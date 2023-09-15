@@ -52,11 +52,11 @@
  * @ingroup tripal_phylotree_api
  */
 function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $schema_name = 'chado') {
-
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
   if ($val_type != 'insert' and $val_type != 'update') {
-    // tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
-    //                     "The $val_type argument must be either 'update or 'insert'.");
-    \Drupal::service('tripal.logger')->error("The \$val_type argument must be either 'update or 'insert'.");
+    \Drupal::service('tripal.logger')->error("The \$val_type argument to"
+        . " chado_validate_phylotree() must be either 'update or 'insert'.");
   }
 
   // Set Defaults.
@@ -69,8 +69,8 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
     if (!array_key_exists('name_re', $options) or (!$options['name_re'])) {
       $options['name_re'] = '^(.*)$';
     }
-    // A dbxref is not required by Tripal but is required by the database
-    // field in the phylotree table.  Therefore, if the dbxref is not provided
+    // A dbxref is not required by Tripal, but is required by the database
+    // field in the phylotree table. Therefore, if the dbxref is not provided,
     // we can set this to be the null database and null dbxref which
     // is represented as 'null:local:null'
     if (!array_key_exists('dbxref', $options)) {
@@ -100,20 +100,23 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
       return FALSE;
     }
   }
+  // else $val_type == 'update'
   else {
     // Does the phylotree ID exist and is it valid.
     if (!array_key_exists('phylotree_id', $options)) {
       $errors['phylotree_id'] = t('Please provide the ID for the tree.');
       return FALSE;
     }
-    $exists = chado_select_record('phylotree', ['phylotree_id'],
-      ['phylotree_id' => $options['phylotree_id']], ['has_record' => 1], $schema_name);
+    $exists = $chado->select('1:phylotree', 'phylotree')
+      ->fields('phylotree')
+      ->condition('phylotree_id', $options['phylotree_id'])
+      ->execute()
+      ->fetchObject();
     if (!$exists) {
       $errors['phylotree_id'] = t('The phylotree_id "%id" does not exist.',
-        [ '%id' => $options['phylotree_id']]);
+        ['%id' => $options['phylotree_id']]);
       return FALSE;
     }
-
   }
 
   // Make sure the file exists if one is specified.
@@ -126,6 +129,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
         return FALSE;
       }
     }
+
     // Make sure the file format is correct.
     if (!array_key_exists('format', $options) or
       ($options['format'] != 'newick' and $options['format'] != 'taxonomy')) {
@@ -134,30 +138,41 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
       return FALSE;
     }
 
-    // If no leaf type is provided then use the polypeptide term.
+    // If no leaf type is provided then assume a taxonomic tree.
     if (!array_key_exists('leaf_type', $options) or !$options['leaf_type']) {
-      $options['leaf_type'] = 'polypeptide';
+      $options['leaf_type'] = 'taxonomy';
     }
   }
 
   // Make sure the analysis exists.
   $analysis = NULL;
   if (array_key_exists('analysis_id', $options) and $options['analysis_id']) {
-    $analysis = chado_select_record('analysis',
-      ['analysis_id'], ['analysis_id' => $options['analysis_id']], NULL, $schema_name);
+    $analysis = $chado->select('1:analysis', 'analysis')
+      ->fields('analysis')
+      ->condition('analysis_id', $options['analysis_id'])
+      ->execute()
+      ->fetchObject();
     if (!$analysis) {
-      $errors['analysis_id'] = t('The analysis name provided does not exist.');
+      $errors['analysis_id'] = t(
+        'The analysis ID provided "%id" does not exist.',
+        ['%id' => $options['analysis_id']]);
       return FALSE;
     }
-    $options['analysis_id'] = $analysis[0]->analysis_id;
+    $options['analysis_id'] = $analysis->analysis_id;
   }
-  if (array_key_exists('analysis', $options) and $options['analysis']) {
-    $analysis = chado_select_record('analysis', ['analysis_id'], ['name' => $options['analysis']], NULL, $schema_name);
+  elseif (array_key_exists('analysis', $options) and $options['analysis']) {
+    $analysis = $chado->select('1:analysis', 'analysis')
+      ->fields('analysis')
+      ->condition('name', $options['analysis'])
+      ->execute()
+      ->fetchObject();
     if (!$analysis) {
-      $errors['analysis'] = t('The analysis ID provided does not exist.');
+      $errors['analysis'] = t(
+        'The analysis name provided "%name" does not exist.',
+        ['%name' => $options['analysis']]);
       return FALSE;
     }
-    $options['analysis_id'] = $analysis[0]->analysis_id;
+    $options['analysis_id'] = $analysis->analysis_id;
   }
 
   // Make sure the leaf type exists.
@@ -170,7 +185,21 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
         ],
         'name' => 'Species tree',
       ];
-      $type = chado_select_record('cvterm', ['cvterm_id'], $values, NULL, $schema_name);
+
+      // Find the cv_id for EDAM
+      $cv_id = $chado->select('1:cv', 'cv')
+        ->fields('cv')
+        ->condition('name', 'EDAM')
+        ->execute()
+        ->fetchObject()
+        ->cv_id;
+
+      $type = $chado->select('1:cvterm', 'cvterm')
+        ->fields('cvterm')
+        ->condition('name', 'Species tree')
+        ->condition('cv_id', $cv_id)
+        ->execute()
+        ->fetchObject();
     }
     else {
       $values = [
@@ -179,14 +208,30 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
         ],
         'name' => $options['leaf_type'],
       ];
-      $type = chado_select_record('cvterm', ['cvterm_id'], $values, NULL, $schema_name);
+      // $type = chado_select_record('cvterm', ['cvterm_id'], $values, NULL, $schema_name);
+
+      // Find the cv_id for sequence
+      $cv_id = $chado->select('1:cv', 'cv')
+        ->fields('cv')
+        ->condition('name', 'sequence')
+        ->execute()
+        ->fetchObject()
+        ->cv_id;
+
+      $type = $chado->select('1:cvterm', 'cvterm')
+        ->fields('cvterm')
+        ->condition('name', $options['leaf_type'])
+        ->condition('cv_id', $cv_id)
+        ->execute()
+        ->fetchObject();
+
       if (!$type) {
         $errors['leaf_type'] = t('The leaf_type provided "%term" is not a valid Sequence Ontology term.',
           ['%term' => $options['leaf_type']]);
         return FALSE;
       }
     }
-    $options['type_id'] = $type[0]->cvterm_id;
+    $options['type_id'] = $type->cvterm_id;
   }
 
   // A Dbxref is required by the phylotree module, but if the
@@ -212,25 +257,34 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
     if (!$dbxref) {
 
       $db = chado_generate_var('db', ['name' => $db_name], [], $schema_name);
-
       if (!$db) {
-        $errors['dbxref'] = t('
-              dbxref could not be created for db: %dbxref.', ['%dbxref' => $dbxref]);
+        $errors['dbxref'] = t(
+            'dbxref could not be created for %dbname:%dbxref, this DB does not exist.',
+            ['%dbname' => $db_name, '%dbxref' => $dbxref]);
         return FALSE;
       }
-      $dbxref = chado_insert_record('dbxref', $values, [], $schema_name);
 
+      // Here we create the new dbxref for the specified new accession.
+      $dbxref = $chado->insert('1:dbxref')->fields([
+        'accession' => $values['accession'],
+        'db_id' => $db->db_id
+      ])->execute();
       if (!$dbxref) {
-        $errors['dbxref'] = t('
-            dbxref could not be created for db: %dbxref.', ['%dbxref' => $dbxref]);
+        $errors['dbxref'] = t(
+            'dbxref could not be created for %dbname:%dbxref.',
+            ['%dbname' => $db_name, '%dbxref' => $dbxref]);
         return FALSE;
       }
     }
-    if (is_array($dbxref)) {
+
+    if (is_object($dbxref)) {
+      $options['dbxref_id'] = $dbxref->dbxref_id;
+    }
+    elseif (is_array($dbxref)) {
       $options['dbxref_id'] = $dbxref['dbxref_id'];
     }
     else {
-      $options['dbxref_id'] = $dbxref->dbxref_id;
+      $options['dbxref_id'] = $dbxref;
     }
   }
 
@@ -238,7 +292,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
   if (array_key_exists('name', $options) and $options['name']) {
     $sql = "
       SELECT *
-      FROM {phylotree} P
+      FROM {1:phylotree} P
       WHERE
         P.name = :name
     ";
@@ -247,9 +301,12 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
       $sql .= " AND NOT P.phylotree_id = :phylotree_id";
       $args[':phylotree_id'] = $options['phylotree_id'];
     }
-    $result = chado_query($sql, $args, [], $schema_name)->fetchObject();
+    $result = $chado->query($sql, $args)->fetchObject();
     if ($result) {
-      $errors['name'] = t("The tree name is in use by another tree. Please provide a different unique name for this tree.");
+      $errors['name'] = t('The tree name "%name" is in use by another tree.'
+        . ' Please provide a different unique name for this tree.',
+        ['%name' => $options['name']]);
+      return FALSE;
     }
   }
 
@@ -275,8 +332,8 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
  *                   should be associated.
  *     'leaf_type':  A sequence ontology term or the word 'taxonomy'. If the
  *                   type is 'taxonomy' then this tree represents a
- *                   taxonomic tree.  The default, if not specified, is the
- *                   term 'polypeptide'.
+ *                   taxonomic tree. The default, if not specified, is a
+ *                   taxonomic tree.
  *     'tree_file':  The path of the file containing the phylogenetic tree to
  *                   import or a Drupal managed_file numeric ID.
  *     'format':     The file format. Currently only 'newick' is supported.
@@ -313,7 +370,15 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
  * @ingroup tripal_phylotree_api
  */
 function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 'chado') {
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
+
   global $user;
+
+  // If no leaf type is provided then assume a taxonomic tree.
+  if (!array_key_exists('leaf_type', $options) or !$options['leaf_type']) {
+    $options['leaf_type'] = 'taxonomy';
+  }
 
   $options['name_re'] = isset($options['name_re']) ? trim($options['name_re']) : NULL;
   $options['leaf_type'] = trim($options['leaf_type']);
@@ -336,7 +401,6 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
   $success = chado_validate_phylotree('insert', $options, $errors, $warnings, $schema_name);
   if (!$success) {
     foreach ($errors as $field => $message) {
-      // tripal_report_error($options['message_type'], TRIPAL_ERROR, $message, [], $options['message_opts']);
       \Drupal::service('tripal.logger')->error($message);
     }
     return FALSE;
@@ -351,20 +415,25 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
     'type_id' => $options['type_id'],
   ];
 
-  $phylotree = chado_insert_record('phylotree', $values, [], $schema_name);
+  $phylotree = $chado->insert('1:phylotree')
+    ->fields($values)
+    ->execute();
+  $phylotree = $chado->select('1:phylotree', 'phylotree')
+    ->fields('phylotree')
+    ->condition('phylotree_id', $phylotree)
+    ->execute()
+    ->fetchAssoc();
   if (!$phylotree) {
     drupal_set_message(t('Unable to add phylotree.'), 'warning');
-    // tripal_report_error($options['message_type'], TRIPAL_WARNING,
-    //   'Insert phylotree: Unable to create phylotree where values: %values',
-    //   ['%values' => print_r($values, TRUE)], $options['message_opts']);
-    \Drupal::service('tripal.logger')->warning('Insert phylotree: Unable to create phylotree where values:' . print_r($values, TRUE));  
+    \Drupal::service('tripal.logger')->warning(
+      'Insert phylotree: Unable to create phylotree where values: %values',
+      ['%values' => print_r($values, TRUE)]);
     return FALSE;
   }
   $phylotree_id = $phylotree['phylotree_id'];
-  // tripal_report_error($options['message_type'], TRIPAL_INFO,
-  //   'Insert phylotree: Created phylotree with phylotree_id: %phylotree_id',
-  //   ['%phylotree_id' => $phylotree_id], $options['message_opts']);
-  \Drupal::service('tripal.logger')->info("Insert phylotree: Created phylotree with phylotree_id: $phylotree_id");
+  \Drupal::service('tripal.logger')->info(
+    'Insert phylotree: Created phylotree with phylotree_id: %phylotree_id',
+    ['%phylotree_id' => $phylotree_id]);
   $options['phylotree_id'] = $phylotree_id;
 
   // If the tree_file is numeric then it is a Drupal managed file and
@@ -381,37 +450,15 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
     $real_file_path = $options['tree_file'];
   }
 
-  // If caller has requested to load the file now then do so, otherwise
-  // submit using a Tripal job.
-  if (!array_key_exists('no_load', $options) or !$options['no_load']) {
-    if (array_key_exists('load_later', $options) and $options['load_later']) {
-      $args = [
-        $real_file_path,
-        'newick',
-        [
-          'phylotree_id' => $phylotree_id,
-          'leaf_type' => $options['leaf_type'],
-          'match' => $options['match'] ? 'uniquename' : 'name',
-          'name_re' => $options['name_re'],
-        ],
-      ];
-      if (tripal_add_job("Import Tree File: " . basename($real_file_path), $options['message_type'],
-        'chado_phylogeny_import_tree_file', $args, $user->uid)) {
-        drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
-      }
-    }
-    else {
-      $args = [
-        'phylotree_id' => $phylotree_id,
-        'leaf_type' => $options['leaf_type'],
-        'match' => $options['match'] ? 'uniquename' : 'name',
-        'name_re' => $options['name_re'],
-        'message_type' => $options['message_type'],
-        'message_opts' => $options['message_opts'],
-      ];
-      chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args, NULL, $schema_name);
-    }
-  }
+  $args = [
+    'phylotree_id' => $phylotree_id,
+    'leaf_type' => $options['leaf_type'],
+    'match' => $options['match'] ? 'uniquename' : 'name',
+    'name_re' => $options['name_re'],
+    'message_type' => $options['message_type'],
+    'message_opts' => $options['message_opts'],
+  ];
+  chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args, NULL, $schema_name);
 
   return TRUE;
 }
@@ -440,8 +487,8 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
  *                   should be associated.
  *     'leaf_type':  A sequence ontology term or the word 'taxonomy'. If the
  *                   type is 'taxonomy' then this tree represents a
- *                   taxonomic tree.  The default, if not specified, is the
- *                   term 'polypeptide'.
+ *                   taxonomic tree. The default, if not specified, is a
+ *                   taxonomic tree.
  *     'tree_file':  The path of the file containing the phylogenetic tree to
  *                   import or a Drupal managed_file numeric ID.
  *     'format':     The file format. Currently only 'newick' is supported
@@ -461,7 +508,10 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
  * @ingroup tripal_phylotree_api
  */
 function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado') {
-  global $user;
+  // global $user; // Unused variable detected by RISH VSCODE IDE [8/27/2023]
+
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
 
   // These are options for the tripal_report_error function. We do not
   // want to log messages to the watchdog but we do for the job and to
@@ -479,7 +529,6 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
   $success = chado_validate_phylotree('update', $options, $errors, $warnings, $schema_name);
   if (!$success) {
     foreach ($errors as $field => $message) {
-      // tripal_report_error($options['message_type'], TRIPAL_ERROR, $message, [], $options['message_opts']);
       \Drupal::service('tripal.logger')->error($message);
     }
     return FALSE;
@@ -508,18 +557,18 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
   $phylotree = chado_update_record('phylotree', $match, $values, ['return_record' => TRUE], $schema_name);
   if (!$phylotree) {
     drupal_set_message(t('Unable to update phylotree.'), 'warning');
-    // tripal_report_error('tripal_phylogeny', TRIPAL_WARNING,
-    //   'Update phylotree: Unable to update phylotree where values: %values',
-    //   ['%values' => print_r($values, TRUE)], $options['message_opts']
-    // );
-    \Drupal::service('tripal.logger')->warning('Update phylotree: Unable to update phylotree where values: ' . print_r($values, TRUE));
+    \Drupal::service('tripal.logger')->warning(
+      'Update phylotree: Unable to update phylotree where values: %values',
+      ['%values' => print_r($values, TRUE)]);
   }
 
   // If we have a tree file, then import the tree.
   if (array_key_exists('tree_file', $options) and $options['tree_file']) {
 
     // Remove any existing nodes
-    chado_delete_record('phylonode', ['phylotree_id' => $options['phylotree_id']], NULL,  $schema_name);
+    $chado->delete('1:phylonode')
+      ->condition('phylotree_id', $options['phylotree_id'])
+      ->execute();
 
     // Make sure if we already have a file that we remove the old one.
     $sql = "
@@ -549,35 +598,15 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
       $real_file_path = $options['tree_file'];
     }
 
-    // If caller has requested to load the file now then do so, otherwise
-    // submit using a Tripal job.
-    if (array_key_exists('load_later', $options) and $options['load_later']) {
-      $args = [
-        $real_file_path,
-        'newick',
-        [
-          'phylotree_id' => $options['phylotree_id'],
-          'leaf_type' => $options['leaf_type'],
-          'match' => $options['match'] ? 'uniquename' : 'name',
-          'name_re' => $options['name_re'],
-        ],
-      ];
-      if (tripal_add_job("Import Tree File: " . basename($real_file_path), 'tripal_phylogeny',
-        'chado_phylogeny_import_tree_file', $args, $user->uid)) {
-        drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
-      }
-    }
-    else {
-      $args = [
-        'phylotree_id' => $options['phylotree_id'],
-        'leaf_type' => $options['leaf_type'],
-        'match' => $options['match'] ? 'uniquename' : 'name',
-        'name_re' => $options['name_re'],
-        'message_type' => $options['message_type'],
-        'message_opts' => $options['message_opts'],
-      ];
-      chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args, NULL, $schema_name);
-    }
+    $args = [
+      'phylotree_id' => $options['phylotree_id'],
+      'leaf_type' => $options['leaf_type'],
+      'match' => $options['match'] ? 'uniquename' : 'name',
+      'name_re' => $options['name_re'],
+      'message_type' => $options['message_type'],
+      'message_opts' => $options['message_opts'],
+    ];
+    chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args, NULL, $schema_name);
   }
 
   return TRUE;
@@ -595,18 +624,27 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
  */
 function chado_delete_phylotree($phylotree_id, $schema_name = 'chado') {
 
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
+
   // If we don't have a phylotree id for this node then this isn't a node of
   // type chado_phylotree or the entry in the chado_phylotree table was lost.
   if (!$phylotree_id) {
-    // tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
-    //   'Please provide a phylotree_id to delete a tree.', [], []);
     \Drupal::service('tripal.logger')->error('Please provide a phylotree_id to delete a tree');
     return FALSE;
   }
 
   // Remove the tree
   $values = ['phylotree_id' => $phylotree_id];
-  return chado_delete_record('phylotree', $values, NULL, $schema_name);
+  // return chado_delete_record('phylotree', $values, NULL, $schema_name);
+  $status = false;
+  // RISH [8/27/2023] The below $num_deleted concept is taken from the Drupal Database API for 9.x
+  // https://www.drupal.org/docs/drupal-apis/database-api/delete-queries
+  $num_deleted = $chado->delete('1:phylotree')
+    ->condition('phylotree_id', $phylotree_id)
+    ->execute();
+  return TRUE;
+
 }
 
 /**
@@ -693,6 +731,8 @@ function chado_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  * @ingroup tripal_phylotree_api
  */
 function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], $parent = NULL, $schema_name = 'chado') {
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
 
   // Used for final summary message at end of recursion.
   static $n_associated = 0;
@@ -718,11 +758,13 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
       $values['distance'] = $tree['length'];
     }
     // Set the type of node.
-    if ($tree['is_root']) {
+    // echo "DEBUG Check is_root\n";
+    if (isset($tree['is_root']) && $tree['is_root'] == true) {
       $values['type_id'] = $vocab['root']->cvterm_id;
     }
     else {
-      if ($tree['is_internal']) {
+      // echo "DEBUG Check is_internal\n";
+      if (isset($tree['is_internal']) && $tree['is_internal'] == true) {
         $values['type_id'] = $vocab['internal']->cvterm_id;
         $values['parent_phylonode_id'] = $parent['phylonode_id'];
         // TODO: a feature may be associated here but it is recommended that it
@@ -730,7 +772,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
         // all features beneath it.
       }
       else {
-        if ($tree['is_leaf']) {
+        if (isset($tree['is_leaf']) && $tree['is_leaf']) {
           $values['type_id'] = $vocab['leaf']->cvterm_id;
           $values['parent_phylonode_id'] = $parent['phylonode_id'];
 
@@ -765,41 +807,53 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
                 ],
               ];
               $sel_columns = ['feature_id'];
-              $feature = chado_select_record('feature', $sel_columns, $sel_values, NULL, $schema_name);
+
+              // Find the cv_id for sequence
+              $cv_id = $chado->select('1:cv', 'cv')->fields('cv')->condition('name', 'sequence')->execute()->fetchObject()->cv_id;
+
+              // Find the cvterm_id for $options['leaf_type']
+              $cvterm_id = $chado->select('1:cvterm', 'cvterm')->fields('cvterm')
+                ->condition('name', $options['leaf_type'])
+                ->condition('cv_id', $cv_id)
+                ->execute()
+                ->fetchObject()->cvterm_id;
+
+              $feature = $chado->select('1:feature', 'feature')
+                ->fields('feature')
+                ->condition('type_id', $cvterm_id);
+              if (isset($sel_values['name'])) {
+                $feature = $feature->condition('name', $sel_values['name']);
+              }
+              else if (isset($sel_values['uniquename'])) {
+                $feature = $feature->condition('uniquename', $sel_values['uniquename']);
+              }
+
+              $feature = $feature->execute()
+                ->fetchAll();
+
               if (count($feature) > 1) {
                 // Found multiple features, cannot make an association.
-                // tripal_report_error($options['message_type'], TRIPAL_WARNING,
-                //   'Import phylotree: Warning, unable to associate to a feature, more than one feature matches the %matchtype: %value',
-                //   ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ],
-                //   $options['message_opts']
-                // );
-                \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a feature, 
-                  more than one feature matches the ' . $options['match'] .  ': ' . $sel_values[$options['match']]);
+                \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a feature,'
+                    . ' more than one feature matches the %matchtype: %value',
+                    ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ]);
               }
               else {
                 if (count($feature) == 1) {
                   $values['feature_id'] = $feature[0]->feature_id;
                   $n_associated++;
-                  // tripal_report_error($options['message_type'], TRIPAL_INFO,
-                  //   'Import phylotree: Associated %value by %matchtype to feature_id: %fid',
-                  //   ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']],
-                  //    '%fid' => $values['feature_id'] ],
-                  //   $options['message_opts']
-                  // );
-                  \Drupal::service('tripal.logger')->info('Import phylotree: Associated ' . 
-                    $sel_values[$options['match']] . ' by ' . $options['match'] . 
-                    ' to feature_id: ' . $values['feature_id']);
+                  \Drupal::service('tripal.logger')->info('Import phylotree: Associated'
+                    . ' %value by %matchtype to feature_id: %fid',
+                    ['%matchtype' => $options['match'],
+                     '%value' => $sel_values[$options['match']],
+                     '%fid' => $values['feature_id'] ]);
                 }
                 else {
                   // Could not find a feature that matches the name or uniquename
                   $n_not_associated++;
-                  // tripal_report_error($options['message_type'], TRIPAL_WARNING,
-                  //   'Import phylotree: Warning, unable to associate to a feature that matches the %matchtype: %value',
-                  //   ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ],
-                  //   $options['message_opts']
-                  // );
-                  \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a 
-                    feature that matches the ' . $options['match'] . ': ' . $sel_values[$options['match']]);
+                  \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a'
+                    . ' feature that matches the %matchtype: %value',
+                    ['%matchtype' => $options['match'],
+                     '%value' => $sel_values[$options['match']] ]);
                 }
               }
             }
@@ -814,23 +868,15 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
               if ($organism_id) {
                 $tree['organism_id'] = $organism_id;
                 $n_associated++;
-                // tripal_report_error($options['message_type'], TRIPAL_INFO,
-                //   'Import phylotree: Associated %name to organism_id: %organism_id',
-                //   ['%name' => $tree['name'], '%organism_id' => $organism_id],
-                //   $options['message_opts']
-                // );
-                \Drupal::service('tripal.logger')->info('Import phylotree: Associated ' . $tree['name'] . 
-                  ' to organism_id: ' . $organism_id);
+                \Drupal::service('tripal.logger')->info(
+                  'Import phylotree: Associated %name to organism_id: %organism_id',
+                  ['%name' => $tree['name'], '%organism_id' => $organism_id]);
               }
               else {
                 $n_not_associated++;
-                // tripal_report_error($options['message_type'], TRIPAL_WARNING,
-                //   'Import phylotree: Warning, unable to associate to an organism that matches %name',
-                //   ['%name' => $tree['name']],
-                //   $options['message_opts']
-                // );
-                \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, 
-                  unable to associate to an organism that matches ' . $tree['name']);
+                \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to'
+                  . ' associate to an organism that matches %name',
+                  ['%name' => $tree['name']]);
               }
             }
           }
@@ -839,7 +885,11 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
     }
 
     // Insert the new node and then add its assigned phylonode_id to the node.
-    $phylonode = chado_insert_record('phylonode', $values, [], $schema_name);
+    // $phylonode = chado_insert_record('phylonode', $values, [], $schema_name);
+    $phylonode = $chado->insert('1:phylonode')->fields($values)->execute();
+    // Get the phylonode record
+    $phylonode = $chado->select('1:phylonode', 'p')->fields('p')->condition('phylonode_id', $phylonode)->execute()->fetchAssoc();
+
     $tree['phylonode_id'] = $phylonode['phylonode_id'];
 
     // This is a taxonomic tree, so associate this node with an
@@ -849,7 +899,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
         'phylonode_id' => $tree['phylonode_id'],
         'organism_id' => $tree['organism_id'],
       ];
-      $pylonode_organism = chado_insert_record('phylonode_organism', $values, [], $schema_name);
+      $phylonode_organism = $chado->insert('1:phylonode_organism')->fields($values)->execute();
     }
 
     // Associate any properties.
@@ -860,7 +910,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
           'type_id' => $type_id,
           'value' => $value,
         ];
-        $pylonode_organism = chado_insert_record('phylonodeprop', $values, [], $schema_name);
+        $phylonode_organism = $chado->insert('1:phylonodeprop')->fields($values)->execute();
       }
     }
   }
@@ -871,15 +921,9 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
   }
   // Report summary status of association of leaf nodes at end of recursion.
   if (!$parent) {
-    // tripal_report_error($options['message_type'], TRIPAL_INFO,
-    //   'Import phylotree summary: %n_associated nodes were successfully associated to '
-    //   . 'content, %n_not_associated nodes could not be associated',
-    //   ['%n_associated' => $n_associated, '%n_not_associated' => $n_not_associated],
-    //   $options['message_opts']
-    //   );
-    \Drupal::service('tripal.logger')->info('Import phylotree summary: ' . $n_associated . 
-      ' were successfully associated to' .
-      ' content, ' . $n_not_associated . ' nodes could not be associated');
+    \Drupal::service('tripal.logger')->info('Import phylotree summary: %n_associated nodes'
+      . ' were successfully associated to content, %n_not_associated nodes could not be associated',
+      ['%n_associated' => $n_associated, '%n_not_associated' => $n_not_associated]);
   }
 }
 
@@ -960,8 +1004,8 @@ function chado_phylogeny_get_node_types_vocab($options, $schema_name = 'chado') 
  *     'phylotree_id': The imported nodes will be associated with this tree.
  *     'leaf_type':  A sequence ontology term or the word 'taxonomy'. If the
  *                   type is 'taxonomy' then this tree represents a
- *                   taxonomic tree.  The default, if not specified, is the
- *                   term 'polypeptide'.
+ *                   taxonomic tree. The default, if not specified, is a
+ *                   taxonomic tree.
  *     'name_re':    The value of this field can be a regular expression to pull
  *                   out the name of the feature or organism from the node label
  *                   in the input tree. If no value is provided the entire label
@@ -975,7 +1019,7 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
 
   // Set some option details.
   if (!array_key_exists('leaf_type', $options)) {
-    $options['leaf_type'] = 'polypeptide';
+    $options['leaf_type'] = 'taxonomy';
   }
   if (!array_key_exists('match', $options)) {
     $options['match'] = 'name';
@@ -1007,11 +1051,9 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
   // required fields for creating a tree.
   if (!array_key_exists('phylotree_id', $options)) {
     if (!array_key_exists('name', $options)) {
-      // tripal_report_error($options['message_type'], TRIPAL_ERROR,
-      //   'The phylotree_id is required for importing the tree.', [], $options['message_opts']);
       \Drupal::service('tripal.logger')->error(
         'The phylotree_id is required for importing the tree.'
-      );     
+      );
       return FALSE;
     }
   }
@@ -1021,12 +1063,9 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
   $phylotree = chado_generate_var('phylotree', $values, [], $schema_name);
 
   if (!$phylotree) {
-    // tripal_report_error($options['message_type'], TRIPAL_ERROR,
-    //   'Could not find the phylotree using the ID provided: %phylotree_id.',
-    //   ['%phylotree_id' => $options['phylotree_id']], $options['message_opts']);
     \Drupal::service('tripal.logger')->error(
-      'Could not find the phylotree using the ID provided: ' . $options['phylotree_id'] . '.'
-    );
+      'Could not find the phylotree using the ID provided: %phylotree_id.',
+      ['%phylotree_id' => $options['phylotree_id']], $options['message_opts']);
     return FALSE;
   }
 
@@ -1034,9 +1073,9 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
   $chado = \Drupal::service('tripal_chado.database');
   $chado->setSchemaName($schema_name);
   $transaction_chado = $chado->startTransaction();
-  print "\nNOTE: Loading of this tree file is performed using a database transaction. \n" .
-    "If the load fails or is terminated prematurely then the entire set of \n" .
-    "insertions/updates is rolled back and will not be found in the database\n\n";
+  // print "\nNOTE: Loading of this tree file is performed using a database transaction. \n" .
+  //   "If the load fails or is terminated prematurely then the entire set of \n" .
+  //   "insertions/updates is rolled back and will not be found in the database\n\n";
   try {
 
 
@@ -1046,11 +1085,13 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
       // To be upgraded at a later time
 
       // // Parse the tree into the expected nested node format.
+      // echo "Parsing newick file...\n";
+      // T3 OLD CODE
       // module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.phylotree_newick');
-      // $tree = tripal_phylogeny_parse_newick_file($file_name);
-
+      // T4 - this file is added as an API file
+      $tree = tripal_phylogeny_parse_newick_file($file_name);
       // // Assign the right and left indices to the tree nodes.
-      // chado_assign_phylogeny_tree_indices($tree);
+      chado_assign_phylogeny_tree_indices($tree);
     }
 
     // Iterate through the tree nodes and add them to Chado in accordance

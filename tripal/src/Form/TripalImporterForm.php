@@ -55,8 +55,12 @@ class TripalImporterForm implements FormInterface {
       $form['file'] = [
         '#type' => 'fieldset',
         '#title' => $importer_def['upload_title'],
-        '#description' => $importer_def['upload_description'],
         '#weight' => -15,
+      ];
+
+      $form['file']['upload_description'] = [
+        '#type' => 'markup',
+        '#markup' => $importer_def['upload_description'] . ' The following file extensions are supported: ' . implode(', ', $importer_def['file_types']) . '.',
       ];
     }
 
