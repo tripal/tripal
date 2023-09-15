@@ -35,6 +35,11 @@ class TripalEntityPublishForm extends FormBase {
     $storage_manager = \Drupal::service('tripal.storage');
     $storage_defs = $storage_manager->getDefinitions();
     foreach ($storage_defs as $plugin_id => $storage_def) {
+      // Don't use the Tripal default 'drupal_sql_storage' plugin
+      // as a source for publishing records.
+      if ($plugin_id == 'drupal_sql_storage') {
+        continue;
+      }
       $datastores[$plugin_id] = $storage_def['label']->__toString();
     }
 

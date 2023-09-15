@@ -108,7 +108,6 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
 
     return FALSE;
   }
-}
 
   /**
    * @{inheritdoc}

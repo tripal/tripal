@@ -44,14 +44,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * The database connection for querying Chado.
    *
-   * @var Drupal\tripal_chado\Database\ChadoConnection
+   * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
   protected $connection;
 
   /**
    * A service to provide debugging for fields to developers.
    *
-   * @ var Drupal\tripal_chado\Services\ChadoFieldDebugger
+   * @ var \Drupal\tripal_chado\Services\ChadoFieldDebugger
    */
   protected $field_debugger;
 
@@ -1154,6 +1154,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             }
             else {
               $records[$chado_table][$delta]['fields'][$chado_column] = $value;
+            }
 
             // If this field should not allow an empty value that means this
             // entire record should be removed on an update and not inserted.
