@@ -18,11 +18,9 @@ use FASTAImporter;
 /**
  * Tests for the FASTAImporter class
  *
- * @group Tripal
- * @group Tripal Chado
- * @group Tripal Chado ChadoStorage
- * @group Tripal Chado ChadoStorage Importer
- * @group Tripal Chado ChadoStorage Importer FASTAImporter
+ * @group TripalImporter
+ * @group ChadoImporter
+ * @group FASTAImporter
  */
 class FASTAImporterTest extends ChadoTestBrowserBase
 {
@@ -66,7 +64,7 @@ class FASTAImporterTest extends ChadoTestBrowserBase
         'programversion' => '1.0',
       ])
       ->execute();
-      
+
 
     // Perform the FASTA test by creating an instance of the FASTA loader
     $importer_manager = \Drupal::service('tripal.importer');
@@ -109,24 +107,24 @@ class FASTAImporterTest extends ChadoTestBrowserBase
 
     $results_object = $results->fetchObject();
     $this->assertEquals($results_object->c1, 1, 'There should have been one feature named orange1.1g017341m');
-    
+
     $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} WHERE name = :name", [
       ':name' => 'orange1.1g022797m'
     ]);
 
     $results_object = $results->fetchObject();
     $this->assertEquals($results_object->c1, 1, 'There should have been one feature named orange1.1g017341m');
-    
+
     $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} WHERE name = :name", [
       ':name' => 'orange1.1g022799m'
     ]);
 
     $results_object = $results->fetchObject();
     $this->assertEquals($results_object->c1, 1, 'There should have been one feature named orange1.1g017341m');
-    
+
     // Check the type_id
-    $results = $chado->query("SELECT * FROM {1:feature} as f 
-      LEFT JOIN {1:cvterm} as cvterm ON (f.type_id = cvterm.cvterm_id) 
+    $results = $chado->query("SELECT * FROM {1:feature} as f
+      LEFT JOIN {1:cvterm} as cvterm ON (f.type_id = cvterm.cvterm_id)
       WHERE f.name = :name", [
       ':name' => 'orange1.1g022799m'
     ]);
@@ -181,8 +179,8 @@ class FASTAImporterTest extends ChadoTestBrowserBase
 
     $results_object = $results->fetchObject();
     $this->assertEquals($results_object->c1, 1, 'There should have been one feature named scaffold00001');
-    
-    
+
+
   }
 
 }
