@@ -191,6 +191,38 @@ fields:
               region: content
               weight: 10
 
+    -   name: organism_image
+        content_type: organism
+        label: Organism Image
+        type: image
+        description: An image of the organism.
+        cardinality: 1
+        required: false
+        translatable: false
+        default_value: {  }
+        default_value_callback: ''
+        storage_settings:
+          storage_plugin_id: drupal
+        settings:
+          handler: 'default:file'
+          handler_settings: {  }
+          max_resolution: 1920x1080
+          file_directory: '[date:custom:Y]-[date:custom:m]'
+          file_extensions: 'png gif jpg jpeg'
+          min_resolution: ''
+          alt_field: true
+          alt_field_required: true
+          title_field: false
+          title_field_required: false
+          default_image:
+            uuid: ''
+            alt: ''
+            title: ''
+            width: null
+            height: null
+          termIdSpace: data
+          termAccession: 2968
+        field_type: image    
 
     -   name: analysis_name
         content_type: analysis
