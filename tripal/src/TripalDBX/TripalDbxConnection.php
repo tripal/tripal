@@ -978,6 +978,8 @@ abstract class TripalDbxConnection extends PgConnection {
    * Find the prefix for a table.
    *
    * OVERRIDES \Drupal\Core\Database\Connection:tablePrefix().
+   * REMOVED IN Drupal 10.1.x
+   * SEE https://www.drupal.org/node/3260849
    *
    * This function is for when you want to know the prefix of a table. This
    * is not used in prefixTables due to performance reasons.
@@ -1032,6 +1034,17 @@ abstract class TripalDbxConnection extends PgConnection {
     else {
       return parent::tablePrefix($table);
     }
+  }
+
+  /**
+   * Returns the prefix of the tables.
+   *
+   * OVERRIDES \Drupal\Core\Database\Connection:getPrefix().
+   *
+   * @return string $prefix
+   */
+  public function getPrefix(): string {
+    return $this->usedSchemas[1] . '.';
   }
 
   /**
