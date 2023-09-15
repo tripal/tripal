@@ -1127,6 +1127,7 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
   $sql = mb_substr($sql, 0, -4);  // Get rid of the trailing 'AND'.
 
   // Finally perform the delete.  If successful, return the updated record.
+  // RISH [8/27/2023] - I think the above comment is incorrect, it returns status only ie. TRUE OR FALSE
   $result = chado_query($sql, $args, [], $chado_schema_name);
   if ($result) {
     return TRUE;
