@@ -207,7 +207,7 @@ fields:
           handler: 'default:file'
           handler_settings: {  }
           max_resolution: 1920x1080
-          file_directory: '[date:custom:Y]-[date:custom:m]'
+          file_directory: 'organism_images'
           file_extensions: 'png gif jpg jpeg'
           min_resolution: ''
           alt_field: true
