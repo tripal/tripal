@@ -16,16 +16,17 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    id = "chado_gff3_loader",
  *    label = @Translation("Chado GFF3 File Loader"),
  *    description = @Translation("Import a GFF3 file into Chado"),
- *    file_types = {"gff","gff3"},
- *    upload_description = @Translation("Please provide the GFF3 file."),
+ *    file_types = {"gff","gff3", "txt"},
+ *    upload_description = @Translation("Please provide a plain text, tab-delimited file following the <a target='_blank' href='https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md'>GFF3 Specification</a>. It is expected that all landmark features are associated with the same organism and that the type (column 3) are sequence ontology terms."),
  *    upload_title = @Translation("GFF3 File"),
  *    use_analysis = True,
  *    require_analysis = True,
  *    button_text = @Translation("Import GFF3 file"),
  *    file_upload = True,
- *    file_load = False,
- *    file_remote = False,
- *    file_required = False,
+ *    file_load = True,
+ *    file_remote = True,
+ *    file_local = True,
+ *    file_required = True,
  *    cardinality = 1,
  *    menu_path = "",
  *    callback = "",
@@ -534,8 +535,8 @@ class GFF3Importer extends ChadoImporterBase {
 
     // check the regular expression to make sure it is valid
     set_error_handler(function () {}, E_WARNING);
-    $result_re = preg_match("/" . $re_mrna . "/", NULL);
-    $result = preg_replace("/" . $re_mrna . "/", $re_protein, NULL);
+    $result_re = preg_match("/" . $re_mrna . "/", "");
+    $result = preg_replace("/" . $re_mrna . "/", $re_protein, "");
     restore_error_handler();
     if ($result_re === FALSE) {
       \Drupal::messenger()->addError('Invalid regular expression.');

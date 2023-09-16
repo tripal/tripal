@@ -651,7 +651,7 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
   $ivalues = [];       // Contains the values of the fields.
   foreach ($insert_values as $field => $value) {
     $ifields[] = $field;
-    if (strcmp($value, '__NULL__') == 0) {
+    if (is_string($value) and (strcmp($value, '__NULL__') == 0)) {
       $itypes[] = "NULL";
     }
     else {
@@ -917,7 +917,7 @@ function chado_update_record($table, $match, $values, $options = NULL, $chado_sc
   $sql = 'UPDATE {' . $table . '} SET ';
   $args = [];        // Arguments passed to chado_query.
   foreach ($update_values as $field => $value) {
-    if (strcmp($value, '__NULL__') == 0) {
+    if (is_string($value) and (strcmp($value, '__NULL__') == 0)) {
       $sql .= " $field = NULL, ";
     }
     else {
@@ -929,7 +929,7 @@ function chado_update_record($table, $match, $values, $options = NULL, $chado_sc
 
   $sql .= " WHERE ";
   foreach ($update_matches as $field => $value) {
-    if (strcmp($value, '__NULL__') == 0) {
+    if (is_string($value) and (strcmp($value, '__NULL__') == 0)) {
       $sql .= " $field = NULL AND ";
     }
     else {
@@ -1115,7 +1115,7 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
       $sql .= ") AND ";
     }
     else {
-      if (strcmp($value, '__NULL__') == 0) {
+      if (is_string($value) and (strcmp($value, '__NULL__') == 0)) {
         $sql .= " $field = NULL AND ";
       }
       else {
@@ -1127,6 +1127,7 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
   $sql = mb_substr($sql, 0, -4);  // Get rid of the trailing 'AND'.
 
   // Finally perform the delete.  If successful, return the updated record.
+  // RISH [8/27/2023] - I think the above comment is incorrect, it returns status only ie. TRUE OR FALSE
   $result = chado_query($sql, $args, [], $chado_schema_name);
   if ($result) {
     return TRUE;
