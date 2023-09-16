@@ -19,10 +19,12 @@ class ChadoSchema extends TripalDbxSchema {
 
     $source = $parameters['source'] ?? 'file';
     $format = strtolower($parameters['format'] ?? '');
-    $version = $parameters['version']
-      ?? $this->connection->getVersion()
-      ?? $DEFAULT_VERSION
-    ;
+
+    $version = $parameters['version'];
+    if (!array_key_exists('version', $parameters) OR empty($parameters['version'])) {
+      $version = $this->connection->getVersion();
+    }
+
     if (!empty($parameters['clear'])) {
       $schema_structure = [];
     }
@@ -49,6 +51,7 @@ class ChadoSchema extends TripalDbxSchema {
           . $version
           . '.yml'
         ;
+
         // Make sure we got a valid version format.
         if (!preg_match('/^\\d\\.\\d$/', $version)
             || !file_exists($filename)

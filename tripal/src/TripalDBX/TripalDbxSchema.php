@@ -30,7 +30,7 @@ use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
  *   - createTable(), dropTable()
  *   - dropField(), dropIndex(), dropPrimaryKey(), dropUniqueKey(),
  *   - fieldExists(), findPrimaryKeyColumns(),
- *   - renameTable(), tableExists()
+ *   - renameTable()
  *   and more from the documentation.
  *
  * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Driver!pgsql!Schema.php/class/Schema/9.0.x
@@ -144,7 +144,7 @@ abstract class TripalDbxSchema extends PgSchema {
   }
 
   /**
-   * 
+   *
    */
   public function initialize() {
     if (!$this->initialized) {
@@ -1137,4 +1137,22 @@ EOD;
     $this->tripalDbxApi->dropSchema($this->defaultSchema, $this->connection);
   }
 
+  /**
+   * Overrides Drupal\Core\Database\Schema->tableExists().
+   *
+   * We needed to override it because core Drupal makes some assumptions
+   * when building the where condition that do not match our multi-schema setup.
+   */
+  public function tableExists($table) {
+
+    // We can't use \Drupal::database()->select() here
+    // because it would prefix information_schema.tables
+    // and the query would fail.
+    // Don't use {} around information_schema.tables table.
+    return (bool) $this->connection
+      ->query('SELECT TRUE AS table_exists FROM pg_tables
+          WHERE schemaname=:schema AND tablename = :table',
+          [':table' => $table, ':schema' => $this->getSchemaName()])
+      ->fetchField();
+  }
 }
