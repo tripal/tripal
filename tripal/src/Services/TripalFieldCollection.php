@@ -361,7 +361,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *   'cardinality' => 1,
    *   'required' => TRUE,
    *   'storage_settings' => [
-   *     'storage_plugin_id' => 'tripal_default_storage',
+   *     'storage_plugin_id' => 'drupal_sql_storage',
    *     'storage_plugin_settings'=> [
    *     ],
    *     'max_length' => 255,
