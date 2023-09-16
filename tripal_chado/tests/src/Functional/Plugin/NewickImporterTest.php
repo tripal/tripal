@@ -74,16 +74,16 @@ class NewickImporterTest extends ChadoTestBrowserBase
       $count = $row->c1;
     }
     $this->assertEquals($count, 1, "Polypeptide was not found in cvterms");
-    
-    // Verify that polypeptide is now in the cvterm table 
-    $result_polypeptide_cvterm = $chado->query("SELECT * FROM {1:cvterm} 
+
+    // Verify that polypeptide is now in the cvterm table
+    $result_polypeptide_cvterm = $chado->query("SELECT * FROM {1:cvterm}
       WHERE name = 'polypeptide' LIMIT 1;");
     $polypeptide_object = null;
     $polypeptide_object = $result_polypeptide_cvterm->fetchObject();
     $this->assertNotEquals($polypeptide_object, null);
-    
+
     $polypeptide_cvterm_id = $polypeptide_object->cvterm_id;
-      
+
 
     // Perform the Newick test by creating an instance of the Newick loader
     $importer_manager = \Drupal::service('tripal.importer');
@@ -104,7 +104,7 @@ class NewickImporterTest extends ChadoTestBrowserBase
     //   'description' => 'No description',
     //   'name_re' => NULL,
     //   'match' => 0,
-    //   'load_later' => 0 
+    //   'load_later' => 0
     // ];
 
     // $file_details = [
@@ -145,12 +145,12 @@ class NewickImporterTest extends ChadoTestBrowserBase
       'description' => 'No description',
       'name_re' => "",
       'match' => 0,
-      // 'load_later' => 0 
+      // 'load_later' => 0
     ];
 
     $file_details = [
       'file_local' => __DIR__ . '/../../../fixtures/newick_loader/newick_T92076.tree',
-    ];    
+    ];
 
     $newick_importer->create($run_args, $file_details);
     $newick_importer->prepareFiles();
@@ -187,7 +187,7 @@ class NewickImporterTest extends ChadoTestBrowserBase
     foreach ($results as $row) {
       $count = $row->c1;
     }
-    $this->assertGreaterThan(0, $count, "Should have created at least one phylotree with associated type_id but did not.");    
+    $this->assertGreaterThan(0, $count, "Should have created at least one phylotree with associated type_id but did not.");
 
     // Check phylonode table - count should be 23 for this specific tree using this test
     $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylonode}');
@@ -219,7 +219,7 @@ class NewickImporterTest extends ChadoTestBrowserBase
       $count = $row->c1;
     }
     // print_r($row->c1);
-    $this->assertGreaterThan(20, $count, "Should have created at least 20 phylonode records with a features being null.");    
+    $this->assertGreaterThan(20, $count, "Should have created at least 20 phylonode records with a features being null.");
 
 
     // Let's check to see if one phylotree exists
@@ -234,7 +234,7 @@ class NewickImporterTest extends ChadoTestBrowserBase
     $results = $chado->query('SELECT phylotree_id FROM {1:phylotree} LIMIT 1');
     $phylotree_id = NULL;
     foreach ($results as $row) {
-      $phylotree_id = $results->phylotree_id;
+      $phylotree_id = $row->phylotree_id;
     }
 
     // Let's try to cover more code for phylotree.api.php by testing chado_update_phylotree
@@ -284,7 +284,7 @@ class NewickImporterTest extends ChadoTestBrowserBase
 
     // Check if the newick tree loader form is viewable
     $this->drupalGet('admin/tripal/loaders/chado_newick_tree_loader');
-    $this->assertSession()->statusCodeEquals(200);    
+    $this->assertSession()->statusCodeEquals(200);
 
     // $this->drupalGet('admin/config/workflow/rules');
     // $this->assertSession()->statusCodeEquals(200);
