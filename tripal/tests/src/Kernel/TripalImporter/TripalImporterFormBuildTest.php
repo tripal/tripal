@@ -46,6 +46,7 @@ class TripalImporterFormBuildTest extends KernelTestBase {
       'upload_title' => 'Gemstone Descriptions',
       'use_analysis' => FALSE,
       'require_analysis' => FALSE,
+      'use_button' => TRUE,
       'button_text' => 'Import file',
       'file_upload' => FALSE,
       'file_load' => FALSE,
@@ -201,7 +202,7 @@ class TripalImporterFormBuildTest extends KernelTestBase {
       "The importer_plugin_id[#value] should be set to our fake plugin_id.");
     // a submit button.
     $this->assertArrayHasKey('button', $form,
-      "The form should not have a submit button since we indicated a specific importer.");
+      "The form should have a submit button since we indicated a specific importer.");
 
     // We should also have our importer specific form elements added to the form!
     $this->assertArrayHasKey('gemstone_composition', $form,
