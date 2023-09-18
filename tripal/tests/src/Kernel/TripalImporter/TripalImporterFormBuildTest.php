@@ -147,8 +147,6 @@ class TripalImporterFormBuildTest extends KernelTestBase {
 
   /**
    * Tests focusing on the Tripal importer form.
-   *
-   * @group tripal_importer
    */
   public function testTripalImporterForm() {
 
@@ -224,8 +222,6 @@ class TripalImporterFormBuildTest extends KernelTestBase {
   /**
    * Confirm that the file-related form elements are added to the form
    * as expected based on plugin annotation.
-   *
-   * @group tripal_importer
    */
   public function testTripalImporterFormFiles() {
 
@@ -399,8 +395,6 @@ class TripalImporterFormBuildTest extends KernelTestBase {
     /**
    * Confirm that the file-related form elements are added to the form
    * as expected based on plugin annotation.
-   *
-   * @group tripal_importer
    */
   public function testTripalImporterFormAnalysis() {
 
@@ -430,5 +424,36 @@ class TripalImporterFormBuildTest extends KernelTestBase {
       "The title for our analysis element did not match what we expected.");
     $this->assertCount(4, $form['analysis_method']['#options'],
       "There were not the expected number of options including the empty option that we expected for our analysis.");
+  }
+
+  /**
+   * Confirm that importers whose annotation indicates they do not want a submit
+   * button, do not get a submit button forced on them.
+   */
+  public function testTripalImporterFormNoButton() {
+
+    $container = \Drupal::getContainer();
+    $plugin_id = 'fakeImporterName';
+    $expected = $this->definitions[$plugin_id];
+
+    // -- Indicate to use an analysis elements.
+    $expected['use_button'] = FALSE;
+    $manager = $this->setMockManager([$plugin_id => $expected]);
+    $container->set('tripal.importer', $manager);
+
+    // Build the form using the Drupal form builder.
+    $form = \Drupal::formBuilder()->getForm(
+      'Drupal\tripal\Form\TripalImporterForm',
+      $plugin_id,
+    );
+    $this->assertIsArray($form,
+      'We still expect the form builder to return a form array even without a plguin_id but it did not.');
+    $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
+      'We did not get the form id we expected.');
+
+    // check that our analysis element is in the form.
+    $this->assertArrayNotHasKey('button', $form,
+      "We should not have a submit button if our annotation sets use_button to FALSE but we do.");
+
   }
 }
