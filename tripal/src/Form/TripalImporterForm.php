@@ -127,12 +127,15 @@ class TripalImporterForm implements FormInterface {
       $form = array_merge($form, $importer_form);
     }
 
-
-    $form['button'] = [
-      '#type' => 'submit',
-      '#value' => $importer_def['button_text'],
-      '#weight' => 10,
-    ];
+    // We should only add a submit button if this importer uses a button.
+    // Examples of importers who don't use this button are mutl-page forms.
+    if (array_key_exists('use_button', $importer_def) AND $importer_def['use_button'] !== FALSE) {
+      $form['button'] = [
+        '#type' => 'submit',
+        '#value' => $importer_def['button_text'],
+        '#weight' => 10,
+      ];
+    }
 
     return $form;
   }
