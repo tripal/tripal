@@ -88,6 +88,15 @@ class TripalImporter extends Plugin {
   public $require_analysis;
 
   /**
+   * Indicates whether the base importer should add a submit button or not.
+   * This should only be used in situations were you need multiple buttons
+   * or control over the submit process (e.g. multi-page forms).
+   *
+   * @var bool
+   */
+  public $use_button = TRUE;
+
+  /**
    * Text that should appear on the button at the bottom of the importer form.
    *
    * @var \Drupal\Core\Annotation\Translation
