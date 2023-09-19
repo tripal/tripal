@@ -402,7 +402,7 @@ function chado_set_active($dbname = 'default', $chado_schema_name = NULL) {
  *
  * Use this function to insert a record into any Chado table.  The first
  * argument specifies the table for inserting and the second is an array
- * of values to be inserted.  The array is mutli-dimensional such that
+ * of values to be inserted.  The array is multi-dimensional such that
  * foreign key lookup values can be specified.
  *
  * @param $table
@@ -706,7 +706,7 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
  * Use this function to update a record in any Chado table.  The first
  * argument specifies the table for inserting, the second is an array
  * of values to matched for locating the record for updating, and the third
- * argument give the values to update.  The arrays are mutli-dimensional such
+ * argument give the values to update.  The arrays are multi-dimensional such
  * that foreign key lookup values can be specified.
  *
  * @param string $table
@@ -980,7 +980,7 @@ function chado_update_record($table, $match, $values, $options = NULL, $chado_sc
  * Use this function to delete a record(s) in any Chado table.  The first
  * argument specifies the table to delete from and the second is an array
  * of values to match for locating the record(s) to be deleted.  The arrays
- * are mutli-dimensional such that foreign key lookup values can be specified.
+ * are multi-dimensional such that foreign key lookup values can be specified.
  *
  * @param string $table
  *  The name of the chado table for inserting.
