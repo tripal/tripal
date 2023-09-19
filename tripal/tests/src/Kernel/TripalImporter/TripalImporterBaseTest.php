@@ -142,7 +142,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->assertIsArray($selected_args,
       "Unable to retrieve arguments after creating tripal importer record.");
     $this->assertEquals($expected_args, $selected_args,
-      "We did not retreive the arguments we expected.");
+      "We did not retrieve the arguments we expected.");
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
@@ -153,7 +153,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->assertIsArray($retrieved_args,
       "Unable to retrieve arguments after loading tripal importer.");
     $this->assertEquals($expected_args, $retrieved_args,
-      "We did not retreive the arguments we expected after loading.");
+      "We did not retrieve the arguments we expected after loading.");
 
     // CASE --- Exception Expected
     // -- Empty run args, no file when file required.
@@ -216,7 +216,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->assertIsArray($selected_args,
       "Unable to retrieve arguments after creating tripal importer record.");
     $this->assertEquals($expected_args, $selected_args,
-      "We did not retreive the arguments we expected.");
+      "We did not retrieve the arguments we expected.");
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
@@ -227,7 +227,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->assertIsArray($retrieved_args,
       "Unable to retrieve arguments after loading tripal importer.");
     $this->assertEquals($expected_args, $retrieved_args,
-      "We did not retreive the arguments we expected after loading.");
+      "We did not retrieve the arguments we expected after loading.");
 
     // CASE --- Valid
     // -- run args + remote file.
@@ -264,7 +264,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->assertIsArray($selected_args,
       "Unable to retrieve arguments after creating tripal importer record.");
     $this->assertEquals($expected_args, $selected_args,
-      "We did not retreive the arguments we expected.");
+      "We did not retrieve the arguments we expected.");
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
@@ -275,7 +275,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->assertIsArray($retrieved_args,
       "Unable to retrieve arguments after loading tripal importer.");
     $this->assertEquals($expected_args, $retrieved_args,
-      "We did not retreive the arguments we expected after loading.");
+      "We did not retrieve the arguments we expected after loading.");
 
     // CASE --- Valid
     // -- run args + file upload (single file).
@@ -315,7 +315,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->assertIsArray($selected_args,
       "Unable to retrieve arguments after creating tripal importer record.");
     $this->assertEquals($expected_args, $selected_args,
-      "We did not retreive the arguments we expected.");
+      "We did not retrieve the arguments we expected.");
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
@@ -326,7 +326,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->assertIsArray($retrieved_args,
       "Unable to retrieve arguments after loading tripal importer.");
     $this->assertEquals($expected_args, $retrieved_args,
-      "We did not retreive the arguments we expected after loading.");
+      "We did not retrieve the arguments we expected after loading.");
 
     // CASE --- Valid
     // -- run args + file upload (multiple files).
@@ -369,7 +369,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->assertIsArray($selected_args,
       "Unable to retrieve arguments after creating tripal importer record.");
     $this->assertEquals($expected_args, $selected_args,
-      "We did not retreive the arguments we expected.");
+      "We did not retrieve the arguments we expected.");
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
@@ -380,7 +380,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->assertIsArray($retrieved_args,
       "Unable to retrieve arguments after loading tripal importer.");
     $this->assertEquals($expected_args, $retrieved_args,
-      "We did not retreive the arguments we expected after loading.");
+      "We did not retrieve the arguments we expected after loading.");
 
     // CASE --- Exception Expected
     // -- Load non-existant importer.
