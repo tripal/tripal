@@ -28,7 +28,7 @@ class ChadoCustomTablesTest extends ChadoTestBrowserBase {
     // Test manager get list of chado custom tables.
     $custom_tables = $manager->getTables($chado_schema_name);
     $this->assertIsArray($custom_tables, "The return value of Custom Table manager getTables is expected to be an array.");
-    $this->assertEmpty($custom_tables, "We just created this test schema so the Custom Table manager should be able to find any tables yet.");
+    $this->assertEmpty($custom_tables, "We just created this test schema so the Custom Table manager should not be able to find any tables yet.");
 
     // Test manager create. This just creates the object.
     $table_name = $this->randomString(25);

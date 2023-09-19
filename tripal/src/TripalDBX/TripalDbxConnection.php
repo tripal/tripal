@@ -62,8 +62,8 @@ use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
  *   and offers, beside others, the follwing methods: addIndex(),
  *   addPrimaryKey(), addUniqueKey(), createTable(), dropField(), dropIndex(),
  *   dropPrimaryKey(), dropTable(), dropUniqueKey(), fieldExists(),
- *   findPrimaryKeyColumns(), findTables(), indexExists(), renameTable(),
- *   tableExists() and more from the documentation.
+ *   findPrimaryKeyColumns(), findTables(), indexExists(), renameTable()
+ *   and more from the documentation.
  *
  * A couple of methods have been added to this class to complete the above list.
  *
@@ -697,9 +697,9 @@ abstract class TripalDbxConnection extends PgConnection {
    */
   public function getVersion() :string {
 
-    if ((NULL === $this->version) && !empty($this->usedSchemas[1])) {
+    if (!is_numeric($this->version) && !empty($this->usedSchemas[1])) {
       // Get the version of the schema.
-      $this->version = $this->findVersion();
+      $this->version = (string) $this->findVersion();
     }
 
     return $this->version ?? '';
@@ -978,6 +978,8 @@ abstract class TripalDbxConnection extends PgConnection {
    * Find the prefix for a table.
    *
    * OVERRIDES \Drupal\Core\Database\Connection:tablePrefix().
+   * REMOVED IN Drupal 10.1.x
+   * SEE https://www.drupal.org/node/3260849
    *
    * This function is for when you want to know the prefix of a table. This
    * is not used in prefixTables due to performance reasons.
@@ -1032,6 +1034,17 @@ abstract class TripalDbxConnection extends PgConnection {
     else {
       return parent::tablePrefix($table);
     }
+  }
+
+  /**
+   * Returns the prefix of the tables.
+   *
+   * OVERRIDES \Drupal\Core\Database\Connection:getPrefix().
+   *
+   * @return string $prefix
+   */
+  public function getPrefix(): string {
+    return $this->usedSchemas[1] . '.';
   }
 
   /**

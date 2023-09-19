@@ -37,6 +37,11 @@ class TripalImporterForm implements FormInterface {
     $importer = $importer_manager->createInstance($plugin_id);
     $importer_def = $importer_manager->getDefinitions()[$plugin_id];
 
+    if (array_key_exists('cardinality', $importer_def) and $importer_def['cardinality'] != 1) {
+      \Drupal::messenger()->addError('Error in the definition of this importer. Tripal Importers'
+        . ' currently only support cardinality of 1, see Tripal issue #1635');
+    }
+
     $form['#title'] = $importer_def['label'];
 
     $form['importer_plugin_id'] = [
@@ -50,8 +55,12 @@ class TripalImporterForm implements FormInterface {
       $form['file'] = [
         '#type' => 'fieldset',
         '#title' => $importer_def['upload_title'],
-        '#description' => $importer_def['upload_description'],
         '#weight' => -15,
+      ];
+
+      $form['file']['upload_description'] = [
+        '#type' => 'markup',
+        '#markup' => $importer_def['upload_description'] . ' The following file extensions are supported: ' . implode(', ', $importer_def['file_types']) . '.',
       ];
     }
 
@@ -118,12 +127,15 @@ class TripalImporterForm implements FormInterface {
       $form = array_merge($form, $importer_form);
     }
 
-
-    $form['button'] = [
-      '#type' => 'submit',
-      '#value' => $importer_def['button_text'],
-      '#weight' => 10,
-    ];
+    // We should only add a submit button if this importer uses a button.
+    // Examples of importers who don't use this button are mutl-page forms.
+    if (array_key_exists('use_button', $importer_def) AND $importer_def['use_button'] !== FALSE) {
+      $form['button'] = [
+        '#type' => 'submit',
+        '#value' => $importer_def['button_text'],
+        '#weight' => 10,
+      ];
+    }
 
     return $form;
   }
@@ -227,28 +239,13 @@ class TripalImporterForm implements FormInterface {
     $importer_def = $importer_manager->getDefinitions()[$plugin_id];
 
     $file_local = NULL;
-    $file_upload = NULL;
     $file_remote = NULL;
+    $file_upload = NULL;
     $file_existing = NULL;
 
-    // Get the form values for the file.
+    // Determine which file source was specified.
     if (array_key_exists('file_local', $importer_def) and $importer_def['file_local'] == TRUE) {
       $file_local = trim($form_values['file_local']);
-      // If the file is local make sure it exists on the local filesystem.
-      if ($file_local) {
-        // check to see if the file is located local to Drupal
-        $file_local = trim($file_local);
-        $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $file_local;
-        if (!file_exists($dfile)) {
-          // if not local to Drupal, the file must be someplace else, just use
-          // the full path provided
-          $dfile = $file_local;
-        }
-        if (!file_exists($dfile)) {
-          // form_set_error('file_local', t("Cannot find the file on the system. Check that the file exists or that the web server has permissions to read the file."));
-          $form_state->setErrorByName('file_local', t("Cannot find the file on the system. Check that the file exists or that the web server has permissions to read the file."));
-        }
-      }
     }
     if (array_key_exists('file_upload', $importer_def) and $importer_def['file_upload'] == TRUE) {
       $file_upload = trim($form_values['file_upload']);
@@ -260,9 +257,51 @@ class TripalImporterForm implements FormInterface {
       $file_remote = trim($form_values['file_remote']);
     }
 
-    // The user must provide at least an uploaded file or a local file path.
-    if ($importer_def['file_required'] == TRUE and !$file_upload and !$file_local and !$file_remote and !$file_existing) {
-      $form_state->setErrorByName('file_local', t("You must provide a file."));
+    // How many methods were specified for the source of the file?
+    $n_methods = ($file_local?1:0) + ($file_remote?1:0) + (($file_upload or $file_existing)?1:0);
+    // The user must provide at least one file source method.
+    if ($n_methods == 0) {
+      $form_state->setErrorByName('file_local', t('You must provide a file location or upload a file.'));
+    }
+    // No more than one method can be specified.
+    elseif ($n_methods > 1) {
+      $field = $file_remote?'file_remote':'file_local';
+      $form_state->setErrorByName($field, t('You have specified more than one source option for'
+                                          . ' the file, only one may be used at a time.'));
+    }
+    // A single file source has been provided. If local or remote, check that it is valid.
+    else {
+      // If the file is local make sure it exists on the local filesystem.
+      if ($file_local) {
+        // check to see if the file is located local to Drupal
+        $file_local = trim($file_local);
+        $dfile = \Drupal::root() . '/' . $file_local;
+        if (!file_exists($dfile)) {
+          // if not local to Drupal, the file must be someplace else, just use
+          // the full path provided
+          $dfile = $file_local;
+        }
+        if (!file_exists($dfile)) {
+          $form_state->setErrorByName('file_local', t('Cannot find the file on the system.'
+            . ' Check that the file exists or that the web server has permission to read the file.'));
+        }
+      }
+      elseif ($file_remote) {
+        // Validate that the remote URI is of the correct format.
+        if (filter_var($file_remote, FILTER_VALIDATE_URL) === false) {
+          $form_state->setErrorByName('file_remote', t('The Remote Path provided is not a valid URI.'));
+        }
+
+        // Validate a correct format remote URI to make sure it can be
+        // accessed, with successful HTTP response code 200.
+        else {
+          $headers = @get_headers($file_remote);
+          if (($headers === false) or (!is_array($headers)) or (!strpos($headers[0], '200'))) {
+            $form_state->setErrorByName('file_remote', t('The Remote Path provided cannot be accessed.'
+              . ' Check that it is correct.'));
+          }
+        }
+      }
     }
 
     // Now allow the loader to do validation of its form additions.
