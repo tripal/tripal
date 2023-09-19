@@ -1766,7 +1766,7 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
   }
   // -- Args should be an array.
   if (!is_array($args)) {
-    $msg = t('chado_query; Arguements should be an array. Query: @query; Arguements: @values',
+    $msg = t('chado_query; Arguments should be an array. Query: @query; Arguments: @values',
       ['@values' => print_r($args, TRUE), '@query' => $sql]);
     \Drupal::logger('tripal_chado')->error($msg);
     return FALSE;
@@ -1777,7 +1777,7 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
   $tokens_in_sql = $matches[0];
   $tokens_in_args = array_keys($args);
   if (count($tokens_in_sql) !== count($tokens_in_args)) {
-    $msg = t('chado_query; There should be the same number of tokens in the arguements as in the SQL. Tokens provided: @args, Tokens in SQL: @sql',
+    $msg = t('chado_query; There should be the same number of tokens in the arguments as in the SQL. Tokens provided: @args, Tokens in SQL: @sql',
       ['@args' => print_r($tokens_in_args,TRUE), '@sql' => print_r($tokens_in_sql,TRUE)]);
     \Drupal::logger('tripal_chado')->error($msg);
     return FALSE;

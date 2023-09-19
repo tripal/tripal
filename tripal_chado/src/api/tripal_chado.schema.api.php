@@ -39,7 +39,7 @@ use Drupal\Core\Database\Database;
  * Check that any given Chado table exists.
  *
  * This function is necessary because Drupal's db_table_exists() function will
- * not look in any other schema but the one were Drupal is installed
+ * not look in any other schema but the one where Drupal is installed
  *
  * @param string $table
  *   The name of the chado table whose existence should be checked.
@@ -69,7 +69,7 @@ function chado_table_exists($table, $chado_schema = NULL) {
  * Check that any given column in a Chado table exists.
  *
  * This function is necessary because Drupal's db_field_exists() will not
- * look in any other schema but the one were Drupal is installed
+ * look in any other schema but the one where Drupal is installed
  *
  * @param string $table
  *   The name of the chado table.
@@ -102,7 +102,7 @@ function chado_column_exists($table, $column, $chado_schema = NULL) {
  * Check that any given column in a Chado table exists.
  *
  * This function is necessary because Drupal's db_field_exists() will not
- * look in any other schema but the one were Drupal is installed
+ * look in any other schema but the one where Drupal is installed
  *
  * @param string $sequence
  *   The name of the sequence.
@@ -605,6 +605,7 @@ function chado_get_base_tables($chado_schema = NULL) {
  *
  * @upgrade
  *
+ */
 function chado_get_cvterm_mapping($params) {
   $cvterm_id = array_key_exists('cvterm_id', $params) ? $params['cvterm_id'] : NULL;
   $vocabulary = array_key_exists('vocabulary', $params) ? $params['vocabulary'] : NULL;
@@ -641,4 +642,3 @@ function chado_get_cvterm_mapping($params) {
   }
   return NULL;
 }
-*/
