@@ -45,7 +45,7 @@ class TripalPubParserManager extends DefaultPluginManager {
   // All elements need to be under the 'pub_parser' array index since
   // a placeholder exists for this to be updated by the Ajax callback.
   public function form($form, $form_state) {
-//@todo get these values
+    //@todo get these values
     $disabled = '';
     $do_contact = '';
 
@@ -71,8 +71,8 @@ class TripalPubParserManager extends DefaultPluginManager {
     ];
 
     // Add the form for the criteria
-$num_criteria = 1;
-$criteria = [];
+    $num_criteria = 1;
+    $criteria = [];
     $form = $this->tripal_pub_importer_setup_add_criteria_fields($form, $form_state, $num_criteria, $criteria);
 
     // Add the submit buttons
@@ -182,7 +182,7 @@ $criteria = [];
       $search_terms = $form_state->getValue("search_terms-$i") ?? $search_terms;
       $is_phrase = $form_state->getValue("is_phrase-$i") ?? $is_phrase;
 
-//      $row['#attributes'] = ['vertical-align' => 'top'];  // Align vertically to top - @todo this doesn't work
+      // $row['#attributes'] = ['vertical-align' => 'top'];  // Align vertically to top - @todo this doesn't work
       $row["operation-$i"] = [
         '#type' => 'select',
         '#options' => $i==1?$first_op_choices:$op_choices,
@@ -255,7 +255,8 @@ $criteria = [];
           // but we need it or Drupal will run the default validate anyway.
           // we also set #limit_validation_errors to empty so fields that
           // are required that don't have values won't generate warnings.
-//@to-do this submit function is not being called - why?
+          
+          //@to-do this submit function is not being called - why?
           '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
           '#validate' => ['tripal_pub_setup_form_ajax_button_validate'],
           '#limit_validation_errors' => [],
@@ -276,8 +277,8 @@ $criteria = [];
    * @ingroup tripal_pub
    */
   public function tripal_pub_setup_form_ajax_button_validate($form, &$form_state) {
-$trigger = $form_state->getTriggeringElement()['#name'];
-dpm($trigger, "tripal_pub_setup_form_ajax_button_validate() called, not yet implemented");
+    $trigger = $form_state->getTriggeringElement()['#name'];
+    dpm($trigger, "tripal_pub_setup_form_ajax_button_validate() called, not yet implemented");
     $form_state->setRebuild(TRUE);
   }
 
@@ -288,8 +289,8 @@ dpm($trigger, "tripal_pub_setup_form_ajax_button_validate() called, not yet impl
    * @ingroup tripal_pub
    */
   public function tripal_pub_setup_form_ajax_button_submit($form, &$form_state) {
-$trigger = $form_state->getTriggeringElement()['#name'];
-dpm($trigger, "tripal_pub_setup_form_ajax_button_submit() called, not yet implemented");
+    $trigger = $form_state->getTriggeringElement()['#name'];
+    dpm($trigger, "tripal_pub_setup_form_ajax_button_submit() called, not yet implemented");
     // do nothing
   }
 

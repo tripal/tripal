@@ -105,9 +105,9 @@ class ChadoPubImporter extends ChadoImporterBase {
 
     // Check to make sure that the tripal_pub vocabulary is loaded. If not, then
     // warn the user that they should load it before continuing.
-dpm('call chado'); //@@@
-$chado = \Drupal::service('tripal_chado.database');
-//    $chado = $this->getChadoConnection();
+    dpm('call chado'); //@@@
+    $chado = \Drupal::service('tripal_chado.database');
+    //    $chado = $this->getChadoConnection();
     $query = $chado->select('cv')
       ->condition('name', 'tripal_pub', '=');
     $count = $query->countQuery()->execute()->fetchField();
@@ -120,9 +120,9 @@ $chado = \Drupal::service('tripal_chado.database');
       );
     }
 
-// tv3 had this
-//  // clear out the session variable when we view the list.
-//  unset($_SESSION['tripal_pub_import']);
+    // tv3 had this
+    //  // clear out the session variable when we view the list.
+    //  unset($_SESSION['tripal_pub_import']);
 
     $headers = [
       '',

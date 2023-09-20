@@ -74,9 +74,9 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
    *   The form state object.
    */
   public function newLoaderForm($form, &$form_state) {
-// this is called in form(), can delete it here
-//    // Call the parent form to provide the Chado schema selector.
-//    $form = parent::form($form, $form_state);
+    // this is called in form(), can delete it here
+    //    // Call the parent form to provide the Chado schema selector.
+    //    $form = parent::form($form, $form_state);
 
     // Retrieve a sorted list of available pub parser plugins.
     $pub_parser_manager = \Drupal::service('tripal.pub_parser');
@@ -89,6 +89,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
     }
     asort($plugins);
 
+    // RISH: This is the radio buttons which lists the types of publication / sources eg NIH PubMed database
     $form['plugin_id'] = [
       '#title' => t('Select a source of publications'),
       '#type' => 'radios',
@@ -97,13 +98,16 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
       '#options' => $plugins,
       '#default_value' => NULL,
       '#ajax' => [
-        'callback' =>  [$this, 'formAjaxCallback'],
+        'callback' =>  [$this, 'formAjaxCallback'], // calls function within this class: function formAjaxCallback
         'wrapper' => 'edit-parser',
       ],
     ];
 
-    // A placeholder for the form elements for the selected plugin,
+    // Doug: A placeholder for the form elements for the selected plugin,
     // to be populated by the AJAX callback.
+
+    // RISH: This is the container that will hold the specific fields for a specific 'plugin' which represents the 
+    //       publication / sources eg NIH PubMed database form elements
     $form['pub_parser'] = [
       '#prefix' => '<span id="edit-pub_parser">',
       '#suffix' => '</span>',
@@ -112,8 +116,10 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
     // The placeholder will only be populated if a plugin, i.e.
     // $form['plugin_id'], has been selected. Both the plugin base
     // class and the selected plugin can each add form elements.
-    $form = $this->formPlugin($form, $form_state);
 
+    // RISH: I think this the part that actually adds the additional form elements for the specific 'plugin' example PubMed 
+    // I think this somehow gets executed on the ajax callback and loads the form elements
+    $form = $this->formPlugin($form, $form_state);
     return $form;
   }
 
@@ -121,16 +127,16 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
    * {@inheritDoc}
    */
   public function formValidate($form, &$form_state) {
-$trigger = $form_state->getTriggeringElement()['#name'];
-dpm($trigger, 'ChadoPubImporterEdit.php Editor Validate not implemented'); //@@@
+    $trigger = $form_state->getTriggeringElement()['#name'];
+    dpm($trigger, 'ChadoPubImporterEdit.php Editor Validate not implemented'); //@@@
   }
 
   /**
    * {@inheritDoc}
    */
   public function formSubmit($form, &$form_state) {
-$trigger = $form_state->getTriggeringElement()['#name'];
-dpm($trigger, 'ChadoPubImporterEdit.php Editor Submit not implemented'); //@@@
+    $trigger = $form_state->getTriggeringElement()['#name'];
+    dpm($trigger, 'ChadoPubImporterEdit.php Editor Submit not implemented'); //@@@
     // Disable the parent submit
     $form_state->setRebuild(True);
   }
@@ -162,6 +168,7 @@ dpm($trigger, 'ChadoPubImporterEdit.php Editor Submit not implemented'); //@@@
     if ($plugin_id) {
 
       // Instantiate the selected plugin
+      // Pub Parse Manager is found in tripal module: tripal/tripal/src/TripalPubParser/PluginManagers/TripalPubParserManager.php
       $pub_parser_manager = \Drupal::service('tripal.pub_parser');
       $plugin = $pub_parser_manager->createInstance($plugin_id, []);
 
