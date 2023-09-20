@@ -744,7 +744,7 @@ EOD;
    *   -'name': table name
    *   -'type': one of 'table', 'view', 'partition' and 'materialized view' for
    *     PostgreSQL materialized views.
-   *   -'status': either 'base' for base a table, or 'custom' for a custom table
+   *   -'status': either 'base' for a base table, or 'custom' for a custom table
    *     or a tripal materialized view, or 'other' for other elements.
    */
   public function getTables(
