@@ -214,16 +214,25 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     $insert_values = [
       'testpropertyfieldA' => [
         [
+          'A_record_id' => NULL,
+          'A_prop_id' => NULL,
+          'A_linker_id' => NULL,
           'A_type_id' => $rdfs_comment_cvtermID,
           'A_value' => 'Note 1',
           'A_rank' => 0,
         ],
         [
+          'A_record_id' => NULL,
+          'A_prop_id' => NULL,
+          'A_linker_id' => NULL,
           'A_type_id' => $rdfs_comment_cvtermID,
           'A_value' => 'Note 2',
           'A_rank' => 1,
         ],
         [
+          'A_record_id' => NULL,
+          'A_prop_id' => NULL,
+          'A_linker_id' => NULL,
           'A_type_id' => $rdfs_comment_cvtermID,
           'A_value' => 'Note 3',
           'A_rank' => 2,

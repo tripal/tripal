@@ -177,7 +177,7 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
       "The $field_name base_id property should not have a value.");
 
     // Now add them to Chado storage.
-    $chado_storage->addTypes($propertyTypes);
+    $chado_storage->addTypes($field_name, $propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
     $this->assertCount(2, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
@@ -355,7 +355,7 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
     }
 
     // Now add them to Chado storage.
-    $chado_storage->addTypes($propertyTypes);
+    $chado_storage->addTypes($field_name, $propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray(
       $retrieved_types,
@@ -576,7 +576,7 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
 
     // Now add them to Chado storage.
     /*
-    $chado_storage->addTypes($propertyTypes);
+    $chado_storage->addTypes($field_name, $propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray(
       $retrieved_types,

@@ -240,6 +240,8 @@ trait ChadoStorageTestTrait {
     // Set the values in the propertyValue objects.
     $this->setExpectedValues($field_names, $values);
 
+    // $this->debugChadoStorageTestTraitArrays();
+
     $success = $this->chadoStorage->insertValues($this->dataStoreValues);
     $this->assertTrue($success, 'We were not able to insert the data.');
   }
