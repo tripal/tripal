@@ -12,9 +12,10 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
 /**
  * Tests for the ChadoCVTerm classes
  *
- * @group Tripal
- * @group Tripal Chado
- * @group Tripal Chado ChadoStorage
+ * @group TripalImporter
+ * @group ChadoImporter
+ * @group OntologyImporter
+ * @group OBOImporter
  */
 class OBOImporterTest extends ChadoTestBrowserBase {
 

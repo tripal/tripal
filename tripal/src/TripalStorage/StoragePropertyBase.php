@@ -63,8 +63,19 @@ class StoragePropertyBase {
       }
     }
     else {
-      throw new \Exception('Cannot create a StorageProperty object without a property formatted term: ' . $term_id);
+      throw new \Exception('Cannot create a StorageProperty object without a properly formatted term: ' . $term_id);
     }
+
+    // Ensure we have required values.
+    if (!$entityType) {
+	    throw new \Exception('Cannot create a StorageProperty object without specifying the entity type.');
+	  }
+    if (!$fieldType) {
+	    throw new \Exception('Cannot create a StorageProperty object without specifying the field that is using it.');
+	  }
+    if (!$key) {
+	    throw new \Exception('Cannot create a StorageProperty object without a key.');
+	  }
 
     // Drupal doesn't allow non alphanumeric characters in the key, so
     // remove any.

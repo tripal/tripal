@@ -2731,7 +2731,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The name of the vocabulary to add.
    *
    * @return object|NULL
-   *   The newly inserted CV object..
+   *   The newly inserted CV object.
    */
   private function insertChadoCv($cvname) {
     $chado = $this->getChadoConnection();

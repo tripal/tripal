@@ -62,7 +62,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *
    * This function will only add defaults if the value is not already present
    * in the $field_def array. You can retrieve a fully populated definition
-   * array, with derfaults, by not passing an argument.  This function will
+   * array, with defaults, by not passing an argument.  This function will
    * remove any keys in the definition array that are not supported.
    *
    * @return array $field_def
@@ -201,7 +201,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    * Validates a field definition array.
    *
    * This function can be used to check a field definition prior to adding
-   * the field to a Tripal content type..
+   * the field to a Tripal content type.
    *
    * @param array $field_def
    *   A definition array for the field.
@@ -217,7 +217,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
     // Check if the type already exists.
     $entityTypes = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
-      ->loadByProperties(['name' => $field_def['content_type']]);
+      ->loadByProperties(['id' => $field_def['content_type']]);
     if (empty($entityTypes)) {
       $this->logger->error('The specified entity type, "' . $field_def['content_type'] . '", for field "' . $field_def['name'] . '", does not exist.');
       return FALSE;
@@ -303,7 +303,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    * Adds a field to a Tripal entity type.
    *
    * @param string $bundle
-   *   The bundle name (e.g. bio_data_1).
+   *   The bundle name (e.g. organism).
    * @param array $field_def
    *   An associative array providing the necessary information about a field
    *   instance for this entity type. The following key/values are supported
@@ -321,7 +321,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *     - storage_plugin_id: the name of the storage plugin
    *       (e.g. 'chado_storage').
    *     - storage_plugin_setings: an array of any settings that the storage
-   *       plugin expects for the field..
+   *       plugin expects for the field.
    *   - settings: (array) Any other settings needed for the field. Every
    *     field can have different settings.
    *   - display: Provides details for display of the field. By default it
@@ -361,7 +361,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *   'cardinality' => 1,
    *   'required' => TRUE,
    *   'storage_settings' => [
-   *     'storage_plugin_id' => 'tripal_default_storage',
+   *     'storage_plugin_id' => 'drupal_sql_storage',
    *     'storage_plugin_settings'=> [
    *     ],
    *     'max_length' => 255,
@@ -402,18 +402,18 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
     // Get the entitytype
     $entity_types = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
-      ->loadByProperties(['name' => $field_def['content_type']]);
+      ->loadByProperties(['id' => $field_def['content_type']]);
     $entity_type = array_pop($entity_types);
 
     // Set defaults for the field if they are not already set.
     $field_def = $this->setFieldDefDefaults($field_def);
 
     // Get the bundle and field id.
-    $field_id = 'tripal_entity' . '.' . 'bio_data_' . $entity_type->getId() . '.' . $field_def['name'];
+    $field_id = 'tripal_entity' . '.' . $entity_type->id() . '.' . $field_def['name'];
 
     try {
 
-      // Check if field storage exists for this field. If not, add it..
+      // Check if field storage exists for this field. If not, add it.
       $field_storage = FieldStorageConfig::loadByName('tripal_entity', $field_def['name']);
       if (!$field_storage) {
         $field_storage = FieldStorageConfig::create([
@@ -445,7 +445,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
 
         // Add field to the default display modes.
         $entity_display = \Drupal::service('entity_display.repository');
-        $bundle_id = 'bio_data_' . $entity_type->getId();
+        $bundle_id = $entity_type->id();
         $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $bundle_id);
         foreach (array_keys($view_modes) as $view_mode) {
           \Drupal::service('entity_display.repository')
@@ -462,18 +462,18 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         }
 
         $this->logger->notice(t('Added field, "@field", to content type: "@type".',
-            ['@field' => $field_def['name'], '@type' => $entity_type->getName()]));
+            ['@field' => $field_def['name'], '@type' => $entity_type->id()]));
       }
       else {
         $this->logger->notice(t('Skipping addition of field, "@field", to content type: "@type" as it is already added.',
-            ['@field' => $field_def['name'], '@type' => $entity_type->getName()]));
+            ['@field' => $field_def['name'], '@type' => $entity_type->id()]));
       }
     }
     catch (\Exception $e) {
       print_r([$e->getMessage()]);
       $this->logger->error(t('Error adding field, "@field_name", to "@bundle": @error', [
          '@field_name' => $field_def['name'],
-         '@bundle' => $entity_type->getName(),
+         '@bundle' => $entity_type->id(),
          '@error' => $e->getMessage(),
       ]));
       return FALSE;

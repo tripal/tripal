@@ -1,0 +1,24 @@
+name: Core Development Task
+description: For keeping track of Tripal 4 core development.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Core Tripal 4 Development Task
+        Remember to tag this issue with 1 or more groups that it relates to.
+
+        I suggest using the "Development Branch" section to the right once you create the issue.
+        This links the branch to the issue and will automatically close the issue when the PR is merged.
+  - type: textarea
+    id: task_description
+    attributes:
+      label: Task Description
+      description: Describe the core development task.
+    validations:
+        required: true
+  - type: input
+    id: branch_name
+    attributes:
+      label: Branch Name
+      description: Fill this in after submitting this issue and opening a new branch.
+      value: tv4g[0-9]-issue\d+-[optional short descriptor]
