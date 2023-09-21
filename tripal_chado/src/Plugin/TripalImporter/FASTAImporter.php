@@ -955,9 +955,8 @@ class FASTAImporter extends ChadoImporterBase {
           // perform the update
           $success = chado_update_record('feature', $match, $values);
           if (!$success) {
-            // $this->logMessage("Failed to update feature '!name' ('!name')",
-            //   ['!name' => $name, '!uiname' => $uname], TRIPAL_ERROR);
-            $this->logger->error("Failed to update feature '$name' ('$name')");
+            $this->logger->error("Failed to update feature '@name' ('@uname')",
+              ['!name' => $name, '!uname' => $uname]);
             return 0;
           }
         }
@@ -977,9 +976,8 @@ class FASTAImporter extends ChadoImporterBase {
           ];
           $success = chado_update_record('feature', $match, $values);
           if (!$success) {
-            // $this->logMessage("Failed to update feature '!name' ('!name')",
-            //   ['!name' => $name, '!uiname' => $uname], TRIPAL_ERROR);
-            $this->logger->error("Failed to update feature '$name' ('$name')");
+            $this->logger->error("Failed to update feature '@name' ('@uname')",
+              ['!name' => $name, '!uname' => $uname]);
             return 0;
           }
         }
