@@ -163,7 +163,7 @@ class TripalImporterFormBuildTest extends KernelTestBase {
 
     // Ensure we are able to build the form.
     $this->assertIsArray($form,
-      'We still expect the form builder to return a form array even without a plguin_id but it did not.');
+      'We still expect the form builder to return a form array even without a plugin_id but it did not.');
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
@@ -245,7 +245,7 @@ class TripalImporterFormBuildTest extends KernelTestBase {
       $plugin_id,
     );
     $this->assertIsArray($form,
-      'We still expect the form builder to return a form array even without a plguin_id but it did not.');
+      'We still expect the form builder to return a form array even without a plugin_id but it did not.');
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
@@ -299,7 +299,7 @@ class TripalImporterFormBuildTest extends KernelTestBase {
       $plugin_id,
     );
     $this->assertIsArray($form,
-      'We still expect the form builder to return a form array even without a plguin_id but it did not.');
+      'We still expect the form builder to return a form array even without a plugin_id but it did not.');
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
@@ -334,7 +334,7 @@ class TripalImporterFormBuildTest extends KernelTestBase {
       $plugin_id,
     );
     $this->assertIsArray($form,
-      'We still expect the form builder to return a form array even without a plguin_id but it did not.');
+      'We still expect the form builder to return a form array even without a plugin_id but it did not.');
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
@@ -369,7 +369,7 @@ class TripalImporterFormBuildTest extends KernelTestBase {
       $plugin_id,
     );
     $this->assertIsArray($form,
-      'We still expect the form builder to return a form array even without a plguin_id but it did not.');
+      'We still expect the form builder to return a form array even without a plugin_id but it did not.');
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
@@ -414,7 +414,7 @@ class TripalImporterFormBuildTest extends KernelTestBase {
       $plugin_id,
     );
     $this->assertIsArray($form,
-      'We still expect the form builder to return a form array even without a plguin_id but it did not.');
+      'We still expect the form builder to return a form array even without a plugin_id but it did not.');
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 
@@ -448,7 +448,7 @@ class TripalImporterFormBuildTest extends KernelTestBase {
       $plugin_id,
     );
     $this->assertIsArray($form,
-      'We still expect the form builder to return a form array even without a plguin_id but it did not.');
+      'We still expect the form builder to return a form array even without a plugin_id but it did not.');
     $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
       'We did not get the form id we expected.');
 

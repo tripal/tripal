@@ -62,7 +62,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *
    * This function will only add defaults if the value is not already present
    * in the $field_def array. You can retrieve a fully populated definition
-   * array, with derfaults, by not passing an argument.  This function will
+   * array, with defaults, by not passing an argument.  This function will
    * remove any keys in the definition array that are not supported.
    *
    * @return array $field_def
@@ -201,7 +201,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    * Validates a field definition array.
    *
    * This function can be used to check a field definition prior to adding
-   * the field to a Tripal content type..
+   * the field to a Tripal content type.
    *
    * @param array $field_def
    *   A definition array for the field.
@@ -321,7 +321,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *     - storage_plugin_id: the name of the storage plugin
    *       (e.g. 'chado_storage').
    *     - storage_plugin_setings: an array of any settings that the storage
-   *       plugin expects for the field..
+   *       plugin expects for the field.
    *   - settings: (array) Any other settings needed for the field. Every
    *     field can have different settings.
    *   - display: Provides details for display of the field. By default it
@@ -413,7 +413,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
 
     try {
 
-      // Check if field storage exists for this field. If not, add it..
+      // Check if field storage exists for this field. If not, add it.
       $field_storage = FieldStorageConfig::loadByName('tripal_entity', $field_def['name']);
       if (!$field_storage) {
         $field_storage = FieldStorageConfig::create([
