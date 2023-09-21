@@ -258,12 +258,8 @@ class TaxonomyImporter extends ChadoImporterBase {
         }
       }
       if (count($bad_ids) > 0) {
-        // form_set_error('taxonomy_ids',
-        //   t('Taxonomy IDs must be numeric. The following are not valid: "@ids".',
-        //     ['@ids' => implode('", "', $bad_ids)]));
-        \Drupal::messenger()->addError(
-          t('Taxonomy IDs must be numeric. The following are not valid: "@ids".',
-          ['@ids' => implode('", "', $bad_ids)])
+        $form_state->setErrorByName('taxonomy_ids', t('Taxonomy IDs must be numeric. The following are not valid: "@ids".'),
+          ['@ids' => implode('", "', $bad_ids)]
         );
       }
     }
