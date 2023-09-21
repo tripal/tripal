@@ -524,13 +524,14 @@ class GFF3Importer extends ChadoImporterBase {
     $re_mrna = trim($form_state_values['re_mrna']);
     $re_protein = trim($form_state_values['re_protein']);
 
+    // The parent class will validate that a file has been specified and is valid.
 
     if ($line_number and !is_numeric($line_number) or $line_number < 0) {
-      \Drupal::messenger()->addError(t("Please provide an integer line number greater than zero."));
+      $form_state->setErrorByName('line_number', t('Please provide an integer line number greater than zero'));
     }
 
     if (!($re_mrna and $re_protein) and ($re_mrna or $re_protein)) {
-      \Drupal::messenger()->addError(t("You must provide both a regular expression for mRNA and a replacement string for protein"));
+      $form_state->setErrorByName('re_mrna', t('You must provide both a regular expression for mRNA and a replacement string for protein'));
     }
 
     // check the regular expression to make sure it is valid
@@ -539,24 +540,24 @@ class GFF3Importer extends ChadoImporterBase {
     $result = preg_replace("/" . $re_mrna . "/", $re_protein, "");
     restore_error_handler();
     if ($result_re === FALSE) {
-      \Drupal::messenger()->addError('Invalid regular expression.');
+      $form_state->setErrorByName('re_mrna', t('Invalid regular expression'));
     }
-    else {
-      if ($result === FALSE) {
-        \Drupal::messenger()->addError('Invalid replacement string.');
-      }
+    elseif ($result === FALSE) {
+      $form_state->setErrorByName('re_protein', t('Invalid replacement string'));
     }
 
     // check to make sure the types exists
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
     $landmark_cvterm_id = $cv_autocomplete->getCVtermId($landmark_type, 'sequence');
     if (!$landmark_cvterm_id) {
-      \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the landmark type is not available in the database. Please check spelling or select another."));
+      $form_state->setErrorByName('landmark_type', t('The Sequence Ontology (SO) term selected for the landmark type is not'
+                                                   . ' available in the database. Please check the spelling or select another'));
     }
     if ($target_type) {
       $target_type_id = $cv_autocomplete->getCVtermId($target_type, 'sequence');
       if (!$target_type_id) {
-        \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the target type is not available in the database. Please check spelling or select another."));
+        $form_state->setErrorByName('target_type', t('The Sequence Ontology (SO) term selected for the target type is not'
+                                                   . ' available in the database. Please check the spelling or select another'));
       }
     }
 
