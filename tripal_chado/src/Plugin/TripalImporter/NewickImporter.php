@@ -106,7 +106,7 @@ class NewickImporter extends ChadoImporterBase {
     $so_cv = chado_get_cv(['name' => 'sequence']);
     $cv_id = $so_cv->cv_id;
     if (!$so_cv) {
-      \Drupal::messenger()->addError(t("The Sequence Ontolgoy does not appear to be imported.
+      \Drupal::messenger()->addError(t("The Sequence Ontology does not appear to be imported.
          Please import the Sequence Ontology before adding a tree."));
     }
 
