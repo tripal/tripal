@@ -715,14 +715,16 @@ class GFF3Importer extends TripalImporter {
       $this->logMessage("Step 25 of 27: Insert Targets...                                 ");
       $this->insertFeatureTargets();
 
-      $this->logMessage("Step 26 of 27: Associate features with analysis....              ");
+      $this->logMessage("Step 26 of 27: Associate features with analysis...               ");
       $this->insertFeatureAnalysis();
 
       if (!empty($this->residue_index)) {
         $this->logMessage("Step 27 of 27: Adding sequences data...                        ");
         $this->insertFeatureSeqs();
       }
-      $this->logMessage("Step 27 of 27: Adding sequences data (Skipped: none available)...");
+      else {
+        $this->logMessage("Step 27 of 27: Adding sequences data (Skipped: none available)...");
+      }
     }
     // On exception, catch the error, clean up the cache file and rethrow
     catch (Exception $e) {
