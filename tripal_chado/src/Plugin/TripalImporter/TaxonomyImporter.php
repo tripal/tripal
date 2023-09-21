@@ -666,8 +666,9 @@ class TaxonomyImporter extends ChadoImporterBase {
           $rfh = fopen($search_url, "r");
           // If error, delay then retry
           if ((!$rfh) and ($retries)) {
-            $this->logger->warning("Error contacting NCBI to look up %sci_name, will retry",
-                              ['%sci_name' => $sci_name_escaped]);
+            $this->logger->warning("Error contacting NCBI to look up @sci_name, will retry",
+              ['@sci_name' => $sci_name_escaped]
+            );
           }
           $retries--;
           $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
@@ -677,7 +678,9 @@ class TaxonomyImporter extends ChadoImporterBase {
         }
 
         if (!$rfh) {
-          $this->logger->warning("Could not look up %sci_name", ['%sci_name' => $sci_name_escaped]);
+          $this->logger->warning("Could not look up @sci_name",
+            ['@sci_name' => $sci_name_escaped]
+          );
           continue;
         }
         $xml_text = '';
@@ -701,8 +704,9 @@ class TaxonomyImporter extends ChadoImporterBase {
               $taxid = (string) $xml->IdList->Id;
             }
             else {
-              $this->logger->warning("Partial match \"%matched\" to query \"%query\", no taxid available",
-                ['%matched' => $matched, '%query' => $sci_name]);
+              $this->logger->warning("Partial match \"@matched\" to query \"@query\", no taxid available",
+                ['@matched' => $matched, '@query' => $sci_name]
+              );
             }
           }
         }
@@ -724,10 +728,10 @@ class TaxonomyImporter extends ChadoImporterBase {
     }
     if (count($omitted_organisms)) {
       $omitted_list = implode('", "', $omitted_organisms);
-      $this->logger->warning('The following %count organisms do not have an NCBI taxonomy ID, '
-                        . 'and have not been included in the tree: "@omitted_list"',
-                        ['%count' => count($omitted_organisms),
-                         '@omitted_list' => $omitted_list]);
+      $this->logger->warning('The following @count organisms do not have an NCBI taxonomy ID,'
+                           . ' and have not been included in the tree: "@omitted_list"',
+        ['@count' => count($omitted_organisms), '@omitted_list' => $omitted_list]
+      );
     }
   }
 
@@ -923,8 +927,9 @@ class TaxonomyImporter extends ChadoImporterBase {
         $xml = new \SimpleXMLElement($xml_text);
       }
       else {
-        $this->logger->warning("Error contacting NCBI to look up taxid %taxid, will retry",
-                               ['%taxid' => $taxid]);
+        $this->logger->warning("Error contacting NCBI to look up @taxid, will retry",
+          ['@taxid' => $taxid]
+        );
       }
       $retries--;
       $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
@@ -960,9 +965,10 @@ class TaxonomyImporter extends ChadoImporterBase {
         $chado_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
         if ($chado_name != $sci_name) {
           $this->logger->warning("Substituting site taxon \"@chado_name\" for NCBI taxon \"@sci_name\","
-                            . " taxid @taxid, organism_id @organism_id",
+                               . " taxid @taxid, organism_id @organism_id",
             ['@chado_name' => $chado_name, '@sci_name' => $sci_name,
-             '@taxid' => $taxid, '@organism_id' => $organism->organism_id]);
+             '@taxid' => $taxid, '@organism_id' => $organism->organism_id]
+          );
           $sci_name = $chado_name;
         }
       }
@@ -1104,8 +1110,9 @@ class TaxonomyImporter extends ChadoImporterBase {
       return TRUE;
     }
     else {
-      $this->logger->warning("Error contacting NCBI to look up taxid %taxid",
-                        ['%taxid' => $taxid]);
+      $this->logger->warning("Error contacting NCBI to look up taxid @taxid",
+        ['@taxid' => $taxid]
+      );
       return FALSE;
     }
   }
