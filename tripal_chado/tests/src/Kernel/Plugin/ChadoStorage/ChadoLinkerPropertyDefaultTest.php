@@ -65,8 +65,10 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
         'A_linker_id' => [
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
           'action' => 'store_link',
-          'chado_table' => 'featureprop',
-          'chado_column' => 'feature_id'
+          'left_table' => 'feature',
+          'left_table_id' => 'feature_id',
+          'right_table' => 'featureprop',
+          'right_table_id' => 'feature_id'
         ],
         // Now we are going to store all the core columns of the featureprop table to
         // ensure we can meet the unique and not null requirements of the table.
@@ -167,6 +169,51 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
         ],
       ],
     ],
+    'testBackwardsCompatiblePropertyField' => [
+      'field_name' => 'testpropertyfieldABackwardsCompatible',
+      'base_table' => 'feature',
+      'properties' => [
+        'A_record_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_id',
+          'drupal_store' => TRUE,
+          'chado_table' => 'feature',
+          'chado_column' => 'feature_id'
+        ],
+        'A_prop_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_pkey',
+          'chado_table' => 'featureprop',
+          'chado_column' => 'featureprop_id',
+        ],
+        'A_linker_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_link',
+          'chado_table' => 'featureprop',
+          'chado_column' => 'feature_id'
+        ],
+        'A_type_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'featureprop',
+          'chado_column' => 'type_id'
+        ],
+        'A_value' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'featureprop',
+          'chado_column' => 'value',
+          'delete_if_empty' => TRUE,
+          'empty_value' => ''
+        ],
+        'A_rank' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'featureprop',
+          'chado_column' => 'rank'
+        ],
+      ],
+    ],
   ];
 
   protected int $organism_id;
@@ -176,6 +223,19 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
    */
   protected function setUp() :void {
     parent::setUp();
+
+    // We need to mock the logger to test the progress reporting.
+    $container = \Drupal::getContainer();
+    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+      ->onlyMethods(['warning'])
+      ->getMock();
+    $mock_logger->method('warning')
+      ->willReturnCallback(function($message, $context, $options) {
+        print str_replace(array_keys($context), $context, $message);
+        return NULL;
+      });
+    $container->set('tripal.logger', $mock_logger);
+
     $this->setUpChadoStorageTestEnviro();
 
     // Create the organism record for use with the feature table.
@@ -194,7 +254,18 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
   }
 
   /**
+   * Data Provider: Test both the current store_link model and the old one.
+   */
+  public function provideSinglePropFieldNames() {
+    return [
+      ['testBackwardsCompatiblePropertyField'],
+      ['testpropertyfieldA']
+    ];
+  }
+  /**
    * Testing ChadoStorage on single property field with multiple values.
+   *
+   * @dataProvider provideSinglePropFieldNames
    *
    * Test Cases:
    *   - Create Values in Chado using ChadoStorage when they don't yet exist.
@@ -203,7 +274,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
    *   - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
    *   - [NOT IMPLEMENTED] Ensure property field picks up records in Chado not added through field.
    */
-  public function testInsertValuesForSingleField() {
+  public function testInsertValuesForSingleField($prop_field_name) {
 
     $rdfs_comment_cvtermID = $this->getCvtermID('rdfs', 'comment');
     $gene_cvtermID = $this->getCvtermID('SO', '0000704');
@@ -212,7 +283,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Test Case: Insert valid values when they do not yet exist in Chado.
     // ---------------------------------------------------------
     $insert_values = [
-      'testpropertyfieldA' => [
+      $prop_field_name => [
         [
           'A_record_id' => NULL,
           'A_prop_id' => NULL,
@@ -246,8 +317,16 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
         ]
       ],
     ];
+    ob_start();
     $this->chadoStorageTestInsertValues($insert_values);
-
+    $printed_output = ob_get_clean();
+    if ($prop_field_name == 'testBackwardsCompatiblePropertyField') {
+      $this->assertStringContainsString('backwards compatible mode', $printed_output,
+        "We expect this field to be in backwards compatible mode and should have been informed during insert.");
+    }
+    else {
+      $this->assertEmpty($printed_output, "There should not be any messages logged.");
+    }
     // @debug $this->debugChadoStorageTestTraitArrays();
 
     // Check that the base feature record was created in the database as expected.
@@ -284,7 +363,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Check that the featureprop records were created in the database as expected.
     // We use the unique key to select this particular value in order to
     // ensure it is here and there is one one.
-    foreach ($insert_values['testpropertyfieldA'] as $delta => $expected) {
+    foreach ($insert_values[$prop_field_name] as $delta => $expected) {
       $query = $this->chado_connection->select('1:featureprop', 'prop')
         ->fields('prop', ['featureprop_id', 'feature_id', 'type_id', 'value', 'rank'])
         ->condition('feature_id', $feature_id, '=')
@@ -308,7 +387,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
 
     // For loading only the store id/pkey/link items should be populated.
     $load_values = [
-      'testpropertyfieldA' => [
+      $prop_field_name => [
         [
           'A_record_id' => $feature_id,
           'A_prop_id' => $prop0->featureprop_id,
@@ -331,12 +410,21 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
         ]
       ],
     ];
+    ob_start();
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
+    $printed_output = ob_get_clean();
+    if ($prop_field_name == 'testBackwardsCompatiblePropertyField') {
+      $this->assertStringContainsString('backwards compatible mode', $printed_output,
+        "We expect this field to be in backwards compatible mode and should have been informed during load.");
+    }
+    else {
+      $this->assertEmpty($printed_output, "There should not be any messages logged.");
+    }
 
     // Now test that the additional values have been loaded.
     // @debug $this->debugChadoStorageTestTraitArrays();
     foreach([0,1,2] as $delta) {
-      $retrieved = $retrieved_values['testpropertyfieldA'][$delta];
+      $retrieved = $retrieved_values[$prop_field_name][$delta];
       $varname = 'prop' . $delta;
       $expected = $$varname;
       $this->assertEquals(
@@ -365,14 +453,25 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     $update_values = $insert_values;
     foreach ($load_values as $field_name => $tmp) {
       foreach ($tmp as $delta => $id_values) {
-        $update_values[$field_name][$delta] += $id_values;
+        foreach ($id_values as $key => $value) {
+          $update_values[$field_name][$delta][$key] = $value;
+        }
       }
     }
 
     // We then change a few non key related values...
-    $update_values['testpropertyfieldA'][1]['A_value'] = 'Changed Note to be more informative.';
-    $update_values['testpropertyfieldA'][2]['A_value'] = 'Something completely different. Not even a note at all.';
+    $update_values[$prop_field_name][1]['A_value'] = 'Changed Note to be more informative.';
+    $update_values[$prop_field_name][2]['A_value'] = 'Something completely different. Not even a note at all.';
+    ob_start();
     $this->chadoStorageTestUpdateValues($update_values);
+    $printed_output = ob_get_clean();
+    if ($prop_field_name == 'testBackwardsCompatiblePropertyField') {
+      $this->assertStringContainsString('backwards compatible mode', $printed_output,
+        "We expect this field to be in backwards compatible mode and should have been informed during update.");
+    }
+    else {
+      $this->assertEmpty($printed_output, "There should not be any messages logged.");
+    }
 
     // Now we check chado to see if these values were changed...
     // Still the expected number of records in the featureprop table?
@@ -386,7 +485,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Check that the featureprop records were created in the database as expected.
     // We use the unique key to select this particular value in order to
     // ensure it is here and there is one one.
-    foreach ($update_values['testpropertyfieldA'] as $delta => $expected) {
+    foreach ($update_values[$prop_field_name] as $delta => $expected) {
       $query = $this->chado_connection->select('1:featureprop', 'prop')
         ->fields('prop', ['featureprop_id', 'feature_id', 'type_id', 'value', 'rank'])
         ->condition('feature_id', $feature_id, '=')
