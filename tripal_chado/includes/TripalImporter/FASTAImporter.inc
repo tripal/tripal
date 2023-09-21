@@ -467,7 +467,7 @@ class FASTAImporter extends TripalImporter {
       ])->fetchObject();
       if (!$parentcvterm) {
         $this->logMessage("Cannot find the parent term type: '!type'",
-          ['!type' => $parentcvterm], TRIPAL_ERROR);
+          ['!type' => $parent_type], TRIPAL_ERROR);
         return 0;
       }
     }
@@ -799,8 +799,8 @@ class FASTAImporter extends TripalImporter {
           // perform the update
           $success = chado_update_record('feature', $match, $values);
           if (!$success) {
-            $this->logMessage("Failed to update feature '!name' ('!name')",
-              ['!name' => $name, '!uiname' => $uname], TRIPAL_ERROR);
+            $this->logMessage("Failed to update feature '!name' ('!uname')",
+              ['!name' => $name, '!uname' => $uname], TRIPAL_ERROR);
             return 0;
           }
         }
@@ -820,8 +820,8 @@ class FASTAImporter extends TripalImporter {
           ];
           $success = chado_update_record('feature', $match, $values);
           if (!$success) {
-            $this->logMessage("Failed to update feature '!name' ('!name')",
-              ['!name' => $name, '!uiname' => $uname], TRIPAL_ERROR);
+            $this->logMessage("Failed to update feature '!name' ('!uname')",
+              ['!name' => $name, '!uname' => $uname], TRIPAL_ERROR);
             return 0;
           }
         }
@@ -889,7 +889,7 @@ class FASTAImporter extends TripalImporter {
       if (count($results) == 0) {
         $success = chado_insert_record('feature_dbxref', $values);
         if (!$success) {
-          $this->logMessage("Failed to add associate database accession '!accession' with feature",
+          $this->logMessage("Failed to associate database accession '!accession' with feature",
             ['!accession' => $accession], TRIPAL_ERROR);
           return 0;
         }
@@ -921,7 +921,7 @@ class FASTAImporter extends TripalImporter {
       if (count($results) == 0) {
         $success = chado_insert_record('feature_relationship', $values);
         if (!$success) {
-          $this->logMessage("Failed to add associate database accession '!accession' with feature",
+          $this->logMessage("Failed to associate database accession '!accession' with feature",
             ['!accession' => $accession], TRIPAL_ERROR);
           return 0;
         }
