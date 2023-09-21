@@ -343,33 +343,14 @@ class FASTAImporter extends ChadoImporterBase {
       $match_type = 'Unique name';
     }
 
-    $file_existing = false;
-    if ($file_upload_existing == "0" || $file_upload_existing == "" || $file_upload_existing == null) {
-      // this means no existing file
-    }
-    else {
-      $file_existing = true;
-    }
-
-    $file_uploaded = false;
-    // If there is no file upload
-    if($file_upload == "" || $file_upload == "0") {
-
-    }
-    else {
-      $file_uploaded = true;
-    }
-
-    if ($file_uploaded == false and $file_existing == false and !$file_local and !$file_remote) {
-      $form_state->setErrorByName('file_local', t('You must upload a FASTA file or choose an existing FASTA file'));
-    }
+    // The parent class will validate that a file has been specified and is valid.
 
     if ($re_name and !$re_uname and strcmp($match_type, 'Unique name') == 0) {
-      $form_state->setErrorByName('re_uname', t('You must provide a regular expression to identify the sequence unique name'));
+      $form_state->setErrorByName('re_name', t('You should not specify a regular expression for name if you are matching to sequence unique name'));
     }
 
     if (!$re_name and $re_uname and strcmp($match_type, 'Name') == 0) {
-      $form_state->setErrorByName('re_name', t('You must provide a regular expression to identify the sequence name'));
+      $form_state->setErrorByName('re_uname', t('You should not specify a regular expression for unique name if you are matching to sequence name'));
     }
 
     // make sure if a relationship is specified that all fields are provided.
