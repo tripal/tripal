@@ -592,7 +592,9 @@ class FASTAImporter extends ChadoImporterBase {
     $filesize = filesize($file_path);
     $fh = fopen($file_path, 'r');
     if (!$fh) {
-      throw new \Exception(t("Cannot open file: !dfile", ['!dfile' => $file_path]));
+      $this->logger->error("Cannot open file: @dfile",
+        ['@dfile' => $file_path]
+      );
     }
     $num_read = 0;
 
