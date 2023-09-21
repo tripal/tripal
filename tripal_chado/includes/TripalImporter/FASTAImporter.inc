@@ -289,11 +289,11 @@ class FASTAImporter extends TripalImporter {
     }
 
     if ($re_name and !$re_uname and strcmp($match_type, 'Unique name') == 0) {
-      form_set_error('re_uname', t("You must provide a regular expression to identify the sequence unique name"));
+      form_set_error('re_name', t("You should not specify a regular expression for name if you are matching to sequence unique name"));
     }
 
     if (!$re_name and $re_uname and strcmp($match_type, 'Name') == 0) {
-      form_set_error('re_name', t("You must provide a regular expression to identify the sequence name"));
+      form_set_error('re_uname', t("You should not specify a regular expression for unique name if you are matching to sequence name"));
     }
 
     // make sure if a relationship is specified that all fields are provided.
