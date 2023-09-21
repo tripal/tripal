@@ -145,7 +145,7 @@ class FASTAImporter extends ChadoImporterBase {
          exists with the same name or unique name and type then it is skipped.
          Select "Update only" to only update featues that already exist in the
          database.  Select "Insert and Update" to insert features that do
-         not exist and upate those that do.'),
+         not exist and update those that do.'),
       '#default_value' => 2,
     ];
 
@@ -163,9 +163,9 @@ class FASTAImporter extends ChadoImporterBase {
         a human-readable name then select the "Name" button. If your features are
         uniquely identified using the unique name then select the "Unique name" button.  If you
         loaded your features first using the GFF loader then the unique name of each
-        features were indicated by the "ID=" attribute and the name by the "Name=" attribute.
+        feature was indicated by the "ID=" attribute and the name by the "Name=" attribute.
         By default, the FASTA loader will use the first word (character string
-        before the first space) as  the name for your feature. If
+        before the first space) as the name for your feature. If
         this does not uniquely identify your feature consider specifying a regular expression in the advanced section below.
         Additionally, you may import both a name and a unique name for each sequence using the advanced options.'),
       '#default_value' => 1,
@@ -870,12 +870,6 @@ class FASTAImporter extends ChadoImporterBase {
           // First check to make sure that by changing the unique name of this
           // feature that we won't conflict with another existing feature of
           // the same name
-          // $values = [
-          //   'organism_id' => $organism_id,
-          //   'uniquename' => $uname,
-          //   'type_id' => $cvterm->cvterm_id,
-          // ];
-          // $results = chado_select_record('feature', ['feature_id'], $values);
           $results_query = $chado->select('1:feature', 'feature')
             ->fields('feature')
             ->condition('organism_id', $organism_id)
@@ -939,11 +933,6 @@ class FASTAImporter extends ChadoImporterBase {
     // add in the analysis link
     if ($analysis_id) {
       // if the association doesn't already exist then add one
-      // $values = [
-      //   'analysis_id' => $analysis_id,
-      //   'feature_id' => $feature->feature_id,
-      // ];
-      // $results = chado_select_record('analysisfeature', ['analysisfeature_id'], $values);
       $results_query = $chado->select('1:analysisfeature', 'analysisfeature')
         ->fields('analysisfeature')
         ->condition('analysis_id', $analysis_id)
@@ -951,7 +940,6 @@ class FASTAImporter extends ChadoImporterBase {
       $results = $results_query->execute();
       $results_count = $results_query->countQuery()->execute()->fetchField();
       if ($results_count == 0) {
-        // $success = chado_insert_record('analysisfeature', $values);
         $values = [
           'analysis_id' => $analysis_id,
           'feature_id' => $feature->feature_id,
@@ -968,12 +956,6 @@ class FASTAImporter extends ChadoImporterBase {
 
     // now add the database cross reference
     if ($db_id) {
-      // check to see if this accession reference exists, if not add it
-      // $values = [
-      //   'db_id' => $db_id,
-      //   'accession' => $accession,
-      // ];
-      // $results = chado_select_record('dbxref', ['dbxref_id'], $values);
       $results_query = $chado->select('1:dbxref', 'dbxref')
         ->fields('dbxref')
         ->condition('db_id', $db_id)
@@ -982,7 +964,6 @@ class FASTAImporter extends ChadoImporterBase {
       $results_count = $results_query->countQuery()->execute()->fetchField();
       // if the accession doesn't exist then add it
       if ($results_count == 0) {
-        // $results = chado_insert_record('dbxref', $values);
         $values = [
           'db_id' => $db_id,
           'accession' => $accession,
@@ -1015,12 +996,6 @@ class FASTAImporter extends ChadoImporterBase {
         $dbxref = $results[0];
       }
 
-      // Check to see if the feature dbxref record exists. If not, then add it.
-      // $values = [
-      //   'feature_id' => $feature->feature_id,
-      //   'dbxref_id' => $dbxref->dbxref_id,
-      // ];
-      // $results = chado_select_record('feature_dbxref', ['feature_dbxref_id'], $values);
       $results_query = $chado->select('1:feature_dbxref', 'feature_dbxref')
         ->fields('feature_dbxref')
         ->condition('feature_id', $feature->feature_id)
@@ -1028,7 +1003,6 @@ class FASTAImporter extends ChadoImporterBase {
       $results = $results_query->execute();
       $results_count = $results_query->countQuery()->execute()->fetchField();
       if ($results_count == 0) {
-        // $success = chado_insert_record('feature_dbxref', $values);
         $values = [
           'feature_id' => $feature->feature_id,
           'dbxref_id' => $dbxref->dbxref_id,
@@ -1045,12 +1019,6 @@ class FASTAImporter extends ChadoImporterBase {
 
     // Now add in the relationship if one exists.
     if ($rel_type) {
-      // $values = [
-      //   'organism_id' => $organism_id,
-      //   'uniquename' => $parent,
-      //   'type_id' => $parentcvterm->cvterm_id,
-      // ];
-      // $results = chado_select_record('feature', ['feature_id'], $values);
       $results_query = $chado->select('1:feature', 'feature')
         ->fields('feature')
         ->condition('organism_id', $organism_id)
@@ -1064,16 +1032,9 @@ class FASTAImporter extends ChadoImporterBase {
         );
         return 0;
       }
-      // $parent_feature = $results[0];
       $parent_feature = $results->fetchObject();
 
       // Check to see if the relationship already exists. If not, then add it.
-      // $values = [
-      //   'subject_id' => $feature->feature_id,
-      //   'object_id' => $parent_feature->feature_id,
-      //   'type_id' => $relcvterm->cvterm_id,
-      // ];
-      // $results = chado_select_record('feature_relationship', ['feature_relationship_id'], $values);
       $results_query = $chado->select('1:feature_relationship', 'feature_relationship')
         ->fields('feature_relationship')
         ->condition('subject_id', $feature->feature_id)
@@ -1082,7 +1043,6 @@ class FASTAImporter extends ChadoImporterBase {
       $results = $results_query->execute();
       $results_count = $results_query->countQuery()->execute()->fetchField();
       if ($results_count == 0) {
-        // $success = chado_insert_record('feature_relationship', $values);
         $values = [
           'subject_id' => $feature->feature_id,
           'object_id' => $parent_feature->feature_id,
