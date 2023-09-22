@@ -36,46 +36,6 @@ use Drupal\Core\Ajax\ReplaceCommand;
  */
 class GFF3Importer extends ChadoImporterBase {
   /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
-  public static $name = 'Chado GFF3 File Loader';
-
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
-  public static $machine_name = 'chado_gff3_loader';
-
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
-  public static $description = 'Import a GFF3 file into Chado';
-
-  /**
-   * An array containing the extensions of allowed file types.
-   */
-  public static $file_types = ['gff', 'gff3'];
-
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
-  public static $upload_description = 'Please provide the GFF3 file.';
-
-  /**
-   * The title that should appear above the upload button.
-   */
-  public static $upload_title = 'GFF3 File';
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
-  public static $button_text = 'Import GFF3 file';
-
-  /**
    * A handle to a temporary file for caching the GFF features. This allows for
    * quick lookup of parsed features without having to store it in RAM.
    */
