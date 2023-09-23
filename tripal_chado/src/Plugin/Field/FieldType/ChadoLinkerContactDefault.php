@@ -135,21 +135,18 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     // Define the link between the base table and the linker table.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $link_base_term, [
       'action' => 'store_link',
-      'drupal_store' => TRUE,
-      'left_table' => $base_table,
-      'left_table_id' => $base_pkey_col,
-      'right_table' => $linker_table,
-      'right_table_id' => $link_object_col,
+      'chado_table' => $linker_table,
+      'chado_column' => $link_fk_col,
     ]);
     // Define the link between the linker table and the object table.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $link_object_term, [
-      'action' => 'store_link',
-      'drupal_store' => TRUE,
-      'left_table' => $linker_table,
-      'left_table_id' => $link_object_col,
-      'right_table' => $object_table,
-      'right_table_id' => $object_pkey_col,
-    ]);
+//    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $link_object_term, [
+//      'action' => 'store_link',
+//      ?
+//      'left_table' => $linker_table,
+//      'left_table_id' => $link_object_col,
+//      'right_table' => $object_table,
+//      'right_table_id' => $object_pkey_col,
+//    ]);
 
     // to-do type_id and rank added conditionally only if present in linker table
 //    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank', $rank_term,  [
@@ -162,14 +159,6 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 //      'chado_table' => $linker_table,
 //      'chado_column' => 'type_id'
 //    ];
-
-    // Define the object table
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_pkey_id', $object_pkey_term, [
-      'action' => 'store_oid',
-      'drupal_store' => TRUE,
-      'chado_table' => $object_table,
-      'chado_column' => $object_pkey_col,
-    ]);
 
     // The displayed value
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
