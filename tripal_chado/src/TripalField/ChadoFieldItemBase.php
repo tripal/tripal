@@ -65,14 +65,22 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   /**
    * Return a list of candidate base tables. We only want to
    * present valid tables to the user, which are those with
-   * a foreign key to the specified object table.
-   * The list of tables is returned in an alphabetized list
-   * ready to use in a form select.
+   * an appropriate foreign key.
    *
    * @param string $object_table
    *   The Chado table being linked to via a foreign key.
+   * @param bool $has_linker_table
+   *   When set to false (default), base tables are tables with
+   *   a foreign key to $object_table.
+   *   When set to true, generate a list of base tables based
+   *   on two foreign keys in linker tables, one to the
+   *   specified $object_table, and a second to a different table.
+   *
+   * @return array
+   *   The list of tables is returned in an alphabetized list
+   *   ready to use in a form select.
    */
-  protected function getBaseTables($object_table) {
+  protected function getBaseTables($object_table, $has_linker_table = FALSE) {
     $base_tables = [];
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
@@ -82,13 +90,30 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
 
-    // Evaluate chado tables for a foreign key to our object table.
-    // If it has one, we will consider this a candidate for
-    // a base table.
     $all_tables = $schema->getTables(['type' => 'table']);
     foreach (array_keys($all_tables) as $table) {
       if ($schema->foreignKeyConstraintExists($table, $object_pkey_col)) {
-        $base_tables[$table] = $table;
+        if ($has_linker_table) {
+          // This logic is used for fields using a linker table,
+          // i.e. a "double-hop". Here we look in potential linker
+          // tables for two foreign keys, one to our object table, and
+          // a second to a different table. These different tables
+          // become the list of candidate base tables.
+          $table_schema_def = $schema->getTableDef($table, ['format' => 'Drupal']);
+          if (array_key_exists('foreign keys', $table_schema_def)) {
+            foreach ($table_schema_def['foreign keys'] as $fk) {
+              if ($fk['table'] != $object_table) {
+                $base_tables[$fk['table']] = $fk['table'];
+              }
+            }
+          }
+        }
+        else {
+          // "single-hop" logic, evaluate chado tables for a foreign
+          // key to our object table. If it has one, we will consider
+          // this a candidate for a base table.
+          $base_tables[$table] = $table;
+        }
       }
     }
 
@@ -105,6 +130,60 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     }
 
     return $base_tables;
+  }
+
+ /**
+   * Return a list of candidate linker tables given a
+   * base table and a linked table. Core tripal will only
+   * ever have zero or one linker tables, but a site may
+   * have custom linker tables, so we need a way to allow
+   * the site administrator to pick the desired table.
+   *
+   * @param string $base_table
+   *   The Chado table being used for the current entity (subject).
+   * @param string $object_table
+   *   The Chado table being linked to (object).
+   *
+   * @return array
+   *   The list of tables is returned in an alphabetized list
+   *   ready to use in a form select.
+   */
+  protected function getLinkerTables($object_table, $base_table) {
+    $linker_tables = [];
+
+    // The base table is needed to generate the list. We will return
+    // here again from the ajax callback once that has been selected.
+    if (!$base_table) {
+      $linker_tables[NULL] = '-- Select base table first --';
+    }
+    else {
+      $chado = \Drupal::service('tripal_chado.database');
+      $schema = $chado->schema();
+
+      $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+      $base_pkey_col = $base_schema_def['primary key'];
+      $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+      $object_pkey_col = $object_schema_def['primary key'];
+
+      $all_tables = $schema->getTables(['type' => 'table']);
+      foreach (array_keys($all_tables) as $table) {
+        if ($schema->foreignKeyConstraintExists($table, $base_pkey_col) and
+            $schema->foreignKeyConstraintExists($table, $object_pkey_col)) {
+          $linker_tables[$table] = $table;
+        }
+      }
+      ksort($linker_tables);
+
+      // This should not happen, but provide an indication if it does.
+      if (count($linker_tables) == 0) {
+        $linker_tables = [NULL => '-- No linker table available --'];
+      }
+      // If more than one table was found, prefix the list with a Select message
+      elseif (count($linker_tables) > 1) {
+        $linker_tables = [NULL => '-- Select --'] + $linker_tables;
+      }
+    }
+    return $linker_tables;
   }
 
 }
