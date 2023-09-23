@@ -987,7 +987,34 @@ fields:
             default:
               region: content
               weight: 90
-
+              
+    -   name: gene_synonym
+        content_type: gene
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: 0
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                syn_linker_table: feature_synonym
+                syn_linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+              
     -   name: mrna_name
         content_type: mRNA
         label: Name
