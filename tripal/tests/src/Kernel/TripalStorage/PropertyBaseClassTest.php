@@ -96,7 +96,7 @@ class PropertyBaseClassTest extends KernelTestBase {
     catch (\Exception $e) {
       $exception_message = $e->getMessage();
     }
-    $this->assertStringContainsString('property formatted term', $exception_message,
+    $this->assertStringContainsString('properly formatted term', $exception_message,
       "We did not get the exception message we expected for passing in a badly formatted term.");
 
     // Test passing in a term whose ID Space doesn't exist in our mock.

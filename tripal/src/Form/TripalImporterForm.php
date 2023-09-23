@@ -128,7 +128,7 @@ class TripalImporterForm implements FormInterface {
     }
 
     // We should only add a submit button if this importer uses a button.
-    // Examples of importers who don't use this button are mutl-page forms.
+    // Examples of importers who don't use this button are multi-page forms.
     if (array_key_exists('use_button', $importer_def) AND $importer_def['use_button'] !== FALSE) {
       $form['button'] = [
         '#type' => 'submit',

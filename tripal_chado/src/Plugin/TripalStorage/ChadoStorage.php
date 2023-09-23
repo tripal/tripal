@@ -351,7 +351,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
       }
 
-      // Now insert all new values for nor the non-base table records.
+      // Now insert all new values for the non-base table records.
       foreach ($records as $chado_table => $deltas) {
         foreach ($deltas as $delta => $record) {
 
@@ -393,7 +393,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     // If we are selecting on the base table and we don't have a proper
-    // condition then throw and error.
+    // condition then throw an error.
     if (!$this->hasValidConditions($record)) {
       throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
@@ -983,7 +983,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       ];
     }
 
-    // Get then current number of joins to the right table.
+    // Get the current number of joins to the right table.
     $num_left = 0;
     if (array_key_exists($left_table,$records[$parent_table][$delta]['joins'])) {
       $num_left = count($records[$parent_table][$delta]['joins'][$left_table]) - 1;

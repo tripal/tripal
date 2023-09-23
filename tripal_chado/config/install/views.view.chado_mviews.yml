@@ -794,7 +794,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: false
-          content: '<a class="button button-action button--primary button--small" href="[site:url]admin/tripal/storage/chado/mview">Add Materilaized View</a>'
+          content: '<a class="button button-action button--primary button--small" href="[site:url]admin/tripal/storage/chado/mview">Add Materialized View</a>'
           tokenize: false
       footer: {  }
       display_extenders: {  }
