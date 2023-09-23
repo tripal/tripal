@@ -20,7 +20,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *
  * @FieldType(
  *   id = "chado_linker_contact_default",
- *   label = @Translation("Chado Contact"),
+ *   label = @Translation("Chado Linker Contact"),
  *   description = @Translation("Add a linked Chado contact to the content type."),
  *   default_widget = "chado_linker_contact_widget_default",
  *   default_formatter = "chado_linker_contact_formatter_default"
