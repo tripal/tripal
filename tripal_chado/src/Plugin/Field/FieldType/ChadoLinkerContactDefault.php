@@ -301,58 +301,6 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
   }
 
   /**
-   * Return a list of candidate base tables. This is done
-   * by evaluating candidate linker tables that have a foreign
-   * key to our $object_table, as well as another foreign key
-   * to a different table. These different tables are returned
-   * in an alphabetized list ready to use in a form select.
-   *
-   * @param string $object_table
-   *   The Chado table being linked to (object).
-   */
-  protected function getBaseTables($object_table) {
-    $base_tables = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-
-    // Start from the primary key of the object, and work
-    // back to candidate linked tables.
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
-    $object_pkey_col = $object_schema_def['primary key'];
-
-    // Evaluate chado tables for a foreign key to our object table.
-    // If it has one, and if it also has another foreign key to a
-    // different table, we will consider this a candidate for
-    // a base table.
-    $all_tables = $schema->getTables(['type' => 'table']);
-    foreach (array_keys($all_tables) as $table) {
-      if ($schema->foreignKeyConstraintExists($table, $object_pkey_col)) {
-        $table_schema_def = $schema->getTableDef($table, ['format' => 'Drupal']);
-        if (array_key_exists('foreign keys', $table_schema_def)) {
-          foreach ($table_schema_def['foreign keys'] as $fk) {
-            if ($fk['table'] != $object_table) {
-              $base_tables[$fk['table']] = $fk['table'];
-            }
-          }
-        }
-      }
-    }
-    // Alphabetize the list presented to the user.
-    ksort($base_tables);
-
-    // This should not happen, but provide an indication if it does.
-    if (count($base_tables) == 0) {
-      $base_tables = [NULL => '-- No base tables available --'];
-    }
-    // If more than one table was found, prefix the list with a Select message
-    elseif (count($base_tables) > 1) {
-      $base_tables = [NULL => '-- Select --'] + $base_tables;
-    }
-
-    return $base_tables;
-  }
-
-  /**
    * Ajax callback to update the linker table select. The select
    * can't be populated until we know the base table.
    *
