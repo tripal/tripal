@@ -77,7 +77,7 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
 //    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($linker_table, 'rank'));
     // Remove any empty values that aren't mapped to a record id.
     foreach ($values as $val_key => $value) {
-      if ($value['value'] == '' and $value['record_id'] == 0) {
+      if ($value['contact_id'] == '' and $value['record_id'] == 0) {
         unset($values[$val_key]);
       }
     }
@@ -85,7 +85,7 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
     // Reset the weights
     $i = 0;
     foreach ($values as $val_key => $value) {
-      if ($value['value'] == '') {
+      if ($value['contact_id'] == '') {
         continue;
       }
       $values[$val_key]['_weight'] = $i;

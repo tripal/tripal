@@ -146,7 +146,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'left_table' => $linker_table,
-      'left_table_id' => $linker_object_col,
+      'left_table_id' => $link_object_col,
       'right_table' => $object_table,
       'right_table_id' => $object_pkey_col,
     ]);
