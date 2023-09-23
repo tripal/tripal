@@ -215,7 +215,7 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
       'action' => 'join',
       'path' => $syn_linker_table . '.synonym_id>synonym.synonym_id',
       'chado_column' => 'name',
-      'as' => 'term_name',
+      'as' => 'synonym_name',
       'drupal_store' => FALSE,
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'synonym_type', $syn_type_id_term, $syn_type_name_len, [

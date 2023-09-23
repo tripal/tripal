@@ -72,6 +72,7 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
 
     // Get the default null publication for now until we have a
     // decent pub lookup field.
+    // @todo: update this for a pub selector field later.
     $query = $chado->select('1:pub', 'p');
     $query->fields('p', ['pub_id']);
     $query->condition('p.uniquename', 'null');
@@ -148,6 +149,16 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
       if ($item['name'] == '') {
         unset($values[$delta]);
       }
+    }
+
+    // Reset the weights
+    $i = 0;
+    foreach ($values as $delta => $value) {
+      if ($value['value'] == '') {
+        continue;
+      }
+      $values[$delta]['_weight'] = $i;
+      $i++;
     }
 
     // Iterate through the synonyms and if a name is not

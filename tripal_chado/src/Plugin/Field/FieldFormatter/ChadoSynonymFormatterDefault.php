@@ -29,7 +29,7 @@ class ChadoSynonymFormatterDefault extends ChadoFormatterBase {
 
     $list = [];
     foreach($items as $delta => $item) {
-      $value = $item->get('value')->getString();
+      $value = $item->get('name')->getString();
       $list[$delta] = $value;
     }
 
