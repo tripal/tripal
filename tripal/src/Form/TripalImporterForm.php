@@ -130,10 +130,20 @@ class TripalImporterForm implements FormInterface {
     // We should only add a submit button if this importer uses a button.
     // Examples of importers who don't use this button are multi-page forms.
     if (array_key_exists('use_button', $importer_def) AND $importer_def['use_button'] !== FALSE) {
+
+      // We will allow specific importers to disable this button based on the state of the form.
+      // By default it is enabled.
+      $disabled = FALSE;
+      // But if they set the storage to indicate we should disable it then we will.
+      $storage = $form_state->getStorage();
+      if (array_key_exists('disable_TripalImporter_submit', $storage)) {
+        $disabled = $storage['disable_TripalImporter_submit'];
+      }
       $form['button'] = [
         '#type' => 'submit',
         '#value' => $importer_def['button_text'],
         '#weight' => 10,
+        '#disabled' => $disabled,
       ];
     }
 
