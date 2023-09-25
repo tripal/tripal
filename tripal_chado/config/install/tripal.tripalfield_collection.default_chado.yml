@@ -987,7 +987,7 @@ fields:
             default:
               region: content
               weight: 90
-              
+
     -   name: gene_synonym
         content_type: gene
         label: Synonyms
@@ -999,8 +999,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                syn_linker_table: feature_synonym
-                syn_linker_fkey_column: feature_id
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
         settings:
             termIdSpace: schema
             termAccession: alternateName
@@ -1014,7 +1014,7 @@ fields:
             default:
               region: content
               weight: 10
-              
+
     -   name: mrna_name
         content_type: mRNA
         label: Name

@@ -39,8 +39,8 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
-    $settings['storage_plugin_settings']['syn_linker_table'] = '';
-    $settings['storage_plugin_settings']['syn_linker_fkey_column'] = '';
+    $settings['storage_plugin_settings']['linker_table'] = '';
+    $settings['storage_plugin_settings']['linker_fkey_column'] = '';
     return $settings;
   }
 
@@ -87,7 +87,7 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
     $schema = $chado->schema();
     $linker_table_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
     if (!$linker_table_def) {
-      $form_state->setErrorByName('storage_plugin_settings][syn_linker_table',
+      $form_state->setErrorByName('storage_plugin_settings][linker_table',
           'The selected base table cannot support synonyms.');
     }
     else {
@@ -95,8 +95,8 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
       $schema = $chado->schema();
       $linker_table_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
       $linker_fkey_column = array_keys($linker_table_def['foreign keys'][$base_table]['columns'])[0];
-      $form_state->setvalue(['settings', 'storage_plugin_settings', 'syn_linker_table'], $linker_table);
-      $form_state->setvalue(['settings', 'storage_plugin_settings', 'syn_linker_fkey_column'], $linker_fkey_column);
+      $form_state->setvalue(['settings', 'storage_plugin_settings', 'linker_table'], $linker_table);
+      $form_state->setvalue(['settings', 'storage_plugin_settings', 'linker_fkey_column'], $linker_fkey_column);
     }
   }
 
@@ -111,12 +111,12 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
 
     $base_table = $storage_settings['base_table'];
-    $syn_linker_table = $storage_settings['syn_linker_table'];
-    $syn_linker_fkey_column = $storage_settings['syn_linker_fkey_column'];
+    $linker_table = $storage_settings['linker_table'];
+    $linker_fkey_column = $storage_settings['linker_fkey_column'];
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
-    if (!$base_table or !$syn_linker_table) {
+    if (!$base_table or !$linker_table) {
       $record_id_term = 'SIO:000729';
       return [
         new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
@@ -132,8 +132,8 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
     $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_table_def['primary key'];
     $synonym_table_def = $schema->getTableDef('synonym', ['format' => 'Drupal']);
-    $syn_linker_table_def = $schema->getTableDef($syn_linker_table, ['format' => 'Drupal']);
-    $syn_linker_table_pkey = $syn_linker_table_def['primary key'];
+    $linker_table_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+    $linker_table_pkey = $linker_table_def['primary key'];
     $cvterm_table_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
 
     // Create variables to store the terms for the properties. We can use terms
@@ -150,11 +150,11 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
 
 
     // Synonym linker table fields
-    $syn_linker_fkey_id_term = $mapping->getColumnTermId($syn_linker_table, $syn_linker_fkey_column);
-    $syn_linker_synonym_id_term = $mapping->getColumnTermId($syn_linker_table, 'synonym_id');
-    $syn_linker_is_current_term = $mapping->getColumnTermId($syn_linker_table, 'is_current');
-    $syn_linker_is_internal_term = $mapping->getColumnTermId($syn_linker_table, 'is_internal');
-    $syn_linker_pub_id_term = $mapping->getColumnTermId($syn_linker_table, 'pub_id');
+    $linker_fkey_id_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column);
+    $linker_synonym_id_term = $mapping->getColumnTermId($linker_table, 'synonym_id');
+    $linker_is_current_term = $mapping->getColumnTermId($linker_table, 'is_current');
+    $linker_is_internal_term = $mapping->getColumnTermId($linker_table, 'is_internal');
+    $linker_pub_id_term = $mapping->getColumnTermId($linker_table, 'pub_id');
 
     // Always store the record id of the base record that this field is
     // associated with in Chado.
@@ -169,42 +169,42 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
     //
     // Properties corresponding to the synonym linker table.
     //
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_pkey_id', $syn_linker_synonym_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_pkey_id', $linker_synonym_id_term, [
       'action' => 'store_pkey',
       'drupal_store' => TRUE,
-      'chado_table' => $syn_linker_table,
-      'chado_column' => $syn_linker_table_pkey,
+      'chado_table' => $linker_table,
+      'chado_column' => $linker_table_pkey,
     ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_base_fkey_id' , $syn_linker_fkey_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_base_fkey_id' , $linker_fkey_id_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
-      'chado_table' => $syn_linker_table,
-      'chado_column' => $syn_linker_fkey_column,
+      'chado_table' => $linker_table,
+      'chado_column' => $linker_fkey_column,
     ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_synonym_fkey_id' , $syn_linker_fkey_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_synonym_fkey_id' , $linker_fkey_id_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
-      'chado_table' => $syn_linker_table,
+      'chado_table' => $linker_table,
       'chado_column' => 'synonym_id',
     ]);
-    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'is_current', $syn_linker_is_current_term, [
+    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'is_current', $linker_is_current_term, [
       'action' => 'store',
-      'chado_table' => $syn_linker_table,
+      'chado_table' => $linker_table,
       'drupal_store' => FALSE,
       'chado_column' => 'is_current',
       'empty_value' => TRUE
     ]);
-    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'is_internal', $syn_linker_is_internal_term, [
+    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'is_internal', $linker_is_internal_term, [
       'action' => 'store',
-      'chado_table' => $syn_linker_table,
+      'chado_table' => $linker_table,
       'drupal_store' => FALSE,
       'chado_column' => 'is_internal',
       'empty_value' => FALSE
     ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_pub_id' , $syn_linker_pub_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_pub_id' , $linker_pub_id_term, [
       'action' => 'store',
       'drupal_store' => FALSE,
-      'chado_table' => $syn_linker_table,
+      'chado_table' => $linker_table,
       'chado_column' => 'pub_id',
     ]);
 
@@ -213,14 +213,14 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
     //
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'name', $syn_name_term, $syn_name_len, [
       'action' => 'join',
-      'path' => $syn_linker_table . '.synonym_id>synonym.synonym_id',
+      'path' => $linker_table . '.synonym_id>synonym.synonym_id',
       'chado_column' => 'name',
       'as' => 'synonym_name',
       'drupal_store' => FALSE,
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'synonym_type', $syn_type_id_term, $syn_type_name_len, [
       'action' => 'join',
-      'path' => $syn_linker_table . '.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id',
+      'path' => $linker_table . '.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id',
       'chado_column' => 'name',
       'as' => 'synonym_type',
       'drupal_store' => FALSE,
