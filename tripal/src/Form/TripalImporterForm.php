@@ -134,7 +134,12 @@ class TripalImporterForm implements FormInterface {
       // We will allow specific importers to disable this button based on the state of the form.
       // By default it is enabled.
       $disabled = FALSE;
-      // But if they set the storage to indicate we should disable it then we will.
+      // Unless the annotation says it should be disabled by default..
+      if (array_key_exists('submit_disabled', $importer_def) AND $importer_def['submit_disabled'] === TRUE) {
+        $disabled = TRUE;
+      }
+      // But if they set the storage to indicate we should disable/enable it
+      // then we will do whatever they say ;-).
       $storage = $form_state->getStorage();
       if (array_key_exists('disable_TripalImporter_submit', $storage)) {
         $disabled = $storage['disable_TripalImporter_submit'];
