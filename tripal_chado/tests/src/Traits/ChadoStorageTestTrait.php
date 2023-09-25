@@ -653,7 +653,7 @@ trait ChadoStorageTestTrait {
         foreach($current_values as $property_key => $val) {
 
           $this->assertArrayHasKey($property_key, $this->dataStoreValues[$field_name][$delta],
-            "The key $property_key does not exist in the data store values, it may be missing from your \$fields definition");
+            "The key $property_key does not exist in the data store values for $field_name[$delta], it may be missing from your \$fields definition");
 
           $this->dataStoreValues[$field_name][$delta][$property_key]['value']->setValue($val);
 

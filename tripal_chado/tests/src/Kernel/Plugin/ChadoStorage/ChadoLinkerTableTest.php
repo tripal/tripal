@@ -246,69 +246,37 @@ class ChadoLinkerTableTest extends ChadoTestKernelBase {
 
     // Synonym.
     $this->right_id['synonymfield'] = [];
-    $query = $this->chado_connection->insert('1:synonym');
-    $query->fields([
-      'name' => 'test' . uniqid() . '-1',
-      'synonym_sgml' => 'test-1',
-      'type_id' => $this->cvterm_id,
-    ]);
-    $this->right_id['synonymfield'][0] = $query->execute();
-    $query = $this->chado_connection->insert('1:synonym');
-    $query->fields([
-      'name' => 'test' . uniqid() . '-2',
-      'synonym_sgml' => 'test-2',
-      'type_id' => $this->cvterm_id,
-    ]);
-    $this->right_id['synonymfield'][1] = $query->execute();
-    $query = $this->chado_connection->insert('1:synonym');
-    $query->fields([
-      'name' => 'test' . uniqid() . '-3',
-      'synonym_sgml' => 'test-3',
-      'type_id' => $this->cvterm_id,
-    ]);
-    $this->right_id['synonymfield'][2] = $query->execute();
+    foreach([1,2,3,4,5] as $delta) {
+      $query = $this->chado_connection->insert('1:synonym');
+      $query->fields([
+        'name' => 'test' . uniqid() . '-' . $delta,
+        'synonym_sgml' => 'test-' . $delta,
+        'type_id' => $this->cvterm_id,
+      ]);
+      $this->right_id['synonymfield'][] = $query->execute();
+    }
 
     // Analysis.
     $this->right_id['analysisfield'] = [];
-    $query = $this->chado_connection->insert('1:analysis');
-    $query->fields([
-      'program' => 'test' . uniqid() . '-1',
-      'programversion' => 'test-1',
-    ]);
-    $this->right_id['analysisfield'][0] = $query->execute();
-    $query = $this->chado_connection->insert('1:analysis');
-    $query->fields([
-      'program' => 'test' . uniqid() . '-2',
-      'programversion' => 'test-2',
-    ]);
-    $this->right_id['analysisfield'][1] = $query->execute();
-    $query = $this->chado_connection->insert('1:analysis');
-    $query->fields([
-      'program' => 'test' . uniqid() . '-3',
-      'programversion' => 'test-3',
-    ]);
-    $this->right_id['analysisfield'][2] = $query->execute();
+    foreach([1,2,3,4,5] as $delta) {
+      $query = $this->chado_connection->insert('1:analysis');
+      $query->fields([
+        'program' => 'test' . uniqid() . '-' . $delta,
+        'programversion' => 'test-' . $delta,
+      ]);
+      $this->right_id['analysisfield'][] = $query->execute();
+    }
 
     // Contact.
     $this->right_id['contactfield'] = [];
-    $query = $this->chado_connection->insert('1:contact');
-    $query->fields([
-      'name' => 'test' . uniqid() . '-1',
-      'type_id' => $this->cvterm_id,
-    ]);
-    $this->right_id['contactfield'][0] = $query->execute();
-    $query = $this->chado_connection->insert('1:contact');
-    $query->fields([
-      'name' => 'test' . uniqid() . '-2',
-      'type_id' => $this->cvterm_id,
-    ]);
-    $this->right_id['contactfield'][1] = $query->execute();
-    $query = $this->chado_connection->insert('1:contact');
-    $query->fields([
-      'name' => 'test' . uniqid() . '-3',
-      'type_id' => $this->cvterm_id,
-    ]);
-    $this->right_id['contactfield'][2] = $query->execute();
+    foreach([1,2,3,4,5] as $delta) {
+      $query = $this->chado_connection->insert('1:contact');
+      $query->fields([
+        'name' => 'test' . uniqid() . '-' . $delta,
+        'type_id' => $this->cvterm_id,
+      ]);
+      $this->right_id['contactfield'][] = $query->execute();
+    }
   }
 
   /**
@@ -381,6 +349,7 @@ class ChadoLinkerTableTest extends ChadoTestKernelBase {
    *   where the key is the property key and the value is the value we should set it to.
    */
   public function testLinkerTableField($linker_field_name, $linker_table_name, $right_table_id, $extra_values) {
+    $linker_pkey = $linker_table_name . '_id';
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
     // ---------------------------------------------------------
@@ -463,12 +432,109 @@ class ChadoLinkerTableTest extends ChadoTestKernelBase {
     // First we want to reset all the chado storage arrays to ensure we are
     // doing a clean test. The values will purposefully remain in Chado but the
     // Property Types, Property Values and Data Values will be built from scratch.
+    $this->cleanChadoStorageValues();
 
+    // For loading only the store id/pkey/link items should be populated.
+    $load_values = [
+      $linker_field_name => [
+        [
+          'record_id' => $feature_id,
+          'linker_id' => $link0->$linker_pkey,
+          'link' => $feature_id,
+        ],
+        [
+          'record_id' => $feature_id,
+          'linker_id' => $link1->$linker_pkey,
+          'link' => $feature_id,
+        ],
+      ],
+      'testotherfeaturefield' => [
+        [
+          'record_id' => $feature_id,
+        ]
+      ],
+    ];
+    $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
+
+    // Now test that the additional values have been loaded.
+    // @debug $this->debugChadoStorageTestTraitArrays();
+    foreach([0,1] as $delta) {
+      $retrieved = $retrieved_values[$linker_field_name][$delta];
+      $varname = 'link' . $delta;
+      $expected = $$varname;
+      $this->assertEquals(
+        $expected->$right_table_id,
+        $retrieved['right_id']['value']->getValue(),
+        "The $right_table_id for delta $delta did not match the one we retrieved from chado after insert."
+      );
+      // These two should match for sure as we actually set the above in our load
+      // arrays but let's check anyway to make sure there isn't any funny business.
+      $this->assertEquals(
+        $expected->$linker_pkey,
+        $retrieved['linker_id']['value']->getValue(),
+        "The pkey for the linker table, $linker_pkey, for delta $delta did not match the one we retrieved from chado after insert."
+      );
+      $this->assertEquals(
+        $expected->feature_id,
+        $retrieved['record_id']['value']->getValue(),
+        "The record_id/feature_id for delta $delta did not match the one we retrieved from chado after insert."
+      );
+    }
 
     // Test Case: Update values in Chado using ChadoStorage.
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
     // and all values of the other properties.
+    // array_merge alone seems not to be sufficient
+    $update_values = $insert_values;
+    foreach ($load_values as $field_name => $tmp) {
+      foreach ($tmp as $delta => $id_values) {
+        foreach ($id_values as $key => $value) {
+          $update_values[$field_name][$delta][$key] = $value;
+        }
+      }
+    }
+    // We also want to add the right_id in for each delta
+    // which we didn't include in the load to ensure we had something
+    // new to check ;-).
+    foreach($update_values[$linker_field_name] as $delta => $values) {
+      $cur_link_record = 'link' . $delta;
+      $update_values[$linker_field_name][$delta]['right_id'] = $$cur_link_record->$right_table_id;
+    }
+    // Finally we want to add the 3rd record which will be new
+    // (an insert rather than an update).
+    $update_values[$linker_field_name][3] = [
+      'record_id' => $feature_id,
+      'linker_id' => NULL,
+      'link' => $feature_id,
+      'right_id' => $this->right_id[$linker_field_name][4],
+    ] + $extra_values;
+
+    // We then change the right table selected to one we haven't used yet.
+    $update_values[$linker_field_name][1]['right_id'] = $this->right_id[$linker_field_name][3];
+    $this->chadoStorageTestUpdateValues($update_values);
+
+    // Now we check chado to see if these values were changed...
+    // Still the expected number of records in the featureprop table?
+    $query = $this->chado_connection->select('1:' . $linker_table_name, 'linker')
+        ->fields('linker')
+        ->execute();
+    $all_linker_records = $query->fetchAll();
+    $this->assertCount(3, $all_linker_records,
+      "There were more records then we were expecting in the $linker_table_name table: " . print_r($all_linker_records, TRUE));
+
+    // Check that the linker table records were updated/created in the database as expected.
+    // We use the unique key to select this particular value in order to
+    // ensure it is here and there is one one.
+    foreach ($update_values[$linker_field_name] as $delta => $expected) {
+      $query = $this->chado_connection->select('1:' . $linker_table_name, 'linker')
+        ->fields('linker')
+        ->condition('feature_id', $feature_id, '=')
+        ->condition($right_table_id, $expected['right_id'])
+        ->execute();
+      $records = $query->fetchAll();
+      $this->assertCount(1, $records, "We expected to get exactly one record for:" . print_r($expected, TRUE));
+    }
 
     // Test Case: Delete values in Chado using ChadoStorage.
     // ---------------------------------------------------------
