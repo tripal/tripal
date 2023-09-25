@@ -539,14 +539,18 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
 
   /**
-   * Sets the record_id properties after an insert.
+   * Sets the Record ID Properties after an insert or update.
    *
-  * @param array $values
-  *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
-  *
-  * @param array $records
-  *   The set of Chado records.
-  */
+   * Specifically, this sets the value of any properties with an action of
+   * store_id, store_pkey and store_link. The value of the ID will be pulled
+   * from the record conditions for that table.
+   *
+   * @param array $values
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   *
+   * @param array $records
+   *   The set of Chado records.
+   */
   protected function setRecordIds(&$values, $records) {
 
     $schema = $this->connection->schema();
@@ -819,19 +823,21 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           }
           $action = $prop_storage_settings['action'];
 
-          // Check that the chado table is set.
+          // Check that the base table for the field is set.
           if (!array_key_exists('base_table', $storage_plugin_settings)) {
             $this->logger->error($this->t('Cannot store the property, @field.@prop, in Chado. The field is missing the chado base table name.',
                 ['@field' => $field_name, '@prop' => $key]));
             continue;
           }
 
-          // Get the base table definitions.
+          // Get the base table definitions for the field.
           $base_table = $storage_plugin_settings['base_table'];
           $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
           $base_table_pkey = $base_table_def['primary key'];
 
-          // Get the Chado table. Use the base table if one is not provided.
+          // Get the Chado table this specific property works with.
+          // Use the base table as a default for properties which do not specify
+          // the chado table (e.g. single value fields).
           $chado_table = $base_table;
           $chado_table_def = $base_table_def;
           $chado_table_pkey = $base_table_pkey;
@@ -840,36 +846,113 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $chado_table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
             $chado_table_pkey = $chado_table_def['primary key'];
           }
+          // Properties with a store_link action use left/right table notation.
+          // The left table.left_table_id include the information for the value
+          // to be set in this property so use them as equalivalent to the
+          // chado table used in other actions. This also allows us to use
+          // the base table of the field as a default for this.
+          if (array_key_exists('left_table', $prop_storage_settings)) {
+            $chado_table = $prop_storage_settings['left_table'];
+            $chado_table_pkey = $prop_storage_settings['left_table_id'];
+          }
 
-          // This action is to store the base record primary key value.
+          // Now for each action type, set the conditions and fields for
+          // selecting chado records based on the other properties supplied.
+          // ----------------------------------------------------------------
+          // STORE ID: stores the primary key value for a core table in chado
+          // Note: There may be more core tables in properties for this field
+          // then just the base table. For example, a field involving a two-join
+          // linker table will include two core tables.
+          // ................................................................
           if ($action == 'store_id') {
             $record_id = $prop_value->getValue();
             // If the record_id is zero then this is a brand-new value for
-            // this property.  Let's set it to be replaced in the hopes that
+            // this property. Let's set it to be replaced in the hopes that
             // some other property has already been inserted and has the ID.
             if ($record_id == 0) {
               $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['value' => ['REPLACE_BASE_RECORD_ID', $base_table], 'operation' => $operation];
-              if (!array_key_exists($base_table, $base_record_ids)) {
-                $base_record_ids[$base_table] = $record_id;
+              // Now we add the chado table to our array of core tables
+              // so that we can replace it with the value for the record later.
+              if (!array_key_exists($chado_table, $base_record_ids)) {
+                $base_record_ids[$chado_table] = $record_id;
               }
             }
+            // However, if the record_id was set when the values were passed in,
+            // then we want to set it here and add it to the array of core ids
+            // for use later when replacing base record ids.
             else {
               $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['value' => $record_id, 'operation' => $operation];
-              $base_record_ids[$base_table] = $record_id;
+              $base_record_ids[$chado_table] = $record_id;
             }
           }
-          // This  action is to store the linked table primary key value.
+          // STORE PKEY: stores the primary key value of a linking table.
+          // NOTE: A linking table is not a core table. This is important because
+          // during insert and update, the core tables are handled first and then
+          // linking tables are handled after.
+          // ................................................................
           if ($action == 'store_pkey') {
             $link_record_id = $prop_value->getValue();
             $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = ['value' => $link_record_id, 'operation' => $operation];
           }
-          // The link action will connect a linking table to the base table.
+          // STORE LINK: performs a join between two tables, one of which is a
+          // core table and one of which is a linking table. The value which is saved
+          // in this property is the left_table_id indicated in other key/value pairs.
+          // ................................................................
           if ($action == 'store_link') {
-            $chado_column = $prop_storage_settings['chado_column'];
-            $records[$chado_table][$delta]['fields'][$chado_column] = ['REPLACE_BASE_RECORD_ID', $base_table];
+            // The old implementation of store_link used chado_table/column notation
+            // only for the right side of the relationship.
+            // This meant we could not reliably determine the left side of the
+            // relationship... Confirm this field uses the new method.
+            if (array_key_exists('right_table', $prop_storage_settings)) {
+              // Using the tables with a store_id, determine which side of this
+              // relationship is a base/core table. This will be used for the
+              // fields below to ensure the ID is replaced.
+              // Start by assuming the left table is the base/core table
+              // (e.g. feature.feature_id = featureprop.feature_id).
+              $link_base = $chado_table;
+              $link_base_id = $chado_table_pkey;
+              $linker = $prop_storage_settings['right_table'];
+              $linker_id = $prop_storage_settings['right_table_id'];
+              // Then check if the right table has a store_id and if so, use it instead.
+              // (e.g. analysisfeature.analysis_id = analysis.analysis_id)
+              if (array_key_exists($prop_storage_settings['right_table'], $base_record_ids)) {
+                $link_base = $prop_storage_settings['right_table'];
+                $link_base_id = $prop_storage_settings['right_table_id'];
+                $linker = $chado_table;
+                $linker_id = $chado_table_pkey;
+              }
+              // @debug print "We decided it should be BASE $link_base.$link_base_id => LINKER $linker.$linker_id.\n";
+              // We want to ensure that the linker table has a field added with
+              // the link to replace the ID once it's available.
+              $records[$linker] = $records[$linker] ?? [$delta => ['fields' => []]];
+              $records[$linker][$delta] = $records[$linker][$delta] ?? ['fields' => []];
+              $records[$linker][$delta]['fields'] = $records[$linker][$delta]['fields'] ?? [];
+              if (!array_key_exists($linker_id, $records[$linker][$delta]['fields'])) {
+                if ($prop_storage_settings['left_table'] !== NULL) {
+                  $records[$linker][$delta]['fields'][$linker_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
+                  // @debug print "Adding a note to replace $linker.$linker_id with $link_base record_id\n";
+                }
+              }
+            }
+            else {
+              // Otherwise this field is using the old method for store_link.
+              // We will enter backwards compatibility mode here to do our best...
+              // It will work to handle CRUD for direct connections (e.g. props)
+              // but will cause problems with double-hops and all token replacement.
+              $bc_chado_table = $prop_storage_settings['chado_table'];
+              $bc_chado_column = $prop_storage_settings['chado_column'];
+              $records[$bc_chado_table][$delta]['fields'][$bc_chado_column] = ['REPLACE_BASE_RECORD_ID', $base_table];
+              $this->logger->warning(
+                'We had to use backwards compatible mode for :name.:key property type with an action of store_link.'
+                .' Please update the code for this field to use left/right table notation for the store_link property.'
+                .' Backwards compatible mode should allow this field to save/load data but may result in errors with token replacement and publishing.',
+                [':name' => $field_name, ':key' => $key]
+              );
+            }
           }
-          // An action of "store" means that this value can be loaded/stored
-          // in the Chado table for the field.
+          // STORE: indicates that the value of this property can be loaded and
+          // stored in the Chado table indicated by this property.
+          // ................................................................
           if ($action == 'store') {
             $chado_column = $prop_storage_settings['chado_column'];
             $value = $prop_value->getValue();
@@ -885,6 +968,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
             }
           }
+          // JOIN: performs a join across multiple tables for the purposes of
+          // selecting a single column. This cannot be used for inserting or
+          // updating values. Instead we use store_link and store actions for that.
+          // ................................................................
           if ($action == 'join') {
             $path = $prop_storage_settings['path'];
             $chado_column = $prop_storage_settings['chado_column'];
@@ -892,9 +979,16 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $path_arr = explode(";", $path);
             $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr);
           }
+          // REPLACE: replace a tokenized string with the values from other
+          // properties. As such we do not need to worry about adding this
+          // property to the chado queries.
+          // ................................................................
           if ($action == 'replace') {
             // Do nothing here for properties that need replacement.
           }
+          // FUNCTION: use a function to determine the value of this property.
+          // As such, we do not need to add this property to the chado queries.
+          // ................................................................
           if ($action == 'function') {
             // Do nothing here for properties that require post-processing
             // with a function.
@@ -902,13 +996,24 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
       }
     }
-    // Iterate through the records and set any record IDs for FK relationships.
+
+    // Now we want to iterate through the records and set any record IDs
+    // for FK relationships based off the values set in the propertyValues
+    // before chado storage was called.
+    // Note: We have not yet done any querying ;-p
+    // -----------------------------------------------------------------------
     foreach ($records as $table_name => $deltas) {
       foreach ($deltas as $delta => $record) {
+        // First for all the fields...
         foreach ($record['fields'] as $chado_column => $val) {
           if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
-            $base_table = $val[1];
+            $core_table = $val[1];
 
+            // If the core table is set in the base record ids array and the
+            // value is not 0 then we can set this chado field now!
+            if (array_key_exists($core_table, $base_record_ids) and $base_record_ids[$core_table] != 0) {
+              $records[$table_name][$delta]['fields'][$chado_column] = $base_record_ids[$core_table];
+            }
             // If the base record ID is 0 then this is an insert and we
             // don't yet have the base record ID.  So, leave in the message
             // to replace the ID so we can do so later.
@@ -921,14 +1026,20 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         if (!array_key_exists('conditions', $record)) print_r($record);
         foreach ($record['conditions'] as $chado_column => $val) {
           if (is_array($val['value']) and $val['value'][0] == 'REPLACE_BASE_RECORD_ID') {
-            $base_table = $val['value'][1];
+            $core_table = $val['value'][1];
 
+            // If the core table is set in the base record ids array and the
+            // value is not 0 then we can set this condition now!
+            if (array_key_exists($core_table, $base_record_ids) and $base_record_ids[$core_table] != 0) {
+              $records[$table_name][$delta]['conditions'][$chado_column] = $base_record_ids[$core_table];
+            }
             // If the base record ID is 0 then this is an insert and we
             // don't yet have the base record ID.  So, leave in the message
             // to replace the ID so we can do so later.
             if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
               $records[$table_name][$delta]['conditions'][$chado_column]['value'] = $base_record_ids[$base_table];
             }
+
           }
         }
       }
