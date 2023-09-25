@@ -29,8 +29,8 @@ use Drupal\Core\Ajax\ReplaceCommand;
 class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_linker_contact_default";
-  public static $object_table = 'contact';
-  public static $value_column = 'name';
+  private static $object_table = 'contact';
+  private static $value_column = 'name';
 
   /**
    * {@inheritdoc}
@@ -96,6 +96,12 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);  // @@@ same as $linker_obj
     $value_term = $mapping->getColumnTermId($object_table, self::$value_column);
+    $value_len = $object_schema_def['fields'][self::$value_column]['size'];
+
+    // Cvterm table, for the contact type
+    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $value_type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $value_type_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Linker table
     $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
@@ -108,8 +114,8 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     // Rank and type_id are added only if they exist in the linker table.
     $rank_term = NULL;
     $type_id_term = NULL;
-    $rank_term = $mapping->getColumnTermId($linker_table, 'rank');
-    $type_id_term = $mapping->getColumnTermId($linker_table, 'type_id');
+    //$rank_term = $mapping->getColumnTermId($linker_table, 'rank');
+    //$type_id_term = $mapping->getColumnTermId($linker_table, 'type_id');
 
     // Examples of columns and terms when using this field on a project page:
     // Keys: base_pkey_col="project_id" object_pkey_col="contact_id" linker_pkey_col="project_contact_id"
@@ -160,7 +166,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 //    ];
 
     // The displayed value
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, $value_len, [
       'action' => 'join',
       'drupal_store' => FALSE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $base_pkey_col
@@ -169,7 +175,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'as' => 'value',
     ]);
     // The type for the displayed value
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value_type', $value_term, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value_type', $value_type_term, $value_type_len, [
       'action' => 'join',
       'drupal_store' => FALSE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $base_pkey_col
