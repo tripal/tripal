@@ -138,9 +138,9 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
       'action' => 'store_link',
       'left_table' => $base_table,
-      'left_table_id' => $linker_left_col,
+      'left_table_id' => $base_pkey_col,
       'right_table' => $linker_table,
-      'right_table_id' => $linker_right_col,
+      'right_table_id' => $linker_left_col,
     ]);
     // Define the link between the base table and the object table.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'right_id', $linker_right_term, [
@@ -167,8 +167,9 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, $value_len, [
       'action' => 'join',
       'drupal_store' => FALSE,
-      'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col
-        . ';' . $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => // $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col
+//        . ';' .
+ $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => self::$value_column,
       'as' => 'value',
     ]);
