@@ -24,113 +24,11 @@ use Drupal\Core\Url;
  *    require_analysis = False,
  *    button_text = @Translation("Import Taxonomy file"),
  *    file_upload = False,
- *    file_load = False,
  *    file_remote = False,
  *    file_required = False,
- *    cardinality = 1,
- *    menu_path = "",
- *    callback = "",
- *    callback_module = "",
- *    callback_path = "",
  *  )
  */
 class TaxonomyImporter extends ChadoImporterBase {
-
-  /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
-  public static $name = 'Chado NCBI Taxonomy Loader';
-
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
-  public static $machine_name = 'chado_taxonomy';
-
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
-  public static $description = 'Imports new organisms from NCBI using taxonomy IDs, ' .
-                                'or loads taxonomic details about existing organisms.';
-
-  /**
-   * An array containing the extensions of allowed file types.
-   */
-  public static $file_types = [];
-
-
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
-  public static $upload_description = '';
-
-  /**
-   * The title that should appear above the upload button.
-   */
-  public static $upload_title = 'File Upload';
-
-  /**
-   * If the loader should require an analysis record.  To maintain provenance
-   * we should always indicate where the data we are uploading comes from.
-   * The method that Tripal attempts to use for this by associating upload files
-   * with an analysis record.  The analysis record provides the details for
-   * how the file was created or obtained. Set this to FALSE if the loader
-   * should not require an analysis when loading. if $use_analysis is set to
-   * true then the form values will have an 'analysis_id' key in the $form_state
-   * array on submitted forms.
-   */
-  public static $use_analysis = FALSE;
-
-  /**
-   * If the $use_analysis value is set above then this value indicates if the
-   * analysis should be required.
-   */
-  public static $require_analysis = FALSE;
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
-  public static $button_text = 'Import from NCBI Taxonomy';
-
-  /**
-   * Indicates the methods that the file uploader will support.
-   */
-  public static $methods = [
-    // Allow the user to upload a file to the server.
-    'file_upload' => FALSE,
-    // Allow the user to provide the path on the Tripal server for the file.
-    'file_local' => FALSE,
-    // Allow the user to provide a remote URL for the file.
-    'file_remote' => FALSE,
-  ];
-
-  /**
-   * Indicates if the file must be provided.  An example when it may not be
-   * necessary to require that the user provide a file for uploading if the
-   * loader keeps track of previous files and makes those available for
-   * selection.
-   */
-  public static $file_required = FALSE;
-
-
-  /**
-   * The array of arguments used for this loader.  Each argument should
-   * be a separate array containing a machine_name, name, and description
-   * keys.  This information is used to build the help text for the loader.
-   */
-  public static $argument_list = [];
-
-
-  /**
-   * Indicates how many files are allowed to be uploaded.  By default this is
-   * set to allow only one file.  Change to any positive number. A value of
-   * zero indicates an unlimited number of uploaded files are allowed.
-   */
-  public static $cardinality = 0;
 
   /**
    * Holds the list of all organisms currently in Chado. This list

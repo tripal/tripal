@@ -22,79 +22,12 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    require_analysis = True,
  *    button_text = @Translation("Import FASTA file"),
  *    file_upload = True,
- *    file_load = True,
  *    file_remote = True,
  *    file_local = True,
  *    file_required = True,
- *    cardinality = 1,
- *    menu_path = "",
- *    callback = "",
- *    callback_module = "",
- *    callback_path = "",
  *  )
  */
 class FASTAImporter extends ChadoImporterBase {
-  /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
-  public static $name = 'Chado FASTA Loader';
-
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
-  public static $machine_name = 'chado_fasta_loader';
-
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
-  public static $description = 'Load sequences from a multi-FASTA file into Chado';
-
-  /**
-   * An array containing the extensions of allowed file types.
-   */
-  public static $file_types = [
-    'fasta',
-    'txt',
-    'fa',
-    'aa',
-    'pep',
-    'nuc',
-    'faa',
-    'fna',
-  ];
-
-
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
-  public static $upload_description = 'Please provide the FASTA file. The file must have a .fasta extension.';
-
-  /**
-   * The title that should appear above the file upload section.
-   */
-  public static $upload_title = 'FASTA Upload';
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
-  public static $button_text = 'Import FASTA file';
-
-  /**
-   * Indicates the methods that the file uploader will support.
-   */
-  public static $methods = [
-    // Allow the user to upload a file to the server.
-    'file_upload' => TRUE,
-    // Allow the user to provide the path on the Tripal server for the file.
-    'file_local' => TRUE,
-    // Allow the user to provide a remote URL for the file.
-    'file_remote' => TRUE,
-  ];
 
   /**
    * @see TripalImporter::form()

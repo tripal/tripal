@@ -23,57 +23,12 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    require_analysis = True,
  *    button_text = @Translation("Import GFF3 file"),
  *    file_upload = True,
- *    file_load = True,
  *    file_remote = True,
  *    file_local = True,
  *    file_required = True,
- *    cardinality = 1,
- *    menu_path = "",
- *    callback = "",
- *    callback_module = "",
- *    callback_path = "",
  *  )
  */
 class GFF3Importer extends ChadoImporterBase {
-  /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
-  public static $name = 'Chado GFF3 File Loader';
-
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
-  public static $machine_name = 'chado_gff3_loader';
-
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
-  public static $description = 'Import a GFF3 file into Chado';
-
-  /**
-   * An array containing the extensions of allowed file types.
-   */
-  public static $file_types = ['gff', 'gff3'];
-
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
-  public static $upload_description = 'Please provide the GFF3 file.';
-
-  /**
-   * The title that should appear above the upload button.
-   */
-  public static $upload_title = 'GFF3 File';
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
-  public static $button_text = 'Import GFF3 file';
 
   /**
    * A handle to a temporary file for caching the GFF features. This allows for
@@ -136,12 +91,10 @@ class GFF3Importer extends ChadoImporterBase {
    */
   private $update = TRUE;
 
-
-    /**
+  /**
    * A list of features to have names updated.
    */
   private $update_names = [];
-
 
   /**
    * If the GFF file contains a 'Target' attribute then the feature and the
@@ -211,7 +164,6 @@ class GFF3Importer extends ChadoImporterBase {
    * The cvterm_id for the landmark type cvterm.
    */
   private $landmark_cvterm_id = NULL;
-
 
   /**
    * Regular expression to pull out the mRNA name.
