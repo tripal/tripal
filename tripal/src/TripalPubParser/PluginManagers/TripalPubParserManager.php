@@ -5,6 +5,8 @@ namespace Drupal\tripal\TripalPubParser\PluginManagers;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
  * Provides a tripal importer plugin manager.
@@ -232,9 +234,11 @@ class TripalPubParserManager extends DefaultPluginManager {
             // but we need it or Drupal will run the default validate anyway.
             // We also set #limit_validation_errors to empty so fields that are
             // required that don't have values won't generate warnings.
-            '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
-            '#validate' => ['tripal_pub_setup_form_ajax_button_validate'],
-            '#limit_validation_errors' => [],
+            
+            // RISH REMOVED FOR TESTING (9/23/2023)
+            // '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
+            // '#validate' => ['tripal_pub_setup_form_ajax_button_validate'], 
+            // '#limit_validation_errors' => [],
           ];
         }
         $row["add-$i"] = [
@@ -257,9 +261,11 @@ class TripalPubParserManager extends DefaultPluginManager {
           // are required that don't have values won't generate warnings.
           
           //@to-do this submit function is not being called - why?
-          '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
-          '#validate' => ['tripal_pub_setup_form_ajax_button_validate'],
-          '#limit_validation_errors' => [],
+
+          // RISH REMOVED FOR TESTING (9/23/2023)
+          // '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
+          // '#validate' => ['tripal_pub_setup_form_ajax_button_validate'],
+          // '#limit_validation_errors' => [],
         ];
       }
       $form['pub_parser']['table'][$i] = $row;
@@ -294,4 +300,14 @@ class TripalPubParserManager extends DefaultPluginManager {
     // do nothing
   }
 
+  /**
+   * This function received ajax calls from the add button in the criteria table
+   */
+  public function tripal_pub_setup_form_ajax_update($form, &$form_state) {
+    // dpm('hmmm');
+    $response = new AjaxResponse();
+    // $response->addCommand(new ReplaceCommand('#tripal-pub-importer-setup', $form['pub_parser']['table']));
+
+    return $response;
+  }
 }
