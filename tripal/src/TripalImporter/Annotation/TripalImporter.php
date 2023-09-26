@@ -96,6 +96,22 @@ class TripalImporter extends Plugin {
   public $use_button = TRUE;
 
   /**
+   * Indicated whether the base importer added submit button should be disabled
+   * when the form is first loaded (i.e when the user clicks the link for the
+   * importer). The form can then be programatically enabled via AJAX once
+   * certain criteria is set by setting the form state storage.
+   *
+   * Example of programatically enabling the button via the form state
+   * on an importer where this annotation is set to TRUE.
+   * @code
+      $storage = $form_state->getStorage();
+      $storage['disable_TripalImporter_submit'] = FALSE;
+      $form_state->setStorage($storage);
+   * @endcode
+   */
+  public $submit_disabled = FALSE;
+
+  /**
    * Text that should appear on the button at the bottom of the importer form.
    *
    * @var \Drupal\Core\Annotation\Translation
