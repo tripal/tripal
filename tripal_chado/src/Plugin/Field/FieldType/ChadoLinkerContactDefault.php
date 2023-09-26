@@ -5,7 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\core\Field\FieldStorageDefinitionInterface;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\Form\FormStateInterface;
@@ -29,8 +29,8 @@ use Drupal\Core\Ajax\ReplaceCommand;
 class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_linker_contact_default";
-  private static $object_table = 'contact';
-  private static $value_column = 'name';
+  protected static $object_table = 'contact';
+  protected static $value_column = 'name';
 
   /**
    * {@inheritdoc}
@@ -66,8 +66,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $base_table = $settings['base_table'];
     $linker_table = $settings['linker_table'];
     $object_table = self::$object_table;
-    $record_id_term = 'TCONTACT:0000018';
-
+    $record_id_term = 'SIO:000729';
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table or !$linker_table) {
@@ -106,12 +105,12 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     // Linker table
     $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
     $linker_pkey_col = $linker_schema_def['primary key'];
-    // the following should be the same as $base_pkey_col
-    $linker_fk_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-    $linker_object_col = $object_pkey_col;
-    $linker_base_term = $mapping->getColumnTermId($linker_table, $linker_fk_col);  // same as $record_id_term? No this is NCIT:C47885
-    $linker_object_term = $mapping->getColumnTermId($linker_table, $linker_object_col);
-    // Rank and type_id are added only if they exist in the linker table.
+    // the following should be the same as $base_pkey_col @todo make sure it is
+    $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
+    $linker_right_col = $object_pkey_col;
+    $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col);
+    $linker_right_term = $mapping->getColumnTermId($linker_table, $linker_right_col);
+    // @todo Rank and type_id are added only if they exist in the linker table. Currently testing only on project.
     $rank_term = NULL;
     $type_id_term = NULL;
     //$rank_term = $mapping->getColumnTermId($linker_table, 'rank');
@@ -119,41 +118,40 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 
     // Examples of columns and terms when using this field on a project page:
     // Keys: base_pkey_col="project_id" object_pkey_col="contact_id" linker_pkey_col="project_contact_id"
-    //    linker_fk_col="project_id" linker_object_col="contact_id"
-    // Terms: record_id_term="TCONTACT:0000018" linker_base_term="NCIT:C47885"
-    //    linker_object_term="local:contact" object_pkey_term="local:contact" value_term="schema:name"
+    //    linker_left_col="project_id" linker_right_col="contact_id"
+    // Terms: record_id_term="SIO:000729" linker_left_term="NCIT:C47885"
+    //    linker_right_term="local:contact" object_pkey_term="local:contact" value_term="schema:name"
     $properties = [];
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_pkey_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'chado_table' => $base_table,
       'chado_column' => $base_pkey_col,
     ]);
-
     // Define the linker table that links the base table to the object table.
-    // Note that type_id and rank are not in all linker tables.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_pkey_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
       'action' => 'store_pkey',
-      'drupal_store' => TRUE,
       'chado_table' => $linker_table,
       'chado_column' => $linker_pkey_col,
     ]);
-    // Define the link between the base table and the linker table.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $linker_base_term, [
+    // Define the link between the base table and the object table.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
       'action' => 'store_link',
-      'drupal_store' => TRUE,
-      'chado_table' => $linker_table,
-      'chado_column' => $linker_fk_col,
+      'left_table' => $base_table,
+      'left_table_id' => $linker_left_col,
+      'right_table' => $linker_table,
+      'right_table_id' => $linker_right_col,
     ]);
-    // Define the link between the linker table and the object table.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $linker_object_term, [
-      'action' => 'store_link',
-      'drupal_store' => TRUE,
+    // Define the link between the base table and the object table.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'right_id', $linker_right_term, [
+      'action' => 'store',
       'chado_table' => $linker_table,
-      'chado_column' => $linker_obj_col,
+      'chado_column' => $linker_right_col,
     ]);
 
-    // @to-do type_id and rank added conditionally only if present in linker table
+    // Other columns in the linker table. These are set by the widget.
+    // Note that type_id and rank are not in all linker tables.
+    // @to-do type_id and rank added conditionally only if present in the linker table
 //    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank', $rank_term,  [
 //      'action' => 'store',
 //      'chado_table' => $linker_table,
@@ -169,22 +167,22 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, $value_len, [
       'action' => 'join',
       'drupal_store' => FALSE,
-      'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $base_pkey_col
-        . ';' . $linker_table . '.' . $object_pkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col
+        . ';' . $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => self::$value_column,
       'as' => 'value',
     ]);
     // The type for the displayed value
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value_type', $value_type_term, $value_type_len, [
-      'action' => 'join',
-      'drupal_store' => FALSE,
-      'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $base_pkey_col
-        . ';' . $linker_table . '.' . $object_pkey_col . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.' . $object_pkey_col . '>cvterm.cvterm_id',
-      'chado_column' => 'name',
-      'as' => 'value_type',
-    ]);
-
+//    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value_type', $value_type_term, $value_type_len, [
+//      'action' => 'join',
+//      'drupal_store' => FALSE,
+//      'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $base_pkey_col
+//        . ';' . $linker_table . '.' . $object_pkey_col . '>' . $object_table . '.' . $object_pkey_col
+//        . ';' . $object_table . '.' . $object_pkey_col . '>cvterm.cvterm_id',
+//      'chado_column' => 'name',
+//      'as' => 'value_type',
+//    ]);
+dpm($properties, 'properties');
     return $properties;
   }
 
