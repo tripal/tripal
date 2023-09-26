@@ -51,7 +51,7 @@ class ChadoLinkerContactFormatterDefault extends ChadoFormatterBase {
 
       // If more than one value has been found, display all values in an
       // unordered list.
-// to-do: add a pager
+// @todo: add a pager
       elseif (count($list) > 1) {
         $elements[0] = [
           '#theme' => 'item_list',
