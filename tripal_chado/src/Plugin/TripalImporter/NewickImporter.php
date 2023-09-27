@@ -18,7 +18,7 @@ use Drupal\Core\Url;
  *    label = @Translation("Newick Tree Loader"),
  *    description = @Translation("Import Newick Tree into Chado"),
  *    file_types = {"tree","txt","newick"},
- *    upload_description = @Translation("Please provide the Newick formatted tree file (one tree per file only).  The file must have a .txt or .tree extension"),
+ *    upload_description = @Translation("Please provide the Newick formatted tree file (one tree per file only)."),
  *    upload_title = @Translation("Newick Tree File"),
  *    use_analysis = True,
  *    require_analysis = True,
