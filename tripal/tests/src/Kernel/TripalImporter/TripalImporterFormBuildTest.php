@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\Core\Form\FormState;
 
 /**
  * Tests the base functionality for importers.
@@ -455,6 +456,160 @@ class TripalImporterFormBuildTest extends KernelTestBase {
     // check that our analysis element is in the form.
     $this->assertArrayNotHasKey('button', $form,
       "We should not have a submit button if our annotation sets use_button to FALSE but we do.");
+
+  }
+
+  /**
+   * Confirm that importers can indicate they want the form submit button
+   * disabled using a particular key in the form state.
+   */
+  public function testTripalImporterFormDisableButtonFormStateOnly() {
+
+    $container = \Drupal::getContainer();
+    $form_builder = \Drupal::formBuilder();
+    $plugin_id = 'fakeImporterName';
+    $form_id = 'tripal_admin_form_tripalimporter';
+    $form_class = 'Drupal\tripal\Form\TripalImporterForm';
+
+    // CASE 1: No Form State
+    $expected = $this->definitions[$plugin_id];
+    $manager = $this->setMockManager([$plugin_id => $expected]);
+    $container->set('tripal.importer', $manager);
+
+    // Build the form using the Drupal form builder.
+    // and confirm that when the form is built with no Form State that
+    // the button is enabled.
+    $form = $form_builder->getForm(
+      'Drupal\tripal\Form\TripalImporterForm',
+      $plugin_id,
+    );
+    $this->assertIsArray($form,
+      'The form builder should return a form array.');
+    $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
+      'We did not get the form id we expected.');
+
+    // check that our button element is in the form.
+    $this->assertArrayHasKey('button', $form,
+      "We should have a submit button.");
+    $this->assertArrayHasKey('#disabled', $form['button'],
+      "The submit button should have the disabled key set.");
+    $this->assertFalse($form['button']['#disabled'],
+      "The submit button should BE ENABLED when the form is built without a specific form state.");
+
+    // CASE 2: Form State[disable_submit] = TRUE when form rebuilt.
+    $form_state = new FormState();
+    $form_state->addBuildInfo('args', [$plugin_id]);
+    $form_state->setStorage(['disable_TripalImporter_submit' => TRUE]);
+    $form = $form_builder->buildForm($form_class, $form_state);
+
+    $this->assertIsArray($form,
+      'The form builder should return a form array.');
+    $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
+      'We did not get the form id we expected.');
+
+    // check that our button element is in the form.
+    $this->assertArrayHasKey('button', $form,
+      "We should have a submit button.");
+    $this->assertArrayHasKey('#disabled', $form['button'],
+      "The submit button should have the disabled key set.");
+    $this->assertTrue($form['button']['#disabled'],
+      "The submit button should BE DISABLED when the form is built with the form state disable_TripalImporter_submit set to TRUE.");
+
+    // CASE 3: Form State[disable_submit] = FALSE when form rebuilt.
+    $form_state = new FormState();
+    $form_state->addBuildInfo('args', [$plugin_id]);
+    $form_state->setStorage(['disable_TripalImporter_submit' => FALSE]);
+    $form = $form_builder->buildForm($form_class, $form_state);
+
+    $this->assertIsArray($form,
+      'The form builder should return a form array.');
+    $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
+      'We did not get the form id we expected.');
+
+    // check that our button element is in the form.
+    $this->assertArrayHasKey('button', $form,
+      "We should have a submit button.");
+    $this->assertArrayHasKey('#disabled', $form['button'],
+      "The submit button should have the disabled key set.");
+    $this->assertFalse($form['button']['#disabled'],
+      "The submit button should BE ENABLED when the form is built with the form state disable_TripalImporter_submit set to FALSE.");
+  }
+
+  /**
+   * Confirm that importers can indicate they want the form submit button
+   * disabled via annotation and change it via form state.
+   */
+  public function testTripalImporterFormDisableButtonAnnotation() {
+
+    $container = \Drupal::getContainer();
+    $form_builder = \Drupal::formBuilder();
+    $plugin_id = 'fakeImporterName';
+    $form_id = 'tripal_admin_form_tripalimporter';
+    $form_class = 'Drupal\tripal\Form\TripalImporterForm';
+
+    // CASE 1: No Form State
+    $expected = $this->definitions[$plugin_id];
+    $expected['submit_disabled'] = TRUE;
+    $manager = $this->setMockManager([$plugin_id => $expected]);
+    $container->set('tripal.importer', $manager);
+
+    // Build the form using the Drupal form builder.
+    // and confirm that when the form is built with no Form State that
+    // the button is enabled.
+    $form = $form_builder->getForm(
+      'Drupal\tripal\Form\TripalImporterForm',
+      $plugin_id,
+    );
+    $this->assertIsArray($form,
+      'The form builder should return a form array.');
+    $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
+      'We did not get the form id we expected.');
+
+    // check that our button element is in the form.
+    $this->assertArrayHasKey('button', $form,
+      "We should have a submit button.");
+    $this->assertArrayHasKey('#disabled', $form['button'],
+      "The submit button should have the disabled key set.");
+    $this->assertTrue($form['button']['#disabled'],
+      "The submit button should BE DISABLED when the form is built without a specific form state but annotation says it should be.");
+
+    // CASE 2: Form State[disable_submit] = FALSE when form rebuilt.
+    $form_state = new FormState();
+    $form_state->addBuildInfo('args', [$plugin_id]);
+    $form_state->setStorage(['disable_TripalImporter_submit' => FALSE]);
+    $form = $form_builder->buildForm($form_class, $form_state);
+
+    $this->assertIsArray($form,
+      'The form builder should return a form array.');
+    $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
+      'We did not get the form id we expected.');
+
+    // check that our button element is in the form.
+    $this->assertArrayHasKey('button', $form,
+      "We should have a submit button.");
+    $this->assertArrayHasKey('#disabled', $form['button'],
+      "The submit button should have the disabled key set.");
+    $this->assertFalse($form['button']['#disabled'],
+      "The submit button should BE ENABLED when the form is built with the form state disable_TripalImporter_submit set to FALSE.");
+
+    // CASE 3: Form State[disable_submit] = TRUE when form rebuilt.
+    $form_state = new FormState();
+    $form_state->addBuildInfo('args', [$plugin_id]);
+    $form_state->setStorage(['disable_TripalImporter_submit' => TRUE]);
+    $form = $form_builder->buildForm($form_class, $form_state);
+
+    $this->assertIsArray($form,
+      'The form builder should return a form array.');
+    $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
+      'We did not get the form id we expected.');
+
+    // check that our button element is in the form.
+    $this->assertArrayHasKey('button', $form,
+      "We should have a submit button.");
+    $this->assertArrayHasKey('#disabled', $form['button'],
+      "The submit button should have the disabled key set.");
+    $this->assertTrue($form['button']['#disabled'],
+      "The submit button should BE DISABLED when the form is built with the form state disable_TripalImporter_submit set to TRUE.");
 
   }
 }
