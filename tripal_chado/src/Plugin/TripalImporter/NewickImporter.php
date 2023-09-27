@@ -106,7 +106,7 @@ class NewickImporter extends ChadoImporterBase {
     $so_cv = chado_get_cv(['name' => 'sequence']);
     $cv_id = $so_cv->cv_id;
     if (!$so_cv) {
-      \Drupal::messenger()->addError(t("The Sequence Ontolgoy does not appear to be imported.
+      \Drupal::messenger()->addError(t("The Sequence Ontology does not appear to be imported.
          Please import the Sequence Ontology before adding a tree."));
     }
 
@@ -195,6 +195,8 @@ class NewickImporter extends ChadoImporterBase {
     $errors = [];
     $warnings = [];
 
+    // The parent class will validate that a file has been specified and is valid.
+
     // Validate DBXREF
     if ($options['dbxref'] and ($options['dbxref'] != "null:local:null")) {
       // The db in a dbxref must already exist, the accession can be new.
@@ -215,12 +217,6 @@ class NewickImporter extends ChadoImporterBase {
         $form_state->setErrorByName('dbxref', "The DB \"$db\" in the dbxref value does not exist, specify a valid dbxref value.");
         return;
       }
-    }
-
-    // Verify that a file has been supplied.
-    if ((!array_key_exists('tree_file', $options) or $options['tree_file'] == null) && $values['file_upload_existing'] <= 0) {
-      $form_state->setErrorByName('file_upload_existing', t('No tree file was submitted, please upload a file or choose one if it exists'));
-      return;
     }
 
     // Perform API validation.
