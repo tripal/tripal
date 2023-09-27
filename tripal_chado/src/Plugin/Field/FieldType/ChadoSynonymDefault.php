@@ -16,7 +16,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * Plugin implementation of Tripal string field type.
  *
  * @FieldType(
- *   id = "chado_feature_synonym_default",
+ *   id = "chado_synonym_default",
  *   label = @Translation("Chado Synonym"),
  *   description = @Translation("A chado syonym"),
  *   default_widget = "chado_synonym_widget_default",
