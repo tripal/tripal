@@ -22,6 +22,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
 class TripalPubParserPubmed extends TripalPubParserBase {
 
   public function formSubmit($form, &$form_state) {
+    dpm('TripalPubParserPubmed formSubmit called');
   }
 
   public function form($form, &$form_state) {
@@ -59,6 +60,7 @@ class TripalPubParserPubmed extends TripalPubParserBase {
   }
 
   public function formValidate($form, &$form_state) {
+    dpm('TripalPubParserPubmed formSubmit called');
   }
 
   public function run(array $criteria) {

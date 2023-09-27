@@ -53,10 +53,16 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
    */
   public static $description = 'Define a publication importer';
 
+
+  public static $form_instance = null;
+
   /**
    * {@inheritDoc}
    */
   public function form($form, &$form_state) {
+    // $this->form_instance = $this;
+    ChadoPubImporterEdit::$form_instance = $this;
+
     // Call the parent form to provide the Chado schema selector.
     $form = parent::form($form, $form_state);
 
@@ -88,6 +94,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
       $plugins[$plugin_key] = $plugin_value;
     }
     asort($plugins);
+    dpm('Generate form elements');
 
     $form['#prefix'] = '<div id="pub_importer_main_form">';
     $form['#suffix'] = '</div>';
@@ -138,10 +145,11 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
    * {@inheritDoc}
    */
   public function formSubmit($form, &$form_state) {
+    dpm('Form Submit never fires');
     $trigger = $form_state->getTriggeringElement()['#name'];
     dpm($trigger, 'ChadoPubImporterEdit.php Editor Submit not implemented'); //@@@
     // Disable the parent submit
-    $form_state->setRebuild(True);
+    // $form_state->setRebuild(True);
   }
 
   /**
@@ -254,8 +262,6 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
     $form['pub_parser']['results'] = [
       '#markup' => '<div id="tripal-pub-importer-test-section"></div>',
     ];
-
-
 
     return $form;
   }  
@@ -386,13 +392,13 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
           '#type' => 'button',
           '#name' => 'remove',
           '#value' => t('Remove'),
-          '#ajax' => [
-            'callback' => [$this, 'tripal_pub_importer_form_ajax_update'],
-            'wrapper' => 'tripal-pub-importer-setup',
-            'effect' => 'fade',
-            // 'method' => 'replace',
-            // 'prevent' => 'click',
-          ],
+          // '#ajax' => [
+          //   'callback' => [$this, 'tripal_pub_importer_form_ajax_update'],
+          //   'wrapper' => 'tripal-pub-importer-setup',
+          //   'effect' => 'fade',
+          //   // 'method' => 'replace',
+          //   // 'prevent' => 'click',
+          // ],
           // When this button is clicked, the form will be validated and submitted.
           // Therefore, we set custom submit and validate functions to override the
           // default form submit. In the validate function we set the form_state to
@@ -402,7 +408,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
           // required that don't have values won't generate warnings.
           
           // RISH REMOVED FOR TESTING (9/23/2023)
-          // '#submit' => ['tripal_pub_importer_form_ajax_button_submit'],
+          '#submit' => [ChadoPubImporterEdit::$form_instance, 'tripal_pub_importer_form_ajax_button_submit'],
           // '#validate' => ['tripal_pub_importer_form_ajax_button_validate'], 
           // '#limit_validation_errors' => [],
         ];
@@ -410,17 +416,17 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
 
 
       $row["add-$i"] = [
-        '#type' => 'button',
+        '#type' => 'submit',
         '#name' => 'add',
         '#value' => t('Add'),
-        '#ajax' => [
-          'callback' => [$this, 'tripal_pub_importer_form_ajax_update'],
-          // 'wrapper' => 'tripal-pub-importer-setup',
-          'wrapper' => 'pub_importer_main_form',
-          'effect' => 'fade',
-          // 'method' => 'replace',
-          // 'prevent' => 'click',
-        ],
+        // '#ajax' => [
+        //   'callback' => [$this, 'tripal_pub_importer_form_ajax_update'],
+        //   // 'wrapper' => 'tripal-pub-importer-setup',
+        //   'wrapper' => 'pub_importer_main_form',
+        //   'effect' => 'fade',
+        //   // 'method' => 'replace',
+        //   // 'prevent' => 'click',
+        // ],
         // When this button is clicked, the form will be validated and submitted.
         // Therefore, we set custom submit and validate functions to override the
         // default form submit. In the validate function we set the form_state to
@@ -432,7 +438,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
         //@to-do this submit function is not being called - why?
 
         // RISH REMOVED FOR TESTING (9/23/2023)
-        // '#submit' => ['tripal_pub_importer_form_ajax_button_submit'],
+        '#submit' => [ChadoPubImporterEdit::$form_instance,'tripal_pub_importer_form_ajax_button_submit'],
         // '#validate' => ['tripal_pub_importer_form_ajax_button_validate'],
         // '#limit_validation_errors' => [],
       ];
@@ -443,7 +449,6 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
   }
   
   
-
   /**
    * This function is used to rebuild the form if an ajax call is made via a
    * button. The button causes the form to be submitted. We don't want this so we
@@ -455,7 +460,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
   public function tripal_pub_importer_form_ajax_button_validate($form, &$form_state) {
     $trigger = $form_state->getTriggeringElement()['#name'];
     dpm($trigger, "tripal_pub_importer_form_ajax_button_validate() called, not yet implemented");
-    $form_state->setRebuild(TRUE);
+    // $form_state->setRebuild(TRUE);
   }
 
   /**
@@ -475,14 +480,18 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
    */
   public function tripal_pub_importer_form_ajax_update(&$form, &$form_state) {
 
+    // $user_input = $form_state->getUserInput();
+    // dpm($user_input);
+
     $trigger = $form_state->getTriggeringElement()['#name'];
     $response = new AjaxResponse();
     // https://www.drupal.org/docs/drupal-apis/ajax-api/core-ajax-callback-commands
-    $debug_output = "";
-    $debug_output .= $trigger . ' occurred.<br />';
-    $debug_output .= 'keys ' . print_r(array_keys($form['pub_parser']['table']), true) . '<br />';
-    $debug_output .= 'rows ' . json_encode($form['pub_parser']['table']['#rows']) . '<br />';
-    $response->addCommand(new ReplaceCommand('#tripal-pub-importer-criteria-debug-section', $debug_output));
+
+    // $debug_output = "";
+    // $debug_output .= $trigger . ' occurred.<br />';
+    // $debug_output .= 'keys ' . print_r(array_keys($form['pub_parser']['table']), true) . '<br />';
+    // $debug_output .= 'rows ' . json_encode($form['pub_parser']['table']['#rows']) . '<br />';
+    // $response->addCommand(new ReplaceCommand('#tripal-pub-importer-criteria-debug-section', $debug_output));
     
     // dpm(array_keys($form['pub_parser']['table']));
     // If add was clicked
@@ -508,9 +517,9 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
     }
     
 
-    // $response->addCommand(new ReplaceCommand('#edit-pub_parser', $form['pub_parser']));
-    // return $response;
-    return $form;
+    $response->addCommand(new ReplaceCommand('#edit-pub_parser', $form['pub_parser']));
+    return $response;
+    // return $form;
   }
 
   /**
