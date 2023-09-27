@@ -130,10 +130,25 @@ class TripalImporterForm implements FormInterface {
     // We should only add a submit button if this importer uses a button.
     // Examples of importers who don't use this button are multi-page forms.
     if (array_key_exists('use_button', $importer_def) AND $importer_def['use_button'] !== FALSE) {
+
+      // We will allow specific importers to disable this button based on the state of the form.
+      // By default it is enabled.
+      $disabled = FALSE;
+      // Unless the annotation says it should be disabled by default..
+      if (array_key_exists('submit_disabled', $importer_def) AND $importer_def['submit_disabled'] === TRUE) {
+        $disabled = TRUE;
+      }
+      // But if they set the storage to indicate we should disable/enable it
+      // then we will do whatever they say ;-).
+      $storage = $form_state->getStorage();
+      if (array_key_exists('disable_TripalImporter_submit', $storage)) {
+        $disabled = $storage['disable_TripalImporter_submit'];
+      }
       $form['button'] = [
         '#type' => 'submit',
         '#value' => $importer_def['button_text'],
         '#weight' => 10,
+        '#disabled' => $disabled,
       ];
     }
 
@@ -259,8 +274,8 @@ class TripalImporterForm implements FormInterface {
 
     // How many methods were specified for the source of the file?
     $n_methods = ($file_local?1:0) + ($file_remote?1:0) + (($file_upload or $file_existing)?1:0);
-    // The user must provide at least one file source method.
-    if ($n_methods == 0) {
+    // If a file is required, the user must provide at least one file source method.
+    if (array_key_exists('file_required', $importer_def) and ($importer_def['file_required'] == TRUE) and ($n_methods == 0)) {
       $form_state->setErrorByName('file_local', t('You must provide a file location or upload a file.'));
     }
     // No more than one method can be specified.
