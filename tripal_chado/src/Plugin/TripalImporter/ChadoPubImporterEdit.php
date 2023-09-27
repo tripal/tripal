@@ -25,6 +25,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    file_upload = False,
  *    file_load = False,
  *    file_remote = False,
+ *    file_local = False,
  *    file_required = False,
  *    cardinality = 1,
  *    menu_path = "",
@@ -60,13 +61,13 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
    * {@inheritDoc}
    */
   public function form($form, &$form_state) {
-    // $this->form_instance = $this;
-    ChadoPubImporterEdit::$form_instance = $this;
-
     // Call the parent form to provide the Chado schema selector.
     $form = parent::form($form, $form_state);
 
-    $form = $this->newLoaderForm($form, $form_state);
+    // This will begin dynamically generating the loader form
+    // which is a combination of common form elements
+    // and elements specified in the plugin form function
+    $form = $this->PubLoaderForm($form, $form_state);
 
     return $form;
   }
@@ -79,7 +80,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
-  public function newLoaderForm($form, &$form_state) {
+  public function PubLoaderForm($form, &$form_state) {
     // this is called in form(), can delete it here
     //    // Call the parent form to provide the Chado schema selector.
     //    $form = parent::form($form, $form_state);
@@ -94,7 +95,6 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
       $plugins[$plugin_key] = $plugin_value;
     }
     asort($plugins);
-    dpm('Generate form elements');
 
     $form['#prefix'] = '<div id="pub_importer_main_form">';
     $form['#suffix'] = '</div>';
@@ -129,7 +129,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
 
     // RISH: I think this the part that actually adds the additional form elements for the specific 'plugin' example PubMed 
     // I think this somehow gets executed on the ajax callback and loads the form elements
-    $form = $this->formPlugin($form, $form_state);
+    $form = $this->PluginForm($form, $form_state);
     return $form;
   }
 
@@ -137,19 +137,36 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
    * {@inheritDoc}
    */
   public function formValidate($form, &$form_state) {
-    $trigger = $form_state->getTriggeringElement()['#name'];
-    dpm($trigger, 'ChadoPubImporterEdit.php Editor Validate not implemented'); //@@@
+    // $user_inputs = $form_state->getUserInput();
+    // dpm($user_inputs);
+
+    // $trigger = $form_state->getTriggeringElement()['#name'];
+    // dpm($trigger, 'ChadoPubImporterEdit.php Editor Validate not implemented'); //@@@
   }
 
   /**
    * {@inheritDoc}
    */
   public function formSubmit($form, &$form_state) {
-    dpm('Form Submit never fires');
     $trigger = $form_state->getTriggeringElement()['#name'];
     dpm($trigger, 'ChadoPubImporterEdit.php Editor Submit not implemented'); //@@@
-    // Disable the parent submit
-    // $form_state->setRebuild(True);
+
+    dpm($trigger);
+    if ($trigger == 'add') {
+      $user_input = $form_state->getUserInput();
+      // Increment the num_criteria which should regenerate the form with an additional criteria row
+      $user_input['num_criteria'] = $user_input['num_criteria'] + 1;
+      $form_state->setUserInput($user_input);
+    }
+    elseif ($trigger == 'remove') {
+      $user_input = $form_state->getUserInput();
+      // Increment the num_criteria which should regenerate the form with an additional criteria row
+      $user_input['num_criteria'] = $user_input['num_criteria'] - 1;
+      $form_state->setUserInput($user_input);
+    }
+
+    // Disable the parent submit and rebuild the form
+    $form_state->setRebuild(True);
   }
 
   /**
@@ -172,7 +189,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
-  private function formPlugin($form, &$form_state) {
+  private function PluginForm($form, &$form_state) {
 
     // Add elements only after a plugin has been selected.
     $plugin_id = $form_state->getValue(['plugin_id']);
@@ -237,7 +254,15 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
       '#default_value' => 1,
     ];
     $criteria = [];
-    $form = $this->tripal_pub_importer_setup_add_criteria_fields($form, $form_state, $form['pub_parser']['num_criteria']['#default_value'], $criteria);
+
+    $user_input = $form_state->getUserInput();
+    if (isset($user_input['num_criteria'])) {
+      dpm('User Input');
+      dpm($user_input);
+      $num_criteria = $user_input['num_criteria'];
+    }
+
+    $form = $this->tripal_pub_importer_setup_add_criteria_fields($form, $form_state, $num_criteria, $criteria);
 
     $form['pub_parser']['criteria_debug'] = [
       '#markup' => '<div id="tripal-pub-importer-criteria-debug-section"></div><br />',
@@ -389,7 +414,8 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
     if ($i == $num_criteria) {
       if ($i > 1) {
         $row["remove-$i"] = [
-          '#type' => 'button',
+          // '#type' => 'button',
+          '#type' => 'submit',
           '#name' => 'remove',
           '#value' => t('Remove'),
           // '#ajax' => [
@@ -408,7 +434,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
           // required that don't have values won't generate warnings.
           
           // RISH REMOVED FOR TESTING (9/23/2023)
-          '#submit' => [ChadoPubImporterEdit::$form_instance, 'tripal_pub_importer_form_ajax_button_submit'],
+          // '#submit' => [$this, 'tripal_pub_importer_form_ajax_button_submit'],
           // '#validate' => ['tripal_pub_importer_form_ajax_button_validate'], 
           // '#limit_validation_errors' => [],
         ];
@@ -416,6 +442,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
 
 
       $row["add-$i"] = [
+        // '#type' => 'button',
         '#type' => 'submit',
         '#name' => 'add',
         '#value' => t('Add'),
@@ -438,7 +465,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
         //@to-do this submit function is not being called - why?
 
         // RISH REMOVED FOR TESTING (9/23/2023)
-        '#submit' => [ChadoPubImporterEdit::$form_instance,'tripal_pub_importer_form_ajax_button_submit'],
+        // '#submit' => [$this,'tripal_pub_importer_form_ajax_button_submit'],
         // '#validate' => ['tripal_pub_importer_form_ajax_button_validate'],
         // '#limit_validation_errors' => [],
       ];
@@ -517,9 +544,10 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
     }
     
 
-    $response->addCommand(new ReplaceCommand('#edit-pub_parser', $form['pub_parser']));
-    return $response;
-    // return $form;
+    // $response->addCommand(new ReplaceCommand('#edit-pub_parser', $form['pub_parser']));
+    // return $response;
+    // $form_state->setRebuild(True);
+    return $form;
   }
 
   /**
