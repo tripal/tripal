@@ -45,8 +45,7 @@ class TripalImporter extends Plugin {
    *
    * @var array
    */
-  public $file_types;
-
+  public $file_types = ['txt'];
 
   /**
    * Provides information to the user about the file upload.
@@ -77,7 +76,7 @@ class TripalImporter extends Plugin {
    *
    * @var bool
    */
-  public $use_analysis;
+  public $use_analysis = TRUE;
 
   /**
    * If the $use_analysis value is set above then this value indicates if the
@@ -85,7 +84,7 @@ class TripalImporter extends Plugin {
    *
    * @var bool
    */
-  public $require_analysis;
+  public $require_analysis = FALSE;
 
   /**
    * Indicates whether the base importer should add a submit button or not.
@@ -119,29 +118,28 @@ class TripalImporter extends Plugin {
    *
    * @ingroup plugin_translatable
    */
-  public $button_text;
+  public $button_text = 'Import';
 
   /**
    * Indicates if the loader should provide a file upload form element.
    *
    * @var bool
    */
-  public $file_upload;
+  public $file_upload = TRUE;
 
   /**
    * Indicates if the loader should provide a local file form element.
    *
    * @var bool
    */
-  public $file_local;
+  public $file_local = TRUE;
 
   /**
    * Indicates if the loader should provide a remote file form element.
    *
    * @var bool
    */
-  public $file_remote;
-
+  public $file_remote = TRUE;
 
   /**
    * Indicates if the file must be provided.
@@ -153,8 +151,7 @@ class TripalImporter extends Plugin {
    *
    * @var bool
    */
-  public $file_required;
-
+  public $file_required = TRUE;
 
   /**
    * The array of arguments used for this loader.
@@ -167,7 +164,6 @@ class TripalImporter extends Plugin {
    */
   public $argument_list = [];
 
-
   /**
    * Indicates how many files are allowed to be uploaded.
    *
@@ -176,8 +172,7 @@ class TripalImporter extends Plugin {
    *
    * @var int
    */
-  public $cardinality;
-
+  public $cardinality = 1;
 
   /**
    * Be default, all loaders are automaticlly added to the Admin >
@@ -188,7 +183,6 @@ class TripalImporter extends Plugin {
    * @var string
    */
   public $menu_path;
-
 
   /**
    * If your importer requires more flexibility and advanced features than
