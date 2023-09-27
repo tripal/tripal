@@ -274,8 +274,8 @@ class TripalImporterForm implements FormInterface {
 
     // How many methods were specified for the source of the file?
     $n_methods = ($file_local?1:0) + ($file_remote?1:0) + (($file_upload or $file_existing)?1:0);
-    // The user must provide at least one file source method.
-    if ($n_methods == 0) {
+    // If a file is required, the user must provide at least one file source method.
+    if (array_key_exists('file_required', $importer_def) and ($importer_def['file_required'] == TRUE) and ($n_methods == 0)) {
       $form_state->setErrorByName('file_local', t('You must provide a file location or upload a file.'));
     }
     // No more than one method can be specified.
