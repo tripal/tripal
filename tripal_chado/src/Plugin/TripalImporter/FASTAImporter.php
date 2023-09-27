@@ -22,18 +22,13 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    require_analysis = True,
  *    button_text = @Translation("Import FASTA file"),
  *    file_upload = True,
- *    file_load = True,
  *    file_remote = True,
  *    file_local = True,
  *    file_required = True,
- *    cardinality = 1,
- *    menu_path = "",
- *    callback = "",
- *    callback_module = "",
- *    callback_path = "",
  *  )
  */
 class FASTAImporter extends ChadoImporterBase {
+
   /**
    * @see TripalImporter::form()
    */

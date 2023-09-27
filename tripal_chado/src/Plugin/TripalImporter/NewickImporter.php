@@ -24,17 +24,12 @@ use Drupal\Core\Url;
  *    require_analysis = True,
  *    button_text = @Translation("Import Newick Tree file"),
  *    file_upload = True,
- *    file_load = False,
  *    file_remote = False,
  *    file_required = False,
- *    cardinality = 1,
- *    menu_path = "",
- *    callback = "",
- *    callback_module = "",
- *    callback_path = "",
  *  )
  */
 class NewickImporter extends ChadoImporterBase {
+
   /**
    * @see TripalImporter::form()
    */

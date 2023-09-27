@@ -23,18 +23,13 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    require_analysis = True,
  *    button_text = @Translation("Import GFF3 file"),
  *    file_upload = True,
- *    file_load = True,
  *    file_remote = True,
  *    file_local = True,
  *    file_required = True,
- *    cardinality = 1,
- *    menu_path = "",
- *    callback = "",
- *    callback_module = "",
- *    callback_path = "",
  *  )
  */
 class GFF3Importer extends ChadoImporterBase {
+
   /**
    * A handle to a temporary file for caching the GFF features. This allows for
    * quick lookup of parsed features without having to store it in RAM.
@@ -96,12 +91,10 @@ class GFF3Importer extends ChadoImporterBase {
    */
   private $update = TRUE;
 
-
-    /**
+  /**
    * A list of features to have names updated.
    */
   private $update_names = [];
-
 
   /**
    * If the GFF file contains a 'Target' attribute then the feature and the
@@ -171,7 +164,6 @@ class GFF3Importer extends ChadoImporterBase {
    * The cvterm_id for the landmark type cvterm.
    */
   private $landmark_cvterm_id = NULL;
-
 
   /**
    * Regular expression to pull out the mRNA name.
