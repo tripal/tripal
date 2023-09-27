@@ -154,7 +154,7 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
     // Reset the weights
     $i = 0;
     foreach ($values as $delta => $value) {
-      if ($value['value'] == '') {
+      if (array_key_exists('value', $value) AND $value['value'] == '') {
         continue;
       }
       $values[$delta]['_weight'] = $i;
