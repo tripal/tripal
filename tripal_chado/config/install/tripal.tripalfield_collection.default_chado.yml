@@ -993,7 +993,7 @@ fields:
         label: Synonyms
         type: chado_synonym_default
         description: Alternate names, aliases or synonyms for this record.
-        cardinality: 0
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
@@ -1233,7 +1233,7 @@ fields:
         label: Synonyms
         type: chado_synonym_default
         description: Alternate names, aliases or synonyms for this record.
-        cardinality: 0
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
@@ -1580,7 +1580,7 @@ fields:
         label: Synonyms
         type: chado_synonym_default
         description: Alternate names, aliases or synonyms for this record.
-        cardinality: 0
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
@@ -2412,7 +2412,7 @@ fields:
         label: Synonyms
         type: chado_synonym_default
         description: Alternate names, aliases or synonyms for this record.
-        cardinality: 0
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
@@ -2652,7 +2652,7 @@ fields:
         label: Synonyms
         type: chado_synonym_default
         description: Alternate names, aliases or synonyms for this record.
-        cardinality: 0
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
@@ -2892,7 +2892,7 @@ fields:
         label: Synonyms
         type: chado_synonym_default
         description: Alternate names, aliases or synonyms for this record.
-        cardinality: 0
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
@@ -3132,7 +3132,7 @@ fields:
         label: Synonyms
         type: chado_synonym_default
         description: Alternate names, aliases or synonyms for this record.
-        cardinality: 0
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
