@@ -10,6 +10,8 @@ services:
     class: Drupal\tripal\Services\Tripaljob
   tripal.logger:
     class: Drupal\tripal\Services\TripalLogger
+  tripal.token_parser:
+    class: Drupal\tripal\Services\TripalTokenParser
   tripal.dbx:
     class: Drupal\tripal\TripalDBX\TripalDbx
   tripal.storage:

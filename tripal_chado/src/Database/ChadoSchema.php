@@ -19,10 +19,12 @@ class ChadoSchema extends TripalDbxSchema {
 
     $source = $parameters['source'] ?? 'file';
     $format = strtolower($parameters['format'] ?? '');
-    $version = $parameters['version']
-      ?? $this->connection->getVersion()
-      ?? $DEFAULT_VERSION
-    ;
+
+    $version = $parameters['version'];
+    if (!array_key_exists('version', $parameters) OR empty($parameters['version'])) {
+      $version = $this->connection->getVersion();
+    }
+
     if (!empty($parameters['clear'])) {
       $schema_structure = [];
     }
@@ -49,6 +51,7 @@ class ChadoSchema extends TripalDbxSchema {
           . $version
           . '.yml'
         ;
+
         // Make sure we got a valid version format.
         if (!preg_match('/^\\d\\.\\d$/', $version)
             || !file_exists($filename)
@@ -84,7 +87,7 @@ class ChadoSchema extends TripalDbxSchema {
    *  include linker tables (which link two or more base tables), property
    * tables, and relationship tables.  These provide additional information
    * about primary data records and are therefore not base tables.  This
-   * function retreives only the list of tables that are considered 'base'
+   * function retrieves only the list of tables that are considered 'base'
    * tables.
    *
    * @return

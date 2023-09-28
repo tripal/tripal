@@ -324,7 +324,7 @@ class ChadoSchema {
    *  include linker tables (which link two or more base tables), property
    * tables, and relationship tables.  These provide additional information
    * about primary data records and are therefore not base tables.  This
-   * function retreives only the list of tables that are considered 'base'
+   * function retrieves only the list of tables that are considered 'base'
    * tables.
    *
    * @return
@@ -531,7 +531,7 @@ class ChadoSchema {
    * Check that any given column in a Chado table exists.
    *
    * This function is necessary because Drupal's db_field_exists() will not
-   * look in any other schema but the one were Drupal is installed
+   * look in any other schema but the one where Drupal is installed
    *
    * @param $table
    *   The name of the chado table.
@@ -611,7 +611,7 @@ class ChadoSchema {
    * Check that any given column in a Chado table exists.
    *
    * This function is necessary because Drupal's db_field_exists() will not
-   * look in any other schema but the one were Drupal is installed
+   * look in any other schema but the one where Drupal is installed
    *
    * @param $table
    *   The name of the chado table.

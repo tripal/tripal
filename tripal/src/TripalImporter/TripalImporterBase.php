@@ -103,7 +103,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   protected $plugin_definition;
 
-
   /**
    * {@inheritdoc}
    */
@@ -130,6 +129,21 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     // Initialize messenger
     $this->messenger = \Drupal::messenger();
 
+  }
+
+  /**
+   * Provide more informative description than is ideal in the annotation alone.
+   *
+   * NOTE: Supports full HTML.
+   *
+   * @return
+   *   A fully formatted string describing the format of the file to be uploaded
+   *   and providing any additional upload file information.
+   */
+  public function describeUploadFileFormat() {
+    $default_description = $this->plugin_definition['upload_description'];
+    $file_types = $this->plugin_definition['file_types'];
+    return $default_description . ' The following file extensions are supported: ' . implode(', ', $file_types) . '.';
   }
 
    /**

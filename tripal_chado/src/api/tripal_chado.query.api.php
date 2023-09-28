@@ -402,7 +402,7 @@ function chado_set_active($dbname = 'default', $chado_schema_name = NULL) {
  *
  * Use this function to insert a record into any Chado table.  The first
  * argument specifies the table for inserting and the second is an array
- * of values to be inserted.  The array is mutli-dimensional such that
+ * of values to be inserted.  The array is multi-dimensional such that
  * foreign key lookup values can be specified.
  *
  * @param $table
@@ -706,7 +706,7 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
  * Use this function to update a record in any Chado table.  The first
  * argument specifies the table for inserting, the second is an array
  * of values to matched for locating the record for updating, and the third
- * argument give the values to update.  The arrays are mutli-dimensional such
+ * argument give the values to update.  The arrays are multi-dimensional such
  * that foreign key lookup values can be specified.
  *
  * @param string $table
@@ -980,7 +980,7 @@ function chado_update_record($table, $match, $values, $options = NULL, $chado_sc
  * Use this function to delete a record(s) in any Chado table.  The first
  * argument specifies the table to delete from and the second is an array
  * of values to match for locating the record(s) to be deleted.  The arrays
- * are mutli-dimensional such that foreign key lookup values can be specified.
+ * are multi-dimensional such that foreign key lookup values can be specified.
  *
  * @param string $table
  *  The name of the chado table for inserting.
@@ -1766,7 +1766,7 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
   }
   // -- Args should be an array.
   if (!is_array($args)) {
-    $msg = t('chado_query; Arguements should be an array. Query: @query; Arguements: @values',
+    $msg = t('chado_query; Arguments should be an array. Query: @query; Arguments: @values',
       ['@values' => print_r($args, TRUE), '@query' => $sql]);
     \Drupal::logger('tripal_chado')->error($msg);
     return FALSE;
@@ -1777,7 +1777,7 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
   $tokens_in_sql = $matches[0];
   $tokens_in_args = array_keys($args);
   if (count($tokens_in_sql) !== count($tokens_in_args)) {
-    $msg = t('chado_query; There should be the same number of tokens in the arguements as in the SQL. Tokens provided: @args, Tokens in SQL: @sql',
+    $msg = t('chado_query; There should be the same number of tokens in the arguments as in the SQL. Tokens provided: @args, Tokens in SQL: @sql',
       ['@args' => print_r($tokens_in_args,TRUE), '@sql' => print_r($tokens_in_sql,TRUE)]);
     \Drupal::logger('tripal_chado')->error($msg);
     return FALSE;

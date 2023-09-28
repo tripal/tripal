@@ -221,7 +221,7 @@ vocabularies:
                 description: 'A version number is an information content entity which is a sequence of characters borne by part of each of a class of manufactured products or its packaging and indicates its order within a set of other products having the same name.'
             -   id: 'IAO:0000064'
                 name: 'algorithm'
-                description: 'An algorithm is a set of instructions for performing a paticular calculation.'
+                description: 'An algorithm is a set of instructions for performing a particular calculation.'
 
     -   name: 'null'
         label: 'No vocabulary'

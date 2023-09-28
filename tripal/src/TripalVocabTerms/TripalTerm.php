@@ -818,7 +818,7 @@ class TripalTerm {
    * An array of synonyms.
    *
    * For easy lookup, this is an associative array where
-   * the key is the synonym and the value is the type term..
+   * the key is the synonym and the value is the type term.
    * Using the synonym as the key also prevents duplication.
    *
    * @var array

@@ -1027,7 +1027,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = [], $sche
   if (property_exists($object, 'expanded')) {
 
     // If so, then remove the expanded identifier from the correct expandable
-    // array..
+    // array.
     $expandable_name = 'expandable_' . $type . 's';
     if (property_exists($object, $expandable_name) and $object->{$expandable_name}) {
       $key_to_remove = array_search($object->expanded, $object->{$expandable_name});

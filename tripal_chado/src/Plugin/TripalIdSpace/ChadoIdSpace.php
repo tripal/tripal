@@ -984,7 +984,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   }
 
   /**
-   * Retrieves from the Drupal cache the default vocabulary for this space..
+   * Retrieves from the Drupal cache the default vocabulary for this space.
    *
    * @return string
    *   The deffault vocabulary name.

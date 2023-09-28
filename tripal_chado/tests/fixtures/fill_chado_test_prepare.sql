@@ -3603,7 +3603,7 @@ INSERT INTO chado.cvterm VALUES (42, 11, 'assay', 'A planned process with the ob
 INSERT INTO chado.cvterm VALUES (43, 12, 'location on map', '', 43, 0, 0);
 INSERT INTO chado.cvterm VALUES (44, 13, 'definition', 'The official OBI definition, explaining the meaning of a class or property. Shall be Aristotelian, formalized and normalized. Can be augmented with colloquial definitions.', 44, 0, 0);
 INSERT INTO chado.cvterm VALUES (45, 13, 'version number', 'A version number is an information content entity which is a sequence of characters borne by part of each of a class of manufactured products or its packaging and indicates its order within a set of other products having the same name.', 45, 0, 0);
-INSERT INTO chado.cvterm VALUES (46, 13, 'algorithm', 'An algorithm is a set of instructions for performing a paticular calculation.', 46, 0, 0);
+INSERT INTO chado.cvterm VALUES (46, 13, 'algorithm', 'An algorithm is a set of instructions for performing a particular calculation.', 46, 0, 0);
 INSERT INTO chado.cvterm VALUES (47, 2, 'property', 'A generic term indicating that represents an attribute, quality or characteristic of something.', 47, 0, 0);
 INSERT INTO chado.cvterm VALUES (48, 2, 'time_last_modified', 'The time at which the record was last modified.', 48, 0, 0);
 INSERT INTO chado.cvterm VALUES (49, 2, 'time_accessioned', 'The time at which the record was first added.', 49, 0, 0);

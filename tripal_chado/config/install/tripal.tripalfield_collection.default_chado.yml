@@ -178,8 +178,8 @@ fields:
                 type_table: organism
                 type_column: type_id
         settings:
-            termIdSpace: OBI
-            termAccession: "0100026"
+            termIdSpace: local
+            termAccession: "infraspecific_type"
         display:
           view:
             default:

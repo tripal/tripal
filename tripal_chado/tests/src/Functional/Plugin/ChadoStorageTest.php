@@ -14,7 +14,7 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  *
  * @group Tripal
  * @group Tripal Chado
- * @group Tripal Chado ChadoStorage
+ * @group ChadoStorage
  */
 class ChadoStorageTest extends ChadoTestBrowserBase {
 
@@ -295,11 +295,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $chado_column = 'value';
     $chado_table = 'featureprop';
     $base_table = 'feature';
-    $chado_column = 'organism_id';
     $storage_settings = [
       'storage_plugin_id' => 'chado_storage',
       'storage_plugin_settings' => [
-        'base_table' => $chado_table,
+        'base_table' => $base_table,
       ],
     ];
 
@@ -317,8 +316,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ]),
       'fk_feature_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'fk_feature_id', 'SO:0000110', [
         'action' => 'store_link',
-        'chado_table' => 'featureprop',
-        'chado_column' => 'feature_id',
+        'left_table' => 'feature',
+        'left_table_id' => 'feature_id',
+        'right_table' => 'featureprop',
+        'right_table_id' => 'feature_id',
       ]),
       'type_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'type_id', 'schema:additionalType', [
         'action' => 'store',
@@ -380,12 +381,15 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       $values[$field_name][0][$key] = [
         'value' => clone $propertyValues[$key],
       ];
-      $values[$field_name][1][$key] = [
-        'value' => clone $propertyValues[$key],
-      ];
-      $values[$field_name][2][$key] = [
-        'value' => clone $propertyValues[$key],
-      ];
+
+      if ($key != 'feature_id') {
+        $values[$field_name][1][$key] = [
+          'value' => clone $propertyValues[$key],
+        ];
+        $values[$field_name][2][$key] = [
+          'value' => clone $propertyValues[$key],
+        ];
+      }
     }
     // We also need to set the featureprop_id for each.
     $values[$field_name][0]['featureprop_id']['value']->setValue($this->featureprop_id[0]);

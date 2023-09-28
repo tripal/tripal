@@ -494,6 +494,7 @@ function chado_autocomplete_organism($text) {
  */
 function chado_abbreviate_infraspecific_rank($rank) {
   $abb = '';
+  $rank = strtolower($rank);
   switch ($rank) {
     case 'no_rank':
       $abb = '';
@@ -513,8 +514,14 @@ function chado_abbreviate_infraspecific_rank($rank) {
     case 'subvariety':
       $abb = 'subvar.';
       break;
+    case 'convariety':
+      $abb = 'convar.';
+      break;
     case 'cultivar':
       $abb = 'cv.';
+      break;
+    case 'cultivar group':
+      $abb = 'Group';
       break;
     case 'forma':
       $abb = 'f.';
@@ -541,25 +548,31 @@ function chado_abbreviate_infraspecific_rank($rank) {
  * @ingroup tripal_organism_api
  */
 function chado_unabbreviate_infraspecific_rank($rank) {
-  if (preg_match('/^subsp\.?$/', $rank)) {
+  if (preg_match('/^subsp\.?$/i', $rank)) {
     $rank = 'subspecies';
   }
-  elseif (preg_match('/^ssp\.?$/', $rank)) {
+  elseif (preg_match('/^ssp\.?$/i', $rank)) {
     $rank = 'subspecies';
   }
-  elseif (preg_match('/^var\.?$/', $rank)) {
+  elseif (preg_match('/^var\.?$/i', $rank)) {
     $rank = 'varietas';
   }
-  elseif (preg_match('/^subvar\.?$/', $rank)) {
+  elseif (preg_match('/^subvar\.?$/i', $rank)) {
     $rank = 'subvarietas';
   }
-  elseif (preg_match('/^cv\.?$/', $rank)) {
+  elseif (preg_match('/^convar\.?$/i', $rank)) {
+    $rank = 'convariety';
+  }
+  elseif (preg_match('/^cv\.?$/i', $rank)) {
     $rank = 'cultivar';
   }
-  elseif (preg_match('/^f\.?$/', $rank)) {
+  elseif (preg_match('/^group$/i', $rank)) {
+    $rank = 'cultivar group';
+  }
+  elseif (preg_match('/^f\.?$/i', $rank)) {
     $rank = 'forma';
   }
-  elseif (preg_match('/^subf\.?$/', $rank)) {
+  elseif (preg_match('/^subf\.?$/i', $rank)) {
     $rank = 'subforma';
   }
   // if none of the above matched, rank is returned unchanged

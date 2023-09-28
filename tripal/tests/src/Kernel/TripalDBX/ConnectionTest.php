@@ -144,7 +144,7 @@ class ConnectionTest extends KernelTestBase {
     // Create a mock for the abstract class.
     $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
       ->disableOriginalConstructor()
-      ->onlyMethods(['setTarget', 'setKey', 'setSchemaName'])
+      ->onlyMethods(['setTarget', 'setKey', 'setSchemaName', 'findVersion'])
       ->getMockForAbstractClass()
     ;
 
@@ -160,6 +160,10 @@ class ConnectionTest extends KernelTestBase {
       ->method('setSchemaName')
       ->with($this->equalTo(''))
     ;
+    $dbmock
+      ->expects($this->any())
+      ->method('findVersion')
+      ->willReturn('');
 
     // Call the constructor.
     $reflected_class = new \ReflectionClass(\Drupal\tripal\TripalDBX\TripalDbxConnection::class);

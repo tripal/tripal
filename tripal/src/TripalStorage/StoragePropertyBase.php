@@ -63,7 +63,7 @@ class StoragePropertyBase {
       }
     }
     else {
-      throw new \Exception('Cannot create a StorageProperty object without a property formatted term: ' . $term_id);
+      throw new \Exception('Cannot create a StorageProperty object without a properly formatted term: ' . $term_id);
     }
 
     // Ensure we have required values.

@@ -137,7 +137,7 @@ function tripal_views_data_jobs(&$data) {
 
   // Arguments
   $data['tripal_jobs']['arguments'] = [
-    'title' => t('Arguements'),
+    'title' => t('Arguments'),
     'help' => t('Any arguments passed to the callback.'),
     'field' => [
       'id' => 'standard',
