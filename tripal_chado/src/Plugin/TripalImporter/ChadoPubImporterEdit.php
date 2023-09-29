@@ -81,10 +81,6 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
    *   The form state object.
    */
   public function PubLoaderForm($form, &$form_state) {
-    // this is called in form(), can delete it here
-    //    // Call the parent form to provide the Chado schema selector.
-    //    $form = parent::form($form, $form_state);
-
     // Retrieve a sorted list of available pub parser plugins.
     $pub_parser_manager = \Drupal::service('tripal.pub_parser');
     $pub_parser_defs = $pub_parser_manager->getDefinitions();
@@ -151,21 +147,34 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
     $trigger = $form_state->getTriggeringElement()['#name'];
     dpm($trigger, 'ChadoPubImporterEdit.php Editor Submit not implemented'); //@@@
 
-    dpm($trigger);
+    dpm('TRIGGER:' . $trigger);
+    $user_input = $form_state->getUserInput();
     if ($trigger == 'add') {
-      $user_input = $form_state->getUserInput();
       // Increment the num_criteria which should regenerate the form with an additional criteria row
       $user_input['num_criteria'] = $user_input['num_criteria'] + 1;
       $form_state->setUserInput($user_input);
     }
     elseif ($trigger == 'remove') {
-      $user_input = $form_state->getUserInput();
       // Increment the num_criteria which should regenerate the form with an additional criteria row
       $user_input['num_criteria'] = $user_input['num_criteria'] - 1;
       $form_state->setUserInput($user_input);
     }
+    elseif ($trigger == 'op') {
+      $op = $user_input['op'];
+      if ($op == 'Save Importer') {
+        dpm('We need to save the importer');
+      }
+      elseif ($op == 'Delete Importer') {
+        dpm('We need to delete the importer');
+      }
+      elseif ($op == 'Test Importer') {
+        dpm('We need to test the importer');
+      }
+    }
 
     // Disable the parent submit and rebuild the form
+    // @todo setRebuild should be based on the triggers above
+    // since there will be cases where we do want to perhaps create a Tripal job to run
     $form_state->setRebuild(True);
   }
 
