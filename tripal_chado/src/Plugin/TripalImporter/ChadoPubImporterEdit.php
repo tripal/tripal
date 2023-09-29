@@ -231,12 +231,14 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
       '#type' => 'textfield',
       '#description' => t("Please provide a name for this loader setup"),
       '#required' => TRUE,
+      '#weight' => 0,
     ];
     $form['pub_parser']['disabled'] = [
       '#type' => 'checkbox',
       '#title' => t('Disabled'),
       '#description' => t('Check to disable this importer.'),
       '#default_value' => $disabled,
+      '#weight' => 0,
     ];
     $form['pub_parser']['do_contact'] = [
       '#type' => 'checkbox',
@@ -245,6 +247,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
          . ' a matching publication during import. This allows storage of additional information'
          . ' such as affilation, etc. Otherwise, only authors\' names are retrieved'),
       '#default_value' => $do_contact,
+      '#weight' => 0,
     ];
 
     // Add the form for the criteria
@@ -253,6 +256,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
       '#type' => 'hidden',
       '#default_value' => 1,
     ];
+
     $criteria = [];
 
     $user_input = $form_state->getUserInput();
@@ -266,21 +270,25 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
 
     $form['pub_parser']['criteria_debug'] = [
       '#markup' => '<div id="tripal-pub-importer-criteria-debug-section"></div><br />',
+      '#weight' => 52,
     ];
 
     // Add the submit buttons
     $form['pub_parser']['save'] = [
       '#type' => 'submit',
       '#value' => t('Save Importer'),
+      '#weight' => 51,
     ];
     $form['pub_parser']['test'] = [
       '#type' => 'submit',
       '#value' => t('Test Importer'),
+      '#weight' => 51,
     ];
     $form['pub_parser']['delete'] = [
       '#type' => 'submit',
       '#value' => t('Delete Importer'),
       '#attributes' => ['style' => 'float: right;'],
+      '#weight' => 51,
     ];
 
     // Add a placeholder for the section where the test results will appear
@@ -318,6 +326,7 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
       '#header' => $headers,
       '#prefix' => '<div id="tripal-pub-importer-setup">',
       '#suffix' => '</div>',
+      '#weight' => 50, // arbitrary heavier number so table is below most options
     ];
 
     for ($i = 1; $i <= $num_criteria; $i++) {
