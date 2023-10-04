@@ -115,7 +115,7 @@ class ChadoStorageActionsTest extends ChadoTestKernelBase {
         ],
         'name_read_again' => [
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'read',
+          'action' => 'read_value',
           'chado_table' => 'project',
           'chado_column' => 'name'
         ],
@@ -162,6 +162,100 @@ class ChadoStorageActionsTest extends ChadoTestKernelBase {
       "There should only be a single project inserted by these 3 fields");
 
     // Check that the single project record has the name set by the `store` action.
+    $expected_name = $insert_values['other_field_store'][0]['name_store'];
+    $retrieved_name = $projects[0]->name;
+    $this->assertEquals($expected_name, $retrieved_name,
+      "We did not get the name that should have been set by the other_field_store:name_store property.");
 
+    $project_id = $projects[0]->project_id;
+
+    // Test Case: Load values existing in Chado.
+    // ---------------------------------------------------------
+    // First we want to reset all the chado storage arrays to ensure we are
+    // doing a clean test. The values will purposefully remain in Chado but the
+    // Property Types, Property Values and Data Values will be built from scratch.
+    $this->cleanChadoStorageValues();
+
+    // For loading only the store id/pkey/link items should be populated.
+    $load_values = [
+      'test_read' => [
+        [
+          'record_id' => $project_id,
+          'name_read' => NULL,
+        ],
+      ],
+      'other_field_store' => [
+        [
+          'record_id' => $project_id,
+          'name_store' => NULL,
+        ],
+      ],
+      'other_field_read' => [
+        [
+          'record_id' => $project_id,
+          'name_read_again' => NULL,
+        ],
+      ],
+    ];
+    $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
+
+    // Check that the name in our fields have been loaded.
+    $expected_name = $insert_values['other_field_store'][0]['name_store'];
+    $retrieved = [
+      'test_read' => $retrieved_values['test_read'][0]['name_read']['value']->getValue(),
+      'other_field_store' => $retrieved_values['other_field_store'][0]['name_store']['value']->getValue(),
+      'other_field_read' => $retrieved_values['other_field_read'][0]['name_read_again']['value']->getValue(),
+    ];
+    foreach ($retrieved as $field_name => $retrieved_name) {
+      $this->assertEquals($expected_name, $retrieved_name,
+        "The name we retrieved for the $field_name field did not match the one set with a store attribute during insert.");
+    }
+
+    // Test Case: Update values in Chado using ChadoStorage.
+    // ---------------------------------------------------------
+    // When updating we need all the store id/pkey/link records
+    // and all values of the other properties.
+    $update_values = [
+      'test_read' => [
+        [
+          'record_id' => $project_id,
+          'name_read' => $expected_name,
+        ],
+      ],
+      'other_field_store' => [
+        [
+          'record_id' => $project_id,
+          'name_store' => $expected_name,
+        ],
+      ],
+      'other_field_read' => [
+        [
+          'record_id' => $project_id,
+          'name_read_again' => $expected_name,
+        ],
+      ],
+    ];
+
+    // We then change the name for the store value.
+    // Since the other are read they shouldn't be connected to a widget
+    // and thus will remain the old value.
+    $update_values['other_field_store'][0]['name_store'] = 'Updated Project Name';
+    $this->chadoStorageTestUpdateValues($update_values);
+
+    // Check that there is still only a single project record.
+    $query = $this->chado_connection->select('1:project', 'p')
+      ->fields('p', ['project_id', 'name'])
+      ->execute();
+    $projects = $query->fetchAll();
+    $this->assertIsArray($projects,
+    "We should have been able to select from the project table.");
+    $this->assertCount(1, $projects,
+      "There should only be a single project affected by these 3 fields");
+
+    // Check that the single project record has the name set by the `store` action.
+    $expected_name = $update_values['other_field_store'][0]['name_store'];
+    $retrieved_name = $projects[0]->name;
+    $this->assertEquals($expected_name, $retrieved_name,
+      "The name was not updated to match the other_field_store:name_store property.");
   }
 }
