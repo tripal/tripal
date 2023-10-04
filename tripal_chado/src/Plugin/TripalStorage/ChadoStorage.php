@@ -684,6 +684,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
           // Get the values of properties that just want to read values.
           if (in_array($action, ['read_value', 'join'])) {
+            $chado_table = $prop_storage_settings['chado_table'];
             $chado_column = $prop_storage_settings['chado_column'];
             $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
             $value = $records[$chado_table][$delta]['fields'][$as];
@@ -973,7 +974,17 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // ................................................................
           if ($action == 'read_value') {
             $chado_column = $prop_storage_settings['chado_column'];
-            $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
+            // We will only set this if it's not already set.
+            // This is to allow another field with a store set for this column
+            // to set this value. We actually only do this to ensure it ends up
+            // in the query fields.
+            if (!array_key_exists('fields', $records[$chado_table][$delta])) {
+              $records[$chado_table][$delta]['fields'] = [];
+              $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
+            }
+            elseif (!array_key_exists($chado_column, $records[$chado_table][$delta]['fields'])) {
+              $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
+            }
           }
           // JOIN: performs a join across multiple tables for the purposes of
           // selecting a single column. This cannot be used for inserting or
