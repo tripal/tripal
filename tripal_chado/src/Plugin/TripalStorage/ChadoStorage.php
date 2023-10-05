@@ -684,7 +684,23 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
           // Get the values of properties that just want to read values.
           if (in_array($action, ['read_value', 'join'])) {
-            $chado_table = $prop_storage_settings['chado_table'];
+            if (array_key_exists('chado_table', $prop_storage_settings)) {
+              $chado_table = $prop_storage_settings['chado_table'];
+            }
+            // Otherwise this is a join + we need the base table.
+            // We can use the path to look this up.
+            elseif (array_key_exists('path', $prop_storage_settings)) {
+              // Examples of the path:
+              //   - phylotree.analysis_id>analysis.analysis_id'.
+              //   - feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id'
+              $path_arr = explode(';', $prop_storage_settings['path']);
+              // Now grab the left/right sides of the first part of the path.
+              list($left, $right) = explode(">", array_shift($path_arr));
+              // Break the left side into table + column.
+              list($left_table, $left_col) = explode(".", $left);
+              // The base table is the left table of the first part of the path.
+              $chado_table = $left_table;
+            }
             $chado_column = $prop_storage_settings['chado_column'];
             $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
             $value = $records[$chado_table][$delta]['fields'][$as];
