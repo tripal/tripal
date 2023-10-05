@@ -103,6 +103,18 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $fixed_value,
     ];
+    $elements['term_name'] = [
+      '#type' => 'value',
+      '#default_value' => '',
+    ];
+    $elements['id_space'] = [
+      '#type' => 'value',
+      '#default_value' => '',
+    ];
+    $elements['accession'] = [
+      '#type' => 'value',
+      '#default_value' => '',
+    ];
 
     // Use the element defaults. They contain the required value, title, etc.
     $elements['term_autoc'] = $element + [
@@ -131,14 +143,17 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
          $termIdSpace = $matches[2];
          $termAccession = $matches[3];
 
+         /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term **/
          $idSpace = $idSpace_manager->loadCollection($termIdSpace);
          $term = $idSpace->getTerm($termAccession);
          $cvterm_id = $term->getInternalId();
          $values[$delta]['type_id'] = $cvterm_id;
          $values[$delta]['value'] = $term->getName();
+         $values[$delta]['term_name'] = $term->getName();
+         $values[$delta]['id_space'] = $term->getIdSpace();
+         $values[$delta]['accession'] = $term->getAccession();
        }
     }
-
     return $values;
   }
 }

@@ -21,14 +21,8 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    require_analysis = True,
  *    button_text = @Translation("Import OBO File"),
  *    file_upload = False,
- *    file_load = False,
  *    file_remote = False,
  *    file_required = False,
- *    cardinality = 1,
- *    menu_path = "",
- *    callback = "",
- *    callback_module = "",
- *    callback_path = "",
  *  )
  */
 class OBOImporter extends ChadoImporterBase {
@@ -39,7 +33,6 @@ class OBOImporter extends ChadoImporterBase {
    * @var array
    */
   private $obo_namespaces = [];
-
 
   /**
    * Holds the list of all CVs on this site. By storing them here it saves
@@ -67,7 +60,6 @@ class OBOImporter extends ChadoImporterBase {
     'narrow' => NULL,
     'related' => NULL,
   ];
-
 
   // An alternative cache to the temp_obo table.
   private $termStanzaCache = [
@@ -101,7 +93,6 @@ class OBOImporter extends ChadoImporterBase {
    */
   private $default_namespace = '';
 
-
   /**
    * Holds the idspace elements from the header. These will correspond
    * to the accession prefixes, or short names (e.g. GO) for the terms. For
@@ -117,13 +108,11 @@ class OBOImporter extends ChadoImporterBase {
    */
   private $default_db = '';
 
-
   /**
    * An array of used cvterm objects so that we don't have to look them
    * up repeatedly.
    */
   private $used_terms = [];
-
 
   /**
    * An array of base IRIs returned from the EBI OLS lookup service.  We
@@ -156,7 +145,6 @@ class OBOImporter extends ChadoImporterBase {
    * @var array
    */
   private $term_names = [];
-
 
   /**
    * {@inheritdoc}
@@ -2731,7 +2719,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The name of the vocabulary to add.
    *
    * @return object|NULL
-   *   The newly inserted CV object..
+   *   The newly inserted CV object.
    */
   private function insertChadoCv($cvname) {
     $chado = $this->getChadoConnection();

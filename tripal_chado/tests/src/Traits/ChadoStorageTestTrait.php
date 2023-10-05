@@ -240,6 +240,8 @@ trait ChadoStorageTestTrait {
     // Set the values in the propertyValue objects.
     $this->setExpectedValues($field_names, $values);
 
+    // $this->debugChadoStorageTestTraitArrays();
+
     $success = $this->chadoStorage->insertValues($this->dataStoreValues);
     $this->assertTrue($success, 'We were not able to insert the data.');
   }
@@ -649,6 +651,9 @@ trait ChadoStorageTestTrait {
     foreach ($field_names as $field_name) {
       foreach($values[$field_name] as $delta => $current_values) {
         foreach($current_values as $property_key => $val) {
+
+          $this->assertArrayHasKey($property_key, $this->dataStoreValues[$field_name][$delta],
+            "The key $property_key does not exist in the data store values for $field_name[$delta], it may be missing from your \$fields definition");
 
           $this->dataStoreValues[$field_name][$delta][$property_key]['value']->setValue($val);
 
