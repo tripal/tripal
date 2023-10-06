@@ -128,7 +128,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
       'chado_column' => $base_fkey_col,
     ]);
     $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $contact_name_term, $contact_name_length, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $base_table . '.' . $base_fkey_col . '>contact.contact_id',
       'chado_column' => 'name',
       'as' => 'contact_name',

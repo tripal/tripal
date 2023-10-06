@@ -60,7 +60,7 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
       'chado_column' => $base_fkey_col,
     ]);
     $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_name', $analysis_name_term, $analysis_name_length, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $base_table . '.' . $base_fkey_col . '>analysis.analysis_id',
       'chado_column' => 'name',
       'as' => 'analysis_name',
@@ -90,7 +90,7 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
         ],
         'analysis_name' => [
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'join',
+          'action' => 'read_value',
           'path' => 'phylotree.analysis_id>analysis.analysis_id',
           'chado_column' => 'name',
           'as' => 'analysis_name',
@@ -138,7 +138,7 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
         ],
         'analysis_name' => [
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'join',
+          'action' => 'read_value',
           'path' => 'quantification.analysis_id>analysis.analysis_id',
           'chado_column' => 'name',
           'as' => 'analysis_name',
