@@ -876,7 +876,7 @@ class ChadoPreparer extends ChadoTaskBase {
   }
 
   /**
-   * Gets a controlled voabulary object.
+   * Gets a controlled vocabulary object.
    *
    * @param string $name
    *   The name of the vocabulary
@@ -960,7 +960,7 @@ class ChadoPreparer extends ChadoTaskBase {
         $this->logger->notice("Importing " . $ontology['idSpace']->getDescription());
         $importer_manager = \Drupal::service('tripal.importer');
         $obo_importer = $importer_manager->createInstance('chado_obo_loader');
-        $obo_importer->create(['obo_id' => $obo_id, 'schema_name' => $schema_name]);
+        $obo_importer->createImportJob(['obo_id' => $obo_id, 'schema_name' => $schema_name]);
         $obo_importer->run();
         $obo_importer->postRun();
       }

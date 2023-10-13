@@ -232,7 +232,7 @@ class TripalImporterForm implements FormInterface {
         return;
       }
 
-      $importer->create($run_args, $file_details);
+      $importer->createImportJob($run_args, $file_details);
       $importer->submitJob();
 
     }

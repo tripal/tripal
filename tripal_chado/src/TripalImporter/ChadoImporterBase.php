@@ -28,13 +28,6 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
   protected $messenger = NULL;
 
   /**
-   * The logger for reporting progress, warnings and errors to admin.
-   *
-   * @var Drupal\tripal\Services\TripalLogger
-   */
-  protected $logger;
-
-  /**
    * The database connection for querying Chado.
    *
    * @var Drupal\tripal_chado\Database\ChadoConnection
@@ -55,12 +48,11 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
    *
    * @return static
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('tripal.logger'),
       $container->get('tripal_chado.database')
     );
   }
@@ -78,10 +70,9 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
    * @param mixed $plugin_definition
    * @param Drupal\tripal_chado\Database\ChadoConnection $connection
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $connection) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    $this->logger = $logger;
     $this->connection = $connection;
   }
 
