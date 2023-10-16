@@ -866,7 +866,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // linker table will include two core tables.
           // ................................................................
           if ($action == 'store_id') {
-            $this->buildChadoRecords_store_id($records, $prop_storage_settings, $context, $prop_value);
+            $this->buildChadoRecords_store_id($records, $delta, $prop_storage_settings, $context, $prop_value);
           }
           // STORE PKEY: stores the primary key value of a linking table.
           // NOTE: A linking table is not a core table. This is important because
@@ -874,12 +874,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // linking tables are handled after.
           // ................................................................
           if ($action == 'store_pkey') {
-
-            $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
-            $chado_table_pkey = $chado_table_def['primary key'];
-
-            $link_record_id = $prop_value->getValue();
-            $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = ['value' => $link_record_id, 'operation' => $context['operation']];
+            $this->buildChadoRecords_store_pkey($records, $delta, $prop_storage_settings, $context, $prop_value);
           }
           // STORE LINK: performs a join between two tables, one of which is a
           // core table and one of which is a linking table. The value which is saved
@@ -896,8 +891,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               // fields below to ensure the ID is replaced.
               // Start by assuming the left table is the base/core table
               // (e.g. feature.feature_id = featureprop.feature_id).
-              $link_base = $chado_table;
-              $link_base_id = $chado_table_pkey;
+              $link_base = $prop_storage_settings['left_table'];
+              $link_base_id = $prop_storage_settings['left_table_id'];
               $linker = $prop_storage_settings['right_table'];
               $linker_id = $prop_storage_settings['right_table_id'];
               // Then check if the right table has a store_id and if so, use it instead.
@@ -905,8 +900,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               if (array_key_exists($prop_storage_settings['right_table'], $context['base_record_ids'])) {
                 $link_base = $prop_storage_settings['right_table'];
                 $link_base_id = $prop_storage_settings['right_table_id'];
-                $linker = $chado_table;
-                $linker_id = $chado_table_pkey;
+                $linker = $prop_storage_settings['left_table'];
+                $linker_id = $prop_storage_settings['left_table_id'];
               }
               // @debug print "We decided it should be BASE $link_base.$link_base_id => LINKER $linker.$linker_id.\n";
               // We want to ensure that the linker table has a field added with
@@ -1074,6 +1069,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *
    * @param array $records
    *   The current set of chado records. This method will update this array.
+   * @param int $delta
+   *   The position in the values array the current property type stands
+   *   and thus the position in the records array it should be.
    * @param array $storage_settings
    *   The storage settings for the current property. This is all the information
    *   from the property type.
@@ -1086,7 +1084,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   Note: We will always have a StoragePropertyValue for a property even if
    *   the value is not set. This method is expected to check if the value is empty or not.
    */
-  protected function buildChadoRecords_store_id(array &$records, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+  protected function buildChadoRecords_store_id(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
 
     // Get the Chado table this specific property works with.
     // Use the base table as a default for properties which do not specify
@@ -1130,6 +1128,55 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       $context['base_record_ids'][$chado_table] = $record_id;
     }
+  }
+
+  /**
+   * Add chado record information for a specific ChadoStorageProperty
+   * where the action is store_pkey.
+   *
+   * STORE PKEY: stores the primary key value of a linking table.
+   *
+   * NOTE: A linking table is not a core table. This is important because
+   * during insert and update, the core tables are handled first and then
+   * linking tables are handled after.
+   *
+   * @param array $records
+   *   The current set of chado records. This method will update this array.
+   * @param int $delta
+   *   The position in the values array the current property type stands
+   *   and thus the position in the records array it should be.
+   * @param array $storage_settings
+   *   The storage settings for the current property. This is all the information
+   *   from the property type.
+   * @param array $context
+   *   A set of values to provide context. These a pre-computed in the parent method
+   *   to reduce code duplication when a task is done for all/many storage properties
+   *   regardless of their action.
+   * @param StoragePropertyValue $prop_value
+   *   The value object for the property we are adding records for.
+   *   Note: We will always have a StoragePropertyValue for a property even if
+   *   the value is not set. This method is expected to check if the value is empty or not.
+   */
+  protected function buildChadoRecords_store_pkey(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
+    // Get the Chado table this specific property works with.
+    // Use the base table as a default for properties which do not specify
+    // the chado table (e.g. single value fields).
+    $chado_table = $context['base_table'];
+    if (array_key_exists('chado_table', $storage_settings)) {
+      $chado_table = $storage_settings['chado_table'];
+    }
+    // Now determine the primary key for the chado table.
+    $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
+    $chado_table_pkey = $chado_table_def['primary key'];
+
+    $link_record_id = $prop_value->getValue();
+
+    $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = [
+      'value' => $link_record_id,
+      'operation' => $context['operation']
+    ];
+
   }
 
   /**
