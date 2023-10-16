@@ -890,19 +890,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // stored in the Chado table indicated by this property.
           // ................................................................
           if ($action == 'store') {
-            $chado_column = $prop_storage_settings['chado_column'];
-            $value = $prop_value->getValue();
-            if (is_string($value)) {
-              $value = trim($value);
-            }
-            $records[$chado_table][$delta]['fields'][$chado_column] = $value;
-
-            // If this field should not allow an empty value that means this
-            // entire record should be removed on an update and not inserted.
-            $delete_if_empty = array_key_exists('delete_if_empty',$prop_storage_settings) ? $prop_storage_settings['delete_if_empty'] : FALSE;
-            if ($delete_if_empty) {
-              $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
-            }
+            $this->buildChadoRecords_store($records, $delta, $prop_storage_settings, $context, $prop_value);
           }
           // READ_VALUE: selecting a single column. This cannot be used for inserting or
           // updating values. Instead we use store actions for that.
@@ -1133,7 +1121,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
   }
 
-/**
+  /**
    * Add chado record information for a specific ChadoStorageProperty
    * where the action is store_link.
    *
@@ -1212,6 +1200,61 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         .' Backwards compatible mode should allow this field to save/load data but may result in errors with token replacement and publishing.',
         [':name' => $context['field_name'], ':key' => $context['key']]
       );
+    }
+  }
+
+/**
+   * Add chado record information for a specific ChadoStorageProperty
+   * where the action is store.
+   *
+   * STORE: indicates that the value of this property can be loaded and
+   * stored in the Chado table indicated by this property.
+   *
+   * @param array $records
+   *   The current set of chado records. This method will update this array.
+   * @param int $delta
+   *   The position in the values array the current property type stands
+   *   and thus the position in the records array it should be.
+   * @param array $storage_settings
+   *   The storage settings for the current property. This is all the information
+   *   from the property type.
+   * @param array $context
+   *   A set of values to provide context. These a pre-computed in the parent method
+   *   to reduce code duplication when a task is done for all/many storage properties
+   *   regardless of their action.
+   * @param StoragePropertyValue $prop_value
+   *   The value object for the property we are adding records for.
+   *   Note: We will always have a StoragePropertyValue for a property even if
+   *   the value is not set. This method is expected to check if the value is empty or not.
+   */
+  protected function buildChadoRecords_store(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
+    // Get the Chado table this specific property works with.
+    // Use the base table as a default for properties which do not specify
+    // the chado table (e.g. single value fields).
+    $chado_table = $context['base_table'];
+    if (array_key_exists('chado_table', $storage_settings)) {
+      $chado_table = $storage_settings['chado_table'];
+    }
+    // Now grab the column we are interested in.
+    $chado_column = $storage_settings['chado_column'];
+
+    // Retrieve the value and clean it up.
+    $value = $prop_value->getValue();
+    if (is_string($value)) {
+      $value = trim($value);
+    }
+
+    $records[$chado_table][$delta]['fields'][$chado_column] = $value;
+
+    // If this field should not allow an empty value that means this
+    // entire record should be removed on an update and not inserted.
+    $delete_if_empty = FALSE;
+    if (array_key_exists('delete_if_empty', $storage_settings)) {
+      $delete_if_empty = $storage_settings['delete_if_empty'];
+    }
+    if ($delete_if_empty) {
+      $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
     }
   }
 
