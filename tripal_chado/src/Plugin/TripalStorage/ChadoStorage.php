@@ -857,6 +857,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Retrieve the operation to be used for searching and if not set, use equals as the default.
           $context['operation'] = array_key_exists('operation', $info) ? $info['operation'] : '=';
 
+          $context['field_name'] = $field_name;
+          $context['key'] = $key;
+
           // Now for each action type, set the conditions and fields for
           // selecting chado records based on the other properties supplied.
           // ----------------------------------------------------------------
@@ -881,56 +884,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // in this property is the left_table_id indicated in other key/value pairs.
           // ................................................................
           if ($action == 'store_link') {
-            // The old implementation of store_link used chado_table/column notation
-            // only for the right side of the relationship.
-            // This meant we could not reliably determine the left side of the
-            // relationship... Confirm this field uses the new method.
-            if (array_key_exists('right_table', $prop_storage_settings)) {
-              // Using the tables with a store_id, determine which side of this
-              // relationship is a base/core table. This will be used for the
-              // fields below to ensure the ID is replaced.
-              // Start by assuming the left table is the base/core table
-              // (e.g. feature.feature_id = featureprop.feature_id).
-              $link_base = $prop_storage_settings['left_table'];
-              $link_base_id = $prop_storage_settings['left_table_id'];
-              $linker = $prop_storage_settings['right_table'];
-              $linker_id = $prop_storage_settings['right_table_id'];
-              // Then check if the right table has a store_id and if so, use it instead.
-              // (e.g. analysisfeature.analysis_id = analysis.analysis_id)
-              if (array_key_exists($prop_storage_settings['right_table'], $context['base_record_ids'])) {
-                $link_base = $prop_storage_settings['right_table'];
-                $link_base_id = $prop_storage_settings['right_table_id'];
-                $linker = $prop_storage_settings['left_table'];
-                $linker_id = $prop_storage_settings['left_table_id'];
-              }
-              // @debug print "We decided it should be BASE $link_base.$link_base_id => LINKER $linker.$linker_id.\n";
-              // We want to ensure that the linker table has a field added with
-              // the link to replace the ID once it's available.
-              $records[$linker] = $records[$linker] ?? [$delta => ['fields' => []]];
-              $records[$linker][$delta] = $records[$linker][$delta] ?? ['fields' => []];
-              $records[$linker][$delta]['fields'] = $records[$linker][$delta]['fields'] ?? [];
-              if (!array_key_exists($linker_id, $records[$linker][$delta]['fields'])) {
-                if ($prop_storage_settings['left_table'] !== NULL) {
-                  $records[$linker][$delta]['fields'][$linker_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
-                  // @debug print "Adding a note to replace $linker.$linker_id with $link_base record_id\n";
-                }
-              }
-            }
-            else {
-              // Otherwise this field is using the old method for store_link.
-              // We will enter backwards compatibility mode here to do our best...
-              // It will work to handle CRUD for direct connections (e.g. props)
-              // but will cause problems with double-hops and all token replacement.
-              $bc_chado_table = $prop_storage_settings['chado_table'];
-              $bc_chado_column = $prop_storage_settings['chado_column'];
-              $records[$bc_chado_table][$delta]['fields'][$bc_chado_column] = ['REPLACE_BASE_RECORD_ID', $context['base_table']];
-              $this->logger->warning(
-                'We had to use backwards compatible mode for :name.:key property type with an action of store_link.'
-                .' Please update the code for this field to use left/right table notation for the store_link property.'
-                .' Backwards compatible mode should allow this field to save/load data but may result in errors with token replacement and publishing.',
-                [':name' => $field_name, ':key' => $key]
-              );
-            }
+            $this->buildChadoRecords_store_link($records, $delta, $prop_storage_settings, $context, $prop_value);
           }
           // STORE: indicates that the value of this property can be loaded and
           // stored in the Chado table indicated by this property.
@@ -1177,6 +1131,88 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'operation' => $context['operation']
     ];
 
+  }
+
+/**
+   * Add chado record information for a specific ChadoStorageProperty
+   * where the action is store_link.
+   *
+   * STORE LINK: performs a join between two tables, one of which is a
+   * core table and one of which is a linking table. The value which is saved
+   * in this property is the left_table_id indicated in other key/value pairs.
+   *
+   * NOTE: A JOIN is not added to the query but rather this property stores
+   * the id that a join would normally look up. This is much more performant.
+   *
+   * @param array $records
+   *   The current set of chado records. This method will update this array.
+   * @param int $delta
+   *   The position in the values array the current property type stands
+   *   and thus the position in the records array it should be.
+   * @param array $storage_settings
+   *   The storage settings for the current property. This is all the information
+   *   from the property type.
+   * @param array $context
+   *   A set of values to provide context. These a pre-computed in the parent method
+   *   to reduce code duplication when a task is done for all/many storage properties
+   *   regardless of their action.
+   * @param StoragePropertyValue $prop_value
+   *   The value object for the property we are adding records for.
+   *   Note: We will always have a StoragePropertyValue for a property even if
+   *   the value is not set. This method is expected to check if the value is empty or not.
+   */
+  protected function buildChadoRecords_store_link(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
+    // The old implementation of store_link used chado_table/column notation
+    // only for the right side of the relationship.
+    // This meant we could not reliably determine the left side of the
+    // relationship... Confirm this field uses the new method.
+    if (array_key_exists('right_table', $storage_settings)) {
+      // Using the tables with a store_id, determine which side of this
+      // relationship is a base/core table. This will be used for the
+      // fields below to ensure the ID is replaced.
+      // Start by assuming the left table is the base/core table
+      // (e.g. feature.feature_id = featureprop.feature_id).
+      $link_base = $storage_settings['left_table'];
+      $link_base_id = $storage_settings['left_table_id'];
+      $linker = $storage_settings['right_table'];
+      $linker_id = $storage_settings['right_table_id'];
+      // Then check if the right table has a store_id and if so, use it instead.
+      // (e.g. analysisfeature.analysis_id = analysis.analysis_id)
+      if (array_key_exists($storage_settings['right_table'], $context['base_record_ids'])) {
+        $link_base = $storage_settings['right_table'];
+        $link_base_id = $storage_settings['right_table_id'];
+        $linker = $storage_settings['left_table'];
+        $linker_id = $storage_settings['left_table_id'];
+      }
+      // @debug print "We decided it should be BASE $link_base.$link_base_id => LINKER $linker.$linker_id.\n";
+      // We want to ensure that the linker table has a field added with
+      // the link to replace the ID once it's available.
+      $records[$linker] = $records[$linker] ?? [$delta => ['fields' => []]];
+      $records[$linker][$delta] = $records[$linker][$delta] ?? ['fields' => []];
+      $records[$linker][$delta]['fields'] = $records[$linker][$delta]['fields'] ?? [];
+      if (!array_key_exists($linker_id, $records[$linker][$delta]['fields'])) {
+        if ($storage_settings['left_table'] !== NULL) {
+          $records[$linker][$delta]['fields'][$linker_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
+          // @debug print "Adding a note to replace $linker.$linker_id with $link_base record_id\n";
+        }
+      }
+    }
+    else {
+      // Otherwise this field is using the old method for store_link.
+      // We will enter backwards compatibility mode here to do our best...
+      // It will work to handle CRUD for direct connections (e.g. props)
+      // but will cause problems with double-hops and all token replacement.
+      $bc_chado_table = $storage_settings['chado_table'];
+      $bc_chado_column = $storage_settings['chado_column'];
+      $records[$bc_chado_table][$delta]['fields'][$bc_chado_column] = ['REPLACE_BASE_RECORD_ID', $context['base_table']];
+      $this->logger->warning(
+        'We had to use backwards compatible mode for :name.:key property type with an action of store_link.'
+        .' Please update the code for this field to use left/right table notation for the store_link property.'
+        .' Backwards compatible mode should allow this field to save/load data but may result in errors with token replacement and publishing.',
+        [':name' => $context['field_name'], ':key' => $context['key']]
+      );
+    }
   }
 
   /**
