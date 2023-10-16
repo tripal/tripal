@@ -863,56 +863,32 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Now for each action type, set the conditions and fields for
           // selecting chado records based on the other properties supplied.
           // ----------------------------------------------------------------
-          // STORE ID: stores the primary key value for a core table in chado
-          // Note: There may be more core tables in properties for this field
-          // then just the base table. For example, a field involving a two-join
-          // linker table will include two core tables.
-          // ................................................................
-          if ($action == 'store_id') {
-            $this->buildChadoRecords_store_id($records, $delta, $prop_storage_settings, $context, $prop_value);
-          }
-          // STORE PKEY: stores the primary key value of a linking table.
-          // NOTE: A linking table is not a core table. This is important because
-          // during insert and update, the core tables are handled first and then
-          // linking tables are handled after.
-          // ................................................................
-          if ($action == 'store_pkey') {
-            $this->buildChadoRecords_store_pkey($records, $delta, $prop_storage_settings, $context, $prop_value);
-          }
-          // STORE LINK: performs a join between two tables, one of which is a
-          // core table and one of which is a linking table. The value which is saved
-          // in this property is the left_table_id indicated in other key/value pairs.
-          // ................................................................
-          if ($action == 'store_link') {
-            $this->buildChadoRecords_store_link($records, $delta, $prop_storage_settings, $context, $prop_value);
-          }
-          // STORE: indicates that the value of this property can be loaded and
-          // stored in the Chado table indicated by this property.
-          // ................................................................
-          if ($action == 'store') {
-            $this->buildChadoRecords_store($records, $delta, $prop_storage_settings, $context, $prop_value);
-          }
-          // READ_VALUE: selecting a single column. This cannot be used for inserting or
-          // updating values. Instead we use store actions for that.
-          // If reading a value from a non-base table, then the path should
-          // be provided. This also supports the deprecated 'join' action.
-          // ................................................................
-          if (in_array($action, ['read_value', 'join'])) {
-            $this->buildChadoRecords_read_value($records, $delta, $prop_storage_settings, $context, $prop_value);
-          }
-          // REPLACE: replace a tokenized string with the values from other
-          // properties. As such we do not need to worry about adding this
-          // property to the chado queries.
-          // ................................................................
-          if ($action == 'replace') {
-            // Do nothing here for properties that need replacement.
-          }
-          // FUNCTION: use a function to determine the value of this property.
-          // As such, we do not need to add this property to the chado queries.
-          // ................................................................
-          if ($action == 'function') {
-            // Do nothing here for properties that require post-processing
-            // with a function.
+          switch ($action) {
+            case 'store_id':
+              $this->buildChadoRecords_store_id($records, $delta, $prop_storage_settings, $context, $prop_value);
+              break;
+            case 'store_pkey':
+              $this->buildChadoRecords_store_pkey($records, $delta, $prop_storage_settings, $context, $prop_value);
+              break;
+            case 'store_link':
+              $this->buildChadoRecords_store_link($records, $delta, $prop_storage_settings, $context, $prop_value);
+              break;
+            case 'store':
+              $this->buildChadoRecords_store($records, $delta, $prop_storage_settings, $context, $prop_value);
+              break;
+            case 'read_value':
+            case 'join':
+              $this->buildChadoRecords_read_value($records, $delta, $prop_storage_settings, $context, $prop_value);
+              break;
+            case 'replace':
+              // Do nothing here for properties that need replacement
+              // since the values are provided by other properties.
+              break;
+            case 'function':
+              // Do nothing here for properties that require post-processing
+              // with a function as determining the value is handled by
+              // the function not by chadostorage.
+              break;
           }
         }
       }
