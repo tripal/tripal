@@ -1092,6 +1092,77 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
+   * Add chado record information for a specific ChadoStorageProperty
+   * where the action is store_id.
+   *
+   * STORE ID: stores the primary key value for a core table in chado.
+   *
+   * Note: There may be more core tables in properties for this field
+   * then just the base table. For example, a field involving a two-join
+   * linker table will include two core tables.
+   *
+   * @param array $records
+   *   The current set of chado records. This method will update this array.
+   * @param array $storage_settings
+   *   The storage settings for the current property. This is all the information
+   *   from the property type.
+   * @param array $context
+   *   A set of values to provide context. These a pre-computed in the parent method
+   *   to reduce code duplication when a task is done for all/many storage properties
+   *   regardless of their action.
+   * @param StoragePropertyValue $prop_value
+   *   The value object for the property we are adding records for.
+   *   Note: We will always have a StoragePropertyValue for a property even if
+   *   the value is not set. This method is expected to check if the value is empty or not.
+   */
+  protected function buildChadoRecords_store_id(array &$records, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
+    // Get the Chado table this specific property works with.
+    // Use the base table as a default for properties which do not specify
+    // the chado table (e.g. single value fields).
+    $chado_table = $context['base_table'];
+    if (array_key_exists('chado_table', $prop_storage_settings)) {
+      $chado_table = $prop_storage_settings['chado_table'];
+    }
+    // Now determine the primary key for the chado table.
+    $schema = $this->connection->schema();
+    $chado_table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+    $chado_table_pkey = $chado_table_def['primary key'];
+
+    // Get the value if it is set.
+    $record_id = $prop_value->getValue();
+
+    // If the record_id is zero then this is a brand-new value for
+    // this property. Let's set it to be replaced in the hopes that
+    // some other property has already been inserted and has the ID.
+    if ($record_id == 0) {
+      $records[$chado_table][0]['conditions'][$chado_table_pkey] = [
+        'value' => [
+          'REPLACE_BASE_RECORD_ID',
+          $context['base_table']
+        ],
+        'operation' => $operation
+      ];
+      // Now we add the chado table to our array of core tables
+      // so that we can replace it with the value for the record later.
+      if (!array_key_exists($chado_table, $context['base_record_ids'])) {
+        $context['base_record_ids'][$chado_table] = $record_id;
+      }
+    }
+    // However, if the record_id was set when the values were passed in,
+    // then we want to set it here and add it to the array of core ids
+    // for use later when replacing base record ids.
+    else {
+      $records[$chado_table][0]['conditions'][$chado_table_pkey] = [
+        'value' => $record_id,
+        'operation' => $operation
+      ];
+
+      $context['base_record_ids'][$chado_table] = $record_id;
+    }
+  }
+
+  /**
    *
    * @param array $records
    * @param string $base_table
