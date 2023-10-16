@@ -898,31 +898,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // be provided. This also supports the deprecated 'join' action.
           // ................................................................
           if (in_array($action, ['read_value', 'join'])) {
-            $chado_column = $prop_storage_settings['chado_column'];
-            // If a join is needed to access the column, then the 'path' needs
-            // to be defined and the joins need to be added to the query.
-            // This will also add the fields to be selected.
-            if (array_key_exists('path', $prop_storage_settings)) {
-              $path = $prop_storage_settings['path'];
-              $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
-              $path_arr = explode(";", $path);
-              $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr);
-            }
-            // Otherwise, it is a column in a base table. In this case, we
-            // only need to ensure the column is added to the fields.
-            else {
-              // We will only set this if it's not already set.
-              // This is to allow another field with a store set for this column
-              // to set this value. We actually only do this to ensure it ends up
-              // in the query fields.
-              if (!array_key_exists('fields', $records[$chado_table][$delta])) {
-                $records[$chado_table][$delta]['fields'] = [];
-                $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
-              }
-              elseif (!array_key_exists($chado_column, $records[$chado_table][$delta]['fields'])) {
-                $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
-              }
-            }
+            $this->buildChadoRecords_read_value($records, $delta, $prop_storage_settings, $context, $prop_value);
           }
           // REPLACE: replace a tokenized string with the values from other
           // properties. As such we do not need to worry about adding this
@@ -1203,7 +1179,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
   }
 
-/**
+  /**
    * Add chado record information for a specific ChadoStorageProperty
    * where the action is store.
    *
@@ -1255,6 +1231,72 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
     if ($delete_if_empty) {
       $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
+    }
+  }
+
+  /**
+   * Add chado record information for a specific ChadoStorageProperty
+   * where the action is read_value.
+   *
+   * READ_VALUE: selecting a single column. This cannot be used for inserting or
+   * updating values. Instead we use store actions for that.
+   * If reading a value from a non-base table, then the path should
+   * be provided.
+   *
+   * This also supports the deprecated 'join' action.
+   *
+   * @param array $records
+   *   The current set of chado records. This method will update this array.
+   * @param int $delta
+   *   The position in the values array the current property type stands
+   *   and thus the position in the records array it should be.
+   * @param array $storage_settings
+   *   The storage settings for the current property. This is all the information
+   *   from the property type.
+   * @param array $context
+   *   A set of values to provide context. These a pre-computed in the parent method
+   *   to reduce code duplication when a task is done for all/many storage properties
+   *   regardless of their action.
+   * @param StoragePropertyValue $prop_value
+   *   The value object for the property we are adding records for.
+   *   Note: We will always have a StoragePropertyValue for a property even if
+   *   the value is not set. This method is expected to check if the value is empty or not.
+   */
+  protected function buildChadoRecords_read_value(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
+    // Get the Chado table this specific property works with.
+    // Use the base table as a default for properties which do not specify
+    // the chado table (e.g. single value fields).
+    $chado_table = $context['base_table'];
+    if (array_key_exists('chado_table', $storage_settings)) {
+      $chado_table = $storage_settings['chado_table'];
+    }
+
+    $chado_column = $storage_settings['chado_column'];
+
+    // If a join is needed to access the column, then the 'path' needs
+    // to be defined and the joins need to be added to the query.
+    // This will also add the fields to be selected.
+    if (array_key_exists('path', $storage_settings)) {
+      $path = $storage_settings['path'];
+      $as = array_key_exists('as', $storage_settings) ? $storage_settings['as'] : $chado_column;
+      $path_arr = explode(";", $path);
+      $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr);
+    }
+    // Otherwise, it is a column in a base table. In this case, we
+    // only need to ensure the column is added to the fields.
+    else {
+      // We will only set this if it's not already set.
+      // This is to allow another field with a store set for this column
+      // to set this value. We actually only do this to ensure it ends up
+      // in the query fields.
+      if (!array_key_exists('fields', $records[$chado_table][$delta])) {
+        $records[$chado_table][$delta]['fields'] = [];
+        $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
+      }
+      elseif (!array_key_exists($chado_column, $records[$chado_table][$delta]['fields'])) {
+        $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
+      }
     }
   }
 
