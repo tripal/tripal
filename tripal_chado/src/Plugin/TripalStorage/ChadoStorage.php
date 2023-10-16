@@ -11,6 +11,8 @@ use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 
+use Drupal\tripal\TripalStorage\StoragePropertyValue;
+
 /**
  * Chado implementation of the TripalStorageInterface.
  *
@@ -846,6 +848,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Get the Chado table this specific property works with.
           // Use the base table as a default for properties which do not specify
           // the chado table (e.g. single value fields).
+          /* TO BE REMOVED LATER */
           $chado_table = $context['base_table'];
           if (array_key_exists('chado_table', $prop_storage_settings)) {
             $chado_table = $prop_storage_settings['chado_table'];
@@ -863,29 +866,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // linker table will include two core tables.
           // ................................................................
           if ($action == 'store_id') {
-
-            $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
-            $chado_table_pkey = $chado_table_def['primary key'];
-
-            $record_id = $prop_value->getValue();
-            // If the record_id is zero then this is a brand-new value for
-            // this property. Let's set it to be replaced in the hopes that
-            // some other property has already been inserted and has the ID.
-            if ($record_id == 0) {
-              $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['value' => ['REPLACE_BASE_RECORD_ID', $chado_table], 'operation' => $context['operation']];
-              // Now we add the chado table to our array of core tables
-              // so that we can replace it with the value for the record later.
-              if (!array_key_exists($chado_table, $context['base_record_ids'])) {
-                $context['base_record_ids'][$chado_table] = $record_id;
-              }
-            }
-            // However, if the record_id was set when the values were passed in,
-            // then we want to set it here and add it to the array of core ids
-            // for use later when replacing base record ids.
-            else {
-              $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['value' => $record_id, 'operation' => $context['operation']];
-              $context['base_record_ids'][$chado_table] = $record_id;
-            }
+            $this->buildChadoRecords_store_id($records, $prop_storage_settings, $context, $prop_value);
           }
           // STORE PKEY: stores the primary key value of a linking table.
           // NOTE: A linking table is not a core table. This is important because
@@ -1111,8 +1092,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // Use the base table as a default for properties which do not specify
     // the chado table (e.g. single value fields).
     $chado_table = $context['base_table'];
-    if (array_key_exists('chado_table', $prop_storage_settings)) {
-      $chado_table = $prop_storage_settings['chado_table'];
+    if (array_key_exists('chado_table', $storage_settings)) {
+      $chado_table = $storage_settings['chado_table'];
     }
     // Now determine the primary key for the chado table.
     $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
