@@ -58,6 +58,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
           'action' => 'store_pkey',
           'chado_table' => 'featureprop',
+          'chado_table_alias' => 'featureprop_rdfstype',
           'chado_column' => 'featureprop_id',
         ],
         // Generate `JOIN {featureprop} ON feature.feature_id = featureprop.feature_id`
@@ -68,6 +69,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
           'left_table' => 'feature',
           'left_table_id' => 'feature_id',
           'right_table' => 'featureprop',
+          'right_table_alias' => 'featureprop_rdfstype',
           'right_table_id' => 'feature_id'
         ],
         // Now we are going to store all the core columns of the featureprop table to
@@ -76,12 +78,14 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
           'action' => 'store',
           'chado_table' => 'featureprop',
+          'chado_table_alias' => 'featureprop_rdfstype',
           'chado_column' => 'type_id'
         ],
         'A_value' => [
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType',
           'action' => 'store',
           'chado_table' => 'featureprop',
+          'chado_table_alias' => 'featureprop_rdfstype',
           'chado_column' => 'value',
           'delete_if_empty' => TRUE,
           'empty_value' => ''
@@ -90,6 +94,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
           'action' => 'store',
           'chado_table' => 'featureprop',
+          'chado_table_alias' => 'featureprop_rdfstype',
           'chado_column' => 'rank'
         ],
       ],
@@ -274,7 +279,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
    *   - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
    *   - [NOT IMPLEMENTED] Ensure property field picks up records in Chado not added through field.
    */
-  public function testInsertValuesForSingleField($prop_field_name) {
+  public function testCRUDForSinglePropField($prop_field_name) {
 
     $rdfs_comment_cvtermID = $this->getCvtermID('rdfs', 'comment');
     $gene_cvtermID = $this->getCvtermID('SO', '0000704');

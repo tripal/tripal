@@ -991,6 +991,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
     $chado_table_pkey = $chado_table_def['primary key'];
 
+    // Check if there is a table alias set and if so, then use it.
+    $table_alias = $chado_table;
+    if (array_key_exists('chado_table_alias', $storage_settings)) {
+      $table_alias = $storage_settings['chado_table_alias'];
+      $context['table_alias'][$table_alias] = $chado_table;
+    }
+
     // Get the value if it is set.
     $record_id = $prop_value->getValue();
 
@@ -998,7 +1005,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // this property. Let's set it to be replaced in the hopes that
     // some other property has already been inserted and has the ID.
     if ($record_id == 0) {
-      $records[$chado_table][0]['conditions'][$chado_table_pkey] = [
+      $records[$table_alias][0]['conditions'][$chado_table_pkey] = [
         'value' => [
           'REPLACE_BASE_RECORD_ID',
           $context['base_table']
@@ -1015,12 +1022,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // then we want to set it here and add it to the array of core ids
     // for use later when replacing base record ids.
     else {
-      $records[$chado_table][0]['conditions'][$chado_table_pkey] = [
+      $records[$table_alias][0]['conditions'][$chado_table_pkey] = [
         'value' => $record_id,
         'operation' => $context['operation']
       ];
 
-      $context['base_record_ids'][$chado_table] = $record_id;
+      $context['base_record_ids'][$table_alias] = $record_id;
     }
   }
 
@@ -1064,9 +1071,16 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
     $chado_table_pkey = $chado_table_def['primary key'];
 
+    // Check if there is a table alias set and if so, then use it.
+    $table_alias = $chado_table;
+    if (array_key_exists('chado_table_alias', $storage_settings)) {
+      $table_alias = $storage_settings['chado_table_alias'];
+      $context['table_alias'][$table_alias] = $chado_table;
+    }
+
     $link_record_id = $prop_value->getValue();
 
-    $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = [
+    $records[$table_alias][$delta]['conditions'][$chado_table_pkey] = [
       'value' => $link_record_id,
       'operation' => $context['operation']
     ];
@@ -1117,6 +1131,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $link_base_id = $storage_settings['left_table_id'];
       $linker = $storage_settings['right_table'];
       $linker_id = $storage_settings['right_table_id'];
+      $linker_alias = (array_key_exists('right_table_alias', $storage_settings)) ? $storage_settings['right_table_alias'] : $linker;
       // Then check if the right table has a store_id and if so, use it instead.
       // (e.g. analysisfeature.analysis_id = analysis.analysis_id)
       if (array_key_exists($storage_settings['right_table'], $context['base_record_ids'])) {
@@ -1124,18 +1139,23 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         $link_base_id = $storage_settings['right_table_id'];
         $linker = $storage_settings['left_table'];
         $linker_id = $storage_settings['left_table_id'];
+        $linker_alias = (array_key_exists('left_table_alias', $storage_settings)) ? $storage_settings['left_table_alias'] : $linker;
       }
+
+      // If an alias was set then make sure it's added to the context.
+      if ($linker_alias != $linker) {
+        $context['table_alias'][$linker_alias] = $linker;
+      }
+
       // @debug print "We decided it should be BASE $link_base.$link_base_id => LINKER $linker.$linker_id.\n";
       // We want to ensure that the linker table has a field added with
       // the link to replace the ID once it's available.
-      $records[$linker] = $records[$linker] ?? [$delta => ['fields' => []]];
-      $records[$linker][$delta] = $records[$linker][$delta] ?? ['fields' => []];
-      $records[$linker][$delta]['fields'] = $records[$linker][$delta]['fields'] ?? [];
-      if (!array_key_exists($linker_id, $records[$linker][$delta]['fields'])) {
-        if ($storage_settings['left_table'] !== NULL) {
-          $records[$linker][$delta]['fields'][$linker_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
-          // @debug print "Adding a note to replace $linker.$linker_id with $link_base record_id\n";
-        }
+      $records[$linker_alias] = $records[$linker_alias] ?? [$delta => ['fields' => []]];
+      $records[$linker_alias][$delta] = $records[$linker_alias][$delta] ?? ['fields' => []];
+      $records[$linker_alias][$delta]['fields'] = $records[$linker_alias][$delta]['fields'] ?? [];
+      if (!array_key_exists($linker_id, $records[$linker_alias][$delta]['fields'])) {
+        $records[$linker_alias][$delta]['fields'][$linker_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
+        // @debug print "Adding a note to replace $linker.$linker_id with $link_base record_id\n";
       }
     }
     else {
@@ -1188,6 +1208,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     if (array_key_exists('chado_table', $storage_settings)) {
       $chado_table = $storage_settings['chado_table'];
     }
+
+    // Check if there is a table alias set and if so, then use it.
+    $table_alias = $chado_table;
+    if (array_key_exists('chado_table_alias', $storage_settings)) {
+      $table_alias = $storage_settings['chado_table_alias'];
+      $context['table_alias'][$table_alias] = $chado_table;
+    }
+
     // Now grab the column we are interested in.
     $chado_column = $storage_settings['chado_column'];
 
@@ -1197,7 +1225,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $value = trim($value);
     }
 
-    $records[$chado_table][$delta]['fields'][$chado_column] = $value;
+    $records[$table_alias][$delta]['fields'][$chado_column] = $value;
 
     // If this field should not allow an empty value that means this
     // entire record should be removed on an update and not inserted.
@@ -1206,7 +1234,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $delete_if_empty = $storage_settings['delete_if_empty'];
     }
     if ($delete_if_empty) {
-      $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
+      $records[$table_alias][$delta]['delete_if_empty'][] = $chado_column;
     }
   }
 
@@ -1248,6 +1276,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $chado_table = $storage_settings['chado_table'];
     }
 
+    // Check if there is a table alias set and if so, then use it.
+    $table_alias = $chado_table;
+    if (array_key_exists('chado_table_alias', $storage_settings)) {
+      $table_alias = $storage_settings['chado_table_alias'];
+      $context['table_alias'][$table_alias] = $chado_table;
+    }
+
     $chado_column = $storage_settings['chado_column'];
 
     // If a join is needed to access the column, then the 'path' needs
@@ -1266,12 +1301,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // This is to allow another field with a store set for this column
       // to set this value. We actually only do this to ensure it ends up
       // in the query fields.
-      if (!array_key_exists('fields', $records[$chado_table][$delta])) {
-        $records[$chado_table][$delta]['fields'] = [];
-        $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
+      if (!array_key_exists('fields', $records[$table_alias][$delta])) {
+        $records[$table_alias][$delta]['fields'] = [];
+        $records[$table_alias][$delta]['fields'][$chado_column] = NULL;
       }
-      elseif (!array_key_exists($chado_column, $records[$chado_table][$delta]['fields'])) {
-        $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
+      elseif (!array_key_exists($chado_column, $records[$table_alias][$delta]['fields'])) {
+        $records[$table_alias][$delta]['fields'][$chado_column] = NULL;
       }
     }
   }
