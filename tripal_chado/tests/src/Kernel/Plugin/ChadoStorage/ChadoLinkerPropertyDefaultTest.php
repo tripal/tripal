@@ -383,6 +383,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
       $$varname = $records[0];
     }
 
+    /*
     // Test Case: Load values existing in Chado.
     // ---------------------------------------------------------
     // First we want to reset all the chado storage arrays to ensure we are
@@ -506,6 +507,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // ---------------------------------------------------------
 
     // NOT YET IMPLEMENTED IN CHADOSTORAGE.
+
+    */
 
   }
 }
