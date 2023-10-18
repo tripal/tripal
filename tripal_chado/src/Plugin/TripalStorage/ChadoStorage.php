@@ -206,19 +206,20 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     try {
 
       // First: Insert the base table records.
-      foreach ($this->base_record_ids as $base_table => $record_id) {
-        foreach ($records[$base_table] as $delta => $record) {
-          $record_id = $this->insertChadoRecord($records, $base_table, $delta, $record);
-          $this->base_record_ids[$base_table] = $record_id;
+      // Note: Assumes there is only a single base table.
+      foreach ($this->base_record_ids as $base_table_alias => $record_id) {
+        foreach ($records[$base_table_alias] as $delta => $record) {
+          $record_id = $this->insertChadoRecord($records, $base_table_alias, $delta, $record);
+          $this->base_record_ids[$base_table_alias] = $record_id;
         }
       }
 
       // Second: Insert non base table records.
-      foreach ($records as $chado_table => $deltas) {
+      foreach ($records as $chado_table_alias => $deltas) {
         foreach ($deltas as $delta => $record) {
 
           // Skip base table records.
-          if (in_array($chado_table, array_keys($this->base_record_ids))) {
+          if (in_array($chado_table_alias, array_keys($this->base_record_ids))) {
             continue;
           }
 
@@ -239,12 +240,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Replace linking fields with values
           foreach ($record['fields'] as $column => $val) {
             if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
-              $base_table = $val[1];
-              $records[$chado_table][$delta]['fields'][$column] = $this->base_record_ids[$base_table];
-              $record['fields'][$column] = $this->base_record_ids[$base_table];
+              $base_table_alias = $val[1];
+              $records[$chado_table_alias][$delta]['fields'][$column] = $this->base_record_ids[$base_table_alias];
+              $record['fields'][$column] = $this->base_record_ids[$base_table_alias];
             }
           }
-          $this->insertChadoRecord($records, $chado_table, $delta, $record);
+          $this->insertChadoRecord($records, $chado_table_alias, $delta, $record);
         }
       }
       $this->setRecordIds($values, $records);
@@ -617,38 +618,45 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           }
           $action = $prop_storage_settings['action'];
 
-          // Get the base table information.
-          $base_table = $storage_plugin_settings['base_table'];
-          $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
-          $base_table_pkey = $base_table_def['primary key'];
-
-          // Get the Chado table information. If one is not specified (as
-          // in the case of single value fields) then default to the base
-          // table.
-          $chado_table = $base_table;
-          $chado_table_def = $base_table_def;
-          $chado_table_pkey = $base_table_pkey;
+          // Get the base table information and use it as the default for if
+          // a chado_table is not specified (as in the case of single value fields).
+          $chado_table = $storage_plugin_settings['base_table'];
+          // Now check for if the chado_table is specified as it should be for
+          // store_id + store_pkey properties.
           if (array_key_exists('chado_table', $prop_storage_settings)) {
             $chado_table = $prop_storage_settings['chado_table'];
-            $chado_table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
-            $chado_table_pkey = $chado_table_def['primary key'];
           }
+          // If it is a store_link property then we have to deal with left/right
+          // tables so let's do that now.
+          // Note: If the action is store_link and the right_table was not set then we
+          // want to be backwards compatible with the old store_link approach.
+          elseif (array_key_exists('right_table', $prop_storage_settings)) {
+            $chado_table = $prop_storage_settings['right_table'];
+            if (array_key_exists($prop_storage_settings['right_table'], $this->base_record_ids)) {
+              $chado_table = $prop_storage_settings['left_table'];
+            }
+          }
+
+          // Grab the pkey using the schema definition.
+          $chado_table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+          $chado_table_pkey = $chado_table_def['primary key'];
+
+          // Now grab the table alias.
+          $chado_table_alias = $this->getTableAliasForChadoTable($field_name, $key, $chado_table);
 
           // If this is the record_id property then set its value.
           if ($action == 'store_id') {
-            $record_id = $records[$chado_table][0]['conditions'][$chado_table_pkey]['value'];
+            $record_id = $records[$chado_table_alias][0]['conditions'][$chado_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is the linked record_id property then set its value.
           if ($action == 'store_pkey') {
-            $record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey]['value'];
+            $record_id = $records[$chado_table_alias][$delta]['conditions'][$chado_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is a property managing a linked record ID then set it too.
           if ($action == 'store_link') {
-            // @todo we should use left/right here rather than assuming there is
-            // only a single base table.
-            $record_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
+            $record_id = $records[$chado_table_alias][0]['conditions'][$chado_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
         }
@@ -1195,6 +1203,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $bc_chado_table = $storage_settings['chado_table'];
       $bc_chado_column = $storage_settings['chado_column'];
       $records[$bc_chado_table][$delta]['fields'][$bc_chado_column] = ['REPLACE_BASE_RECORD_ID', $context['base_table']];
+
+      // We also need to set the mapping so that the id can be replaced later.
+      $this->setChadoTableAliasMapping($bc_chado_table, $bc_chado_table, $context['field_name'], $context['property_key']);
+
       $this->logger->warning(
         'We had to use backwards compatible mode for :name.:key property type with an action of store_link.'
         .' Please update the code for this field to use left/right table notation for the store_link property.'
@@ -1867,6 +1879,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
       }
     }
+
+    print "\nWe could not reverse lookup for $field_name > $property_key : $chado_table. Reverse Mapping: " . print_r($this->reverse_alias_mapping, TRUE) . "Forward Mapping: " . print_r($this->table_alias_mapping, TRUE);
 
     return NULL;
   }
