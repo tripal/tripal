@@ -76,7 +76,7 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
 
   // The link to add a new publication
   $html = "<ul class='action-links'>";
-  $html .= '  <li>' . Link::fromTextAndUrl('New Importer', Url::fromUri('internal:/admin/tripal/loaders/publications/new_pub'))->toString() . '</li>';
+  $html .= '  <li>' . Link::fromTextAndUrl('New Importer', Url::fromUri('internal:/admin/tripal/loaders/publications/new_publication'))->toString() . '</li>';
   $html .= '</ul>';
   $form['new_publication_link'] = [
     '#type' => 'markup',
