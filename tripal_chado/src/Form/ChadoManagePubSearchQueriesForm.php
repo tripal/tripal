@@ -35,17 +35,6 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
   // // clear out the session variable when we view the list.
   // unset($_SESSION['tripal_pub_import']);
 
-  // $headers = [
-  //   '',
-  //   'Importer Name',
-  //   'Database',
-  //   'Search String',
-  //   'Disabled',
-  //   'Create Contact',
-  //   '',
-  // ];
-  // $rows = [];
-  // $importers = db_query("SELECT * FROM {tripal_pub_import} ORDER BY name");
 
   // while ($importer = $importers->fetchObject()) {
   //   $criteria = unserialize($importer->criteria);
@@ -162,18 +151,7 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
   }
 
 
-  // $page .= '<p>' . t(
-  //     "A publication importer is used to create a set of search criteria that can be used
-  //    to query a remote database, find publications that match the specified criteria
-  //    and then import those publications into the Chado database. An example use case would
-  //    be to peridocially add new publications to this Tripal site that have appeared in PubMed
-  //    in the last 30 days.  You can import publications in one of two ways:
-  //    <ol>
-  //     <li>Create a new importer by clicking the 'New Importer' link above, and after saving it should appear in the list below.  Click the
-  //         link labeled 'Import Pubs' to schedule a job to import the publications</li>
-  //     <li>The first method only performs the import once.  However, you can schedule the
-  //         importer to run periodically by adding a cron job. </li>
-  //    </ol><br>");
+
 
   // $form = drupal_get_form('tripal_pub_importer_ncbi_api_key_form');
   // $page .= drupal_render($form);
