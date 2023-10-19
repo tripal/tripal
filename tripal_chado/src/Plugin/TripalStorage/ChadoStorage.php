@@ -418,13 +418,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * Selects a single record from Chado.
    *
    * @param array $records
-   * @param string $chado_table
+   * @param string $chado_table_alias
    * @param integer $delta
    * @param array $record
    *
    * @throws \Exception
    */
-  public function selectChadoRecord(&$records, $base_tables, $chado_table, $delta, $record) {
+  public function selectChadoRecord(&$records, $base_tables, $chado_table_alias, $delta, $record) {
 
     if (!array_key_exists('conditions', $record)) {
       throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to missing conditions. Record: @record',
@@ -437,6 +437,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
+
+    $chado_table = $this->getChadoTableFromAlias($chado_table_alias);
 
     // Select the fields in the chado table.
     $select = $this->connection->select('1:'.$chado_table, 'ct');
@@ -479,7 +481,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       throw new \Exception($this->t('Failed to select record in the Chado "@table" table. Record: @record',
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
-    $records[$chado_table][$delta]['fields'] = $results->fetchAssoc();
+    $records[$chado_table_alias][$delta]['fields'] = $results->fetchAssoc();
   }
 
   /**
@@ -496,9 +498,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $transaction_chado = $this->connection->startTransaction();
     try {
-      foreach ($records as $chado_table => $deltas) {
+      foreach ($records as $chado_table_alias => $deltas) {
         foreach ($deltas as $delta => $record) {
-          $this->selectChadoRecord($records, $base_tables, $chado_table, $delta, $record);
+          $this->selectChadoRecord($records, $base_tables, $chado_table_alias, $delta, $record);
         }
       }
       $this->setPropValues($values, $records);
@@ -704,26 +706,20 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           if ($action == 'store_pkey') {
             continue;
           }
-
-          // If this is a linked record then the ID should already be in the
-          // the conditions of the base table.
           if ($action == 'store_link') {
-            $base_table = $storage_plugin_settings['base_table'];
-            $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
-            $base_table_pkey = $base_table_def['primary key'];
-            $link_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
-            $values[$field_name][$delta][$key]['value']->setValue($link_id);
+            continue;
           }
 
           // Get the values of properties that can be stored.
           if ($action == 'store') {
             $chado_table = $prop_storage_settings['chado_table'];
+            $chado_table_alias = $this->getTableAliasForChadoTable($field_name, $key, $chado_table);
             $chado_column = $prop_storage_settings['chado_column'];
 
-            if (array_key_exists($chado_table, $records)) {
-              if (array_key_exists($delta, $records[$chado_table])) {
-                if (array_key_exists($chado_column, $records[$chado_table][$delta]['fields'])) {
-                  $value = $records[$chado_table][$delta]['fields'][$chado_column];
+            if (array_key_exists($chado_table_alias, $records)) {
+              if (array_key_exists($delta, $records[$chado_table_alias])) {
+                if (array_key_exists($chado_column, $records[$chado_table_alias][$delta]['fields'])) {
+                  $value = $records[$chado_table_alias][$delta]['fields'][$chado_column];
                   $values[$field_name][$delta][$key]['value']->setValue($value);
                 }
               }
@@ -749,9 +745,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               // The base table is the left table of the first part of the path.
               $chado_table = $left_table;
             }
+            $chado_table_alias = $this->getTableAliasForChadoTable($field_name, $key, $chado_table);
             $chado_column = $prop_storage_settings['chado_column'];
             $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
-            $value = $records[$chado_table][$delta]['fields'][$as];
+            $value = $records[$chado_table_alias][$delta]['fields'][$as];
             $values[$field_name][$delta][$key]['value']->setValue($value);
           }
 
