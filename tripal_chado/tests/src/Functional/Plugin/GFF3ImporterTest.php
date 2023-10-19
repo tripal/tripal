@@ -117,7 +117,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/small_gene.gff',
     ];
 
-    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->createImportJob($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();
@@ -234,7 +234,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     $has_exception = false;
     try {
-      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->createImportJob($run_args, $file_details);
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
@@ -287,7 +287,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     $has_exception = false;
     try {
-      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->createImportJob($run_args, $file_details);
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
@@ -337,7 +337,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     $has_exception = false;
     try {
-      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->createImportJob($run_args, $file_details);
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
@@ -391,7 +391,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     $has_exception = false;
     try {
-      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->createImportJob($run_args, $file_details);
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
@@ -443,7 +443,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     $has_exception = false;
     try {
-      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->createImportJob($run_args, $file_details);
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
@@ -492,7 +492,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_phase.gff',
     ];
 
-    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->createImportJob($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();
@@ -553,7 +553,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     $has_exception = false;
     try {
-      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->createImportJob($run_args, $file_details);
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
@@ -604,7 +604,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     $has_exception = false;
     try {
-      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->createImportJob($run_args, $file_details);
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
@@ -664,7 +664,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_score.gff',
     ];
 
-    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->createImportJob($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();
@@ -741,7 +741,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     $has_exception = false;
     try {
-      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->createImportJob($run_args, $file_details);
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
@@ -793,7 +793,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     $has_exception = false;
     try {
-      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->createImportJob($run_args, $file_details);
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
@@ -844,7 +844,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_strand.gff',
     ];
 
-    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->createImportJob($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();
@@ -937,7 +937,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tag_parent_verification.gff',
     ];
 
-    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->createImportJob($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();
@@ -989,7 +989,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tagvalue_encoded_character.gff',
     ];
 
-    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->createImportJob($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();
@@ -1040,7 +1040,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tagvalue_comma_character.gff',
     ];
 
-    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->createImportJob($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();
@@ -1101,7 +1101,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     ];
 
 
-    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->createImportJob($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();
@@ -1155,7 +1155,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     ];
 
 
-    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->createImportJob($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();
@@ -1269,7 +1269,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     ];
 
 
-    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->createImportJob($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();

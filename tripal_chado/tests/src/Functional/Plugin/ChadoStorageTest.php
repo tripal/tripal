@@ -473,22 +473,22 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'template' => "<i>[genus] [species]</i> [infraspecific_type] [infraspecific_name]",
       ]),
       'genus' => new ChadoVarCharStoragePropertyType($this->content_type, $field_name, 'genus', 'TAXRANK:0000005', 255, [
-        'action' => 'join',
+        'action' => 'read_value',
         'path' => $base_table . '.organism_id>organism.organism_id',
         'chado_column' => 'genus'
       ]),
       'species' => new ChadoVarCharStoragePropertyType($this->content_type, $field_name, 'species', 'TAXRANK:0000006', 255, [
-        'action' => 'join',
+        'action' => 'read_value',
         'path' => $base_table . '.organism_id>organism.organism_id',
         'chado_column' => 'species'
       ]),
       'infraspecific_name' => new ChadoVarCharStoragePropertyType($this->content_type, $field_name, 'infraspecific_name', 'TAXRANK:0000045', 255, [
-        'action' => 'join',
+        'action' => 'read_value',
         'path' => $base_table . '.organism_id>organism.organism_id',
         'chado_column' => 'infraspecific_name',
       ]),
       'infraspecific_type'=> new ChadoIntStoragePropertyType($this->content_type, $field_name, 'infraspecific_type', 'local:infraspecific_type', [
-        'action' => 'join',
+        'action' => 'read_value',
         'path' => $base_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
         'chado_column' => 'name',
         'as' => 'infraspecific_type_name'
