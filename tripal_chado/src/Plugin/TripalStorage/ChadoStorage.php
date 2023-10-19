@@ -349,21 +349,22 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
 
+
     $base_tables = $this->base_record_ids;
     $transaction_chado = $this->connection->startTransaction();
     try {
 
       // Handle base table records first.
-      foreach ($records as $chado_table => $deltas) {
+      foreach ($records as $chado_table_alias => $deltas) {
         foreach ($deltas as $delta => $record) {
 
           // If this is the base table then do an update.
-          if (in_array($chado_table, array_keys($base_tables))) {
+          if (in_array($chado_table_alias, array_keys($base_tables))) {
             if (!array_key_exists('conditions', $record)) {
               throw new \Exception($this->t('Cannot update record in the Chado "@table" table due to missing conditions. Record: @record',
                   ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
             }
-            $this->updateChadoRecord($records, $chado_table, $delta, $record);
+            $this->updateChadoRecord($records, $chado_table_alias, $delta, $record);
             continue;
           }
         }
@@ -373,11 +374,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // with updates. This is necessary because we may violate unique
       // constraints if we don't e.g. changing the order of records with a
       // rank.
-      foreach ($records as $chado_table => $deltas) {
+      foreach ($records as $chado_table_alias => $deltas) {
         foreach ($deltas as $delta => $record) {
 
           // Skip base table records.
-          if (in_array($chado_table, array_keys($base_tables))) {
+          if (in_array($chado_table_alias, array_keys($base_tables))) {
             continue;
           }
 
@@ -386,23 +387,24 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           if (!$this->hasValidConditions($record)) {
             continue;
           }
-          $this->deleteChadoRecord($records, $chado_table, $delta, $record);
+          $this->deleteChadoRecord($records, $chado_table_alias, $delta, $record);
         }
       }
 
       // Now insert all new values for the non-base table records.
-      foreach ($records as $chado_table => $deltas) {
+      foreach ($records as $chado_table_alias => $deltas) {
         foreach ($deltas as $delta => $record) {
 
           // Skip base table records.
-          if (in_array($chado_table, array_keys($base_tables))) {
+          if (in_array($chado_table_alias, array_keys($base_tables))) {
             continue;
           }
           // Skip records that were supposed to be deleted (and were).
           if ($this->isEmptyRecord($record)) {
             continue;
           }
-          $this->insertChadoRecord($records, $chado_table, $delta, $record);
+
+          $this->insertChadoRecord($records, $chado_table_alias, $delta, $record);
         }
       }
       $this->setRecordIds($values, $records);
@@ -524,7 +526,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param array $record
    * @throws \Exception
    */
-  private function deleteChadoRecord(&$records, $chado_table, $delta, $record) {
+  private function deleteChadoRecord(&$records, $chado_table_alias, $delta, $record) {
+
+    $chado_table = $this->getChadoTableFromAlias($chado_table_alias);
 
     $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
@@ -554,7 +558,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     // Unset the record Id for this deleted record.
-    $records[$chado_table][$delta]['conditions'][$pkey]['value'] = 0;
+    $records[$chado_table_alias][$delta]['conditions'][$pkey]['value'] = 0;
   }
 
   /**
