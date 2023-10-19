@@ -181,7 +181,7 @@ tripal.data_loaders.publication_loaders:
 tripal.data_loaders.publication_loaders.manage_pub_search_queries:
   path: 'admin/tripal/loaders/publications/manage_pub_search_queries'
   defaults:
-    _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
+    _form: 'Drupal\tripal_chado\Form\ChadoManagePubSearchQueriesForm'
     _title: 'Manage Pub Search Queries'
   requirements:
     _permission: 'allow tripal import'
