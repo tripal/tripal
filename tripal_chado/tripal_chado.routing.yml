@@ -167,3 +167,39 @@ tripal_chado.project_autocomplete:
         type: integer
       type_id:
         type: integer
+
+# Publication Loaders.
+tripal.data_loaders.publication_loaders:
+  path: 'admin/tripal/loaders/publications'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Publication Loaders'
+  requirements:
+    _permission: 'administer tripal'
+
+# TODO - Add the correct form here
+tripal.data_loaders.publication_loaders.manage_pub_search_queries:
+  path: 'admin/tripal/loaders/publications/manage_pub_search_queries'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
+    _title: 'Manage Pub Search Queries'
+  requirements:
+    _permission: 'allow tripal import'
+
+# TODO - Add the correct form here
+tripal.data_loaders.publication_loaders.run_pub_search_query:
+  path: 'admin/tripal/loaders/publications/manage_pub_search_query'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
+    _title: 'Run Pub Search Query'
+  requirements:
+    _permission: 'allow tripal import'
+
+# TODO - Add the correct form here
+tripal.data_loaders.publication_loaders.import_publication_file:
+  path: 'admin/tripal/loaders/publications/import_publication_file'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
+    _title: 'Import Publication File'
+  requirements:
+    _permission: 'allow tripal import'
