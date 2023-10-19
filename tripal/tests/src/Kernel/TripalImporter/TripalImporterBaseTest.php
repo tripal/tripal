@@ -105,7 +105,7 @@ class TripalImporterBaseTest extends KernelTestBase {
 
   /**
    * Tests focusing on the Tripal importer base class.
-   * Specifically, create(), load(), and getArguments() methods.
+   * Specifically, createImportJob(), load(), and getArguments() methods.
    *
    * @group tripal_importer
    */
@@ -122,10 +122,10 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file not required so expected to succeed.
+    // Execute createImportJob, file not required so expected to succeed.
     $run_args = [];
     $file_details = [];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now check that a record was added to the tripal_import table.
     $public = \Drupal::database();
@@ -166,12 +166,12 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file required so expected to FAIL.
+    // Execute createImportJob, file required so expected to FAIL.
     $exception_msg = NULL;
     try {
       $run_args = [];
       $file_details = [];
-      $import_id = $importer->create($run_args, $file_details);
+      $import_id = $importer->createImportJob($run_args, $file_details);
     }
     catch(\Exception $e) {
       $exception_msg = $e->getMessage();
@@ -196,10 +196,10 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file not required so expected to succeed.
+    // Execute createImportJob, file not required so expected to succeed.
     $run_args = ['test' => 'single run arg'];
     $file_details = ['file_local' => $test_file_path];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now check that a record was added to the tripal_import table.
     $public = \Drupal::database();
@@ -244,10 +244,10 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file not required so expected to succeed.
+    // Execute createImportJob, file not required so expected to succeed.
     $run_args = ['test' => 'single run arg'];
     $file_details = ['file_remote' => $test_file_path];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now check that a record was added to the tripal_import table.
     $public = \Drupal::database();
@@ -295,10 +295,10 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file not required so expected to succeed.
+    // Execute createImportJob, file not required so expected to succeed.
     $run_args = ['test' => 'single run arg'];
     $file_details = ['fid' => $test_fid];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now check that a record was added to the tripal_import table.
     $public = \Drupal::database();
@@ -349,10 +349,10 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file not required so expected to succeed.
+    // Execute createImportJob, file not required so expected to succeed.
     $run_args = ['test' => 'single run arg'];
     $file_details = ['fid' => "$test_fid|$test_fid|$test_fid"];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now check that a record was added to the tripal_import table.
     $public = \Drupal::database();
@@ -460,7 +460,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     );
     $run_args = [];
     $file_details = [];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
     $job_id = $importer->submitJob();
     $this->assertIsNumeric($job_id,
       "We expected to have a tripal job_id returned from submitJob().");
@@ -470,7 +470,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $importer->setJob($job);
 
     // CASE --- Exception Expected
-    // submit job when import not yet created.
+    // submit job when import job not yet created.
     $configuration = [];
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
@@ -516,7 +516,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     );
     $run_args = [];
     $file_details = ['file_remote' => $test_file_path];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now try to prepare the file.
     $importer->prepareFiles();
@@ -543,7 +543,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     );
     $run_args = [];
     $file_details = ['file_remote' => $test_file_path];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now try to prepare the file.
     $importer->prepareFiles();
