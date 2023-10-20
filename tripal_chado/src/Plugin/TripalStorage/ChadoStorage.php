@@ -624,6 +624,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           }
           $action = $prop_storage_settings['action'];
 
+          // Quickly skip any property whose action is not focused on keys.
+          if (!in_array($action, ['store_id', 'store_pkey', 'store_link'])) {
+            continue;
+          }
+
           // Get the base table information and use it as the default for if
           // a chado_table is not specified (as in the case of single value fields).
           $chado_table = $storage_plugin_settings['base_table'];
@@ -1881,7 +1886,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       }
     }
 
-    print "\nWe could not reverse lookup for $field_name > $property_key : $chado_table. Reverse Mapping: " . print_r($this->reverse_alias_mapping, TRUE) . "Forward Mapping: " . print_r($this->table_alias_mapping, TRUE);
+    $this->logger->warning('ChadoStorage could not find the table alias for the requested chado table. Specifically, we were trying to look up the alias for @table for the field @field, property @property.',
+      ['@table' => $chado_table, '@field' => $field_name, '@property' => $property_key]);
 
     return NULL;
   }
