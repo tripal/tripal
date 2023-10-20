@@ -25,6 +25,8 @@ class ChadoStorageActionsTest extends ChadoTestKernelBase {
   // with fields specific to that test.
   protected $fields = [];
 
+  protected $yaml_file = __DIR__ . "/ChadoStorageActions-FieldDefinitions.yml";
+
   /**
    * {@inheritdoc}
    */
@@ -64,64 +66,8 @@ class ChadoStorageActionsTest extends ChadoTestKernelBase {
    */
   public function testReadValueAction() {
 
-    // This is the field we are actually testing.
-    $this->fields['test_read'] = [
-      'field_name' => 'test_read',
-      'base_table' => 'project',
-      'properties' => [
-        'record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'chado_table' => 'project',
-          'chado_column' => 'project_id'
-        ],
-        'name_read' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'read_value',
-          'chado_table' => 'project',
-          'chado_column' => 'name'
-        ],
-      ],
-    ];
-    // This is another field (STORE) which we want to ensure there are no conflicts with.
-    $this->fields['other_field_store'] = [
-      'field_name' => 'other_field_store',
-      'base_table' => 'project',
-      'properties' => [
-        'record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'chado_table' => 'project',
-          'chado_column' => 'project_id'
-        ],
-        'name_store' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'project',
-          'chado_column' => 'name'
-        ],
-      ],
-    ];
-    // This is another field (READ) which we want to ensure there are no conflicts with.
-    $this->fields['other_field_read'] = [
-      'field_name' => 'other_field_read',
-      'base_table' => 'project',
-      'properties' => [
-        'record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'chado_table' => 'project',
-          'chado_column' => 'project_id'
-        ],
-        'name_read_again' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'read_value',
-          'chado_table' => 'project',
-          'chado_column' => 'name'
-        ],
-      ],
-    ];
-    // Needed to ensure these fields are added to the storage arrays e.g. field config.
+    // Set the fields for this test and then re-populate the storage arrays.
+    $this->setFieldsFromYaml($this->yaml_file, 'read_value');
     $this->cleanChadoStorageValues();
 
     // Test Case: Insert valid values when they do not yet exist in Chado.

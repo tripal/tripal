@@ -6,6 +6,8 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
+use Symfony\Component\Yaml\Yaml;
+
 /**
  * Provides functions and member variables to be used when testing Chado Storage.
  * This allows for less duplication of setup and more focus on the particular
@@ -728,5 +730,37 @@ trait ChadoStorageTestTrait {
 
     print "\n\n";
 
+  }
+
+  /**
+   * Allows you to set the 'fields' by specifying the top level key of a YAML file.
+   *
+   * @param string $yaml_file
+   *   The full path to a yaml file which follows the format descripbed above.
+   * @param string $top_level_key
+   *   The top level key in the yaml file which contains the fields you would
+   *   like to set.
+   */
+  public function setFieldsFromYaml($yaml_file, $top_level_key) {
+
+    if (!file_exists($yaml_file)) {
+      throw new \Exception("Cannot open YAML file $yaml_file in order to set the fields for testing chadostorage.");
+    }
+
+    $file_contents = file_get_contents($yaml_file);
+    if (empty($file_contents)) {
+      throw new \Exception("Unable to retrieve contents for YAML file $yaml_file in order to set the fields for testing chadostorage.");
+    }
+
+    $yaml_data = Yaml::parse($file_contents);
+    if (empty($yaml_data)) {
+      throw new \Exception("Unable to parse YAML file $yaml_file in order to set the fields for testing chadostorage.");
+    }
+
+    if (!array_key_exists($top_level_key, $yaml_data)) {
+      throw new \Exception("The Top level key $top_level_key that you provided does not exist in the parsed YAML file: $yaml_file.");
+    }
+
+    $this->fields = $yaml_data[$top_level_key];
   }
 }

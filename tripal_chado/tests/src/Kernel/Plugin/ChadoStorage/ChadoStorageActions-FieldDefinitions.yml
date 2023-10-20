@@ -1,0 +1,64 @@
+##
+## Used to provide file/property definitions for the tests in
+## ChadoStorageActionsTest.php
+##
+## The format is as follows:
+## [action to be tested]:
+##   [field name]:
+##      field_name: [field name]
+##      base_table: [base table]
+##      properties:
+##        [property key]:
+##           propertyType class: [full class name + namespace]
+##           action: [action]
+##           [additional key/value pairs associated with the action]
+
+read_value:
+  # The core field used to test the read action.
+  test_read:
+    field_name: 'test_read'
+    base_table: 'project'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_column: 'name'
+  # A field which focuses on storing the same fields as the read field above.
+  # This is added to ensure there is no conflict between having two fields
+  # accessing the same column with different action types.
+  other_field_store:
+    field_name: 'other_field_store'
+    base_table: 'project'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_store:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'project'
+        chado_column: 'name'
+  # This is another read-focused field focused on the same as columns.
+  # This is here to ensure there are no conflicts with two fields reading the same value.
+  other_field_read:
+    field_name: 'other_field_read'
+    base_table: 'project'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_read_again:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_column: 'name'
