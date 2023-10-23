@@ -107,5 +107,13 @@ class TripalEntityTest extends KernelTestBase {
     $ret_owner_id = $entity->getOwnerId();
     $this->assertEquals($user->id(), $ret_owner_id,
       "The owner should be set to the current user by default.");
+
+    $ret_owner = $entity->getOwner();
+    $this->assertIsObject($ret_owner,
+      "We were unable to retrieve the owner object for this entity.");
+    $this->assertInstanceOf(\Drupal\user\Entity\User::class, $ret_owner,
+      "The owner returned should be a Drupal User object.");
+    $this->assertEquals($user->id(), $ret_owner->id(),
+      "The onwer returned should be the current user.");
   }
 }
