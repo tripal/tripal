@@ -73,7 +73,7 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
     $field_name = 'test_store_id';
 
     // Set the fields for this test and then re-populate the storage arrays.
-    $this->setFieldsFromYaml($this->yaml_file, "store_id.$field_name");
+    $this->setFieldsFromYaml($this->yaml_file, "testStoreIdAction");
     $this->cleanChadoStorageValues();
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
@@ -174,7 +174,7 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
     $field_name = 'test_non_base_match';
 
     // Set the fields for this test and then re-populate the storage arrays.
-    $this->setFieldsFromYaml($this->yaml_file, "store_id.$field_name");
+    $this->setFieldsFromYaml($this->yaml_file, "testStoreIdActionNotBase");
     $this->cleanChadoStorageValues();
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
@@ -212,7 +212,7 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
     $field_name = 'test_chado_alias';
 
     // Set the fields for this test and then re-populate the storage arrays.
-    $this->setFieldsFromYaml($this->yaml_file, "store_id.$field_name");
+    $this->setFieldsFromYaml($this->yaml_file, "testStoreIdActionTableAlias");
     $this->cleanChadoStorageValues();
 
     // Test Case: Insert valid values when they do not yet exist in Chado.

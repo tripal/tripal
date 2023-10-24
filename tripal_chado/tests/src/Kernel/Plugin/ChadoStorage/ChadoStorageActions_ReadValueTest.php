@@ -68,7 +68,7 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
   public function testReadValueAction() {
 
     // Set the fields for this test and then re-populate the storage arrays.
-    $this->setFieldsFromYaml($this->yaml_file, 'read_value');
+    $this->setFieldsFromYaml($this->yaml_file, 'testReadValueAction');
     $this->cleanChadoStorageValues();
 
     // Test Case: Insert valid values when they do not yet exist in Chado.

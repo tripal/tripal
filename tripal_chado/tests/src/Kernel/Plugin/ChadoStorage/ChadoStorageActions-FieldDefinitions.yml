@@ -3,7 +3,7 @@
 ## ChadoStorageActionsTest.php
 ##
 ## The format is as follows:
-## [action to be tested]:
+## [test method which will be using the fields]:
 ##   [field name]:
 ##      field_name: [field name]
 ##      base_table: [base table]
@@ -17,7 +17,7 @@
 ## Focus: Showing that the read_value action can read a value without any
 ##        conflict with other fields.
 ## Chado Table: Project
-read_value:
+testReadValueAction:
   # The core field used to test the read action.
   test_read:
     field_name: 'test_read'
@@ -72,7 +72,7 @@ read_value:
 ## base tables... rather it should work if:
 ## the chado table for the property = the base_table for the field.
 ## Chado Table: db
-store_id:
+testStoreIdAction:
   test_store_id:
     field_name: 'test_store_id'
     base_table: 'db'
@@ -87,7 +87,8 @@ store_id:
         action: 'store'
         chado_table: 'db'
         chado_column: 'name'
-  # This field should not work as the store_id is not associated with the base table of the field.
+# This field should not work as the store_id is not associated with the base table of the field.
+testStoreIdActionNotBase:
   test_non_base_match:
     field_name: test_store_id
     base_table: cv
@@ -102,7 +103,8 @@ store_id:
         action: 'store'
         chado_table: 'db'
         chado_column: 'name'
-  # Check that the chado table alias setting works on this action.
+# Check that the chado table alias setting works on this action.
+testStoreIdActionTableAlias:
   test_chado_alias:
     field_name: 'test_chado_alias'
     base_table: 'db'
@@ -113,9 +115,3 @@ store_id:
         chado_table: 'db'
         chado_table_alias: 'fred'
         chado_column: 'db_id'
-
-store_pkey:
-
-store_link:
-
-store:
