@@ -66,6 +66,38 @@ testReadValueAction:
         action: 'read_value'
         chado_table: 'project'
         chado_column: 'name'
+# Ensure the read_value action works with an alias.
+testReadValueActionTableAlias:
+  test_alias:
+    field_name: 'test_read'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'project'
+        chado_table_alias: 'project_alias'
+        chado_column: 'project_id'
+      name_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_table_alias: 'project_alias'
+        chado_column: 'name'
+  test_noalias:
+    field_name: 'test_read'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_column: 'name'
 
 ## Focus: Ensure that we can create records by setting this to NULL. Also ensure
 ## that there are no assumptions that this only be used on our typical set of

@@ -205,4 +205,66 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
     $this->assertEquals($expected_name, $retrieved_name,
       "The name was not updated to match the other_field_store:name_store property.");
   }
+
+
+  /**
+   * Test the read_value action works with table alias.
+   *
+   * Chado Table: project
+   *     Columns: project_id*, name*, description
+   *
+   * Specifically, ensure that a property with the read_value action
+   *  - Can be used with a table alias. This is testing load only.
+   */
+  public function testReadValueActionTableAlias() {
+
+    // Set the fields for this test and then re-populate the storage arrays.
+    $this->setFieldsFromYaml($this->yaml_file, 'testReadValueActionTableAlias');
+    $this->cleanChadoStorageValues();
+
+    // Create to project records for testing the load with later.
+    // Test Case: Insert valid values when they do not yet exist in Chado.
+    $test_values = [
+      'test_alias' => [
+        'name' => 'Project name for the aliased record',
+      ],
+      'test_noalias' => [
+        'name' => 'Base Project Name',
+      ],
+    ];
+    foreach ($test_values as $field => $values) {
+      $project_id = $this->chado_connection->insert('1:project')
+        ->fields($values)
+        ->execute();
+      $this->assertIsNumeric($project_id,
+        "We should have been able to insert test data for $field into the project table with the values: " . print_r($values, TRUE));
+      $test_values[$field]['project_id'] = $project_id;
+    }
+
+    // For loading only the store id/pkey/link items should be populated.
+    $load_values = [
+      'test_alias' => [
+        [
+          'record_id' => $test_values['test_alias']['project_id'],
+        ],
+      ],
+      'test_noalias' => [
+        [
+          'record_id' => $test_values['test_noalias']['project_id'],
+        ],
+      ],
+    ];
+    $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
+
+    // Check that the name in our fields have been loaded.
+    foreach ($test_values as $field => $values) {
+      $ret_name = $retrieved_values[$field][0]['name_read']['value']->getValue();
+      $this->assertEquals($test_values[$field]['name'], $ret_name,
+        "The name retrieved should match the one we inserted into chado for $field.");
+
+      $ret_id = $retrieved_values[$field][0]['record_id']['value']->getValue();
+      $this->assertEquals($test_values[$field]['project_id'], $ret_id,
+        "The project_id retrieved should match the one we inserted into chado for $field.");
+    }
+  }
 }
