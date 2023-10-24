@@ -757,10 +757,26 @@ trait ChadoStorageTestTrait {
       throw new \Exception("Unable to parse YAML file $yaml_file in order to set the fields for testing chadostorage.");
     }
 
-    if (!array_key_exists($top_level_key, $yaml_data)) {
-      throw new \Exception("The Top level key $top_level_key that you provided does not exist in the parsed YAML file: $yaml_file.");
+    // Check if we have a single top level key or if there are more levels.
+    $levels = explode('.', $top_level_key);
+    $data2return = $yaml_data;
+    $deepest_level = max(array_keys($levels));
+    foreach($levels as $i => $key) {
+      if (!array_key_exists($key, $data2return)) {
+        throw new \Exception("The key $key (part of $top_level_key) that you provided does not exist in the parsed YAML file: $yaml_file.");
+      }
+
+
+      if ($i === $deepest_level AND $i !== 0) {
+        // If this is the deepest level and not the only level then we want to
+        // do something different to ensure we keep the structure of the fields array.
+        $data2return = [ $key => $data2return[$key] ];
+      }
+      else {
+        $data2return = $data2return[$key];
+      }
     }
 
-    $this->fields = $yaml_data[$top_level_key];
+    $this->fields = $data2return;
   }
 }

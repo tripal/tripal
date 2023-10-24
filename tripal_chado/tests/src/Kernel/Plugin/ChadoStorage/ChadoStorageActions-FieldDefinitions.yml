@@ -13,6 +13,10 @@
 ##           action: [action]
 ##           [additional key/value pairs associated with the action]
 
+
+## Focus: Showing that the read_value action can read a value without any
+##        conflict with other fields.
+## Chado Table: Project
 read_value:
   # The core field used to test the read action.
   test_read:
@@ -62,3 +66,62 @@ read_value:
         action: 'read_value'
         chado_table: 'project'
         chado_column: 'name'
+
+## Focus: Ensure that we can create records by setting this to NULL. Also ensure
+## that there are no assumptions that this only be used on our typical set of
+## base tables... rather it should work if:
+## the chado table for the property = the base_table for the field.
+## Chado Table: db
+store_id:
+  test_store_id:
+    field_name: 'test_store_id'
+    base_table: 'db'
+    properties:
+      random_name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'db'
+        chado_column: 'db_id'
+      name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'db'
+        chado_column: 'name'
+  # This field should not work as the store_id is not associated with the base table of the field.
+  test_non_base_match:
+    field_name: test_store_id
+    base_table: cv
+    properties:
+      random_name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'db'
+        chado_column: 'db_id'
+      name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'db'
+        chado_column: 'name'
+  # Check that the chado table alias setting works on this action.
+  test_chado_alias:
+    field_name: 'test_chado_alias'
+    base_table: 'db'
+    properties:
+      random_name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'db'
+        chado_table_alias: 'fred'
+        chado_column: 'db_id'
+      name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'db'
+        chado_table_alias: 'fred'
+        chado_column: 'name'
+
+store_pkey:
+
+store_link:
+
+store:
