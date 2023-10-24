@@ -40,9 +40,14 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
     // We need to mock the logger to test the progress reporting.
     $container = \Drupal::getContainer();
     $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
-      ->onlyMethods(['warning'])
+      ->onlyMethods(['warning', 'error'])
       ->getMock();
     $mock_logger->method('warning')
+      ->willReturnCallback(function($message, $context, $options) {
+        print str_replace(array_keys($context), $context, $message);
+        return NULL;
+      });
+    $mock_logger->method('error')
       ->willReturnCallback(function($message, $context, $options) {
         print str_replace(array_keys($context), $context, $message);
         return NULL;
@@ -53,17 +58,15 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Test the read_value action.
+   * Test the store_id action.
    *
-   * Chado Table: project
-   *     Columns: project_id*, name*, description
+   * Chado Table: db
+   *     Columns: db_id*, name*
    *
-   * Specifically,
-   *  - Ensure that a property with the read_value action has the value set
-   *  - Ensure that a property with the read_value action can't change the value
-   *  - That two fields accessing the same chado column do not conflict
-   *      A. both read_value action for the same column
-   *      B. one read_value and one store for the same column
+   * Specifically, ensure that a property with the store_id action
+   *  - and a NULL value can insert a new record
+   *  - has the value set on load
+   *  - does not get changed on update
    */
   public function testStoreIdAction() {
 
@@ -154,5 +157,45 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
       "We should have been able to select from the record from the db table.");
     $this->assertCount(1, $records,
       "There should only be a single db with this name");
+  }
+
+  /**
+   * Test the store_id action.
+   *
+   * Chado Table: db
+   *     Columns: db_id*, name*
+   *
+   * Specifically, ensure that a property with the store_id action
+   *  MUST BE associated with the base table of the field
+   *  BUT NEED NOT BE a typical base table.
+   */
+  public function testStoreIdActionNotBase() {
+
+    $field_name = 'test_non_base_match';
+
+    // Set the fields for this test and then re-populate the storage arrays.
+    $this->setFieldsFromYaml($this->yaml_file, "store_id.$field_name");
+    $this->cleanChadoStorageValues();
+
+    // Test Case: Insert valid values when they do not yet exist in Chado.
+    // ---------------------------------------------------------
+    $insert_values = [
+      $field_name => [
+        [
+          'random_name' => NULL,
+          'name' => 'Something random that is only here because this field is required.',
+        ],
+      ],
+    ];
+    ob_start();
+    $this->chadoStorageTestInsertValues($insert_values);
+    $printed_output = ob_get_clean();
+
+    $this->assertStringContainsString(
+      'uses the store_id action type but is not assocatiated with the base table of the field',
+      $printed_output,
+      'We did not get the error message we expected when using the store_id action for a non-base table.'
+    );
+
   }
 }

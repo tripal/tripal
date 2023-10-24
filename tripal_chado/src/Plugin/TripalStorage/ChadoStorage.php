@@ -1032,6 +1032,15 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     if (array_key_exists('chado_table', $storage_settings)) {
       $chado_table = $storage_settings['chado_table'];
     }
+
+    // The store_id action should only be used for the base table...
+    if ($chado_table !== $context['base_table']) {
+      $this->logger->error($this->t('The @field.@key property type uses the '
+        . 'store_id action type but is not assocatiated with the base table of the field. '
+        . 'Either change the base_table of this field or use store_pkey instead.',
+        ['@field' => $context['field_name'], '@key' => $context['property_key']]));
+    }
+
     // Now determine the primary key for the chado table.
     $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
     $chado_table_pkey = $chado_table_def['primary key'];
