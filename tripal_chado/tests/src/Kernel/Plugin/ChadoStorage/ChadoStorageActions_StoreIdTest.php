@@ -196,6 +196,35 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
       $printed_output,
       'We did not get the error message we expected when using the store_id action for a non-base table.'
     );
+  }
 
+  /**
+   * Test the store_id action.
+   *
+   * Chado Table: db
+   *     Columns: db_id*, name*
+   *
+   * Specifically, ensure that a property with the store_id action
+   *  DOES NOT try to set a table alias.
+   */
+  public function testStoreIdActionTableAlias() {
+
+    $field_name = 'test_chado_alias';
+
+    // Set the fields for this test and then re-populate the storage arrays.
+    $this->setFieldsFromYaml($this->yaml_file, "store_id.$field_name");
+    $this->cleanChadoStorageValues();
+
+    // Test Case: Insert valid values when they do not yet exist in Chado.
+    // ---------------------------------------------------------
+    $insert_values = [
+      $field_name => [
+        [
+          'random_name' => NULL,
+        ],
+      ],
+    ];
+    $this->expectExceptionMessage('tries to set a table alias, which are not supported');
+    $this->chadoStorageTestInsertValues($insert_values);
   }
 }

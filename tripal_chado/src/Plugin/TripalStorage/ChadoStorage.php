@@ -1045,12 +1045,16 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
     $chado_table_pkey = $chado_table_def['primary key'];
 
-    // Check if there is a table alias set and if so, then use it.
+    // For store_id action properties, the alias should always match the table name.
     $table_alias = $chado_table;
-    if (array_key_exists('chado_table_alias', $storage_settings)) {
-      $table_alias = $storage_settings['chado_table_alias'];
-    }
     $this->setChadoTableAliasMapping($chado_table, $table_alias, $context['field_name'], $context['property_key']);
+    // If another alias is provided then we need to trow an exception.
+    if (array_key_exists('chado_table_alias', $storage_settings)) {
+      throw new \Exception($this->t('The @field.@key property type uses the '
+        . 'store_id action type and tries to set a table alias, which are not '
+        . 'supported for this type of action.',
+        ['@field' => $context['field_name'], '@key' => $context['property_key']]));
+    }
 
     // Get the value if it is set.
     $record_id = $prop_value->getValue();

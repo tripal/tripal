@@ -113,12 +113,6 @@ store_id:
         chado_table: 'db'
         chado_table_alias: 'fred'
         chado_column: 'db_id'
-      name:
-        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
-        action: 'store'
-        chado_table: 'db'
-        chado_table_alias: 'fred'
-        chado_column: 'name'
 
 store_pkey:
 
