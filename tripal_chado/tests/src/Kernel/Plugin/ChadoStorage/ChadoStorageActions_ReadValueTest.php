@@ -17,7 +17,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @group Tripal Chado
  * @group ChadoStorage
  */
-class ChadoStorageActionsTest extends ChadoTestKernelBase {
+class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
