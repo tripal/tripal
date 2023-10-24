@@ -194,7 +194,7 @@ fields:
     -   name: organism_image
         content_type: organism
         label: Organism Image
-        type: image
+        type: tripal_image_type
         description: An image of the organism.
         cardinality: 1
         required: false
@@ -202,7 +202,7 @@ fields:
         default_value: {  }
         default_value_callback: ''
         storage_settings:
-          storage_plugin_id: drupal
+          storage_plugin_id: drupal_sql_storage
         settings:
           handler: 'default:file'
           handler_settings: {  }
@@ -220,8 +220,9 @@ fields:
             title: ''
             width: null
             height: null
-          termIdSpace: data
-          termAccession: 2968
+          third_party_settings:
+            termIdSpace: data
+            termAccession: 2968
         field_type: image    
 
     -   name: analysis_name
