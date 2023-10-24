@@ -214,7 +214,8 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
    *     Columns: project_id*, name*, description
    *
    * Specifically, ensure that a property with the read_value action
-   *  - Can be used with a table alias. This is testing load only.
+   *  - Can be used with a table alias.
+   * Focusing on load since this action type does not impact insert/update.
    */
   public function testReadValueActionTableAlias() {
 
@@ -265,6 +266,81 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
       $ret_id = $retrieved_values[$field][0]['record_id']['value']->getValue();
       $this->assertEquals($test_values[$field]['project_id'], $ret_id,
         "The project_id retrieved should match the one we inserted into chado for $field.");
+    }
+  }
+
+  /**
+   * Test read_value through a join.
+   *
+   * Base Table: Stock
+   *     Columns: stock_id
+   * Chado Table: cvterm
+   *     Columns: name
+   *
+   * Specically, testing that we can read the cvterm name for a stock record
+   * through the stock > stock_cvterm > cvterm join path.
+   *
+   * Again focusing on load since this action type does not impact insert/update.
+   */
+  public function testReadValueActionJoin() {
+
+    // Set the fields for this test and then re-populate the storage arrays.
+    $this->setFieldsFromYaml($this->yaml_file, 'testReadValueActionJoin');
+    $this->cleanChadoStorageValues();
+
+    // Create the organism record needed for the stock.
+    $organism_id = $this->chado_connection->insert('1:organism')
+      ->fields([
+        'genus' => 'Tripalus',
+        'species' => 'databasica',
+      ])
+      ->execute();
+    $this->assertIsNumeric($organism_id,
+      'We should have been able to insert a organism for use with testing.');
+    // Create the stock base record.
+    $stock_id = $this->chado_connection->insert('1:stock')
+      ->fields([
+        'type_id' => $this->getCvtermId('rdfs', 'comment'),
+        'organism_id' => $organism_id,
+        'uniquename' => uniqid(),
+      ])
+      ->execute();
+    $this->assertIsNumeric($stock_id,
+      'We should have been able to insert a stock for use with testing.');
+    // Create the pub record needed for the stock_cvterm.
+    $pub_id = $this->chado_connection->insert('1:pub')
+      ->fields([
+        'uniquename' => uniqid(),
+        'type_id' => $this->getCvtermId('TPUB', '0000172'),
+      ])
+      ->execute();
+    $this->assertIsNumeric($pub_id,
+      'We should have been able to insert a pub for use with testing.');
+    // Now create 3 connections to cvterms for testing purposes.
+    $test_values = [
+      [
+        'stock_id' => $stock_id,
+        'cvterm_id' => $this->getCvtermId('SO', '0001778'),
+        'pub_id' => $pub_id,
+      ],
+      [
+        'stock_id' => $stock_id,
+        'cvterm_id' => $this->getCvtermId('CO_010', '0000044'),
+        'pub_id' => $pub_id,
+      ],
+      [
+        'stock_id' => $stock_id,
+        'cvterm_id' => $this->getCvtermId('TAXRANK', '0000034'),
+        'pub_id' => $pub_id,
+      ]
+    ];
+    foreach ($test_values as $delta => $values) {
+      $pkey = $this->chado_connection->insert('1:stock_cvterm')
+        ->fields($values)
+        ->execute();
+      $this->assertIsNumeric($pkey,
+        "We should have been able to insert test data for $delta into the stock_cvterm table with the values: " . print_r($values, TRUE));
+      $test_values[$delta]['stock_cvterm_id'] = $pkey;
     }
   }
 }

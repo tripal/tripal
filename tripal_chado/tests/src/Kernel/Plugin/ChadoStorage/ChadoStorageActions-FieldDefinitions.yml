@@ -69,7 +69,7 @@ testReadValueAction:
 # Ensure the read_value action works with an alias.
 testReadValueActionTableAlias:
   test_alias:
-    field_name: 'test_read'
+    field_name: 'test_alias'
     base_table: 'feature'
     properties:
       record_id:
@@ -85,7 +85,7 @@ testReadValueActionTableAlias:
         chado_table_alias: 'project_alias'
         chado_column: 'name'
   test_noalias:
-    field_name: 'test_read'
+    field_name: 'test_noalias'
     base_table: 'feature'
     properties:
       record_id:
@@ -98,6 +98,23 @@ testReadValueActionTableAlias:
         action: 'read_value'
         chado_table: 'project'
         chado_column: 'name'
+# Ensure we can read the value when a path is supplied (e.g. think old join action)
+testReadValueActionJoin:
+  test_join:
+    field_name: 'test_join'
+    base_table: 'stock'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'stock'
+        chado_column: 'stock_id'
+      cvterm_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'cvterm'
+        chado_column: 'name'
+        path: 'stock.stock_id=stock_cvterm.stock_id>stock_cvterm.cvterm_id=cvterm.cvterm_id'
 
 ## Focus: Ensure that we can create records by setting this to NULL. Also ensure
 ## that there are no assumptions that this only be used on our typical set of
