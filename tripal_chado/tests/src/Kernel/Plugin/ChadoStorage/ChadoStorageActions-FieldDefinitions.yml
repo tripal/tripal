@@ -221,3 +221,11 @@ testStorePKeyActionTableAlias:
         chado_table: 'db'
         chado_table_alias: 'fred'
         chado_column: 'name'
+
+## Focus:
+## Chado Table:
+testStoreAction:
+
+## Focus:
+## Chado Table:
+testStoreLinkAction:
