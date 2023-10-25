@@ -185,3 +185,39 @@ testStoreIdActionTableAlias:
         chado_table: 'db'
         chado_table_alias: 'fred'
         chado_column: 'db_id'
+
+## Focus: Ensure that we can create records by setting this to NULL.
+## Chado Table: cvterm
+testStorePKeyAction:
+  test_field:
+    field_name: 'test_store_id'
+    base_table: 'cv'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'db'
+        chado_column: 'db_id'
+      name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'db'
+        chado_column: 'name'
+# Check that the chado table alias setting works on this action.
+testStorePKeyActionTableAlias:
+  test_chado_alias:
+    field_name: 'test_chado_alias'
+    base_table: 'db'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'db'
+        chado_table_alias: 'fred'
+        chado_column: 'db_id'
+      name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'db'
+        chado_table_alias: 'fred'
+        chado_column: 'name'
