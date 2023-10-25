@@ -114,7 +114,7 @@ testReadValueActionJoin:
         action: 'read_value'
         chado_table: 'cvterm'
         chado_column: 'name'
-        path: 'stock.stock_id=stock_cvterm.stock_id>stock_cvterm.cvterm_id=cvterm.cvterm_id'
+        path: 'stock.stock_id>stock_cvterm.stock_id;stock_cvterm.cvterm_id>cvterm.cvterm_id'
 
 ## Focus: Ensure that we can create records by setting this to NULL. Also ensure
 ## that there are no assumptions that this only be used on our typical set of

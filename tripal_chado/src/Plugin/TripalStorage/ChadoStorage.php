@@ -444,7 +444,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // Select the fields in the chado table.
     $select = $this->connection->select('1:'.$chado_table, 'ct');
-    $select->fields('ct', array_keys($record['fields']));
+    if (array_key_exists('fields', $record)) {
+      $select->fields('ct', array_keys($record['fields']));
+    }
 
     // Add in any joins.
     if (array_key_exists('joins', $record)) {
@@ -739,10 +741,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           if (in_array($action, ['read_value', 'join'])) {
             if (array_key_exists('chado_table', $prop_storage_settings)) {
               $chado_table = $prop_storage_settings['chado_table'];
+              $chado_table_alias = $this->getTableAliasForChadoTable($field_name, $key, $chado_table);
             }
             // Otherwise this is a join + we need the base table.
             // We can use the path to look this up.
-            elseif (array_key_exists('path', $prop_storage_settings)) {
+            if (array_key_exists('path', $prop_storage_settings)) {
               // Examples of the path:
               //   - phylotree.analysis_id>analysis.analysis_id'.
               //   - feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id'
@@ -753,8 +756,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               list($left_table, $left_col) = explode(".", $left);
               // The base table is the left table of the first part of the path.
               $chado_table = $left_table;
+              $chado_table_alias = $left_table;
             }
-            $chado_table_alias = $this->getTableAliasForChadoTable($field_name, $key, $chado_table);
             $chado_column = $prop_storage_settings['chado_column'];
             $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
             $value = $records[$chado_table_alias][$delta]['fields'][$as];
@@ -949,22 +952,23 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     foreach ($records as $table_name => $deltas) {
       foreach ($deltas as $delta => $record) {
         // First for all the fields...
-        foreach ($record['fields'] as $chado_column => $val) {
-          if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
-            $core_table = $val[1];
+        if (array_key_exists('fields', $record)) {
+          foreach ($record['fields'] as $chado_column => $val) {
+            if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
+              $core_table = $val[1];
 
-            // If the core table is set in the base record ids array and the
-            // value is not 0 then we can set this chado field now!
-            if (array_key_exists($core_table, $this->base_record_ids) and $this->base_record_ids[$core_table] != 0) {
-              $records[$table_name][$delta]['fields'][$chado_column] = $this->base_record_ids[$core_table];
+              // If the core table is set in the base record ids array and the
+              // value is not 0 then we can set this chado field now!
+              if (array_key_exists($core_table, $this->base_record_ids) and $this->base_record_ids[$core_table] != 0) {
+                $records[$table_name][$delta]['fields'][$chado_column] = $this->base_record_ids[$core_table];
+              }
+              // If the base record ID is 0 then this is an insert and we
+              // don't yet have the base record ID.  So, leave in the message
+              // to replace the ID so we can do so later.
+              if (array_key_exists($base_table, $this->base_record_ids) and $this->base_record_ids[$base_table] != 0) {
+                $records[$table_name][$delta]['fields'][$chado_column] = $this->base_record_ids[$base_table];
+              }
             }
-            // If the base record ID is 0 then this is an insert and we
-            // don't yet have the base record ID.  So, leave in the message
-            // to replace the ID so we can do so later.
-            if (array_key_exists($base_table, $this->base_record_ids) and $this->base_record_ids[$base_table] != 0) {
-              $records[$table_name][$delta]['fields'][$chado_column] = $this->base_record_ids[$base_table];
-            }
-
           }
         }
         if (!array_key_exists('conditions', $record)) print_r($record);

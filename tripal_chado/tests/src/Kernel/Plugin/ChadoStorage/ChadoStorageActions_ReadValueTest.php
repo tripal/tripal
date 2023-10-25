@@ -323,16 +323,6 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
         'cvterm_id' => $this->getCvtermId('SO', '0001778'),
         'pub_id' => $pub_id,
       ],
-      [
-        'stock_id' => $stock_id,
-        'cvterm_id' => $this->getCvtermId('CO_010', '0000044'),
-        'pub_id' => $pub_id,
-      ],
-      [
-        'stock_id' => $stock_id,
-        'cvterm_id' => $this->getCvtermId('TAXRANK', '0000034'),
-        'pub_id' => $pub_id,
-      ]
     ];
     foreach ($test_values as $delta => $values) {
       $pkey = $this->chado_connection->insert('1:stock_cvterm')
@@ -341,6 +331,30 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
       $this->assertIsNumeric($pkey,
         "We should have been able to insert test data for $delta into the stock_cvterm table with the values: " . print_r($values, TRUE));
       $test_values[$delta]['stock_cvterm_id'] = $pkey;
+    }
+
+    // For loading only the store id/pkey/link items should be populated.
+    $load_values = [
+      'test_join' => [
+        [
+          'record_id' => $test_values[0]['stock_id'],
+        ],
+      ],
+    ];
+    $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
+
+    // Check that the name in our fields have been loaded.
+    $expected = [
+      'germline_variant',
+    ];
+    foreach ($test_values as $delta => $values) {
+      $ret_term = $retrieved_values['test_join'][$delta]['cvterm_read']['value']->getValue();
+      $this->assertEquals($expected[$delta], $ret_term,
+        "The cvterm name retrieved should match the one we inserted into chado for $delta.");
+
+      $ret_id = $retrieved_values['test_join'][$delta]['record_id']['value']->getValue();
+      $this->assertEquals($test_values[$delta]['stock_id'], $ret_id,
+        "The stock_id retrieved should match the one we inserted into chado for $delta.");
     }
   }
 }
