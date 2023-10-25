@@ -115,6 +115,27 @@ testReadValueActionJoin:
         chado_table: 'cvterm'
         chado_column: 'name'
         path: 'stock.stock_id>stock_cvterm.stock_id;stock_cvterm.cvterm_id>cvterm.cvterm_id'
+# Ensure read_value works when there isn't a store action for the same column.
+testReadValueActionNoStore:
+  test_read:
+    field_name: 'test_read'
+    base_table: 'project'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_column: 'name'
+      description_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_column: 'description'
 
 ## Focus: Ensure that we can create records by setting this to NULL. Also ensure
 ## that there are no assumptions that this only be used on our typical set of

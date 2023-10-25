@@ -357,4 +357,56 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
         "The stock_id retrieved should match the one we inserted into chado for $delta.");
     }
   }
+
+  /**
+   * Test read_value works when there is no store on the same column.
+   *
+   * Chado Table: project
+   *     Columns: project_id*, name*, description
+   *
+   * Specifically testing that we can read the project name for an existing
+   * project record when there is no store property for the project name.
+   *
+   * Again focusing on load since this action type does not impact insert/update.
+   */
+  public function testReadValueActionNoStore() {
+
+    // Set the fields for this test and then re-populate the storage arrays.
+    $this->setFieldsFromYaml($this->yaml_file, 'testReadValueActionNoStore');
+    $this->cleanChadoStorageValues();
+
+    $project_name = uniqid();
+    $project_description = 'This is a random comment with a unique ending ' . uniqid();
+    $project_id = $this->chado_connection->insert('1:project')
+      ->fields([
+        'name' => $project_name,
+        'description' => $project_description,
+      ])
+      ->execute();
+    $this->assertIsNumeric($project_id,
+      'We should have been able to insert a project for use with testing.');
+
+    // For loading only the store id/pkey/link items should be populated.
+    $load_values = [
+      'test_read' => [
+        [
+          'record_id' => $project_id,
+        ],
+      ],
+    ];
+    $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
+
+    // Check that the name in our fields have been loaded.
+    $ret_name = $retrieved_values['test_read'][0]['name_read']['value']->getValue();
+    $this->assertEquals($project_name, $ret_name,
+      "The name retrieved should match the one we inserted into chado.");
+
+    $ret_descrip = $retrieved_values['test_read'][0]['description_read']['value']->getValue();
+    $this->assertEquals($project_description, $ret_descrip,
+      "The description retrieved should match the one we inserted into chado.");
+
+    $ret_id = $retrieved_values['test_read'][0]['record_id']['value']->getValue();
+    $this->assertEquals($project_id, $ret_id,
+      "The project_id retrieved should match the one we inserted into chado.");
+  }
 }
