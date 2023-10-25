@@ -44,14 +44,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * The database connection for querying Chado.
    *
-   * @var Drupal\tripal_chado\Database\ChadoConnection
+   * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
   protected $connection;
 
   /**
    * A service to provide debugging for fields to developers.
    *
-   * @ var Drupal\tripal_chado\Services\ChadoFieldDebugger
+   * @var \Drupal\tripal_chado\Services\ChadoFieldDebugger
    */
   protected $field_debugger;
 
@@ -91,8 +91,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param array $configuration
    * @param string $plugin_id
    * @param mixed $plugin_definition
-   * @param Drupal\tripal\Services\TripalLogger $logger
-   * @param Drupal\tripal_chado\Database\ChadoConnection $connection
+   * @param \Drupal\tripal\Services\TripalLogger $logger
+   * @param \Drupal\tripal_chado\Database\ChadoConnection $connection
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection, ChadoFieldDebugger $field_debugger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);

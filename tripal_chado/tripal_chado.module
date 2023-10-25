@@ -78,6 +78,17 @@ function tripal_chado_config_schema_info_alter(&$definitions) {
     'label' => 'Table containing property columns',
     'nullable' => false
   ];
+  // Specific to linker tables.
+  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['linker_table'] = [
+    'type' => 'string',
+    'label' => 'The linking table used by the current field.',
+    'nullable' => true
+  ];
+  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['linker_fkey_column'] = [
+    'type' => 'string',
+    'label' => 'The column in the linking table which is a foreign key pointing to the base table (e.g. for feature_synonym this would be feature_id).',
+    'nullable' => true
+  ];
 
   // ADDITIONS TO TRIPAL FIELD COLLECTION -YML FIELD CREATION.
   // Adds the Base table and column information needed for all Chado fields.
@@ -110,6 +121,17 @@ function tripal_chado_config_schema_info_alter(&$definitions) {
     'type' => 'string',
     'label' => 'Table containing property columns',
     'nullable' => false
+  ];
+  // Specific to linker tables.
+  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['linker_table'] = [
+    'type' => 'string',
+    'label' => 'The linking table used by the current field.',
+    'nullable' => true
+  ];
+  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['linker_fkey_column'] = [
+    'type' => 'string',
+    'label' => 'The column in the linking table which is a foreign key pointing to the base table (e.g. for feature_synonym this would be feature_id).',
+    'nullable' => true
   ];
 }
 

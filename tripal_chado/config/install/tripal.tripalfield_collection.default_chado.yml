@@ -1014,6 +1014,33 @@ fields:
               region: content
               weight: 90
 
+    -   name: gene_synonym
+        content_type: gene
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: mrna_name
         content_type: mRNA
         label: Name
@@ -1252,6 +1279,33 @@ fields:
             default:
               region: content
               weight: 90
+
+    -   name: mrna_synonym
+        content_type: mRNA
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
 
     -   name: phylotree_name
         content_type: phylotree
@@ -1572,6 +1626,33 @@ fields:
             default:
               region: content
               weight: 20
+
+    -   name: dna_library_synonym
+        content_type: dna_library
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                linker_table: library_synonym
+                linker_fkey_column: library_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
 
     -   name: genome_assembly_name
         content_type: genome_assembly
@@ -2405,6 +2486,33 @@ fields:
               region: content
               weight: 90
 
+    -   name: qtl_synonym
+        content_type: QTL
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: sequence_variant_name
         content_type: sequence_variant
         label: Name
@@ -2643,6 +2751,33 @@ fields:
             default:
               region: content
               weight: 90
+
+    -   name: sequence_variant_synonym
+        content_type: sequence_variant
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
 
     -   name: genetic_marker_name
         content_type: genetic_marker
@@ -2883,6 +3018,33 @@ fields:
               region: content
               weight: 90
 
+    -   name: genetic_marker_synonym
+        content_type: genetic_marker
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: phenotypic_marker_name
         content_type: phenotypic_marker
         label: Name
@@ -3121,6 +3283,33 @@ fields:
             default:
               region: content
               weight: 90
+
+    -   name: phenotypic_marker_synonym
+        content_type: phenotypic_marker
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
 
     -   name: germplasm_name
         content_type: germplasm
