@@ -24,6 +24,15 @@ class ChadoNewPublicationForm extends FormBase {
     $form_state_values = $form_state->getValues();
     dpm($form_state_values);
 
+    $html = "<ul class='action-links'>";
+    $html .= '  <li>' . Link::fromTextAndUrl('Return to manage pub search queries', Url::fromUri('internal:/admin/tripal/loaders/publications/manage_pub_search_queries'))->toString() . '</li>';
+    $html .= '</ul>';
+    $form['new_publication_link'] = [
+      '#type' => 'markup',
+      '#markup' => $html
+    ];
+    unset($html);
+
     // Show the list of importers available for user to select
     $form = $this->form_elements_importer_selection($form, $form_state);
 
@@ -401,11 +410,72 @@ class ChadoNewPublicationForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // $form_state_values = $form_state->getValues();
     // dpm($form_state_values);
-    // $trigger = $form_state->getTriggeringElement()['#name'];
-    // dpm($trigger);
+    $public = \Drupal::database();
+    $user_input = $form_state->getUserInput();
+    $trigger = $form_state->getTriggeringElement()['#name'];
+    
+    dpm($trigger);
+    if ($trigger == 'op') {
+      $op = $user_input['op'];
+      dpm($op);
+      if ($op == 'Save Importer') {
+        // tripal_pub_import table columns are: pub_import_id, name, criteria, disabled, do_contact
 
+        // Translate the submitted data into a variable which can be serialized into a criteria column
+        // of the tripal_pub_import table
+        dpm($user_input);
+        $disabled = $user_input['disabled'];
+        if ($disabled == null) {
+          $disabled = 0;
+        }
+        $do_contact = $user_input['do_contact'];
+        if ($do_contact == null) {
+          $do_contact = 0;
+        }
+        $criteria_column_array = [
+          'remote_db' => explode('tripal_pub_parser_', $user_input['plugin_id'])[1],
+          'days' => $user_input['days'],
+          'num_criteria' => $user_input['num_criteria'],
+          'loader_name' => $user_input['loader_name'],
+          'disabled' => $disabled,
+          'do_contact' => $do_contact,
+          'pub_import_id' => NULL,
+          'criteria' => [],
+        ];
 
-    $form_state->setRebuild(TRUE);
+        $criteria_count = 1;
+        // $user_input['table'] is the criteria rows from the submitted form
+        // Go through each row of criteria
+        foreach ($user_input['table'] as $criteria_row_submitted) {
+          $is_phrase = $criteria_row_submitted['is_phrase-' . $criteria_count];
+          if ($is_phrase == null) {
+            $is_phrase = 0;
+          }
+          $criteria_column_array['criteria'][$criteria_count] = [
+            'search_terms' => $criteria_row_submitted['search_terms-' . $criteria_count],
+            'scope' => $criteria_row_submitted['scope-' . $criteria_count],
+            'is_phrase' => $is_phrase,
+            'operation' => $criteria_row_submitted['operation-' . $criteria_count],
+          ];
+          $criteria_count++;
+        }
+        $criteria_column_serialized = serialize($criteria_column_array);
+        $public->insert('tripal_pub_import')->fields([
+          'name' => $user_input['loader_name'],
+          'criteria' => $criteria_column_serialized,
+          'disabled' => $disabled,
+          'do_contact' => $do_contact
+        ])->execute();
+        
+        $messenger = \Drupal::messenger();
+        $messenger->addMessage("Importer successfully added!");
+        $form_state->setRebuild(TRUE); // @TODO change this to false after developing this form
+      }
+      
+    }
+    else {
+      $form_state->setRebuild(TRUE);
+    }
   }
 
 }

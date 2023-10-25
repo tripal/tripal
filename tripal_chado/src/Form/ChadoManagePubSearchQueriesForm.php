@@ -108,13 +108,78 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
   ];
 
   $public = \Drupal::database();
-  $pub_importers_query = $public->select('tripal_pub_import');
-  $pub_importers_count= $pub_importers_query->countQuery()->execute()->fetchField();
+  $pub_importers_query = $public->select('tripal_pub_import','tpi');
+  $pub_importers_count = $pub_importers_query->countQuery()->execute()->fetchField();
   if ($pub_importers_count > 0) {
     // Lookup all records
-    $pub_importers = $pub_importers_query->execute();
+    $pub_importers = $pub_importers_query->fields('tpi')->execute()->fetchAll();
     foreach ($pub_importers as $pub_importer) {
       dpm($pub_importer);
+      dpm($pub_importer->name);
+      $criteria_column_array = unserialize($pub_importer->criteria);
+
+      $search_string = "";
+      foreach ($criteria_column_array['criteria'] as $criteria_row) {
+        $search_string .= $criteria_row['operation'] . ' (' . $criteria_row['scope'] . ': ' . $criteria_row['search_terms'] . ') ';
+      }
+
+      $disabled = $criteria_column_array['disabled'];
+      if ($disabled <= 0) {
+        $disabled = 'No';
+      }
+      else {
+        $disabled = 'Yes';
+      }
+
+      $do_contact = $criteria_column_array['do_contact'];
+      if ($do_contact <= 0) {
+        $do_contact = 'No';
+      }
+      else {
+        $do_contact = 'Yes';
+      }
+
+      $row = [];
+
+      // This should contain edit test and import pubs links @TODO
+      $row['col-1'] = [
+        '#type' => 'markup',
+        '#markup' => ''
+      ];
+      $row['col-2'] = [
+        '#type' => 'markup',
+        '#markup' => $pub_importer->name
+      ];
+      $row['col-3'] = [
+        '#type' => 'markup',
+        '#markup' => $criteria_column_array['remote_db']
+      ];
+
+      // Search string
+      $row['col-4'] = [
+        '#type' => 'markup',
+        '#markup' => $search_string
+      ];
+
+      // Disabled
+      $row['col-5'] = [
+        '#type' => 'markup',
+        '#markup' => $disabled
+      ];
+
+      // Create contact
+      $row['col-6'] = [
+        '#type' => 'markup',
+        '#markup' => $do_contact
+      ]; 
+
+      // Delete should be a button instead of markup @TODO
+      $row['col-7'] = [
+        '#type' => 'markup',
+        '#markup' => ''
+      ];
+
+      $form['pub_manager']['table'][] = $row;
     }
   }
   else {
