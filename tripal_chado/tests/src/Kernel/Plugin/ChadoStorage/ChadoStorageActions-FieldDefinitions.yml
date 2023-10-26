@@ -222,9 +222,68 @@ testStorePKeyActionTableAlias:
         chado_table_alias: 'fred'
         chado_column: 'name'
 
-## Focus:
-## Chado Table:
-testStoreAction:
+## Focus: Ensure that a property with the store action
+## - can be inserted when an alias is used on a non-base table
+## - can be loaded when an alias is used on a non-base table
+## - can be updated when an alias is used on a non-base table
+## Chado Table: featureprop
+testStoreActionAlias:
+  test_store_alias:
+    field_name: 'test_store_alias'
+    base_table: 'feature'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'featureprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'feature_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'type_id'
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'rank'
+  test_store_other_alias:
+    field_name: 'test_store_other_alias'
+    base_table: 'feature'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'featureprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'feature_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'type_id'
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'rank'
 
 ## Focus:
 ## Chado Table:
