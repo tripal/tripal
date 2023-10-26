@@ -94,8 +94,8 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
   /**
    * Test the store action when an alias is set and it's on a non-base table.
    *
-   * Chado Table:
-   *     Columns:
+   * Chado Table: featureprop
+   *     Columns: featureprop_id*, feature_id*, type_id*, value, rank*
    *
    * Specifically, ensure that a property with the store action
    *  - can be inserted when an alias is used on a non-base table
@@ -211,7 +211,6 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
       }
     }
 
-
     // Test Case: Update values in Chado using ChadoStorage.
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
@@ -252,31 +251,10 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Test the store action when an alias is set and it's on a base table.
-   *
-   * Chado Table:
-   *     Columns:
-   *
-   * Specifically, ensure that a property with the store action
-   *  - throws an error when an alias is set and the store is on a base_table.
-   */
-  public function testStoreActionAliasBase() {
-
-    // Set the fields for this test and then re-populate the storage arrays.
-    // $this->setFieldsFromYaml($this->yaml_file, 'testStoreAction');
-    // $this->cleanChadoStorageValues();
-
-    // Stop here and mark this test as incomplete.
-    $this->markTestIncomplete(
-      'This test has not been implemented yet.'
-    );
-  }
-
-  /**
    * Test the store action delete_if_empty on insert and update.
    *
-   * Chado Table:
-   *     Columns:
+   * Chado Table: featureprop
+   *     Columns: featureprop_id*, feature_id*, type_id*, value*, rank*
    *
    * Specifically, ensure that a property with the store action
    *  - is deleted if it's an empty string and delete_if_empty is true
@@ -285,12 +263,122 @@ class ChadoStorageActions_StoreTest extends ChadoTestKernelBase {
   public function testStoreActionDeleteIfEmpty() {
 
     // Set the fields for this test and then re-populate the storage arrays.
-    // $this->setFieldsFromYaml($this->yaml_file, 'testStoreAction');
-    // $this->cleanChadoStorageValues();
+    $this->setFieldsFromYaml($this->yaml_file, 'testStoreActionDeleteIfEmpty');
+    $this->cleanChadoStorageValues();
 
-    // Stop here and mark this test as incomplete.
-    $this->markTestIncomplete(
-      'This test has not been implemented yet.'
-    );
+    $types_used = [
+      'test_store_alias'  => $this->getCvtermId('schema', 'comment'),
+      'test_store_other_alias'  => $this->getCvtermId('schema', 'description'),
+    ];
+
+    // Test Case: Insert valid values when they do not yet exist in Chado.
+    // ---------------------------------------------------------
+    $insert_values = [
+      'test_store_alias' => [
+        [
+          'primary_key' => NULL,
+          'fkey' => $this->feature_id,
+          'type' => $types_used['test_store_alias'],
+          'value' => '', // Should NOT be inserted since delete_if_empty: TRUE
+          'rank' => 0
+        ],
+        [
+          'primary_key' => NULL,
+          'fkey' => $this->feature_id,
+          'type' => $types_used['test_store_alias'],
+          'value' => 'pippin',
+          'rank' => 1
+        ],
+        [
+          'primary_key' => NULL,
+          'fkey' => $this->feature_id,
+          'type' => $types_used['test_store_alias'],
+          'value' => 'samwise',
+          'rank' => 2
+        ],
+      ],
+      'test_store_other_alias' => [
+        [
+          'primary_key' => NULL,
+          'fkey' => $this->feature_id,
+          'type' => $types_used['test_store_other_alias'],
+          'value' => 'merry',
+          'rank' => 0
+        ],
+        [
+          'primary_key' => NULL,
+          'fkey' => $this->feature_id,
+          'type' => $types_used['test_store_other_alias'],
+          'value' => '', // SHOULD be inserted as delete_if_empty: FALSE
+          'rank' => 3
+        ],
+      ],
+    ];
+    $this->chadoStorageTestInsertValues($insert_values);
+
+    $query = $this->chado_connection->select('1:featureprop', 'prop')
+      ->fields('prop', ['featureprop_id', 'feature_id', 'type_id', 'rank'])
+      ->execute();
+    $inserted_records = $query->fetchAll();
+    $this->assertIsArray($inserted_records,
+      "We should have been able to select from the records from the featureprop table.");
+    $this->assertCount(4, $inserted_records,
+      "We did not get the number of records in the featureprop table that we excepted after insert.");
+
+    // Ensure there are to records for each field.
+    foreach (['test_store_alias' => 2, 'test_store_other_alias' => 2] as $field_name => $expected_count) {
+      $query = $this->chado_connection->select('1:featureprop', 'prop')
+        ->fields('prop', ['featureprop_id'])
+        ->condition('prop.type_id', $types_used[$field_name], '=')
+        ->orderBy('rank')
+        ->execute();
+      $varname = $field_name . '_pkeys';
+      $$varname = $query->fetchCol();
+      $this->assertIsArray($$varname,
+        "We should have been able to select from the records from the featureprop table.");
+      $this->assertCount($expected_count, $$varname,
+        "We did not get the number of records in the featureprop table for $field_name that we excepted after insert.");
+    }
+
+    // Test Case: Update values in Chado using ChadoStorage.
+    // ---------------------------------------------------------
+    // When updating we need all the store id/pkey/link records
+    // and all values of the other properties.
+    $update_values = $insert_values;
+    $update_values['test_store_alias'][1]['primary_key'] = $test_store_alias_pkeys[0];
+    $update_values['test_store_alias'][2]['primary_key'] = $test_store_alias_pkeys[1];
+    $update_values['test_store_other_alias'][0]['primary_key'] = $test_store_other_alias_pkeys[0];
+    $update_values['test_store_other_alias'][1]['primary_key'] = $test_store_other_alias_pkeys[1];
+
+    // Now this one should be removed too.
+    $update_values['test_store_alias'][2]['value'] = '';
+    // Add another empty value which should be kept.
+    $update_values['test_store_other_alias'][2] = $insert_values['test_store_other_alias'][1];
+    $update_values['test_store_other_alias'][2]['rank'] = 5;
+    $this->chadoStorageTestUpdateValues($update_values);
+
+    $query = $this->chado_connection->select('1:featureprop', 'prop')
+      ->fields('prop', ['featureprop_id', 'feature_id', 'type_id', 'rank'])
+      ->execute();
+    $records = $query->fetchAll();
+    $this->assertIsArray($records,
+      "We should have been able to select from the records from the featureprop table.");
+    $this->assertCount(4, $records,
+      "We did not get the number of records in the featureprop table that we excepted after update.");
+
+    // Ensure there are to records for each field.
+    foreach (['test_store_alias' => 1, 'test_store_other_alias' => 3] as $field_name => $expected_count) {
+      $query = $this->chado_connection->select('1:featureprop', 'prop')
+        ->fields('prop', ['featureprop_id'])
+        ->condition('prop.type_id', $types_used[$field_name], '=')
+        ->orderBy('rank')
+        ->execute();
+      $varname = $field_name . '_pkeys';
+      $$varname = $query->fetchCol();
+      $this->assertIsArray($$varname,
+        "We should have been able to select from the records from the featureprop table.");
+      $this->assertCount($expected_count, $$varname,
+        "We did not get the number of records in the featureprop table for $field_name that we excepted after insert.");
+    }
   }
 }

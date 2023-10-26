@@ -285,6 +285,82 @@ testStoreActionAlias:
         chado_table_alias: 'merry'
         chado_column: 'rank'
 
+## Focus: Ensure that a property with the store action
+## - is deleted if it's an empty string and delete_if_empty is true
+## - is kept and inserted as an empty string if delete_if_empty is false
+## Chado Table: featureprop
+testStoreActionDeleteIfEmpty:
+  test_store_alias:
+    field_name: 'test_store_alias'
+    base_table: 'feature'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'featureprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'feature_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'type_id'
+      value:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'value'
+        delete_if_empty: TRUE
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'rank'
+  test_store_other_alias:
+    field_name: 'test_store_other_alias'
+    base_table: 'feature'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'featureprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'feature_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'type_id'
+      value:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'value'
+        delete_if_empty: FALSE
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'rank'
+
 ## Focus:
 ## Chado Table:
 testStoreLinkAction:
