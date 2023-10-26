@@ -114,8 +114,8 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
     // Lookup all records
     $pub_importers = $pub_importers_query->fields('tpi')->execute()->fetchAll();
     foreach ($pub_importers as $pub_importer) {
-      dpm($pub_importer);
-      dpm($pub_importer->name);
+      // dpm($pub_importer);
+      // dpm($pub_importer->name);
       $criteria_column_array = unserialize($pub_importer->criteria);
 
       $search_string = "";
@@ -144,7 +144,7 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
       // This should contain edit test and import pubs links @TODO
       $row['col-1'] = [
         '#type' => 'markup',
-        '#markup' => ''
+        '#markup' => '<a href="">Edit/Test</a><br /><a href="">Import Pubs</a>'
       ];
       $row['col-2'] = [
         '#type' => 'markup',
@@ -173,10 +173,17 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
         '#markup' => $do_contact
       ]; 
 
+      // dpm($form_state->getValues());
       // Delete should be a button instead of markup @TODO
-      $row['col-7'] = [
-        '#type' => 'markup',
-        '#markup' => ''
+      $row['col-7-delete-' . $pub_importer->pub_import_id] = [
+        '#type' => 'submit',
+        '#default_value' => 'Delete',
+        '#attributes' => [
+          'data-value' => [
+            $pub_importer->pub_import_id
+          ],
+          'onclick' => 'var result = confirm("Are you sure you want to delete this publication importer?"); if (result != true) { return false }'
+        ]
       ];
 
       $form['pub_manager']['table'][] = $row;
@@ -247,6 +254,24 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
+    $public = \Drupal::database();
+    $user_input = $form_state->getUserInput();
+    $trigger_element = $form_state->getTriggeringElement();
+    dpm($form_state->getTriggeringElement());
+    // dpm($trigger);
+    if ($trigger_element['#name'] == "op") {
+      $op = $user_input['op'];
+      if ($op == 'Delete') {
+        $pub_import_id = $trigger_element['#attributes']['data-value'][0];
+        $public->delete('tripal_pub_import')
+          ->condition('pub_import_id', $pub_import_id)
+          ->execute();
+                
+        $messenger = \Drupal::messenger();
+        $messenger->addMessage("Publication importer has been deleted.");
+      }
+      dpm($op);
+    }
   }
 
 }
