@@ -361,6 +361,81 @@ testStoreActionDeleteIfEmpty:
         chado_table_alias: 'merry'
         chado_column: 'rank'
 
-## Focus:
-## Chado Table:
+## Focus: Testing the basic functioning of the store_link action inccluding alias' where the base table
+## is either on the left or right side of the relationship.
+## Chado Table: projectprop
 testStoreLinkAction:
+  project:
+    field_name: 'project'
+    base_table: 'project'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_store:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'project'
+        chado_column: 'name'
+  right_linker:
+    field_name: 'right_linker'
+    base_table: 'project'
+    properties:
+      record_pkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'projectprop'
+        chado_table_alias: 'merry'
+        chado_column: 'projectprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_link'
+        right_table: 'project'
+        right_table_id: 'project_id'
+        left_table: 'projectprop'
+        left_table_alias: 'merry'
+        left_table_id: 'project_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'projectprop'
+        chado_table_alias: 'merry'
+        chado_column: 'type_id'
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'projectprop'
+        chado_table_alias: 'merry'
+        chado_column: 'rank'
+  left_linker:
+    field_name: 'left_linker'
+    base_table: 'project'
+    properties:
+      record_pkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'projectprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'projectprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_link'
+        left_table: 'project'
+        left_table_id: 'project_id'
+        right_table: 'projectprop'
+        right_table_alias: 'pippin'
+        right_table_id: 'project_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'projectprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'type_id'
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'projectprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'rank'
