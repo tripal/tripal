@@ -979,7 +979,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             // If the core table is set in the base record ids array and the
             // value is not 0 then we can set this condition now!
             if (array_key_exists($core_table, $this->base_record_ids) and $this->base_record_ids[$core_table] != 0) {
-              $records[$table_name][$delta]['conditions'][$chado_column] = $this->base_record_ids[$core_table];
+              $records[$table_name][$delta]['conditions'][$chado_column]['value'] = $this->base_record_ids[$core_table];
             }
             // If the base record ID is 0 then this is an insert and we
             // don't yet have the base record ID.  So, leave in the message
