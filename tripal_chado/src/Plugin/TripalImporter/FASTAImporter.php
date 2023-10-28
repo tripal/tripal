@@ -22,79 +22,12 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    require_analysis = True,
  *    button_text = @Translation("Import FASTA file"),
  *    file_upload = True,
- *    file_load = True,
  *    file_remote = True,
  *    file_local = True,
  *    file_required = True,
- *    cardinality = 1,
- *    menu_path = "",
- *    callback = "",
- *    callback_module = "",
- *    callback_path = "",
  *  )
  */
 class FASTAImporter extends ChadoImporterBase {
-  /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
-  public static $name = 'Chado FASTA Loader';
-
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
-  public static $machine_name = 'chado_fasta_loader';
-
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
-  public static $description = 'Load sequences from a multi-FASTA file into Chado';
-
-  /**
-   * An array containing the extensions of allowed file types.
-   */
-  public static $file_types = [
-    'fasta',
-    'txt',
-    'fa',
-    'aa',
-    'pep',
-    'nuc',
-    'faa',
-    'fna',
-  ];
-
-
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
-  public static $upload_description = 'Please provide the FASTA file. The file must have a .fasta extension.';
-
-  /**
-   * The title that should appear above the file upload section.
-   */
-  public static $upload_title = 'FASTA Upload';
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
-  public static $button_text = 'Import FASTA file';
-
-  /**
-   * Indicates the methods that the file uploader will support.
-   */
-  public static $methods = [
-    // Allow the user to upload a file to the server.
-    'file_upload' => TRUE,
-    // Allow the user to provide the path on the Tripal server for the file.
-    'file_local' => TRUE,
-    // Allow the user to provide a remote URL for the file.
-    'file_remote' => TRUE,
-  ];
 
   /**
    * @see TripalImporter::form()
@@ -145,7 +78,7 @@ class FASTAImporter extends ChadoImporterBase {
          exists with the same name or unique name and type then it is skipped.
          Select "Update only" to only update featues that already exist in the
          database.  Select "Insert and Update" to insert features that do
-         not exist and upate those that do.'),
+         not exist and update those that do.'),
       '#default_value' => 2,
     ];
 
@@ -163,9 +96,9 @@ class FASTAImporter extends ChadoImporterBase {
         a human-readable name then select the "Name" button. If your features are
         uniquely identified using the unique name then select the "Unique name" button.  If you
         loaded your features first using the GFF loader then the unique name of each
-        features were indicated by the "ID=" attribute and the name by the "Name=" attribute.
+        feature was indicated by the "ID=" attribute and the name by the "Name=" attribute.
         By default, the FASTA loader will use the first word (character string
-        before the first space) as  the name for your feature. If
+        before the first space) as the name for your feature. If
         this does not uniquely identify your feature consider specifying a regular expression in the advanced section below.
         Additionally, you may import both a name and a unique name for each sequence using the advanced options.'),
       '#default_value' => 1,
@@ -343,89 +276,59 @@ class FASTAImporter extends ChadoImporterBase {
       $match_type = 'Unique name';
     }
 
-    $file_existing = false;
-    if ($file_upload_existing == "0" || $file_upload_existing == "" || $file_upload_existing == null) {
-      // this means no existing file
-    }
-    else {
-      $file_existing = true;
-    }
-
-    $file_uploaded = false;
-    // If there is no file upload
-    if($file_upload == "" || $file_upload == "0") {
-
-    }
-    else {
-      $file_uploaded = true;
-    }
-
-    if ($file_uploaded == false and $file_existing == false and !$file_local and !$file_remote) {
-      \Drupal::messenger()->addError(t("You must upload a FASTA file or choose an existing FASTA file"));
-    }
+    // The parent class will validate that a file has been specified and is valid.
 
     if ($re_name and !$re_uname and strcmp($match_type, 'Unique name') == 0) {
-      // form_set_error('re_uname', t("You must provide a regular expression to identify the sequence unique name"));
-      \Drupal::messenger()->addError(t("You must provide a regular expression to identify the sequence unique name"));
+      $form_state->setErrorByName('re_name', t('You should not specify a regular expression for name if you are matching to sequence unique name'));
     }
 
     if (!$re_name and $re_uname and strcmp($match_type, 'Name') == 0) {
-      // form_set_error('re_name', t("You must provide a regular expression to identify the sequence name"));
-      \Drupal::messenger()->addError(t("You must provide a regular expression to identify the sequence name"));
+      $form_state->setErrorByName('re_uname', t('You should not specify a regular expression for unique name if you are matching to sequence name'));
     }
 
     // make sure if a relationship is specified that all fields are provided.
-
     if (($rel_type or $re_subject) and !$parent_type) {
-      // form_set_error('parent_type', t("Please provide a SO term for the parent"));
-      \Drupal::messenger()->addError(t("Please provide a SO term for the parent"));
+      $form_state->setErrorByName('parent_type', t('Please provide a Sequence Ontology (SO) term for the parent'));
     }
     if (($parent_type or $re_subject) and !$rel_type) {
-      // form_set_error('rel_type', t("Please select a relationship type"));
-      \Drupal::messenger()->addError(t("Please select a relationship type"));
+      $form_state->setErrorByName('rel_type', t('Please select a relationship type'));
     }
 
     // make sure if a database is specified that all fields are provided
     if ($db_id and !$re_accession) {
-      // form_set_error('re_accession', t("Please provide a regular expression for the accession"));
-      \Drupal::messenger()->addError(t("Please provide a regular expression for the accession"));
+      $form_state->setErrorByName('re_accession', t('Please provide a regular expression for the accession'));
     }
     if ($re_accession and !$db_id) {
-      // form_set_error('db_id', t("Please select a database"));
-      \Drupal::messenger()->addError(t("Please select a database"));
+      $form_state->setErrorByName('db_id', t('Please select a database'));
     }
 
     // Check to make sure the regexps are valid.
     if ($re_name && @preg_match("/$re_name/", null) === false) {
-      // form_set_error('re_name', t("please provide a valid regular expression for the feature name."));
-      \Drupal::messenger()->addError(t("please provide a valid regular expression for the feature name."));
+      $form_state->setErrorByName('re_name', t('Please provide a valid regular expression for the feature name'));
     }
     if ($re_uname && @preg_match("/$re_uname/", null) === false) {
-      // form_set_error('re_uname', t("please provide a valid regular expression for the feature unique name."));
-      \Drupal::messenger()->addError(t("please provide a valid regular expression for the feature unique name."));
+      $form_state->setErrorByName('re_uname', t('Please provide a valid regular expression for the feature unique name'));
     }
     if ($re_accession && @preg_match("/$re_accession/", null) === false) {
-      // form_set_error('re_accession', t("please provide a valid regular expression for the external database accession."));
-      \Drupal::messenger()->addError(t("please provide a valid regular expression for the external database accession."));
+      $form_state->setErrorByName('re_accession', t('Please provide a valid regular expression for the external database accession'));
     }
     if ($re_subject && @preg_match("/$re_subject/", null) === false) {
-      // form_set_error('re_subject', t("please provide a valid regular expression for the relationship parent."));
-      \Drupal::messenger()->addError(t("please provide a valid regular expression for the relationship parent."));
+      $form_state->setErrorByName('re_subject', t('Please provide a valid regular expression for the relationship parent'));
     }
 
     // check to make sure the types exists
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
     $cvterm_id = $cv_autocomplete->getCVtermId($type, 'sequence');
     if (!$cvterm_id) {
-      // form_set_error('type', t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
-      \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
+      $form_state->setErrorByName('type', t('The Sequence Ontology (SO) term selected for the sequence'
+        . ' type is not available in the database. Please check the spelling or select another.'));
     }
 
     if ($rel_type) {
       $cvterm_id = $cv_autocomplete->getCVtermId($parent_type, 'sequence');
       if (!$cvterm_id) {
-        // form_set_error('parent_type', t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
-        \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
+        $form_state->setErrorByName('parent_type', t('The Sequence Ontology (SO) term selected for the parent'
+          . ' relationship is not available in the database. Please check the spelling or select another.'));
       }
     }
   }
@@ -519,9 +422,9 @@ class FASTAImporter extends ChadoImporterBase {
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
     $cvterm_id = $cv_autocomplete->getCVtermId($type, 'sequence');
     if (!$cvterm_id) {
-      // $this->logMessage("Cannot find the term type: '!type'", ['!type' => $type], TRIPAL_ERROR);
-      $this->logger->error("Cannot find the term type: ':type'",
-          [':type' => $type]);
+      $this->logger->error("Cannot find the term type: '@type'",
+        ['@type' => $type]
+      );
       return 0;
     }
     $cvtermsql = "
@@ -535,8 +438,9 @@ class FASTAImporter extends ChadoImporterBase {
       ':cvterm_id' => $cvterm_id,
     ])->fetchObject();
     if (!$cvterm) {
-      $this->logger->error("Cannot find the term type: ':type'",
-          [':type' => $type]);
+      $this->logger->error("Cannot find the term type: '@type'",
+        ['@type' => $type]
+      );
       return 0;
     }
 
@@ -545,17 +449,17 @@ class FASTAImporter extends ChadoImporterBase {
     if (isset($parent_type) && $parent_type != "") {
       $parentcvterm_id = $cv_autocomplete->getCVtermId($parent_type, 'sequence');
       if (!$parentcvterm_id) {
-        $this->logger->error("Cannot find the parent term type: ':parent_type'",
-            [':parent_type' => $parent_type]);
+        $this->logger->error("Cannot find the parent term type: '@parent_type'",
+           ['@parent_type' => $parent_type]
+        );
       }
       $parentcvterm = $chado->query($cvtermsql, [
         ':cvterm_id' => $parentcvterm_id,
       ])->fetchObject();
       if (!isset($parentcvterm)) {
-        // $this->logMessage("Cannot find the parent term type: '!type'",
-        //   ['!type' => $parentcvterm], TRIPAL_ERROR);
-        $this->logger->error("Cannot find the parent term type: ':parent_type'",
-            [':parent_type' => $parent_type]);
+        $this->logger->error("Cannot find the parent term type: '@parent_type'",
+           ['@parent_type' => $parent_type]
+        );
         return 0;
       }
     }
@@ -575,10 +479,9 @@ class FASTAImporter extends ChadoImporterBase {
         ':name' => $rel_type,
       ])->fetchObject();
       if (!$relcvterm) {
-        // $this->logMessage("Cannot find the relationship term type: '!type'",
-        //   ['!type' => $relcvterm], TRIPAL_ERROR);
-        $this->logger->error("Cannot find the relationship term type: ':relcvterm'",
-            [':relcvterm' => $rel_type]);
+        $this->logger->error("Cannot find the relationship term type: '@type'",
+          ['@type' => $rel_type]
+        );
         return 0;
       }
     }
@@ -588,12 +491,13 @@ class FASTAImporter extends ChadoImporterBase {
     $feature_tbl = chado_get_schema('feature', $chado->getSchemaName());
     $dbxref_tbl = chado_get_schema('dbxref', $chado->getSchemaName());
 
-    // $this->logMessage(t("Step 1: Finding sequences..."));
     $this->logger->notice("Step 1: Finding sequences...");
     $filesize = filesize($file_path);
     $fh = fopen($file_path, 'r');
     if (!$fh) {
-      throw new \Exception(t("Cannot open file: !dfile", ['!dfile' => $file_path]));
+      $this->logger->error("Cannot open file: @dfile",
+        ['@dfile' => $file_path]
+      );
     }
     $num_read = 0;
 
@@ -621,16 +525,16 @@ class FASTAImporter extends ChadoImporterBase {
         // if ($re_name) { // OLD T3 code that does not work as intended
         if (isset($re_name) && $re_name != "") {
           if (!preg_match("/$re_name/", $defline, $matches)) {
-            // $this->logMessage("Regular expression for the feature name finds nothing. Line !line.",
-            //   ['!line' => $i], TRIPAL_ERROR);
-            $this->logger->error("Regular expression for the feature name finds nothing. Line $i.");
+            $this->logger->error("Regular expression for the feature name finds nothing. Line @line.",
+              ['@line' => $i]
+            );
           }
           // OLD TRIPAL 3 CODE
           // elseif (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
           elseif (strlen($matches[1]) > $feature_tbl['fields']['name']['size']) {
-            // $this->logMessage("Regular expression retrieves a value too long for the feature name. Line !line.",
-            //   ['!line' => $i], TRIPAL_WARNING);
-            $this->logger->warning("Regular expression retrieves a value too long for the feature name. Line $i.");
+            $this->logger->warning("Regular expression retrieves a value too long for the feature name. Line @line.",
+              ['@line' => $i]
+            );
           }
           else {
             $name = trim($matches[1]);
@@ -644,17 +548,18 @@ class FASTAImporter extends ChadoImporterBase {
             // OLD TRIPAL 3 CODE
             // if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
             if (strlen($matches[1]) > $feature_tbl['fields']['name']['size']) {
-              // $this->logMessage("Regular expression retrieves a feature name too long for the feature name. Line !line.",
-              //   ['!line' => $i], TRIPAL_WARNING);
-              $this->logger->warning("Regular expression retrieves a feature name too long for the feature name. Line $i.");
+              $this->logger->warning("Regular expression retrieves a feature name too long for the feature name. Line @line.",
+                ['@line' => $i]
+              );
             }
             else {
               $name = trim($matches[1]);
             }
           }
           else {
-            // $this->logMessage("Cannot find a feature name. Line !line.", ['!line' => $i], TRIPAL_WARNING);
-            $this->logger->warning("Cannot find a feature name. Line $i.");
+            $this->logger->warning("Cannot find a feature name. Line @line.",
+              ['@line' => $i]
+            );
           }
         }
 
@@ -662,9 +567,9 @@ class FASTAImporter extends ChadoImporterBase {
         $uname = "";
         if ($re_uname) {
           if (!preg_match("/$re_uname/", $defline, $matches)) {
-            // $this->logMessage("Regular expression for the feature unique name finds nothing. Line !line.",
-            //   ['!line' => $i], TRIPAL_ERROR);
-            $this->logger->error("Regular expression for the feature unique name finds nothing. Line $i.");
+            $this->logger->error("Regular expression for the feature unique name finds nothing. Line @line.",
+              ['@line' => $i]
+            );
           }
           $uname = trim($matches[1]);
         }
@@ -676,9 +581,9 @@ class FASTAImporter extends ChadoImporterBase {
             $uname = trim($matches[1]);
           }
           else {
-            // $this->logMessage("Cannot find a feature unique name. Line !line.",
-            //   ['!line' => $i], TRIPAL_ERROR);
-            $this->logger->error("Cannot find a feature unique name. Line $i.");
+            $this->logger->error("Cannot find a feature unique name. Line @line.",
+              ['@line' => $i]
+            );
           }
         }
 
@@ -689,11 +594,10 @@ class FASTAImporter extends ChadoImporterBase {
           // OLD TRIPAL 3 CODE
           // if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
           if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['size']) {
-            // tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves an accession too long for the feature name. " .
-            //   "Cannot add cross reference. Line %line.", [
-            //   '%line' => $i,
-            // ]);
-            $this->logger->error("WARNING: Regular expression retrieves an accession too long for the feature name. Cannot add cross reference. Line $i.");
+            $this->logger->warning("WARNING: Regular expression retrieves an accession too long for"
+                                 . " the feature name. Cannot add cross reference. Line @line.",
+              ['@line' => $i]
+            );
           }
           else {
             $accession = trim($matches[1]);
@@ -733,15 +637,12 @@ class FASTAImporter extends ChadoImporterBase {
     $seqs[$num_seqs - 1]['seq_end'] = $num_read - strlen($line);
 
     // Now that we know where the sequences are in the file we need to add them.
-    // $this->logMessage("Step 2: Importing sequences...");
     $this->logger->notice("Step 2: Importing sequences...");
-    // $this->logMessage("Found !num_seqs sequence(s).", ['!num_seqs' => $num_seqs]);
-    $this->logger->notice("Found $num_seqs sequence(s).");
+    $this->logger->notice("Found @num_seqs sequence(s).", ['@num_seqs' => $num_seqs]);
     $this->setTotalItems($num_seqs);
     $this->setItemsHandled(0);
     for ($j = 0; $j < $num_seqs; $j++) {
       $seq = $seqs[$j];
-      //$this->logMessage("Importing !seqname.", array('!seqname' => $seq['name']));
       $source = NULL;
       $this->loadFastaFeature($fh, $seq['name'], $seq['uname'], $db_id,
         $seq['accession'], $seq['subject'], $rel_type, $parent_type,
@@ -766,14 +667,6 @@ class FASTAImporter extends ChadoImporterBase {
     $chado = $this->getChadoConnection();
     // Check to see if this feature already exists if the match_type is 'Name'.
     if (strcmp($match_type, 'Name') == 0) {
-      // $values = [
-      //   'organism_id' => $organism_id,
-      //   'name' => $name,
-      //   'type_id' => $cvterm->cvterm_id,
-      // ];
-      // $results = chado_select_record('feature', [
-      //   'feature_id',
-      // ], $values);
       $results_query = $chado->select('1:feature', 'feature')
         ->fields('feature')
         ->condition('organism_id', $organism_id)
@@ -782,26 +675,18 @@ class FASTAImporter extends ChadoImporterBase {
       $results = $results_query->execute();
       $results_count = $results_query->countQuery()->execute()->fetchField();
       if ($results_count > 1) {
-        // $this->logMessage("Multiple features exist with the name '!name' of type '!type' for the organism.  skipping",
-        //   ['!name' => $name, '!type' => $cvterm->name], TRIPAL_ERROR);
-        $this->logger->error("Multiple features exist with the name '$name' of type '" .
-          $cvterm->name . "' for the organism.  skipping");
+        $this->logger->error("Multiple features exist with the name '@name' of type '@type' for the organism.  skipping",
+          ['@name' => $name, '@type' => $cvterm->name]
+        );
         return 0;
       }
       if ($results_count == 1) {
-        // $feature = $results[0];
         $feature = $results->fetchObject();
       }
     }
 
     // Check if this feature already exists if the match_type is 'Unique Name'.
     if (strcmp($match_type, 'Unique name') == 0) {
-      // $values = [
-      //   'organism_id' => $organism_id,
-      //   'uniquename' => $uname,
-      //   'type_id' => $cvterm->cvterm_id,
-      // ];
-      // $results = chado_select_record('feature', ['feature_id'], $values);
       $results_query = $chado->select('1:feature', 'feature')
         ->fields('feature')
         ->condition('organism_id', $organism_id)
@@ -810,27 +695,20 @@ class FASTAImporter extends ChadoImporterBase {
       $results = $results_query->execute();
       $results_count = $results_query->countQuery()->execute()->fetchField();
       if ($results_count > 1) {
-        // $this->logMessage("Multiple features exist with the name '!name' of type '!type' for the organism.  skipping",
-        //   ['!name' => $name, '!type' => $cvterm->name], TRIPAL_WARNING);
-        $this->logger->error("Multiple features exist with the name '$name' of type '" .
-          $cvterm->name . "' for the organism.  skipping");
+        $this->logger->error("Multiple features exist with the name '@name' of type '@type' for the organism.  skipping",
+          ['@name' => $name, '@type' => $cvterm->name]
+        );
         return 0;
       }
       if ($results_count == 1) {
-        // $feature = $results[0];
         $feature = $results->fetchObject();
       }
 
       // If the feature exists but this is an "insert only" then skip.
       if (isset($feature) and (strcmp($method, 'Insert only') == 0)) {
-        // $this->logMessage("Feature already exists '!name' ('!uname') while matching on !type. Skipping insert.",
-        //   [
-        //     '!name' => $name,
-        //     '!uname' => $uname,
-        //     '!type' => drupal_strtolower($match_type),
-        //   ], TRIPAL_WARNING);
-        $this->logger->error("Feature already exists '$name' ('$uname') while matching on " .
-          strtolower($match_type) . ". Skipping insert.");
+        $this->logger->error("Feature already exists '@name' ('@uname') while matching on @type. Skipping insert.",
+          ['@name' => $name, '@uname' => $uname, '@type' => strtolower($match_type)]
+        );
         return 0;
       }
     }
@@ -853,23 +731,15 @@ class FASTAImporter extends ChadoImporterBase {
         'uniquename' => $uname,
         'type_id' => $cvterm->cvterm_id,
       ];
-      // $success = chado_insert_record('feature', $values);
       $success = $chado->insert('1:feature')->fields($values)->execute();
       if (!$success) {
-        $this->logMessage("Failed to insert feature '!name (!uname)'", [
-          '!name' => $name,
-          '!uname' => $uname,
-        ], TRIPAL_ERROR);
+        $this->logger->error("Failed to insert feature '@name (@uname)'",
+          ['@name' => $name, '@uname' => $uname]
+        );
         return 0;
       }
 
       // now get the feature we just inserted
-      // $values = [
-      //   'organism_id' => $organism_id,
-      //   'uniquename' => $uname,
-      //   'type_id' => $cvterm->cvterm_id,
-      // ];
-      // $results = chado_select_record('feature', ['feature_id'], $values);
       $results_query = $chado->select('1:feature', 'feature')
         ->fields('feature')
         ->condition('organism_id', $organism_id)
@@ -879,15 +749,12 @@ class FASTAImporter extends ChadoImporterBase {
       $results_count = $results_query->countQuery()->execute()->fetchField();
       if ($results_count == 1) {
         $inserted = 1;
-        // $feature = $results[0];
         $feature = $results->fetchObject();
       }
       else {
-        // $this->logMessage("Failed to retrieve newly inserted feature '!name (!uname)'", [
-        //   '!name' => $name,
-        //   '!uname' => $uname,
-        // ], TRIPAL_ERRORR);
-        $this->logger->error("Failed to retrieve newly inserted feature '$name ($uname)'");
+        $this->logger->error("Failed to retrieve newly inserted feature '@name (@uname)'",
+          ['@name' => $name, '@uname' => $uname]
+        );
         return 0;
       }
 
@@ -897,9 +764,9 @@ class FASTAImporter extends ChadoImporterBase {
 
     // if we don't have a feature and the user wants to do an update then fail
     if (!isset($feature) and (strcmp($method, 'Update only') == 0 or strcmp($method, 'Insert and update') == 0)) {
-      // $this->logMessage("Failed to find feature '!name' ('!uname') while matching on " . drupal_strtolower($match_type) . ".",
-      //   ['!name' => $name, '!uname' => $uname], TRIPAL_ERROR);
-      $this->logger->error("Failed to find feature '$name' ('$uname') while matching on " . strtolower($match_type) . ".");
+      $this->logger->error("Failed to find feature '@name' ('@uname') while matching on @match_type.",
+        ['@name' => $name, '@uname' => $uname, '@match_type' => strtolower($match_type)]
+      );
       return 0;
     }
 
@@ -917,12 +784,6 @@ class FASTAImporter extends ChadoImporterBase {
           // First check to make sure that by changing the unique name of this
           // feature that we won't conflict with another existing feature of
           // the same name
-          // $values = [
-          //   'organism_id' => $organism_id,
-          //   'uniquename' => $uname,
-          //   'type_id' => $cvterm->cvterm_id,
-          // ];
-          // $results = chado_select_record('feature', ['feature_id'], $values);
           $results_query = $chado->select('1:feature', 'feature')
             ->fields('feature')
             ->condition('organism_id', $organism_id)
@@ -931,16 +792,10 @@ class FASTAImporter extends ChadoImporterBase {
           $results = $results_query->execute();
           $results_count = $results_query->countQuery()->execute()->fetchField();
           if ($results_count > 0) {
-            // $this->logMessage("Cannot update the feature '!name' with a uniquename of '!uname' and type of '!type' as it " .
-            //   "conflicts with an existing feature with the same uniquename and type.",
-            //   [
-            //     '!name' => $name,
-            //     '!uname' => $uname,
-            //     '!type' => $cvterm->name,
-            //   ], TRIPAL_ERROR);
-            $this->logger->error("Cannot update the feature '$name' with a uniquename of '$uname' and type of '" .
-              $cvterm->name . "' as it " .
-              "conflicts with an existing feature with the same uniquename and type.");
+            $this->logger->error("Cannot update the feature '@name' with a uniquename of '@uname' and type of '@type'"
+                               . " as it conflicts with an existing feature with the same uniquename and type.",
+              ['@name' => $name, '@uname' => $uname, '@type' => $cvterm->name]
+            );
             return 0;
           }
 
@@ -955,9 +810,9 @@ class FASTAImporter extends ChadoImporterBase {
           // perform the update
           $success = chado_update_record('feature', $match, $values);
           if (!$success) {
-            // $this->logMessage("Failed to update feature '!name' ('!name')",
-            //   ['!name' => $name, '!uiname' => $uname], TRIPAL_ERROR);
-            $this->logger->error("Failed to update feature '$name' ('$name')");
+            $this->logger->error("Failed to update feature '@name' ('@uname')",
+              ['@name' => $name, '@uname' => $uname]
+            );
             return 0;
           }
         }
@@ -977,9 +832,9 @@ class FASTAImporter extends ChadoImporterBase {
           ];
           $success = chado_update_record('feature', $match, $values);
           if (!$success) {
-            // $this->logMessage("Failed to update feature '!name' ('!name')",
-            //   ['!name' => $name, '!uiname' => $uname], TRIPAL_ERROR);
-            $this->logger->error("Failed to update feature '$name' ('$name')");
+            $this->logger->error("Failed to update feature '@name' ('@uname')",
+              ['@name' => $name, '@uname' => $uname]
+            );
             return 0;
           }
         }
@@ -992,11 +847,6 @@ class FASTAImporter extends ChadoImporterBase {
     // add in the analysis link
     if ($analysis_id) {
       // if the association doesn't already exist then add one
-      // $values = [
-      //   'analysis_id' => $analysis_id,
-      //   'feature_id' => $feature->feature_id,
-      // ];
-      // $results = chado_select_record('analysisfeature', ['analysisfeature_id'], $values);
       $results_query = $chado->select('1:analysisfeature', 'analysisfeature')
         ->fields('analysisfeature')
         ->condition('analysis_id', $analysis_id)
@@ -1004,16 +854,15 @@ class FASTAImporter extends ChadoImporterBase {
       $results = $results_query->execute();
       $results_count = $results_query->countQuery()->execute()->fetchField();
       if ($results_count == 0) {
-        // $success = chado_insert_record('analysisfeature', $values);
         $values = [
           'analysis_id' => $analysis_id,
           'feature_id' => $feature->feature_id,
         ];
         $success = $chado->insert('1:analysisfeature')->fields($values)->execute();
         if (!$success) {
-          // $this->logMessage("Failed to associate analysis and feature '!name' ('!name')",
-          //   ['!name' => $name, '!uname' => $uname], TRIPAL_ERROR);
-          $this->logger->error("Failed to associate analysis and feature '$name' ('$name')");
+          $this->logger->error("Failed to associate analysis and feature '@name' ('@name')",
+            ['@name' => $name, '@uname' => $uname]
+          );
           return 0;
         }
       }
@@ -1021,12 +870,6 @@ class FASTAImporter extends ChadoImporterBase {
 
     // now add the database cross reference
     if ($db_id) {
-      // check to see if this accession reference exists, if not add it
-      // $values = [
-      //   'db_id' => $db_id,
-      //   'accession' => $accession,
-      // ];
-      // $results = chado_select_record('dbxref', ['dbxref_id'], $values);
       $results_query = $chado->select('1:dbxref', 'dbxref')
         ->fields('dbxref')
         ->condition('db_id', $db_id)
@@ -1035,33 +878,31 @@ class FASTAImporter extends ChadoImporterBase {
       $results_count = $results_query->countQuery()->execute()->fetchField();
       // if the accession doesn't exist then add it
       if ($results_count == 0) {
-        // $results = chado_insert_record('dbxref', $values);
         $values = [
           'db_id' => $db_id,
           'accession' => $accession,
         ];
         $success = $chado->insert('1:dbxref')->fields($values)->execute();
         if (!$results) {
-          // $this->logMessage("Failed to add database accession '!accession'",
-          //   ['!accession' => $accession], TRIPAL_ERROR);
-          $this->logger->error("Failed to add database accession '$accession'");
+          $this->logger->error("Failed to add database accession '@accession'",
+            ['@accession' => $accession]
+          );
           return 0;
         }
-        // $results = chado_select_record('dbxref', ['dbxref_id'], $values);
+
         $results_query = $chado->select('1:dbxref', 'dbxref')
-        ->fields('dbxref')
-        ->condition('db_id', $db_id)
-        ->condition('accession', $accession);
+          ->fields('dbxref')
+          ->condition('db_id', $db_id)
+          ->condition('accession', $accession);
         $results = $results_query->execute();
         $results_count = $results_query->countQuery()->execute()->fetchField();
         if ($results_count == 1) {
-          // $dbxref = $results[0];
           $dbxref = $results->fetchObject();
         }
         else {
-          // $this->logMessage("Failed to retrieve newly inserted dbxref '!name (!uname)'",
-          //   ['!name' => $name, '!uname' => $uname], TRIPAL_ERROR);
-          $this->logger->error("Failed to retrieve newly inserted dbxref '$name ($uname)'");
+          $this->logger->error("Failed to retrieve newly inserted dbxref '@name (@uname)'",
+            ['@name' => $name, '@uname' => $uname]
+          );
           return 0;
         }
       }
@@ -1069,12 +910,6 @@ class FASTAImporter extends ChadoImporterBase {
         $dbxref = $results[0];
       }
 
-      // Check to see if the feature dbxref record exists. If not, then add it.
-      // $values = [
-      //   'feature_id' => $feature->feature_id,
-      //   'dbxref_id' => $dbxref->dbxref_id,
-      // ];
-      // $results = chado_select_record('feature_dbxref', ['feature_dbxref_id'], $values);
       $results_query = $chado->select('1:feature_dbxref', 'feature_dbxref')
         ->fields('feature_dbxref')
         ->condition('feature_id', $feature->feature_id)
@@ -1082,16 +917,15 @@ class FASTAImporter extends ChadoImporterBase {
       $results = $results_query->execute();
       $results_count = $results_query->countQuery()->execute()->fetchField();
       if ($results_count == 0) {
-        // $success = chado_insert_record('feature_dbxref', $values);
         $values = [
           'feature_id' => $feature->feature_id,
           'dbxref_id' => $dbxref->dbxref_id,
         ];
         $success = $chado->insert('1:feature_dbxref')->fields($values)->execute();
         if (!$success) {
-          // $this->logMessage("Failed to add associate database accession '!accession' with feature",
-          //   ['!accession' => $accession], TRIPAL_ERROR);
-          $this->logger->error("Failed to add associate database accession '$accession' with feature");
+          $this->logger->error("Failed to associate database accession '@accession' with feature",
+            ['@accession' => $accession]
+          );
           return 0;
         }
       }
@@ -1099,12 +933,6 @@ class FASTAImporter extends ChadoImporterBase {
 
     // Now add in the relationship if one exists.
     if ($rel_type) {
-      // $values = [
-      //   'organism_id' => $organism_id,
-      //   'uniquename' => $parent,
-      //   'type_id' => $parentcvterm->cvterm_id,
-      // ];
-      // $results = chado_select_record('feature', ['feature_id'], $values);
       $results_query = $chado->select('1:feature', 'feature')
         ->fields('feature')
         ->condition('organism_id', $organism_id)
@@ -1113,21 +941,14 @@ class FASTAImporter extends ChadoImporterBase {
       $results = $results_query->execute();
       $results_count = $results_query->countQuery()->execute()->fetchField();
       if ($results_count != 1) {
-        // $this->logMessage("Cannot find a unique feature for the parent '!parent' of type '!type' for the feature.",
-        //   ['!parent' => $parent, '!type' => $parent_type], TRIPAL_ERROR);
-        $this->logger->error("Cannot find a unique feature for the parent '$parent' of type '$parent_type' for the feature.");
+        $this->logger->error("Cannot find a unique feature for the parent '@parent' of type '@type' for the feature.",
+          ['@parent' => $parent, '@type' => $parent_type]
+        );
         return 0;
       }
-      // $parent_feature = $results[0];
       $parent_feature = $results->fetchObject();
 
       // Check to see if the relationship already exists. If not, then add it.
-      // $values = [
-      //   'subject_id' => $feature->feature_id,
-      //   'object_id' => $parent_feature->feature_id,
-      //   'type_id' => $relcvterm->cvterm_id,
-      // ];
-      // $results = chado_select_record('feature_relationship', ['feature_relationship_id'], $values);
       $results_query = $chado->select('1:feature_relationship', 'feature_relationship')
         ->fields('feature_relationship')
         ->condition('subject_id', $feature->feature_id)
@@ -1136,7 +957,6 @@ class FASTAImporter extends ChadoImporterBase {
       $results = $results_query->execute();
       $results_count = $results_query->countQuery()->execute()->fetchField();
       if ($results_count == 0) {
-        // $success = chado_insert_record('feature_relationship', $values);
         $values = [
           'subject_id' => $feature->feature_id,
           'object_id' => $parent_feature->feature_id,
@@ -1144,9 +964,9 @@ class FASTAImporter extends ChadoImporterBase {
         ];
         $success = $chado->insert('1:feature_relationship')->fields($values)->execute();
         if (!$success) {
-          // $this->logMessage("Failed to add associate database accession '!accession' with feature",
-          //   ['!accession' => $accession], TRIPAL_ERROR);
-          $this->logger->error("Failed to add associate database accession '$accession' with feature");
+          $this->logger->error("Failed to associate database accession '@accession' with feature",
+            ['@accession' => $accession]
+          );
           return 0;
         }
       }

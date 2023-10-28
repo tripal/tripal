@@ -44,14 +44,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * The database connection for querying Chado.
    *
-   * @var Drupal\tripal_chado\Database\ChadoConnection
+   * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
   protected $connection;
 
   /**
    * A service to provide debugging for fields to developers.
    *
-   * @ var Drupal\tripal_chado\Services\ChadoFieldDebugger
+   * @var \Drupal\tripal_chado\Services\ChadoFieldDebugger
    */
   protected $field_debugger;
 
@@ -91,8 +91,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param array $configuration
    * @param string $plugin_id
    * @param mixed $plugin_definition
-   * @param Drupal\tripal\Services\TripalLogger $logger
-   * @param Drupal\tripal_chado\Database\ChadoConnection $connection
+   * @param \Drupal\tripal\Services\TripalLogger $logger
+   * @param \Drupal\tripal_chado\Database\ChadoConnection $connection
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection, ChadoFieldDebugger $field_debugger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
@@ -682,8 +682,25 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             }
           }
 
-          // Get the values of properties that have values added by a join.
-          if ($action == 'join') {
+          // Get the values of properties that just want to read values.
+          if (in_array($action, ['read_value', 'join'])) {
+            if (array_key_exists('chado_table', $prop_storage_settings)) {
+              $chado_table = $prop_storage_settings['chado_table'];
+            }
+            // Otherwise this is a join + we need the base table.
+            // We can use the path to look this up.
+            elseif (array_key_exists('path', $prop_storage_settings)) {
+              // Examples of the path:
+              //   - phylotree.analysis_id>analysis.analysis_id'.
+              //   - feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id'
+              $path_arr = explode(';', $prop_storage_settings['path']);
+              // Now grab the left/right sides of the first part of the path.
+              list($left, $right) = explode(">", array_shift($path_arr));
+              // Break the left side into table + column.
+              list($left_table, $left_col) = explode(".", $left);
+              // The base table is the left table of the first part of the path.
+              $chado_table = $left_table;
+            }
             $chado_column = $prop_storage_settings['chado_column'];
             $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
             $value = $records[$chado_table][$delta]['fields'][$as];
@@ -968,16 +985,37 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
             }
           }
-          // JOIN: performs a join across multiple tables for the purposes of
-          // selecting a single column. This cannot be used for inserting or
-          // updating values. Instead we use store_link and store actions for that.
+          // READ_VALUE: selecting a single column. This cannot be used for inserting or
+          // updating values. Instead we use store actions for that.
+          // If reading a value from a non-base table, then the path should
+          // be provided. This also supports the deprecated 'join' action.
           // ................................................................
-          if ($action == 'join') {
-            $path = $prop_storage_settings['path'];
+          if (in_array($action, ['read_value', 'join'])) {
             $chado_column = $prop_storage_settings['chado_column'];
-            $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
-            $path_arr = explode(";", $path);
-            $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr);
+            // If a join is needed to access the column, then the 'path' needs
+            // to be defined and the joins need to be added to the query.
+            // This will also add the fields to be selected.
+            if (array_key_exists('path', $prop_storage_settings)) {
+              $path = $prop_storage_settings['path'];
+              $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
+              $path_arr = explode(";", $path);
+              $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr);
+            }
+            // Otherwise, it is a column in a base table. In this case, we
+            // only need to ensure the column is added to the fields.
+            else {
+              // We will only set this if it's not already set.
+              // This is to allow another field with a store set for this column
+              // to set this value. We actually only do this to ensure it ends up
+              // in the query fields.
+              if (!array_key_exists('fields', $records[$chado_table][$delta])) {
+                $records[$chado_table][$delta]['fields'] = [];
+                $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
+              }
+              elseif (!array_key_exists($chado_column, $records[$chado_table][$delta]['fields'])) {
+                $records[$chado_table][$delta]['fields'][$chado_column] = NULL;
+              }
+            }
           }
           // REPLACE: replace a tokenized string with the values from other
           // properties. As such we do not need to worry about adding this
