@@ -67,6 +67,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $linker_table = $settings['linker_table'];
     $object_table = self::$object_table;
     $record_id_term = 'SIO:000729';
+
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table or !$linker_table) {
@@ -128,9 +129,11 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'chado_table' => $base_table,
       'chado_column' => $base_pkey_col,
     ]);
+
     // Define the linker table that links the base table to the object table.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
       'action' => 'store_pkey',
+      'drupal_store' => TRUE,
       'chado_table' => $linker_table,
       'chado_column' => $linker_pkey_col,
     ]);
@@ -145,6 +148,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     // Define the link between the base table and the object table.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'right_id', $linker_right_term, [
       'action' => 'store',
+      'drupal_store' => TRUE,
       'chado_table' => $linker_table,
       'chado_column' => $linker_right_col,
     ]);
@@ -183,7 +187,6 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 //      'chado_column' => 'name',
 //      'as' => 'value_type',
 //    ]);
-dpm($properties, 'properties');
     return $properties;
   }
 
