@@ -1,0 +1,441 @@
+##
+## Used to provide file/property definitions for the tests in
+## ChadoStorageActionsTest.php
+##
+## The format is as follows:
+## [test method which will be using the fields]:
+##   [field name]:
+##      field_name: [field name]
+##      base_table: [base table]
+##      properties:
+##        [property key]:
+##           propertyType class: [full class name + namespace]
+##           action: [action]
+##           [additional key/value pairs associated with the action]
+
+
+## Focus: Showing that the read_value action can read a value without any
+##        conflict with other fields.
+## Chado Table: Project
+testReadValueAction:
+  # The core field used to test the read action.
+  test_read:
+    field_name: 'test_read'
+    base_table: 'project'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_column: 'name'
+  # A field which focuses on storing the same fields as the read field above.
+  # This is added to ensure there is no conflict between having two fields
+  # accessing the same column with different action types.
+  other_field_store:
+    field_name: 'other_field_store'
+    base_table: 'project'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_store:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'project'
+        chado_column: 'name'
+  # This is another read-focused field focused on the same as columns.
+  # This is here to ensure there are no conflicts with two fields reading the same value.
+  other_field_read:
+    field_name: 'other_field_read'
+    base_table: 'project'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_read_again:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_column: 'name'
+# Ensure the read_value action works with an alias.
+testReadValueActionTableAlias:
+  test_alias:
+    field_name: 'test_alias'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'project'
+        chado_table_alias: 'project_alias'
+        chado_column: 'project_id'
+      name_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_table_alias: 'project_alias'
+        chado_column: 'name'
+  test_noalias:
+    field_name: 'test_noalias'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_column: 'name'
+# Ensure we can read the value when a path is supplied (e.g. think old join action)
+testReadValueActionJoin:
+  test_join:
+    field_name: 'test_join'
+    base_table: 'stock'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'stock'
+        chado_column: 'stock_id'
+      cvterm_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'cvterm'
+        chado_column: 'name'
+        path: 'stock.stock_id>stock_cvterm.stock_id;stock_cvterm.cvterm_id>cvterm.cvterm_id'
+# Ensure read_value works when there isn't a store action for the same column.
+testReadValueActionNoStore:
+  test_read:
+    field_name: 'test_read'
+    base_table: 'project'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_column: 'name'
+      description_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'project'
+        chado_column: 'description'
+
+## Focus: Ensure that we can create records by setting this to NULL. Also ensure
+## that there are no assumptions that this only be used on our typical set of
+## base tables... rather it should work if:
+## the chado table for the property = the base_table for the field.
+## Chado Table: db
+testStoreIdAction:
+  test_store_id:
+    field_name: 'test_store_id'
+    base_table: 'db'
+    properties:
+      random_name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'db'
+        chado_column: 'db_id'
+      name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'db'
+        chado_column: 'name'
+# This field should not work as the store_id is not associated with the base table of the field.
+testStoreIdActionNotBase:
+  test_non_base_match:
+    field_name: test_store_id
+    base_table: cv
+    properties:
+      random_name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'db'
+        chado_column: 'db_id'
+      name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'db'
+        chado_column: 'name'
+# Check that the chado table alias setting works on this action.
+testStoreIdActionTableAlias:
+  test_chado_alias:
+    field_name: 'test_chado_alias'
+    base_table: 'db'
+    properties:
+      random_name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'db'
+        chado_table_alias: 'fred'
+        chado_column: 'db_id'
+
+## Focus: Ensure that we can create records by setting this to NULL.
+## Chado Table: cvterm
+testStorePKeyAction:
+  test_field:
+    field_name: 'test_store_id'
+    base_table: 'cv'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'db'
+        chado_column: 'db_id'
+      name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'db'
+        chado_column: 'name'
+# Check that the chado table alias setting works on this action.
+testStorePKeyActionTableAlias:
+  test_chado_alias:
+    field_name: 'test_chado_alias'
+    base_table: 'db'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'db'
+        chado_table_alias: 'fred'
+        chado_column: 'db_id'
+      name:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'db'
+        chado_table_alias: 'fred'
+        chado_column: 'name'
+
+## Focus: Ensure that a property with the store action
+## - can be inserted when an alias is used on a non-base table
+## - can be loaded when an alias is used on a non-base table
+## - can be updated when an alias is used on a non-base table
+## Chado Table: featureprop
+testStoreActionAlias:
+  test_store_alias:
+    field_name: 'test_store_alias'
+    base_table: 'feature'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'featureprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'feature_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'type_id'
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'rank'
+  test_store_other_alias:
+    field_name: 'test_store_other_alias'
+    base_table: 'feature'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'featureprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'feature_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'type_id'
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'rank'
+
+## Focus: Ensure that a property with the store action
+## - is deleted if it's an empty string and delete_if_empty is true
+## - is kept and inserted as an empty string if delete_if_empty is false
+## Chado Table: featureprop
+testStoreActionDeleteIfEmpty:
+  test_store_alias:
+    field_name: 'test_store_alias'
+    base_table: 'feature'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'featureprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'feature_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'type_id'
+      value:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'value'
+        delete_if_empty: TRUE
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'rank'
+  test_store_other_alias:
+    field_name: 'test_store_other_alias'
+    base_table: 'feature'
+    properties:
+      primary_key:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'featureprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'feature_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'type_id'
+      value:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'value'
+        delete_if_empty: FALSE
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'featureprop'
+        chado_table_alias: 'merry'
+        chado_column: 'rank'
+
+## Focus: Testing the basic functioning of the store_link action inccluding alias' where the base table
+## is either on the left or right side of the relationship.
+## Chado Table: projectprop
+testStoreLinkAction:
+  project:
+    field_name: 'project'
+    base_table: 'project'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'project'
+        chado_column: 'project_id'
+      name_store:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'store'
+        chado_table: 'project'
+        chado_column: 'name'
+  right_linker:
+    field_name: 'right_linker'
+    base_table: 'project'
+    properties:
+      record_pkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'projectprop'
+        chado_table_alias: 'merry'
+        chado_column: 'projectprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_link'
+        right_table: 'project'
+        right_table_id: 'project_id'
+        left_table: 'projectprop'
+        left_table_alias: 'merry'
+        left_table_id: 'project_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'projectprop'
+        chado_table_alias: 'merry'
+        chado_column: 'type_id'
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'projectprop'
+        chado_table_alias: 'merry'
+        chado_column: 'rank'
+  left_linker:
+    field_name: 'left_linker'
+    base_table: 'project'
+    properties:
+      record_pkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'projectprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'projectprop_id'
+      fkey:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_link'
+        left_table: 'project'
+        left_table_id: 'project_id'
+        right_table: 'projectprop'
+        right_table_alias: 'pippin'
+        right_table_id: 'project_id'
+      type:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'projectprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'type_id'
+      rank:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'projectprop'
+        chado_table_alias: 'pippin'
+        chado_column: 'rank'

@@ -784,6 +784,9 @@ vocabularies:
             -   id: 'NCIT:C43376'
                 name: 'Biologically-Derived Material'
                 description: 'Natural substances derived from living organisms such as cells, tissues, proteins, and DNA.'
+            -   id: 'NCIT:C70699'
+                name: 'Biospecimen'
+                description: 'Any material sample taken from a biological entity for testing, diagnostic, propagation, treatment or research purposes, including a sample obtained from a living organism or taken from the biological object after halting of all its life functions.'
             -   id: 'NCIT:C25463'
                 name: 'Count'
                 description: 'Determining the number or amount of something.'
@@ -796,7 +799,6 @@ vocabularies:
             -   id: 'NCIT:C63536'
                 name: 'Study'
                 description: 'A detailed examination, analysis, or critical inspection of a subject designed to discover facts about it.'
-
 
     -   name: 'ncbitaxon'
         label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'
