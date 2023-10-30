@@ -46,6 +46,14 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function mainPropertyName() {
+    // Overrides the default of 'value'
+    return 'contact_name';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
     // CV Term is 'Communication Contact'
@@ -137,18 +145,21 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'chado_table' => $linker_table,
       'chado_column' => $linker_pkey_col,
     ]);
-    // Define the link between the base table and the object table.
+    // Define the link between the base table and the linker table.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
       'action' => 'store_link',
+      'drupal_store' => TRUE,
+// ^ @@@ setting to true does not help
       'left_table' => $base_table,
       'left_table_id' => $base_pkey_col,
       'right_table' => $linker_table,
       'right_table_id' => $linker_left_col,
     ]);
-    // Define the link between the base table and the object table.
+    // Define the link between the linker table and the object table.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'right_id', $linker_right_term, [
       'action' => 'store',
       'drupal_store' => TRUE,
+// ^ @@@ removing does not help or hurt
       'chado_table' => $linker_table,
       'chado_column' => $linker_right_col,
     ]);
@@ -169,13 +180,14 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 
     // The displayed value
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, $value_len, [
-      'action' => 'join',
+      'action' => 'read_value',
+// @@@ not displayed if following is true
       'drupal_store' => FALSE,
       'path' => // $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col
 //        . ';' .
  $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => self::$value_column,
-      'as' => 'value',
+      'as' => 'contact_name',
     ]);
     // The type for the displayed value
 //    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value_type', $value_type_term, $value_type_len, [
