@@ -359,6 +359,91 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
   }
 
   /**
+   * Test read_value through a join where two fields access the same tables.
+   *
+   * Base Table: arraydesign
+   *     Columns: arraydesign_id*, manufacturer_id, platformtype_id*, substratetype_id*, name
+   * Chado Table: dbxref
+   *     Columns: accession
+   *
+   * Specically, testing that we can read the database reference for an arraydesign
+   * record through the arraydesign > cvterm > dbxref path for two separate
+   * fields without their being data swap between them.
+   *
+   * Again focusing on load since this action type does not impact insert/update.
+   */
+  public function testReadValueActionJoinDouble() {
+
+    // Set the fields for this test and then re-populate the storage arrays.
+    $this->setFieldsFromYaml($this->yaml_file, 'testReadValueActionJoinDouble');
+    $this->cleanChadoStorageValues();
+
+    // Create the organism record needed for the stock.
+    $contact_id = $this->chado_connection->insert('1:contact')
+      ->fields([
+        'name' => uniqid(),
+      ])
+      ->execute();
+    $this->assertIsNumeric($contact_id,
+      'We should have been able to insert a contact for use with testing.');
+    // Create the arraydesign record needed for testing the load.
+    $platform_accession = 'comment';
+    $substrate_accession = 'type';
+    $arraydesign_expected = [
+        'manufacturer_id' => $contact_id,
+        'platformtype_id' => $this->getCvtermId('rdfs', $platform_accession),
+        'substratetype_id' => $this->getCvtermId('rdfs', $substrate_accession),
+        'name' => uniqid(),
+    ];
+    $arraydesign_id = $this->chado_connection->insert('1:arraydesign')
+      ->fields($arraydesign_expected)
+      ->execute();
+    $this->assertIsNumeric($arraydesign_id,
+      'We should have been able to insert a arraydesign record for use with testing.');
+
+    // For loading only the store id/pkey/link items should be populated.
+    $load_values = [
+      'test_join1' => [
+        [
+          'record_id' => $arraydesign_id,
+          'type_id' => $arraydesign_expected['platformtype_id'],
+          'accession_read' => NULL,
+        ],
+      ],
+      'test_join2' => [
+        [
+          'record_id' => $arraydesign_id,
+          'type_id' => $arraydesign_expected['substratetype_id'],
+          'accession_read' => NULL,
+        ],
+      ],
+    ];
+    $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
+
+    // Check that the accession in our fields have been loaded.
+    $delta = 0;
+    $ret = $retrieved_values['test_join1'][$delta]['accession_read']['value']->getValue();
+    $this->assertEquals($platform_accession, $ret,
+      "The dbxref accession retrieved for test_join1 should match the one we inserted into chado for platformtype_id.");
+    $ret = $retrieved_values['test_join1'][$delta]['record_id']['value']->getValue();
+    $this->assertEquals($arraydesign_id, $ret,
+      "The arraydesign_id retrieved should match the one we inserted into chado.");
+    $ret = $retrieved_values['test_join1'][$delta]['type_id']['value']->getValue();
+    $this->assertEquals($arraydesign_expected['platformtype_id'], $ret,
+      "The type_id retrieved should match the one we inserted into chado for platformtype_id.");
+
+    $ret = $retrieved_values['test_join2'][$delta]['accession_read']['value']->getValue();
+    $this->assertEquals($substrate_accession, $ret,
+      "The dbxref accession retrieved for test_join2 should match the one we inserted into chado for substratetype_id.");
+    $ret = $retrieved_values['test_join2'][$delta]['record_id']['value']->getValue();
+    $this->assertEquals($arraydesign_id, $ret,
+      "The arraydesign_id retrieved should match the one we inserted into chado.");
+    $ret = $retrieved_values['test_join2'][$delta]['type_id']['value']->getValue();
+    $this->assertEquals($arraydesign_expected['substratetype_id'], $ret,
+      "The type_id retrieved should match the one we inserted into chado for substratetype_id.");
+  }
+
+  /**
    * Test read_value works when there is no store on the same column.
    *
    * Chado Table: project
