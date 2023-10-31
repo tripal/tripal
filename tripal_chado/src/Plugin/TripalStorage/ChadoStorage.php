@@ -91,6 +91,20 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   protected $reverse_alias_mapping = [];
 
   /**
+   * A mapping of the field property to the alias used in the query.
+   * This is specific to properties with an action of read_value who
+   * specify a path.
+   *
+   * @var array
+   *  a nested array where mapping the new alias including the right table alias
+   *  to the original alias set in the property type. The structure is:
+   *   [field name]:
+   *     [property key]:
+   *       [original column alias]: [new alias]
+   */
+  protected $join_column_alias = [];
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
@@ -462,7 +476,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
           foreach ($jinfo['columns'] as $column) {
             $sel_col = $column[0];
-            $sel_col_as = $column[1];
+            $sel_col_as = $ralias . '_' . $column[1];
+            $field_name = $column[2];
+            $property_key = $column[3];
+            $this->join_column_alias[$field_name][$property_key][ $column[1] ] = $sel_col_as;
             $select->addField($ralias, $sel_col, $sel_col_as);
           }
           $j_index++;
@@ -739,6 +756,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
           // Get the values of properties that just want to read values.
           if (in_array($action, ['read_value', 'join'])) {
+            // Both variants should have a chado column defined so grab that first.
+            $chado_column = $prop_storage_settings['chado_column'];
+            $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
             if (array_key_exists('chado_table', $prop_storage_settings)) {
               $chado_table = $prop_storage_settings['chado_table'];
               $chado_table_alias = $this->getTableAliasForChadoTable($field_name, $key, $chado_table);
@@ -757,9 +777,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               // The base table is the left table of the first part of the path.
               $chado_table = $left_table;
               $chado_table_alias = $left_table;
+              // the column alias will actually include the right table alias
+              // in order to keep the joins separate.
+              // So we will grab that here.
+              $as = $this->join_column_alias[$field_name][$key][$as];
             }
-            $chado_column = $prop_storage_settings['chado_column'];
-            $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
             $value = $records[$chado_table_alias][$delta]['fields'][$as];
             $values[$field_name][$delta][$key]['value']->setValue($value);
           }
@@ -884,7 +906,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             continue;
           }
           $action = $prop_storage_settings['action'];
-dpm("CP21 delta=$delta key=$key field_name=$field_name key=$key action=$action"); //@@@
           // Check that the base table for the field is set.
           if (!array_key_exists('base_table', $storage_plugin_settings)) {
             $this->logger->error($this->t('Cannot store the property, @field.@prop, in Chado. The field is missing the chado base table name.',
@@ -938,7 +959,6 @@ dpm("CP21 delta=$delta key=$key field_name=$field_name key=$key action=$action")
               // the function not by chadostorage.
               break;
           }
-dpm($records, "CP51 records="); //@@@
         }
       }
     }
@@ -1336,7 +1356,6 @@ if ($delta > 0) { dpm("CP81 buildChadoRecords_store_id() Skipping delta=$delta f
     // Use the base table as a default for properties which do not specify
     // the chado table (e.g. single value fields).
     $chado_table = $context['base_table'];
-$x = $chado_table; //@@@
     if (array_key_exists('chado_table', $storage_settings)) {
       $chado_table = $storage_settings['chado_table'];
     }
@@ -1346,11 +1365,9 @@ $x = $chado_table; //@@@
     if (array_key_exists('chado_table_alias', $storage_settings)) {
       $table_alias = $storage_settings['chado_table_alias'];
     }
-dpm("CP71 chado_table=$x ~> $chado_table alias $table_alias"); //@@@
     $this->setChadoTableAliasMapping($chado_table, $table_alias, $context['field_name'], $context['property_key']);
 
     $chado_column = $storage_settings['chado_column'];
-dpm($chado_column, "CP72 chado_column="); //@@@
 
     // If a join is needed to access the column, then the 'path' needs
     // to be defined and the joins need to be added to the query.
@@ -1359,13 +1376,11 @@ dpm($chado_column, "CP72 chado_column="); //@@@
       $path = $storage_settings['path'];
       $as = array_key_exists('as', $storage_settings) ? $storage_settings['as'] : $chado_column;
       $path_arr = explode(";", $path);
-dpm($path, "CP73 delta=$delta path="); //@@@
-      $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr);
+      $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr, $context['field_name'], $context['property_key']);
     }
     // Otherwise, it is a column in a base table. In this case, we
     // only need to ensure the column is added to the fields.
     else {
-dpm("CP72"); //@@@
       // We will only set this if it's not already set.
       // This is to allow another field with a store set for this column
       // to set this value. We actually only do this to ensure it ends up
@@ -1388,7 +1403,7 @@ dpm("CP72"); //@@@
    * @param string $path
    */
   protected function addChadoRecordJoins(array &$records, string $chado_column, string $as,
-      int $delta, array $path_arr, $parent_table = NULL, $parent_column = NULL, $depth = 0) {
+      int $delta, array $path_arr, string $field_name, string $property_key, $parent_table = NULL, $parent_column = NULL, $depth = 0) {
 
     // Get the left column and the right table join infor.
     list($left, $right) = explode(">", array_shift($path_arr));
@@ -1445,13 +1460,13 @@ dpm("CP72"); //@@@
 
     // We're done recursing if we only have no elements left in the path
     if (count($path_arr) == 0) {
-      $records[$parent_table][$delta]['joins'][$right_table][$parent_column]['columns'][] = [$chado_column, $as];
+      $records[$parent_table][$delta]['joins'][$right_table][$parent_column]['columns'][] = [$chado_column, $as, $field_name, $property_key];
       return;
     }
 
     // Add the right table back onto the path as the new left table and recurse.
     $depth++;
-    $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr, $parent_table, $parent_column, $depth);
+    $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr, $field_name, $property_key, $parent_table, $parent_column, $depth);
   }
 
 

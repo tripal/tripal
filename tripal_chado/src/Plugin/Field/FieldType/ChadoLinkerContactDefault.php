@@ -177,18 +177,12 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 //    ];
 
     // The object table, contact in this case
-//    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'contact_id', $object_pkey_term, [
-//      'action' => 'store_pkey',
-//      'drupal_store' => TRUE,
-//      'chado_table' => $object_table,
-//      'chado_column' => $object_pkey_col,
-//    ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $value_term, $value_len, [
       'action' => 'read_value',
 // @@@ not displayed if following is TRUE
       'drupal_store' => FALSE,
-      'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col . ';' .
-                $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
+// @@@ $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col . ';' .
       'chado_table' => $object_table,
       'chado_column' => self::$value_column,
       'as' => 'contact_name',
