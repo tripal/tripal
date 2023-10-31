@@ -176,13 +176,20 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 //      'chado_column' => 'type_id'
 //    ];
 
-    // The displayed value
+    // The object table, contact in this case
+//    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'contact_id', $object_pkey_term, [
+//      'action' => 'store_pkey',
+//      'drupal_store' => TRUE,
+//      'chado_table' => $object_table,
+//      'chado_column' => $object_pkey_col,
+//    ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $value_term, $value_len, [
       'action' => 'read_value',
 // @@@ not displayed if following is TRUE
       'drupal_store' => FALSE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col . ';' .
                 $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_table' => $object_table,
       'chado_column' => self::$value_column,
       'as' => 'contact_name',
     ]);
@@ -209,7 +216,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
 
     // Base tables presented here are only those that have foreign
-    // keys through a linker table to our object table, the true
+    // keys through a linker table to our object table, the TRUE
     // parameter to getBaseTables() selects this option.
     $elements['storage_plugin_settings']['base_table']['#options'] = $this->getBaseTables($object_table, TRUE);
 

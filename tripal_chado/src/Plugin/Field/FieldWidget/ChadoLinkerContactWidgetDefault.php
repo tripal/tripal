@@ -47,6 +47,7 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
+    $link = $item_vals['link'] ?? 0;
     $contact_id = $item_vals['contact_id'] ?? 0;
 
     $elements = [];
@@ -58,6 +59,11 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $linker_id,
     ];
+    $elements['link'] = [
+      '#type' => 'value',
+      '#default_value' => $link,
+    ];
+//@todo add in type_id and rank here
     $elements['contact_id'] = $element + [
       '#type' => 'select',
       '#options' => $contacts,
@@ -73,6 +79,7 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+return $values;  // @@@ disable for now...
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
 

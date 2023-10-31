@@ -865,7 +865,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
-
           // Ensure we have a value to work with.
           if (!array_key_exists('value', $info) OR !is_object($info['value'])) {
             $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the StoragePropertyValue object.',
@@ -885,7 +884,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             continue;
           }
           $action = $prop_storage_settings['action'];
-
+dpm("CP21 delta=$delta key=$key field_name=$field_name key=$key action=$action"); //@@@
           // Check that the base table for the field is set.
           if (!array_key_exists('base_table', $storage_plugin_settings)) {
             $this->logger->error($this->t('Cannot store the property, @field.@prop, in Chado. The field is missing the chado base table name.',
@@ -939,6 +938,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               // the function not by chadostorage.
               break;
           }
+dpm($records, "CP51 records="); //@@@
         }
       }
     }
@@ -1028,7 +1028,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   the value is not set. This method is expected to check if the value is empty or not.
    */
   protected function buildChadoRecords_store_id(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
-
+if ($delta > 0) { dpm("CP81 buildChadoRecords_store_id() Skipping delta=$delta for store_id"); return; }
     // Get the Chado table this specific property works with.
     // Use the base table as a default for properties which do not specify
     // the chado table (e.g. single value fields).
@@ -1336,6 +1336,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // Use the base table as a default for properties which do not specify
     // the chado table (e.g. single value fields).
     $chado_table = $context['base_table'];
+$x = $chado_table; //@@@
     if (array_key_exists('chado_table', $storage_settings)) {
       $chado_table = $storage_settings['chado_table'];
     }
@@ -1345,9 +1346,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     if (array_key_exists('chado_table_alias', $storage_settings)) {
       $table_alias = $storage_settings['chado_table_alias'];
     }
+dpm("CP71 chado_table=$x ~> $chado_table alias $table_alias"); //@@@
     $this->setChadoTableAliasMapping($chado_table, $table_alias, $context['field_name'], $context['property_key']);
 
     $chado_column = $storage_settings['chado_column'];
+dpm($chado_column, "CP72 chado_column="); //@@@
 
     // If a join is needed to access the column, then the 'path' needs
     // to be defined and the joins need to be added to the query.
@@ -1356,11 +1359,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $path = $storage_settings['path'];
       $as = array_key_exists('as', $storage_settings) ? $storage_settings['as'] : $chado_column;
       $path_arr = explode(";", $path);
+dpm($path, "CP73 delta=$delta path="); //@@@
       $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr);
     }
     // Otherwise, it is a column in a base table. In this case, we
     // only need to ensure the column is added to the fields.
     else {
+dpm("CP72"); //@@@
       // We will only set this if it's not already set.
       // This is to allow another field with a store set for this column
       // to set this value. We actually only do this to ensure it ends up
@@ -1476,7 +1481,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       if (array_key_exists($col, $record['fields'])) {
         $col_val = $record['fields'][$col];
       }
-
       // Don't check the pkey
       if ($col == $pkey) {
         continue;
