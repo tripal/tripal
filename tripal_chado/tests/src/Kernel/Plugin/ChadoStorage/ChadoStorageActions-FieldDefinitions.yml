@@ -115,6 +115,48 @@ testReadValueActionJoin:
         chado_table: 'cvterm'
         chado_column: 'name'
         path: 'stock.stock_id>stock_cvterm.stock_id;stock_cvterm.cvterm_id>cvterm.cvterm_id'
+# Ensure joins accessing the same column stay separate.
+testReadValueActionJoinDouble:
+  test_join1:
+    field_name: 'test_join1'
+    base_table: 'arraydesign'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'arraydesign'
+        chado_column: 'arraydesign_id'
+      type_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'arraydesign_id'
+        chado_table: 'arraydesign'
+        chado_column: 'platformtype_id'
+      accession_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'dbxref'
+        chado_column: 'accession'
+        path: 'arraydesign.platformtype_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id'
+  test_join2:
+    field_name: 'test_join2'
+    base_table: 'arraydesign'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'arraydesign'
+        chado_column: 'arraydesign_id'
+      type_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'arraydesign_id'
+        chado_table: 'arraydesign'
+        chado_column: 'substratetype_id'
+      accession_read:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: 'read_value'
+        chado_table: 'dbxref'
+        chado_column: 'accession'
+        path: 'arraydesign.substratetype_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id'
 # Ensure read_value works when there isn't a store action for the same column.
 testReadValueActionNoStore:
   test_read:
