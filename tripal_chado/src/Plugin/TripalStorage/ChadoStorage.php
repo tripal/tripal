@@ -345,7 +345,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $this->field_debugger->printHeader('Update');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::updateValues');
-dpm($values, "CP01U values"); //@@@
 
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
@@ -496,7 +495,6 @@ dpm($values, "CP01U values"); //@@@
 
     $this->field_debugger->printHeader('Load');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::loadValues');
-dpm($values, "CP01L values"); //@@@
 
     $build = $this->buildChadoRecords($values, FALSE);
     $records = $build['records'];
@@ -855,7 +853,6 @@ dpm($values, "CP01L values"); //@@@
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
-dpm($values, "CP91 buildChadoRecords values="); //@@@  the linker_id is present here!
 
       // Retrieve the field configuration.
       $definition = $this->getFieldDefinition($field_name);
@@ -1181,6 +1178,7 @@ dpm($values, "CP91 buildChadoRecords values="); //@@@  the linker_id is present 
    *   the value is not set. This method is expected to check if the value is empty or not.
    */
   protected function buildChadoRecords_store_link(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
     // The old implementation of store_link used chado_table/column notation
     // only for the right side of the relationship.
     // This meant we could not reliably determine the left side of the

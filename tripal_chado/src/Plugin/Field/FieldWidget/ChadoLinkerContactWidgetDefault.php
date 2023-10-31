@@ -46,14 +46,19 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
 
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
-    $contact_id = $item_vals['right_id'] ?? 0;
+    $linker_id = $item_vals['linker_id'] ?? 0;
+    $contact_id = $item_vals['contact_id'] ?? 0;
 
     $elements = [];
     $elements['record_id'] = [
       '#type' => 'value',
       '#default_value' => $record_id,
     ];
-    $elements['right_id'] = $element + [
+    $elements['linker_id'] = [
+      '#type' => 'value',
+      '#default_value' => $linker_id,
+    ];
+    $elements['contact_id'] = $element + [
       '#type' => 'select',
       '#options' => $contacts,
       '#default_value' => $contact_id,
@@ -77,7 +82,7 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
 //    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($linker_table, 'rank'));
     // Remove any empty values that aren't mapped to a record id.
     foreach ($values as $val_key => $value) {
-      if ($value['record_id'] == 0 and $value['right_id'] == '') {
+      if ($value['record_id'] == 0 and $value['contact_id'] == '') {
         unset($values[$val_key]);
       }
     }
@@ -85,7 +90,7 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
     // Reset the weights
     $i = 0;
     foreach ($values as $val_key => $value) {
-      if ($value['right_id'] == '') {
+      if ($value['contact_id'] == '') {
         continue;
       }
       $values[$val_key]['_weight'] = $i;

@@ -30,7 +30,7 @@ class ChadoLinkerContactFormatterDefault extends ChadoFormatterBase {
 
     $list = [];
     foreach($items as $delta => $item) {
-      $value = $item->get('value')->getString();
+      $value = $item->get('contact_name')->getString();
       // any URLs are made into clickable links
       if (preg_match('/^https?:/i', $value) ) {
         $value = Link::fromTextAndUrl($value, $value);

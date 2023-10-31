@@ -148,18 +148,16 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     // Define the link between the base table and the linker table.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
       'action' => 'store_link',
-      'drupal_store' => TRUE,
-// ^ @@@ setting to true does not help
+      'drupal_store' => TRUE,  // needed when loading
       'left_table' => $base_table,
       'left_table_id' => $base_pkey_col,
       'right_table' => $linker_table,
       'right_table_id' => $linker_left_col,
     ]);
     // Define the link between the linker table and the object table.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'right_id', $linker_right_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'contact_id', $linker_right_term, [
       'action' => 'store',
       'drupal_store' => TRUE,
-// ^ @@@ removing does not help or hurt
       'chado_table' => $linker_table,
       'chado_column' => $linker_right_col,
     ]);
@@ -179,13 +177,12 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 //    ];
 
     // The displayed value
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, $value_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $value_term, $value_len, [
       'action' => 'read_value',
-// @@@ not displayed if following is true
+// @@@ not displayed if following is TRUE
       'drupal_store' => FALSE,
-      'path' => // $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col
-//        . ';' .
- $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col . ';' .
+                $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => self::$value_column,
       'as' => 'contact_name',
     ]);
