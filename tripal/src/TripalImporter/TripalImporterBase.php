@@ -11,10 +11,31 @@ use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+
 /**
  * Defines an interface for tripal impoerter plugins.
  */
 abstract class TripalImporterBase extends PluginBase implements TripalImporterInterface {
+
+  /**
+   * Needed to allow AJAX on TripalImporter forms once Dependency injection is used.
+   *
+   * The error message implies that the log exception this trait is needed to
+   * solve is caused by the form serializing an object that has an indirect
+   * reference to the database connection (TripalImporter) and that we should
+   * adjust your code so that is not necessary.
+   *
+   * That said, the TripalImporterForm does not appear to save the TripalImporter
+   * object in the form or form state at any point. Instead it only uses
+   * the importer object to get strings and arrays that are incorporated
+   * into the form.
+   *
+   * Anyway, using this trait solves the problem and although the error
+   * mentions this should be a temporary solution, there are no mentioned plans
+   * in the Drupal forumns or code that this trait will be removed at any point.
+   */
+  use DependencySerializationTrait;
 
   /**
    * The number of items that this importer needs to process. A progress
