@@ -396,12 +396,18 @@ class OBOImporter extends ChadoImporterBase {
     $public = \Drupal::database();
 
     $obo_id = $form_state->getValue('obo_id');
-    $obo_name = trim($form_state->getValue('obo_name'));
-    $obo_url = trim($form_state->getValue('obo_url'));
-    $obo_file = trim($form_state->getValue('obo_file'));
-    $uobo_name = trim($form_state->getValue('uobo_name'));
-    $uobo_url = trim($form_state->getValue('uobo_url'));
-    $uobo_file = trim($form_state->getValue('uobo_file'));
+    $obo_name = $form_state->getValue('obo_name');
+    $obo_url = $form_state->getValue('obo_url');
+    $obo_file = $form_state->getValue('obo_file');
+    $uobo_name = $form_state->getValue('uobo_name');
+    $uobo_url = $form_state->getValue('uobo_url');
+    $uobo_file = $form_state->getValue('uobo_file');
+    // Now trim variables. We do it this way to avoid trimming an empty value.
+    foreach(['obo_name', 'obo_url', 'obo_file', 'uobo_name', 'uobo_url', 'uobo_file'] as $varname) {
+      if (!empty($$varname)) {
+        $$varname = trim($$varname);
+      }
+    }
 
     // If the user requested to alter the details then do that.
 
