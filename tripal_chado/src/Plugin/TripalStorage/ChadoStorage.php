@@ -1048,7 +1048,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   the value is not set. This method is expected to check if the value is empty or not.
    */
   protected function buildChadoRecords_store_id(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
-if ($delta > 0) { dpm("CP81 buildChadoRecords_store_id() Skipping delta=$delta for store_id"); return; }
     // Get the Chado table this specific property works with.
     // Use the base table as a default for properties which do not specify
     // the chado table (e.g. single value fields).
