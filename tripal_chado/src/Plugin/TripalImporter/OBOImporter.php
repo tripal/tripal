@@ -220,7 +220,7 @@ class OBOImporter extends ChadoImporterBase {
       '#options' => $obos,
       '#default_value' => $obo_id,
       '#ajax' => [
-        'callback' =>  [$this, 'formAjaxCallback'],
+        'callback' =>  [$this::class, 'formAjaxCallback'],
         'wrapper' => 'obo-existing-fieldset',
       ],
       '#description' => t('Select a vocabulary to import.'),
@@ -374,7 +374,7 @@ class OBOImporter extends ChadoImporterBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
-  public function formAjaxCallback($form, &$form_state) {
+  public static function formAjaxCallback($form, &$form_state) {
 
     $uobo_name = $form['obo_existing']['uobo_name']['#default_value'];
     $uobo_url = $form['obo_existing']['uobo_url']['#default_value'];
