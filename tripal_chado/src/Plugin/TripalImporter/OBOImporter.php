@@ -17,12 +17,13 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    file_types = {"obo"},
  *    upload_description = @Translation("Please provide the details for importing a new OBO file. The file must have a .obo extension."),
  *    upload_title = @Translation("New OBO File"),
- *    use_analysis = False,
- *    require_analysis = True,
+ *    use_analysis = FALSE,
+ *    require_analysis = FALSE,
  *    button_text = @Translation("Import OBO File"),
- *    file_upload = False,
- *    file_remote = False,
- *    file_required = False,
+ *    file_upload = FALSE,
+ *    file_local = FALSE,
+ *    file_remote = FALSE,
+ *    file_required = FALSE,
  *  )
  */
 class OBOImporter extends ChadoImporterBase {
