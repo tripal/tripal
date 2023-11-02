@@ -170,6 +170,23 @@ class TripalImporterForm implements FormInterface {
     $importer = $importer_manager->createInstance($plugin_id);
     $importer_def = $importer_manager->getDefinitions()[$plugin_id];
 
+    // Now allow the loader to do its own submit if needed.
+    try {
+      $importer->formSubmit($form, $form_state);
+      // Ensure any modifications made by the importer are used.
+      $form_values = $form_state->getValues();
+      $run_args = $form_values;
+    }
+    catch (\Exception $e) {
+        \Drupal::messenger()->addMessage('Cannot submit import: ' . $e->getMessage(), 'error');
+    }
+
+    // If the importer wants to rebuild the form for some reason then let's
+    // not add a job.
+    if ($form_state->isRebuilding() == TRUE) {
+      return;
+    }
+
     // Remove the file_local and file_upload args. We'll add in a new
     // full file path and the fid instead.
     unset($run_args['file_local']);
@@ -218,23 +235,8 @@ class TripalImporterForm implements FormInterface {
       $file_details['file_remote'] = $file_remote;
     }
     try {
-      // Now allow the loader to do its own submit if needed.
-      $importer->formSubmit($form, $form_state);
-      // If the formSubmit made changes to the $form_state we need to update the
-      // $run_args info.
-      if ($run_args !== $form_values) {
-        $run_args = $form_values;
-      }
-
-      // If the importer wants to rebuild the form for some reason then let's
-      // not add a job.
-      if ($form_state->isRebuilding() == TRUE) {
-        return;
-      }
-
       $importer->createImportJob($run_args, $file_details);
       $importer->submitJob();
-
     }
     catch (\Exception $e) {
         \Drupal::messenger()->addMessage('Cannot submit import: ' . $e->getMessage(), 'error');

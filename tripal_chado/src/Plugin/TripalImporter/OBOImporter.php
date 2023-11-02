@@ -17,12 +17,13 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    file_types = {"obo"},
  *    upload_description = @Translation("Please provide the details for importing a new OBO file. The file must have a .obo extension."),
  *    upload_title = @Translation("New OBO File"),
- *    use_analysis = False,
- *    require_analysis = True,
+ *    use_analysis = FALSE,
+ *    require_analysis = FALSE,
  *    button_text = @Translation("Import OBO File"),
- *    file_upload = False,
- *    file_remote = False,
- *    file_required = False,
+ *    file_upload = FALSE,
+ *    file_local = FALSE,
+ *    file_remote = FALSE,
+ *    file_required = FALSE,
  *  )
  */
 class OBOImporter extends ChadoImporterBase {
@@ -219,7 +220,7 @@ class OBOImporter extends ChadoImporterBase {
       '#options' => $obos,
       '#default_value' => $obo_id,
       '#ajax' => [
-        'callback' =>  [$this, 'formAjaxCallback'],
+        'callback' =>  [$this::class, 'formAjaxCallback'],
         'wrapper' => 'obo-existing-fieldset',
       ],
       '#description' => t('Select a vocabulary to import.'),
@@ -373,7 +374,7 @@ class OBOImporter extends ChadoImporterBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
-  public function formAjaxCallback($form, &$form_state) {
+  public static function formAjaxCallback($form, &$form_state) {
 
     $uobo_name = $form['obo_existing']['uobo_name']['#default_value'];
     $uobo_url = $form['obo_existing']['uobo_url']['#default_value'];
@@ -395,12 +396,18 @@ class OBOImporter extends ChadoImporterBase {
     $public = \Drupal::database();
 
     $obo_id = $form_state->getValue('obo_id');
-    $obo_name = trim($form_state->getValue('obo_name'));
-    $obo_url = trim($form_state->getValue('obo_url'));
-    $obo_file = trim($form_state->getValue('obo_file'));
-    $uobo_name = trim($form_state->getValue('uobo_name'));
-    $uobo_url = trim($form_state->getValue('uobo_url'));
-    $uobo_file = trim($form_state->getValue('uobo_file'));
+    $obo_name = $form_state->getValue('obo_name');
+    $obo_url = $form_state->getValue('obo_url');
+    $obo_file = $form_state->getValue('obo_file');
+    $uobo_name = $form_state->getValue('uobo_name');
+    $uobo_url = $form_state->getValue('uobo_url');
+    $uobo_file = $form_state->getValue('uobo_file');
+    // Now trim variables. We do it this way to avoid trimming an empty value.
+    foreach(['obo_name', 'obo_url', 'obo_file', 'uobo_name', 'uobo_url', 'uobo_file'] as $varname) {
+      if (!empty($$varname)) {
+        $$varname = trim($$varname);
+      }
+    }
 
     // If the user requested to alter the details then do that.
 

@@ -92,7 +92,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       ))->toString() . '.',
       '#default_value' => \Drupal::state()->get('tripal_ncbi_api_key', NULL),
       '#ajax' => array(
-        'callback' => [$this, 'tripal_taxon_importer_set_ncbi_api_key'],
+        'callback' => [$this::class, 'tripal_taxon_importer_set_ncbi_api_key'],
         'wrapper' => 'ncbi_api_key',
         'disable-refocus' => true,
       ),
@@ -1169,7 +1169,7 @@ class TaxonomyImporter extends ChadoImporterBase {
    * @return array
    *   The new api key field.
    */
-  function tripal_taxon_importer_set_ncbi_api_key($form, &$form_state) {
+  public static function tripal_taxon_importer_set_ncbi_api_key($form, &$form_state) {
     $key_value = $form_state->getValue(['ncbi_api_key']);
     \Drupal::state()->set('tripal_ncbi_api_key', \Drupal\Component\Utility\HTML::escape($key_value));
     \Drupal::messenger()->addMessage(t('NCBI API key has been saved successfully!'));
