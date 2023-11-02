@@ -2391,7 +2391,7 @@ class OBOImporter extends ChadoImporterBase {
           // We need to ensure this term has an id.
           // This one is non-negotiable!
           if (!array_key_exists('id', $stanza)) {
-            $this->logger('We are skipping the following term because it does not have and id. Term information: ' . print_r($stanza, TRUE));
+            $this->logger->warning('We are skipping the following term because it does not have and id. Term information: ' . print_r($stanza, TRUE));
           }
           else {
             // We need to ensure this term has a name.
