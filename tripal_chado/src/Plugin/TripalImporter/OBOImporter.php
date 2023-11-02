@@ -1330,14 +1330,14 @@ class OBOImporter extends ChadoImporterBase {
       list($ontologyID, $base_iri) = $this->baseIRIs[$short_name];
     }
     else {
-      $ontology_results =  $this->oboEbiLookup($ontologyID, 'query');
+      $ontology_results =  $this->oboEbiLookup($id, 'query');
       if ($ontology_results === FALSE OR !is_array($ontology_results)) {
         throw new \Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !id',
           ['!id' => $ontologyID]));
       }
       // If results were received but the number of results is 0, do a query-non-local lookup.
       if ($ontology_results['response']['numFound'] == 0) {
-        $ontology_results =  $this->oboEbiLookup($ontologyID, 'query-non-local');
+        $ontology_results =  $this->oboEbiLookup($id, 'query-non-local');
       }
       if (array_key_exists('error', $ontology_results) AND !empty($ontology_results['error'])) {
         $message = t('Cannot find the ontology via an EBI OLS lookup: @short_name. ' .
@@ -1409,7 +1409,7 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     // If EBI sent an error message then throw an error.
-    if ($results['error']) {
+    if (array_key_exists('error', $results) AND !empty($results['error'])) {
       $message = t('Cannot find the term via an EBI OLS lookup: @term. EBI ' .
         'Reported: @message. Consider finding the OBO file for this ontology ' .
          'and manually loading it first.', ['@message' => $results['message'], '@term' => $id]);
@@ -1424,7 +1424,7 @@ class OBOImporter extends ChadoImporterBase {
 
     // Make an OBO stanza array as if this term were in the OBO file and
     // return it.
-    $this->logMessage("Found @term in EBI OLS.", ['@term' => $id]);
+    $this->logger->notice("Found @term in EBI OLS.", ['@term' => $id]);
     $stanza = [];
     $stanza['id'][0] = $id;
     $stanza['name'][0] = $results['label'];
@@ -2387,15 +2387,27 @@ class OBOImporter extends ChadoImporterBase {
             }
           }
 
-          // Before caching this stanza, check the term's name to
-          // make sure it doesn't conflict. If it does we'll just
-          // add the ID to the name to ensure it doesn't.
-          if (array_key_exists($stanza['name'][0], $this->term_names)) {
-            $new_name = $stanza['name'][0] . '(' . $stanza['id'][0] . ')';
-            $stanza['name'][0] = $new_name;
+          // Before caching this stanza...
+          // We need to ensure this term has an id.
+          // This one is non-negotiable!
+          if (!array_key_exists('id', $stanza)) {
+            $this->logger('We are skipping the following term because it does not have and id. Term information: ' . print_r($stanza, TRUE));
           }
+          else {
+            // We need to ensure this term has a name.
+            // If it doesn't then we will use the id.
+            if (!array_key_exists('name', $stanza)) {
+              $stanza['name'][0] = $stanza['id'][0];
+            }
+            // make sure it doesn't conflict. If it does we'll just
+            // add the ID to the name to ensure it doesn't.
+            if (array_key_exists($stanza['name'][0], $this->term_names)) {
+              $new_name = $stanza['name'][0] . '(' . $stanza['id'][0] . ')';
+              $stanza['name'][0] = $new_name;
+            }
 
-          $this->cacheTermStanza($stanza, $type);
+            $this->cacheTermStanza($stanza, $type);
+          }
 
         }
 
