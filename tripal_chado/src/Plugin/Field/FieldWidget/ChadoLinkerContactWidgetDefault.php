@@ -38,11 +38,16 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
     $results = $query->execute();
     while ($contact = $results->fetchObject()) {
       $contact_name = $contact->name;
+      // Change the non-user-friendly 'null' contact, which is specified by chado.
+      if ($contact->name == 'null') {
+        $contact->name = '-- Unknown --';  // This will sort to the top.
+      }
       if ($contact->contact_type) {
         $contact_name .= ' (' . $contact->contact_type . ')';
       }
       $contacts[$contact->contact_id] = $contact_name;
     }
+    natcasesort($contacts);
 
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
