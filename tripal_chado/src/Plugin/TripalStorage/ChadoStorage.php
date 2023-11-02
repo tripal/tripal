@@ -242,7 +242,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           if (array_key_exists('delete_if_empty', $record)) {
             $skip_record = FALSE;
             foreach ($record['delete_if_empty'] as $del_key) {
+dpm($record['fields'][$del_key], "CP020 test for skip_record del_key=\"$del_key\" record="); //@@@
               if ($record['fields'][$del_key] == '') {
+dpm("CP021 set to true"); //@@@
                 $skip_record = TRUE;
               }
             }
@@ -305,6 +307,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   private function isEmptyRecord($record) {
     if (array_key_exists('delete_if_empty', $record)) {
       foreach ($record['delete_if_empty'] as $del_key) {
+dpm($record['fields'][$del_key], "CP010 del_key=\"$del_key\" record="); //@@@
         if ($record['fields'][$del_key] == '') { // @todo use the `empty_value` setting instead of hardcoding the ''
           return TRUE;
         }
@@ -399,8 +402,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Skip records that don't have a condition set. This means they
           // haven't been inserted before.
           if (!$this->hasValidConditions($record)) {
+dpm($record, "CP011 no conditions set alias=$chado_table_alias delta=$delta record="); //@@@
             continue;
           }
+dpm($record, "CP012 deleting record alias=$chado_table_alias delta=$delta record="); //@@@
           $this->deleteChadoRecord($records, $chado_table_alias, $delta, $record);
         }
       }
@@ -418,6 +423,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             continue;
           }
 
+dpm($record, "CP013 inserting record alias=$chado_table_alias delta=$delta record="); //@@@
           $this->insertChadoRecord($records, $chado_table_alias, $delta, $record);
         }
       }

@@ -459,6 +459,32 @@ fields:
               region: content
               weight: 15
 
+    -   name: project_contact
+        content_type: project
+        label: Contact
+        type: chado_linker_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: project_id
+        settings:
+            termIdSpace: local
+            termAccession: contact
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
     -   name: study_name
         content_type: study
         label: Name

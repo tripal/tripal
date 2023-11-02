@@ -84,21 +84,35 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
 
     $storage_settings = $this->getFieldSetting('storage_plugin_settings');
 // to-do handle type_id and rank when present
-//    $linker_table = $storage_settings['linker_table'];
+    $linker_table = $storage_settings['linker_table'];
 //    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($linker_table, 'rank'));
-    // Remove any empty values that aren't mapped to a record id.
+
+    // Remove any empty values.
     foreach ($values as $val_key => $value) {
-      if ($value['record_id'] == 0 and $value['contact_id'] == '') {
-        unset($values[$val_key]);
+      if ($value['contact_id'] == '') {
+        // If there is a record_id, then we need to delete the
+        // existing linker record in chado. How to do this, though? @@@
+        // This will be called for both validate and update, we can't
+        // delete during the validate call
+        if ($value['record_id']) {
+
+//          $chado = \Drupal::service('tripal_chado.database');
+//          $schema = $chado->schema();
+//          $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+//          $linker_pkey_col = $linker_schema_def['primary key'];
+//          $linker_id = $value['linker_id'];
+//dpm($linker_id, "CP005 delete chado record, linker_pkey_col=$linker_pkey_col linker_id="); //@@@
+//          $num_deleted = $chado->delete('1:' . $linker_table)
+//            ->condition($linker_pkey_col, $linker_id, '=')
+//            ->execute();
+//dpm($num_deleted, "CP006 num_deleted="); //@@@
+        }
       }
     }
 
     // Reset the weights
     $i = 0;
     foreach ($values as $val_key => $value) {
-      if ($value['contact_id'] == '') {
-        continue;
-      }
       $values[$val_key]['_weight'] = $i;
 //      $values[$val_key][$rank_term] = $i;
       $i++;
