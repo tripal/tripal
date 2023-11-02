@@ -1428,7 +1428,7 @@ class OBOImporter extends ChadoImporterBase {
     $stanza = [];
     $stanza['id'][0] = $id;
     $stanza['name'][0] = $results['label'];
-    $stanza['def'][0] = $results['def'];
+    $stanza['def'][0] = (array_key_exists('def', $results)) ? $results['def'] : '';
     $stanza['namespace'][0] = $results['ontology_name'];
     $stanza['is_obsolete'][0] = $results['is_obsolete'] ? 'true' : '';
     $stanza['is_relationshiptype'][0] = '';
