@@ -497,7 +497,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
         $delta = $item->getName();
         $tsid = $item->tripalStorageId();
-
         // If the Tripal Storage Backend is not set on a Tripal-based field,
         // we will log an error and not support the field. If developers want
         // to use Drupal storage for a Tripal-based field then they need to
@@ -529,7 +528,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           // Keep track of elements that have no value.
           foreach ($prop_values as $prop_value) {
             if (!$prop_value->getValue()) {
-              $delta_remove[$field_name][] = $delta;
+              // A given delta should only be present once here.
+              if (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name])) {
+                $delta_remove[$field_name][] = $delta;
+              }
               continue;
             }
           }

@@ -154,7 +154,8 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     // Define the link between the base table and the linker table.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
       'action' => 'store_link',
-      'drupal_store' => TRUE,  // needed when loading
+      'drupal_store' => FALSE,
+  //^@@@ needed when loading
       'left_table' => $base_table,
       'left_table_id' => $base_pkey_col,
       'right_table' => $linker_table,
@@ -169,7 +170,8 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       // delete_if_empty is not working because the record_id for the linker table is not
       // passed in from the form state when it is unselected
       'delete_if_empty' => TRUE,
-      'empty_value' => 0,  // ChadoStorage doesn't support this yet
+      // @@@todo ChadoStorage doesn't support this yet
+      'empty_value' => 0,
     ]);
 
     // Other columns in the linker table. These are set by the widget.

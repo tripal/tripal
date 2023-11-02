@@ -470,7 +470,7 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: project
-                base_column: project_id
+                linker_table: project_contact
         settings:
             termIdSpace: local
             termAccession: contact
