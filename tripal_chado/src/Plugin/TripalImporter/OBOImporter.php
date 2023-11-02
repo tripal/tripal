@@ -4,9 +4,11 @@ namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+
 /**
  * OBO Importer implementation of the TripalImporterBase.
  *
@@ -1312,7 +1314,7 @@ class OBOImporter extends ChadoImporterBase {
       $this->setInterval(1);
     }
 
-    $this->logger->notice(t("Performing EBI OLS Lookup for: @id", ['@id' => $id]));
+    $this->logger->notice('Performing EBI OLS Lookup for: @id', ['@id' => $id]);
 
     // Get the short name and accession for the term.
     $pair = explode(":", $id, 2);
@@ -1328,21 +1330,31 @@ class OBOImporter extends ChadoImporterBase {
       list($ontologyID, $base_iri) = $this->baseIRIs[$short_name];
     }
     else {
-      $ontology_results =  $this->oboEbiLookup($id, 'query');
+      $ontology_results =  $this->oboEbiLookup($ontologyID, 'query');
+      if ($ontology_results === FALSE OR !is_array($ontology_results)) {
+        throw new \Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !id',
+          ['!id' => $ontologyID]));
+      }
       // If results were received but the number of results is 0, do a query-non-local lookup.
       if ($ontology_results['response']['numFound'] == 0) {
-        $ontology_results =  $this->oboEbiLookup($id, 'query-non-local');
+        $ontology_results =  $this->oboEbiLookup($ontologyID, 'query-non-local');
       }
-      if (!$ontology_results) {
-        throw new \Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !id',
-          ['!id' => $id]));
-      }
-      if ($ontology_results['error']) {
+      if (array_key_exists('error', $ontology_results) AND !empty($ontology_results['error'])) {
         $message = t('Cannot find the ontology via an EBI OLS lookup: @short_name. ' .
           'EBI Reported: @message. Consider finding the OBO file for this ' .
           ' ontology and manually loading it first.', ['@message' => $ontology_results['message'],
             '@short_name' => $short_name]);
-        $this->logger->warning($message);
+        $this->logger->error($message);
+        throw new \Exception('Unable to lookup ontology via EBI. See previous error for details.');
+      }
+      // If results were received but the number of results is 0 and we already
+      // tried a query-non-local lookup then we just have to admin defeat.
+      if ($ontology_results['response']['numFound'] == 0) {
+        $this->logger->error('Cannot find the ontology via an EBI OLS lookup: @short_name. ' .
+          'While EBI did not provide an error, no results were found. Consider ' .
+          ' finding the OBO file for this ontology and manually loading it first.',
+          ['@short_name' => $short_name]);
+        throw new \Exception('Unable to lookup ontology via EBI. See previous error for details.');
       }
       // The following foreach code works but, I am not sure that
       // I am retrieving each query result from the json associative
@@ -2861,6 +2873,8 @@ class OBOImporter extends ChadoImporterBase {
    * @ingroup tripal_obo_loader
    */
   private function oboEbiLookup($accession, $type_of_search, $found_iri = NULL, $found_ontology = NULL) {
+    $client = \Drupal::httpClient();
+
     // Grab just the ontology from the $accession.
     $parts = explode(':', $accession);
     $ontology = strtolower($parts[0]);
@@ -2879,55 +2893,43 @@ class OBOImporter extends ChadoImporterBase {
       }
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . $type . '/' . $found_iri;
       $options = [];
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
     elseif ($type_of_search == 'ontology') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology;
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
     elseif ($type_of_search == 'term') {
       // The IRI of the terms, this value must be double URL encoded
       $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':', '_', $accession)));
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'terms/' . $iri;
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
     elseif ($type_of_search == 'property') {
       // The IRI of the terms, this value must be double URL encoded
       $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':', '_', $accession)));
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'properties/' . $iri;
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
     elseif ($type_of_search == 'query') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id&local=true';
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
     elseif ($type_of_search == 'query-non-local') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id';
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
-    return $response;
+
+    try {
+      $response = $client->get($full_url, $options);
+      $response = $response->getBody();
+      $response = Json::decode($response);
+      return $response;
+    }
+    catch (RequestException $e) {
+      $this->logger->error('Unable to get response from @url when trying to retrieve data for @accession. @exception',
+          ['@url' => $full_url, '@accession' => $accession, '@exception' => $e->getMessage()]);
+    }
+
+    return FALSE;
   }
 }
