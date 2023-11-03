@@ -32,6 +32,9 @@ class ChadoLinkerContactFormatterDefault extends ChadoFormatterBase {
     foreach($items as $delta => $item) {
       $value = $item->get('contact_name')->getString();
       $value_type = $item->get('contact_type')->getString();
+      // This formatter does not display the contact description, but it may be obtained with
+      // $value_description = $item->get('contact_description')->getString();
+
       // Change the non-user-friendly 'null' contact, which is spedified by chado.
       if ($value == 'null') {
         $value = 'Unknown';

@@ -104,8 +104,10 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $object_type_col = 'type_id';
     $value_term = $mapping->getColumnTermId($object_table, self::$value_column);
     $value_len = $object_schema_def['fields'][self::$value_column]['size'];
+    $description_term = $mapping->getColumnTermId($object_table, 'description');
+    $description_len = $object_schema_def['fields']['description']['size'];
 
-    // Cvterm table, for the contact type
+    // Cvterm table, for the name for the contact type
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
     $value_type_term = $mapping->getColumnTermId('cvterm', 'name');
     $value_type_len = $cvterm_schema_def['fields']['name']['size'];
@@ -191,7 +193,16 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'as' => 'contact_name',
     ]);
 
-    // The type for the displayed value
+    // The contact description.
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_description', $description_term, $description_len, [
+      'action' => 'join',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'description',
+      'as' => 'contact_description',
+    ]);
+
+    // The name for the type of contact.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_type', $value_type_term, $value_type_len, [
       'action' => 'join',
       'drupal_store' => FALSE,
@@ -200,6 +211,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'chado_column' => 'name',
       'as' => 'contact_type',
     ]);
+
     return $properties;
   }
 
