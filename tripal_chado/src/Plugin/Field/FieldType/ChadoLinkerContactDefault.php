@@ -195,7 +195,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 
     // The contact description.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_description', $description_term, $description_len, [
-      'action' => 'join',
+      'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => 'description',
@@ -204,7 +204,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 
     // The name for the type of contact.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_type', $value_type_term, $value_type_len, [
-      'action' => 'join',
+      'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_right_col . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id',
