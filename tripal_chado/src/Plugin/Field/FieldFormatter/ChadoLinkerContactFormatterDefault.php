@@ -31,11 +31,15 @@ class ChadoLinkerContactFormatterDefault extends ChadoFormatterBase {
     $list = [];
     foreach($items as $delta => $item) {
       $value = $item->get('contact_name')->getString();
-      // any URLs are made into clickable links
-      if (preg_match('/^https?:/i', $value) ) {
-        $value = Link::fromTextAndUrl($value, $value);
+      $value_type = $item->get('contact_type')->getString();
+      // Change the non-user-friendly 'null' contact, which is spedified by chado.
+      if ($value == 'null') {
+        $value = 'Unknown';
       }
       $list[$delta] = $value;
+      if ($value_type) {
+        $list[$delta] .= ' (' . $value_type . ')';
+      }
     }
 
     // Only return markup if the field is not empty.

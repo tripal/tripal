@@ -68,7 +68,6 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $link,
     ];
-//@todo add in type_id and rank here
     $elements['contact_id'] = $element + [
       '#type' => 'select',
       '#options' => $contacts,
@@ -88,22 +87,17 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
     $mapping = $storage->load('core_mapping');
 
     $storage_settings = $this->getFieldSetting('storage_plugin_settings');
-// @to-do handle type_id and rank when present
     $linker_table = $storage_settings['linker_table'];
-//    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($linker_table, 'rank'));
 
-    // Remove any empty values.
+    // Handle any empty values.
     foreach ($values as $val_key => $value) {
       if ($value['contact_id'] == '') {
-        // If there is a record_id, then we need to delete the
-        // existing linker record in chado. How to do this, though? @@@
-        // This will be called for both validate and update, we can't
-        // delete during the validate call
         if ($value['record_id']) {
-          // We need to pass in this record to chado storage to
-          // be deleted there, but also we need to have the
-          // correct primitive type for this field, so change
-          // from empty string to zero.
+          // If there is a record_id, but no contact_id, this means
+          // we need to pass in this record to chado storage to
+          // have the linker record be deleted there. To do this,
+          // we need to have the correct primitive type for this
+          // field, so change from empty string to zero.
           $values[$val_key]['contact_id'] = 0;
         }
         else {
@@ -116,7 +110,6 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
     $i = 0;
     foreach ($values as $val_key => $value) {
       $values[$val_key]['_weight'] = $i;
-//      $values[$val_key][$rank_term] = $i;
       $i++;
     }
 
