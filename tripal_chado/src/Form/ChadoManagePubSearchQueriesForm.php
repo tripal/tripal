@@ -183,6 +183,7 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
       // Delete should be a button instead of markup @TODO
       $row['col-7-delete-' . $pub_importer->pub_import_id] = [
         '#type' => 'submit',
+        '#name' => 'delete-' . $pub_importer->pub_import_id,
         '#default_value' => 'Delete',
         '#attributes' => [
           'data-value' => [
@@ -263,20 +264,18 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
     $public = \Drupal::database();
     $user_input = $form_state->getUserInput();
     $trigger_element = $form_state->getTriggeringElement();
-    dpm($form_state->getTriggeringElement());
+    // dpm($form_state->getTriggeringElement());
     // dpm($trigger);
-    if ($trigger_element['#name'] == "op") {
-      $op = $user_input['op'];
-      if ($op == 'Delete') {
-        $pub_import_id = $trigger_element['#attributes']['data-value'][0];
-        $public->delete('tripal_pub_import')
-          ->condition('pub_import_id', $pub_import_id)
-          ->execute();
-                
-        $messenger = \Drupal::messenger();
-        $messenger->addMessage("Publication importer has been deleted.");
-      }
-      dpm($op);
+    if (stripos($trigger_element['#name'],'delete-') !== FALSE) {
+      $pub_import_id = explode('delete-',$trigger_element['#name'])[1];
+      // dpm($pub_import_id);
+      $public->delete('tripal_pub_import')
+        ->condition('pub_import_id', $pub_import_id, '=')
+        ->execute();
+              
+      $messenger = \Drupal::messenger();
+      $messenger->addMessage("Publication importer has been deleted.");
+
     }
   }
 

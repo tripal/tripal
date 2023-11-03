@@ -29,7 +29,7 @@ class TripalPubParserPubmed extends TripalPubParserBase {
   // I can't currently think of a reason it wouldn't off hand
   // This might be the function that the Tripal Job will call
   public function parse($pub_import_id) {
-    
+    // This will connect to PUBMED AND PERFORM NECESSARY INSERTIONS INTO DATABASE
   }
 
   /** 
