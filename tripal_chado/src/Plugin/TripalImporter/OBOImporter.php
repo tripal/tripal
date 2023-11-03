@@ -2050,13 +2050,13 @@ class OBOImporter extends ChadoImporterBase {
     // Create a new stanza using the values of this cvterm.
     $stanza = [];
     $stanza['id'][0] = $short_name . ':' . $accession;
-    $stanza['name'][0] = $cvterm->getValue('name');
-    $stanza['def'][0] = $cvterm->getValue('definition');
-    $stanza['namespace'][0] = $cv->getValue('name');
-    $stanza['is_obsolete'][0] = $cvterm->getValue('is_obsolete') == 1 ? 'true' : '';
+    $stanza['name'][0] = $cvterm->name;
+    $stanza['def'][0] = $cvterm->definition;
+    $stanza['namespace'][0] = $cv->name;
+    $stanza['is_obsolete'][0] = ($cvterm->is_obsolete == 1) ? 'true' : '';
     $stanza['is_relationshiptype'][0] = '';
     $stanza['db_name'][0] = $db->name;
-    $stanza['cv_name'][0] = $cv->getValue('name');
+    $stanza['cv_name'][0] = $cv->name;
     return $stanza;
   }
 
