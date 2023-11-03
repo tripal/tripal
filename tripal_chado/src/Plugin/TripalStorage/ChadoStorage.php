@@ -241,13 +241,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // are marked as "delete if empty".
           if (array_key_exists('delete_if_empty', $record)) {
             $skip_record = FALSE;
-            foreach ($record['delete_if_empty'] as $del_key) {
-              // @todo use the `empty_value` setting instead of hardcoding the ''
-dpm($record['fields'][$del_key], "CP020 test for skip_record del_key=\"$del_key\" record="); //@@@
-              if ($record['fields'][$del_key] == '') {
-                $skip_record = TRUE;
-              }
-              if ($record['fields'][$del_key] == 0) {
+            foreach ($record['delete_if_empty'] as $del_record) {
+              if ($record['fields'][$del_record['chado_column']] == $del_record['empty_value']) {
                 $skip_record = TRUE;
               }
             }
@@ -305,16 +300,13 @@ dpm($record['fields'][$del_key], "CP020 test for skip_record del_key=\"$del_key\
    * Indicates if we should keep this record for inserts/updates.
    *
    * @param array $record
+   *
    * @return boolean
    */
   private function isEmptyRecord($record) {
     if (array_key_exists('delete_if_empty', $record)) {
-      foreach ($record['delete_if_empty'] as $del_key) {
-        if ($record['fields'][$del_key] == '') { // @todo use the `empty_value` setting instead of hardcoding the ''
-          return TRUE;
-        }
-// @@@ next 3 lines:
-        if ($record['fields'][$del_key] == 0) { // @todo use the `empty_value` setting instead of hardcoding the ''
+      foreach ($record['delete_if_empty'] as $del_record) {
+        if ($record['fields'][$del_record['chado_column']] == $del_record['empty_value']) {
           return TRUE;
         }
       }
@@ -1322,11 +1314,16 @@ dpm($record['fields'][$del_key], "CP020 test for skip_record del_key=\"$del_key\
     // If this field should not allow an empty value that means this
     // entire record should be removed on an update and not inserted.
     $delete_if_empty = FALSE;
+    $empty_value = '';
     if (array_key_exists('delete_if_empty', $storage_settings)) {
       $delete_if_empty = $storage_settings['delete_if_empty'];
     }
+    if (array_key_exists('empty_value', $storage_settings)) {
+      $empty_value = $storage_settings['empty_value'];
+    }
     if ($delete_if_empty) {
-      $records[$table_alias][$delta]['delete_if_empty'][] = $chado_column;
+      $records[$table_alias][$delta]['delete_if_empty'][] =
+        ['chado_column' => $chado_column, 'empty_value' => $empty_value];
     }
   }
 
