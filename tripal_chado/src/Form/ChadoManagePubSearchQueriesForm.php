@@ -22,7 +22,7 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    // // Check to make sure that the tripal_pub vocabulary is loaded. If not, then
+  // // Check to make sure that the tripal_pub vocabulary is loaded. If not, then
   // // warn the user that they should load it before continuing.
   // $pub_cv = chado_select_record('cv', ['cv_id'], ['name' => 'tripal_pub']);
   // if (count($pub_cv) == 0) {
@@ -144,7 +144,13 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
       // This should contain edit test and import pubs links @TODO
       $row['col-1'] = [
         '#type' => 'markup',
-        '#markup' => '<a href="">Edit/Test</a><br /><a href="">Import Pubs</a>'
+        '#markup' => 
+          Link::fromTextAndUrl(
+            'Edit/Test', 
+            Url::fromUri('internal:/admin/tripal/loaders/publications/edit_publication/' . $pub_importer->pub_import_id)
+          )
+          ->toString() . 
+          '<br /><a href="">Import Pubs</a>'
       ];
       $row['col-2'] = [
         '#type' => 'markup',

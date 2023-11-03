@@ -192,7 +192,15 @@ tripal.data_loaders.publication_loaders.new_publication:
     _form: 'Drupal\tripal_chado\Form\ChadoNewPublicationForm'
     _title: 'New publication'
   requirements:
-    _permission: 'allow tripal import'    
+    _permission: 'allow tripal import'
+
+tripal.data_loaders.publication_loaders.edit_publication:
+  path: 'admin/tripal/loaders/publications/edit_publication/{pub_import_id}'
+  defaults:
+    _form: 'Drupal\tripal_chado\Form\ChadoNewPublicationForm'
+    _title: 'New publication'
+  requirements:
+    _permission: 'allow tripal import'  
 
 # TODO - Add the correct form here
 tripal.data_loaders.publication_loaders.run_pub_search_query:

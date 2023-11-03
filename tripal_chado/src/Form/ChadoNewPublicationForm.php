@@ -10,6 +10,7 @@ use Drupal\Core\Url;
 
 class ChadoNewPublicationForm extends FormBase {
 
+  private $form_state_previous_user_input = null;
   /**
    * {@inheritdoc}
    */
@@ -20,9 +21,40 @@ class ChadoNewPublicationForm extends FormBase {
   /**
    * {@inheritDoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state, $pub_import_id = null) {
+    
+    dpm('Pub Import ID:' . $pub_import_id);
+    if ($pub_import_id != null) {
+      $public = \Drupal::database();
+      // This is the edit version of the form, we need to lookup the current pub_import_id
+      $publication = $public->select('tripal_pub_import', 'tpi')->fields('tpi')->condition('pub_import_id', $pub_import_id, '=')->execute()->fetchObject();
+      $criteria = unserialize($publication->criteria);
+
+
+      // THIS DOES NOT WORK!!!!!! DRUPAL and Symphony!!!!!
+      // $form_state->setUserInput($criteria['form_state_user_input']);
+
+      // Alternative and not what I want
+      // Add the previously saved user input into the instantiated object   
+      $this->form_state_previous_user_input = $criteria['form_state_user_input'];
+
+      // Let's add a hidden field called form_mode to tell the form submit process that this is an edit instead of creation
+      $form['mode'] = [
+        '#type' => 'hidden',
+        '#value' => 'edit'
+      ];
+
+      // Save the pub_import_id into a hidden field to be used if the form is ever submitted
+      $form['pub_import_id'] = [
+        '#type' => 'hidden',
+        '#value' => $pub_import_id
+      ];
+    }
+
     $form_state_values = $form_state->getValues();
-    dpm($form_state_values);
+    // dpm($form_state_values);
+
+
 
     $html = "<ul class='action-links'>";
     $html .= '  <li>' . Link::fromTextAndUrl('Return to manage pub search queries', Url::fromUri('internal:/admin/tripal/loaders/publications/manage_pub_search_queries'))->toString() . '</li>';
@@ -37,24 +69,47 @@ class ChadoNewPublicationForm extends FormBase {
     $form = $this->form_elements_importer_selection($form, $form_state);
 
     // If the button_next was clicked, it will exist in the form_state_values
-    if (isset($form_state_values['button_next'])) {
+    if (isset($form_state_values['button_next']) || $pub_import_id != null) {
       // Once clicked, hide the 'next' button by changing type to hidden
       $form['button_next']['#type'] = 'hidden';
 
       // Disable the click radio options
       $form['plugin_id']['#attributes'] = array('onclick' => 'return false;');
 
+
       // add the elements for the specific importer (below function initialized plugin and calls form function)
       $form = $this->form_elements_specific_importer($form, $form_state);
       dpm('We should show the elements fields required for this importer');
 
+
       // add the common elements (like search criteria)
       $form = $this->form_elements_common($form, $form_state);
       
+      // handle previous user input
+      if ($pub_import_id != 'null') {
+        dpm('IT CAME HERE');
+        // dpm($this->form_state_previous_user_input);
+        dpm($form);
+        $this->form_elements_load_previous_user_input($this->form_state_previous_user_input, $form['pub_parser']);
+        dpm($form);
+      }
     }
 
     return $form;
   }
+
+  public function form_elements_load_previous_user_input(&$input, &$form_element) {
+    foreach ($input as $key => $value) {
+      if (!is_array($input[$key])) {
+        dpm($key . ' and ' . $value);
+        $form_element[$key]['#default_value'] = $value;
+      }
+      else {
+        $this->form_elements_load_previous_user_input($input[$key], $form_element[$key]);
+      }
+    }
+  }
+
 
   public function form_elements_common($form, FormStateInterface &$form_state) {
     $form_state_values = $form_state->getValues();
@@ -93,6 +148,9 @@ class ChadoNewPublicationForm extends FormBase {
 
     if (isset($user_input['num_criteria'])) {
       $num_criteria = $user_input['num_criteria'];
+    }
+    elseif (isset($this->form_state_previous_user_input['num_criteria'])) {
+      $num_criteria = $this->form_state_previous_user_input['num_criteria'];
     }
 
     // dpm($user_input);
@@ -150,7 +208,7 @@ class ChadoNewPublicationForm extends FormBase {
       '#markup' => '<div id="tripal-pub-importer-test-section"></div>',
     ];
 
-    return $form;    
+    return $form;
   }
 
   /**
@@ -370,6 +428,11 @@ class ChadoNewPublicationForm extends FormBase {
     $form['#prefix'] = '<div id="pub_importer_main_form">';
     $form['#suffix'] = '</div>';
 
+    $default_value = NULL;
+    if ($this->form_state_previous_user_input != null) {
+      $default_value = $this->form_state_previous_user_input['plugin_id'];
+    }
+
     // RISH: This is the radio buttons which lists the types of publication / sources eg NIH PubMed database
     $form['plugin_id'] = [
       '#title' => t('Select a source of publications'),
@@ -377,7 +440,7 @@ class ChadoNewPublicationForm extends FormBase {
       '#description' => t("Choose one of the sources above for loading publications."),
       '#required' => TRUE,
       '#options' => $plugins,
-      '#default_value' => NULL,
+      '#default_value' => $default_value,
       // '#ajax' => [
       //   'callback' =>  [$this, 'formAjaxCallback'], // calls function within this class: function formAjaxCallback
       //   'wrapper' => 'edit-parser',
@@ -412,6 +475,7 @@ class ChadoNewPublicationForm extends FormBase {
     // dpm($form_state_values);
     $public = \Drupal::database();
     $user_input = $form_state->getUserInput();
+    dpm($user_input);
     $trigger = $form_state->getTriggeringElement()['#name'];
     
     dpm($trigger);
@@ -434,14 +498,25 @@ class ChadoNewPublicationForm extends FormBase {
         }
         $criteria_column_array = [
           'remote_db' => explode('tripal_pub_parser_', $user_input['plugin_id'])[1],
-          'days' => $user_input['days'],
+          // 'days' => $user_input['days'],
           'num_criteria' => $user_input['num_criteria'],
           'loader_name' => $user_input['loader_name'],
           'disabled' => $disabled,
           'do_contact' => $do_contact,
-          'pub_import_id' => NULL,
+          'pub_import_id' => $user_input['pub_import_id'],
           'criteria' => [],
+          'form_state_user_input' => NULL, // used for edit form
         ];
+
+        // Save form_state_user_input (for use with the edit version of this form)
+        // This removes the requirement to retranslate the saved data which could become unmaintainable
+        // Remove any data from user_input that is not necessary or can confuse logic processing
+        $form_mode = $user_input['mode'];
+        unset($user_input['op']); // used to determine if it was a save or delete
+        // unset($user_input['form_build_id']);
+        // unset($user_input['form_token']);
+        unset($user_input['mode']); // was used to determine if it is new or edit
+        $criteria_column_array['form_state_user_input'] = $user_input;
 
         $criteria_count = 1;
         // $user_input['table'] is the criteria rows from the submitted form
@@ -459,18 +534,53 @@ class ChadoNewPublicationForm extends FormBase {
           ];
           $criteria_count++;
         }
+
+
+        // Load the plugin
+        $plugin_id = $user_input['plugin_id'];
+        if ($plugin_id) {
+          // Instantiate the selected plugin
+          // Pub Parse Manager is found in tripal module: tripal/tripal/src/TripalPubParser/PluginManagers/TripalPubParserManager.php
+          $pub_parser_manager = \Drupal::service('tripal.pub_parser');
+          $plugin = $pub_parser_manager->createInstance($plugin_id, []);
+
+          // The selected plugin defines form elements specific
+          // to itself.
+          $plugin->form_submit($form, $form_state, $criteria_column_array);
+        }
+
+
         $criteria_column_serialized = serialize($criteria_column_array);
-        $public->insert('tripal_pub_import')->fields([
+
+        $db_fields = [
           'name' => $user_input['loader_name'],
           'criteria' => $criteria_column_serialized,
           'disabled' => $disabled,
           'do_contact' => $do_contact
-        ])->execute();
-        
+        ];
+
         $messenger = \Drupal::messenger();
-        $messenger->addMessage("Importer successfully added!");
+
+        // If form_mode is not edit, then it is a new importer
+        if ($form_mode != "edit") {
+          $public->insert('tripal_pub_import')->fields($db_fields)->execute();
+          
+          $messenger->addMessage("Importer successfully added!");
+          
+        }
+        // If form_mode is 'edit', this is an update to the database
+        else {
+          $public->update('tripal_pub_import', 'tpi')
+            ->fields($db_fields)
+            ->condition('pub_import_id', $user_input['pub_import_id'])
+            ->execute();
+          $messenger->addMessage("Importer successfully edited!");
+        }
+        
         $form_state->setRebuild(TRUE); // @TODO change this to false after developing this form
+
       }
+      
       
     }
     else {

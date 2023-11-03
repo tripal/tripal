@@ -25,6 +25,26 @@ class TripalPubParserPubmed extends TripalPubParserBase {
     dpm('TripalPubParserPubmed formSubmit called');
   }
 
+  // @TODO Maybe ??? Need to confirm with Stephen if this could work
+  // I can't currently think of a reason it wouldn't off hand
+  // This might be the function that the Tripal Job will call
+  public function parse($pub_import_id) {
+    
+  }
+
+  /** 
+   * Plugin specific form submit to add form values for example to criteria array
+   * The criteria array eventually gets serialized and stored in the tripal_pub_import
+   * database table. (This code gets called from ChadoNewPublicationForm)
+   */
+  public function form_submit($form, $form_state, &$criteria) {
+    $user_input = $form_state->getUserInput();
+    $criteria['days'] = $user_input['days'];
+  }
+
+  /**
+   * Adds plugin specific form items and returns the $form array
+   */
   public function form($form, &$form_state) {
     // Add form elements specific to this parser.
     $api_key_description = t('Tripal imports publications using NCBI\'s ')
@@ -46,7 +66,7 @@ class TripalPubParserPubmed extends TripalPubParserBase {
       '#type' => 'textfield',
       '#description' => $api_key_description,
       '#required' => FALSE,
-//to-do add ajax callback to populate?
+      //to-do add ajax callback to populate?
       '#size' => 20,
     ];
     $form['pub_parser']['days'] = [
