@@ -79,7 +79,7 @@ class ChadoNewPublicationForm extends FormBase {
 
       // add the elements for the specific importer (below function initialized plugin and calls form function)
       $form = $this->form_elements_specific_importer($form, $form_state);
-      dpm('We should show the elements fields required for this importer');
+      // dpm('We should show the elements fields required for this importer');
 
 
       // add the common elements (like search criteria)
@@ -87,21 +87,21 @@ class ChadoNewPublicationForm extends FormBase {
       
       // handle previous user input
       if ($pub_import_id != 'null') {
-        dpm('IT CAME HERE');
-        // dpm($this->form_state_previous_user_input);
-        dpm($form);
         $this->form_elements_load_previous_user_input($this->form_state_previous_user_input, $form['pub_parser']);
-        dpm($form);
       }
     }
 
     return $form;
   }
 
+  /**
+   * Recursive function to find values from user_input and add it back to the #default_value
+   * key for the specific form element
+   */
   public function form_elements_load_previous_user_input(&$input, &$form_element) {
     foreach ($input as $key => $value) {
       if (!is_array($input[$key])) {
-        dpm($key . ' and ' . $value);
+        // dpm($key . ' and ' . $value);
         $form_element[$key]['#default_value'] = $value;
       }
       else {
@@ -143,7 +143,7 @@ class ChadoNewPublicationForm extends FormBase {
     ];
 
     $num_criteria = 1; // default criteria row count
-    $trigger = $form_state->getTriggeringElement()['#name'];
+    $trigger = @$form_state->getTriggeringElement()['#name'];
     $user_input = $form_state->getUserInput();
 
     if (isset($user_input['num_criteria'])) {
@@ -475,10 +475,10 @@ class ChadoNewPublicationForm extends FormBase {
     // dpm($form_state_values);
     $public = \Drupal::database();
     $user_input = $form_state->getUserInput();
-    dpm($user_input);
+    // dpm($user_input);
     $trigger = $form_state->getTriggeringElement()['#name'];
     
-    dpm($trigger);
+    // dpm($trigger);
     if ($trigger == 'op') {
       $op = $user_input['op'];
       dpm($op);
@@ -487,7 +487,7 @@ class ChadoNewPublicationForm extends FormBase {
 
         // Translate the submitted data into a variable which can be serialized into a criteria column
         // of the tripal_pub_import table
-        dpm($user_input);
+        // dpm($user_input);
         $disabled = $user_input['disabled'];
         if ($disabled == null) {
           $disabled = 0;
@@ -536,7 +536,9 @@ class ChadoNewPublicationForm extends FormBase {
         }
 
 
-        // Load the plugin
+        // Load the plugin and initialize an instance to perform it's unique form_submit function
+        // This will run plugin specific form submit operations that can alter the criteria database column
+        // which stores the specific plugin importer settings (basically all the form data)
         $plugin_id = $user_input['plugin_id'];
         if ($plugin_id) {
           // Instantiate the selected plugin
@@ -564,24 +566,27 @@ class ChadoNewPublicationForm extends FormBase {
         // If form_mode is not edit, then it is a new importer
         if ($form_mode != "edit") {
           $public->insert('tripal_pub_import')->fields($db_fields)->execute();
-          
           $messenger->addMessage("Importer successfully added!");
-          
+          $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_pub_search_queries');
+          $form_state->setRedirectUrl($url);
         }
         // If form_mode is 'edit', this is an update to the database
         else {
-          $public->update('tripal_pub_import', 'tpi')
+          // dpm($db_fields);
+          // dpm($user_input['pub_import_id']);
+          $public->update('tripal_pub_import')
             ->fields($db_fields)
             ->condition('pub_import_id', $user_input['pub_import_id'])
             ->execute();
           $messenger->addMessage("Importer successfully edited!");
+          $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_pub_search_queries');
+          // dpm($url);
+          $form_state->setRedirectUrl($url);
         }
         
-        $form_state->setRebuild(TRUE); // @TODO change this to false after developing this form
+        $form_state->setRebuild(FALSE); // @TODO change this to false after developing this form
 
       }
-      
-      
     }
     else {
       $form_state->setRebuild(TRUE);

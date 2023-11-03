@@ -112,7 +112,7 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
   $pub_importers_count = $pub_importers_query->countQuery()->execute()->fetchField();
   if ($pub_importers_count > 0) {
     // Lookup all records
-    $pub_importers = $pub_importers_query->fields('tpi')->execute()->fetchAll();
+    $pub_importers = $pub_importers_query->fields('tpi')->orderBy('pub_import_id', 'ASC')->execute()->fetchAll();
     foreach ($pub_importers as $pub_importer) {
       // dpm($pub_importer);
       // dpm($pub_importer->name);
