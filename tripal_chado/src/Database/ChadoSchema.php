@@ -20,8 +20,10 @@ class ChadoSchema extends TripalDbxSchema {
     $source = $parameters['source'] ?? 'file';
     $format = strtolower($parameters['format'] ?? '');
 
-    $version = $parameters['version'];
-    if (!array_key_exists('version', $parameters) OR empty($parameters['version'])) {
+    if (array_key_exists('version', $parameters) and !empty($parameters['version'])) {
+      $version = $parameters['version'];
+    }
+    else {
       $version = $this->connection->getVersion();
     }
 

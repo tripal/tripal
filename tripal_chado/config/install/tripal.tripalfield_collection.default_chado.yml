@@ -830,8 +830,8 @@ fields:
 
     -   name: gene_sequence
         content_type: gene
-        label: Sequence
-        type: chado_text_type
+        label: Sequence Residues
+        type: chado_sequence_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -857,7 +857,7 @@ fields:
     -   name: gene_length
         content_type: gene
         label: Sequence Length
-        type: chado_integer_type
+        type: chado_sequence_length_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -879,6 +879,32 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: gene_sequence_md5_checksum
+        content_type: gene
+        label: Sequence MD5 Checksum
+        type: chado_sequence_checksum_default
+        description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: md5checksum
+        settings:
+            termIdSpace: data
+            termAccession: "2190"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
 
     -   name: gene_organism
         content_type: gene
@@ -988,6 +1014,33 @@ fields:
               region: content
               weight: 90
 
+    -   name: gene_synonym
+        content_type: gene
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: mrna_name
         content_type: mRNA
         label: Name
@@ -1043,8 +1096,8 @@ fields:
 
     -   name: mrna_sequence
         content_type: mRNA
-        label: Sequence
-        type: chado_text_type
+        label: Sequence Residues
+        type: chado_sequence_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -1070,7 +1123,7 @@ fields:
     -   name: mrna_sequence_length
         content_type: mRNA
         label: Sequence Length
-        type: chado_integer_type
+        type: chado_sequence_length_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -1092,6 +1145,32 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: mrna_sequence_md5_checksum
+        content_type: mRNA
+        label: Sequence MD5 Checksum
+        type: chado_sequence_checksum_default
+        description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: md5checksum
+        settings:
+            termIdSpace: data
+            termAccession: "2190"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
 
     -   name: mrna_organism
         content_type: mRNA
@@ -1200,6 +1279,33 @@ fields:
             default:
               region: content
               weight: 90
+
+    -   name: mrna_synonym
+        content_type: mRNA
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
 
     -   name: phylotree_name
         content_type: phylotree
@@ -1520,6 +1626,33 @@ fields:
             default:
               region: content
               weight: 20
+
+    -   name: dna_library_synonym
+        content_type: dna_library
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                linker_table: library_synonym
+                linker_fkey_column: library_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
 
     -   name: genome_assembly_name
         content_type: genome_assembly
@@ -2142,7 +2275,7 @@ fields:
 
     -   name: qtl_unique_name
         content_type: QTL
-        label: Uniquen Name
+        label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the QTL within the organism.
         cardinality: 1
@@ -2168,8 +2301,8 @@ fields:
 
     -   name: qtl_sequence
         content_type: QTL
-        label: Sequence
-        type: chado_text_type
+        label: Sequence Residues
+        type: chado_sequence_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -2195,7 +2328,7 @@ fields:
     -   name: qtl_sequence_length
         content_type: QTL
         label: Sequence Length
-        type: chado_integer_type
+        type: chado_sequence_length_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -2217,6 +2350,33 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: qtl_md5_checksum
+        content_type: QTL
+        label: Sequence MD5 Checksum
+        type: chado_sequence_checksum_default
+        description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: md5checksum
+        settings:
+            termIdSpace: data
+            termAccession: "2190"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
 
     -   name: qtl_organism
         content_type: QTL
@@ -2326,6 +2486,33 @@ fields:
               region: content
               weight: 90
 
+    -   name: qtl_synonym
+        content_type: QTL
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: sequence_variant_name
         content_type: sequence_variant
         label: Name
@@ -2353,7 +2540,7 @@ fields:
               region: content
               weight: 10
 
-    -   name: sequence_variant_uniquene_name
+    -   name: sequence_variant_unique_name
         content_type: sequence_variant
         label: Unique Name
         type: chado_text_type
@@ -2381,8 +2568,8 @@ fields:
 
     -   name: sequence_variant_sequence
         content_type: sequence_variant
-        label: Sequence
-        type: chado_text_type
+        label: Sequence Residues
+        type: chado_sequence_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -2408,7 +2595,7 @@ fields:
     -   name: sequence_variant_sequence_length
         content_type: sequence_variant
         label: Sequence Length
-        type: chado_integer_type
+        type: chado_sequence_length_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -2430,6 +2617,32 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: sequence_variant_md5_checksum
+        content_type: sequence_variant
+        label: Sequence MD5 Checksum
+        type: chado_sequence_checksum_default
+        description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: md5checksum
+        settings:
+            termIdSpace: data
+            termAccession: "2190"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
 
     -   name: sequence_variant_organism
         content_type: sequence_variant
@@ -2539,6 +2752,33 @@ fields:
               region: content
               weight: 90
 
+    -   name: sequence_variant_synonym
+        content_type: sequence_variant
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: genetic_marker_name
         content_type: genetic_marker
         label: Name
@@ -2594,8 +2834,8 @@ fields:
 
     -   name: genetic_marker_sequence
         content_type: genetic_marker
-        label: Sequence
-        type: chado_text_type
+        label: Sequence Residues
+        type: chado_sequence_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -2621,7 +2861,7 @@ fields:
     -   name: genetic_marker_sequence_length
         content_type: genetic_marker
         label: Sequence Length
-        type: chado_integer_type
+        type: chado_sequence_length_default
         description: The size (length) of a sequence, subsequence or region in a sequence,or range(s) of lengths.
         cardinality: 1
         required: false
@@ -2643,6 +2883,32 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: genetic_marker_md5_checksum
+        content_type: genetic_marker
+        label: Sequence MD5 Checksum
+        type: chado_sequence_checksum_default
+        description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: md5checksum
+        settings:
+            termIdSpace: data
+            termAccession: "2190"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
 
     -   name: genetic_marker_organism
         content_type: genetic_marker
@@ -2752,6 +3018,33 @@ fields:
               region: content
               weight: 90
 
+    -   name: genetic_marker_synonym
+        content_type: genetic_marker
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: phenotypic_marker_name
         content_type: phenotypic_marker
         label: Name
@@ -2781,7 +3074,7 @@ fields:
 
     -   name: phenotypic_marker_unique_name
         content_type: phenotypic_marker
-        label: Uniquen Name
+        label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the heritable phenotypic marker within the organism.
         cardinality: 1
@@ -2807,8 +3100,8 @@ fields:
 
     -   name: phenotypic_marker_sequence
         content_type: phenotypic_marker
-        label: Sequence
-        type: chado_text_type
+        label: Sequence Residues
+        type: chado_sequence_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -2831,10 +3124,10 @@ fields:
               region: content
               weight: 20
 
-    -   name: phenotypic_marker_seqlen
+    -   name: phenotypic_marker_length
         content_type: phenotypic_marker
         label: Sequence Length
-        type: chado_integer_type
+        type: chado_sequence_length_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -2856,6 +3149,32 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: phenotypic_marker_md5_checksum
+        content_type: phenotypic_marker
+        label: Sequence MD5 Checksum
+        type: chado_sequence_checksum_default
+        description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: md5checksum
+        settings:
+            termIdSpace: data
+            termAccession: "2190"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
 
     -   name: phenotypic_marker_organism
         content_type: phenotypic_marker
@@ -2964,6 +3283,33 @@ fields:
             default:
               region: content
               weight: 90
+
+    -   name: phenotypic_marker_synonym
+        content_type: phenotypic_marker
+        label: Synonyms
+        type: chado_synonym_default
+        description: Alternate names, aliases or synonyms for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_synonym
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: schema
+            termAccession: alternateName
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
 
     -   name: germplasm_name
         content_type: germplasm

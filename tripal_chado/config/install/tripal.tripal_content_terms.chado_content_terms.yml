@@ -775,7 +775,9 @@ vocabularies:
             -   id: 'NCIT:C42699'
                 name: 'Namespace'
                 description: 'In general, a namespace is an abstract container, which is or could be filled by names, or technical terms, or words, and these represent or stand for real-world things. A description logic terminology namespace is a collection of Kind, Role, Property and Concept definitions. As in computer programming, context namespaces are intended to allow multiple knowledge bases to reside in the same physical database. (from Apelon) [ NCI ]'
-                
+            -   id: 'NCIT:C70699'
+                name: 'Biospecimen'
+                description: 'Any material sample taken from a biological entity for testing, diagnostic, propagation, treatment or research purposes, including a sample obtained from a living organism or taken from the biological object after halting of all its life functions.'
 
     -   name: 'ncbitaxon'
         label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'
