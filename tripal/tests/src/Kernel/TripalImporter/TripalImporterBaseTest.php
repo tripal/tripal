@@ -105,7 +105,7 @@ class TripalImporterBaseTest extends KernelTestBase {
 
   /**
    * Tests focusing on the Tripal importer base class.
-   * Specifically, create(), load(), and getArguments() methods.
+   * Specifically, createImportJob(), load(), and getArguments() methods.
    *
    * @group tripal_importer
    */
@@ -122,10 +122,10 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file not required so expected to succeed.
+    // Execute createImportJob, file not required so expected to succeed.
     $run_args = [];
     $file_details = [];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now check that a record was added to the tripal_import table.
     $public = \Drupal::database();
@@ -140,9 +140,9 @@ class TripalImporterBaseTest extends KernelTestBase {
       "The class should match our fake plugin name.");
     $selected_args = unserialize(base64_decode($records[0]->arguments));
     $this->assertIsArray($selected_args,
-      "Unable to retrieve arguements after creating tripal importer record.");
+      "Unable to retrieve arguments after creating tripal importer record.");
     $this->assertEquals($expected_args, $selected_args,
-      "We did not retreive the arguements we expected.");
+      "We did not retrieve the arguments we expected.");
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
@@ -151,9 +151,9 @@ class TripalImporterBaseTest extends KernelTestBase {
     $importerTestLoad->load($import_id);
     $retrieved_args = $importerTestLoad->getArguments();
     $this->assertIsArray($retrieved_args,
-      "Unable to retrieve arguements after loading tripal importer.");
+      "Unable to retrieve arguments after loading tripal importer.");
     $this->assertEquals($expected_args, $retrieved_args,
-      "We did not retreive the arguements we expected after loading.");
+      "We did not retrieve the arguments we expected after loading.");
 
     // CASE --- Exception Expected
     // -- Empty run args, no file when file required.
@@ -166,12 +166,12 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file required so expected to FAIL.
+    // Execute createImportJob, file required so expected to FAIL.
     $exception_msg = NULL;
     try {
       $run_args = [];
       $file_details = [];
-      $import_id = $importer->create($run_args, $file_details);
+      $import_id = $importer->createImportJob($run_args, $file_details);
     }
     catch(\Exception $e) {
       $exception_msg = $e->getMessage();
@@ -196,10 +196,10 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file not required so expected to succeed.
+    // Execute createImportJob, file not required so expected to succeed.
     $run_args = ['test' => 'single run arg'];
     $file_details = ['file_local' => $test_file_path];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now check that a record was added to the tripal_import table.
     $public = \Drupal::database();
@@ -214,9 +214,9 @@ class TripalImporterBaseTest extends KernelTestBase {
       "The class should match our fake plugin name.");
     $selected_args = unserialize(base64_decode($records[0]->arguments));
     $this->assertIsArray($selected_args,
-      "Unable to retrieve arguements after creating tripal importer record.");
+      "Unable to retrieve arguments after creating tripal importer record.");
     $this->assertEquals($expected_args, $selected_args,
-      "We did not retreive the arguements we expected.");
+      "We did not retrieve the arguments we expected.");
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
@@ -225,9 +225,9 @@ class TripalImporterBaseTest extends KernelTestBase {
     $importerTestLoad->load($import_id);
     $retrieved_args = $importerTestLoad->getArguments();
     $this->assertIsArray($retrieved_args,
-      "Unable to retrieve arguements after loading tripal importer.");
+      "Unable to retrieve arguments after loading tripal importer.");
     $this->assertEquals($expected_args, $retrieved_args,
-      "We did not retreive the arguements we expected after loading.");
+      "We did not retrieve the arguments we expected after loading.");
 
     // CASE --- Valid
     // -- run args + remote file.
@@ -244,10 +244,10 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file not required so expected to succeed.
+    // Execute createImportJob, file not required so expected to succeed.
     $run_args = ['test' => 'single run arg'];
     $file_details = ['file_remote' => $test_file_path];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now check that a record was added to the tripal_import table.
     $public = \Drupal::database();
@@ -262,9 +262,9 @@ class TripalImporterBaseTest extends KernelTestBase {
       "The class should match our fake plugin name.");
     $selected_args = unserialize(base64_decode($records[0]->arguments));
     $this->assertIsArray($selected_args,
-      "Unable to retrieve arguements after creating tripal importer record.");
+      "Unable to retrieve arguments after creating tripal importer record.");
     $this->assertEquals($expected_args, $selected_args,
-      "We did not retreive the arguements we expected.");
+      "We did not retrieve the arguments we expected.");
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
@@ -273,9 +273,9 @@ class TripalImporterBaseTest extends KernelTestBase {
     $importerTestLoad->load($import_id);
     $retrieved_args = $importerTestLoad->getArguments();
     $this->assertIsArray($retrieved_args,
-      "Unable to retrieve arguements after loading tripal importer.");
+      "Unable to retrieve arguments after loading tripal importer.");
     $this->assertEquals($expected_args, $retrieved_args,
-      "We did not retreive the arguements we expected after loading.");
+      "We did not retrieve the arguments we expected after loading.");
 
     // CASE --- Valid
     // -- run args + file upload (single file).
@@ -295,10 +295,10 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file not required so expected to succeed.
+    // Execute createImportJob, file not required so expected to succeed.
     $run_args = ['test' => 'single run arg'];
     $file_details = ['fid' => $test_fid];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now check that a record was added to the tripal_import table.
     $public = \Drupal::database();
@@ -313,9 +313,9 @@ class TripalImporterBaseTest extends KernelTestBase {
       "The class should match our fake plugin name.");
     $selected_args = unserialize(base64_decode($records[0]->arguments));
     $this->assertIsArray($selected_args,
-      "Unable to retrieve arguements after creating tripal importer record.");
+      "Unable to retrieve arguments after creating tripal importer record.");
     $this->assertEquals($expected_args, $selected_args,
-      "We did not retreive the arguements we expected.");
+      "We did not retrieve the arguments we expected.");
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
@@ -324,9 +324,9 @@ class TripalImporterBaseTest extends KernelTestBase {
     $importerTestLoad->load($import_id);
     $retrieved_args = $importerTestLoad->getArguments();
     $this->assertIsArray($retrieved_args,
-      "Unable to retrieve arguements after loading tripal importer.");
+      "Unable to retrieve arguments after loading tripal importer.");
     $this->assertEquals($expected_args, $retrieved_args,
-      "We did not retreive the arguements we expected after loading.");
+      "We did not retrieve the arguments we expected after loading.");
 
     // CASE --- Valid
     // -- run args + file upload (multiple files).
@@ -349,10 +349,10 @@ class TripalImporterBaseTest extends KernelTestBase {
       [$configuration, $plugin_id, $plugin_defn]
     );
 
-    // Execute create, file not required so expected to succeed.
+    // Execute createImportJob, file not required so expected to succeed.
     $run_args = ['test' => 'single run arg'];
     $file_details = ['fid' => "$test_fid|$test_fid|$test_fid"];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now check that a record was added to the tripal_import table.
     $public = \Drupal::database();
@@ -367,9 +367,9 @@ class TripalImporterBaseTest extends KernelTestBase {
       "The class should match our fake plugin name.");
     $selected_args = unserialize(base64_decode($records[0]->arguments));
     $this->assertIsArray($selected_args,
-      "Unable to retrieve arguements after creating tripal importer record.");
+      "Unable to retrieve arguments after creating tripal importer record.");
     $this->assertEquals($expected_args, $selected_args,
-      "We did not retreive the arguements we expected.");
+      "We did not retrieve the arguments we expected.");
 
     $importerTestLoad = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
@@ -378,9 +378,9 @@ class TripalImporterBaseTest extends KernelTestBase {
     $importerTestLoad->load($import_id);
     $retrieved_args = $importerTestLoad->getArguments();
     $this->assertIsArray($retrieved_args,
-      "Unable to retrieve arguements after loading tripal importer.");
+      "Unable to retrieve arguments after loading tripal importer.");
     $this->assertEquals($expected_args, $retrieved_args,
-      "We did not retreive the arguements we expected after loading.");
+      "We did not retrieve the arguments we expected after loading.");
 
     // CASE --- Exception Expected
     // -- Load non-existant importer.
@@ -460,7 +460,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     );
     $run_args = [];
     $file_details = [];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
     $job_id = $importer->submitJob();
     $this->assertIsNumeric($job_id,
       "We expected to have a tripal job_id returned from submitJob().");
@@ -470,7 +470,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $importer->setJob($job);
 
     // CASE --- Exception Expected
-    // submit job when import not yet created.
+    // submit job when import job not yet created.
     $configuration = [];
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
@@ -516,13 +516,13 @@ class TripalImporterBaseTest extends KernelTestBase {
     );
     $run_args = [];
     $file_details = ['file_remote' => $test_file_path];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now try to prepare the file.
     $importer->prepareFiles();
     $retrieved_args = $importer->getArguments();
     $this->assertIsArray($retrieved_args,
-      "We could not retrieve arguements after preparing files");
+      "We could not retrieve arguments after preparing files");
     $this->assertArrayHasKey('file_path', $retrieved_args['files'][0],
       "The file_path should have been set during prepareFiles().");
 
@@ -543,13 +543,13 @@ class TripalImporterBaseTest extends KernelTestBase {
     );
     $run_args = [];
     $file_details = ['file_remote' => $test_file_path];
-    $import_id = $importer->create($run_args, $file_details);
+    $import_id = $importer->createImportJob($run_args, $file_details);
 
     // Now try to prepare the file.
     $importer->prepareFiles();
     $retrieved_args = $importer->getArguments();
     $this->assertIsArray($retrieved_args,
-      "We could not retrieve arguements after preparing files");
+      "We could not retrieve arguments after preparing files");
     $this->assertArrayHasKey('file_path', $retrieved_args['files'][0],
       "The file_path should have been set during prepareFiles().");
 

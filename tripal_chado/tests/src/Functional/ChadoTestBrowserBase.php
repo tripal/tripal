@@ -6,7 +6,7 @@ use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
- * This is a base class for Chado tests that need a full Drupal install..
+ * This is a base class for Chado tests that need a full Drupal install.
  *
  * It enables Chado tests schemas and helper functions to efficiently perform
  * tests.

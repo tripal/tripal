@@ -77,6 +77,15 @@ class ChadoLinkerPropertyDefault extends ChadoFieldItemBase {
     $rank_term = $mapping->getColumnTermId($prop_table, 'rank');
     $type_id_term = $mapping->getColumnTermId($prop_table, 'type_id');
 
+    // We need to create a table alias for our prop table in order to ensure
+    // values of other property types are not combined.
+    // The type used when creating the prop record will be the same as the
+    // type set for the field. As such, we grab that here and use it in our
+    // table alias.
+    $field_settings = $field_definition->getSettings();
+    $term = $field_settings['termIdSpace'] . ': ' . $field_settings['termAccession'];
+    $table_alias = $prop_table . '_' . preg_replace( '/[^a-z0-9]+/', '', strtolower( $term ) );
+
     // Create the property types.
     return [
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
@@ -90,15 +99,20 @@ class ChadoLinkerPropertyDefault extends ChadoFieldItemBase {
         'drupal_store' => TRUE,
         'chado_table' => $prop_table,
         'chado_column' => $prop_pkey_col,
+        'chado_table_alias' => $table_alias,
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  $link_term, [
         'action' => 'store_link',
-        'chado_table' => $prop_table,
-        'chado_column' => $prop_fk_col,
+        'left_table' => $base_table,
+        'left_table_id' => $base_pkey_col,
+        'right_table' => $prop_table,
+        'right_table_alias' => $table_alias,
+        'right_table_id' => $prop_fk_col,
       ]),
       new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'chado_table' => $prop_table,
+        'chado_table_alias' => $table_alias,
         'chado_column' => 'value',
         'delete_if_empty' => TRUE,
         'empty_value' => ''
@@ -106,11 +120,13 @@ class ChadoLinkerPropertyDefault extends ChadoFieldItemBase {
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank', $rank_term,  [
         'action' => 'store',
         'chado_table' => $prop_table,
+        'chado_table_alias' => $table_alias,
         'chado_column' => 'rank'
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
         'action' => 'store',
         'chado_table' => $prop_table,
+        'chado_table_alias' => $table_alias,
         'chado_column' => 'type_id'
       ]),
     ];

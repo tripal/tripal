@@ -11,7 +11,7 @@ use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\field\Entity\FieldConfig;
 use Symfony\Component\Routing\Route;
-
+use Drupal\tripal\TripalField\TripalFieldItemBase;
 
 /**
  * Defines the Tripal Content entity.
@@ -129,12 +129,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
     }
 
-    // If no title was supplied then we should try to generate one using the
-    // default format set by admins.
-    // @todo figure out how to override the title while still allowing
-    //   tokenized titles to be updated on edit.
     $title = $bundle->getTitleFormat();
-    $title = $this->replaceTokens($title, ['tripal_entity_type' => $bundle]);
+    $title = $this->replaceTokens($title, $bundle);
 
     $this->title = $title;
   }
@@ -165,8 +161,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
       $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
       $path_alias = $bundle->getURLFormat();
-      $path_alias = $this->replaceTokens($path_alias,
-        ['tripal_entity_type' => $bundle]);
+      $path_alias = $this->replaceTokens($path_alias, $bundle);
     }
 
     // Ensure there is a leading slash.
@@ -253,126 +248,37 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Replaces tokens in a given tokens in URL Aliases and Titles.
+   *
+   * @param string $string
+   *   The string to replace.
+   * @param array $cache
    */
-  public function replaceTokens($string, $cache = []) {
+  protected function replaceTokens($string, $bundle) {
 
-    // Pull any items out of the cache.
-    if (isset($cache['bundle'])) {
-      $bundle_entity = $cache['bundle'];
-    }
-    else {
-      $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
-    }
-
-    // Determine which tokens were used in the format string
-    $used_tokens = [];
-    if (preg_match_all('/\[.*?\]/', $string, $matches)) {
-      $used_tokens = $matches[0];
-    }
-
-    // If there are no tokens then just return the string.
-    if (count($used_tokens) == 0) {
-      return $string;
-    }
-
-    // @todo UPGRADE THIS CODE ONCE TRIPAL FIELDS HAVE BEEN ADDED
-    //
-    // If the fields are not loaded for the entity then we want to load them
-    // but we won't do a field_attach_load() as that will load all of the
-    // fields. For syncing (publishing) of content loading all fields for
-    // all synced entities causes extreme slowness, so we'll only attach
-    // the necessary fields for replacing tokens.
-    // $attach_fields = [];
-    //
-    // foreach ($used_tokens as $token) {
-    //   $token = preg_replace('/[\[\]]/', '', $token);
-    //   $elements = explode(',', $token);
-    //   $field_name = array_shift($elements);
-    //
-    //   if (!property_exists($entity, $field_name) or empty($entity->{$field_name})) {
-    //     $field = field_info_field($field_name);
-    //     $storage = $field['storage'];
-    //     $attach_fields[$storage['type']]['storage'] = $storage;
-    //     $attach_fields[$storage['type']]['fields'][] = $field;
-    //   }
-    // }
-    //
-    // // If we have any fields that need attaching, then do so now.
-    // if (count(array_keys($attach_fields)) > 0) {
-    //   foreach ($attach_fields as $storage_type => $details) {
-    //     $field_ids = [];
-    //     $storage = $details['storage'];
-    //     $fields = $details['fields'];
-    //     foreach ($fields as $field) {
-    //       $field_ids[$field['id']] = [$entity->id];
-    //     }
-    //     $entities = [$entity->id => $entity];
-    //     module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
-    //       $entities, FIELD_LOAD_CURRENT, $field_ids, []);
-    //   }
-    // }
-
-    // Now that all necessary fields are attached process the tokens.
-    foreach ($used_tokens as $token) {
-      $token = preg_replace('/[\[\]]/', '', $token);
-      $elements = explode(',', $token);
-      $field_name = array_shift($elements);
-      $value = '';
-
-      // The TripalBundle__bundle_id is a special token for substituting the
-      // bundle id.
-      if ($token === 'TripalBundle__bundle_id') {
-        // This token should be the id of the TripalBundle.
-        $value = $bundle_entity->getID();
-      }
-      // The TripalBundle__bundle_id is a special token for substituting the
-      // entity id.
-      elseif ($token === 'TripalEntity__entity_id') {
-        // This token should be the id of the TripalEntity.
-        $value = $this->getID();
-      }
-      elseif ($token == 'TripalEntityType__label') {
-        $value = $bundle_entity->getLabel();
-      }
-      else {
-        $value_obj = $this->get($field_name);
-        if ($value_obj) {
-          // A field may have multiple properties. We should use the
-          // main property key for the field when replacing the value.
-          $field_type = $this->getFieldDefinition($field_name)->getType();
-          $field_types = \Drupal::service('plugin.manager.field.field_type');
-          $field_type_def = $field_types->getDefinition($field_type);
-          $field_class = $field_type_def['class'];
-          $main_key = $field_class::mainPropertyName();
-
-          // Get the value if the property has one.
-          $value_raw = $value_obj->getValue();
-          $value = '';
-          if (array_key_exists($main_key, $value_raw[0])) {
-            $value = $value_raw[0][$main_key];
-          }
-
-          // If the value is an array it means we have sub elements and we can
-          // descend through the array to look for matching value.
-          if (is_array($value) and count($elements) > 0) {
-            // @todo we still need to handle this case.
-            $value = '';
-            //$value = _tripal_replace_entity_tokens_for_elements($elements, $value);
-          }
+    // Intiailze the Tripal token parser service.
+    /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
+    $token_parser = \Drupal::service('tripal.token_parser');
+    $token_parser->initParser($bundle, $this);
+    $field_defs = $this->getFieldDefinitions();
+    foreach ($field_defs as $field_name => $field_def) {
+      /** @var \Drupal\Core\Field\FieldItemList $items **/
+      $items = $this->get($field_name);
+      if ($items->count() == 1) {
+        /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem  $item **/
+        /** @var \Drupal\Core\TypedData\TypedDataInterface $prop **/
+        $item = $items->get(0);
+        if (! $item instanceof TripalFieldItemBase) {
+          continue;
+        }
+        $props = $item->getProperties();
+        foreach ($props as $prop) {
+          $token_parser->addFieldValue($field_name, $prop->getName(), $prop->getValue());
         }
       }
-
-      // We can't support tokens that have multiple elements (i.e. in an array).
-      if (is_array($value)) {
-        $string = str_replace('[' . $token . ']', '', $string);
-      }
-      else {
-        $string = str_replace('[' . $token . ']', $value ?? '', $string);
-      }
     }
-
-    return trim($string);
+    $replaced = $token_parser->replaceTokens([$string]);
+    return $replaced[0];
   }
 
   /**
@@ -578,7 +484,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     // Set the property values that should be saved in Drupal, everything
-    // else will stay in the underlying data store (e.g. Chado)..
+    // else will stay in the underlying data store (e.g. Chado).
     $delta_remove = [];
     $fields = $this->getFields();
     foreach ($fields as $field_name => $items) {

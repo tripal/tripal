@@ -60,7 +60,7 @@ class TripalImporterForm implements FormInterface {
 
       $form['file']['upload_description'] = [
         '#type' => 'markup',
-        '#markup' => $importer_def['upload_description'] . ' The following file extensions are supported: ' . implode(', ', $importer_def['file_types']) . '.',
+        '#markup' => $importer->describeUploadFileFormat(),
       ];
     }
 
@@ -127,12 +127,30 @@ class TripalImporterForm implements FormInterface {
       $form = array_merge($form, $importer_form);
     }
 
+    // We should only add a submit button if this importer uses a button.
+    // Examples of importers who don't use this button are multi-page forms.
+    if (array_key_exists('use_button', $importer_def) AND $importer_def['use_button'] !== FALSE) {
 
-    $form['button'] = [
-      '#type' => 'submit',
-      '#value' => $importer_def['button_text'],
-      '#weight' => 10,
-    ];
+      // We will allow specific importers to disable this button based on the state of the form.
+      // By default it is enabled.
+      $disabled = FALSE;
+      // Unless the annotation says it should be disabled by default..
+      if (array_key_exists('submit_disabled', $importer_def) AND $importer_def['submit_disabled'] === TRUE) {
+        $disabled = TRUE;
+      }
+      // But if they set the storage to indicate we should disable/enable it
+      // then we will do whatever they say ;-).
+      $storage = $form_state->getStorage();
+      if (array_key_exists('disable_TripalImporter_submit', $storage)) {
+        $disabled = $storage['disable_TripalImporter_submit'];
+      }
+      $form['button'] = [
+        '#type' => 'submit',
+        '#value' => $importer_def['button_text'],
+        '#weight' => 10,
+        '#disabled' => $disabled,
+      ];
+    }
 
     return $form;
   }
@@ -151,6 +169,23 @@ class TripalImporterForm implements FormInterface {
     $importer_manager = \Drupal::service('tripal.importer');
     $importer = $importer_manager->createInstance($plugin_id);
     $importer_def = $importer_manager->getDefinitions()[$plugin_id];
+
+    // Now allow the loader to do its own submit if needed.
+    try {
+      $importer->formSubmit($form, $form_state);
+      // Ensure any modifications made by the importer are used.
+      $form_values = $form_state->getValues();
+      $run_args = $form_values;
+    }
+    catch (\Exception $e) {
+        \Drupal::messenger()->addMessage('Cannot submit import: ' . $e->getMessage(), 'error');
+    }
+
+    // If the importer wants to rebuild the form for some reason then let's
+    // not add a job.
+    if ($form_state->isRebuilding() == TRUE) {
+      return;
+    }
 
     // Remove the file_local and file_upload args. We'll add in a new
     // full file path and the fid instead.
@@ -200,23 +235,8 @@ class TripalImporterForm implements FormInterface {
       $file_details['file_remote'] = $file_remote;
     }
     try {
-      // Now allow the loader to do its own submit if needed.
-      $importer->formSubmit($form, $form_state);
-      // If the formSubmit made changes to the $form_state we need to update the
-      // $run_args info.
-      if ($run_args !== $form_values) {
-        $run_args = $form_values;
-      }
-
-      // If the importer wants to rebuild the form for some reason then let's
-      // not add a job.
-      if ($form_state->isRebuilding() == TRUE) {
-        return;
-      }
-
-      $importer->create($run_args, $file_details);
+      $importer->createImportJob($run_args, $file_details);
       $importer->submitJob();
-
     }
     catch (\Exception $e) {
         \Drupal::messenger()->addMessage('Cannot submit import: ' . $e->getMessage(), 'error');
@@ -256,8 +276,8 @@ class TripalImporterForm implements FormInterface {
 
     // How many methods were specified for the source of the file?
     $n_methods = ($file_local?1:0) + ($file_remote?1:0) + (($file_upload or $file_existing)?1:0);
-    // The user must provide at least one file source method.
-    if ($n_methods == 0) {
+    // If a file is required, the user must provide at least one file source method.
+    if (array_key_exists('file_required', $importer_def) and ($importer_def['file_required'] == TRUE) and ($n_methods == 0)) {
       $form_state->setErrorByName('file_local', t('You must provide a file location or upload a file.'));
     }
     // No more than one method can be specified.

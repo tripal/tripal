@@ -139,7 +139,7 @@ tables:
             -   name: 'value'
                 term_id: 'NCIT:C25712'
                 term_name: 'Value'
-                
+
     -   name: 'analysisprop'
         columns:
             -   name: 'analysis_id'
@@ -268,6 +268,9 @@ tables:
             -   name: 'value'
                 term_id: 'NCIT:C25712'
                 term_name: 'Value'
+            -   name: 'arraydesign_id'
+                term_id: 'EFO:0000269'
+                term_name: 'array design'
 
     -   name: 'assay'
         columns:
@@ -2504,6 +2507,9 @@ tables:
             -   name: 'rank'
                 term_id: 'OBCS:0000117'
                 term_name: 'rank order'
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
 
     -   name: 'stock_cvtermprop'
         columns:
@@ -2525,6 +2531,9 @@ tables:
             -   name: 'is_current'
                 term_id: 'local:is_current'
                 term_name: 'is_current'
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
 
     -   name: 'stock_dbxrefprop'
         columns:
@@ -2549,6 +2558,9 @@ tables:
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
 
     -   name: 'stock_featuremap'
         columns:
@@ -2558,30 +2570,39 @@ tables:
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
 
     -   name: 'stock_genotype'
         columns:
             -   name: 'genotype_id'
                 term_id: 'NCIT:C16631'
                 term_name: 'Genotype'
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
 
     -   name: 'stock_library'
         columns:
             -   name: 'library_id'
                 term_id: 'local:library'
                 term_name: 'Library'
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
 
     -   name: 'stockprop'
         columns:
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
             -   name: 'rank'
                 term_id: 'OBCS:0000117'
                 term_name: 'rank order'
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
-
-    -   name: 'stockprop'
-        columns:
             -   name: 'value'
                 term_id: 'NCIT:C25712'
                 term_name: 'Value'

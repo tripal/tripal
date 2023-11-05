@@ -96,7 +96,7 @@ class FASTAImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/fasta_loader/Citrus_sinensis-orange1.1g015632m.g.fasta',
     ];
 
-    $fasta_importer->create($run_args, $file_details);
+    $fasta_importer->createImportJob($run_args, $file_details);
     $fasta_importer->prepareFiles();
     $fasta_importer->run();
     $fasta_importer->postRun();
@@ -168,7 +168,7 @@ class FASTAImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/fasta_loader/Citrus_sinensis-scaffold00001-trimmed.fasta',
     ];
 
-    $fasta_importer->create($run_args, $file_details);
+    $fasta_importer->createImportJob($run_args, $file_details);
     $fasta_importer->prepareFiles();
     $fasta_importer->run();
     $fasta_importer->postRun();

@@ -157,19 +157,19 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
     // This field needs the term name, idspace and accession for proper
     // display of the type.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', $name_term, 128, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id',
       'chado_column' => 'name',
       'as' => 'term_name'
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'id_space', $idspace_term, 128, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
       'chado_column' => 'name',
       'as' => 'idSpace'
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'accession', $accession_term, 128, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id',
       'chado_column' => 'accession',
       'as' => 'accession'

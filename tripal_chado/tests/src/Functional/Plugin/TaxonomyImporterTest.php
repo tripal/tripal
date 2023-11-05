@@ -64,7 +64,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase
       // 'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/small_gene.gff',
     ];
 
-    $taxonomy_importer->create($run_args, $file_details);
+    $taxonomy_importer->createImportJob($run_args, $file_details);
     $taxonomy_importer->prepareFiles();
     $taxonomy_importer->run();
     $taxonomy_importer->postRun();

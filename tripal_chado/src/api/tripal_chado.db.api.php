@@ -161,7 +161,7 @@ function chado_get_db_select_options($schema_name = NULL) {
 
   $dbs = chado_query(
     "SELECT db_id, name FROM {db} ORDER BY name",
-    [], // Arguements.
+    [], // Arguments.
     [], // Options.
     $schema_name
   );

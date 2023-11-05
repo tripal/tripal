@@ -182,7 +182,7 @@ class ChadoFieldDebugger {
      * We would like to complete print out the query with subbed in parameters
      * but it's driving me crazy.
      *
-     * Usually we would use $query->arguments() to get the arguements with
+     * Usually we would use $query->arguments() to get the arguments with
      * placeholders but there are a number of bugs here:
      *  - in Drupal 10 $insertQuery->arguments() provides a scope error.
      *  - $updateQuery->arguments() only provides the conditional arguments,

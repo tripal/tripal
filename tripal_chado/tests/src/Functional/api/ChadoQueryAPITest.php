@@ -53,12 +53,12 @@ class ChadoQueryAPITest extends BrowserTestBase {
 		$dbq = chado_query($sql, $args);
 		$this->assertEquals(FALSE, $dbq);
 
-		// -- Arguements must be an array.
+		// -- Arguments must be an array.
 		$sql = $args = 'SELECT * FROM {organism}';
 		$dbq = chado_query($sql, $args);
 		$this->assertEquals(FALSE, $dbq);
 
-		// -- Arguements should be in the SQL string.
+		// -- Arguments should be in the SQL string.
 		$sql = 'SELECT * FROM {organism} WHERE genus=:genus';
 		$args = [':genus' => 'Tripalus', ':species' => 'databasica'];
 		$dbq = chado_query($sql, $args);

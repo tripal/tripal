@@ -125,7 +125,7 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
       'chado_column' => $base_fkey_col,
     ]);
     $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_name', $analysis_name_term, $analysis_name_length, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $base_table . '.' . $base_fkey_col . '>analysis.analysis_id',
       'chado_column' => 'name',
       'as' => 'analysis_name',
