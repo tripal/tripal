@@ -55,6 +55,29 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
   }
 
   /**
+   * Retrieve a list of Tripal Entity Collections.
+   */
+  public function getTypeCollections() {
+
+    $config_factory = \Drupal::service('config.factory');
+    $config_list = $config_factory->listAll('tripal.tripalentitytype_collection');
+
+    $collections = [];
+    foreach ($config_list as $config_item) {
+      $config = $config_factory->get($config_item);
+      $label = $config->get('label');
+      $id = $config->get('id');
+      $collections[$id] = [
+        'id' => $id,
+        'label' => $config->get('label'),
+        'description' => $config->get('description'),
+      ];
+    }
+
+    return $collections;
+  }
+
+  /**
    * Installs content types using all appropriate YAML files.
    *
    * The YAML config file prefix is tripal.tripalentitytype_collection.*
