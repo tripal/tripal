@@ -557,7 +557,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         while (($retries > 0) and (!$rfh)) {
           $start = microtime(TRUE);
           // Get the search response from NCBI.
-          $rfh = fopen($search_url, "r");
+          $rfh = @fopen($search_url, "r");
           // If error, delay then retry
           if ((!$rfh) and ($retries)) {
             $this->logger->warning("Error contacting NCBI to look up @sci_name, will retry",
@@ -810,7 +810,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $retries = 3;
     while (($retries > 0) and (!$rfh)) {
       $start = microtime(TRUE);
-      $rfh = fopen($fetch_url, "r");
+      $rfh = @fopen($fetch_url, "r");
       if ($rfh) {
         $xml_text = '';
         while (!feof($rfh)) {
