@@ -497,6 +497,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
         $delta = $item->getName();
         $tsid = $item->tripalStorageId();
+
         // If the Tripal Storage Backend is not set on a Tripal-based field,
         // we will log an error and not support the field. If developers want
         // to use Drupal storage for a Tripal-based field then they need to
