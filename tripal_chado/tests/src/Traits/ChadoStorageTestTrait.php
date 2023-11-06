@@ -212,10 +212,8 @@ trait ChadoStorageTestTrait {
    *   ]
    */
   protected function chadoStorageTestInsertValues(array $values) {
-print "CP301 values="; var_dump($values); //@@@
     // Get the list of fields we are testing from the values array.
     $field_names = array_keys($values);
-print "CP302 field_names="; var_dump($field_names); //@@@
 
     // Count total number of properties expected for the fields in the
     // values array we are testing.
@@ -231,27 +229,21 @@ print "CP302 field_names="; var_dump($field_names); //@@@
       $expected_property_counts['total'] += count($this->fields[$field_name]['properties']);
       $expected_property_counts[$field_name] = count($this->fields[$field_name]['properties']);
     }
-print "CP303 expected_property_counts="; var_dump($expected_property_counts); //@@@
 
     // Create the property types based on our fields array.
     $this->createPropertyTypes($field_names, $expected_property_counts);
-print "CP304"; //@@@
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
 
-print "CP305"; //@@@
     // Create the property values + format them for testing with *Values methods.
     $this->createDataStoreValues($field_names, $values);
 
-print "CP306"; //@@@
     // Set the values in the propertyValue objects.
     $this->setExpectedValues($field_names, $values);
 
     // $this->debugChadoStorageTestTraitArrays();
 
-print "CP307 this->dataStoreValues="; var_dump($this->dataStoreValues); //@@@
     $success = $this->chadoStorage->insertValues($this->dataStoreValues);
-print "CP308"; //@@@
     $this->assertTrue($success, 'We were not able to insert the data.');
   }
 
@@ -333,7 +325,6 @@ print "CP308"; //@@@
     $this->createPropertyTypes($field_names, $expected_property_counts);
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
-
 
     // Create the property values + format them for testing with *Values methods.
     $this->createDataStoreValues($field_names, $values);
@@ -619,7 +610,6 @@ print "CP308"; //@@@
       $this->chadoStorage->addTypes($field_name, $properties);
     }
     $retrieved_types = $this->chadoStorage->getTypes();
-
     $field_name_string = implode(' + ', $field_names);
     $this->assertIsArray($retrieved_types,
       "Unable to retrieve the PropertyTypes after adding $field_name_string.");
@@ -630,7 +620,7 @@ print "CP308"; //@@@
       $total_num_properties += count($retrieved_properties);
     }
     $this->assertEquals($expected_property_counts['total'], $total_num_properties,
-      "Did not revieve the expected number of PropertyTypes after adding $field_name_string.");
+      "Did not retrieve the expected number of PropertyTypes after adding $field_name_string.");
   }
 
   /**
@@ -720,7 +710,7 @@ print "CP308"; //@@@
     print "\tData Store Values:\n";
 
     foreach ($this->dataStoreValues as $field_name => $level1) {
-      print "\n\tFEILD: $field_name:\n";
+      print "\n\tFIELD: $field_name:\n";
       foreach ($level1 as $delta => $level2) {
         print "\t\tDelta: $delta\n";
         foreach ($level2 as $property_key => $level3) {
