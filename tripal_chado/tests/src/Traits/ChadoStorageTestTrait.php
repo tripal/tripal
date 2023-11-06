@@ -212,6 +212,7 @@ trait ChadoStorageTestTrait {
    *   ]
    */
   protected function chadoStorageTestInsertValues(array $values) {
+
     // Get the list of fields we are testing from the values array.
     $field_names = array_keys($values);
 
@@ -232,6 +233,7 @@ trait ChadoStorageTestTrait {
 
     // Create the property types based on our fields array.
     $this->createPropertyTypes($field_names, $expected_property_counts);
+
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
 
@@ -610,6 +612,7 @@ trait ChadoStorageTestTrait {
       $this->chadoStorage->addTypes($field_name, $properties);
     }
     $retrieved_types = $this->chadoStorage->getTypes();
+
     $field_name_string = implode(' + ', $field_names);
     $this->assertIsArray($retrieved_types,
       "Unable to retrieve the PropertyTypes after adding $field_name_string.");

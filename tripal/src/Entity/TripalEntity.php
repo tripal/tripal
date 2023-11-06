@@ -641,6 +641,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // Create a values array appropriate for `loadValues()`
     list($values, $tripal_storages) = TripalEntity::getValuesArray($this);
+
     // Iterate through the different Tripal Storage objects and run the
     // validateVales() function for the values that belong to it.
     foreach ($values as $tsid => $tsid_values) {

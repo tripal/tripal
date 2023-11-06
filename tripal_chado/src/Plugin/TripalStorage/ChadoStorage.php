@@ -888,6 +888,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
+
           // Ensure we have a value to work with.
           if (!array_key_exists('value', $info) OR !is_object($info['value'])) {
             $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the StoragePropertyValue object.',
@@ -907,6 +908,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             continue;
           }
           $action = $prop_storage_settings['action'];
+
           // Check that the base table for the field is set.
           if (!array_key_exists('base_table', $storage_plugin_settings)) {
             $this->logger->error($this->t('Cannot store the property, @field.@prop, in Chado. The field is missing the chado base table name.',
@@ -1049,6 +1051,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   the value is not set. This method is expected to check if the value is empty or not.
    */
   protected function buildChadoRecords_store_id(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
     // Get the Chado table this specific property works with.
     // Use the base table as a default for properties which do not specify
     // the chado table (e.g. single value fields).
@@ -1501,6 +1504,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       if (array_key_exists($col, $record['fields'])) {
         $col_val = $record['fields'][$col];
       }
+
       // Don't check the pkey
       if ($col == $pkey) {
         continue;
