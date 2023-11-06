@@ -551,7 +551,6 @@ class TaxonomyImporter extends ChadoImporterBase {
         if (!empty($api_key)) {
           $search_url .= "&api_key=" . $api_key;
         }
-$ffh = fopen('https://will.fail. .surely', "r");  // Try to trigger the failure but not affect loading
         $rfh = NULL;
         // Query NCBI. To accomodate occasional glitches, retry up to three times.
         $retries = 3;
@@ -807,7 +806,6 @@ $ffh = fopen('https://will.fail. .surely', "r");  // Try to trigger the failure 
 
     // Query NCBI. To accomodate occasional glitches, retry up to three times.
     $xml = FALSE;
-$ffh = fopen('https://will.fail. .surely', "r");  // Try to trigger the failure but not affect loading
     $rfh = NULL;
     $retries = 3;
     while (($retries > 0) and (!$rfh)) {
