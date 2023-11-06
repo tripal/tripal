@@ -38,6 +38,7 @@ final class ImportTripalEntityTypeCollection extends FormBase {
       '#type' => 'checkboxes',
       '#title' => 'Tripal Entity Type Collection',
       '#options' => [],
+      '#required' => TRUE,
     ];
     foreach ($collections as $id => $details) {
       $form['collection_id']['#options'][$id] = $details['label'];
@@ -59,16 +60,7 @@ final class ImportTripalEntityTypeCollection extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
-    // @todo Validate the form here.
-    // Example:
-    // @code
-    //   if (mb_strlen($form_state->getValue('message')) < 10) {
-    //     $form_state->setErrorByName(
-    //       'message',
-    //       $this->t('Message should be at least 10 characters.'),
-    //     );
-    //   }
-    // @endcode
+    // No validation needed.
   }
 
   /**
@@ -76,8 +68,24 @@ final class ImportTripalEntityTypeCollection extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
 
-    // Let them know this isn't yet implemented.
-    $this->messenger()->addStatus('This functionality has not yet been implemented.');
+    $args = [[
+      'collection_ids' => $form_state->getValue('collection_id')
+    ]];
+
+    // Get the current user for the job.
+    $current_user = \Drupal::currentUser();
+
+    // Now create the job.
+    $job_submitted = \Drupal::service('tripal.job')->create([
+      'job_name' => "Import Tripal Entity Type Collection",
+      'modulename' => 'tripal',
+      'uid' => $current_user->id(),
+      'callback' => 'import_tripalentitytype_collection',
+      'arguments' => $args,
+    ]);
+    if ($job_submitted) {
+      $this->messenger()->addStatus('Successfully submitted a Tripal Job to load these collections.');
+    }
 
     // Redirect back to the Tripal Entity Type listing.
     $form_state->setRedirect('entity.tripal_entity_type.collection');

@@ -572,3 +572,10 @@ function tripal_rebuild() {
     $view->save();
   }
 }
+
+/**
+ * Callback: Allows Tripal Jobs to create a set of TripalEntityType Collections.
+ */
+function import_tripalentitytype_collection(array $collection_ids, \Drupal\tripal\Services\TripalJob $job = NULL) {
+  print "COLLECTION IDS: " . print_r($collection_ids, TRUE);
+}
