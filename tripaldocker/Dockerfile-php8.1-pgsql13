@@ -38,7 +38,7 @@ USER postgres
 RUN    /etc/init.d/postgresql start &&\
     psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';"  \
     && createdb -O docker docker \
-    && psql --command="CREATE USER drupaladmin WITH PASSWORD 'drupal9developmentonlylocal'" \
+    && psql --command="CREATE USER drupaladmin WITH PASSWORD 'drupal10developmentonlylocal'" \
     && psql --command="ALTER USER drupaladmin WITH LOGIN" \
     && psql --command="ALTER USER drupaladmin WITH CREATEDB" \
     && psql --command="CREATE DATABASE sitedb WITH OWNER drupaladmin" \
@@ -135,8 +135,8 @@ RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 ## Environment variables used for phpunit testing.
 ENV SIMPLETEST_BASE_URL=http://localhost
-ENV SIMPLETEST_DB=pgsql://drupaladmin:drupal9developmentonlylocal@localhost/sitedb
-ENV BROWSER_OUTPUT_DIRECTORY=/var/www/drupal9/web/sites/default/files/simpletest
+ENV SIMPLETEST_DB=pgsql://drupaladmin:drupal10developmentonlylocal@localhost/sitedb
+ENV BROWSER_OUTPUT_DIRECTORY=/var/www/drupal10/web/sites/default/files/simpletest
 ENV COMPOSER_MEMORY_LIMIT=-1
 ENV COMPOSER_NO_INTERACTION=1
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -150,8 +150,8 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 WORKDIR /var/www
 ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit"
 ARG composerpackages="drupal/devel drupal/devel_php"
-RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal9 \
-  && cd drupal9 \
+RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal10 \
+  && cd drupal10 \
   && composer config --no-plugins allow-plugins.composer/installers true \
   && composer config --no-plugins allow-plugins.drupal/core-composer-scaffold true \
   && composer config --no-plugins allow-plugins.drupal/core-project-message true \
@@ -161,19 +161,19 @@ RUN composer create-project drupal/recommended-project:${drupalversion} --stabil
   && composer install
 
 ## Set files directory permissions
-RUN mkdir /var/www/drupal9/web/sites/default/files \
-  && mkdir /var/www/drupal9/web/sites/default/files/simpletest \
-  && chown -R www-data:www-data /var/www/drupal9 \
-  && chmod 02775 -R /var/www/drupal9/web/sites/default/files \
+RUN mkdir /var/www/drupal10/web/sites/default/files \
+  && mkdir /var/www/drupal10/web/sites/default/files/simpletest \
+  && chown -R www-data:www-data /var/www/drupal10 \
+  && chmod 02775 -R /var/www/drupal10/web/sites/default/files \
   && usermod -g www-data root
 
 ## Install Drupal.
-RUN cd /var/www/drupal9 \
+RUN cd /var/www/drupal10 \
   && service apache2 start \
   && service postgresql start \
   && sleep 30 \
-  && /var/www/drupal9/vendor/drush/drush/drush site-install standard \
-  --db-url=pgsql://drupaladmin:drupal9developmentonlylocal@localhost/sitedb \
+  && /var/www/drupal10/vendor/drush/drush/drush site-install standard \
+  --db-url=pgsql://drupaladmin:drupal10developmentonlylocal@localhost/sitedb \
   --account-mail="drupaladmin@localhost" \
   --account-name=drupaladmin \
   --account-pass=some_admin_password \
@@ -184,12 +184,12 @@ RUN cd /var/www/drupal9 \
 
 ############# Tripal ##########################################################
 
-WORKDIR /var/www/drupal9
+WORKDIR /var/www/drupal10
 RUN service apache2 start \
   && service postgresql start \
   && sleep 30 \
-  && mkdir -p /var/www/drupal9/web/modules/contrib \
-  && cp -R /app /var/www/drupal9/web/modules/contrib/tripal \
+  && mkdir -p /var/www/drupal10/web/modules/contrib \
+  && cp -R /app /var/www/drupal10/web/modules/contrib/tripal \
   && vendor/bin/drush en tripal tripal_biodb tripal_chado ${modules} -y \
   && if [ "$installchado" = "TRUE" ]; then \
     vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
@@ -203,18 +203,18 @@ RUN service apache2 start \
 ## Configuration files & Activation script
 RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
   && mv /app/tripaldocker/default_files/000-default.conf /etc/apache2/sites-available/000-default.conf \
-  && echo "\$settings['trusted_host_patterns'] = [ '^localhost$', '^127\.0\.0\.1$', \$_SERVER['SERVER_NAME'] ];" >> /var/www/drupal9/web/sites/default/settings.php \
+  && echo "\$settings['trusted_host_patterns'] = [ '^localhost$', '^127\.0\.0\.1$', \$_SERVER['SERVER_NAME'] ];" >> /var/www/drupal10/web/sites/default/settings.php \
   && mv /app/tripaldocker/init_scripts/init.sh /usr/bin/init.sh \
   && chmod +x /usr/bin/init.sh \
   && mv /app/tripaldocker/default_files/xdebug/xdebug_toggle.sh /usr/bin/xdebug_toggle.sh \
-  && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal9/web/sites/default/settings.php
+  && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal10/web/sites/default/settings.php
 
 ## Make global commands.
-RUN ln -s /var/www/drupal9/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
-  && ln -s /var/www/drupal9/vendor/drush/drush/drush /usr/local/bin/
+RUN ln -s /var/www/drupal10/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
+  && ln -s /var/www/drupal10/vendor/drush/drush/drush /usr/local/bin/
 
 ## Set the working directory to DRUPAL_ROOT
-WORKDIR /var/www/drupal9/web
+WORKDIR /var/www/drupal10/web
 
 ## Expose http, xdebug and psql port
 EXPOSE 80 5432 9003
