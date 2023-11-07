@@ -1,4 +1,3 @@
-
 name: PHPUnit Matrixed
 on:
   push:
@@ -39,19 +38,19 @@ jobs:
       - name: Spin up Local Docker
         run: |
           docker run --publish=80:80 --name=tripaldocker -tid \
-            --volume=`pwd`:/var/www/drupal10/web/modules/contrib/tripal \
+            --volume=`pwd`:/var/www/drupal/web/modules/contrib/tripal \
             tripaldocker:localdocker
           docker exec tripaldocker service postgresql restart
       # Runs the PHPUnit tests.
       - name: Run PHPUnit Tests
         env:
           SIMPLETEST_BASE_URL: "http://localhost"
-          SIMPLETEST_DB: "pgsql://drupaladmin:drupal10developmentonlylocal@localhost/sitedb"
-          BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal10/web/sites/default/files/simpletest"
+          SIMPLETEST_DB: "pgsql://drupaladmin:drupaldevelopmentonlylocal@localhost/sitedb"
+          BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal/web/sites/default/files/simpletest"
         run: |
           docker exec tripaldocker service postgresql restart
           docker exec -e SIMPLETEST_BASE_URL=$SIMPLETEST_BASE_URL \
             -e SIMPLETEST_DB=$SIMPLETEST_DB \
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
-            --workdir=/var/www/drupal10/web/modules/contrib/tripal \
+            --workdir=/var/www/drupal/web/modules/contrib/tripal \
             tripaldocker phpunit
