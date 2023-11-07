@@ -73,7 +73,7 @@ class ChadoSequenceLengthDefault extends ChadoFieldItemBase {
         'chado_column' => 'feature_id'
     ]);
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
-      'action' => 'store',
+      'action' => 'read_value',
       'chado_column' => 'seqlen',
       'chado_table' => 'feature'
     ]);
