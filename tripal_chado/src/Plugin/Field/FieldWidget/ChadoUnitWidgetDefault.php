@@ -60,5 +60,18 @@ class ChadoUnitWidgetDefault extends ChadoWidgetBase {
 
     return $elements;
   }  
+  
+  /**
+   * {@inheritDoc}
+   */
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    // Remove any empty values that don't have a unit type
+     foreach ($values as $delta => $item) {
+       if ($item['unittype_id'] == '') {
+         unset($values[$delta]);
+       }
+     }
+     return $values;
+   }
 
 }
