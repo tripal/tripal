@@ -74,7 +74,7 @@ class TripalEntityTest extends KernelTestBase {
     // Validate our values.
     $violations = $entity->validate();
     $this->assertEmpty($violations,
-      "We should noy have had any violations");
+      "We should not have had any violations");
 
     // Finally Save it. This should call preSave() and Save().
     $entity_id = $entity->save();
