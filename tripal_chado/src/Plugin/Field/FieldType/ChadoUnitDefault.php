@@ -57,9 +57,6 @@ class ChadoUnitDefault extends ChadoFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
 
-    $ftmap_def = $schema->getTableDef('featuremap', ['format' => 'Drupal']);
-    $ftmap_name_len = $ftmap_def['fields']['name']['size'];
-
     $cvterm_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
     $cv_name_len = $cvterm_def['fields']['name']['size'];
 
@@ -75,16 +72,12 @@ class ChadoUnitDefault extends ChadoFieldItemBase {
         ])
       ];
     }
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
 
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $record_id_term = $mapping->getColumnTermId('featuremap', 'featuremap_id');
     $unittype_id_term = $mapping->getColumnTermId( 'featuremap', 'unittype_id' ) ;    
-    $ftmap_name_term = $mapping->getColumnTermId('featuremap', 'name');
     $cv_name_term = $mapping->getColumnTermId('cvterm', 'name');
-    $cvterm_id_term = $mapping->getColumnTermId( 'cvterm', 'cvterm_id' ) ;    
 
     $properties = [];
 

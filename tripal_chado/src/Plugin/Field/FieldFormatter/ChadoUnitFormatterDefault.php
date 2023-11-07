@@ -10,8 +10,8 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *
  * @FieldFormatter(
  *   id = "chado_unit_formatter_default",
- *   label = @Translation("Chado Unit Formatter"),
- *   description = @Translation("The default unit widget which allows curators to enter unit on the Gene Map content edit page."),
+ *   label = @Translation("Chado unit type formatter"),
+ *   description = @Translation("A Chado unit type formatter."),
  *   field_types = {
  *     "chado_unit_default"
  *   }
@@ -27,7 +27,6 @@ class ChadoUnitFormatterDefault extends ChadoFormatterBase {
     $elements = [];
     foreach($items as $delta => $item) {
       $elements[$delta] = [
-        // "#markup" => $item->get('unittype_id')->getString()
         "#markup" => $item->get('cv_name')->getString()
       ];
     }

@@ -25,21 +25,18 @@ class ChadoUnitWidgetDefault extends ChadoWidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state)  {
 
     $unit_vals = [];
-    $unittype_ids = [];
-    $unittype_names = [];
      
     $chado = \Drupal::service('tripal_chado.database');
-    if ( 1 == 1 ) {
-      $unit_vals = [];
-      $query = $chado->select( 'cvterm', 'cvt' );
-      $query->addField( 'cvt', 'name', 'cvt_name' );
-      $query->addField( 'cvt', 'cvterm_id', 'unittype_id' );
-      $query->condition('cvt.cv_id', 23, '=');
-      $results = $query->execute();
 
-      while ( $unit_rec = $results->fetchObject() ) {
-        $unit_vals[$unit_rec->unittype_id] = $unit_rec->cvt_name;
-      }
+    $query = $chado->select( 'cvterm', 'cvt' );
+    $query->leftJoin ('cv', 'cv', 'cvt.cv_id = cv.cv_id ');
+    $query->addField( 'cvt', 'name', 'cvt_name' );
+    $query->addField( 'cvt', 'cvterm_id', 'unittype_id' );
+    $query->condition('cv.name', 'featuremap_units', '=');
+    $results = $query->execute();
+
+    while ( $unit_rec = $results->fetchObject() ) {
+      $unit_vals[$unit_rec->unittype_id] = $unit_rec->cvt_name;
     }
 
     $item_vals = $items[$delta]->getValue() ;
@@ -58,7 +55,6 @@ class ChadoUnitWidgetDefault extends ChadoWidgetBase {
       '#description' =>  t("Select map unit from dropdown."),
       '#options' => $unit_vals,
       '#default_value' => $unittype_id,
-      '#placeholder' => $this->getSetting('placeholder'),
       '#empty_option' => '-- Select --',
     ];
 
