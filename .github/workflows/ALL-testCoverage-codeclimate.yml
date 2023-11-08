@@ -1,6 +1,9 @@
 # Run some PHPUnit tests
 name: Test Coverage on Drupal 10.1.x-dev + PHP 8.1
-on: [push]
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize]
 
 # Define jobs that are part of the workflow
 jobs:
