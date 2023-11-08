@@ -57,8 +57,8 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
   public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
     // CV Term is 'Communication Contact'
-    $settings['termIdSpace'] = 'TCONTACT';
-    $settings['termAccession'] = '0000018';
+    $settings['termIdSpace'] = 'NCIT';
+    $settings['termAccession'] = 'C47594';
     return $settings;
   }
 
