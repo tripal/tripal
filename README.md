@@ -1,6 +1,6 @@
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
-# Tripal 4 (Drupal 9 + 10)
+# Tripal 4 (Drupal 10)
 
                    _   _                 _____                 _                                  _
          /\       | | (_)               |  __ \               | |                                | |
@@ -18,22 +18,16 @@
 
 ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success)
 
-| Drupal      | 9.4.x           | 9.5.x           | 10.0.x          | 10.1.x          |
-|-------------|-----------------|-----------------|-----------------|-----------------|
-| **PHP 8.0** | ![Grid1A-Badge] | ![Grid1B-Badge] |                 |                 |
-| **PHP 8.1** | ![Grid2A-Badge] | ![Grid2B-Badge] | ![Grid2C-Badge] | ![Grid2D-Badge] |
-| **PHP 8.2** |                 |                 | ![Grid3C-Badge] | ![Grid3D-Badge] |
+| Drupal      | 10.0.x          | 10.1.x          |
+|-------------|-----------------|-----------------|
+| **PHP 8.1** | ![Grid1A-Badge] | ![Grid1B-Badge] |
+| **PHP 8.2** | ![Grid2A-Badge] | ![Grid2B-Badge] |
 
-[Grid1A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.0_D9_4x.yml/badge.svg
-[Grid1B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.0_D9_5x.yml/badge.svg
+[Grid1A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml/badge.svg
+[Grid1B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_1x.yml/badge.svg
 
-[Grid2A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D9_4x.yml/badge.svg
-[Grid2B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D9_5x.yml/badge.svg
-[Grid2C-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml/badge.svg
-[Grid2D-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_1x.yml/badge.svg
-
-[Grid3C-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_0x.yml/badge.svg
-[Grid3D-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_1x.yml/badge.svg
+[Grid2A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_0x.yml/badge.svg
+[Grid2B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_1x.yml/badge.svg
 
 ### Code Coverage
 
@@ -63,7 +57,7 @@ This project uses Code Climate to determine the quality of our codebase and the 
 
 ## How to get involved!
 
-This upgrade to Drupal 9 is a community effort. As such, we NEED YOUR HELP!
+This upgrade to Drupal 10 is a community effort. As such, we NEED YOUR HELP!
 
   - To get involved, please join [our Tripal Slack](http://tripal.info/join/slack) and comment in the #core-dev channel.
     - Alternatively, feel free to contact Lacey-Anne Sanderson through Slack direct message.

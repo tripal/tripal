@@ -44,8 +44,8 @@
     <!-- Example SIMPLETEST_BASE_URL value: http://localhost -->
     <env name="SIMPLETEST_BASE_URL" value="http://localhost"/>
     <!-- Example SIMPLETEST_DB value: mysql://username:password@localhost/databasename#table_prefix -->
-    <env name="SIMPLETEST_DB" value="pgsql://drupaladmin:drupal9developmentonlylocal@localhost/sitedb"/>
-    <!-- Example BROWSERTEST_OUTPUT_DIRECTORY value: /var/www/drupal9/web/sites/default/files/simpletest -->
+    <env name="SIMPLETEST_DB" value="pgsql://drupaladmin:drupaldevelopmentonlylocal@localhost/sitedb"/>
+    <!-- Example BROWSERTEST_OUTPUT_DIRECTORY value: /var/www/drupal/web/sites/default/files/simpletest -->
     <env name="BROWSERTEST_OUTPUT_DIRECTORY" value=""/>
     <!-- To have browsertest output use an alternative base URL. For example if
      SIMPLETEST_BASE_URL is an internal DDEV URL, you can set this to the
