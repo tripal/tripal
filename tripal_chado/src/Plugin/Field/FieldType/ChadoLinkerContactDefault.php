@@ -137,6 +137,9 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
         }
       }
     }
+    else {
+      $linker_right_term = $mapping->getColumnTermId($base_table, $linker_right_col);
+    }
 
     $properties = [];
 
@@ -277,7 +280,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       '#type' => 'select',
       '#title' => t('Chado Linker Table'),
       '#description' => t('Select the table that links the selected base table to the linked table. ' .
-        'If the base table includes the link as a column, then this will not be applicable. ' .
+        'If the base table includes the link as a column, then this will reference the base table. ' .
         'When a linker table is used, the table name is typically a ' .
         'combination of the two table names, but they might be in either order. ' .
         'Generally this select will have only one option, unless a module has added additional custom linker tables. ' .
