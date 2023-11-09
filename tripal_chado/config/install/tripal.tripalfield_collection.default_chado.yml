@@ -462,7 +462,7 @@ fields:
     -   name: project_contact
         content_type: project
         label: Contact
-        type: chado_linker_contact_default
+        type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -989,7 +989,7 @@ fields:
     -   name: gene_contact
         content_type: gene
         label: Contact
-        type: chado_linker_contact_default
+        type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -1281,7 +1281,7 @@ fields:
     -   name: mrna_contact
         content_type: mrna
         label: Contact
-        type: chado_linker_contact_default
+        type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -1601,7 +1601,7 @@ fields:
     -   name: physical_map_contact
         content_type: physical_map
         label: Contact
-        type: chado_linker_contact_default
+        type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -1761,7 +1761,7 @@ fields:
     -   name: dna_library_contact
         content_type: dna_library
         label: Contact
-        type: chado_linker_contact_default
+        type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -2379,7 +2379,7 @@ fields:
     -   name: genetic_map_contact
         content_type: genetic_map
         label: Contact
-        type: chado_linker_contact_default
+        type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -2591,7 +2591,7 @@ fields:
     -   name: qtl_contact
         content_type: QTL
         label: Contact
-        type: chado_linker_contact_default
+        type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -2883,7 +2883,7 @@ fields:
     -   name: sequence_variant_contact
         content_type: sequence_variant
         label: Contact
-        type: chado_linker_contact_default
+        type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -3175,7 +3175,7 @@ fields:
     -   name: genetic_marker_contact
         content_type: genetic_marker
         label: Contact
-        type: chado_linker_contact_default
+        type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -3467,7 +3467,7 @@ fields:
     -   name: phenotypic_marker_contact
         content_type: phenotypic_marker
         label: Contact
-        type: chado_linker_contact_default
+        type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
