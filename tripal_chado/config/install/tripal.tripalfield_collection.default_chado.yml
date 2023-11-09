@@ -470,10 +470,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: project
-                linker_table: project_contact
+                linker_table: project_contact.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -548,10 +548,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: study
-                base_column: contact_id
+                linker_table: study.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -997,10 +997,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact
+                linker_table: feature_contact.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -1289,10 +1289,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact
+                linker_table: feature_contact.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -1609,10 +1609,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: featuremap
-                linker_table: featuremap_contact
+                linker_table: featuremap_contact.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -1769,10 +1769,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: library
-                linker_table: library_contact
+                linker_table: library_contact.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -2387,10 +2387,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: featuremap
-                linker_table: featuremap_contact
+                linker_table: featuremap_contact.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -2599,10 +2599,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact
+                linker_table: feature_contact.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -2891,10 +2891,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact
+                linker_table: feature_contact.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -3183,10 +3183,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact
+                linker_table: feature_contact.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -3475,10 +3475,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact
+                linker_table: feature_contact.contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -4275,10 +4275,10 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: arraydesign
-                base_column: manufacturer_id
+                linker_table: arraydesign.manufacturer_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
