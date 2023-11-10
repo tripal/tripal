@@ -9,12 +9,12 @@ use Drupal\Core\Link;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of default Tripal string type formatter.
+ * Plugin implementation of default Tripal contact formatter.
  *
  * @FieldFormatter(
  *   id = "chado_contact_formatter_default",
- *   label = @Translation("Chado Contact"),
- *   description = @Translation("Add a Chado contact to the content type."),
+ *   label = @Translation("Chado contact formatter"),
+ *   description = @Translation("A chado contact formatter."),
  *   field_types = {
  *     "chado_contact_default"
  *   }

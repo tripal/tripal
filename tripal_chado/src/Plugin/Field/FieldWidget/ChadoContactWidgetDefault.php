@@ -8,19 +8,18 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of default Tripal string type widget.
+ * Plugin implementation of default Chado contact widget.
  *
  * @FieldWidget(
  *   id = "chado_contact_widget_default",
- *   label = @Translation("Chado Contact"),
- *   description = @Translation("Add a Chado contact to the content type."),
+ *   label = @Translation("Chado Contact Widget"),
+ *   description = @Translation("The default contact widget."),
  *   field_types = {
  *     "chado_contact_default"
  *   }
  * )
  */
 class ChadoContactWidgetDefault extends ChadoWidgetBase {
-
 
   /**
    * {@inheritdoc}
