@@ -146,13 +146,16 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   The Chado table being used for the current entity (subject).
    * @param string $linked_table
    *   The Chado table being linked to (object).
+   * @param string $delimiter
+   *   The displayed delimiter between the table and column in the
+   *   form select. This defaults to a right arrow.
    *
    * @return array
    *   The list of tables is returned in an alphabetized list
    *   ready to use in a form select. The list elements will be
    *   in the format table.column
    */
-  protected function getLinkerTables($linked_table, $base_table) {
+  protected function getLinkerTables($linked_table, $base_table, $delimiter = " \u{2192} ") {
     $select_list = [];
 
     // The base table is needed to generate the list. We will return
@@ -180,7 +183,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
               // and needs to also have a foreign key to the base table.
               if (($table_name == $base_table)
                   or ($schema->foreignKeyConstraintExists($table_name, $base_pkey_col))) {
-                $key = $table_name . '.' . array_values($foreign_key['columns'])[0];
+                $key = $table_name . $delimiter . array_values($foreign_key['columns'])[0];
                 $select_list[$key] = $key;
               }
             }

@@ -39,8 +39,8 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
     while ($contact = $results->fetchObject()) {
       $contact_name = $contact->name;
       // Change the non-user-friendly 'null' contact, which is specified by chado.
-      if ($contact->name == 'null') {
-        $contact->name = '-- Unknown --';  // This will sort to the top.
+      if ($contact_name == 'null') {
+        $contact_name = '-- Unknown --';  // This will sort to the top.
       }
       if ($contact->contact_type) {
         $contact_name .= ' (' . $contact->contact_type . ')';
@@ -83,12 +83,6 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
-
-    $storage_settings = $this->getFieldSetting('storage_plugin_settings');
-    $linker_table = $storage_settings['linker_table'];
-
     // Handle any empty values.
     foreach ($values as $val_key => $value) {
       if ($value['contact_id'] == '') {
