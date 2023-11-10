@@ -470,7 +470,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: project
-                linker_table: project_contact.contact_id
+                linker_table: project_contact
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -548,7 +549,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: study
-                linker_table: study.contact_id
+                linker_table: study
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -997,7 +999,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact.contact_id
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -1289,7 +1292,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact.contact_id
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -1609,7 +1613,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: featuremap
-                linker_table: featuremap_contact.contact_id
+                linker_table: featuremap_contact
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -1769,7 +1774,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: library
-                linker_table: library_contact.contact_id
+                linker_table: library_contact
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -2387,7 +2393,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: featuremap
-                linker_table: featuremap_contact.contact_id
+                linker_table: featuremap_contact
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -2599,7 +2606,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact.contact_id
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -2891,7 +2899,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact.contact_id
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -3183,7 +3192,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact.contact_id
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -3475,7 +3485,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                linker_table: feature_contact.contact_id
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
@@ -4275,7 +4286,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: arraydesign
-                linker_table: arraydesign.manufacturer_id
+                linker_table: arraydesign
+                linker_fkey_column: manufacturer_id
         settings:
             termIdSpace: NCIT
             termAccession: C47954
