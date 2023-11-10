@@ -280,10 +280,10 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     }
     $elements['storage_plugin_settings']['linker_table_and_column'] = [
       '#type' => 'select',
-      '#title' => t('Chado Linker Table'),
+      '#title' => t('Linking Method'),
       '#description' => t('Select the table that links the selected base table to the linked table. ' .
         'If the base table includes the link as a column, then this will reference the base table. ' .
-        'When a linker table is used, the table name is typically a ' .
+        'When a linker table is used, the linking table name is typically a ' .
         'combination of the two table names, but they might be in either order. ' .
         'Generally this select will have only one option, unless a module has added additional custom linker tables. ' .
         'For example to link "feature" to "contact", the linker table would be "feature_contact".'),
