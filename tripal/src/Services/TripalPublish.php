@@ -642,6 +642,7 @@ class TripalPublish {
    */
   protected function insertFieldItems($field_name, $matches, $titles, $entities, $existing) {
 
+    print_r(array_keys($matches[$field_name][0]));
     $database = \Drupal::database();
     $field_table = 'tripal_entity__' . $field_name;
 
