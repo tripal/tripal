@@ -95,7 +95,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
     parent::preCreate($storage_controller, $values);
     $values += array(
-      'user_id' => \Drupal::currentUser()->id(),
+      'uid' => \Drupal::currentUser()->id(),
     );
   }
 
@@ -104,9 +104,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function getID() {
     $entity_id = $this->id();
-    if (is_array($entity_id) AND array_key_exists(0, $entity_id)) {
-      return $entity_id[0]['value'];
-    }
     return $entity_id;
   }
 

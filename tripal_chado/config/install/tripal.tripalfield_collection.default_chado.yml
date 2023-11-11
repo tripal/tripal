@@ -1496,7 +1496,7 @@ fields:
     -   name: physical_map_unit_type
         content_type: physical_map
         label: Unit Type
-        type: chado_additional_type_default
+        type: chado_unit_default
         description: A unit of measurement is a standardized quantity of a physical quality.
         cardinality: 1
         required: false
@@ -2222,7 +2222,7 @@ fields:
     -   name: genetic_map_unit_type
         content_type: genetic_map
         label: Unit Type
-        type: chado_additional_type_default
+        type: chado_unit_default
         description: A unit of measurement is a standardized quantity of a physical quality.
         cardinality: 1
         required: false
