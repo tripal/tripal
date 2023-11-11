@@ -781,10 +781,6 @@ vocabularies:
             -   id: 'NCIT:C47954'
                 name: 'Communication Contact'
                 description: 'A channel for communication between groups.'
-            -   id: 'NCIT:C25463'
-                name: 'Count'
-                description: 'Determining the number or amount of something.'
-            -   id: 'NCIT:C73619'
 
     -   name: 'ncbitaxon'
         label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'
