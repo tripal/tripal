@@ -15,7 +15,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
 
 
 /**
- * Plugin implementation of Tripal string field type.
+ * Plugin implementation of Tripal contact field type.
  *
  * @FieldType(
  *   id = "chado_contact_default",
