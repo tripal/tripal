@@ -104,6 +104,17 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   public function getStoredTypes();
 
   /**
+   * Returns a list of property values for stored types..
+   *
+   * This function returns an array of property value objects that
+   * correspond to the types returned by getStoredTypes().
+   *
+   * @return @array
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   */
+  public function getStoredValues();
+
+  /**
    * Inserts values in the field data store.
    *
    * The record Ids of the inserted records will be set in the property

@@ -171,15 +171,24 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getStoredTypes()
    */
-  public function getStoredTypes(){
+  public function getStoredTypes() {
     $ret_types = [];
     foreach ($this->property_types as $field_name => $keys) {
       $field_definition = $this->field_definitions[$field_name];
       foreach ($keys as $key => $prop_type) {
         $storage_settings = $prop_type->getStorageSettings();
+
+        // We always need to retreive any field that store a base record id
+        // a primery key or a foreign key link.
         if (($storage_settings['action'] == 'store_id') or
             ($storage_settings['action'] == 'store_pkey') or
             ($storage_settings['action'] == 'store_link')) {
+          $ret_types[$field_name][$key] = $prop_type;
+        }
+        // For any other fields that have a 'drupal_store' set we need
+        // those too.
+        elseif ((array_key_exists('drupal_store', $storage_settings)) and
+                ($storage_settings['drupal_store'] === TRUE)) {
           $ret_types[$field_name][$key] = $prop_type;
         }
       }
@@ -187,7 +196,54 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     return $ret_types;
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getStoredValues()
+   */
+  public function getStoredValues() {
 
+    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
+    $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
+
+    $props = $this->getStoredTypes();
+
+    $values = [];
+    foreach ($props as $field_name => $keys) {
+      foreach ($keys as $key => $prop_type) {
+        $field_definition = $this->field_definitions[$field_name];
+        $configuration = [
+          'field_definition' => $field_definition,
+          'name' => $field_name,
+          'parent' => NULL,
+        ];
+        $instance = $field_type_manager->createInstance($field_definition->getType(), $configuration);
+        $field_class = get_class($instance);
+
+        $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
+            $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+        $values[$field_name][0][$key]['value'] = $prop_value;
+      }
+    }
+    return $values;
+  }
+
+  /**
+   * A simple helper function to clone a values array.
+   *
+   * @param array $values
+   *   An array of property values.
+   */
+  private function cloneValues($values) {
+    $copy = [];
+    foreach ($values as $field_name => $deltas) {
+      foreach ($deltas as $delta => $keys) {
+        foreach ($keys as $key => $value) {
+          $copy[$field_name][$delta][$key]['value'] = clone $value['value'];
+        }
+      }
+    }
+    return $copy;
+  }
 
   /**
    * Inserts a single record in a Chado table.
@@ -474,7 +530,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *
    * @throws \Exception
    */
-  public function findChadoRecords(&$records, $base_tables, $chado_table_alias, $delta, $record) {
+  public function findChadoRecords($chado_table_alias, $delta, $record) {
 
     $chado_table = $this->getChadoTableFromAlias($chado_table_alias);
 
@@ -690,44 +746,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     return FALSE;
   }
 
-/**
-   * Makes an identical copy of a values array.
-   *
-   * The values array is the same as received by the findValues, loadValues,
-   * deleteValues, insertValues, etc. funtions.
-   *
-   * @param array $values
-   *   The values array.
-   * @param array $options
-   *   Specifies options for cpying.  Set the `copy` key to include
-   *   one or more of the following: `definition`, `type`, `operation`,
-   *   `value` to copy only the parts of the values you want.
-   *
-   * @return array
-   *   A new exact duplicate of the values array with the value
-   *   objects clones.
-   */
-  private function copyValues($values, $options = ['copy' => ['definition', 'type', 'operation', 'value']]) {
-
-    $new_values = [];
-
-    foreach ($values as $field_name => $deltas) {
-      foreach ($deltas as $delta => $keys) {
-        foreach ($keys as $key => $info) {
-          if (in_array('operation', $options['copy'])) {
-            if (array_key_exists('operation', $info)) {
-              $new_values[$field_name][$delta][$key]['operation'] = $info['operation'];
-            }
-          }
-          if (in_array('value', $options['copy'])) {
-            $new_values[$field_name][$delta][$key]['value'] = clone $info['value'];
-          }
-        }
-      }
-    }
-    return $new_values;
-  }
-
   /**
    * @{inheritdoc}
    */
@@ -738,60 +756,54 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
-    $base_tables = $this->base_record_ids;
-    $matched_records = [];
+    $base_record_ids = $this->base_record_ids;
+    $found_list = [];
 
+    // Find all of property values for the base record. We need to
+    // search for this first because the properties that have values
+    // from linked tables need to know the record_id.
     $transaction_chado = $this->connection->startTransaction();
     try {
+      foreach (array_keys($base_record_ids) as $base_table) {
+        foreach ($records[$base_table] as $delta => $record) {
+          $matches = $this->findChadoRecords($base_table, $delta, $record);
+          while ($match = $matches->fetchAssoc()) {
+            $new_records = $records;
+            $new_records[$base_table][0]['fields'] = $match;
+            $base_values = $this->cloneValues($values);
+            $this->setPropValues($base_values, $new_records);
+            $this->setRecordIds($base_values, $new_records, TRUE);
+            $found_list[] = $base_values;
+          }
+        }
+      }
 
-      // terate through the tables to query, and start off
-      // only doing the query for the base tables.
-      foreach ($records as $chado_table_alias => $deltas) {
-        $chado_table = $this->getChadoTableFromAlias($chado_table_alias);
-        if (array_key_exists($chado_table, $base_tables)) {
+      // Now that we have the record IDs for the properties in
+      // the base table we can query for the properties in linked
+      // tables.
+      foreach ($found_list as $i => $base_values) {
+        $build = $this->buildChadoRecords($base_values, TRUE);
+        $base_records = $build['records'];
+        foreach ($base_records as $chado_table_alias => $deltas) {
+
+          // Skip base tables as we've already done those.
+          if (in_array($chado_table_alias, array_keys($base_record_ids))) {
+            continue;
+          }
+
+          // Now query for non base records, and add each match to the
+          // records array.
+          $j = 0;
           foreach ($deltas as $delta => $record) {
-
-            // Perform the query for the base table.
-            $matches = $this->findChadoRecords($records, $base_tables, $chado_table_alias, $delta, $record);
+            $matches = $this->findChadoRecords($chado_table_alias, $delta, $record);
             while ($match = $matches->fetchAssoc()) {
-
-              // Copy the values array and the records array for this matched record.
-              $new_values = $this->copyValues($values);
-              $new_records = $records;
-
-              // Update the values in the copied record and prop value objects.
-              $new_records[$chado_table_alias][$delta]['fields'] = $match;
-              $this->setPropValues($new_values, $new_records);
-              $this->setRecordIds($new_values, $new_records, TRUE);
-
-              // Update the new_records so that we an then query the
-              // non base tables.
-              $build = $this->buildChadoRecords($new_values, TRUE);
-              $new_records = $build['records'];
-
-              // Now add in any non base table records that might be linked to this
-              // base table record.
-              foreach ($new_records as $sub_table_alias => $sub_deltas) {
-                $sub_table = $this->getChadoTableFromAlias($sub_table_alias);
-                if (!array_key_exists($sub_table, $base_tables)) {
-                  foreach ($sub_deltas as $sub_delta => $sub_record) {
-
-                    $sub_matches = $this->findChadoRecords($new_records, $base_tables, $sub_table_alias, $sub_delta, $sub_record);
-                    while ($sub_match = $sub_matches->fetchAssoc()) {
-
-                      // Update the values in the copied record and prop value objects.
-                      $new_records[$sub_table_alias][$sub_delta]['fields'] = $sub_match;
-                      $this->setPropValues($new_values, $new_records);
-                      $this->setRecordIds($new_values, $new_records, TRUE);
-                    }
-                  }
-                }
-              }
-
-              // Store the new values object for return .
-              $matched_records[] = $new_values;
-
+              $base_records[$chado_table_alias][$j]['fields'] = $match;
+              $j++;
             }
+          }
+          if ($j > 0) {
+            $this->setPropValues($found_list[$i], $base_records);
+            $this->setRecordIds($found_list[$i], $base_records, TRUE);
           }
         }
       }
@@ -800,7 +812,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-    return $matched_records;
+    return $found_list;
   }
 
 
@@ -1011,6 +1023,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               $as = $this->join_column_alias[$field_name][$key][$as];
             }
             $value = $records[$chado_table_alias][$delta]['fields'][$as];
+            print_r([$field_name, $delta, $key, $chado_table_alias, $delta, $as, $value]);
             $values[$field_name][$delta][$key]['value']->setValue($value);
           }
 
@@ -1206,7 +1219,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               break;
             case 'read_value':
             case 'join':
-              $this->buildChadoRecords_read_value($records, $delta, $prop_storage_settings, $context, $prop_value);
+              $this->buildChadoRecords_read_value($records, $delta, $prop_storage_settings, $context, $prop_value, $is_find);
               break;
             case 'replace':
               // Do nothing here for properties that need replacement
@@ -1522,7 +1535,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       }
 
       // If this is a find operation then we need to add a condition using the
-      // linked value.
+      // linked value
       if ($is_find) {
         $base_alias = $context['base_table'];;
         if (array_key_exists('chado_table_alias', $storage_settings)) {
@@ -1610,13 +1623,17 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $records[$table_alias][$delta]['fields'][$chado_column] = $value;
 
-    // When we are trying to find a value any fields that have
-    // values become search criteria.  So, we need to add a condition.
-    if ($is_find and !empty($value)) {
-      $records[$table_alias][$delta]['conditions'][$chado_column] = [
-        'value' => $value,
-        'operation' => '='
-      ];
+    // If this is a find then we may want to add a condition.
+    if ($is_find) {
+
+      // If we hvae a value for this field then it's a search criteria
+      // so we need to add a condition.
+      if (!empty($value)) {
+        $records[$table_alias][$delta]['conditions'][$chado_column] = [
+          'value' => $value,
+          'operation' => '='
+        ];
+      }
     }
 
     // If this field should not allow an empty value that means this
@@ -1657,8 +1674,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
    *   the value is not set. This method is expected to check if the value is empty or not.
+   * @param bool $is_find
+   *   Set to TRUE if we are building the record array for finding records.
+   *   update.
    */
-  protected function buildChadoRecords_read_value(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+  protected function buildChadoRecords_read_value(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value, bool $is_find = FALSE) {
 
     // Get the Chado table this specific property works with.
     // Use the base table as a default for properties which do not specify
@@ -1681,6 +1701,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // to be defined and the joins need to be added to the query.
     // This will also add the fields to be selected.
     if (array_key_exists('path', $storage_settings)) {
+
       $path = $storage_settings['path'];
       $as = array_key_exists('as', $storage_settings) ? $storage_settings['as'] : $chado_column;
       $path_arr = explode(";", $path);
@@ -1723,7 +1744,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // is first called.
     $parent_table = !$parent_table ? $left_table : $parent_table;
     $parent_column = !$parent_column ? $left_col : $parent_column;
-
 
     // Make sure the parent table has a 'joins' array.
     if (!array_key_exists($parent_table, $records) or

@@ -419,18 +419,17 @@ class TripalPublish {
 
     // Iterate through the results and build the bulk SQL statements that
     // will publish the records.
-    foreach ($matches as $record) {
+    foreach ($matches as $match) {
       $entity_title = $title_format;
-      foreach ($record as $field_name => $deltas) {
+      foreach ($match as $field_name => $deltas) {
         if (preg_match("/\[$field_name\]/", $title_format)) {
 
-
-          // There should only be one value for the fields that
+          // There should only be one delta for the fields that
           // are used for title formats so default this to 0.
           $delta = 0;
           $field = $this->field_info[$field_name]['instance'];
           $main_prop = $field->mainPropertyName();
-          $value = $record[$field_name][$delta][$main_prop]['value']->getValue();
+          $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
           $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
         }
       }
@@ -642,7 +641,6 @@ class TripalPublish {
    */
   protected function insertFieldItems($field_name, $matches, $titles, $entities, $existing) {
 
-    print_r(array_keys($matches[$field_name][0]));
     $database = \Drupal::database();
     $field_table = 'tripal_entity__' . $field_name;
 
