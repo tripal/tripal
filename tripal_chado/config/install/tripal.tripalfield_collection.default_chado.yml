@@ -475,7 +475,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -555,7 +554,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -1006,7 +1004,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -1300,7 +1297,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -1622,7 +1618,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -1784,7 +1779,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -2404,7 +2398,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -2618,7 +2611,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -2912,7 +2904,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -3206,7 +3197,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -3500,7 +3490,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
@@ -4302,7 +4291,6 @@ fields:
         settings:
             termIdSpace: NCIT
             termAccession: C47954
-            token_string: "[name]"
         display:
           view:
             default:
