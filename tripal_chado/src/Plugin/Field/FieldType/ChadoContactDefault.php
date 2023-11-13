@@ -63,9 +63,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     // CV Term is 'Communication Contact'
     $settings['termIdSpace'] = 'NCIT';
     $settings['termAccession'] = 'C47954';
-    // Pager default configuration
-    $settings['display_contact_type'] = FALSE;
-    $settings['display_contact_description'] = FALSE;
+    $settings['token_string'] = '[name]';
     return $settings;
   }
 
@@ -248,22 +246,53 @@ class ChadoContactDefault extends ChadoFieldItemBase {
 
     $element = [];
     // The key of the element is the setting name
-    $element['display_contact_type'] = [
-      '#title' => $this->t('Display the contact type'),
-      '#description' => $this->t('If a type has been defined for the contact,'
-                     . ' then display it. For example, "Person" or "Institution"'),
-      '#type' => 'checkbox',
-      '#default_value' => $this->getSetting('display_contact_type'),
-    ];
-    $element['display_contact_description'] = [
-      '#title' => $this->t('Display the contact description'),
-      '#description' => $this->t('If a description is present for the contact,'
-                     . ' then display it.'),
-      '#type' => 'checkbox',
-      '#default_value' => $this->getSetting('display_contact_description'),
+    $element['token_string'] = [
+      '#title' => $this->t('Token string for field display'),
+      '#description' => $this->t('You may specify elements in this text box to customize how'
+                     . ' contacts are displayed. The available tokens are [name] for the'
+                     . ' contact name, [type] for the type of contact (person, institution, etc.)'
+                     . ' and [description] for the description for the contact.'
+                     . ' For example, "[name] ([type]) [[description]]"'),
+      '#type' => 'textfield',
+      '#default_value' => $this->getSetting('token_string'),
+      '#element_validate' => [[static::class, 'fieldSettingsFormValidateTokenString']],
     ];
 
     return $element;
+  }
+
+  /**
+   * Form element validation handler for token string
+   *
+   * @param array $form
+   *   The form where the settings form is being included in.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form.
+   */
+  public static function fieldSettingsFormValidateTokenString(array $form, FormStateInterface $form_state) {
+    $settings = $form_state->getValue('settings');
+    $token_string = $settings['token_string'];
+    $valid_keys = ['[name]', '[type]', '[description]'];
+    $n_tokens = 0;
+    $n_invalid = 0;
+    preg_match_all('/\[[^\]]*\]/', $token_string, $matches);
+    foreach ($matches[0] as $index => $match) {
+      if (in_array($match, $valid_keys)) {
+        $n_tokens++;
+      }
+      else {
+        $n_invalid++;
+      }
+    }
+
+    if ($n_invalid) {
+      $form_state->setErrorByName('settings][token_string',
+          'The token string contains an invalid token, only "[name]", "[type]", and "[description]" may be used.');
+    }
+    elseif (!$n_tokens) {
+      $form_state->setErrorByName('settings][token_string',
+          'The token string must contain at least one of "[name]", "[type]", or "[description]".');
+    }
   }
 
   /**

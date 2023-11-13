@@ -26,27 +26,28 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $display_contact_type = $items->getSetting('display_contact_type');
-    $display_contact_description = $items->getSetting('display_contact_description');
     $elements = [];
 
     $list = [];
+    $token_string = $items->getSetting('token_string');
     foreach($items as $delta => $item) {
-      $value = $item->get('contact_name')->getString();
-      $value_type = $item->get('contact_type')->getString();
-      $value_description = $item->get('contact_description')->getString();
+      $values = [
+        'name' => $item->get('contact_name')->getString(),
+        'type' => $item->get('contact_type')->getString(),
+        'description' => $item->get('contact_description')->getString(),
+      ];
 
       // Change the non-user-friendly 'null' contact, which is specified by chado.
-      if ($value == 'null') {
-        $value = 'Unknown';
+      if ($values['name'] == 'null') {
+        $values['name'] = 'Unknown';
       }
-      $list[$delta] = $value;
-      if ($value_type and $display_contact_type) {
-        $list[$delta] .= ' (' . $value_type . ')';
+
+      // Substitute values in token string to generate displayed string.
+      $displayed_string = $token_string;
+      foreach ($values as $key => $value) {
+        $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
       }
-      if ($value_description and $display_contact_description) {
-        $list[$delta] .= ' [' . $value_description . ']';
-      }
+      $list[$delta] = $displayed_string;
     }
 
     // Only return markup if the field is not empty.
