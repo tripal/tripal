@@ -26,22 +26,26 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
+    $display_contact_type = $items->getSetting('display_contact_type');
+    $display_contact_description = $items->getSetting('display_contact_description');
     $elements = [];
 
     $list = [];
     foreach($items as $delta => $item) {
       $value = $item->get('contact_name')->getString();
       $value_type = $item->get('contact_type')->getString();
-      // This formatter does not display the contact description, but it may be obtained with
-      // $value_description = $item->get('contact_description')->getString();
+      $value_description = $item->get('contact_description')->getString();
 
-      // Change the non-user-friendly 'null' contact, which is spedified by chado.
+      // Change the non-user-friendly 'null' contact, which is specified by chado.
       if ($value == 'null') {
         $value = 'Unknown';
       }
       $list[$delta] = $value;
-      if ($value_type) {
+      if ($value_type and $display_contact_type) {
         $list[$delta] .= ' (' . $value_type . ')';
+      }
+      if ($value_description and $display_contact_description) {
+        $list[$delta] .= ' [' . $value_description . ']';
       }
     }
 

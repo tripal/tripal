@@ -32,7 +32,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
   protected static $object_id = 'contact_id';
   protected static $value_column = 'name';
   // delimiter between table name and column name in form select
-  public static $table_column_delimiter = " \u{2192} ";  # right arrow
+  protected static $table_column_delimiter = " \u{2192} ";  # right arrow
 
   /**
    * {@inheritdoc}
@@ -63,6 +63,9 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     // CV Term is 'Communication Contact'
     $settings['termIdSpace'] = 'NCIT';
     $settings['termAccession'] = 'C47954';
+    // Pager default configuration
+    $settings['display_contact_type'] = FALSE;
+    $settings['display_contact_description'] = FALSE;
     return $settings;
   }
 
@@ -236,6 +239,31 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     ]);
 
     return $properties;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+
+    $element = [];
+    // The key of the element is the setting name
+    $element['display_contact_type'] = [
+      '#title' => $this->t('Display the contact type'),
+      '#description' => $this->t('If a type has been defined for the contact,'
+                     . ' then display it. For example, "Person" or "Institution"'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->getSetting('display_contact_type'),
+    ];
+    $element['display_contact_description'] = [
+      '#title' => $this->t('Display the contact description'),
+      '#description' => $this->t('If a description is present for the contact,'
+                     . ' then display it.'),
+      '#type' => 'checkbox',
+      '#default_value' => $this->getSetting('display_contact_description'),
+    ];
+
+    return $element;
   }
 
   /**
