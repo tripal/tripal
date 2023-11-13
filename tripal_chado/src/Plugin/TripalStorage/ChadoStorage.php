@@ -1023,7 +1023,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               $as = $this->join_column_alias[$field_name][$key][$as];
             }
             $value = $records[$chado_table_alias][$delta]['fields'][$as];
-            print_r([$field_name, $delta, $key, $chado_table_alias, $delta, $as, $value]);
             $values[$field_name][$delta][$key]['value']->setValue($value);
           }
 
