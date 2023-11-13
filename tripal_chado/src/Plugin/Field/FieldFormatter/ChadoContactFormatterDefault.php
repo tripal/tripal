@@ -5,7 +5,6 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
@@ -14,7 +13,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  * @FieldFormatter(
  *   id = "chado_contact_formatter_default",
  *   label = @Translation("Chado contact formatter"),
- *   description = @Translation("A chado contact formatter."),
+ *   description = @Translation("A chado contact formatter"),
  *   field_types = {
  *     "chado_contact_default"
  *   }
