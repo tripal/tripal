@@ -8,14 +8,14 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 
-class ChadoNewPublicationForm extends FormBase {
+class ChadoNewPubSearchQueryForm extends FormBase {
 
   private $form_state_previous_user_input = null;
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'chado_new_publication_form';
+    return 'chado_new_pub_search_query_form';
   }
 
   /**
@@ -57,7 +57,7 @@ class ChadoNewPublicationForm extends FormBase {
 
 
     $html = "<ul class='action-links'>";
-    $html .= '  <li>' . Link::fromTextAndUrl('Return to manage pub search queries', Url::fromUri('internal:/admin/tripal/loaders/publications/manage_pub_search_queries'))->toString() . '</li>';
+    $html .= '  <li>' . Link::fromTextAndUrl('Return to manage pub search queries', Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries'))->toString() . '</li>';
     $html .= '</ul>';
     $form['new_publication_link'] = [
       '#type' => 'markup',
@@ -87,7 +87,7 @@ class ChadoNewPublicationForm extends FormBase {
       
       // handle previous user input
       if ($pub_import_id != 'null') {
-        $this->form_elements_load_previous_user_input($this->form_state_previous_user_input, $form['pub_parser']);
+        $this->form_elements_load_previous_user_input($this->form_state_previous_user_input, $form['pub_library']);
       }
     }
 
@@ -118,28 +118,28 @@ class ChadoNewPublicationForm extends FormBase {
     $disabled = '';
     $do_contact = '';
 
-    $form['pub_parser']['loader_name'] = [
+    $form['pub_library']['loader_name'] = [
       '#title' => t('Loader Name'),
       '#type' => 'textfield',
       '#description' => t("Please provide a name for this loader setup"),
       '#required' => TRUE,
-      '#weight' => 0,
+      '#weight' => -50,
     ];
-    $form['pub_parser']['disabled'] = [
+    $form['pub_library']['disabled'] = [
       '#type' => 'checkbox',
       '#title' => t('Disabled'),
       '#description' => t('Check to disable this importer.'),
       '#default_value' => $disabled,
-      '#weight' => 0,
+      '#weight' => -49,
     ];
-    $form['pub_parser']['do_contact'] = [
+    $form['pub_library']['do_contact'] = [
       '#type' => 'checkbox',
       '#title' => t('Create Contact'),
       '#description' => t('Check to create an entry in the contact table for each author of'
          . ' a matching publication during import. This allows storage of additional information'
          . ' such as affilation, etc. Otherwise, only authors\' names are retrieved'),
       '#default_value' => $do_contact,
-      '#weight' => 0,
+      '#weight' => -48,
     ];
 
     $num_criteria = 1; // default criteria row count
@@ -169,7 +169,7 @@ class ChadoNewPublicationForm extends FormBase {
     }
 
     // Add the form for the criteria
-    $form['pub_parser']['num_criteria'] = [
+    $form['pub_library']['num_criteria'] = [
       '#type' => 'hidden',
       '#default_value' => $num_criteria,
     ];
@@ -180,23 +180,23 @@ class ChadoNewPublicationForm extends FormBase {
 
     $form = $this->tripal_pub_importer_setup_add_criteria_fields($form, $form_state, $num_criteria, $criteria);
 
-    $form['pub_parser']['criteria_debug'] = [
+    $form['pub_library']['criteria_debug'] = [
       '#markup' => '<div id="tripal-pub-importer-criteria-debug-section"></div><br />',
       '#weight' => 52,
     ];
 
     // Add the submit buttons
-    $form['pub_parser']['save'] = [
+    $form['pub_library']['save'] = [
       '#type' => 'submit',
       '#value' => t('Save Importer'),
       '#weight' => 51,
     ];
-    $form['pub_parser']['test'] = [
+    $form['pub_library']['test'] = [
       '#type' => 'submit',
       '#value' => t('Test Importer'),
       '#weight' => 51,
     ];
-    $form['pub_parser']['delete'] = [
+    $form['pub_library']['delete'] = [
       '#type' => 'submit',
       '#value' => t('Delete Importer'),
       '#attributes' => ['style' => 'float: right;'],
@@ -204,7 +204,7 @@ class ChadoNewPublicationForm extends FormBase {
     ];
 
     // Add a placeholder for the section where the test results will appear
-    $form['pub_parser']['results'] = [
+    $form['pub_library']['results'] = [
       '#markup' => '<div id="tripal-pub-importer-test-section"></div>',
     ];
 
@@ -233,7 +233,7 @@ class ChadoNewPublicationForm extends FormBase {
 
     $headers = ['Operation', 'Scope', 'Search Terms', '', '', ''];
     // Add the table to the form
-    $form['pub_parser']['table'] = [
+    $form['pub_library']['table'] = [
       '#type' => 'table',
       '#header' => $headers,
       '#prefix' => '<div id="tripal-pub-importer-setup">',
@@ -392,7 +392,7 @@ class ChadoNewPublicationForm extends FormBase {
       ];
       
     }
-    $form['pub_parser']['table'][$i] = $row;
+    $form['pub_library']['table'][$i] = $row;
     return $form;
   }  
 
@@ -402,9 +402,9 @@ class ChadoNewPublicationForm extends FormBase {
     if ($plugin_id) {
 
       // Instantiate the selected plugin
-      // Pub Parse Manager is found in tripal module: tripal/tripal/src/TripalPubParser/PluginManagers/TripalPubParserManager.php
-      $pub_parser_manager = \Drupal::service('tripal.pub_parser');
-      $plugin = $pub_parser_manager->createInstance($plugin_id, []);
+      // Pub Library Manager is found in tripal module: tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+      $pub_library_manager = \Drupal::service('tripal.pub_library');
+      $plugin = $pub_library_manager->createInstance($plugin_id, []);
 
       // The selected plugin defines form elements specific
       // to itself.
@@ -414,11 +414,11 @@ class ChadoNewPublicationForm extends FormBase {
   }
 
   public function form_elements_importer_selection($form, FormStateInterface $form_state) {
-    // Retrieve a sorted list of available pub parser plugins.
-    $pub_parser_manager = \Drupal::service('tripal.pub_parser');
-    $pub_parser_defs = $pub_parser_manager->getDefinitions();
+    // Retrieve a sorted list of available pub library plugins.
+    $pub_library_manager = \Drupal::service('tripal.pub_library');
+    $pub_library_defs = $pub_library_manager->getDefinitions();
     $plugins = [];
-    foreach ($pub_parser_defs as $plugin_id => $def) {
+    foreach ($pub_library_defs as $plugin_id => $def) {
       $plugin_key = $def['id'];
       $plugin_value = $def['label']->render();
       $plugins[$plugin_key] = $plugin_value;
@@ -443,7 +443,7 @@ class ChadoNewPublicationForm extends FormBase {
       '#default_value' => $default_value,
       // '#ajax' => [
       //   'callback' =>  [$this, 'formAjaxCallback'], // calls function within this class: function formAjaxCallback
-      //   'wrapper' => 'edit-parser',
+      //   'wrapper' => 'edit-library',
       // ],
     ];
 
@@ -457,8 +457,8 @@ class ChadoNewPublicationForm extends FormBase {
 
     // RISH: This is the container that will hold the specific fields for a specific 'plugin' which represents the 
     //       publication / sources eg NIH PubMed database form elements
-    $form['pub_parser'] = [
-      '#prefix' => '<span id="edit-pub_parser">',
+    $form['pub_library'] = [
+      '#prefix' => '<span id="edit-pub_library">',
       '#suffix' => '</span>',
     ];
 
@@ -497,7 +497,7 @@ class ChadoNewPublicationForm extends FormBase {
           $do_contact = 0;
         }
         $criteria_column_array = [
-          'remote_db' => explode('tripal_pub_parser_', $user_input['plugin_id'])[1],
+          'remote_db' => explode('tripal_pub_library_', $user_input['plugin_id'])[1],
           // 'days' => $user_input['days'],
           'num_criteria' => $user_input['num_criteria'],
           'loader_name' => $user_input['loader_name'],
@@ -542,9 +542,9 @@ class ChadoNewPublicationForm extends FormBase {
         $plugin_id = $user_input['plugin_id'];
         if ($plugin_id) {
           // Instantiate the selected plugin
-          // Pub Parse Manager is found in tripal module: tripal/tripal/src/TripalPubParser/PluginManagers/TripalPubParserManager.php
-          $pub_parser_manager = \Drupal::service('tripal.pub_parser');
-          $plugin = $pub_parser_manager->createInstance($plugin_id, []);
+          // Pub Library Manager is found in tripal module: tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+          $pub_library_manager = \Drupal::service('tripal.pub_library');
+          $plugin = $pub_library_manager->createInstance($plugin_id, []);
 
           // The selected plugin defines form elements specific
           // to itself.

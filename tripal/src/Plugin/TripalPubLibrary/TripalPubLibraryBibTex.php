@@ -1,23 +1,23 @@
 <?php
 
-namespace Drupal\tripal\Plugin\TripalPubParser;
+namespace Drupal\tripal\Plugin\TripalPubLibrary;
 
-use Drupal\tripal\TripalPubParser\TripalPubParserBase;
+use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
- * Agricola publication parser
+ * Agricola publication library
  *
- *  @TripalPubParser(
- *    id = "tripal_pub_parser_bibtex",
+ *  @TripalPubLibrary(
+ *    id = "tripal_pub_library_bibtex",
  *    label = @Translation("Upload a BibTex format file"),
  *    description = @Translation("Parses data from the an uploaded BibTex file"),
  *  )
  */
-class TripalPubParserBibTex extends TripalPubParserBase {
+class TripalPubLibraryBibTex extends TripalPubLibraryBase {
 
   public function formSubmit($form, &$form_state) {
   }

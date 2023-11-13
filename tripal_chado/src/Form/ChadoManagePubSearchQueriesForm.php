@@ -65,7 +65,7 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
 
   // The link to add a new publication
   $html = "<ul class='action-links'>";
-  $html .= '  <li>' . Link::fromTextAndUrl('New Importer', Url::fromUri('internal:/admin/tripal/loaders/publications/new_publication'))->toString() . '</li>';
+  $html .= '  <li>' . Link::fromTextAndUrl('New search query', Url::fromUri('internal:/admin/tripal/loaders/publications/new_publication_search_query'))->toString() . '</li>';
   $html .= '</ul>';
   $form['new_publication_link'] = [
     '#type' => 'markup',
@@ -147,7 +147,7 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
         '#markup' => 
           Link::fromTextAndUrl(
             'Edit/Test', 
-            Url::fromUri('internal:/admin/tripal/loaders/publications/edit_publication/' . $pub_importer->pub_import_id)
+            Url::fromUri('internal:/admin/tripal/loaders/publications/edit_publication_search_query/' . $pub_importer->pub_import_id)
           )
           ->toString() . 
           '<br /><a href="">Import Pubs</a>'

@@ -178,33 +178,33 @@ tripal.data_loaders.publication_loaders:
     _permission: 'administer tripal'
 
 # Manage Pub Search Queries
-tripal.data_loaders.publication_loaders.manage_pub_search_queries:
-  path: 'admin/tripal/loaders/publications/manage_pub_search_queries'
+tripal.data_loaders.publication_loaders.manage_publication_search_queries:
+  path: 'admin/tripal/loaders/publications/manage_publication_search_queries'
   defaults:
     _form: 'Drupal\tripal_chado\Form\ChadoManagePubSearchQueriesForm'
     _title: 'Manage Pub Search Queries'
   requirements:
     _permission: 'allow tripal import'
 
-tripal.data_loaders.publication_loaders.new_publication:
-  path: 'admin/tripal/loaders/publications/new_publication'
+tripal.data_loaders.publication_loaders.new_publication_search_query:
+  path: 'admin/tripal/loaders/publications/new_publication_search_query'
   defaults:
-    _form: 'Drupal\tripal_chado\Form\ChadoNewPublicationForm'
+    _form: 'Drupal\tripal_chado\Form\ChadoNewPubSearchQueryForm'
     _title: 'New publication'
   requirements:
     _permission: 'allow tripal import'
 
-tripal.data_loaders.publication_loaders.edit_publication:
-  path: 'admin/tripal/loaders/publications/edit_publication/{pub_import_id}'
+tripal.data_loaders.publication_loaders.edit_publication_search_query:
+  path: 'admin/tripal/loaders/publications/edit_publication_search_query/{pub_import_id}'
   defaults:
-    _form: 'Drupal\tripal_chado\Form\ChadoNewPublicationForm'
+    _form: 'Drupal\tripal_chado\Form\ChadoNewPubSearchQueryForm'
     _title: 'New publication'
   requirements:
     _permission: 'allow tripal import'  
 
 # TODO - Add the correct form here
-tripal.data_loaders.publication_loaders.run_pub_search_query:
-  path: 'admin/tripal/loaders/publications/manage_pub_search_query'
+tripal.data_loaders.publication_loaders.run_publication_search_query:
+  path: 'admin/tripal/loaders/publications/manage_publication_search_query'
   defaults:
     _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
     _title: 'Run Pub Search Query'

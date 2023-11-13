@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\tripal\Plugin\TripalPubParser;
+namespace Drupal\tripal\Plugin\TripalPubLibrary;
 
-use Drupal\tripal\TripalPubParser\TripalPubParserBase;
+use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
@@ -13,13 +13,13 @@ use Drupal\Core\Ajax\ReplaceCommand;
 /**
  * PubMed publication parser
  *
- *  @TripalPubParser(
- *    id = "tripal_pub_parser_pubmed",
+ *  @TripalPubLibrary(
+ *    id = "tripal_pub_library_pubmed",
  *    label = @Translation("NIH PubMed database"),
  *    description = @Translation("Retrieves and parses publication data from the NIH PubMed database"),
  *  )
  */
-class TripalPubParserPubmed extends TripalPubParserBase {
+class TripalPubLibraryPubmed extends TripalPubLibraryBase {
 
   public function formSubmit($form, &$form_state) {
     dpm('TripalPubParserPubmed formSubmit called');
@@ -61,7 +61,7 @@ class TripalPubParserPubmed extends TripalPubParserBase {
             ]]))->toString()
       . '.';
 
-    $form['pub_parser']['ncbi_api_key'] = [
+    $form['pub_library']['ncbi_api_key'] = [
       '#title' => t('(Optional) NCBI API key:'),
       '#type' => 'textfield',
       '#description' => $api_key_description,
@@ -69,7 +69,7 @@ class TripalPubParserPubmed extends TripalPubParserBase {
       //to-do add ajax callback to populate?
       '#size' => 20,
     ];
-    $form['pub_parser']['days'] = [
+    $form['pub_library']['days'] = [
       '#title' => t('Days since record modified'),
       '#type' => 'textfield',
       '#description' => t('Limit the search to include pubs that have been added no more than this many days before today'),
@@ -80,7 +80,7 @@ class TripalPubParserPubmed extends TripalPubParserBase {
   }
 
   public function formValidate($form, &$form_state) {
-    dpm('TripalPubParserPubmed formSubmit called');
+    dpm('TripalPubLibraryPubmed formSubmit called');
   }
 
   public function run(array $criteria) {
