@@ -284,6 +284,10 @@ tripal.tripalfield_collection.*:
                      type: string
                      label: "A fixed value for the field that cannot be changed."
                      nullable: true
+                   token_string:
+                     type: string
+                     label: "Token string for field display"
+                     nullable: true
                display:
                  type: mapping
                  label: 'Display'
