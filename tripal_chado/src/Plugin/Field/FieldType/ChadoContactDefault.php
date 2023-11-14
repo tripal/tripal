@@ -275,7 +275,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     $valid_keys = ['[name]', '[type]', '[description]'];
     $n_tokens = 0;
     $n_invalid = 0;
-    preg_match_all('/\[[^\]]*\]/', $token_string, $matches);
+    preg_match_all('/\[[^\[\]]*\]/', $token_string, $matches);
     foreach ($matches[0] as $index => $match) {
       if (in_array($match, $valid_keys)) {
         $n_tokens++;
