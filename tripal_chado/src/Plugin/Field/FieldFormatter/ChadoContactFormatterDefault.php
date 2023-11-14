@@ -55,7 +55,6 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
       // If only one element has been found, don't make into a list.
       if (count($list) == 1) {
         $elements[0] = [
-          '#type' => 'markup',
           "#markup" => $list[0]
         ];
       }
