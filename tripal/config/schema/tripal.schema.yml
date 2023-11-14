@@ -132,6 +132,10 @@ field.field.tripal_entity.*.*:
           type: string
           label: "A fixed value for the field that cannot be changed."
           nullable: true
+        token_string:
+          type: string
+          label: "A tokenzied string for the displayed value of the field. Names in square brackets can be used as tokens."
+          nullable: true
 
 ## For TripalEntityTypeCollection functionality
 ## focused on using YML files to describe TripalEntityTypes
@@ -286,7 +290,7 @@ tripal.tripalfield_collection.*:
                      nullable: true
                    token_string:
                      type: string
-                     label: "Token string for field display"
+                     label: "A tokenzied string for the displayed value of the field. Names in square brackets can be used as tokens."
                      nullable: true
                display:
                  type: mapping
