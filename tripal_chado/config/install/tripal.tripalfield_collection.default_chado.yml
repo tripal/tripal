@@ -459,6 +459,33 @@ fields:
               region: content
               weight: 15
 
+    -   name: project_contact
+        content_type: project
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
     -   name: study_name
         content_type: study
         label: Name
@@ -522,10 +549,11 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: study
-                base_column: contact_id
+                linker_table: study
+                linker_fkey_column: contact_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
@@ -960,6 +988,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: gene_contact
+        content_type: gene
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 80
+          form:
+            default:
+              region: content
+              weight: 80
+
     -   name: gene_is_analysis
         content_type: gene
         label: Is Analysis
@@ -1225,6 +1280,33 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: mrna_contact
+        content_type: mrna
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 80
+          form:
+            default:
+              region: content
+              weight: 80
 
     -   name: mrna_is_analysis
         content_type: mRNA
@@ -1520,6 +1602,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: physical_map_contact
+        content_type: physical_map
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: featuremap_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
     -   name: dna_library_name
         content_type: dna_library
         label: Name
@@ -1653,6 +1762,33 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: dna_library_contact
+        content_type: dna_library
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                linker_table: library_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 50
+          form:
+            default:
+              region: content
+              weight: 50
 
     -   name: genome_assembly_name
         content_type: genome_assembly
@@ -2246,6 +2382,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genetic_map_contact
+        content_type: genetic_map
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: featuremap_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
     -   name: qtl_name
         content_type: QTL
         label: Name
@@ -2431,6 +2594,33 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: qtl_contact
+        content_type: QTL
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 80
+          form:
+            default:
+              region: content
+              weight: 80
 
     -   name: qtl_is_analysis
         content_type: QTL
@@ -2698,6 +2888,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: sequence_variant_contact
+        content_type: sequence_variant
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 80
+          form:
+            default:
+              region: content
+              weight: 80
+
     -   name: sequence_variant_is_analysis
         content_type: sequence_variant
         label: Is Analysis
@@ -2964,6 +3181,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genetic_marker_contact
+        content_type: genetic_marker
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 80
+          form:
+            default:
+              region: content
+              weight: 80
+
     -   name: genetic_marker_is_analysis
         content_type: genetic_marker
         label: Is Analysis
@@ -3229,6 +3473,33 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: phenotypic_marker_contact
+        content_type: phenotypic_marker
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 80
+          form:
+            default:
+              region: content
+              weight: 80
 
     -   name: phenotypic_marker_is_analysis
         content_type: phenotypic_marker
@@ -4015,10 +4286,11 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: arraydesign
-                base_column: manufacturer_id
+                linker_table: arraydesign
+                linker_fkey_column: manufacturer_id
         settings:
-            termIdSpace: local
-            termAccession: contact
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
