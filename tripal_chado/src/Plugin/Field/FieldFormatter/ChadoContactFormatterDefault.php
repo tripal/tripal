@@ -35,9 +35,9 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
-
     $list = [];
-    $token_string = $items->getSetting('token_string');
+    $token_string = $this->getSetting('token_string');
+
     foreach($items as $delta => $item) {
       $values = [
         'name' => $item->get('contact_name')->getString(),
