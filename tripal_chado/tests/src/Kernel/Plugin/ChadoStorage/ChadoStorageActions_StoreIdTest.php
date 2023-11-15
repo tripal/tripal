@@ -192,7 +192,7 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
     $printed_output = ob_get_clean();
 
     $this->assertStringContainsString(
-      'uses the store_id action type but is not assocatiated with the base table of the field',
+      'uses the store_id action type but is not associated with the base table of the field',
       $printed_output,
       'We did not get the error message we expected when using the store_id action for a non-base table.'
     );

@@ -332,3 +332,10 @@ tripal.tripalfield_collection.*:
                            type: integer
                            label: 'Weight'
                            nullable: false
+
+field.formatter.settings.chado_contact_formatter_default:
+  type: mapping
+  mapping:
+    token_string:
+      type: string
+      label: 'Set display format'

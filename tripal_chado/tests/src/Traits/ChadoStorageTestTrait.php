@@ -233,12 +233,13 @@ trait ChadoStorageTestTrait {
 
     // Create the property types based on our fields array.
     $this->createPropertyTypes($field_names, $expected_property_counts);
+
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
 
-
     // Create the property values + format them for testing with *Values methods.
     $this->createDataStoreValues($field_names, $values);
+
     // Set the values in the propertyValue objects.
     $this->setExpectedValues($field_names, $values);
 
@@ -326,7 +327,6 @@ trait ChadoStorageTestTrait {
     $this->createPropertyTypes($field_names, $expected_property_counts);
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
-
 
     // Create the property values + format them for testing with *Values methods.
     $this->createDataStoreValues($field_names, $values);
@@ -623,7 +623,7 @@ trait ChadoStorageTestTrait {
       $total_num_properties += count($retrieved_properties);
     }
     $this->assertEquals($expected_property_counts['total'], $total_num_properties,
-      "Did not revieve the expected number of PropertyTypes after adding $field_name_string.");
+      "Did not retrieve the expected number of PropertyTypes after adding $field_name_string.");
   }
 
   /**
@@ -655,7 +655,7 @@ trait ChadoStorageTestTrait {
         foreach($current_values as $property_key => $val) {
 
           $this->assertArrayHasKey($property_key, $this->dataStoreValues[$field_name][$delta],
-            "The key $property_key does not exist in the data store values for $field_name[$delta], it may be missing from your \$fields definition");
+            "The key $property_key does not exist in the data store values for ".$field_name."[".$delta."], it may be missing from your \$fields definition");
 
           $this->dataStoreValues[$field_name][$delta][$property_key]['value']->setValue($val);
 
@@ -713,7 +713,7 @@ trait ChadoStorageTestTrait {
     print "\tData Store Values:\n";
 
     foreach ($this->dataStoreValues as $field_name => $level1) {
-      print "\n\tFEILD: $field_name:\n";
+      print "\n\tFIELD: $field_name:\n";
       foreach ($level1 as $delta => $level2) {
         print "\t\tDelta: $delta\n";
         foreach ($level2 as $property_key => $level3) {
