@@ -51,7 +51,6 @@ class ChadoSynonymFormatterDefault extends ChadoFormatterBase {
     }
 
     $elements[0] = [
-      '#type' => 'markup',
       "#markup" => $list[0]
     ];
     return $elements;

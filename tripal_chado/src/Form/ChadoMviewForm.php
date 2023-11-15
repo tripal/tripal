@@ -260,7 +260,6 @@ SELECT
     ];
 
     $form['cancel'] = [
-      '#type' => 'markup',
       '#markup' => Link::fromTextAndUrl('Cancel', Url::fromUserInput('/admin/tripal/storage/chado/mviews'))->toString(),
     ];
 

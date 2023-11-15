@@ -75,7 +75,6 @@ class TripalFileQuotaCustomEdit implements FormInterface{
     $link = Link::fromTextAndUrl('Cancel',
       Drupal\Core\Url::fromRoute('tripal.files_quota'));
     $form['cancel'] = [
-      '#type' => 'markup',
       '#markup' => $link->toString(),
     ];
     return $form;
