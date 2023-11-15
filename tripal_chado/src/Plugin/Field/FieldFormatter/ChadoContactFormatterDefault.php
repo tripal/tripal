@@ -94,7 +94,7 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
       '#title' => $this->t('Token string for field display'),
       '#description' => $this->t('You may specify elements in this text box to customize how'
                      . ' contacts are displayed. The available tokens are [name] for the'
-                     . ' contact name, [type] for the type of contact (person, institution, etc.)'
+                     . ' contact name, [type] for the type of contact (person, institution, etc.),'
                      . ' and [description] for the description for the contact.'
                      . ' For example, "[name] ([type]) [[description]]"'),
       '#type' => 'textfield',
@@ -146,13 +146,13 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
             }
           }
 
-          // @todo Note that this is not highlighting the field with the error
+          // Return validation error to the user with offending field highlighted
           if ($n_invalid) {
-            $form_state->setErrorByName($field.'][settings_edit_form][settings][token_string',
+            $form_state->setErrorByName('fields][' . $field . '][settings_edit_form][settings][token_string',
                 'The token string contains an invalid token, only "[name]", "[type]", and "[description]" may be used.');
           }
           elseif (!$n_tokens) {
-            $form_state->setErrorByName($field.'][settings_edit_form][settings][token_string',
+            $form_state->setErrorByName('fields][' . $field . '][settings_edit_form][settings][token_string',
                 'The token string must contain at least one of "[name]", "[type]", or "[description]".');
           }
         }
