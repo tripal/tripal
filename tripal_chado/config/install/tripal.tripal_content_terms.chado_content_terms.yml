@@ -778,6 +778,9 @@ vocabularies:
             -   id: 'NCIT:C70699'
                 name: 'Biospecimen'
                 description: 'Any material sample taken from a biological entity for testing, diagnostic, propagation, treatment or research purposes, including a sample obtained from a living organism or taken from the biological object after halting of all its life functions.'
+            -   id: 'NCIT:C47954'
+                name: 'Communication Contact'
+                description: 'A channel for communication between groups.'
 
     -   name: 'ncbitaxon'
         label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'

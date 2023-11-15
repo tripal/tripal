@@ -241,8 +241,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // are marked as "delete if empty".
           if (array_key_exists('delete_if_empty', $record)) {
             $skip_record = FALSE;
-            foreach ($record['delete_if_empty'] as $del_key) {
-              if ($record['fields'][$del_key] == '') {
+            foreach ($record['delete_if_empty'] as $del_record) {
+              if ($record['fields'][$del_record['chado_column']] == $del_record['empty_value']) {
                 $skip_record = TRUE;
               }
             }
@@ -300,12 +300,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * Indicates if we should keep this record for inserts/updates.
    *
    * @param array $record
+   *
    * @return boolean
    */
   private function isEmptyRecord($record) {
     if (array_key_exists('delete_if_empty', $record)) {
-      foreach ($record['delete_if_empty'] as $del_key) {
-        if ($record['fields'][$del_key] == '') { // @todo use the `empty_value` setting instead of hardcoding the ''
+      foreach ($record['delete_if_empty'] as $del_record) {
+        if ($record['fields'][$del_record['chado_column']] == $del_record['empty_value']) {
           return TRUE;
         }
       }
@@ -338,7 +339,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $update->condition($chado_column, $cond_value['value']);
     }
 
-    $this->field_debugger->reportQuery($update, "Update Query for $chado_table ($delta). Note: aguements may only include the conditional ones, see Drupal Issue #2005626.");
+    $this->field_debugger->reportQuery($update, "Update Query for $chado_table ($delta). Note: arguments may only include the conditional ones, see Drupal Issue #2005626.");
 
     $rows_affected = $update->execute();
     if ($rows_affected == 0) {
@@ -1062,7 +1063,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // The store_id action should only be used for the base table...
     if ($chado_table !== $context['base_table']) {
       $this->logger->error($this->t('The @field.@key property type uses the '
-        . 'store_id action type but is not assocatiated with the base table of the field. '
+        . 'store_id action type but is not associated with the base table of the field. '
         . 'Either change the base_table of this field or use store_pkey instead.',
         ['@field' => $context['field_name'], '@key' => $context['property_key']]));
     }
@@ -1316,11 +1317,16 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // If this field should not allow an empty value that means this
     // entire record should be removed on an update and not inserted.
     $delete_if_empty = FALSE;
+    $empty_value = '';
     if (array_key_exists('delete_if_empty', $storage_settings)) {
       $delete_if_empty = $storage_settings['delete_if_empty'];
     }
+    if (array_key_exists('empty_value', $storage_settings)) {
+      $empty_value = $storage_settings['empty_value'];
+    }
     if ($delete_if_empty) {
-      $records[$table_alias][$delta]['delete_if_empty'][] = $chado_column;
+      $records[$table_alias][$delta]['delete_if_empty'][] =
+        ['chado_column' => $chado_column, 'empty_value' => $empty_value];
     }
   }
 
