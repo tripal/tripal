@@ -5,6 +5,7 @@ namespace Drupal\tripal\Services;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -141,7 +142,7 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
       return FALSE;
     }
 
-    if (get_class($details['term']) != 'Drupal\tripal\TripalVocabTerms\TripalTerm') {
+    if (!is_a($details['term'],TripalTerm::class)) {
       $this->logger->error(t('Creation of content type, "@type", failed. The provided term was not a valid TripalTerm object.',
           ['@type' => $details['label']]));
       return FALSE;
