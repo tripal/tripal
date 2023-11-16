@@ -1,0 +1,920 @@
+id: 'general_chado'
+label: 'Default Chado Fields'
+description: 'Default fields configurations provided by the Tripal Chado module'
+fields:
+
+## Organism ##
+
+    -   name: organism_abbreviation
+        content_type: organism
+        label: Abbreviation
+        type: chado_string_type
+        description: A shortened name (or abbreviation) for the organism (e.g. O. sativa).
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: abbreviation
+            max_length: 255
+        settings:
+            termIdSpace: local
+            termAccession: abbreviation
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 25
+            form:
+                default:
+                    region: content
+                    weight: 25
+
+    -   name: organism_genus
+        content_type: organism
+        label: Genus
+        type: chado_string_type
+        description: "The genus name of the organism."
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: genus
+            max_length: 255
+        settings:
+            termIdSpace: TAXRANK
+            termAccession: "0000005"
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 5
+            form:
+                default:
+                    region: content
+                    weight: 5
+
+    -   name: organism_species
+        content_type: organism
+        label: Species
+        type: chado_string_type
+        description: "The species name of the organism."
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: species
+            max_length: 255
+        settings:
+            termIdSpace: TAXRANK
+            termAccession: "0000006"
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 10
+            form:
+                default:
+                    region: content
+                    weight: 10
+
+    -   name: organism_common_name
+        content_type: organism
+        label: Common Name
+        type: chado_string_type
+        description: "The common name for the organism."
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: common_name
+            max_length: 255
+        settings:
+            termIdSpace: NCBITaxon
+            termAccession: common_name
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 30
+            form:
+                default:
+                    region: content
+                    weight: 30
+
+    -   name: organism_infraspecific_name
+        content_type: organism
+        label: Infraspecies
+        type: chado_string_type
+        description: "The infraspecfic name for the organism."
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: infraspecific_name
+            max_length: 1024
+        settings:
+            termIdSpace: TAXRANK
+            termAccession: "0000045"
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 20
+            form:
+                default:
+                    region: content
+                    weight: 20
+
+    -   name: organism_infraspecific_type
+        content_type: organism
+        label: Infraspecific Type
+        type: chado_additional_type_default
+        description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                type_table: organism
+                type_column: type_id
+        settings:
+            termIdSpace: local
+            termAccession: "infraspecific_type"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: organism_comment
+        content_type: organism
+        label: Description
+        type: chado_text_type
+        description: A description of the organism.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: comment
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
+## Analysis ##
+
+    -   name: analysis_name
+        content_type: analysis
+        label: Name
+        type: chado_string_type
+        description: The name of the analysis.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: analysis_description
+        content_type: analysis
+        label: Description
+        type: chado_text_type
+        description: A description of the analysis.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: analysis_software
+        content_type: analysis
+        label: Program, Pipeline, Workflow or Method Name
+        type: chado_string_type
+        description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: program
+            max_length: 255
+        settings:
+            termIdSpace: SWO
+            termAccession: "0000001"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: analysis_program_version
+        content_type: analysis
+        label: Software Version
+        type: chado_string_type
+        description: The version of the program, pipeline or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: programversion
+            max_length: 255
+        settings:
+            termIdSpace: IAO
+            termAccession: 0000129
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: analysis_algorithm
+        content_type: analysis
+        label: Algorithm
+        type: chado_string_type
+        description: The name of the algorithm used to produce the dataset if different from the program.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: algorithm
+            max_length: 255
+        settings:
+            termIdSpace: IAO
+            termAccession: "0000064"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
+    -   name: analysis_source
+        content_type: analysis
+        label: Data Source Name
+        type: chado_string_type
+        description: The name of the source where data was obtained for this analysis.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourcename
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
+    -   name: analysis_source_version
+        content_type: analysis
+        label: Data Source Version
+        type: chado_string_type
+        description: The version number of the data source (if applicable).
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourceversion
+            max_length: 255
+        settings:
+            termIdSpace: IAO
+            termAccession: 0000129
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 40
+          form:
+            default:
+              region: content
+              weight: 40
+
+    -   name: analysis_source_uri
+        content_type: analysis
+        label: Data Source URI
+        type: chado_text_type
+        description: The URI (e.g. web URL) where the source data can be retrieved.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourceuri
+        settings:
+            termIdSpace: data
+            termAccession: "1047"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 45
+          form:
+            default:
+              region: content
+              weight: 45
+
+## Project ##
+
+    -   name: project_name
+        content_type: project
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: project_description
+        content_type: project
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: project_contact
+        content_type: project
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_contact
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+## Study ##
+
+    -   name: study_name
+        content_type: study
+        label: Name
+        type: chado_text_type
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                base_column: name
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: study_description
+        content_type: study
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: study_contact
+        content_type: study
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                linker_table: study
+                linker_fkey_column: contact_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47954
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: study_dbxref_id
+        content_type: study
+        label: Dbxref ID
+        type: chado_integer_type
+        description: The primary key of the database reference (dbxref) to attach to this study. This field is a placeholder until we develop a more user friendly database reference field.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                base_column: dbxref_id
+        settings:
+            termIdSpace: data
+            termAccession: "2091"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: study_pub_id
+        content_type: study
+        label: Publication ID
+        type: chado_integer_type
+        description: The primary key of the publication to attach to this study. This field is a placeholder until we develop a more user friendly publication field.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                base_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession:  "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+## Contact ##
+
+    -   name: contact_name
+        content_type: contact
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: contact_description
+        content_type: contact
+        label: Description
+        type: chado_string_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                base_column: description
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: contact_type
+        content_type: contact
+        label: Contact Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                type_table: contact
+                type_column: type_id
+        settings:
+            termIdSpace: local
+            termAccession: contact
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+## Protocol ##
+
+    -   name: protocol_name
+        content_type: protocol
+        label: Name
+        type: chado_text_type
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: name
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: protocol_uri
+        content_type: protocol
+        label: URI
+        type: chado_text_type
+        description: The name of a biological or bioinformatics database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: uri
+        settings:
+            termIdSpace: data
+            termAccession: "1047"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: protocol_description
+        content_type: protocol
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: protocoldescription
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: protocol_instrument
+        content_type: protocol
+        label: Instrument
+        type: chado_text_type
+        description: An instrument is a device which provides a mechanical or electronic function.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: hardwaredescription
+        settings:
+            termIdSpace: EFO
+            termAccession: 0000548
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: protocol_software
+        content_type: protocol
+        label: Software
+        type: chado_text_type
+        description: Computer software, or generally just software, is any set of machine-readable instructions (most often in the form of a computer program) that conform to a given syntax (sometimes referred to as a language) that is interpretable by a given processor and that directs a computer's processor to perform specific operations.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: softwaredescription
+        settings:
+            termIdSpace: SWO
+            termAccession: "0000001"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
+    -   name: protocol_type
+        content_type: protocol
+        label: Protocol Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                type_table: protocol
+                type_column: type_id
+        settings:
+            termIdSpace: sep
+            termAccession: "00101"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+
+    -   name: protocol_dbxref_id
+        content_type: protocol
+        label: Dbxref ID
+        type: chado_integer_type
+        description: The primary key of the database reference (dbxref) to attach to this protocol. This field is a placeholder until we develop a more user friendly database reference field.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: dbxref_id
+        settings:
+            termIdSpace: data
+            termAccession: "2091"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: protocol_pub_id
+        content_type: protocol
+        label: Publication ID
+        type: chado_integer_type
+        description: The primary key of the publication to attach to this protocol. This field is a placeholder until we develop a more user friendly publication field.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession:  "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
