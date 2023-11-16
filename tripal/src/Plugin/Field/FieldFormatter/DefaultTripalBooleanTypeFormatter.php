@@ -58,7 +58,7 @@ class DefaultTripalBooleanTypeFormatter extends TripalFormatterBase {
       '#description' => $this->t('Enter text here to represent a boolean TRUE value.'
                      . ' For example "True", "Yes", "Present", "Active", etc.'),
       '#type' => 'textfield',
-      '#default_value' => $this->getSetting('true_string') ?? 'True',
+      '#default_value' => $this->getSetting('true_string'),
       '#required' => TRUE,
       '#element_validate' => [[static::class, 'settingsFormValidateBoolean']],
     ];
