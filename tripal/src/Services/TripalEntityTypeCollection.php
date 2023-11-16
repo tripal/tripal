@@ -81,32 +81,41 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
   /**
    * Installs content types using all appropriate YAML files.
    *
-   * The YAML config file prefix is tripal.tripalentitytype_collection.*
+   * @param array $collection_ids
+   *   An array of the collection 'id' you would like to install.
    */
-  public function install() {
+  public function install(array $collection_ids) {
+    $yaml_prefix = 'tripal.tripalentitytype_collection.';
 
-    // Get the list of all configurations that match the config schema name.
     $config_factory = \Drupal::service('config.factory');
-    $config_list = $config_factory->listAll('tripal.tripalentitytype_collection');
 
     // Iterate through the configurations and create the content types.
-    foreach ($config_list as $config_item) {
+    foreach ($collection_ids as $config_id) {
+
+      $config_item = $yaml_prefix . $config_id;
+      print "\nConfig Item: $config_item.\n";
       $config = $config_factory->get($config_item);
-      $label = $config->get('label');
-      $this->logger->notice("Creating Tripal Content Types from: " . $label);
 
-      // Iterate through each of the content types in the config.
-      $content_types = $config->get('content_types');
-      foreach ($content_types as $content_type) {
+      if (is_object($config)) {
+        $label = $config->get('label');
+        $this->logger->notice("Creating Tripal Content Types from: " . $label);
 
-        // Replace the term ID with a term object
-        list($termIdSpace, $termAccession) = explode(':', $content_type['term']);
-        $idspace = $this->idSpaceManager->loadCollection($termIdSpace);
-        $term =  $idspace->getTerm($termAccession);
-        $content_type['term'] = $term;
+        // Iterate through each of the content types in the config.
+        $content_types = $config->get('content_types');
+        foreach ($content_types as $content_type) {
 
-        // Add the content type
-        $content_type = $this->createContentType($content_type);
+          // Replace the term ID with a term object
+          list($termIdSpace, $termAccession) = explode(':', $content_type['term']);
+          $idspace = $this->idSpaceManager->loadCollection($termIdSpace);
+          $term =  $idspace->getTerm($termAccession);
+          $content_type['term'] = $term;
+
+          // Add the content type
+          $content_type = $this->createContentType($content_type);
+        }
+      }
+      else {
+        throw new \Exception("Unable to retrieve the configuration with an id of $config_id using the assumption that its in the file $config_item.");
       }
     }
   }
