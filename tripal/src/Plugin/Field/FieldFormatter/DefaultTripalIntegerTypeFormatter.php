@@ -23,15 +23,77 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
   /**
    * {@inheritdoc}
    */
+  public static function defaultSettings() {
+    $settings = parent::defaultSettings();
+    $settings['field_prefix'] = '';
+    $settings['field_suffix'] = ' b.p.';
+    $settings['thousand_separator'] = '';
+    return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
+    $field_prefix = $this->getSetting('field_prefix');
+    $field_suffix = $this->getSetting('field_suffix');
+    $thousand_separator = $this->getSetting('thousand_separator');
 
     foreach($items as $delta => $item) {
       $elements[$delta] = [
-        "#markup" => $item->get("value")->getValue(),
+        $value = $item->get("value")->getValue();
+        if (strlen($thousand_separator)) {
+          // For an integer we can hardcode the unused decimal setting
+          $value = number_format(floatval($value), 0, '.', $thousand_separator);
+        }
+        "#markup" => $field_prefix . $value . $field_suffix,
       ];
     }
 
     return $elements;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $form = parent::settingsForm($form, $form_state);
+
+    $form['field_prefix'] = [
+      '#title' => $this->t('Text to display before the field value'),
+      '#description' => $this->t('Enter text here that will be displayed in front of the'
+                     . ' field value, or leave blank for no additional text'),
+      '#type' => 'textfield',
+      '#default_value' => $this->getSetting('field_prefix'),
+      '#required' => FALSE,
+    ];
+    $form['false_string'] = [
+      '#title' => $this->t('Text to display for a boolean FALSE value'),
+      '#description' => $this->t('Enter text here that will be displayed after the'
+                     . ' field value, e.g. " b.p.", or leave blank for no additional text'),
+      '#type' => 'textfield',
+      '#default_value' => $this->getSetting('field_suffix'),
+      '#required' => FALSE,
+    ];
+    $form['thousand_separator'] = [
+      '#title' => $this->t('Thousand Separator'),
+      '#description' => $this->t('Character to display every three digits'),
+      '#type' => 'textfield',
+      '#default_value' => $this->getSetting('thousand_separator'),
+      '#required' => FALSE,
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $summary = parent::settingsSummary();
+    $summary[] = $this->t('Set display format');
+    return $summary;
+  }
+
 }

@@ -336,6 +336,14 @@ tripal.tripalfield_collection.*:
 field.formatter.settings.*:
   type: mapping
   mapping:
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
     true_string:
       type: string
       label: 'Text to display for a boolean TRUE value'
@@ -344,6 +352,10 @@ field.formatter.settings.*:
       type: string
       label: 'Text to display for a boolean FALSE value'
       nullable: false
+    thousand_separator:
+      type: string
+      label: 'Thousand marker'
+      nullable: true
     token_string:
       type: string
       label: 'Token string for field display'
