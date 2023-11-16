@@ -339,9 +339,12 @@ field.formatter.settings.*:
     true_string:
       type: string
       label: 'Text to display for a boolean TRUE value'
+      nullable: false
     false_string:
       type: string
       label: 'Text to display for a boolean FALSE value'
+      nullable: false
     token_string:
       type: string
       label: 'Token string for field display'
+      nullable: false
