@@ -333,9 +333,15 @@ tripal.tripalfield_collection.*:
                            label: 'Weight'
                            nullable: false
 
-field.formatter.settings.chado_contact_formatter_default:
+field.formatter.settings.*:
   type: mapping
   mapping:
+    true_string:
+      type: string
+      label: 'Text to display for a boolean TRUE value'
+    false_string:
+      type: string
+      label: 'Text to display for a boolean FALSE value'
     token_string:
       type: string
-      label: 'Set display format'
+      label: 'Token string for field display'
