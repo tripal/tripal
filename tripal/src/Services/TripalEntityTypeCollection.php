@@ -221,7 +221,8 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
     if (!empty($entityTypes)) {
       $this->logger->notice(t('Skipping content type, "@type", as it already exists.',
           ['@type' => $details['label']]));
-      $bundle = array_pop(array_keys($entityTypes));
+      $entity_ids = array_keys($entityTypes);
+      $bundle = array_pop($entity_ids);
       $entityType = $entityTypes[$bundle];
     }
     else {
