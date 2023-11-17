@@ -169,7 +169,7 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
     }
 
     if (!array_key_exists('help_text', $details) or !$details['help_text']) {
-      $this->logger->error(t('Creation of content type, "@type", failed. No help_text was provided.',
+      $this->logger->error(t('Creation of content type, "@type", failed. No help text was provided.',
           ['@type' => $details['label']]));
       return FALSE;
     }
