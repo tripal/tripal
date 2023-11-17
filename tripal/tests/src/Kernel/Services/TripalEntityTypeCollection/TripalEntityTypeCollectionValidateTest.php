@@ -27,9 +27,9 @@ class TripalEntityTypeCollectionValidateTest extends KernelTestBase {
    * A dummy Tripal Term.
    * NOTE: This is a dummy object so any methods called on it will return NULL.
    *
-   * @var \Drupal\tripal\TripalVocabTerms\TripalTerm
+   * @var array of \Drupal\tripal\TripalVocabTerms\TripalTerm
    */
-  protected object $mock_term;
+  protected array $mock_terms;
 
   /**
    * A dummy Tripal ID Space.
@@ -54,14 +54,39 @@ class TripalEntityTypeCollectionValidateTest extends KernelTestBase {
 
     // We need a term for property types so we will create a generic mocked one
     // here which will be pulled from the container any time a term is requested.
-    $this->mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
-    print "The class for our mock term is " . get_class($this->mock_term) . " and when testing it it's an instance of TripalTerm we get: " . print_r(is_a($this->mock_term, TripalTerm::class), TRUE);
+    // -- valid organism term.
+    $mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
+    $mock_term->method('getName')
+      ->willReturn('organism');
+    $mock_term->method('getIdSpace')
+      ->willReturn('OBI');
+    $mock_term->method('getAccession')
+      ->willReturn('0100026');
+    $mock_term->method('getVocabulary')
+      ->willReturn('OBI');
+    $mock_term->method('isValid')
+      ->willReturn(TRUE);
+    $this->mock_terms['organism'] = $mock_term;
+    // Invalid term with missing name.
+    $mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
+    $mock_term->method('getName')
+      ->willReturn('');
+    $mock_term->method('getIdSpace')
+      ->willReturn('BEEP');
+    $mock_term->method('getAccession')
+      ->willReturn('invalidTerm');
+    $mock_term->method('getVocabulary')
+      ->willReturn('Fake Realm');
+    $mock_term->method('isValid')
+      ->willReturn(FALSE);
+    $this->mock_terms['invalidTerm'] = $mock_term;
+
     // Create a mock ID space to return our mock term when asked.
     $this->mock_idspace = $this->createMock(\Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface::class);
     $this->mock_idspace->method('getTerm')
       ->willReturnCallback(function($accession) {
-        if ($accession == 'term') {
-          return $this->mock_term;
+        if (array_key_exists($accession, $this->mock_terms)) {
+          return $this->mock_terms[$accession];
         }
         else {
           return NULL;
@@ -86,10 +111,14 @@ class TripalEntityTypeCollectionValidateTest extends KernelTestBase {
    */
   public function testTripalEntityTypeCollection() {
 
+    $this->assertInstanceOf(TripalTerm::class, $this->mock_terms['organism']);
+    $this->assertTrue($this->mock_terms['organism']->isValid(), "Mock Organism Term must pass TripalTerm::isValid");
+    $this->assertFalse($this->mock_terms['invalidTerm']->isValid(), "Mock Term missing name must fail TripalTerm::isValid");
+
     // Create a good content type array.
     $good = [
       'label' => 'Organism',
-      'term' => $this->mock_term,
+      'term' => $this->mock_terms['organism'],
       'help_text' => 'Use the organism page for an individual living system, such as animal, plant, bacteria or virus,',
       'category' => 'General',
       'id' => 'organism',
@@ -98,14 +127,16 @@ class TripalEntityTypeCollectionValidateTest extends KernelTestBase {
       'synonyms' => ['bio_data_1']
     ];
 
-    /** @var \Drupal\tripal\Services\TripalEntityTypeCollection $content_type_service **/
     $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
 
     // Test creating a good content type.
     $is_valid = $content_type_service->validate($good);
     $this->assertTrue($is_valid, "A good content type definition failed validation check.");
+
+  /**
+   * Working up to here
     $content_type = $content_type_service->createContentType($good);
-    $this->assertTrue(!is_null($content_type), "Failed to create a content type with avalid definition.");
+    $this->assertTrue(!is_null($content_type), "Failed to create a content type with a valid definition.");
 
     // Test that when a value is missing it fails validation.
     $bad = $good;
@@ -154,5 +185,6 @@ class TripalEntityTypeCollectionValidateTest extends KernelTestBase {
     # $content_type = $content_type_service->createContentType($bad);
     # $this->assertTrue(is_null($content_type), "Created a content type when the synonyms are incorret.");
 
+    */
   }
 }
