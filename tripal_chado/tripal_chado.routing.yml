@@ -194,6 +194,14 @@ tripal.data_loaders.publication_loaders.new_publication_search_query:
   requirements:
     _permission: 'allow tripal import'
 
+tripal.data_loaders.publication_loaders.delete_publication_search_query:
+  path: 'admin/tripal/loaders/publications/delete_publication_search_query/{pub_import_id}'
+  defaults:
+    _form: 'Drupal\tripal_chado\Form\ChadoDeletePubSearchQueryForm'
+    _title: 'Delete publication'
+  requirements:
+    _permission: 'allow tripal import'    
+
 tripal.data_loaders.publication_loaders.edit_publication_search_query:
   path: 'admin/tripal/loaders/publications/edit_publication_search_query/{pub_import_id}'
   defaults:

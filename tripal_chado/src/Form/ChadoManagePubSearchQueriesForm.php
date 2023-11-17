@@ -14,7 +14,7 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'chado_manage_pub_search_queries_form';
+    return 'chado_manage_publication_search_queries_form';
   }
 
   /**
@@ -185,12 +185,12 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
         '#type' => 'submit',
         '#name' => 'delete-' . $pub_importer->pub_import_id,
         '#default_value' => 'Delete',
-        '#attributes' => [
-          'data-value' => [
-            $pub_importer->pub_import_id
-          ],
-          'onclick' => 'var result = confirm("Are you sure you want to delete this publication importer?"); if (result != true) { return false }'
-        ]
+        // '#attributes' => [
+        //   'data-value' => [
+        //     $pub_importer->pub_import_id
+        //   ],
+        //   'onclick' => 'var result = confirm("Are you sure you want to delete this publication importer?"); if (result != true) { return false }'
+        // ]
       ];
 
       $form['pub_manager']['table'][] = $row;
@@ -268,14 +268,8 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
     // dpm($trigger);
     if (stripos($trigger_element['#name'],'delete-') !== FALSE) {
       $pub_import_id = explode('delete-',$trigger_element['#name'])[1];
-      // dpm($pub_import_id);
-      $public->delete('tripal_pub_import')
-        ->condition('pub_import_id', $pub_import_id, '=')
-        ->execute();
-              
-      $messenger = \Drupal::messenger();
-      $messenger->addMessage("Publication importer has been deleted.");
-
+      $url = Url::fromUri('internal:/admin/tripal/loaders/publications/delete_publication_search_query/' . $pub_import_id);
+      $form_state->setRedirectUrl($url);
     }
   }
 

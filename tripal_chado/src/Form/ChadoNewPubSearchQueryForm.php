@@ -191,11 +191,14 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       '#value' => t('Save Importer'),
       '#weight' => 51,
     ];
-    $form['pub_library']['test'] = [
-      '#type' => 'submit',
-      '#value' => t('Test Importer'),
-      '#weight' => 51,
-    ];
+
+    // @TODO if necessary from within this form
+    // $form['pub_library']['test'] = [
+    //   '#type' => 'submit',
+    //   '#value' => t('Test Importer'),
+    //   '#weight' => 51,
+    // ];
+
     $form['pub_library']['delete'] = [
       '#type' => 'submit',
       '#value' => t('Delete Importer'),
@@ -567,7 +570,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         if ($form_mode != "edit") {
           $public->insert('tripal_pub_import')->fields($db_fields)->execute();
           $messenger->addMessage("Importer successfully added!");
-          $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_pub_search_queries');
+          $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
         }
         // If form_mode is 'edit', this is an update to the database
@@ -579,7 +582,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
             ->condition('pub_import_id', $user_input['pub_import_id'])
             ->execute();
           $messenger->addMessage("Importer successfully edited!");
-          $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_pub_search_queries');
+          $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           // dpm($url);
           $form_state->setRedirectUrl($url);
         }
