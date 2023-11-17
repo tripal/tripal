@@ -356,6 +356,10 @@ field.formatter.settings.*:
       type: string
       label: 'Thousand marker'
       nullable: true
+    case_setting:
+      type: string
+      label: 'Case setting for field display'
+      nullable: true
     token_string:
       type: string
       label: 'Token string for field display'
