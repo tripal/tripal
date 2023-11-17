@@ -21,7 +21,7 @@ class TripalEntityTypeCollectionValidateTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['tripal'];
+  protected static $modules = ['user', 'tripal'];
 
   /**
    * A dummy Tripal Term.
@@ -104,6 +104,16 @@ class TripalEntityTypeCollectionValidateTest extends KernelTestBase {
         }
       });
     $container->set('tripal.collection_plugin_manager.idspace', $mock_idspace_service);
+
+    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+      ->onlyMethods(['error'])
+      ->getMock();
+    $mock_logger->method('error')
+      ->willReturnCallback(function($message, $context, $options) {
+        print str_replace(array_keys($context), $context, $message);
+        return NULL;
+      });
+    $container->set('tripal.logger', $mock_logger);
   }
 
   /**
@@ -132,59 +142,69 @@ class TripalEntityTypeCollectionValidateTest extends KernelTestBase {
     // Test creating a good content type.
     $is_valid = $content_type_service->validate($good);
     $this->assertTrue($is_valid, "A good content type definition failed validation check.");
-
-  /**
-   * Working up to here
     $content_type = $content_type_service->createContentType($good);
     $this->assertTrue(!is_null($content_type), "Failed to create a content type with a valid definition.");
 
     // Test that when a value is missing it fails validation.
+    // -- missing term.
     $bad = $good;
     unset($bad['term']);
+    ob_start();
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'term' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the term is incorret.");
+    $printed_output = ob_get_clean();
+    $this->assertTrue(is_null($content_type), "Created a content type when the term is incorrect.");
+    $this->assertStringContainsString('No term provided', $printed_output,
+      "The user should be told why their content type wasn't created.");
 
-    # Name is currently created automatically.
-    # $bad = $good;
-    # unset($bad['name']);
-    # $is_valid = $content_type_service->validate($bad);
-    # $this->assertFalse($is_valid, "A content type definition missing the 'name' should fail the validation check but it passed.");
-    # $content_type = $content_type_service->createContentType($bad);
-    # $this->assertTrue(is_null($content_type), "Created a content type when the name is incorret.");
+    // -- missing id
+    $bad = $good;
+    unset($bad['id']);
+    ob_start();
+    $is_valid = $content_type_service->validate($bad);
+    $this->assertFalse($is_valid, "A content type definition missing the 'name' should fail the validation check but it passed.");
+    $content_type = $content_type_service->createContentType($bad);
+    $printed_output = ob_get_clean();
+    $this->assertTrue(is_null($content_type), "Created a content type when the name is incorrect.");
+    $this->assertStringContainsString('No id provided', $printed_output,
+      "The user should be told why their content type wasn't created.");
 
+    // -- missing label
     $bad = $good;
     unset($bad['label']);
+    ob_start();
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'label' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the label is incorret.");
+    $printed_output = ob_get_clean();
+    $this->assertTrue(is_null($content_type), "Created a content type when the label is incorrect.");
+    $this->assertStringContainsString('No label provided', $printed_output,
+      "The user should be told why their content type wasn't created.");
 
+    // -- missing cetegory
     $bad = $good;
     unset($bad['category']);
+    ob_start();
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'category' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the category is incorret.");
+    $printed_output = ob_get_clean();
+    $this->assertTrue(is_null($content_type), "Created a content type when the category is incorrect.");
+    $this->assertStringContainsString('No category was provided', $printed_output,
+      "The user should be told why their content type wasn't created.");
 
-
+    // -- missing help text
     $bad = $good;
     unset($bad['help_text']);
+    ob_start();
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'help_text' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the help_text is incorret.");
+    $printed_output = ob_get_clean();
+    $this->assertTrue(is_null($content_type), "Created a content type when the help_text is incorrect.");
+    $this->assertStringContainsString('No help text was provided', $printed_output,
+      "The user should be told why their content type wasn't created.");
 
-
-    # Synonyms are not yet supported but will be in a later PR.
-    # $bad = $good;
-    # $bad['synonyms'] = 'xyz';
-    # $is_valid = $content_type_service->validate($bad);
-    # $this->assertFalse($is_valid, "A content type definition with a malformed synonyms list should fail the validation check but it passed.");
-    # $content_type = $content_type_service->createContentType($bad);
-    # $this->assertTrue(is_null($content_type), "Created a content type when the synonyms are incorret.");
-
-    */
   }
 }
