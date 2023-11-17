@@ -67,19 +67,6 @@ class TripalEntityTypeCollectionCreateTest extends KernelTestBase {
     $mock_term->method('isValid')
       ->willReturn(TRUE);
     $this->mock_terms['organism'] = $mock_term;
-    // Invalid term with missing name.
-    $mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
-    $mock_term->method('getName')
-      ->willReturn('');
-    $mock_term->method('getIdSpace')
-      ->willReturn('BEEP');
-    $mock_term->method('getAccession')
-      ->willReturn('invalidTerm');
-    $mock_term->method('getVocabulary')
-      ->willReturn('Fake Realm');
-    $mock_term->method('isValid')
-      ->willReturn(FALSE);
-    $this->mock_terms['invalidTerm'] = $mock_term;
 
     // Create a mock ID space to return our mock term when asked.
     $this->mock_idspace = $this->createMock(\Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface::class);
