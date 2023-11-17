@@ -93,7 +93,6 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
     foreach ($collection_ids as $config_id) {
 
       $config_item = $yaml_prefix . $config_id;
-      print "\nConfig Item: $config_item.\n";
       $config = $config_factory->get($config_item);
 
       if (is_object($config)) {
