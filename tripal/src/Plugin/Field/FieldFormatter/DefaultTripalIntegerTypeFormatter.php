@@ -41,12 +41,12 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
     $thousand_separator = $this->getSetting('thousand_separator');
 
     foreach($items as $delta => $item) {
+      $value = $item->get("value")->getValue();
+      if (strlen($thousand_separator)) {
+        // For an integer we can hardcode the unused decimal setting
+        $value = number_format(floatval($value), 0, '.', $thousand_separator);
+      }
       $elements[$delta] = [
-        $value = $item->get("value")->getValue();
-        if (strlen($thousand_separator)) {
-          // For an integer we can hardcode the unused decimal setting
-          $value = number_format(floatval($value), 0, '.', $thousand_separator);
-        }
         "#markup" => $field_prefix . $value . $field_suffix,
       ];
     }
@@ -62,16 +62,16 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
 
     $form['field_prefix'] = [
       '#title' => $this->t('Text to display before the field value'),
-      '#description' => $this->t('Enter text here that will be displayed in front of the'
+      '#description' => $this->t('Enter text here that will be displayed before the'
                      . ' field value, or leave blank for no additional text'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('field_prefix'),
       '#required' => FALSE,
     ];
-    $form['false_string'] = [
-      '#title' => $this->t('Text to display for a boolean FALSE value'),
+    $form['field_suffix'] = [
+      '#title' => $this->t('Text to display after the field value'),
       '#description' => $this->t('Enter text here that will be displayed after the'
-                     . ' field value, e.g. " b.p.", or leave blank for no additional text'),
+                     . ' field value, or leave blank for no additional text'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('field_suffix'),
       '#required' => FALSE,

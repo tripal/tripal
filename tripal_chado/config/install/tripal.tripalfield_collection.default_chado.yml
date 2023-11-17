@@ -897,6 +897,9 @@ fields:
         settings:
             termIdSpace: data
             termAccession: "1249"
+        formatter_settings:
+            field_suffix: " b.p."
+            thousand_separator: " "
         display:
           view:
             default:
