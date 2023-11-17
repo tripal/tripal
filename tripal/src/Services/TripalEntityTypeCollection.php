@@ -151,13 +151,13 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
     }
 
     if (!is_a($details['term'],TripalTerm::class)) {
-      $this->logger->error(t('Creation of content type, "@type", failed. The provided term was not a valid TripalTerm object.',
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided term was not an instance of the TripalTerm class.',
           ['@type' => $details['label']]));
       return FALSE;
     }
 
     if (!$details['term']->isValid()) {
-      $this->logger->error(t('Creation of content type, "@type", failed. The provided TripalTerm object was not valid.',
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided TripalTerm object was not valid due to missing details.',
           ['@type' => $details['label']]));
       return FALSE;
     }

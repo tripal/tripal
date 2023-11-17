@@ -206,5 +206,41 @@ class TripalEntityTypeCollectionValidateTest extends KernelTestBase {
     $this->assertStringContainsString('No help text was provided', $printed_output,
       "The user should be told why their content type wasn't created.");
 
+    // Test that when a value is not the correct type it fails validation.
+    // -- pass in an invalid tripal term.
+    $bad = $good;
+    $bad['term'] = $this->mock_terms['invalidTerm'];
+    ob_start();
+    $is_valid = $content_type_service->validate($bad);
+    $this->assertFalse($is_valid, "A content type definition with an invalid term should fail the validation check but it passed.");
+    $content_type = $content_type_service->createContentType($bad);
+    $printed_output = ob_get_clean();
+    $this->assertTrue(is_null($content_type), "Created a content type when the term is incorrect.");
+    $this->assertStringContainsString('TripalTerm object was not valid', $printed_output,
+      "The user should be told why their content type wasn't created.");
+
+    // -- pass in a random object instead of a tripal term.
+    $bad = $good;
+    $bad['term'] = (object) array('foo' => 'bar');
+    ob_start();
+    $is_valid = $content_type_service->validate($bad);
+    $this->assertFalse($is_valid, "A content type definition with a non TripalTerm object as the term should fail the validation check but it passed.");
+    $content_type = $content_type_service->createContentType($bad);
+    $printed_output = ob_get_clean();
+    $this->assertTrue(is_null($content_type), "Created a content type when the term is incorrect.");
+    $this->assertStringContainsString('not an instance of the TripalTerm class', $printed_output,
+      "The user should be told why their content type wasn't created.");
+
+    // -- pass in a optional synonyms but they are not an array.
+    $bad = $good;
+    $bad['synonyms'] = (object) array('syn1', 'syn2', 'syn3');
+    ob_start();
+    $is_valid = $content_type_service->validate($bad);
+    $this->assertFalse($is_valid, "A content type definition with synonyms specified in the wrong format should fail the validation check but it passed.");
+    $content_type = $content_type_service->createContentType($bad);
+    $printed_output = ob_get_clean();
+    $this->assertTrue(is_null($content_type), "Created a content type when the term is incorrect.");
+    $this->assertStringContainsString('synonyms should be an array', $printed_output,
+      "The user should be told why their content type wasn't created.");
   }
 }
