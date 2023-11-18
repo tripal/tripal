@@ -131,6 +131,49 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     return $base_tables;
   }
 
+  /**
+   * Return a list of column names for the indicated table.
+   *
+   * @param string $table_name
+   *   The Chado table of interest.
+   *
+   * @param array $column_types
+   *   If specified, limit to specified column types, e.g.
+   *   "character varying", "text", "bigint", etc.
+   *
+   * @return array
+   *   The list of columns is returned in an alphabetized list
+   *   ready to use in a form select.
+   */
+  protected function getTableColumns($table_name = '', $column_types = []) {
+    $select_list = [];
+
+    if (!$table_name) {
+      $select_list[NULL] = '-- Select base table first --';
+    }
+    else {
+      $chado = \Drupal::service('tripal_chado.database');
+      $schema = $chado->schema();
+      $table_schema_def = $schema->getTableDef($table_name, ['format' => 'Drupal']);
+      foreach ($table_schema_def['fields'] as $field => $properties) {
+        if (!$column_types or in_array($properties['type'], $column_types)) {
+          $select_list[$field] = $field;
+        }
+      }
+      if (count($select_list) == 0) {
+        $select_list = [NULL => '-- No valid columns available --'];
+      }
+      // If more than one item was found, prefix the list with a Select message
+      elseif (count($select_list) > 1) {
+        ksort($select_list);
+dpm("Add prefix"); //@@@
+        $select_list = [NULL => '-- Select --'] + $select_list;
+      }
+    }
+
+    return $select_list;
+  }
+
  /**
    * Return a list of candidate linking connections given
    * a base table and a linked table. These can either be
@@ -190,13 +233,13 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
           }
         }
       }
-      ksort($select_list);
 
       if (count($select_list) == 0) {
         $select_list = [NULL => '-- No link is possible --'];
       }
       // If more than one item was found, prefix the list with a Select message
       elseif (count($select_list) > 1) {
+        ksort($select_list);
         $select_list = [NULL => '-- Select --'] + $select_list;
       }
     }
