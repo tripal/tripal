@@ -48,52 +48,6 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    $storage_settings = $this->getSetting('storage_plugin_settings');
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-
-    // Add an ajax callback so that when the base table is selected, the
-    // base column select can be populated.
-    $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-      'callback' =>  [$this, 'storageSettingsFormAjaxCallback'],
-      'event' => 'change',
-      'progress' => [
-        'type' => 'throbber',
-        'message' => $this->t('Retrieving table columns...'),
-      ],
-      'wrapper' => 'edit-base_column',
-    ];
-
-    $base_columns = $this->getTableColumns($base_table, ['text', 'character varying']);
-    $elements['storage_plugin_settings']['base_column'] = [
-      '#type' => 'select',
-      '#title' => t('Table Column'),
-      '#description' => t('Select the column in the base table that contains the field data'),
-      '#options' => $base_columns,
-      '#default_value' => $this->getSetting('base_column') ?? '',
-      '#required' => TRUE,
-      '#disabled' => $has_data or !$base_table,
-      '#prefix' => '<div id="edit-base_column">',
-      '#suffix' => '</div>',
-    ];
-
-    $elements['storage_plugin_settings']['max_length'] = [
-      '#type' => 'number',
-      '#title' => t('Maximum length'),
-      '#default_value' => $this->getSetting('max_length'),
-      '#required' => TRUE,
-      '#description' => t('The maximum length of the field in characters.'),
-      '#min' => 1,
-      '#disabled' => $has_data,
-    ];
-
-    return $elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $values = [];
     //$random = new Random();
@@ -164,6 +118,52 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
         'chado_column' => $base_column,
       ]),
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
+    $storage_settings = $this->getSetting('storage_plugin_settings');
+    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+
+    // Add an ajax callback so that when the base table is selected, the
+    // base column select can be populated.
+    $elements['storage_plugin_settings']['base_table']['#ajax'] = [
+      'callback' =>  [$this, 'storageSettingsFormAjaxCallback'],
+      'event' => 'change',
+      'progress' => [
+        'type' => 'throbber',
+        'message' => $this->t('Retrieving table columns...'),
+      ],
+      'wrapper' => 'edit-base_column',
+    ];
+
+    $base_columns = $this->getTableColumns($base_table, ['text', 'character varying']);
+    $elements['storage_plugin_settings']['base_column'] = [
+      '#type' => 'select',
+      '#title' => t('Table Column'),
+      '#description' => t('Select the column in the base table that contains the field data'),
+      '#options' => $base_columns,
+      '#default_value' => $this->getSetting('base_column') ?? '',
+      '#required' => TRUE,
+      '#disabled' => $has_data or !$base_table,
+      '#prefix' => '<div id="edit-base_column">',
+      '#suffix' => '</div>',
+    ];
+
+    $elements['storage_plugin_settings']['max_length'] = [
+      '#type' => 'number',
+      '#title' => t('Maximum length'),
+      '#default_value' => $this->getSetting('max_length'),
+      '#required' => TRUE,
+      '#description' => t('The maximum length of the field in characters.'),
+      '#min' => 1,
+      '#disabled' => $has_data,
+    ];
+
+    return $elements;
   }
 
   /**
