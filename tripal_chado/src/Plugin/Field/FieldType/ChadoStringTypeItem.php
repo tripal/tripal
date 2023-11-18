@@ -60,7 +60,8 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
    */
   public function getConstraints() {
     $constraints = parent::getConstraints();
-    if ($max_length = $this->getSetting('max_length')) {
+    $settings = $this->getSetting('storage_plugin_settings');
+    if ($max_length == $settings['max_length']) {
       $constraint_manager = \Drupal::typedDataManager()->getValidationConstraintManager();
       $constraints[] = $constraint_manager->create('ComplexData', [
         'value' => [
