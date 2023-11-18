@@ -277,14 +277,33 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     }
   }
 
+  /**
+   * Returns a placeholder properties array for fields where the
+   * base table has not yet been set when manually adding a field.
+   *
+   * @param object $field_definition
+   *   The field configuration object. This can be an instance of:
+   *   \Drupal\field\Entity\FieldStorageConfig or
+   *   \Drupal\field\Entity\FieldConfig
+   */
+  private static function placeholderProperties($field_definition) {
+    $entity_type_id = $field_definition->getTargetEntityTypeId();
+    $record_id_term = 'SIO:000729';
+    return([
+      new IntStoragePropertyType($entity_type_id, 'placeholder', 'record_id', $record_id_term, [
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+      ])
+    ]);
+  }
 
   /**
    * {@inheritdoc}
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
     $properties = [];
-
-    foreach (get_called_class()::tripalTypes($field_definition) as $type) {
+    $prop_types = get_called_class()::tripalTypes($field_definition) ?? self::placeholderProperties($field_definition);
+    foreach ($prop_types as $type) {
       if ($type instanceof IntStoragePropertyType) {
         $properties[$type->getKey()] = DataDefinition::create("integer");
       }
@@ -305,7 +324,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if (empty($properties)) {
       throw new RuntimeException("Cannot return empty array.");
     }
-
     return $properties;
   }
 
@@ -314,7 +332,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     $schema = [];
-    foreach (get_called_class()::tripalTypes($field_definition) as $type) {
+    $prop_types = get_called_class()::tripalTypes($field_definition) ?? self::placeholderProperties($field_definition);
+    foreach ($prop_types as $type) {
       if ($type instanceof IntStoragePropertyType) {
         $column = [
           "type" => "int"
