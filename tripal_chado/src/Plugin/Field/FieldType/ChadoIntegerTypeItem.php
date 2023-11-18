@@ -42,9 +42,15 @@ class ChadoIntegerTypeItem extends ChadoFieldItemBase {
 
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
+    $base_table = $settings['base_table'];
+
+    // If we don't have a base table then we're not ready to specify the
+    // properties for this field.
+    if (!$base_table) {
+      return;
+    }
 
     // Get the base table columns needed for this field.
-    $base_table = $settings['base_table'];
     $base_column = $settings['base_column'];
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
