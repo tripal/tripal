@@ -141,7 +141,7 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
       'wrapper' => 'edit-base_column',
     ];
 
-    $base_columns = $this->getTableColumns($base_table, ['text', 'character varying']);
+    $base_columns = $this->getTableColumns($base_table, ['character varying']);
     $elements['storage_plugin_settings']['base_column'] = [
       '#type' => 'select',
       '#title' => t('Table Column'),
