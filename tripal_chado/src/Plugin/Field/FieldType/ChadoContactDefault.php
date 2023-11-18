@@ -265,7 +265,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
 
     $linker_is_disabled = FALSE;
     $linker_tables = [];
-    $default_linker_table_and_column = array_key_exists('linker_table_and_column', $storage_settings) ? $storage_settings['linker_table_and_column'] : '';
+    $default_linker_table_and_column = $storage_settings['linker_table_and_column'] ?? '';
     if ($default_linker_table_and_column) {
       $linker_is_disabled = TRUE;
       $linker_tables = [$default_linker_table_and_column => $default_linker_table_and_column];
@@ -285,7 +285,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
       '#options' => $linker_tables,
       '#default_value' => $default_linker_table_and_column,
       '#required' => TRUE,
-      '#disabled' => $linker_is_disabled,
+      '#disabled' => $linker_is_disabled or !$base_table,
       '#prefix' => '<div id="edit-linker_table">',
       '#suffix' => '</div>',
     ];
