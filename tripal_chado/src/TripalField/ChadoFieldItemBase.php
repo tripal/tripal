@@ -166,7 +166,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       // If more than one item was found, prefix the list with a Select message
       elseif (count($select_list) > 1) {
         ksort($select_list);
-dpm("Add prefix"); //@@@
         $select_list = [NULL => '-- Select --'] + $select_list;
       }
     }
