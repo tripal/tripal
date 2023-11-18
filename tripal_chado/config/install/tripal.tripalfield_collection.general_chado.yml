@@ -4,6 +4,12 @@ description: 'Default fields configurations provided by the Tripal Chado module'
 fields:
 
 ## Organism ##
+## Chado Table: organism
+## Required Columns: genus (varchar 255), species (varchar 255), type_id (cvterm FK), infraspecific_name (varchar 1024)
+## Optional columns: abbreviation (varchar 255), common_name (varchar 255), comment (text)
+## Related: organismprop, organism_dbxref, organism_pub, organims_relationship, organism_cvterm,
+##          feature, library, stock, biomaterial, cell_line,
+##          featuremap_organism, phenotype_comparison, phylonode_organism
 
     -   name: organism_abbreviation
         content_type: organism
@@ -194,6 +200,13 @@ fields:
               weight: 35
 
 ## Analysis ##
+## Chado Table: analysis
+## Required Columns: program (varchar 255), programversion(varchar 255), timeexecuted (timestamp)
+## Optional columns: name (varchar 255), description (text), algorithm (varchar 255), sourcename (varchar 255), sourceversion (varchar 255), sourceuri (text)
+## Related: analysis_cvterm, analysis_dbxref, analysis_pub, analysis_relationship, analysisprop, 
+##          phylotree, quantification,
+##          analysisfeature, nd_experiment_analysis, project_analysis
+## MISSING FIELD: Timestamp
 
     -   name: analysis_name
         content_type: analysis
@@ -410,6 +423,11 @@ fields:
               weight: 45
 
 ## Project ##
+## Chado Table: project
+## Required Columns: name (varchar 255)
+## Optional columns: description (text)
+## Related: projectprop, project_pub, project_relationship
+##          array_project, nd_experiment_project, project_analysis, project_contact, project_dbxref, project_feature, project_stock
 
     -   name: project_name
         content_type: project
@@ -492,6 +510,10 @@ fields:
               weight: 20
 
 ## Study ##
+## Chado Table: study
+## Required Columns: name (varchar 255), contact_id (contact FK)
+## Optional columns: description (text), pub_id (pub FK), dbxref_id (dbxref FK)
+## Related: studyprop, studydesign, study_assay
 
     -   name: study_name
         content_type: study
@@ -590,7 +612,7 @@ fields:
         display:
           view:
             default:
-              region: content
+              region: hidden
               label: above
               weight: 15
           form:
@@ -616,7 +638,7 @@ fields:
         display:
           view:
             default:
-              region: content
+              region: hidden
               label: above
               weight: 15
           form:
@@ -625,6 +647,12 @@ fields:
               weight: 15
 
 ## Contact ##
+## Chado Table: contact
+## Required Columns: name (varchar 255)
+## Optional columns: type_id (cvtem FK), description (text)
+## Related: contactprop, contact_relationship,
+##         arraydesign, biomaterial, quantification, study, stockcollection,
+##         feature_contact, featuremap_contact, library_contact, nd_experiment_contact, projact_contact, pubauthor_contact
 
     -   name: contact_name
         content_type: contact
@@ -708,6 +736,10 @@ fields:
               weight: 10
 
 ## Protocol ##
+## Chado Table: protocol
+## Required Columns: name (varchar 255), type_id (cvterm FK)
+## Optional columns: pub_id (pub FK), dbxref_id (dbxref FK), uri (text), protocoldescription (text) hardwaredescription (text), softwaredescription (text)
+## Related: protocolparam, treatment, arraydesign, assay, aquisition, quantification
 
     -   name: protocol_name
         content_type: protocol
@@ -885,7 +917,7 @@ fields:
         display:
           view:
             default:
-              region: content
+              region: hidden
               label: above
               weight: 15
           form:
@@ -911,7 +943,7 @@ fields:
         display:
           view:
             default:
-              region: content
+              region: hidden
               label: above
               weight: 15
           form:
