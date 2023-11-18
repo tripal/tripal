@@ -21,7 +21,8 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   label = @Translation("Chado Integer Field Type"),
  *   description = @Translation("An integer field."),
  *   default_widget = "chado_integer_type_widget",
- *   default_formatter = "chado_integer_type_formatter"
+ *   default_formatter = "chado_integer_type_formatter",
+ *   cardinality = 1
  * )
  */
 class ChadoIntegerTypeItem extends ChadoFieldItemBase {

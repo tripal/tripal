@@ -22,7 +22,8 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   label = @Translation("Chado Text Field Type"),
  *   description = @Translation("A text field."),
  *   default_widget = "chado_text_type_widget",
- *   default_formatter = "chado_text_type_formatter"
+ *   default_formatter = "chado_text_type_formatter",
+ *   cardinality = 1
  * )
  */
 class ChadoTextTypeItem extends ChadoFieldItemBase {
