@@ -40,7 +40,7 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
-    $settings['max_length'] = 255;
+    $settings['storage_plugin_settings']['max_length'] = 255;
     $settings['storage_plugin_settings']['base_column'] = '';
     return $settings;
   }
@@ -51,7 +51,8 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $values = [];
     //$random = new Random();
-    //$values['value'] = $random->word(mt_rand(1, $field_definition->getSetting('max_length')));
+    //$settings = $this->getSetting('storage_plugin_settings');
+    //$values['value'] = $random->word(mt_rand(1, $settings['max_length']));
     return $values;
   }
 
@@ -61,7 +62,8 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
   public function getConstraints() {
     $constraints = parent::getConstraints();
     $settings = $this->getSetting('storage_plugin_settings');
-    if ($max_length == $settings['max_length']) {
+    // @todo this next line looks like a bug
+    if ($max_length = $settings['max_length']) {
       $constraint_manager = \Drupal::typedDataManager()->getValidationConstraintManager();
       $constraints[] = $constraint_manager->create('ComplexData', [
         'value' => [
@@ -94,7 +96,7 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
       return;
     }
     $base_column = $settings['base_column'];
-    $max_length = $settings['max_length'];
+    $max_length = $settings['max_length'] ?? 255;
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
