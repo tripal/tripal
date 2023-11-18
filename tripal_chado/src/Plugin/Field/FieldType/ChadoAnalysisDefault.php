@@ -85,13 +85,7 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table) {
-      $record_id_term = 'operation:2945';
-      return [
-        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-        ])
-      ];
+      return;
     }
 
     // Get the connecting information for the foreign key from the
