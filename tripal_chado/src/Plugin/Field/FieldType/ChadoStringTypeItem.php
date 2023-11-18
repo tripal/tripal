@@ -12,6 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 
+
 /**
  * Plugin implementation of string field type for Chado.
  *
@@ -93,11 +94,11 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
     if (!$base_table) {
       return;
     }
-    $base_column = $settings['base_column'];
     $max_length = $field_definition->getSetting('max_length');
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_column = $settings['base_column'];
     $base_pkey_col = $base_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.

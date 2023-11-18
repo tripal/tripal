@@ -49,12 +49,12 @@ class ChadoTextTypeItem extends ChadoFieldItemBase {
     if (!$base_table) {
       return;
     }
-    $base_column = $settings['base_column'];
 
     // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_column = $settings['base_column'];
     $base_pkey_col = $base_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.
