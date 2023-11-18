@@ -75,17 +75,11 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId(); // 'tripal_entity'
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $settings['base_table'];
-    $record_id_term = 'SIO:000729';
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table) {
-      return [
-        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-        ])
-      ];
+      return;
     }
 
     // Get the various tables and columns needed for this field.
@@ -94,6 +88,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     $schema = $chado->schema();
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
+    $record_id_term = 'SIO:000729';
 
     // Base table
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
