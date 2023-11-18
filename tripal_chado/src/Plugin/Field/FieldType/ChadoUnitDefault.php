@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_unit_default",
- *   label = @Translation("Chado unit of measurement"),
+ *   label = @Translation("Chado Unit"),
  *   description = @Translation("Provide unit of measurement of content, for example, Genetic Map."),
  *   default_widget = "chado_unit_widget_default",
  *   default_formatter = "chado_unit_formatter_default"
@@ -21,7 +21,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoUnitDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_unit_default";
-  
+
   /**
    * {@inheritdoc}
   */
@@ -39,7 +39,7 @@ class ChadoUnitDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
-  /**  
+  /**
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
@@ -69,7 +69,7 @@ class ChadoUnitDefault extends ChadoFieldItemBase {
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $record_id_term = $mapping->getColumnTermId('featuremap', 'featuremap_id');
-    $unittype_id_term = $mapping->getColumnTermId( 'featuremap', 'unittype_id' ) ;    
+    $unittype_id_term = $mapping->getColumnTermId( 'featuremap', 'unittype_id' );
     $cv_name_term = $mapping->getColumnTermId('cvterm', 'name');
 
     $properties = [];
@@ -94,7 +94,7 @@ class ChadoUnitDefault extends ChadoFieldItemBase {
       'as' => 'cv_name'
     ]);
 
-    return( $properties );
+    return $properties;
   }
-  
+
 }

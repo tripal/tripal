@@ -17,7 +17,7 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *
  * @FieldType(
  *   id = "chado_analysis_default",
- *   label = @Translation("Analysis"),
+ *   label = @Translation("Chado Analysis"),
  *   description = @Translation("Application of analytical methods to existing data of a specific type"),
  *   default_widget = "chado_analysis_widget_default",
  *   default_formatter = "chado_analysis_formatter_default",
