@@ -5,12 +5,31 @@ namespace Drupal\tripal_chado\TripalField;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 
 
 /**
  * Defines the Tripal field item base class.
  */
 abstract class ChadoFieldItemBase extends TripalFieldItemBase {
+
+  /**
+    * Indicates if the form should provide a base column select form element.
+    *
+    * @var bool
+    */
+  public $display_base_column = FALSE;
+
+  /**
+   * Toggle for form display of base column selector.
+   *
+   * @param boolean $display
+   *
+   */
+  public function display_base_column($display) {
+    $this->display_base_column = $display;
+  }
 
   /**
    * {@inheritdoc}
@@ -35,7 +54,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
     $is_disabled = FALSE;
     $storage_settings = $this->getSetting('storage_plugin_settings');
-    $default_base_table = array_key_exists('base_table', $storage_settings) ? $storage_settings['base_table'] : '';
+    $default_base_table = $storage_settings['base_table'] ?? '';
+    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
     if ($default_base_table) {
       $is_disabled = TRUE;
     }
@@ -59,7 +79,53 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       "#disabled" => $is_disabled
     ];
 
+    // Optionally provide a column selector for the base table column.
+    if ($this->display_base_column) {
+      $default_base_column = $storage_settings['base_column'] ?? '';
+      $base_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_column']);
+
+      // Add an ajax callback so that when the base table is selected, the
+      // base column select can be populated.
+      $elements['storage_plugin_settings']['base_table']['#ajax'] = [
+        'callback' =>  [$this, 'storageSettingsFormBaseTableAjaxCallback'],
+        'event' => 'change',
+        'progress' => [
+          'type' => 'throbber',
+          'message' => $this->t('Retrieving table columns...'),
+        ],
+        'wrapper' => 'edit-base_column',
+      ];
+
+      $base_columns = $this->getTableColumns($base_table, []);
+      $elements['storage_plugin_settings']['base_column'] = [
+        '#type' => 'select',
+        '#title' => t('Table Column'),
+        '#description' => t('Select the column in the base table that contains the field data'),
+        '#options' => $base_columns,
+        '#default_value' => $default_base_column,
+        '#required' => TRUE,
+        '#disabled' => $has_data or !$base_table,
+        '#prefix' => '<div id="edit-base_column">',
+        '#suffix' => '</div>',
+      ];
+
+    }
     return $elements + parent::storageSettingsForm($form, $form_state, $has_data);
+  }
+
+  /**
+   * Ajax callback to update the base column select. The select
+   * can't be populated until we know the base table.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  public function storageSettingsFormBaseTableAjaxCallback($form, &$form_state) {
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#edit-base_column', $form['settings']['storage_plugin_settings']['base_column']));
+    return $response;
   }
 
   /**
