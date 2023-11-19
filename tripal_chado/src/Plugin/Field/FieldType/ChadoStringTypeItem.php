@@ -89,12 +89,12 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
 
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
-
-    // Get the base table columns needed for this field.
     $base_table = $settings['base_table'];
     if (!$base_table) {
       return;
     }
+
+    // Get the base table columns needed for this field.
     $max_length = $field_definition->getSetting('max_length');
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
