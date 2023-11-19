@@ -324,6 +324,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if (empty($properties)) {
       throw new RuntimeException("Cannot return empty array.");
     }
+
     return $properties;
   }
 
