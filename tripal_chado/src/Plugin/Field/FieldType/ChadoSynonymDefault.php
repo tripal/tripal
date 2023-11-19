@@ -139,7 +139,7 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
     // Synonym table fields
     $syn_name_term = $mapping->getColumnTermId('synonym', 'name');
     $syn_name_len = $synonym_table_def['fields']['name']['size'];
-    $syn_type_id_term = $mapping->getColumnTermId('synonym','type_id');
+    $syn_type_id_term = $mapping->getColumnTermId('synonym', 'type_id');
     $syn_type_name_len = $cvterm_table_def['fields']['name']['size'];
 
 

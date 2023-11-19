@@ -70,7 +70,7 @@ class ChadoBooleanTypeItem extends ChadoFieldItemBase {
         'chado_table' => $base_table,
         'chado_column' => $base_pkey_col
       ]),
-      new ChadoBoolStoragePropertyType($entity_type_id, self::$id, "value", $value_term, [
+      new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'chado_table' => $base_table,
         'chado_column' => $base_column,

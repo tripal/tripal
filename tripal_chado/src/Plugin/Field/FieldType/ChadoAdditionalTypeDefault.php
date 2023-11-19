@@ -250,8 +250,8 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
     }
     else {
       // Store the separated table and column in their respective settings variables
-      $form_state->setValue(['settings','storage_plugin_settings','type_table'], $parts[0]);
-      $form_state->setValue(['settings','storage_plugin_settings','type_column'], $parts[1]);
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'type_table'], $parts[0]);
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'type_column'], $parts[1]);
     }
   }
 

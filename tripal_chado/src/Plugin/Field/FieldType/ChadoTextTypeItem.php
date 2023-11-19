@@ -65,13 +65,13 @@ class ChadoTextTypeItem extends ChadoFieldItemBase {
     $value_term = $mapping->getColumnTermId($base_table, $base_column);
 
     return [
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id,'record_id', $record_id_term, [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
         'chado_column' => $base_pkey_col
       ]),
-      new TextStoragePropertyType($entity_type_id, self::$id, "value", $value_term, [
+      new TextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'chado_table' => $base_table,
         'chado_column' => $base_column,
