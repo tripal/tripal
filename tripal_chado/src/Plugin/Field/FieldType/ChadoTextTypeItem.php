@@ -83,51 +83,18 @@ class ChadoTextTypeItem extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+    // Include a base column select element and associated ajax callback.
+    $this->display_base_column(TRUE);
+
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
     $storage_settings = $this->getSetting('storage_plugin_settings');
     $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
 
-    // Add an ajax callback so that when the base table is selected, the
-    // base column select can be populated.
-    $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-      'callback' =>  [$this, 'storageSettingsFormAjaxCallback'],
-      'event' => 'change',
-      'progress' => [
-        'type' => 'throbber',
-        'message' => $this->t('Retrieving table columns...'),
-      ],
-      'wrapper' => 'edit-base_column',
-    ];
-
+    // Base columns are limited to those appropriate for this field.
     $base_columns = $this->getTableColumns($base_table, ['text']);
-    $elements['storage_plugin_settings']['base_column'] = [
-      '#type' => 'select',
-      '#title' => t('Table Column'),
-      '#description' => t('Select the column in the base table that contains the field data'),
-      '#options' => $base_columns,
-      '#default_value' => $this->getSetting('base_column') ?? '',
-      '#required' => TRUE,
-      '#disabled' => $has_data or !$base_table,
-      '#prefix' => '<div id="edit-base_column">',
-      '#suffix' => '</div>',
-    ];
+    $elements['storage_plugin_settings']['base_column']['#options'] = $base_columns;
 
     return $elements;
-  }
-
-  /**
-   * Ajax callback to update the base column select. The select
-   * can't be populated until we know the base table.
-   *
-   * @param array $form
-   *   The form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state object.
-   */
-  public function storageSettingsFormAjaxCallback($form, &$form_state) {
-    $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-base_column', $form['settings']['storage_plugin_settings']['base_column']));
-    return $response;
   }
 
 }
