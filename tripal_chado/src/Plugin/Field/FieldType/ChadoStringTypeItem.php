@@ -9,6 +9,10 @@ use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
+
+
 /**
  * Plugin implementation of string field type for Chado.
  *
@@ -17,7 +21,8 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *   label = @Translation("Chado String Field Type"),
  *   description = @Translation("A string field."),
  *   default_widget = "chado_string_type_widget",
- *   default_formatter = "chado_string_type_formatter"
+ *   default_formatter = "chado_string_type_formatter",
+ *   cardinality = 1
  * )
  */
 class ChadoStringTypeItem extends ChadoFieldItemBase {
@@ -45,23 +50,6 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    $elements = [];
-    $elements['max_length'] = [
-      '#type' => 'number',
-      '#title' => t('Maximum length'),
-      '#default_value' => $this->getSetting('max_length'),
-      '#required' => TRUE,
-      '#description' => t('The maximum length of the field in characters.'),
-      '#min' => 1,
-      '#disabled' => $has_data,
-    ];
-    return $elements + parent::storageSettingsForm($form,$form_state,$has_data);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $values = [];
     //$random = new Random();
@@ -74,6 +62,7 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
    */
   public function getConstraints() {
     $constraints = parent::getConstraints();
+    // @todo this next line looks like a bug
     if ($max_length = $this->getSetting('max_length')) {
       $constraint_manager = \Drupal::typedDataManager()->getValidationConstraintManager();
       $constraints[] = $constraint_manager->create('ComplexData', [
@@ -99,15 +88,18 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
   public static function tripalTypes($field_definition) {
 
     $entity_type_id = $field_definition->getTargetEntityTypeId();
-    $max_length = $field_definition->getSetting('max_length');
     $settings = $field_definition->getSetting('storage_plugin_settings');
+    $base_table = $settings['base_table'];
+    if (!$base_table) {
+      return;
+    }
 
     // Get the base table columns needed for this field.
-    $base_table = $settings['base_table'];
-    $base_column = $settings['base_column'];
+    $max_length = $field_definition->getSetting('max_length');
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_column = $settings['base_column'];
     $base_pkey_col = $base_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.
@@ -117,17 +109,46 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
     $value_term = $mapping->getColumnTermId($base_table, $base_column);
 
     return [
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id,'record_id', $record_id_term, [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
         'chado_column' => $base_pkey_col
       ]),
-      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, "value", $value_term, $max_length, [
+      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, $max_length, [
         'action' => 'store',
         'chado_table' => $base_table,
         'chado_column' => $base_column,
       ]),
     ];
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+    // Include a base column select element and associated ajax callback.
+    $this->display_base_column(TRUE);
+
+    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
+    $storage_settings = $this->getSetting('storage_plugin_settings');
+    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+
+    // Base columns are limited to those appropriate for this field.
+    $base_columns = $this->getTableColumns($base_table, ['character varying']);
+    $elements['storage_plugin_settings']['base_column']['#options'] = $base_columns;
+
+    $elements['max_length'] = [
+      '#type' => 'number',
+      '#title' => t('Maximum length'),
+      '#default_value' => $this->getSetting('max_length'),
+      '#required' => TRUE,
+      '#description' => t('The maximum length of the field in characters.'),
+      '#min' => 1,
+      '#disabled' => $has_data,
+    ];
+
+    return $elements;
+  }
+
 }

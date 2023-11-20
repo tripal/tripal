@@ -10,6 +10,8 @@ use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 
 
 /**
@@ -20,7 +22,8 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
  *   label = @Translation("Chado Text Field Type"),
  *   description = @Translation("A text field."),
  *   default_widget = "chado_text_type_widget",
- *   default_formatter = "chado_text_type_formatter"
+ *   default_formatter = "chado_text_type_formatter",
+ *   cardinality = 1
  * )
  */
 class ChadoTextTypeItem extends ChadoFieldItemBase {
@@ -44,12 +47,15 @@ class ChadoTextTypeItem extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $settings['base_table'];
-    $base_column = $settings['base_column'];
+    if (!$base_table) {
+      return;
+    }
 
     // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_column = $settings['base_column'];
     $base_pkey_col = $base_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.
@@ -59,17 +65,36 @@ class ChadoTextTypeItem extends ChadoFieldItemBase {
     $value_term = $mapping->getColumnTermId($base_table, $base_column);
 
     return [
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id,'record_id', $record_id_term, [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
         'chado_column' => $base_pkey_col
       ]),
-      new TextStoragePropertyType($entity_type_id, self::$id, "value", $value_term, [
+      new TextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'chado_table' => $base_table,
         'chado_column' => $base_column,
       ]),
     ];
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+    // Include a base column select element and associated ajax callback.
+    $this->display_base_column(TRUE);
+
+    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
+    $storage_settings = $this->getSetting('storage_plugin_settings');
+    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+
+    // Base columns are limited to those appropriate for this field.
+    $base_columns = $this->getTableColumns($base_table, ['text']);
+    $elements['storage_plugin_settings']['base_column']['#options'] = $base_columns;
+
+    return $elements;
+  }
+
 }

@@ -55,6 +55,16 @@ class ChadoOrganismDefault extends ChadoFieldItemBase {
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
+    // Get the base table columns needed for this field.
+    $settings = $field_definition->getSetting('storage_plugin_settings');
+    $base_table = $settings['base_table'];
+
+    // If we don't have a base table then we're not ready to specify the
+    // properties for this field.
+    if (!$base_table) {
+      return;
+    }
+
     // Get the length of the database fields so we don't go over the size limit.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
@@ -65,22 +75,6 @@ class ChadoOrganismDefault extends ChadoFieldItemBase {
     $iftype_len = $cvterm_def['fields']['name']['size'];
     $ifname_len = $organism_def['fields']['infraspecific_name']['size'];
     $label_len = $genus_len + $species_len + $iftype_len + $ifname_len;
-
-    // Get the base table columns needed for this field.
-    $settings = $field_definition->getSetting('storage_plugin_settings');
-    $base_table = $settings['base_table'];
-
-    // If we don't have a base table then we're not ready to specify the
-    // properties for this field.
-    if (!$base_table) {
-      $record_id_term = 'OBI:0100026';
-      return [
-        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-        ])
-      ];
-    }
 
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_schema_def['primary key'];
