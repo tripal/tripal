@@ -1589,8 +1589,8 @@ fields:
                 type_table: featuremap
                 type_column: unittype_id
         settings:
-            termIdSpace: data
-            termAccession: "1280"
+            termIdSpace: UO
+            termAccession: "0000000"
         display:
           view:
             default:
@@ -2369,8 +2369,8 @@ fields:
                 type_table: featuremap
                 type_column: unittype_id
         settings:
-            termIdSpace: data
-            termAccession: "1278"
+            termIdSpace: UO
+            termAccession: "0000000"
         display:
           view:
             default:
