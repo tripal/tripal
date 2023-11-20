@@ -118,7 +118,6 @@ class TripalFileQuota implements FormInterface{
     ];
 
     $form['custom']['links'] = [
-      '#type' => 'markup',
       '#markup' => '<br>' . Link::fromTextAndUrl('Add Custom User Quota',
           Drupal\Core\Url::fromUri('internal:/admin/tripal/files/quota/add'))
           ->toString(),
