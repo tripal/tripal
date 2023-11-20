@@ -23,6 +23,10 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   description = @Translation("A text field."),
  *   default_widget = "chado_text_type_widget",
  *   default_formatter = "chado_text_type_formatter",
+ *   select_base_column = TRUE,
+ *   valid_base_column_types = {
+ *     "text",
+ *   },
  *   cardinality = 1
  * )
  */
@@ -77,24 +81,6 @@ class ChadoTextTypeItem extends ChadoFieldItemBase {
         'chado_column' => $base_column,
       ]),
     ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    // Include a base column select element and associated ajax callback.
-    $this->display_base_column(TRUE);
-
-    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    $storage_settings = $this->getSetting('storage_plugin_settings');
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-
-    // Base columns are limited to those appropriate for this field.
-    $base_columns = $this->getTableColumns($base_table, ['text']);
-    $elements['storage_plugin_settings']['base_column']['#options'] = $base_columns;
-
-    return $elements;
   }
 
 }

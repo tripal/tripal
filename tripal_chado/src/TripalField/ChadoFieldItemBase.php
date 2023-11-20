@@ -15,23 +15,6 @@ use Drupal\Core\Ajax\ReplaceCommand;
 abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
   /**
-    * Indicates if the form should provide a base column select form element.
-    *
-    * @var bool
-    */
-  public $display_base_column = FALSE;
-
-  /**
-   * Toggle for form display of base column selector.
-   *
-   * @param boolean $display
-   *
-   */
-  public function display_base_column($display) {
-    $this->display_base_column = $display;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
@@ -79,8 +62,10 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       "#disabled" => $is_disabled
     ];
 
-    // Optionally provide a column selector for the base table column.
-    if ($this->display_base_column) {
+    // Optionally provide a column selector for the base table column if
+    // the field annotations specify it.
+    $plugin_definition = $this->getPluginDefinition();
+    if ($plugin_definition['select_base_column'] ?? FALSE) {
       $default_base_column = $storage_settings['base_column'] ?? '';
       $base_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_column']);
 
@@ -96,7 +81,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         'wrapper' => 'edit-base_column',
       ];
 
-      $base_columns = $this->getTableColumns($base_table, []);
+      $column_types = $plugin_definition['valid_base_column_types'] ?? [];
+      $base_columns = $this->getTableColumns($base_table, $column_types);
       $elements['storage_plugin_settings']['base_column'] = [
         '#type' => 'select',
         '#title' => t('Table Column'),

@@ -22,6 +22,10 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   description = @Translation("A string field."),
  *   default_widget = "chado_string_type_widget",
  *   default_formatter = "chado_string_type_formatter",
+ *   select_base_column = TRUE,
+ *   valid_base_column_types = {
+ *     "character varying",
+ *   },
  *   cardinality = 1
  * )
  */
@@ -127,16 +131,7 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    // Include a base column select element and associated ajax callback.
-    $this->display_base_column(TRUE);
-
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    $storage_settings = $this->getSetting('storage_plugin_settings');
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-
-    // Base columns are limited to those appropriate for this field.
-    $base_columns = $this->getTableColumns($base_table, ['character varying']);
-    $elements['storage_plugin_settings']['base_column']['#options'] = $base_columns;
 
     $elements['max_length'] = [
       '#type' => 'number',

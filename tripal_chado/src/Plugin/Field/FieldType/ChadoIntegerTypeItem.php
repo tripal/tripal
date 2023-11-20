@@ -22,6 +22,13 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   description = @Translation("An integer field."),
  *   default_widget = "chado_integer_type_widget",
  *   default_formatter = "chado_integer_type_formatter",
+ *   select_base_column = TRUE,
+ *   valid_base_column_types = {
+ *     "smallint",
+ *     "integer",
+ *     "bigint",
+ *     "serial",
+ *   },
  *   cardinality = 1
  * )
  */
@@ -66,7 +73,6 @@ class ChadoIntegerTypeItem extends ChadoFieldItemBase {
     $record_id_term = 'SIO:000729';
     $value_term = $mapping->getColumnTermId($base_table, $base_column);
 
-
     return [
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
@@ -80,24 +86,6 @@ class ChadoIntegerTypeItem extends ChadoFieldItemBase {
         'chado_column' => $base_column,
       ]),
     ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    // Include a base column select element and associated ajax callback.
-    $this->display_base_column(TRUE);
-
-    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    $storage_settings = $this->getSetting('storage_plugin_settings');
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-
-    // Base columns are limited to those appropriate for this field.
-    $base_columns = $this->getTableColumns($base_table, ['smallint', 'integer', 'bigint', 'serial']);
-    $elements['storage_plugin_settings']['base_column']['#options'] = $base_columns;
-
-    return $elements;
   }
 
 }
