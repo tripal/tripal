@@ -207,7 +207,6 @@ class ChadoCustomTableForm extends FormBase {
     ];
 
     $form['cancel'] = [
-      '#type' => 'markup',
       '#markup' => Link::fromTextAndUrl('Cancel', Url::fromUserInput('/admin/tripal/storage/chado/custom_tables'))->toString(),
     ];
 
