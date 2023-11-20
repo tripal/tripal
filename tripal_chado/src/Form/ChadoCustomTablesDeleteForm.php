@@ -35,7 +35,6 @@ class ChadoCustomTablesDeleteForm extends FormBase {
     ];
 
     $form['sure'] = [
-      '#type' => 'markup',
       '#markup' => '<p>Are you sure you want to delete the "' . $custom_table->getTableName() .
         '" custom table in the "' . $custom_table->getChadoSchema() . '" schema?</p>',
     ];

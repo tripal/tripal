@@ -55,7 +55,6 @@ class ChadoSourceDataFormatterDefault extends ChadoFormatterBase {
 
     // The cardinality of this field is always 1, so only create element for $delta of zero.
     $elements[0] = [
-      '#type' => 'markup',
       '#markup' => $content,
     ];
 

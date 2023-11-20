@@ -79,13 +79,7 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table or !$type_table) {
-      $record_id_term = 'SIO:000729';
-      return [
-        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-        ])
-      ];
+      return;
     }
 
     // Get the connecting information about the base table and the
@@ -256,8 +250,8 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
     }
     else {
       // Store the separated table and column in their respective settings variables
-      $form_state->setValue(['settings','storage_plugin_settings','type_table'], $parts[0]);
-      $form_state->setValue(['settings','storage_plugin_settings','type_column'], $parts[1]);
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'type_table'], $parts[0]);
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'type_column'], $parts[1]);
     }
   }
 
