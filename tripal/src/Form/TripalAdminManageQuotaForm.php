@@ -72,7 +72,6 @@ class TripalAdminManageQuotaForm implements FormInterface{
     ];
 
     $form['cancel'] = [
-      '#type' => 'markup',
       '#markup' => Link::fromTextAndUrl('Cancel',
         Url::fromRoute('tripal.files_quota'))->toString(),
     ];

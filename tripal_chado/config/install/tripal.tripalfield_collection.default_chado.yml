@@ -1282,7 +1282,7 @@ fields:
               weight: 10
 
     -   name: mrna_contact
-        content_type: mrna
+        content_type: mRNA
         label: Contact
         type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
