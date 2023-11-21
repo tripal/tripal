@@ -156,11 +156,19 @@ class TripalTerm {
    *   True if valid, False otherwise.
    */
   public function isValid() : bool {
-    if (!empty($this->name) and !empty($this->accession) and !empty($this->idSpace) and !empty($this->vocabulary)){
-      return True;
-    }
-    return False;
+    $is_valid = TRUE;
 
+    if (empty($this->getName())) {
+      $is_valid = FALSE;
+    }
+    if (empty($this->getIdSpace()) OR empty($this->getAccession())) {
+      $is_valid = FALSE;
+    }
+    if (empty($this->getVocabulary())) {
+      $is_valid = FALSE;
+    }
+
+    return $is_valid;
   }
 
   /**
