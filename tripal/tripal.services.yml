@@ -7,7 +7,7 @@ services:
   tripal.bulkPgSchemaInstaller:
     class: Drupal\tripal\Services\bulkPgSchemaInstaller
   tripal.job:
-    class: Drupal\tripal\Services\Tripaljob
+    class: Drupal\tripal\Services\TripalJob
   tripal.logger:
     class: Drupal\tripal\Services\TripalLogger
   tripal.token_parser:
