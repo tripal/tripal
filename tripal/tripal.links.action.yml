@@ -21,7 +21,14 @@ tripal.content_type_unpublish:
 # -- Add Content Type link on the Type Listing page.
 entity.tripal_entity_type.add_form:
   route_name: 'entity.tripal_entity_type.add_form'
-  title: 'Add Tripal Content type'
+  title: 'Add custom type'
+  appears_on:
+    - entity.tripal_entity_type.collection
+
+# -- Add Content Type link on the Type Listing page.
+entity.tripal_entity_type.import_collection:
+  route_name: 'tripal.import_tripalentitytype_collection'
+  title: 'Import type collection'
   appears_on:
     - entity.tripal_entity_type.collection
 

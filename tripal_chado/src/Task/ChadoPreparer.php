@@ -159,23 +159,11 @@ class ChadoPreparer extends ChadoTaskBase {
       $terms_setup->installTerms();
       $this->importOntologies();
 
-      $this->setProgress(0.5);
-      $this->logger->notice("Creating default content types...");
-      /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_setup **/
-      $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
-      $content_type_setup->install();
-
-      $this->setProgress(0.7);
-      $this->logger->notice("Adding Fields to Tripal Content Types...");
-      /** @var \Drupal\tripal\Services\TripalFields $fields **/
-      $fields = \Drupal::service('tripal.tripalfield_collection');
-      $fields->install();
-
-      $this->setProgress(0.8);
+      $this->setProgress(0.6);
       $this->logger->notice('Populating materialized view cv_root_mview...');
       $this->populateMview_cv_root_mview();
 
-      $this->setProgress(0.9);
+      $this->setProgress(0.8);
       $this->logger->notice('Populating materialized view db2cv_mview...');
       $this->populateMview_db2cv_mview();
 

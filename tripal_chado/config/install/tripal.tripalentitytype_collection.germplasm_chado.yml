@@ -1,0 +1,44 @@
+id: 'germplasm_chado'
+label: 'Germplasm Content Types (Chado)'
+description: 'Content types based on Chado focused on supporting germplasm chatacterization.'
+content_types:
+
+    -   label: Germplasm Accession
+        term: CO_010:0000044
+        help_text: Use the germplasm accession page for a living genetic resources such as seeds or tissues that are maintained for the purpose of animal and plant breeding, and preservation.
+        category: Germplasm
+        id: germplasm
+        title_format: "[germplasm_name]"
+        url_format: "germplasm/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_21
+
+    -   label: Breeding Cross
+        term: CO_010:0000255
+        help_text: Use the breeding cross page for information about a cross between two germplasm in a breeding application.
+        category: Germplasm
+        id: breeding_cross
+        title_format: "[breeding_cross_name]"
+        url_format: "breeding_cross/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_22
+
+    -   label: Germplasm Variety
+        term: CO_010:0000029
+        help_text: Use the germplasm variety page for information about specific variety of germplasm.
+        category: Germplasm
+        id: germplasm_variety
+        title_format: "[germplasm_variety_name]"
+        url_format: "germplasm_variety/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_23
+
+    -   label: Recombinant Inbred Line
+        term: CO_010:0000162
+        help_text: Use the recombinant inbred line page to describe a collection of germplasm that were created by crossing and can be used to map quantitative trait loci.
+        category: Germplasm
+        id: RIL
+        title_format: "[ril_name]"
+        url_format: "RIL/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_24
