@@ -69,7 +69,7 @@ class ChadoSequenceLengthFormatterDefault extends ChadoFormatterBase {
       '#default_value' => $this->getSetting('field_prefix'),
       '#required' => FALSE,
     ];
-    $form['field_prefix'] = [
+    $form['field_suffix'] = [
       '#title' => $this->t('Text to display after the sequence length'),
       '#description' => $this->t('Enter text here that will be displayed after the'
                      . ' sequence length value, e.g. " b.p.", or leave blank for no additional text'),

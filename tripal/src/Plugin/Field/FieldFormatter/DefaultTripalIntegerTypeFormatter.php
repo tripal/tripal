@@ -26,7 +26,7 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
     $settings['field_prefix'] = '';
-    $settings['field_suffix'] = ' b.p.';
+    $settings['field_suffix'] = '';
     $settings['thousand_separator'] = '';
     return $settings;
   }
