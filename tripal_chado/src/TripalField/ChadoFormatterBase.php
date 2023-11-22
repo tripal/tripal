@@ -3,12 +3,48 @@
 namespace Drupal\tripal_chado\TripalField;
 
 use Drupal\Core\Field\FormatterBase;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\TripalField\TripalFormatterBase;
 
 /**
  * Defines the Chado field formatter base class.
  */
 abstract class ChadoFormatterBase extends TripalFormatterBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $form = parent::settingsForm($form, $form_state);
+    $plugin_definition = $this->getPluginDefinition();
+
+    // If specified in the annotation, provide a form element for the token string.
+    if (array_key_exists('valid_tokens', $plugin_definition)) {
+      $valid_tokens = $plugin_definition['valid_tokens'];
+      $valid_tokens_str = '"' . implode('", "', $valid_tokens) . '"';
+
+      $form['token_string'] = [
+        '#title' => $this->t('Token string for field display'),
+        '#description' => $this->t('You may specify elements in this text box to customize how'
+                       . ' records are displayed. The available tokens are: ')
+                       . $valid_tokens_str,
+        '#type' => 'textfield',
+        '#default_value' => $this->getSetting('token_string'),
+        '#element_validate' => [[$this, 'settingsFormValidateTokenString']],
+      ];
+    }
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $summary = parent::settingsSummary();
+    $summary[] = $this->t('Set display format');
+    return $summary;
+  }
 
   /**
    * Form element validation handler for token strings
@@ -18,7 +54,7 @@ abstract class ChadoFormatterBase extends TripalFormatterBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state of the (entire) form.
    */
-  public static function settingsFormValidateTokenString(array $form, FormStateInterface $form_state) {
+  public function settingsFormValidateTokenString(array $form, FormStateInterface $form_state) {
     $plugin_definition = $this->getPluginDefinition();
     $id = $plugin_definition['id'];
     if (!isset($plugin_definition['valid_tokens'])) {

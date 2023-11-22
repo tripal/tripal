@@ -89,34 +89,4 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
     return $elements;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $form = parent::settingsForm($form, $form_state);
-
-    $form['token_string'] = [
-      '#title' => $this->t('Token string for field display'),
-      '#description' => $this->t('You may specify elements in this text box to customize how'
-                     . ' contacts are displayed. The available tokens are [name] for the'
-                     . ' contact name, [type] for the type of contact (person, institution, etc.),'
-                     . ' and [description] for the description for the contact.'
-                     . ' For example, "[name] ([type]) [[description]]"'),
-      '#type' => 'textfield',
-      '#default_value' => $this->getSetting('token_string'),
-      '#element_validate' => [[static::class, 'settingsFormValidateTokenString']],
-    ];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    $summary = parent::settingsSummary();
-    $summary[] = $this->t('Set display format');
-    return $summary;
-  }
-
 }

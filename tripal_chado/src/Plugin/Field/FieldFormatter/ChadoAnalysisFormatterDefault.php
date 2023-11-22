@@ -95,34 +95,4 @@ class ChadoAnalysisFormatterDefault extends ChadoFormatterBase {
     return $elements;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $form = parent::settingsForm($form, $form_state);
-
-    $form['token_string'] = [
-      '#title' => $this->t('Token string for field display'),
-      '#description' => $this->t('You may specify elements in this text box to customize how'
-                     . ' contacts are displayed. The available tokens are [name] for the'
-                     . ' analysis name, [program], [programversion], [algorithm],'
-                     . ' [sourcename], [sourceversion], [sourceuri]'
-                     . ' For example, "[name] ([sourcename])"'),
-      '#type' => 'textfield',
-      '#default_value' => $this->getSetting('token_string'),
-      '#element_validate' => [[static::class, 'settingsFormValidateTokenString']],
-    ];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    $summary = parent::settingsSummary();
-    $summary[] = $this->t('Set display format');
-    return $summary;
-  }
-
 }
