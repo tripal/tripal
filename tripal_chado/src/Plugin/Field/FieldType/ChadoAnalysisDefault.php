@@ -2,31 +2,38 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+
 
 /**
  * Plugin implementation of default Tripal analysis field type.
  *
  * @FieldType(
  *   id = "chado_analysis_default",
+ *   object_table = "analysis",
  *   label = @Translation("Chado Analysis"),
  *   description = @Translation("Application of analytical methods to existing data of a specific type"),
  *   default_widget = "chado_analysis_widget_default",
  *   default_formatter = "chado_analysis_formatter_default",
- *   cardinality = 1
  * )
  */
 class ChadoAnalysisDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_analysis_default';
+  // The following needs to match the object_table annotation above
+  protected static $object_table = 'analysis';
+  protected static $object_id = 'analysis_id';
+  protected static $value_column = 'name';
 
   /**
    * {@inheritdoc}
@@ -39,46 +46,33 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function defaultFieldSettings() {
-    $settings = parent::defaultFieldSettings();
-    $settings['termIdSpace'] = 'operation';
-    $settings['termAccession'] = '2945';
-    return $settings;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function defaultStorageSettings() {
-    $settings = parent::defaultStorageSettings();
-    return $settings;
+    $storage_settings = parent::defaultStorageSettings();
+    $storage_settings['storage_plugin_settings']['base_table'] = '';
+    $storage_settings['storage_plugin_settings']['linking_method'] = '';
+    $storage_settings['storage_plugin_settings']['linker_table'] = '';
+    $storage_settings['storage_plugin_settings']['linker_fkey_column'] = '';
+    $storage_settings['storage_plugin_settings']['object_table'] = self::$object_table;
+    return $storage_settings;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-
-    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    $storage_settings = $this->getSetting('storage_plugin_settings');
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-
-    // Only present base tables that have a foreign key to analysis.
-    $elements['storage_plugin_settings']['base_table']['#options'] = $this->getBaseTables('analysis');
-
-    // Add a validation to make sure the base table has a foreign
-    // key to analysis_id in the chado.analysis table.
-    $elements['storage_plugin_settings']['base_table']['#element_validate'] = [[static::class, 'storageSettingsFormValidate']];
-    return $elements;
+  public static function defaultFieldSettings() {
+    $field_settings = parent::defaultFieldSettings();
+    // CV Term is 'Analysis'
+    $field_settings['termIdSpace'] = 'operation';
+    $field_settings['termAccession'] = '2945';
+    return $field_settings;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function tripalTypes($field_definition) {
-    $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Get the Chado table and column this field maps to.
+    // Create a variable for easy access to settings.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
 
@@ -88,75 +82,211 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
       return;
     }
 
-    // Get the connecting information for the foreign key from the
-    // base table to the analysis table.
+    // Get the various tables and columns needed for this field.
+    // We will get the property terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $analysis_table_def = $schema->getTableDef('analysis', ['format' => 'Drupal']);
-    $base_pkey_col = $base_table_def['primary key'];
-    $base_fkey_col = 'analysis_id';
-
-    // Create variables to store the terms for the analysis.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
+    $entity_type_id = $field_definition->getTargetEntityTypeId();
     $record_id_term = 'SIO:000729';
-    $analysis_id_term = $mapping->getColumnTermId('analysis', 'analysis_id');
-    $analysis_name_term = $mapping->getColumnTermId('analysis', 'name');
-    $analysis_name_length = $analysis_table_def['fields']['name']['size'];
 
-    // Define field properties, this is a simple lookup in the analysis table
+    // Base table
+    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = $base_schema_def['primary key'];
+
+    // Object table
+    $object_table = self::$object_table;
+    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_pkey_col = $object_schema_def['primary key'];
+    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
+    $value_term = $mapping->getColumnTermId($object_table, self::$value_column);
+    $value_len = $object_schema_def['fields'][self::$value_column]['size'];
+
+    // Other columns specific to this object table
+    $description_term = $mapping->getColumnTermId($object_table, 'description'); // text
+    $program_term = $mapping->getColumnTermId($object_table, 'program');
+    $program_len = $object_schema_def['fields']['program']['size'];
+    $programversion_term = $mapping->getColumnTermId($object_table, 'programversion');
+    $programversion_len = $object_schema_def['fields']['programversion']['size'];
+    $algorithm_term = $mapping->getColumnTermId($object_table, 'algorithm');
+    $algorithm_len = $object_schema_def['fields']['algorithm']['size'];
+    $sourcename_term = $mapping->getColumnTermId($object_table, 'sourcename');
+    $sourcename_len = $object_schema_def['fields']['sourcename']['size'];
+    $sourceversion_term = $mapping->getColumnTermId($object_table, 'sourceversion');
+    $sourceversion_len = $object_schema_def['fields']['sourceversion']['size'];
+    $sourceuri_term = $mapping->getColumnTermId($object_table, 'sourceuri'); // text
+    // and timeexecuted not implemented
+
+    // Linker table, when used
+    $linker_table = $storage_settings['linker_table'];
+    $linker_fkey_col = $storage_settings['linker_fkey_column'];
+    $extra_linker_columns = [];
+    if ($linker_table != $base_table) {
+      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_pkey_col = $linker_schema_def['primary key'];
+      // the following should be the same as $base_pkey_col @todo make sure it is
+      $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
+      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col);
+      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_col);
+
+      // Some but not all linker tables contain rank, type_id, and maybe other columns.
+      // These are conditionally added only if they exist in the linker
+      // table, and if a term is defined for them.
+      foreach (array_keys($linker_schema_def['fields']) as $column) {
+        if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_col)) {
+          $term = $mapping->getColumnTermId($linker_table, $column);
+          if ($term) {
+            $extra_linker_columns[$column] = $term;
+          }
+        }
+      }
+    }
+    else {
+      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_col);
+    }
+
     $properties = [];
+
+    // Define the base table record id.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'chado_table' => $base_table,
       'chado_column' => $base_pkey_col,
     ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'analysis_id', $analysis_id_term, [
-      'action' => 'store',
-      'chado_table' => $base_table,
-      'chado_column' => $base_fkey_col,
-    ]);
-    $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_name', $analysis_name_term, $analysis_name_length, [
+
+    // Base table links directly
+    if ($base_table == $linker_table) {
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
+        'action' => 'store',
+        'drupal_store' => TRUE,
+        'chado_table' => $base_table,
+        'chado_column' => $linker_fkey_col,
+        'delete_if_empty' => TRUE,
+        'empty_value' => 0,
+      ]);
+    }
+    // An intermediate linker table is used
+    else {
+      // Define the linker table that links the base table to the object table.
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
+        'action' => 'store_pkey',
+        'drupal_store' => TRUE,
+        'chado_table' => $linker_table,
+        'chado_column' => $linker_pkey_col,
+      ]);
+
+      // Define the link between the base table and the linker table.
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
+        'action' => 'store_link',
+        'drupal_store' => FALSE,
+        'left_table' => $base_table,
+        'left_table_id' => $base_pkey_col,
+        'right_table' => $linker_table,
+        'right_table_id' => $linker_left_col,
+      ]);
+
+      // Define the link between the linker table and the object table.
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
+        'action' => 'store',
+        'drupal_store' => TRUE,
+        'chado_table' => $linker_table,
+        'chado_column' => $linker_fkey_col,
+        'delete_if_empty' => TRUE,
+        'empty_value' => 0,
+      ]);
+
+      // Other columns in the linker table. Currently not implemented in the widget or formatter.
+      // Typically these are type_id and rank, but are not present in all linker tables,
+      // so they are added only if present in the linker table.
+      foreach ($extra_linker_columns as $column => $term) {
+        $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
+          'action' => 'store',
+          'drupal_store' => TRUE,
+          'chado_table' => $linker_table,
+          'chado_column' => $column,
+          'as' => 'linker_' . $column,
+        ]);
+      }
+    }
+
+    // The object table, the destination table of the linker table
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_name', $value_term, $value_len, [
       'action' => 'read_value',
-      'path' => $base_table . '.' . $base_fkey_col . '>analysis.analysis_id',
-      'chado_column' => 'name',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_table' => $object_table,
+      'chado_column' => self::$value_column,
       'as' => 'analysis_name',
     ]);
 
+    // Other columns specific to the object table
+
+    // The analysis description
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'analysis_description', $description_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'description',
+      'as' => 'analysis_description',
+    ]);
+
+    // The analysis program
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_program', $program_term, $program_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'program',
+      'as' => 'analysis_program',
+    ]);
+
+    // The analysis program version
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_programversion', $programversion_term, $programversion_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'programversion',
+      'as' => 'analysis_programversion',
+    ]);
+
+    // The analysis algorithm
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_algorithm', $algorithm_term, $algorithm_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'algorithm',
+      'as' => 'analysis_algorithm',
+    ]);
+
+    // The analysis sourcename
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_sourcename', $sourcename_term, $sourcename_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'sourcename',
+      'as' => 'analysis_sourcename',
+    ]);
+
+    // The analysis sourceversion
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_sourceversion', $sourceversion_term, $sourceversion_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'sourceversion',
+      'as' => 'analysis_sourceversion',
+    ]);
+
+    // The analysis sourceuri
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'analysis_sourceuri', $sourceuri_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'sourceuri',
+      'as' => 'analysis_sourceuri',
+    ]);
+
     return $properties;
-  }
-
-  /**
-   * Form element validation handler
-   *
-   * @param array $form
-   *   The form where the settings form is being included in.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the (entire) configuration form.
-   */
-  public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
-    if (!array_key_exists('storage_plugin_settings', $settings)) {
-      return;
-    }
-
-    // Validation confirms that the base table has a foreign key
-    // to analysis_id in the chado.analysis table.
-    // This validation might be redundant, since we only present
-    // valid base tables to the user, but let's play it safe.
-    $base_table = $settings['storage_plugin_settings']['base_table'];
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_fkey_col = 'analysis_id';
-    $fkeys = $base_table_def['foreign keys']['analysis']['columns'] ?? [];
-    if (!in_array($base_fkey_col, $fkeys)) {
-      $form_state->setErrorByName('storage_plugin_settings][base_table',
-          'The selected base table does not have a foreign key to analysis_id,'
-          . ' this field cannot be used on this content type.');
-    }
   }
 
 }

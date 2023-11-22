@@ -2,9 +2,9 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
@@ -52,12 +52,27 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
 
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
+    $linker_id = $item_vals['linker_id'] ?? 0;
+    $link = $item_vals['link'] ?? 0;
+    $linker_rank = $item_vals['linker_rank'] ?? 0;
     $analysis_id = $item_vals['analysis_id'] ?? 0;
 
     $elements = [];
     $elements['record_id'] = [
       '#type' => 'value',
       '#default_value' => $record_id,
+    ];
+    $elements['linker_id'] = [
+      '#type' => 'value',
+      '#default_value' => $linker_id,
+    ];
+    $elements['link'] = [
+      '#type' => 'value',
+      '#default_value' => $link,
+    ];
+    $elements['linker_rank'] = [
+      '#type' => 'value',
+      '#default_value' => $linker_rank,
     ];
     $elements['analysis_id'] = $element + [
       '#type' => 'select',
@@ -68,6 +83,37 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
     ];
 
     return $elements;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    // Handle any empty values.
+    foreach ($values as $val_key => $value) {
+      if ($value['analysis_id'] == '') {
+        if ($value['record_id']) {
+          // If there is a record_id, but no analysis_id, this means
+          // we need to pass in this record to chado storage to
+          // have the linker record be deleted there. To do this,
+          // we need to have the correct primitive type for this
+          // field, so change from empty string to zero.
+          $values[$val_key]['analysis_id'] = 0;
+        }
+        else {
+          unset($values[$val_key]);
+        }
+      }
+    }
+
+    // Reset the weights
+    $i = 0;
+    foreach ($values as $val_key => $value) {
+      $values[$val_key]['_weight'] = $i;
+      $i++;
+    }
+
+    return $values;
   }
 
 }
