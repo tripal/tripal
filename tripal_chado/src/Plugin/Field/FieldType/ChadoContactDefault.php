@@ -199,7 +199,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
       foreach ($extra_linker_columns as $column => $term) {
         $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',
-          'drupal_store' => TRUE,
+          'drupal_store' => FALSE,
           'chado_table' => $linker_table,
           'chado_column' => $column,
           'as' => 'linker_' . $column,

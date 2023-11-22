@@ -42,7 +42,7 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
         AND CV.name=:cv
       ) AS TYPE
       ON A.analysis_id=TYPE.analysis_id
-      ORDER BY A.name';
+      ORDER BY LOWER(A.name)';
     $results = $chado->query($sql, [':cvterm' => 'type', ':cv' => 'rdfs']);
 
     while ($analysis = $results->fetchObject()) {
