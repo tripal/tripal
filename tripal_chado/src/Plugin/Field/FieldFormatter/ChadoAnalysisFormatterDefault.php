@@ -48,7 +48,7 @@ class ChadoAnalysisFormatterDefault extends ChadoFormatterBase {
     $list = [];
     $token_string = $this->getSetting('token_string');
 
-    foreach($items as $delta => $item) {
+    foreach ($items as $delta => $item) {
       $values = [
         'name' => $item->get('analysis_name')->getString(),
         'description' => $item->get('analysis_description')->getString(),

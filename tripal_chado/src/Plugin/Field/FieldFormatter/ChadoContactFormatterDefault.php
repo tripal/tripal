@@ -43,7 +43,7 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
     $list = [];
     $token_string = $this->getSetting('token_string');
 
-    foreach($items as $delta => $item) {
+    foreach ($items as $delta => $item) {
       $values = [
         'name' => $item->get('contact_name')->getString(),
         'description' => $item->get('contact_description')->getString(),

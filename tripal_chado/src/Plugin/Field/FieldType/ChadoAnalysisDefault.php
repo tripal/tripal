@@ -197,7 +197,7 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
 
-      // Other columns in the linker table. Currently not implemented in the widget or formatter.
+      // Other columns in the linker table. Set in the widget, but currently not implemented in the formatter.
       // Typically these are type_id and rank, but are not present in all linker tables,
       // so they are added only if present in the linker table.
       foreach ($extra_linker_columns as $column => $term) {

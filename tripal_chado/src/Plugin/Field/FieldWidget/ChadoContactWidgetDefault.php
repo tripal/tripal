@@ -53,6 +53,11 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
     $contact_id = $item_vals['contact_id'] ?? 0;
+    // If a linker table is used, values for additional columns that
+    // may or may not be present in that table.
+    $linker_type_id = $item_vals['linker_type_id'] ?? 1;
+    $linker_rank = $item_vals['linker_rank'] ?? $delta;
+    $linker_pub_id = $item_vals['linker_pub_id'] ?? 1;
 
     $elements = [];
     $elements['record_id'] = [
@@ -73,6 +78,23 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $contact_id,
       '#placeholder' => $this->getSetting('placeholder'),
       '#empty_option' => '-- Select --',
+    ];
+
+    // For linker table columns that may or may not be present,
+    // it doesn't hurt to always include them, they will be ignored
+    // when not needed.
+    $elements['linker_type_id'] = [
+      '#type' => 'value',
+      '#default_value' => $linker_type_id,
+    ];
+    $elements['linker_rank'] = [
+      '#type' => 'value',
+      '#default_value' => $linker_rank,
+    ];
+    // e.g. cell_line_feature has pub_id with not null constraint
+    $elements['linker_pub_id'] = [
+      '#type' => 'value',
+      '#default_value' => $linker_pub_id,
     ];
 
     return $elements;
