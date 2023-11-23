@@ -174,7 +174,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   /**
    * Ajax callback to update the linking method select. The select
    * can't be populated until we know the base table.
-   * 
+   *
    * @param array $form
    *   The form array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
