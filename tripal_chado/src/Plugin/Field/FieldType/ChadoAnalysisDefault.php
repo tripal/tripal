@@ -117,8 +117,8 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
     // and timeexecuted not implemented
 
     // Linker table, when used
-    $linker_table = $storage_settings['linker_table'];
-    $linker_fkey_col = $storage_settings['linker_fkey_column'];
+    $linker_table = $storage_settings['linker_table'] ?? $base_table;
+    $linker_fkey_col = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
