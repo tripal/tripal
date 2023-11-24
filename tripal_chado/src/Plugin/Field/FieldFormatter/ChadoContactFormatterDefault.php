@@ -60,30 +60,26 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
       foreach ($values as $key => $value) {
         $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
       }
-      $list[$delta] = $displayed_string;
+      $list[$delta] = [
+        '#markup' => $displayed_string,
+      ];
     }
 
-    // Only return markup if the field is not empty.
-    if (!empty($list)) {
+    // If only one element has been found, don't make into a list.
+    if (count($list) == 1) {
+      $elements = $list;
+    }
 
-      // If only one element has been found, don't make into a list.
-      if (count($list) == 1) {
-        $elements[0] = [
-          "#markup" => $list[0],
-        ];
-      }
-
-      // If more than one value has been found, display all values in an
-      // unordered list.
+    // If more than one value has been found, display all values in an
+    // unordered list.
 // @todo: add a pager
-      elseif (count($list) > 1) {
-        $elements[0] = [
-          '#theme' => 'item_list',
-          '#list_type' => 'ul',
-          '#items' => $list,
-          '#wrapper_attributes' => ['class' => 'container'],
-        ];
-      }
+    elseif (count($list) > 1) {
+      $elements[0] = [
+        '#theme' => 'item_list',
+        '#list_type' => 'ul',
+        '#items' => $list,
+        '#wrapper_attributes' => ['class' => 'container'],
+      ];
     }
 
     return $elements;
