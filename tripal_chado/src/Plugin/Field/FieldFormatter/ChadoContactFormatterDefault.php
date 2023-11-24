@@ -3,8 +3,6 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**

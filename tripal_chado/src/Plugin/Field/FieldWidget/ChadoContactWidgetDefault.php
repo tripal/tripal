@@ -4,7 +4,6 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
