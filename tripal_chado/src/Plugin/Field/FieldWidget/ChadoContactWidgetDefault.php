@@ -75,7 +75,6 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
       '#type' => 'select',
       '#options' => $contacts,
       '#default_value' => $contact_id,
-      '#placeholder' => $this->getSetting('placeholder'),
       '#empty_option' => '-- Select --',
     ];
 

@@ -77,7 +77,6 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
       '#type' => 'select',
       '#options' => $analyses,
       '#default_value' => $analysis_id,
-      '#placeholder' => $this->getSetting('placeholder'),
       '#empty_option' => '-- Select --',
     ];
 
