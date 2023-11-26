@@ -226,6 +226,15 @@ class ChadoOrganismDefault extends ChadoFieldItemBase {
       'as' => 'organism_species',
     ]);
 
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_infraspecific_type', $infraspecific_type_term, $infraspecific_type_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id',
+      'chado_column' => 'name',
+      'as' => 'organism_infraspecific_type',
+    ]);
+
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_infraspecific_name', $infraspecific_name_term, $infraspecific_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -260,16 +269,6 @@ class ChadoOrganismDefault extends ChadoFieldItemBase {
       'chado_table' => $object_table,
       'chado_column' => 'comment',
       'as' => 'organism_comment',
-    ]);
-
-    // The infraspecific type is from the cvterm table
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_infraspecific_type', $infraspecific_type_term, $infraspecific_type_len, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id',
-      'chado_column' => 'name',
-      'as' => 'organism_infraspecific_type',
     ]);
 
     return $properties;

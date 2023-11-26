@@ -23,7 +23,6 @@ class ChadoContactDefault extends ChadoFieldItemBase {
   public static $id = 'chado_contact_default';
   // The following needs to match the object_table annotation above
   protected static $object_table = 'contact';
-  protected static $object_id = 'contact_id';
   protected static $value_column = 'name';
 
   /**
@@ -146,7 +145,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
 
     // Base table links directly
     if ($base_table == $linker_table) {
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_col, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
@@ -176,7 +175,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
       ]);
 
       // Define the link between the linker table and the object table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_col, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'chado_table' => $linker_table,

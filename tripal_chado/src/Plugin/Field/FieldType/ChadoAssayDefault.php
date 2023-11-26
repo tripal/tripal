@@ -214,7 +214,7 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
 
     // Other columns specific to the object table
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_description', $description_term [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . $object_pkey_col,
@@ -222,7 +222,7 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
       'as' => 'assay_description',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_arrayidentifier', $arrayidentifier_term [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_arrayidentifier', $arrayidentifier_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
@@ -230,7 +230,7 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
       'as' => 'assay_arrayidentifier',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_arraybatchidentifier', $arraybatchidentifier_term [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_arraybatchidentifier', $arraybatchidentifier_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,

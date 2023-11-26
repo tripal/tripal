@@ -92,7 +92,6 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
     $value_term = $mapping->getColumnTermId($object_table, self::$value_column);
-    $value_len = $object_schema_def['fields'][self::$value_column]['size'];
 
     // Other columns specific to this object table
     $description_term = $mapping->getColumnTermId($object_table, 'description');
@@ -216,7 +215,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_name', $value_term, $value_len, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_name', $value_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
