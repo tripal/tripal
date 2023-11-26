@@ -266,27 +266,27 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // back to candidate base tables.
     $object_schema_def = $schema->getTableDef($linked_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-
     $all_tables = $schema->getTables(['type' => 'table']);
     foreach (array_keys($all_tables) as $table) {
-      if ($schema->foreignKeyConstraintExists($table, $object_pkey_col)) {
-        // "single-hop" logic, evaluate chado tables for a foreign
-        // key to our object table. If it has one, we will consider
-        // this a candidate for a base table.
-        $base_tables[$table] = $table;
-
-        if ($has_linker_table) {
-          // This logic is used for fields using a linker table,
-          // i.e. a "double-hop". Here we look in potential linker
-          // tables for two foreign keys, one to our object table, and
-          // a second to a different table. These different tables
-          // become the list of candidate base tables.
-          $table_schema_def = $schema->getTableDef($table, ['format' => 'Drupal']);
-          if (array_key_exists('foreign keys', $table_schema_def)) {
-            foreach ($table_schema_def['foreign keys'] as $foreign_key) {
-              if ($foreign_key['table'] != $linked_table) {
-                $base_tables[$foreign_key['table']] = $foreign_key['table'];
-              }
+      $table_schema_def = $schema->getTableDef($table, ['format' => 'Drupal']);
+      if (array_key_exists('foreign keys', $table_schema_def)) {
+        // For "single-hop" logic, we add this table if there is a
+        // foreign key to our linked_table.
+        $found = FALSE;
+        foreach ($table_schema_def['foreign keys'] as $foreign_key) {
+          if ($foreign_key['table'] == $linked_table) {
+            $base_tables[$table] = $table;
+            $found = TRUE;
+          }
+        }
+        // For "double-hop" logic, this may be a linker table,
+        // and it needs two foreign keys, one to our linked_table
+        // which we detected above, and a second one to another table.
+        // This linked-to table is also a candidate base table.
+        if ($has_linker_table and $found) {
+          foreach ($table_schema_def['foreign keys'] as $foreign_key) {
+            if ($foreign_key['table'] != $linked_table) {
+              $base_tables[$foreign_key['table']] = $foreign_key['table'];
             }
           }
         }
@@ -402,7 +402,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
               // and needs to also have a foreign key to the base table.
               if (($table_name == $base_table)
                   or ($schema->foreignKeyConstraintExists($table_name, $base_pkey_col))) {
-                $key = $table_name . $delimiter . array_values($foreign_key['columns'])[0];
+                $key = $table_name . $delimiter . array_keys($foreign_key['columns'])[0];
                 $select_list[$key] = $key;
               }
             }
