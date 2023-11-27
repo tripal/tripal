@@ -214,6 +214,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
 
+    /**
+     * This was removed in the 4.x branch at some point.
+     * Commenting out for now to determine if it needs to be removed here too.
+     *
     // NOTE: Sometime the primary key is added to the fields without
     // a value in buildChadoRecords. We want to remove those here
     // before trying to insert the record.
@@ -224,6 +228,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       }
       $fields[$key] = $value;
     }
+    */
 
     // Now we can insert the record *fingers crossed!*
     // @debug print "Table: $chado_table; Record: " . print_r($record, TRUE);
@@ -472,7 +477,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     return TRUE;
   }
 
-/**
+  /**
    * Queries for multiple records in Chado.
    *
    * @param array $records
@@ -549,19 +554,19 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function selectChadoRecord(&$records, $base_tables, $chado_table_alias, $delta, $record) {
 
-    $chado_table = $this->getChadoTableFromAlias($chado_table_alias);
-
     if (!array_key_exists('conditions', $record)) {
       throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to missing conditions. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+          ['@table' => $chado_table_alias, '@record' => print_r($record, TRUE)]));
     }
 
     // If we are selecting on the base table and we don't have a proper
     // condition then throw an error.
     if (!$this->hasValidConditions($record)) {
       throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+          ['@table' => $chado_table_alias, '@record' => print_r($record, TRUE)]));
     }
+
+    $chado_table = $this->getChadoTableFromAlias($chado_table_alias);
 
     // Select the fields in the chado table.
     $select = $this->connection->select('1:'.$chado_table, 'ct');
@@ -586,7 +591,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $sel_col_as = $ralias . '_' . $column[1];
             $field_name = $column[2];
             $property_key = $column[3];
-            $this->join_column_alias[$field_name][$property_key][$column[1]] = $sel_col_as;
+            $this->join_column_alias[$field_name][$property_key][ $column[1] ] = $sel_col_as;
             $select->addField($ralias, $sel_col, $sel_col_as);
           }
           $j_index++;
@@ -857,7 +862,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // If this is the linked record_id property then set its value.
           if ($action == 'store_pkey') {
             if ($is_find) {
-              // Do nohting on a find.
+              // Do nothing on a find.
             }
             else {
               $record_id = $records[$chado_table_alias][$delta]['conditions'][$chado_table_pkey]['value'];
@@ -867,7 +872,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // If this is a property managing a linked record ID then set it too.
           if ($action == 'store_link') {
             if ($is_find) {
-              // Do nohting on a find.
+              // Do nothing on a find.
             }
             else {
               $record_id = $records[$chado_table_alias][0]['conditions'][$chado_table_pkey]['value'];
@@ -919,15 +924,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           if ($action == 'store_pkey') {
             continue;
           }
-
-          // If this is a linked record then the ID should already be in the
-          // the conditions of the base table.
           if ($action == 'store_link') {
-            $base_table = $storage_plugin_settings['base_table'];
-            $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
-            $base_table_pkey = $base_table_def['primary key'];
-            $link_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
-            $values[$field_name][$delta][$key]['value']->setValue($link_id);
+            continue;
           }
 
           // Get the values of properties that can be stored.
@@ -1376,12 +1374,17 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $pkey_record_id = $prop_value->getValue();
 
-    if ($pkey_record_id) {
-      $records[$table_alias][$delta]['conditions'][$chado_table_pkey] = [
-        'value' => $pkey_record_id,
-        'operation' => $context['operation']
-      ];
+    if (!$pkey_record_id) {
+      $pkey_record_id = [
+          'REPLACE_BASE_RECORD_ID',
+          $chado_table
+        ];
     }
+
+    $records[$table_alias][$delta]['conditions'][$chado_table_pkey] = [
+      'value' => $pkey_record_id,
+      'operation' => $context['operation']
+    ];
 
     // When we are trying to find a value we need to add the field
     // for the primary key so it can be included in the query.
@@ -1635,7 +1638,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // to be defined and the joins need to be added to the query.
     // This will also add the fields to be selected.
     if (array_key_exists('path', $storage_settings)) {
-
       $path = $storage_settings['path'];
       $as = array_key_exists('as', $storage_settings) ? $storage_settings['as'] : $chado_column;
       $path_arr = explode(";", $path);
@@ -1678,6 +1680,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // is first called.
     $parent_table = !$parent_table ? $left_table : $parent_table;
     $parent_column = !$parent_column ? $left_col : $parent_column;
+
 
     // Make sure the parent table has a 'joins' array.
     if (!array_key_exists($parent_table, $records) or
