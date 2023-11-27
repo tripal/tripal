@@ -327,33 +327,6 @@ fields:
               region: content
               weight: 80
 
-    -   name: qtl_analysis
-        content_type: analysis
-        label: Analysis
-        type: chado_analysis_default
-        description: Application of analytical methods to existing data of a specific type
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: feature
-                linker_table: analysisfeature
-                linker_fkey_column: analysis_id
-        settings:
-            termIdSpace: operation
-            termAccession: "2945"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 85
-          form:
-            default:
-              region: content
-              weight: 85
-
     -   name: qtl_is_analysis
         content_type: QTL
         label: Is Analysis
@@ -648,33 +621,6 @@ fields:
             default:
               region: content
               weight: 80
-
-    -   name: sequence_variant_analysis
-        content_type: analysis
-        label: Analysis
-        type: chado_analysis_default
-        description: Application of analytical methods to existing data of a specific type
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: feature
-                linker_table: analysisfeature
-                linker_fkey_column: analysis_id
-        settings:
-            termIdSpace: operation
-            termAccession: "2945"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 85
-          form:
-            default:
-              region: content
-              weight: 85
 
     -   name: sequence_variant_is_analysis
         content_type: sequence_variant
@@ -971,33 +917,6 @@ fields:
               region: content
               weight: 80
 
-    -   name: genetic_marker_analysis
-        content_type: analysis
-        label: Analysis
-        type: chado_analysis_default
-        description: Application of analytical methods to existing data of a specific type
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: feature
-                linker_table: analysisfeature
-                linker_fkey_column: analysis_id
-        settings:
-            termIdSpace: operation
-            termAccession: "2945"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 85
-          form:
-            default:
-              region: content
-              weight: 85
-
     -   name: genetic_marker_is_analysis
         content_type: genetic_marker
         label: Is Analysis
@@ -1292,33 +1211,6 @@ fields:
             default:
               region: content
               weight: 80
-
-    -   name: phenotypic_marker_analysis
-        content_type: analysis
-        label: Analysis
-        type: chado_analysis_default
-        description: Application of analytical methods to existing data of a specific type
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: feature
-                linker_table: analysisfeature
-                linker_fkey_column: analysis_id
-        settings:
-            termIdSpace: operation
-            termAccession: "2945"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 85
-          form:
-            default:
-              region: content
-              weight: 85
 
     -   name: phenotypic_marker_is_analysis
         content_type: phenotypic_marker
