@@ -1056,7 +1056,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   will be set in the StoragePropertyValue object.
    * @param bool $is_find
    *   Set to TRUE if we are building the record array for finding records.
-   *   update.
    * @return array
    *   An associative array.
    */
@@ -1087,18 +1086,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             continue;
           }
 
+          // Define the context array which will contain all details needed
+          // for the buildChadoRecords_*() methods.
+          $context = [];
+          $context['is_find'] = $is_find;
+
           // Retrieve the property type for this value.
           $prop_value = $info['value'];
           $prop_type = $this->getPropertyType($field_name, $key);
-          $prop_storage_settings = $prop_type->getStorageSettings();
-
-          // Retrieve the operation to be used for searching and if not set, use equals as the default.
-          $operation = array_key_exists('operation', $info) ? $info['operation'] : '=';
-
-          // Retrieve important field settings.
-          $field_label = $definition->getLabel();
-          $field_settings = $definition->getSettings();
-          $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
 
           // Make sure we have an action for this property.
@@ -1118,23 +1113,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           }
           $context['base_table'] = $storage_plugin_settings['base_table'];
 
-          // Get the base table definitions for the field.
-          $schema = $this->connection->schema();
-          $base_table = $storage_plugin_settings['base_table'];
-          $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
-          $base_table_pkey = $base_table_def['primary key'];
-
           // Get the Chado table this specific property works with.
           // Use the base table as a default for properties which do not specify
           // the chado table (e.g. single value fields).
           /* TO BE REMOVED LATER */
           $chado_table = $context['base_table'];
-          $chado_table_def = $base_table_def;
-          $chado_table_pkey = $base_table_pkey;
           if (array_key_exists('chado_table', $prop_storage_settings)) {
             $chado_table = $prop_storage_settings['chado_table'];
-            $chado_table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
-            $chado_table_pkey = $chado_table_def['primary key'];
           }
 
           // Retrieve the operation to be used for searching and if not set, use equals as the default.
@@ -1142,35 +1127,26 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
           $context['field_name'] = $field_name;
           $context['property_key'] = $key;
-          // Properties with a store_link action use left/right table notation.
-          // The left table.left_table_id include the information for the value
-          // to be set in this property so use them as equalivalent to the
-          // chado table used in other actions. This also allows us to use
-          // the base table of the field as a default for this.
-          if (array_key_exists('left_table', $prop_storage_settings)) {
-            $chado_table = $prop_storage_settings['left_table'];
-            $chado_table_pkey = $prop_storage_settings['left_table_id'];
-          }
 
           // Now for each action type, set the conditions and fields for
           // selecting chado records based on the other properties supplied.
           // ----------------------------------------------------------------
           switch ($action) {
             case 'store_id':
-              $this->buildChadoRecords_store_id($records, $delta, $prop_storage_settings, $context, $prop_value, $is_find);
+              $this->buildChadoRecords_store_id($records, $delta, $prop_storage_settings, $context, $prop_value);
               break;
             case 'store_pkey':
-              $this->buildChadoRecords_store_pkey($records, $delta, $prop_storage_settings, $context, $prop_value, $is_find);
+              $this->buildChadoRecords_store_pkey($records, $delta, $prop_storage_settings, $context, $prop_value);
               break;
             case 'store_link':
-              $this->buildChadoRecords_store_link($records, $delta, $prop_storage_settings, $context, $prop_value, $is_find);
+              $this->buildChadoRecords_store_link($records, $delta, $prop_storage_settings, $context, $prop_value);
               break;
             case 'store':
-              $this->buildChadoRecords_store($records, $delta, $prop_storage_settings, $context, $prop_value, $is_find);
+              $this->buildChadoRecords_store($records, $delta, $prop_storage_settings, $context, $prop_value);
               break;
             case 'read_value':
             case 'join':
-              $this->buildChadoRecords_read_value($records, $delta, $prop_storage_settings, $context, $prop_value, $is_find);
+              $this->buildChadoRecords_read_value($records, $delta, $prop_storage_settings, $context, $prop_value);
               break;
             case 'replace':
               // Do nothing here for properties that need replacement
@@ -1270,11 +1246,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
    *   the value is not set. This method is expected to check if the value is empty or not.
-   * @param bool $is_find
-   *   Set to TRUE if we are building the record array for finding records.
-   *   update.
    */
-  protected function buildChadoRecords_store_id(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value, bool $is_find = FALSE) {
+  protected function buildChadoRecords_store_id(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
+    // Set to TRUE if we are building the record array for finding records.
+    $is_find = $context['is_find'];
 
     // Get the Chado table this specific property works with.
     // Use the base table as a default for properties which do not specify
@@ -1372,11 +1348,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
    *   the value is not set. This method is expected to check if the value is empty or not.
-   * @param bool $is_find
-   *   Set to TRUE if we are building the record array for finding records.
-   *   update.
    */
-  protected function buildChadoRecords_store_pkey(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value, bool $is_find = FALSE) {
+  protected function buildChadoRecords_store_pkey(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
+    // Set to TRUE if we are building the record array for finding records.
+    $is_find = $context['is_find'];
 
     // Get the Chado table this specific property works with.
     // Use the base table as a default for properties which do not specify
@@ -1440,11 +1416,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
    *   the value is not set. This method is expected to check if the value is empty or not.
-   * @param bool $is_find
-   *   Set to TRUE if we are building the record array for finding records.
-   *   update.
    */
-  protected function buildChadoRecords_store_link(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value, bool $is_find = FALSE) {
+  protected function buildChadoRecords_store_link(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
+    // Set to TRUE if we are building the record array for finding records.
+    $is_find = $context['is_find'];
 
     // The old implementation of store_link used chado_table/column notation
     // only for the right side of the relationship.
@@ -1542,11 +1518,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
    *   the value is not set. This method is expected to check if the value is empty or not.
-   * @param bool $is_find
-   *   Set to TRUE if we are building the record array for finding records.
-   *   update.
    */
-  protected function buildChadoRecords_store(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value, bool $is_find = FALSE) {
+  protected function buildChadoRecords_store(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
+    // Set to TRUE if we are building the record array for finding records.
+    $is_find = $context['is_find'];
 
     // Get the Chado table this specific property works with.
     // Use the base table as a default for properties which do not specify
@@ -1630,11 +1606,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
    *   the value is not set. This method is expected to check if the value is empty or not.
-   * @param bool $is_find
-   *   Set to TRUE if we are building the record array for finding records.
-   *   update.
    */
-  protected function buildChadoRecords_read_value(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value, bool $is_find = FALSE) {
+  protected function buildChadoRecords_read_value(array &$records, int $delta, array $storage_settings, array &$context, StoragePropertyValue $prop_value) {
+
+    // Set to TRUE if we are building the record array for finding records.
+    $is_find = $context['is_find'];
 
     // Get the Chado table this specific property works with.
     // Use the base table as a default for properties which do not specify
