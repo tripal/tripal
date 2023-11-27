@@ -217,6 +217,33 @@ fields:
               region: content
               weight: 80
 
+    -   name: gene_analysis
+        content_type: analysis
+        label: Analysis
+        type: chado_analysis_default
+        description: Application of analytical methods to existing data of a specific type
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: analysisfeature
+                linker_fkey_column: analysis_id
+        settings:
+            termIdSpace: operation
+            termAccession: "2945"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
     -   name: gene_is_analysis
         content_type: gene
         label: Is Analysis
@@ -511,6 +538,33 @@ fields:
             default:
               region: content
               weight: 80
+
+    -   name: mrna_analysis
+        content_type: analysis
+        label: Analysis
+        type: chado_analysis_default
+        description: Application of analytical methods to existing data of a specific type
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: analysisfeature
+                linker_fkey_column: analysis_id
+        settings:
+            termIdSpace: operation
+            termAccession: "2945"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
 
     -   name: mrna_is_analysis
         content_type: mRNA
