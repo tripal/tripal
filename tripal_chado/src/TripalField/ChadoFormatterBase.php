@@ -42,7 +42,11 @@ abstract class ChadoFormatterBase extends TripalFormatterBase {
    */
   public function settingsSummary() {
     $summary = parent::settingsSummary();
-    $summary[] = $this->t('Set display format');
+    // If a settings form was specified in the annotation, provide the label for the settings cog.
+    $plugin_definition = $this->getPluginDefinition();
+    if (array_key_exists('valid_tokens', $plugin_definition)) {
+      $summary[] = $this->t('Set display format');
+    }
     return $summary;
   }
 
