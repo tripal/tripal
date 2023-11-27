@@ -214,24 +214,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
 
-    /**
-     * This was removed in the 4.x branch at some point.
-     * Commenting out for now to determine if it needs to be removed here too.
-     *
-    // NOTE: Sometime the primary key is added to the fields without
-    // a value in buildChadoRecords. We want to remove those here
-    // before trying to insert the record.
-    $fields = [];
-    foreach ($record['fields'] as $key => $value) {
-      if (is_array($value) AND $value[0] === 'REPLACE_BASE_RECORD_ID') {
-        continue;
-      }
-      $fields[$key] = $value;
-    }
-    */
-
-    // Now we can insert the record *fingers crossed!*
-    // @debug print "Table: $chado_table; Record: " . print_r($record, TRUE);
+    // Insert the record.
     $insert = $this->connection->insert('1:' . $chado_table);
     $insert->fields($record['fields']);
 
@@ -680,6 +663,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $rows_affected = $delete->execute();
     if ($rows_affected == 0) {
+      // @debug print "\n" . strtr((string) $delete, $delete->arguments()) . "\n";
       throw new \Exception($this->t('Failed to delete a record in the Chado "@table" table. Record: @record',
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
@@ -808,7 +792,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $field_settings = $definition->getSettings();
           $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
-          $base_table = $storage_plugin_settings['base_table'];
 
           // Skip fields that don't have an action. An error was already logged
           // for this in the buildChadoRecords function. Here we just skip.
@@ -850,34 +833,18 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
           // If this is the record_id property then set its value.
           if ($action == 'store_id') {
-            if ($is_find) {
-              $record_id = $records[$chado_table_alias][0]['fields'][$chado_table_pkey];
-              $this->base_record_ids[$chado_table_alias] = $record_id;
-            }
-            else {
-              $record_id = $records[$chado_table_alias][0]['conditions'][$chado_table_pkey]['value'];
-            }
+            $record_id = $records[$chado_table_alias][0]['conditions'][$chado_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is the linked record_id property then set its value.
           if ($action == 'store_pkey') {
-            if ($is_find) {
-              // Do nothing on a find.
-            }
-            else {
-              $record_id = $records[$chado_table_alias][$delta]['conditions'][$chado_table_pkey]['value'];
-              $values[$field_name][$delta][$key]['value']->setValue($record_id);
-            }
+            $record_id = $records[$chado_table_alias][$delta]['conditions'][$chado_table_pkey]['value'];
+            $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is a property managing a linked record ID then set it too.
           if ($action == 'store_link') {
-            if ($is_find) {
-              // Do nothing on a find.
-            }
-            else {
-              $record_id = $records[$chado_table_alias][0]['conditions'][$chado_table_pkey]['value'];
-              $values[$field_name][$delta][$key]['value']->setValue($record_id);
-            }
+            $record_id = $records[$chado_table_alias][0]['conditions'][$chado_table_pkey]['value'];
+            $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
         }
       }
@@ -1313,12 +1280,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       ];
 
       $this->base_record_ids[$table_alias] = $record_id;
-
-      // If we are trying to find a value then we wan to set the value of the
-      // field to the record_id as well.
-      if ($is_find) {
-        $records[$table_alias][0]['fields'][$chado_table_pkey] = $record_id;
-      }
     }
   }
 
@@ -1372,25 +1333,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
     $this->setChadoTableAliasMapping($chado_table, $table_alias, $context['field_name'], $context['property_key']);
 
-    $pkey_record_id = $prop_value->getValue();
-
-    if (!$pkey_record_id) {
-      $pkey_record_id = [
-          'REPLACE_BASE_RECORD_ID',
-          $chado_table
-        ];
-    }
+    $link_record_id = $prop_value->getValue();
 
     $records[$table_alias][$delta]['conditions'][$chado_table_pkey] = [
-      'value' => $pkey_record_id,
+      'value' => $link_record_id,
       'operation' => $context['operation']
     ];
-
-    // When we are trying to find a value we need to add the field
-    // for the primary key so it can be included in the query.
-    if ($is_find) {
-      $records[$table_alias][$delta]['fields'][$chado_table_pkey] = NULL;
-    }
 
   }
 
@@ -1464,19 +1412,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       if (!array_key_exists($linker_id, $records[$linker_alias][$delta]['fields'])) {
         $records[$linker_alias][$delta]['fields'][$linker_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
         // @debug print "Adding a note to replace $linker.$linker_id with $link_base record_id\n";
-      }
-
-      // If this is a find operation then we need to add a condition using the
-      // linked value
-      if ($is_find) {
-        $base_alias = $context['base_table'];;
-        if (array_key_exists('chado_table_alias', $storage_settings)) {
-          $base_alias = $storage_settings['chado_table_alias'];
-        }
-        $records[$linker_alias][$delta]['conditions'][$linker_id] = [
-          'value' => $this->base_record_ids[$base_alias],
-          'operation' => '='
-        ];
       }
     }
     else {
@@ -1554,19 +1489,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     $records[$table_alias][$delta]['fields'][$chado_column] = $value;
-
-    // If this is a find then we may want to add a condition.
-    if ($is_find) {
-
-      // If we hvae a value for this field then it's a search criteria
-      // so we need to add a condition.
-      if (!empty($value)) {
-        $records[$table_alias][$delta]['conditions'][$chado_column] = [
-          'value' => $value,
-          'operation' => '='
-        ];
-      }
-    }
 
     // If this field should not allow an empty value that means this
     // entire record should be removed on an update and not inserted.
