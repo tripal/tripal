@@ -1,0 +1,54 @@
+id: 'genetic_chado'
+label: 'Genetic Content Types (Chado)'
+description: 'Content types based on Chado focused on supporting genetic data such as sequence variation, genetic markers and maps.'
+content_types:
+
+    -   label: Genetic Map
+        term: data:1278
+        help_text: Use a genetic map page for a map showing the relative positions of genetic markers in a nucleic acid sequence, based on estimation of non-physical distance such as recombination frequencies.
+        category: Genetic
+        id: genetic_map
+        title_format: "[genetic_map_name]"
+        url_format: "genetic_map/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_16
+
+    -   label: QTL
+        term: SO:0000771
+        help_text: Use a QTL page for a quantitative trait locus (QTL), which is a polymorphic locus which contains alleles that differentially affect the expression of a continuously distributed phenotypic trait. Usually it is a marker described by statistical association to quantitative variation in the particular phenotypic trait that is thought to be controlled by the cumulative action of alleles at multiple loci.
+        category: Genetic
+        id: QTL
+        title_format: "[qtl_name]"
+        url_format: "QTL/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_17
+
+    -   label: Sequence Variant
+        term: SO:0001060
+        help_text: Use the sequence variant page for a non exact copy of a sequence feature or genome exhibiting one or more sequence alteration.
+        category: Genetic
+        id: sequence_variant
+        title_format: "[sequence_variant_name]"
+        url_format: "sequence_variant/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_18
+
+    -   label: Genetic Marker
+        term: SO:0001645
+        help_text: Use the genetic marker page for a measurable sequence feature that varies within a population.
+        category: Genetic
+        id: genetic_marker
+        title_format: "[genetic_marker_name]"
+        url_format: "genetic_marker/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_19
+
+    -   label: Heritable Phenotypic Marker
+        term: SO:0001500
+        help_text: Use the heritable phenotypic marker page for a sequence region characterized as a single heritable trait in a phenotype screen. The heritable phenotype may be mapped to a chromosome but generally has not been characterized to a specific gene locus.
+        category: Genetic
+        id: phenotypic_marker
+        title_format: "[phenotypic_marker_name]"
+        url_format: "phenotypic_marker/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_20

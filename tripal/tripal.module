@@ -573,3 +573,28 @@ function tripal_rebuild() {
     $view->save();
   }
 }
+
+/**
+ * Callback: Allows Tripal Jobs to create a set of TripalEntityType Collections.
+ *
+ * @param array $options
+ *   - collection_ids:
+ *       An array where each found collection has a key entry and only the chosen
+ *       ones have a value the same as the key. All collections not chosen to be
+ *       installed will have a value of 0.
+ */
+function import_tripalentitytype_collection(array $options, \Drupal\tripal\Services\TripalJob $job = NULL) {
+
+  // We need to ensure that we only submit the chosen collections.
+  $collection_ids = $options['collection_ids'];
+  $chosen_collection_ids = array_filter($collection_ids, function($e) {
+      return ($e !== 0);
+  });
+
+  $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
+  $content_type_setup->install($chosen_collection_ids);
+
+  $fields = \Drupal::service('tripal.tripalfield_collection');
+  $fields->install($chosen_collection_ids);
+
+}

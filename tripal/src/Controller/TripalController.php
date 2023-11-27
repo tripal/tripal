@@ -114,7 +114,6 @@ class TripalController extends ControllerBase{
 
     $content = [
       [
-        '#type' => 'markup',
         '#markup' => 'Usage reports coming in the future...',
       ],
     ];

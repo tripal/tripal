@@ -74,7 +74,6 @@ class TripalAdminAddCustomForm extends ConfigFormBase {
       '#value' => $this->t('Submit'),
     ];
     $form['cancel'] = [
-      '#type' => 'markup',
       '#markup' => l('Cancel', 'admin/tripal/files/quota'),
     ];
 

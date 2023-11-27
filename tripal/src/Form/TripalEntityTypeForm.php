@@ -169,7 +169,6 @@ class TripalEntityTypeForm extends EntityForm {
     ];
 
     $form['title_settings']['tokens']['msg'] = [
-      '#type' => 'markup',
       '#markup' => 'Copy the token and paste it into the "Page Title Format" text field above.'
     ];
 
@@ -204,7 +203,6 @@ class TripalEntityTypeForm extends EntityForm {
     ];
 
     $form['url_settings']['tokens']['msg'] = [
-      '#type' => 'markup',
       '#markup' => 'Copy the token and paste it into the "URL Alias Pattern" text field above.'
     ];
 

@@ -568,3 +568,11 @@ entity.tripalfield_collection.delete_form:
     _title: 'Delete Configuration'
   requirements:
     _permission: 'administer tripal'
+
+tripal.import_tripalentitytype_collection:
+  path: 'admin/structure/bio_data/import-collection'
+  defaults:
+    _title: 'Import Tripal Entity Type Collection'
+    _form: 'Drupal\tripal\Form\ImportTripalEntityTypeCollection'
+  requirements:
+    _permission: 'manage tripal content types'
