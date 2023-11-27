@@ -1190,24 +1190,26 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             }
           }
         }
-        if (array_key_exists('conditions', $record)) {
-          foreach ($record['conditions'] as $chado_column => $val) {
-            if (is_array($val['value']) and $val['value'][0] == 'REPLACE_BASE_RECORD_ID') {
-              $core_table = $val['value'][1];
+        // All records should have conditions set!
+        if (!array_key_exists('conditions', $record)) {
+          throw new \Exception('All Chado records built should have a conditions array set by this point. However, the following record does not: ' . print_r($record, TRUE));
+        }
+        foreach ($record['conditions'] as $chado_column => $val) {
+          if (is_array($val['value']) and $val['value'][0] == 'REPLACE_BASE_RECORD_ID') {
+            $core_table = $val['value'][1];
 
-              // If the core table is set in the base record ids array and the
-              // value is not 0 then we can set this condition now!
-              if (array_key_exists($core_table, $this->base_record_ids) and $this->base_record_ids[$core_table] != 0) {
-                $records[$table_name][$delta]['conditions'][$chado_column]['value'] = $this->base_record_ids[$core_table];
-              }
-              // If the base record ID is 0 then this is an insert and we
-              // don't yet have the base record ID.  So, leave in the message
-              // to replace the ID so we can do so later.
-              if (array_key_exists($base_table, $this->base_record_ids) and $this->base_record_ids[$base_table] != 0) {
-                $records[$table_name][$delta]['conditions'][$chado_column]['value'] = $this->base_record_ids[$base_table];
-              }
-
+            // If the core table is set in the base record ids array and the
+            // value is not 0 then we can set this condition now!
+            if (array_key_exists($core_table, $this->base_record_ids) and $this->base_record_ids[$core_table] != 0) {
+              $records[$table_name][$delta]['conditions'][$chado_column]['value'] = $this->base_record_ids[$core_table];
             }
+            // If the base record ID is 0 then this is an insert and we
+            // don't yet have the base record ID.  So, leave in the message
+            // to replace the ID so we can do so later.
+            if (array_key_exists($base_table, $this->base_record_ids) and $this->base_record_ids[$base_table] != 0) {
+              $records[$table_name][$delta]['conditions'][$chado_column]['value'] = $this->base_record_ids[$base_table];
+            }
+
           }
         }
       }
@@ -1313,12 +1315,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       ];
 
       $this->base_record_ids[$table_alias] = $record_id;
-    }
 
-    // When we are trying to find a value we need to add the field
-    // for the primary key so it can be included in the queyr.
-    if ($is_find) {
-      $records[$table_alias][0]['fields'][$chado_table_pkey] = $record_id;
+      // If we are trying to find a value then we wan to set the value of the
+      // field to the record_id as well.
+      if ($is_find) {
+        $records[$table_alias][0]['fields'][$chado_table_pkey] = $record_id;
+      }
     }
   }
 
