@@ -197,55 +197,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   * {@inheritDoc}
-   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getStoredValues()
-   */
-  public function getStoredValues() {
-
-    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
-    $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
-
-    $props = $this->getStoredTypes();
-
-    $values = [];
-    foreach ($props as $field_name => $keys) {
-      foreach ($keys as $key => $prop_type) {
-        $field_definition = $this->field_definitions[$field_name];
-        $configuration = [
-          'field_definition' => $field_definition,
-          'name' => $field_name,
-          'parent' => NULL,
-        ];
-        $instance = $field_type_manager->createInstance($field_definition->getType(), $configuration);
-        $field_class = get_class($instance);
-
-        $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
-            $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
-        $values[$field_name][0][$key]['value'] = $prop_value;
-      }
-    }
-    return $values;
-  }
-
-  /**
-   * A simple helper function to clone a values array.
-   *
-   * @param array $values
-   *   An array of property values.
-   */
-  private function cloneValues($values) {
-    $copy = [];
-    foreach ($values as $field_name => $deltas) {
-      foreach ($deltas as $delta => $keys) {
-        foreach ($keys as $key => $value) {
-          $copy[$field_name][$delta][$key]['value'] = clone $value['value'];
-        }
-      }
-    }
-    return $copy;
-  }
-
-  /**
    * Inserts a single record in a Chado table.
    *
    * @param array $records
