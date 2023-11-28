@@ -17,6 +17,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   },
  *   valid_tokens = {
  *     "[genus]",
+ *     "[genus_abbrev]",
  *     "[species]",
  *     "[infratype]",
  *     "[infratype_abbrev]",
@@ -57,7 +58,8 @@ class ChadoOrganismFormatterDefault extends ChadoFormatterBase {
         'comment' => $item->get('organism_comment')->getString(),
       ];
 
-      // Special case handling for abbreviation of infraspecific type
+      // Special case handling for abbreviation of genus and infraspecific type
+      $values['genus_abbrev'] = substr($values['genus'], 0, 1) . '.';
       $values['infratype_abbrev'] = chado_abbreviate_infraspecific_rank($values['infratype']);
 
       // Substitute values in token string to generate displayed string.
