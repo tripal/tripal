@@ -6,6 +6,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
+use Drupal\Core\Render\Markup;
 
 
 class ChadoNewPubSearchQueryForm extends FormBase {
@@ -88,6 +89,68 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       // handle previous user input
       if ($pub_import_id != 'null') {
         $this->form_elements_load_previous_user_input($this->form_state_previous_user_input, $form['pub_library']);
+      }
+
+      // If the test button was clicked - run the TripalPubLibrary Plugin specific test function
+      if ($_SESSION['tripal_pub_import']['perform_test'] == 1) {
+        $plugin_id = $form['plugin_id']['#default_value'];
+        if ($plugin_id) {
+          // Instantiate the selected plugin
+          // Pub Library Manager is found in tripal module: tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+          $pub_library_manager = \Drupal::service('tripal.pub_library');
+          $plugin = $pub_library_manager->createInstance($plugin_id, []);
+
+          // The selected plugin defines a test specific to itself.
+          $criteria_column_array = $_SESSION['tripal_pub_import']['perform_test_criteria_array'];
+          // dpm($criteria_column_array);
+          $results = $plugin->test($form, $form_state, $criteria_column_array);
+
+          // On successful results, it should return array with keys total_records, search_str, pubs(array)
+          $headers = ['', 'Publication', 'Raw results'];
+          $form['test_results_table'] = [
+            '#type' => 'table',
+            '#header' => $headers,
+            '#prefix' => '<div id="test_results_table">',
+            '#suffix' => '</div>',
+            '#weight' => 1000, // arbitrary heavier number so table is below most options
+          ];
+          // dpm($results);
+          if ($results != NULL) {
+            $results_count = count($results['pubs']);
+            $form['test_results_count_info'] = [
+              '#type' => 'markup',
+              '#markup' => '<h1>Test results</h1><div>Found ' . $results_count . ' publications.</div>',
+              '#weight' => 998
+            ];
+            $form['test_results_search_string'] = [
+              '#type' => 'markup',
+              '#markup' => 'Search String: ' .  $results['search_str'],
+              '#weight' => 999,
+            ];            
+            $index = 0;
+            foreach ($results['pubs'] as $pubs_row) {
+              $index++;
+              $row["index"] = [
+                '#type' => 'markup',
+                '#markup' => $index,
+              ];
+              $row["publication"] = [
+                '#type' => 'markup',
+                '#markup' => $pubs_row['Title'],
+              ];
+              $row["raw"] = [
+                '#type' => 'markup',
+                '#markup' => Markup::create('<div style="cursor: pointer;" onclick="javascript:console.log(\'click\');console.log(jQuery(this));jQuery(this).parent().find(\'#test_results_' . $index . '\').css(\'display\', \'block\');">Show</div><div id="test_results_' . $index . '" style="display: none; display: none; position: fixed; top: 20%; left: 10%; width: 80%; height: 50%; padding: 10px; background-color: #FFFFFF; border: 1px solid #000000;"><div onclick="javascript:jQuery(this).parent().css(\'display\',\'none\');" style="display: inline-block; background-color: #000000; color: #FFFFFF; padding: 2px; border-radius: 2px; border: 1px solid #000000; cursor: pointer; font-size: 10px;">Close</div><div style="height: 90%; overflow-y: scroll">' . htmlentities($pubs_row['raw']) . '</div></div>'),
+                ''
+              ];
+              $form['test_results_table'][$index - 1] = $row;                           
+            }
+          }
+
+          // Set the session variable perform_test back to 0 since the test has finished
+          $_SESSION['tripal_pub_import']['perform_test'] = 0;
+          $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = [];
+        }
       }
     }
 
@@ -188,20 +251,20 @@ class ChadoNewPubSearchQueryForm extends FormBase {
     // Add the submit buttons
     $form['pub_library']['save'] = [
       '#type' => 'submit',
-      '#value' => t('Save Importer'),
+      '#value' => t('Save Search Query'),
       '#weight' => 51,
     ];
 
     // @TODO if necessary from within this form
-    // $form['pub_library']['test'] = [
-    //   '#type' => 'submit',
-    //   '#value' => t('Test Importer'),
-    //   '#weight' => 51,
-    // ];
+    $form['pub_library']['test'] = [
+      '#type' => 'submit',
+      '#value' => t('Test Search Query'),
+      '#weight' => 51,
+    ];
 
     $form['pub_library']['delete'] = [
       '#type' => 'submit',
-      '#value' => t('Delete Importer'),
+      '#value' => t('Delete Search Query'),
       '#attributes' => ['style' => 'float: right;'],
       '#weight' => 51,
     ];
@@ -402,6 +465,9 @@ class ChadoNewPubSearchQueryForm extends FormBase {
   public function form_elements_specific_importer($form, FormStateInterface $form_state) {
     // Add elements only after a plugin has been selected.
     $plugin_id = $form_state->getValue(['plugin_id']);
+    if (!$plugin_id) {
+      $plugin_id = $form['plugin_id']['#default_value'];
+    }
     if ($plugin_id) {
 
       // Instantiate the selected plugin
@@ -478,6 +544,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
     // dpm($form_state_values);
     $public = \Drupal::database();
     $user_input = $form_state->getUserInput();
+    $form_mode = $user_input['mode'];
     // dpm($user_input);
     $trigger = $form_state->getTriggeringElement()['#name'];
     
@@ -485,59 +552,14 @@ class ChadoNewPubSearchQueryForm extends FormBase {
     if ($trigger == 'op') {
       $op = $user_input['op'];
       dpm($op);
-      if ($op == 'Save Importer') {
+      if ($op == 'Save Search Query') {
+        $_SESSION['tripal_pub_import']['perform_test'] = 0;
         // tripal_pub_import table columns are: pub_import_id, name, criteria, disabled, do_contact
 
         // Translate the submitted data into a variable which can be serialized into a criteria column
         // of the tripal_pub_import table
-        // dpm($user_input);
-        $disabled = $user_input['disabled'];
-        if ($disabled == null) {
-          $disabled = 0;
-        }
-        $do_contact = $user_input['do_contact'];
-        if ($do_contact == null) {
-          $do_contact = 0;
-        }
-        $criteria_column_array = [
-          'remote_db' => explode('tripal_pub_library_', $user_input['plugin_id'])[1],
-          // 'days' => $user_input['days'],
-          'num_criteria' => $user_input['num_criteria'],
-          'loader_name' => $user_input['loader_name'],
-          'disabled' => $disabled,
-          'do_contact' => $do_contact,
-          'pub_import_id' => $user_input['pub_import_id'],
-          'criteria' => [],
-          'form_state_user_input' => NULL, // used for edit form
-        ];
-
-        // Save form_state_user_input (for use with the edit version of this form)
-        // This removes the requirement to retranslate the saved data which could become unmaintainable
-        // Remove any data from user_input that is not necessary or can confuse logic processing
-        $form_mode = $user_input['mode'];
-        unset($user_input['op']); // used to determine if it was a save or delete
-        // unset($user_input['form_build_id']);
-        // unset($user_input['form_token']);
-        unset($user_input['mode']); // was used to determine if it is new or edit
-        $criteria_column_array['form_state_user_input'] = $user_input;
-
-        $criteria_count = 1;
-        // $user_input['table'] is the criteria rows from the submitted form
-        // Go through each row of criteria
-        foreach ($user_input['table'] as $criteria_row_submitted) {
-          $is_phrase = $criteria_row_submitted['is_phrase-' . $criteria_count];
-          if ($is_phrase == null) {
-            $is_phrase = 0;
-          }
-          $criteria_column_array['criteria'][$criteria_count] = [
-            'search_terms' => $criteria_row_submitted['search_terms-' . $criteria_count],
-            'scope' => $criteria_row_submitted['scope-' . $criteria_count],
-            'is_phrase' => $is_phrase,
-            'operation' => $criteria_row_submitted['operation-' . $criteria_count],
-          ];
-          $criteria_count++;
-        }
-
+        $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
+        dpm($criteria_column_array);
 
         // Load the plugin and initialize an instance to perform it's unique form_submit function
         // This will run plugin specific form submit operations that can alter the criteria database column
@@ -554,14 +576,13 @@ class ChadoNewPubSearchQueryForm extends FormBase {
           $plugin->form_submit($form, $form_state, $criteria_column_array);
         }
 
-
         $criteria_column_serialized = serialize($criteria_column_array);
 
         $db_fields = [
           'name' => $user_input['loader_name'],
           'criteria' => $criteria_column_serialized,
-          'disabled' => $disabled,
-          'do_contact' => $do_contact
+          'disabled' => $criteria_column_array['disabled'],
+          'do_contact' => $criteria_column_array['do_contact'],
         ];
 
         $messenger = \Drupal::messenger();
@@ -575,25 +596,88 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         }
         // If form_mode is 'edit', this is an update to the database
         else {
-          // dpm($db_fields);
-          // dpm($user_input['pub_import_id']);
           $public->update('tripal_pub_import')
             ->fields($db_fields)
             ->condition('pub_import_id', $user_input['pub_import_id'])
             ->execute();
           $messenger->addMessage("Importer successfully edited!");
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
-          // dpm($url);
           $form_state->setRedirectUrl($url);
         }
         
         $form_state->setRebuild(FALSE); // @TODO change this to false after developing this form
 
       }
+      else if ($op == 'Test Search Query') {
+        // This session variable gets checked when the form reloads so you can find the code 
+        // in the buildForm function
+        $_SESSION['tripal_pub_import']['perform_test'] = 1;
+        $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $this->criteria_convert_to_array($form, $form_state);
+      }
     }
     else {
+      $_SESSION['tripal_pub_import']['perform_test'] = 0; // stop perform test from running
       $form_state->setRebuild(TRUE);
     }
+  }
+
+  /**
+   * This function accepts the form state and converts the data into a criteria array
+   * This criteria array is serialized and saved in the tripal_pub_import table as a row if Save Importer is clicked
+   * This array will be given to the plugin test function to perform a test if Test Importer is clicked
+   */
+  public function criteria_convert_to_array($form, FormStateInterface $form_state) {
+    $user_input = $form_state->getUserInput();
+    
+    // dpm($user_input);
+    $disabled = $user_input['disabled'];
+    if ($disabled == null) {
+      $disabled = 0;
+    }
+    $do_contact = $user_input['do_contact'];
+    if ($do_contact == null) {
+      $do_contact = 0;
+    }
+    $criteria_column_array = [
+      'remote_db' => explode('tripal_pub_library_', $user_input['plugin_id'])[1],
+      // 'days' => $user_input['days'],
+      'num_criteria' => $user_input['num_criteria'],
+      'loader_name' => $user_input['loader_name'],
+      'disabled' => $disabled,
+      'do_contact' => $do_contact,
+      'pub_import_id' => $user_input['pub_import_id'],
+      'criteria' => [],
+      'form_state_user_input' => NULL, // used for edit form
+    ];
+
+    // Save form_state_user_input (for use with the edit version of this form)
+    // This removes the requirement to retranslate the saved data which could become unmaintainable
+    // Remove any data from user_input that is not necessary or can confuse logic processing
+    
+    unset($user_input['op']); // used to determine if it was a save or delete
+    // unset($user_input['form_build_id']);
+    // unset($user_input['form_token']);
+    unset($user_input['mode']); // was used to determine if it is new or edit
+    $criteria_column_array['form_state_user_input'] = $user_input;
+
+    $criteria_count = 1;
+    // $user_input['table'] is the criteria rows from the submitted form
+    // Go through each row of criteria
+    foreach ($user_input['table'] as $criteria_row_submitted) {
+      $is_phrase = $criteria_row_submitted['is_phrase-' . $criteria_count];
+      if ($is_phrase == null) {
+        $is_phrase = 0;
+      }
+      $criteria_column_array['criteria'][$criteria_count] = [
+        'search_terms' => $criteria_row_submitted['search_terms-' . $criteria_count],
+        'scope' => $criteria_row_submitted['scope-' . $criteria_count],
+        'is_phrase' => $is_phrase,
+        'operation' => $criteria_row_submitted['operation-' . $criteria_count],
+      ];
+      $criteria_count++;
+    }
+
+    return $criteria_column_array;
   }
 
 }
