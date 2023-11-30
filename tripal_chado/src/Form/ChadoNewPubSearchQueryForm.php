@@ -562,6 +562,11 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         $form_state->setRebuild(FALSE); // @TODO change this to false after developing this form
 
       }
+      else if ($op == 'Delete Search Query') {
+        $pub_import_id = $user_input['pub_import_id'];
+        $url = Url::fromUri('internal:/admin/tripal/loaders/publications/delete_publication_search_query/' . $pub_import_id);
+        $form_state->setRedirectUrl($url);
+      }
       else if ($op == 'Test Search Query') {
         // This session variable gets checked when the form reloads so you can find the code 
         // in the buildForm function

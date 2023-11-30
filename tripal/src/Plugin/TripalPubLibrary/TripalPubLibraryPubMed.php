@@ -108,60 +108,61 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
   /** THIS IS FROM 7.x-3.x/tripal_chado/includes/loaders/tripal_chado.pub_importer_PMID.inc */
   /* https://www.nlm.nih.gov/dataguide/eutilities/how_eutilities_works.html */
 
-  /**
-   * A hook for altering the publication importer form.  It Changes the
-   * 'Abstract' filter to be 'Abstract/Title'.
-   *
-   * @param $form
-   *   The Drupal form array
-   * @param $form_state
-   *   The form state array
-   * @param $num_criteria
-   *   The number of criteria the user currently has added to the form
-   *
-   * @return
-   *   The form (drupal form api)
-   *
-   * @ingroup tripal_pub
-   */
-  function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1) {
-    // PubMed doesn't have an 'Abstract' field, so we need to convert the criteria
-    // from 'Abstract' to 'Title/Abstract'
-    for ($i = 1; $i <= $num_criteria; $i++) {
-      $form['themed_element']['criteria'][$i]["scope-$i"]['#options']['abstract'] = 'Abstract/Title';
-    }
+  // /**
+  //  * A hook for altering the publication importer form.  It Changes the
+  //  * 'Abstract' filter to be 'Abstract/Title'.
+  //  *
+  //  * @param $form
+  //  *   The Drupal form array
+  //  * @param $form_state
+  //  *   The form state array
+  //  * @param $num_criteria
+  //  *   The number of criteria the user currently has added to the form
+  //  *
+  //  * @return
+  //  *   The form (drupal form api)
+  //  *
+  //  * @ingroup tripal_pub
+  //  */
+  // function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1) {
+  //   // PubMed doesn't have an 'Abstract' field, so we need to convert the criteria
+  //   // from 'Abstract' to 'Title/Abstract'
+  //   for ($i = 1; $i <= $num_criteria; $i++) {
+  //     $form['themed_element']['criteria'][$i]["scope-$i"]['#options']['abstract'] = 'Abstract/Title';
+  //   }
   
-    return $form;
-  }
+  //   return $form;
+  // }
   
-  /**
-   * A hook for providing additional validation of importer setup form.
-   *
-   * @param $form
-   *   The Drupal form array
-   * @param $form_state
-   *   The form state array
-   *
-   * @return
-   *  The form (drupal form api)
-   *
-   * @ingroup tripal_pub
-   */
-  function tripal_pub_remote_validate_form_PMID($form, $form_state) {
-    $num_criteria = $form_state['values']['num_criteria'];
+  // /**
+  //  * A hook for providing additional validation of importer setup form.
+  //  *
+  //  * @param $form
+  //  *   The Drupal form array
+  //  * @param $form_state
+  //  *   The form state array
+  //  *
+  //  * @return
+  //  *  The form (drupal form api)
+  //  *
+  //  * @ingroup tripal_pub
+  //  */
+  // function tripal_pub_remote_validate_form_PMID($form, $form_state) {
+  //   $num_criteria = $form_state['values']['num_criteria'];
   
-    for ($i = 1; $i <= $num_criteria; $i++) {
-      $search_terms = trim($form_state['values']["search_terms-$i"]);
-      $scope = $form_state['values']["scope-$i"];
-      if ($scope == 'id' and !preg_match('/^PMID:\d+$/', $search_terms)) {
-        form_set_error("search_terms-$i", "The PubMed accession must be a numeric value, prefixed with 'PMID:' (e.g. PMID:23024789).");
-      }
-    }
-    return $form;
-  }
+  //   for ($i = 1; $i <= $num_criteria; $i++) {
+  //     $search_terms = trim($form_state['values']["search_terms-$i"]);
+  //     $scope = $form_state['values']["scope-$i"];
+  //     if ($scope == 'id' and !preg_match('/^PMID:\d+$/', $search_terms)) {
+  //       form_set_error("search_terms-$i", "The PubMed accession must be a numeric value, prefixed with 'PMID:' (e.g. PMID:23024789).");
+  //     }
+  //   }
+  //   return $form;
+  // }
   
   /**
    * A hook for performing the search on the PubMed database.
+   * T4 - this is not a hook any longer but can still be used
    *
    * @param $search_array
    *   An array containing the search criteria for the search
@@ -322,7 +323,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     }
   
     usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
-    dpm($query_url);
+    // dpm($query_url);
     $rfh = fopen($query_url, "r");
     if (!$rfh) {
       \Drupal::messenger()->addMessage('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
@@ -338,7 +339,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       $query_xml .= fread($rfh, 255);
     }
     fclose($rfh);
-    dpm($query_xml);
+    // dpm($query_xml);
     $xml = new \XMLReader();
     $xml->xml($query_xml);
   
