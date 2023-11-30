@@ -25,11 +25,10 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     // DUMMY function from inheritance
   }
 
-  // @TODO Maybe ??? Need to confirm with Stephen if this could work
-  // I can't currently think of a reason it wouldn't off hand
-  // This might be the function that the Tripal Job will call
+  // @TODO: Create a tripal job, call the PubParser
   public function parse($pub_import_id) {
-    // This will connect to PUBMED AND PERFORM NECESSARY INSERTIONS INTO DATABASE
+    // Perhaps as a Tripal Job
+    // Do we just run this and get the XML - where do we save it?
   }
 
   /** 

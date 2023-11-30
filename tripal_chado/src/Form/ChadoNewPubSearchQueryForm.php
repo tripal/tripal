@@ -7,11 +7,13 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\Render\Markup;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 
 class ChadoNewPubSearchQueryForm extends FormBase {
-
+  private $pub_import_id = null;
   private $form_state_previous_user_input = null;
+
   /**
    * {@inheritdoc}
    */
@@ -23,21 +25,19 @@ class ChadoNewPubSearchQueryForm extends FormBase {
    * {@inheritDoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, $pub_import_id = null) {
-    
-    dpm('Pub Import ID:' . $pub_import_id);
     if ($pub_import_id != null) {
+      // used to keep track of whether this is a new query or edit query
+      $this->pub_import_id = $pub_import_id; 
       $public = \Drupal::database();
+
       // This is the edit version of the form, we need to lookup the current pub_import_id
       $publication = $public->select('tripal_pub_import', 'tpi')->fields('tpi')->condition('pub_import_id', $pub_import_id, '=')->execute()->fetchObject();
       $criteria = unserialize($publication->criteria);
 
 
-      // THIS DOES NOT WORK!!!!!! DRUPAL and Symphony!!!!!
-      // $form_state->setUserInput($criteria['form_state_user_input']);
-
-      // Alternative and not what I want
       // Add the previously saved user input into the instantiated object   
       $this->form_state_previous_user_input = $criteria['form_state_user_input'];
+
 
       // Let's add a hidden field called form_mode to tell the form submit process that this is an edit instead of creation
       $form['mode'] = [
@@ -53,9 +53,12 @@ class ChadoNewPubSearchQueryForm extends FormBase {
     }
 
     $form_state_values = $form_state->getValues();
-    // dpm($form_state_values);
 
-
+    // If performing a test we need to change the state etc to make sure the form appears correctly
+    if ($_SESSION['tripal_pub_import']['perform_test'] == 1) {
+      $this->form_state_previous_user_input = $_SESSION['tripal_pub_import']['perform_test_user_input'];
+      $form_state_values['button_next'] = "Next";
+    }
 
     $html = "<ul class='action-links'>";
     $html .= '  <li>' . Link::fromTextAndUrl('Return to manage pub search queries', Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries'))->toString() . '</li>';
@@ -80,8 +83,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
       // add the elements for the specific importer (below function initialized plugin and calls form function)
       $form = $this->form_elements_specific_importer($form, $form_state);
-      // dpm('We should show the elements fields required for this importer');
-
 
       // add the common elements (like search criteria)
       $form = $this->form_elements_common($form, $form_state);
@@ -102,7 +103,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
           // The selected plugin defines a test specific to itself.
           $criteria_column_array = $_SESSION['tripal_pub_import']['perform_test_criteria_array'];
-          // dpm($criteria_column_array);
           $results = $plugin->test($form, $form_state, $criteria_column_array);
 
           // On successful results, it should return array with keys total_records, search_str, pubs(array)
@@ -114,19 +114,22 @@ class ChadoNewPubSearchQueryForm extends FormBase {
             '#suffix' => '</div>',
             '#weight' => 1000, // arbitrary heavier number so table is below most options
           ];
-          // dpm($results);
+
           if ($results != NULL) {
             $results_count = count($results['pubs']);
+            
             $form['test_results_count_info'] = [
               '#type' => 'markup',
               '#markup' => '<h1>Test results</h1><div>Found ' . $results_count . ' publications.</div>',
               '#weight' => 998
             ];
+            
             $form['test_results_search_string'] = [
               '#type' => 'markup',
               '#markup' => 'Search String: ' .  $results['search_str'],
               '#weight' => 999,
-            ];            
+            ];  
+
             $index = 0;
             foreach ($results['pubs'] as $pubs_row) {
               $index++;
@@ -138,10 +141,14 @@ class ChadoNewPubSearchQueryForm extends FormBase {
                 '#type' => 'markup',
                 '#markup' => $pubs_row['Title'],
               ];
+              $raw_html = '';
+              $raw_html .= '<div style="cursor: pointer;" onclick="javascript:console.log(\'click\');console.log(jQuery(this));jQuery(this).parent().find(\'#test_results_' . $index . '\').css(\'display\', \'block\');">Show</div>';
+              $raw_html .= '<div id="test_results_' . $index . '" style="display: none; border-radius: 2px; position: fixed; top: 20%; left: 10%; width: 80%; height: 50%; padding: 10px; background-color: #000000; color: #FFFFFF; border: 1px solid #000000;">';
+              $raw_html .= '<div onclick="javascript:jQuery(this).parent().css(\'display\',\'none\');" style="display: inline-block; background-color: #000000; color: #FFFFFF; padding: 2px; border-radius: 2px; border: 1px solid #000000; cursor: pointer; font-size: 10px;">Close</div>';
+              $raw_html .= '<div style="height: 90%; overflow-y: scroll">' . htmlentities($pubs_row['raw']) . '</div></div>';
               $row["raw"] = [
                 '#type' => 'markup',
-                '#markup' => Markup::create('<div style="cursor: pointer;" onclick="javascript:console.log(\'click\');console.log(jQuery(this));jQuery(this).parent().find(\'#test_results_' . $index . '\').css(\'display\', \'block\');">Show</div><div id="test_results_' . $index . '" style="display: none; position: fixed; top: 20%; left: 10%; width: 80%; height: 50%; padding: 10px; background-color: #000000; color: #FFFFFF; border: 1px solid #000000;"><div onclick="javascript:jQuery(this).parent().css(\'display\',\'none\');" style="display: inline-block; background-color: #000000; color: #FFFFFF; padding: 2px; border-radius: 2px; border: 1px solid #000000; cursor: pointer; font-size: 10px;">Close</div><div style="height: 90%; overflow-y: scroll">' . htmlentities($pubs_row['raw']) . '</div></div>'),
-                ''
+                '#markup' => Markup::create($raw_html),
               ];
               $form['test_results_table'][$index - 1] = $row;                           
             }
@@ -153,7 +160,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         }
       }
     }
-
     return $form;
   }
 
@@ -176,8 +182,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
   public function form_elements_common($form, FormStateInterface &$form_state) {
     $form_state_values = $form_state->getValues();
-    // dpm($form_state_values);
-    //@todo get these values
+
     $disabled = '';
     $do_contact = '';
 
@@ -216,7 +221,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       $num_criteria = $this->form_state_previous_user_input['num_criteria'];
     }
 
-    // dpm($user_input);
     if ($trigger == 'add') {
       // Increment the num_criteria which should regenerate the form with an additional criteria row
       $num_criteria += 1;
@@ -255,19 +259,21 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       '#weight' => 51,
     ];
 
-    // @TODO if necessary from within this form
+
     $form['pub_library']['test'] = [
       '#type' => 'submit',
       '#value' => t('Test Search Query'),
       '#weight' => 51,
     ];
 
-    $form['pub_library']['delete'] = [
-      '#type' => 'submit',
-      '#value' => t('Delete Search Query'),
-      '#attributes' => ['style' => 'float: right;'],
-      '#weight' => 51,
-    ];
+    if($this->pub_import_id != null) {
+      $form['pub_library']['delete'] = [
+        '#type' => 'submit',
+        '#value' => t('Delete Search Query'),
+        '#attributes' => ['style' => 'float: right;'],
+        '#weight' => 51,
+      ];
+    }
 
     // Add a placeholder for the section where the test results will appear
     $form['pub_library']['results'] = [
@@ -405,25 +411,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
           '#type' => 'submit',
           '#name' => 'remove',
           '#value' => t('Remove'),
-          // '#ajax' => [
-          //   'callback' => [$this, 'tripal_pub_importer_form_ajax_update'],
-          //   'wrapper' => 'tripal-pub-importer-setup',
-          //   'effect' => 'fade',
-          //   // 'method' => 'replace',
-          //   // 'prevent' => 'click',
-          // ],
-          // When this button is clicked, the form will be validated and submitted.
-          // Therefore, we set custom submit and validate functions to override the
-          // default form submit. In the validate function we set the form_state to
-          // rebuild the form so that the submit function never actually gets called,
-          // but we need it or Drupal will run the default validate anyway.
-          // We also set #limit_validation_errors to empty so fields that are
-          // required that don't have values won't generate warnings.
-          
-          // RISH REMOVED FOR TESTING (9/23/2023)
-          // '#submit' => [$this, 'tripal_pub_importer_form_ajax_button_submit'],
-          // '#validate' => ['tripal_pub_importer_form_ajax_button_validate'], 
-          // '#limit_validation_errors' => [],
         ];
       }
 
@@ -433,28 +420,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         '#type' => 'submit',
         '#name' => 'add',
         '#value' => t('Add'),
-        // '#ajax' => [
-        //   'callback' => [$this, 'tripal_pub_importer_form_ajax_update'],
-        //   // 'wrapper' => 'tripal-pub-importer-setup',
-        //   'wrapper' => 'pub_importer_main_form',
-        //   'effect' => 'fade',
-        //   // 'method' => 'replace',
-        //   // 'prevent' => 'click',
-        // ],
-        // When this button is clicked, the form will be validated and submitted.
-        // Therefore, we set custom submit and validate functions to override the
-        // default form submit. In the validate function we set the form_state to
-        // rebuild the form so that the submit function never actually gets called,
-        // but we need it or Drupal will run the default validate anyway.
-        // we also set #limit_validation_errors to empty so fields that
-        // are required that don't have values won't generate warnings.
-        
-        //@to-do this submit function is not being called - why?
-
-        // RISH REMOVED FOR TESTING (9/23/2023)
-        // '#submit' => [$this,'tripal_pub_importer_form_ajax_button_submit'],
-        // '#validate' => ['tripal_pub_importer_form_ajax_button_validate'],
-        // '#limit_validation_errors' => [],
       ];
       
     }
@@ -502,7 +467,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       $default_value = $this->form_state_previous_user_input['plugin_id'];
     }
 
-    // RISH: This is the radio buttons which lists the types of publication / sources eg NIH PubMed database
+    // This is the radio buttons which lists the types of publication / sources eg NIH PubMed database
     $form['plugin_id'] = [
       '#title' => t('Select a source of publications'),
       '#type' => 'radios',
@@ -510,10 +475,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       '#required' => TRUE,
       '#options' => $plugins,
       '#default_value' => $default_value,
-      // '#ajax' => [
-      //   'callback' =>  [$this, 'formAjaxCallback'], // calls function within this class: function formAjaxCallback
-      //   'wrapper' => 'edit-library',
-      // ],
     ];
 
     $form['button_next'] = [
@@ -521,18 +482,13 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       '#value' => 'Next'
     ];
 
-    // Doug: A placeholder for the form elements for the selected plugin,
-    // to be populated by the AJAX callback.
-
-    // RISH: This is the container that will hold the specific fields for a specific 'plugin' which represents the 
-    //       publication / sources eg NIH PubMed database form elements
+    // This is the container that will hold the specific fields for a specific 'plugin' which represents the 
+    // publication / sources eg NIH PubMed database form elements
     $form['pub_library'] = [
       '#prefix' => '<span id="edit-pub_library">',
       '#suffix' => '</span>',
     ];
-
     return $form;
-
   }
 
 
@@ -548,10 +504,9 @@ class ChadoNewPubSearchQueryForm extends FormBase {
     // dpm($user_input);
     $trigger = $form_state->getTriggeringElement()['#name'];
     
-    // dpm($trigger);
     if ($trigger == 'op') {
       $op = $user_input['op'];
-      dpm($op);
+      // dpm($op);
       if ($op == 'Save Search Query') {
         $_SESSION['tripal_pub_import']['perform_test'] = 0;
         // tripal_pub_import table columns are: pub_import_id, name, criteria, disabled, do_contact
@@ -559,7 +514,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         // Translate the submitted data into a variable which can be serialized into a criteria column
         // of the tripal_pub_import table
         $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
-        dpm($criteria_column_array);
 
         // Load the plugin and initialize an instance to perform it's unique form_submit function
         // This will run plugin specific form submit operations that can alter the criteria database column
@@ -613,6 +567,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         // in the buildForm function
         $_SESSION['tripal_pub_import']['perform_test'] = 1;
         $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $this->criteria_convert_to_array($form, $form_state);
+        $_SESSION['tripal_pub_import']['perform_test_user_input'] = $form_state->getUserInput();
       }
     }
     else {

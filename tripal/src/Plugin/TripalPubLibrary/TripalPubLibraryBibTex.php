@@ -9,7 +9,7 @@ use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
- * Agricola publication library
+ * Agricola publication library @TODO
  *
  *  @TripalPubLibrary(
  *    id = "tripal_pub_library_bibtex",
