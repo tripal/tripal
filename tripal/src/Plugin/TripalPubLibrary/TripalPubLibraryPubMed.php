@@ -25,7 +25,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     // DUMMY function from inheritance
   }
 
-  // @TODO: Create a tripal job, call the PubParser
+  // @TODO: Create a tripal job, get all results, save it to db (?)
   public function parse($pub_import_id) {
     // Perhaps as a Tripal Job
     // Do we just run this and get the XML - where do we save it?
