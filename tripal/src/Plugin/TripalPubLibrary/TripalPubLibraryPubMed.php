@@ -79,7 +79,8 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
   }
 
   public function formValidate($form, &$form_state) {
-    dpm('TripalPubLibraryPubmed formSubmit called');
+    // @TODO
+    dpm('TripalPubLibraryPubmed formValidations called');
   }
 
   /**
@@ -87,17 +88,18 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    * Return an array with keys total_records, search_str, pubs(array)
    */
   public function test($form, &$form_state, $search_array) {
-    dpm('TEST FUNCTION EXECUTED');
+    // dpm('TEST FUNCTION EXECUTED');
     $results = NULL;
     try {
       $results = $this->tripal_pub_remote_search_PMID($search_array, 2, 1);
       return $results;
     }
     catch (\Exception $ex) {
-      dpm($ex);
+      // dpm($ex);
     }
   }
 
+  // @TODO Parse or Run? Not both right?
   public function run(array $criteria) {
     dpm('RUN FUNCTION EXECUTED');
   }
