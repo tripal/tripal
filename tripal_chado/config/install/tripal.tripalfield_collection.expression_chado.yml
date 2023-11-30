@@ -51,11 +51,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 20
+              weight: 15
           form:
             default:
               region: content
-              weight: 20
+              weight: 15
 
     -   name: biosample_biosourceprovider
         content_type: biosample
@@ -77,11 +77,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 30
+              weight: 20
           form:
             default:
               region: content
-              weight: 30
+              weight: 20
 
     -   name: biosample_organism
         content_type: biosample
@@ -103,11 +103,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 40
+              weight: 25
           form:
             default:
               region: content
-              weight: 40
+              weight: 25
 
     -   name: biosample_dbxref_id
         content_type: biosample
@@ -129,11 +129,11 @@ fields:
             default:
               region: hidden
               label: above
-              weight: 50
+              weight: 30
           form:
             default:
               region: content
-              weight: 50
+              weight: 30
 
 ## Assay ##
 
@@ -183,11 +183,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 20
+              weight: 15
           form:
             default:
               region: content
-              weight: 20
+              weight: 15
 
     -   name: assay_array_design
         content_type: assay
@@ -209,11 +209,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 30
+              weight: 20
           form:
             default:
               region: content
-              weight: 30
+              weight: 20
 
     -   name: assay_protocol_id
         content_type: assay
@@ -235,11 +235,11 @@ fields:
             default:
               region: hidden
               label: above
-              weight: 40
+              weight: 25
           form:
             default:
               region: content
-              weight: 40
+              weight: 25
 
 # placeholder for assaydate
 
@@ -263,11 +263,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 60
+              weight: 35
           form:
             default:
               region: content
-              weight: 60
+              weight: 35
 
     -   name: assay_arraybatchidentifier
         content_type: assay
@@ -289,11 +289,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 70
+              weight: 40
           form:
             default:
               region: content
-              weight: 70
+              weight: 40
 
     -   name: assay_operator
         content_type: assay
@@ -315,11 +315,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 80
+              weight: 45
           form:
             default:
               region: content
-              weight: 80
+              weight: 45
 
     -   name: assay_dbxref_id
         content_type: assay
@@ -341,11 +341,11 @@ fields:
             default:
               region: hidden
               label: above
-              weight: 90
+              weight: 50
           form:
             default:
               region: content
-              weight: 90
+              weight: 50
 
 ## Array Design ##
 
@@ -395,11 +395,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 20
+              weight: 15
           form:
             default:
               region: content
-              weight: 20
+              weight: 15
 
     -   name: array_design_manufacturer
         content_type: array_design
@@ -421,11 +421,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 30
+              weight: 20
           form:
             default:
               region: content
-              weight: 30
+              weight: 20
 
     -   name: array_design_platform_type
         content_type: array_design
@@ -448,11 +448,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 40
+              weight: 25
           form:
             default:
               region: content
-              weight: 40
+              weight: 25
 
     -   name: array_design_substrate_type
         content_type: array_design
@@ -475,11 +475,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 50
+              weight: 30
           form:
             default:
               region: content
-              weight: 50
+              weight: 30
 
     -   name: array_design_protocol_id
         content_type: array_design
@@ -501,11 +501,11 @@ fields:
             default:
               region: hidden
               label: above
-              weight: 60
+              weight: 35
           form:
             default:
               region: content
-              weight: 60
+              weight: 35
 
     -   name: array_design_dbxref_id
         content_type: array_design
@@ -527,11 +527,11 @@ fields:
             default:
               region: hidden
               label: above
-              weight: 70
+              weight: 40
           form:
             default:
               region: content
-              weight: 70
+              weight: 40
 
     -   name: array_design_version_num
         content_type: array_design
@@ -553,11 +553,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 80
+              weight: 45
           form:
             default:
               region: content
-              weight: 80
+              weight: 45
 
     -   name: array_design_dimensions
         content_type: array_design
@@ -579,11 +579,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 90
+              weight: 50
           form:
             default:
               region: content
-              weight: 90
+              weight: 50
 
     -   name: array_design_element_dims
         content_type: array_design
@@ -605,11 +605,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 100
+              weight: 55
           form:
             default:
               region: content
-              weight: 100
+              weight: 55
 
     -   name: array_design_num_of_elements
         content_type: array_design
@@ -631,11 +631,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 110
+              weight: 60
           form:
             default:
               region: content
-              weight: 110
+              weight: 60
 
     -   name: array_design_num_array_columns
         content_type: array_design
@@ -657,11 +657,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 120
+              weight: 65
           form:
             default:
               region: content
-              weight: 120
+              weight: 65
 
     -   name: array_design_num_array_rows
         content_type: array_design
@@ -683,11 +683,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 130
+              weight: 70
           form:
             default:
               region: content
-              weight: 130
+              weight: 70
 
     -   name: array_design_num_grid_columns
         content_type: array_design
@@ -709,11 +709,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 140
+              weight: 75
           form:
             default:
               region: content
-              weight: 140
+              weight: 75
 
     -   name: array_design_num_grid_rows
         content_type: array_design
@@ -735,11 +735,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 150
+              weight: 80
           form:
             default:
               region: content
-              weight: 150
+              weight: 80
 
     -   name: array_design_num_sub_columns
         content_type: array_design
@@ -761,11 +761,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 160
+              weight: 85
           form:
             default:
               region: content
-              weight: 160
+              weight: 85
 
     -   name: array_design_num_sub_rows
         content_type: array_design
@@ -787,8 +787,8 @@ fields:
             default:
               region: content
               label: above
-              weight: 170
+              weight: 90
           form:
             default:
               region: content
-              weight: 170
+              weight: 90
