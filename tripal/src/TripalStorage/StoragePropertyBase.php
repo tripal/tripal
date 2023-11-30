@@ -48,6 +48,19 @@ class StoragePropertyBase {
     $container = \Drupal::getContainer();
     $this->idSpaceService = $container->get('tripal.collection_plugin_manager.idspace');
 
+    // Ensure we have required values.
+    if (!$entityType) {
+      throw new \Exception('Cannot create a StorageProperty object without specifying the entity type.');
+    }
+    if (!$fieldType) {
+      throw new \Exception('Cannot create a StorageProperty object for entity type "' . $entityType
+          . '" without specifying the field that is using it.');
+    }
+    if (!$key) {
+      throw new \Exception('Cannot create a StorageProperty object for entity type "' . $entityType
+          . '", field type "' . $fieldType . '" without a key.');
+    }
+
     $matches = [];
     if (preg_match('/^(.+?):(.+)$/', $term_id, $matches)) {
       $this->termIdSpace = $matches[1];
@@ -55,27 +68,27 @@ class StoragePropertyBase {
 
       $idspace = $this->idSpaceService->loadCollection($this->termIdSpace);
       if (!$idspace) {
-        throw new \Exception('Cannot create a StorageProperty object as IdSpace for the property term is not recognized: ' . $term_id);
+        throw new \Exception('Cannot create a StorageProperty object for entity type "' . $entityType
+            . '", field type "' . $fieldType . '", key "' . $key
+            . '" as IdSpace for the property term is not recognized: "' . $term_id . '"');
       }
       $term = $idspace->getTerm($this->termAccession);
       if (!$term) {
-        throw new \Exception('Cannot create a StorageProperty object as accession for the property term is not recognized: ' . $term_id);
+        throw new \Exception('Cannot create a StorageProperty object for entity type "' . $entityType
+            . '" field type "' . $fieldType . '", key "' . $key
+            . '" as accession for the property term is not recognized: "' . $term_id . '"');
       }
     }
-    else {
-      throw new \Exception('Cannot create a StorageProperty object without a properly formatted term: ' . $term_id);
+    elseif ($term_id) {
+      throw new \Exception('Cannot create a StorageProperty object for entity type "' . $entityType
+          . '", field type "' . $fieldType . '", key "' . $key
+          . '" without a properly formatted term: "' . $term_id . '"');
     }
-
-    // Ensure we have required values.
-    if (!$entityType) {
-	    throw new \Exception('Cannot create a StorageProperty object without specifying the entity type.');
-	  }
-    if (!$fieldType) {
-	    throw new \Exception('Cannot create a StorageProperty object without specifying the field that is using it.');
-	  }
-    if (!$key) {
-	    throw new \Exception('Cannot create a StorageProperty object without a key.');
-	  }
+    else {
+      throw new \Exception('Cannot create a StorageProperty object for entity type "' . $entityType
+          . '", field type "' . $fieldType . '", key "' . $key
+          . '" as no term was provided');
+    }
 
     // Drupal doesn't allow non alphanumeric characters in the key, so
     // remove any.
