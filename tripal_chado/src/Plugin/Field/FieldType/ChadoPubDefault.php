@@ -3,35 +3,36 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
 /**
- * Plugin implementation of default Tripal analysis field type.
+ * Plugin implementation of default Tripal publication field type.
  *
  * @FieldType(
- *   id = "chado_analysis_default",
- *   object_table = "analysis",
- *   label = @Translation("Chado Analysis"),
- *   description = @Translation("Application of analytical methods to existing data of a specific type"),
- *   default_widget = "chado_analysis_widget_default",
- *   default_formatter = "chado_analysis_formatter_default",
+ *   id = "chado_pub_default",
+ *   object_table = "pub",
+ *   label = @Translation("Chado Publication"),
+ *   description = @Translation("Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record."),
+ *   default_widget = "chado_pub_widget_default",
+ *   default_formatter = "chado_pub_formatter_default",
  * )
  */
-class ChadoAnalysisDefault extends ChadoFieldItemBase {
+class ChadoPubDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_analysis_default';
+  public static $id = 'chado_pub_default';
   // The following needs to match the object_table annotation above
-  protected static $object_table = 'analysis';
-  protected static $object_id = 'analysis_id';
+  protected static $object_table = 'pub';
+  protected static $object_id = 'pub_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'analysis_name';
+    return 'pub_title';
   }
 
   /**
@@ -52,9 +53,9 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Analysis'
-    $field_settings['termIdSpace'] = 'operation';
-    $field_settings['termAccession'] = '2945';
+    // CV Term is 'publication'
+    $field_settings['termIdSpace'] = 'schema';
+    $field_settings['termAccession'] = 'publication';
     return $field_settings;
   }
 
@@ -93,21 +94,31 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
 
     // Columns specific to the object table
-    $name_term = $mapping->getColumnTermId($object_table, 'name');
-    $name_len = $object_schema_def['fields']['name']['size'];
-    $description_term = $mapping->getColumnTermId($object_table, 'description'); // text
-    $program_term = $mapping->getColumnTermId($object_table, 'program');
-    $program_len = $object_schema_def['fields']['program']['size'];
-    $programversion_term = $mapping->getColumnTermId($object_table, 'programversion');
-    $programversion_len = $object_schema_def['fields']['programversion']['size'];
-    $algorithm_term = $mapping->getColumnTermId($object_table, 'algorithm');
-    $algorithm_len = $object_schema_def['fields']['algorithm']['size'];
-    $sourcename_term = $mapping->getColumnTermId($object_table, 'sourcename');
-    $sourcename_len = $object_schema_def['fields']['sourcename']['size'];
-    $sourceversion_term = $mapping->getColumnTermId($object_table, 'sourceversion');
-    $sourceversion_len = $object_schema_def['fields']['sourceversion']['size'];
-    $sourceuri_term = $mapping->getColumnTermId($object_table, 'sourceuri'); // text
-    // @todo timeexecuted not yet implemented
+    $title_term = $mapping->getColumnTermId($object_table, 'title'); // text
+    $volumetitle_term = $mapping->getColumnTermId($object_table, 'volumetitle'); // text
+    $volume_term = $mapping->getColumnTermId($object_table, 'volume');
+    $volume_len = $object_schema_def['fields']['volume']['size'];
+    $seriesname_term = $mapping->getColumnTermId($object_table, 'seriesname');
+    $seriesname_len = $object_schema_def['fields']['seriesname']['size'];
+    $issue_term = $mapping->getColumnTermId($object_table, 'issue');
+    $issue_len = $object_schema_def['fields']['issue']['size'];
+    $pyear_term = $mapping->getColumnTermId($object_table, 'pyear');
+    $pyear_len = $object_schema_def['fields']['pyear']['size'];
+    $pages_term = $mapping->getColumnTermId($object_table, 'pages');
+    $pages_len = $object_schema_def['fields']['pages']['size'];
+    $miniref_term = $mapping->getColumnTermId($object_table, 'miniref');
+    $miniref_len = $object_schema_def['fields']['miniref']['size'];
+    $uniquename_term = $mapping->getColumnTermId($object_table, 'uniquename'); // text
+    $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete'); // boolean
+    $publisher_term = $mapping->getColumnTermId($object_table, 'publisher');
+    $publisher_len = $object_schema_def['fields']['publisher']['size'];
+    $pubplace_term = $mapping->getColumnTermId($object_table, 'pubplace');
+    $pubplace_len = $object_schema_def['fields']['pubplace']['size'];
+
+    // Cvterm table, to retrieve the name for the publication type
+    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $type_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
     // For single hop, in the yaml we support using the usual 'base_table'
@@ -207,80 +218,125 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    // The analysis name
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_name', $name_term, $name_len, [
+    // The publication title
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_title', $title_term, $value_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
+      'chado_column' => self::$title_column,
+      'as' => 'pub_title',
+    ]);
+
+    // The publication volumetitle
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'pub_volumetitle', $volumetitle_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'volumetitle',
+      'as' => 'pub_volumetitle',
+    ]);
+
+    // The publication volume
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_volume', $volume_term, $volume_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'volume',
+      'as' => 'pub_volume',
+    ]);
+
+    // The publication program version
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_seriesname', $seriesname_term, $seriesname_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'seriesname',
+      'as' => 'pub_seriesname',
+    ]);
+
+    // The publication issue
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_issue', $issue_term, $issue_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'issue',
+      'as' => 'pub_issue',
+    ]);
+
+    // The publication pyear
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_pyear', $pyear_term, $pyear_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'pyear',
+      'as' => 'pub_pyear',
+    ]);
+
+    // The publication pages
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_pages', $pages_term, $pages_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'pages',
+      'as' => 'pub_pages',
+    ]);
+
+    // The publication miniref
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_miniref', $miniref_term, $miniref_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'miniref',
+      'as' => 'pub_miniref',
+    ]);
+
+    // The publication uniquename - not null
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'pub_uniquename', $uniquename_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'uniquename',
+      'as' => 'pub_uniquename',
+    ]);
+
+    // The type of publication - not null
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_type', $type_term, $type_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id',
       'chado_column' => 'name',
-      'as' => 'analysis_name',
+      'as' => 'pub_type',
     ]);
 
-    // The analysis description
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'analysis_description', $description_term, [
+    // Publication is obsolete - default=false
+    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'pub_is_obsolete', $is_obsolete_term, [
+      'action' => 'store',
+      'chado_table' => $linker_table,
+      'drupal_store' => FALSE,
+      'chado_column' => 'is_obsolete',
+      'empty_value' => FALSE,
+      'as' => 'pub_is_obsolete',
+    ]);
+
+    // The publication publisher
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_publisher', $publisher_term, $publisher_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'description',
-      'as' => 'analysis_description',
+      'chado_column' => 'publisher',
+      'as' => 'pub_publisher',
     ]);
 
-    // The analysis program - not null
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_program', $program_term, $program_len, [
+    // The publication pubplace
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_pubplace', $pubplace_term, $pubplace_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'program',
-      'as' => 'analysis_program',
+      'chado_column' => 'pubplace',
+      'as' => 'pub_pubplace',
     ]);
-
-    // The analysis program version - not null
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_programversion', $programversion_term, $programversion_len, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'programversion',
-      'as' => 'analysis_programversion',
-    ]);
-
-    // The analysis algorithm
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_algorithm', $algorithm_term, $algorithm_len, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'algorithm',
-      'as' => 'analysis_algorithm',
-    ]);
-
-    // The analysis sourcename
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_sourcename', $sourcename_term, $sourcename_len, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'sourcename',
-      'as' => 'analysis_sourcename',
-    ]);
-
-    // The analysis sourceversion
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_sourceversion', $sourceversion_term, $sourceversion_len, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'sourceversion',
-      'as' => 'analysis_sourceversion',
-    ]);
-
-    // The analysis sourceuri
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'analysis_sourceuri', $sourceuri_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'sourceuri',
-      'as' => 'analysis_sourceuri',
-    ]);
-
-    // @todo timeexecuted not yet implemented - not null, default CURRENT_TIMESTAMP
 
     return $properties;
   }
