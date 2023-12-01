@@ -98,8 +98,8 @@ class ChadoPubDefault extends ChadoFieldItemBase {
     $volumetitle_term = $mapping->getColumnTermId($object_table, 'volumetitle'); // text
     $volume_term = $mapping->getColumnTermId($object_table, 'volume');
     $volume_len = $object_schema_def['fields']['volume']['size'];
-    $seriesname_term = $mapping->getColumnTermId($object_table, 'seriesname');
-    $seriesname_len = $object_schema_def['fields']['seriesname']['size'];
+    $series_name_term = $mapping->getColumnTermId($object_table, 'series_name');
+    $series_name_len = $object_schema_def['fields']['series_name']['size'];
     $issue_term = $mapping->getColumnTermId($object_table, 'issue');
     $issue_len = $object_schema_def['fields']['issue']['size'];
     $pyear_term = $mapping->getColumnTermId($object_table, 'pyear');
@@ -114,6 +114,9 @@ class ChadoPubDefault extends ChadoFieldItemBase {
     $publisher_len = $object_schema_def['fields']['publisher']['size'];
     $pubplace_term = $mapping->getColumnTermId($object_table, 'pubplace');
     $pubplace_len = $object_schema_def['fields']['pubplace']['size'];
+
+    // Object columns that link to another table
+    $object_type_col = 'type_id';
 
     // Cvterm table, to retrieve the name for the publication type
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
@@ -219,12 +222,12 @@ class ChadoPubDefault extends ChadoFieldItemBase {
 
     // The object table, the destination table of the linker table
     // The publication title
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_title', $title_term, $value_len, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'pub_title', $title_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
-      'chado_column' => self::$title_column,
+      'chado_column' => 'title',
       'as' => 'pub_title',
     ]);
 
@@ -246,13 +249,13 @@ class ChadoPubDefault extends ChadoFieldItemBase {
       'as' => 'pub_volume',
     ]);
 
-    // The publication program version
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_seriesname', $seriesname_term, $seriesname_len, [
+    // The publication series (e.g. journal name)
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_series_name', $series_name_term, $series_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'seriesname',
-      'as' => 'pub_seriesname',
+      'chado_column' => 'series_name',
+      'as' => 'pub_series_name',
     ]);
 
     // The publication issue
@@ -312,11 +315,10 @@ class ChadoPubDefault extends ChadoFieldItemBase {
 
     // Publication is obsolete - default=false
     $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'pub_is_obsolete', $is_obsolete_term, [
-      'action' => 'store',
-      'chado_table' => $linker_table,
+      'action' => 'read_value',
       'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => 'is_obsolete',
-      'empty_value' => FALSE,
       'as' => 'pub_is_obsolete',
     ]);
 

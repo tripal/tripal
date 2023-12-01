@@ -25,28 +25,19 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-    // Get the list of analyses.
-    $analyses = [];
+    // Get the list of publications.
+    $pubs = [];
     $chado = \Drupal::service('tripal_chado.database');
 
-    // In addition to getting a sorted list of analyses, include
+    // In addition to getting a sorted list of pubs, include
     // the pubprop rdfs:type when it is present, e.g.
     // genome assembly or genome annotation.
-    $sql = 'SELECT A.pub_id, A.name, TYPE.value FROM {1:pub} A
-      LEFT JOIN (
-        SELECT AP.pub_id, AP.value FROM {1:pubprop} AP
-        LEFT JOIN {1:cvterm} T ON AP.type_id=T.cvterm_id
-        LEFT JOIN {1:cv} CV ON T.cv_id=CV.cv_id
-        WHERE T.name=:cvterm
-        AND CV.name=:cv
-      ) AS TYPE
-      ON A.pub_id=TYPE.pub_id
-      ORDER BY LOWER(A.name)';
-    $results = $chado->query($sql, [':cvterm' => 'type', ':cv' => 'rdfs']);
+    $sql = 'SELECT P.pub_id, P.title FROM {1:pub} P
+      ORDER BY LOWER(P.title)';
+    $results = $chado->query($sql, []);
 
     while ($pub = $results->fetchObject()) {
-      $type_text = $pub->value ? ' (' . $pub->value . ')' : '';
-      $analyses[$pub->pub_id] = $pub->name . $type_text;
+      $pubs[$pub->pub_id] = $pub->title;
     }
 
     $item_vals = $items[$delta]->getValue();
@@ -58,7 +49,6 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
     // may or may not be present in that table.
     $linker_type_id = $item_vals['linker_type_id'] ?? 1;
     $linker_rank = $item_vals['linker_rank'] ?? $delta;
-    $linker_pub_id = $item_vals['linker_pub_id'] ?? 1;
 
     $elements = [];
     $elements['record_id'] = [
@@ -75,7 +65,7 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
     ];
     $elements['pub_id'] = $element + [
       '#type' => 'select',
-      '#options' => $analyses,
+      '#options' => $pubs,
       '#default_value' => $pub_id,
       '#empty_option' => '-- Select --',
     ];
@@ -90,11 +80,6 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
     $elements['linker_rank'] = [
       '#type' => 'value',
       '#default_value' => $linker_rank,
-    ];
-    // e.g. cell_line_feature has pub_id with not null constraint
-    $elements['linker_pub_id'] = [
-      '#type' => 'value',
-      '#default_value' => $linker_pub_id,
     ];
 
     return $elements;

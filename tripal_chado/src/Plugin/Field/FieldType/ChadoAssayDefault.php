@@ -4,7 +4,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 
 /**
  * Plugin implementation of default Tripal assay field type.
@@ -24,7 +24,6 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
   // The following needs to match the object_table annotation above
   protected static $object_table = 'assay';
   protected static $object_id = 'assay_id';
-  protected static $value_column = 'name';
 
   /**
    * {@inheritdoc}
@@ -91,9 +90,9 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
-    $value_term = $mapping->getColumnTermId($object_table, self::$value_column);
 
-    // Other columns specific to this object table
+    // Columns specific to the object table
+    $name_term = $mapping->getColumnTermId($object_table, 'name');
     $description_term = $mapping->getColumnTermId($object_table, 'description');
     $arrayidentifier_term = $mapping->getColumnTermId($object_table, 'arrayidentifier');
     $arraybatchidentifier_term = $mapping->getColumnTermId($object_table, 'arraybatchidentifier');
@@ -109,9 +108,13 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
     $db_term = $mapping->getColumnTermId('db', 'name');
     $db_len = $dbxref_schema_def['fields']['name']['size'];
 
-    // Linker table, when used
+    // Linker table, when used, requires specifying the linker table and column.
+    // For single hop, in the yaml we support using the usual 'base_table'
+    // and 'base_column' settings.
     $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_col = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
+    $linker_fkey_col = $storage_settings['linker_fkey_column']
+      ?? $storage_settings['base_column'] ?? $object_pkey_col;
+
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
@@ -203,12 +206,12 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'assay_name', $value_term, $value_len, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
-      'chado_column' => self::$value_column,
+      'chado_column' => 'name',
       'as' => 'assay_name',
     ]);
 

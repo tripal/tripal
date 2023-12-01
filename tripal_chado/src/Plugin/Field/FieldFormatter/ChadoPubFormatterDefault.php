@@ -16,14 +16,19 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *     "chado_pub_default"
  *   },
  *   valid_tokens = {
- *     "[name]",
- *     "[description]",
- *     "[program]",
- *     "[programversion]",
- *     "[algorithm]",
- *     "[sourcename]",
- *     "[sourceversion]",
- *     "[sourceuri]",
+ *     "[title]",
+ *     "[volumetitle]",
+ *     "[volume]",
+ *     "[series_name]",
+ *     "[issue]",
+ *     "[pyear]",
+ *     "[pages]",
+ *     "[miniref]",
+ *     "[uniquename]",
+ *     "[type]",
+ *     "[is_obsolete]",
+ *     "[publisher]",
+ *     "[pubplace]",
  *   },
  * )
  */
@@ -34,7 +39,7 @@ class ChadoPubFormatterDefault extends ChadoFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $settings['token_string'] = '[name]';
+    $settings['token_string'] = '[title]';
     return $settings;
   }
 
@@ -48,15 +53,19 @@ class ChadoPubFormatterDefault extends ChadoFormatterBase {
 
     foreach ($items as $delta => $item) {
       $values = [
-        'name' => $item->get('pub_name')->getString(),
-        'description' => $item->get('pub_description')->getString(),
-        'program' => $item->get('pub_program')->getString(),
-        'programversion' => $item->get('pub_programversion')->getString(),
-        'algorithm' => $item->get('pub_algorithm')->getString(),
-        'sourcename' => $item->get('pub_sourcename')->getString(),
-        'sourceversion' => $item->get('pub_sourceversion')->getString(),
-        'sourceuri' => $item->get('pub_sourceuri')->getString(),
-        // timeexecuted not implemented
+        'title' => $item->get('pub_title')->getString(),
+        'volumetitle' => $item->get('pub_volumetitle')->getString(),
+        'volume' => $item->get('pub_volume')->getString(),
+        'series_name' => $item->get('pub_series_name')->getString(),
+        'issue' => $item->get('pub_issue')->getString(),
+        'pyear' => $item->get('pub_pyear')->getString(),
+        'pages' => $item->get('pub_pages')->getString(),
+        'miniref' => $item->get('pub_miniref')->getString(),
+        'uniquename' => $item->get('pub_uniquename')->getString(),
+        'type' => $item->get('pub_type')->getString(),
+        'is_obsolete' => $item->get('pub_is_obsolete')->getString(),
+        'publisher' => $item->get('pub_publisher')->getString(),
+        'pubplace' => $item->get('pub_pubplace')->getString(),
       ];
 
       // Substitute values in token string to generate displayed string.
