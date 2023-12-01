@@ -24,7 +24,6 @@ class ChadoContactDefault extends ChadoFieldItemBase {
   // The following needs to match the object_table annotation above
   protected static $object_table = 'contact';
   protected static $object_id = 'contact_id';
-  protected static $value_column = 'name';
 
   /**
    * {@inheritdoc}
@@ -91,10 +90,10 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
-    $value_term = $mapping->getColumnTermId($object_table, self::$value_column);
-    $value_len = $object_schema_def['fields'][self::$value_column]['size'];
 
-    // Other columns specific to this object table
+    // Columns specific to the object table
+    $name_term = $mapping->getColumnTermId($object_table, 'name');
+    $name_len = $object_schema_def['fields']['name']['size'];
     $description_term = $mapping->getColumnTermId($object_table, 'description');
     $description_len = $object_schema_def['fields']['description']['size'];
 
@@ -204,16 +203,15 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $value_term, $value_len, [
+    // The contact name
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $name_term, $name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
-      'chado_column' => self::$value_column,
+      'chado_column' => 'name',
       'as' => 'contact_name',
     ]);
-
-    // Other columns specific to the object table
 
     // The contact description
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_description', $description_term, $description_len, [
