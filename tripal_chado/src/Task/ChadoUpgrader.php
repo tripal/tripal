@@ -1614,6 +1614,7 @@ class ChadoUpgrader extends ChadoTaskBase {
       else {
         // Column does not exist, add (without default as it will be added
         // later).
+        $new_not_null = $new_column_def['not null'];
         $alter_sql[] =
           "ADD COLUMN $new_column " . $new_column_type
           . ($new_not_null ? ' NOT NULL' : ' NULL' ) ;
