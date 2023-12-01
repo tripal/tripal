@@ -119,7 +119,7 @@ fields:
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table: biosample
+                base_table: biomaterial
                 base_column: dbxref_id
         settings:
             termIdSpace: data
