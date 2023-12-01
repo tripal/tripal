@@ -30,6 +30,15 @@ tripal.storage:
   requirements:
     _permission: 'administer tripal'
 
+# Tripal Config.
+tripal.config:
+  path: 'admin/tripal/config'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Tripal Configuration'
+  requirements:
+    _permission: 'administer tripal'
+
 # Tripal Extensions.
 tripal.extension:
   path: 'admin/tripal/extension'
@@ -119,39 +128,14 @@ tripal.dashboard_admin_notification_field:
 
 ##
 # Tripal Content
-##
+## 
 
-# Tripal Content:
-
-# entity.tripal_entity_type.canonical:
-#   path: "/bio_data/{tripal_entity}",
-# entity.tripal_entity_type.add-page:
-#   path: "/bio_data/add",
-# entity.tripal_entity_type.add-form:
-#   path: "/bio_data/add/{tripal_entity_type}",
-# entity.tripal_entity_type.edit-form:
-#   path: "/bio_data/{tripal_entity}/edit",
-# entity.tripal_entity_type.delete-form:
-#   path: "/bio_data/{tripal_entity}/delete",
-# entity.tripal_entity_type.collection:
-#   path: "/admin/content/bio_data",
-
-# Tripal Content Types:
-
-# entity.tripal_entity_type.canonical:
-#   path: '/admin/structure/bio_data/{tripal_entity_type}'
-# entity.tripal_entity_type.add-form:
-#   path: '/admin/structure/bio_data/add'
-# entity.tripal_entity_type.edit-form:
-#   path: '/admin/structure/bio_data/manage/{tripal_entity_type}'
-# entity.tripal_entity_type.delete-form:
-#   path: '/admin/structure/bio_data/manage/{tripal_entity_type}/delete'
-
+# Override the default entity listing page for a more informative page.
 entity.tripal_entity.add_page:
   path: bio_data/add
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalEntityUIController::tripalContentAddPage'
-    _title: 'Add Biological Data'
+    _title: 'Add Tripal Content'
     _description: 'Add biological data provided by Tripal.'
   options:
     _admin_route: 'TRUE'
@@ -159,7 +143,7 @@ entity.tripal_entity.add_page:
     _permission: 'administer tripal content'
 
 # tripal_unpublish_orphans_form
-tripal.content_bio_data_unpublish:
+tripal.content_type_unpublish:
   path: 'admin/content/bio_data/unpublish'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalContentUnpublishOrphans'
@@ -169,7 +153,7 @@ tripal.content_bio_data_unpublish:
     _permission: 'publish tripal content+administer tripal content'
 
 # Bio Data Ajax Callbacks
-tripal.content_bio_data_field_attach:
+tripal.content_type_field_attach:
   path: 'bio_data/ajax/field_attach/{id}'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalAttachField'
@@ -178,7 +162,7 @@ tripal.content_bio_data_field_attach:
     _permission: 'administer tripal'
 
 # Adds a +Check for new fields link on the 'Tripal Content Types' page.
-tripal.content_bio_data_field_check:
+tripal.content_type_field_check:
   path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/check'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalEntityUIController::tripalCheckForFields'
@@ -524,6 +508,8 @@ entity.tripal_content_terms.delete_form:
 # Tripal Content Term Config entity.
 ##
 
+# Commented out since these are created automatically by the entity.
+# Added here for people who are looking.
 # entity.tripal_content_terms.collection:
 #   path: '/admin/tripal/config/terms'
 # entity.tripal_content_terms.add_form:
@@ -532,3 +518,48 @@ entity.tripal_content_terms.delete_form:
 #   path: '/admin/tripal/config/terms/{tripal_content_terms}'
 # entity.tripal_content_terms.delete_form:
 #   path: '/admin/tripal/config/terms/{tripal_content_terms}/delete'
+
+##
+# Tripal Entity Type Collection entity.
+##
+
+entity.tripalentitytype_collection.collection:
+  path: '/admin/tripal/config/tripalentitytype-collection'
+  defaults:
+    _entity_list: 'tripalentitytype_collection'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.tripalentitytype_collection.delete_form:
+  path: '/admin/tripal/config/tripalentitytype-collection/{tripalentitytype_collection}/delete'
+  defaults:
+    _entity_form: 'tripalentitytype_collection.delete'
+    _title: 'Delete Configuration'
+  requirements:
+    _permission: 'administer tripal'
+##
+# Tripal Field Collection entity.
+##
+
+entity.tripalfield_collection.collection:
+  path: '/admin/tripal/config/tripalfield-collection'
+  defaults:
+    _entity_list: 'tripalfield_collection'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.tripalfield_collection.delete_form:
+  path: '/admin/tripal/config/tripalfield-collection/{tripalfield_collection}/delete'
+  defaults:
+    _entity_form: 'tripalfield_collection.delete'
+    _title: 'Delete Configuration'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.import_tripalentitytype_collection:
+  path: 'admin/structure/bio_data/import-collection'
+  defaults:
+    _title: 'Import Tripal Entity Type Collection'
+    _form: 'Drupal\tripal\Form\ImportTripalEntityTypeCollection'
+  requirements:
+    _permission: 'manage tripal content types'

@@ -1,0 +1,55 @@
+name: Tripal 4 Feature Request
+description: Suggest an idea for this project
+body:
+  - type: markdown
+    attributes: 
+      value: |
+        # Tripal 4 Feature Request
+        ## Instructions
+        The following template is meant to structure your feature request.
+        Please keep in mind, this issue may evolve into discussion for an extension module if it's decided that the feature is not a good fit for Tripal Core.
+
+        Go over all the following points, and select the options that best apply to you.
+  - type: dropdown
+    id: existing_problem
+    attributes:
+      label: This feature attempts to solve an existing problem
+      options:
+        - "Yes"
+        - "No"
+  - type: dropdown
+    id: open_to_develop_or_collab_extensino
+    attributes:
+      label: I am open to developing or collaborating on an extension module if this is not a good fit for Tripal Core
+      description: No pressure here, just good to know upfront :-)
+      options:
+        - "Yes"
+        - "No"
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Is this feature urgent?
+      options:
+        - "Yes"
+        - "No"
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and conccise description of what you want to happen.
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Your specific use case
+      description: Please describe how you would use this feature in your own Tripal site and why you need it.
+  - type: textarea
+    id: generally_applicable
+    attributes:
+      label: Generally Applicable
+      description: Why do you feel this is generally applicable? 
+      placeholder: Suggest other use cases if possible.
+  - type: textarea
+    id: additional_information_screenshots
+    attributes:
+      label: Additional information/screenshots
+      description: Add any other context or screenshots about the feature request here.

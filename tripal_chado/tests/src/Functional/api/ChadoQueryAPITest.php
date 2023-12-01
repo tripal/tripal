@@ -8,7 +8,7 @@ use Drupal\Core\Database\Database;
 use Drupal\tripal_chado\api\ChadoSchema;
 
 /**
- * Testing the tripal_chado/api/tripal_chado.schema.api.inc functions.
+ * Testing the tripal_chado/api/tripal_chado.query.api.php functions.
  *
  * @group Tripal
  * @group Tripal Chado
@@ -16,7 +16,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
  */
 class ChadoQueryAPITest extends BrowserTestBase {
 
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   /**
    * Modules to enable.
@@ -53,12 +53,12 @@ class ChadoQueryAPITest extends BrowserTestBase {
 		$dbq = chado_query($sql, $args);
 		$this->assertEquals(FALSE, $dbq);
 
-		// -- Arguements must be an array.
+		// -- Arguments must be an array.
 		$sql = $args = 'SELECT * FROM {organism}';
 		$dbq = chado_query($sql, $args);
 		$this->assertEquals(FALSE, $dbq);
 
-		// -- Arguements should be in the SQL string.
+		// -- Arguments should be in the SQL string.
 		$sql = 'SELECT * FROM {organism} WHERE genus=:genus';
 		$args = [':genus' => 'Tripalus', ':species' => 'databasica'];
 		$dbq = chado_query($sql, $args);

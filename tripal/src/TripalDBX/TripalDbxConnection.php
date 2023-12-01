@@ -62,8 +62,8 @@ use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
  *   and offers, beside others, the follwing methods: addIndex(),
  *   addPrimaryKey(), addUniqueKey(), createTable(), dropField(), dropIndex(),
  *   dropPrimaryKey(), dropTable(), dropUniqueKey(), fieldExists(),
- *   findPrimaryKeyColumns(), findTables(), indexExists(), renameTable(),
- *   tableExists() and more from the documentation.
+ *   findPrimaryKeyColumns(), findTables(), indexExists(), renameTable()
+ *   and more from the documentation.
  *
  * A couple of methods have been added to this class to complete the above list.
  *
@@ -148,25 +148,14 @@ abstract class TripalDbxConnection extends PgConnection {
 
 
   /**
-   * The name of the Tripal DBX managed schema used by this instance.
+   * An ordered list of used schemas.
    *
-   * @var string
-   */
-  protected $schemaName = '';
-
-  /**
-   * The PostgreSQL quoted name of the Tripal DBX managed schema used by this instance.
-   *
-   * @var string
-   */
-  protected $quotedSchemaName = '';
-
-  /**
-   * An ordered list of extra schema that can be used.
+   * Schema [0] should be the default schema name (Drupal's one) and [1]
+   * should contain the main biological data schema name.
    *
    * @var array
    */
-  protected $extraSchemas = [];
+  protected $usedSchemas = [];
 
   /**
    * The version for current Tripal DBX managed schema instance.
@@ -345,49 +334,6 @@ abstract class TripalDbxConnection extends PgConnection {
     // Get option array.
     $connection_options = $database->getConnectionOptions();
     $this->databaseName = $connection_options['database'];
-    // Check if a Tripal DBX managed schema name has been specified.
-    if (!empty($schema_name)) {
-      // We must use this PostgreSQL schema instead of the Drupal one as default
-      // for this database connection. To do so, we use the schema name as a
-      // prefix (which is supported by Drupal PostgreSQL implementation).
-      // If there are table-specific prefixes set, we assume the user knows what
-      // he/she wants to do and we won't change those.
-      // Note: if the schema name is not valid, an exception will be thrown by
-      // setSchemaName() at the end of this constructor.
-      if (empty($connection_options['prefix'])) {
-        $connection_options['prefix'] = ['1' => $schema_name . '.'];
-      }
-      elseif (is_array($connection_options['prefix'])) {
-        $connection_options['prefix']['1'] = $schema_name . '.';
-      }
-      else {
-        // $this->prefixes is a string.
-        $connection_options['prefix'] = [
-          'default' => $connection_options['prefix'],
-          '1' => $schema_name . '.',
-        ];
-      }
-      // Add search_path to avoid the use of Drupal schema by mistake.
-      // Get Tripal DBX managed schema name first.
-      $sql =
-        "SELECT quote_ident("
-        . $database->connection->quote($schema_name)
-        . ") AS \"qi\";"
-      ;
-      $quoted_schema_name = $database->connection
-        ->query($sql)
-        ->fetch(\PDO::FETCH_OBJ)
-        ->qi ?: $schema_name
-      ;
-      // Then, get Drupal schema.
-      $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
-      $connection_options['init_commands']['search_path'] =
-        'SET search_path='
-        . $quoted_schema_name
-        . ','
-        . $drupal_schema
-      ;
-    }
 
     // Get a new connection distinct from Drupal's to avoid search_path issues.
     $connection = static::openNewPdoConnection($database);
@@ -510,7 +456,9 @@ abstract class TripalDbxConnection extends PgConnection {
    */
   public function setSchemaName(string $schema_name) :void {
     // Does schema change?
-    if (!empty($this->schemaName) && ($schema_name == $this->schemaName)) {
+    if (!empty($this->usedSchemas[1])
+        && ($schema_name == $this->usedSchemas[1])
+    ) {
       return;
     }
 
@@ -523,40 +471,34 @@ abstract class TripalDbxConnection extends PgConnection {
       );
     }
     // Resets some members.
-    $this->version = NULL;
-    $this->extraSchemas = [];
+    $this->usedSchemas = ['' , '', ];
     $this->schema = NULL;
-    $this->quotedSchemaName = '';
+    $this->version = NULL;
 
-    // Update schema prefixes.
-    $TripalDbxSchema_prefix = empty($schema_name) ? '' : $schema_name . '.';
-    if (empty($this->prefixes)) {
-      $this->prefixes = ['1' => $TripalDbxSchema_prefix];
-    }
-    elseif (is_array($this->prefixes)) {
-      $this->prefixes['1'] = $TripalDbxSchema_prefix;
-    }
-    else {
-      // $this->prefixes is a string.
-      $this->prefixes = [
-        'default' => $this->prefixes,
-        '1' => $TripalDbxSchema_prefix,
-      ];
-    }
-    $this->setPrefix($this->prefixes);
+    // Set instance schema name.
+    $this->usedSchemas[1] = $schema_name;
 
     // Update search_path.
     if (!empty($schema_name)) {
-      $quoted_schema_name = $this->tripalDbxApi->quoteDbObjectId($schema_name, $this);
-      $this->quotedSchemaName = $quoted_schema_name ?? $schema_name;
-      $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
+      [$start_quote, $end_quote] = $this->identifierQuotes;
       $search_path =
-        $this->connectionOptions['init_commands']['search_path'] =
-        'SET search_path=' . $quoted_schema_name . ',' . $drupal_schema;
+        'SET search_path='
+        . $start_quote
+        . $schema_name
+        . $end_quote
+      ;
+      $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
+      if (!empty($drupal_schema)) {
+        $search_path .=
+          ','
+          . $start_quote
+          . $drupal_schema
+          . $end_quote
+        ;
+      }
+      $this->connectionOptions['init_commands']['search_path'] = $search_path;
       $this->connection->exec($search_path);
     }
-
-    $this->schemaName = $schema_name;
   }
 
   /**
@@ -566,7 +508,7 @@ abstract class TripalDbxConnection extends PgConnection {
    *   Current Tripal DBX managed schema name or an empty string if not set.
    */
   public function getSchemaName() :string {
-    return $this->schemaName;
+    return $this->usedSchemas[1] ?? '';
   }
 
   /**
@@ -574,7 +516,7 @@ abstract class TripalDbxConnection extends PgConnection {
    *
    * This getter should rarely be used (and in very specific cases).
    * If the schema name does not contain any special characters, it might not
-   * require any quote and $quotedSchemaName will be the same as $schemaName.
+   * require any quote and returned quoted name will be the same as $schemaName.
    * The quoted schema name is only needed when writing special SQL queries that
    * need to qualify database objects with a schema name. The quoted schema name
    * must not be used as a field value in SQL queries.
@@ -593,7 +535,12 @@ abstract class TripalDbxConnection extends PgConnection {
    *   empty string if not set.
    */
   public function getQuotedSchemaName() :string {
-    return $this->quotedSchemaName;
+    $quoted_schema_name = '';
+    if (array_key_exists(1, $this->usedSchemas) and !empty($this->usedSchemas[1])) {
+      [$start_quote, $end_quote] = $this->identifierQuotes;
+      $quoted_schema_name = $start_quote . $this->usedSchemas[1] . $end_quote;
+    }
+    return $quoted_schema_name;
   }
 
   /**
@@ -607,15 +554,15 @@ abstract class TripalDbxConnection extends PgConnection {
    * @param ?string $schema_name
    *   A user-provided schema name.
    * @param string $error_message
-   *   An error message to throw if none of $schema_name and $this->schemaName
-   *   are set. Default: 'Invalid schema name.'
+   *   An error message to throw if none of $schema_name and
+   *   $this->usedSchemas[1] are set. Default: 'Invalid schema name.'
    *
    * @return string
    *   $schema_name if set and valid, or the current schema name.
    *
    * @throws \Drupal\tripal\TripalDBX\Exceptions\ConnectionException
    *  If the given schema name is invalid (ignoring schema name reservations)
-   *  or none of $schema_name and $this->schemaName are set.
+   *  or none of $schema_name and $this->usedSchemas[1] are set.
    */
   protected function getDefaultSchemaName(
     ?string $schema_name = NULL,
@@ -628,10 +575,10 @@ abstract class TripalDbxConnection extends PgConnection {
         . ' without a schema name.';
     }
     if (empty($schema_name)) {
-      if (empty($this->schemaName)) {
+      if (empty($this->usedSchemas[1])) {
         throw new ConnectionException($error_message);
       }
-      $schema_name = $this->schemaName;
+      $schema_name = $this->usedSchemas[1];
     }
     else {
       if ($issue = $this->tripalDbxApi->isInvalidSchemaName($schema_name, TRUE)) {
@@ -650,15 +597,16 @@ abstract class TripalDbxConnection extends PgConnection {
    *   reserved (respectively) to Drupal schema and current schema.
    */
   public function getExtraSchemas() :array {
-    return $this->extraSchemas;
+    $extra_schemas = $this->usedSchemas;
+    unset($extra_schemas[0], $extra_schemas[1]);
+    return $extra_schemas;
   }
 
   /**
    * Clears the extra schemas list.
    */
   public function clearExtraSchemas() :void {
-    $this->extraSchemas = [];
-    $this->setPrefix($this->prefixes);
+    $this->usedSchemas = array_splice($this->usedSchemas, 0, 2);
   }
 
   /**
@@ -680,7 +628,7 @@ abstract class TripalDbxConnection extends PgConnection {
    *   database or there is no current schema.
    */
   public function addExtraSchema(string $schema_name) :int {
-    if (empty($this->schemaName)) {
+    if (empty($this->usedSchemas[1])) {
       throw new ConnectionException(
         "Cannot add an extra schema. No current schema (specified by ::setSchemaName)."
       );
@@ -689,16 +637,9 @@ abstract class TripalDbxConnection extends PgConnection {
     if ($issue = $this->tripalDbxApi->isInvalidSchemaName($schema_name, TRUE)) {
       throw new ConnectionException($issue);
     }
-    // We reserve index 0 for Drupal schema and index 1 for current schema.
-    if (empty($this->extraSchemas)) {
-      // We restart at 2.
-      $this->extraSchemas[2] = $schema_name;
-    }
-    else {
-      $this->extraSchemas[] = $schema_name;
-    }
-    $this->setPrefix($this->prefixes);
-    return array_key_last($this->extraSchemas);
+    // Append new schema.
+    $this->usedSchemas[] = $schema_name;
+    return array_key_last($this->usedSchemas);
   }
 
   /**
@@ -726,12 +667,12 @@ abstract class TripalDbxConnection extends PgConnection {
         "Invalid extra schema index '$index'."
       );
     }
-    elseif (max(array_key_last($this->extraSchemas)+1, 2) < $index) {
+    elseif (count($this->usedSchemas) < $index) {
       throw new ConnectionException(
         "Invalid extra schema index '$index'. Intermediate schemas are missing."
       );
     }
-    if (empty($this->schemaName)) {
+    if (empty($this->usedSchemas[1])) {
       throw new ConnectionException(
         "Cannot add an extra schema. No current schema (specified by ::setSchemaName)."
       );
@@ -740,8 +681,7 @@ abstract class TripalDbxConnection extends PgConnection {
     if ($issue = $this->tripalDbxApi->isInvalidSchemaName($schema_name, TRUE)) {
       throw new ConnectionException($issue);
     }
-    $this->extraSchemas[$index] = $schema_name;
-    $this->setPrefix($this->prefixes);
+    $this->usedSchemas[$index] = $schema_name;
   }
 
   /**
@@ -757,9 +697,9 @@ abstract class TripalDbxConnection extends PgConnection {
    */
   public function getVersion() :string {
 
-    if ((NULL === $this->version) && !empty($this->schemaName)) {
+    if (!is_numeric($this->version) && !empty($this->usedSchemas[1])) {
       // Get the version of the schema.
-      $this->version = $this->findVersion();
+      $this->version = (string) $this->findVersion();
     }
 
     return $this->version ?? '';
@@ -825,163 +765,6 @@ abstract class TripalDbxConnection extends PgConnection {
       throw new ConnectionException("Invalid Tripal DBX class '$class'.");
     }
     return $classes[$class];
-  }
-
-  /**
-   * Sets the list of prefixes used by this database connection.
-   *
-   * OVERRIDES \Drupal\Core\Database\Connection:setPrefix().
-   *
-   * This API overrides the parent method in order to manage multiple schema queries.
-   *
-   * In static Drupal SQL queries, table names must be wrapped in curly braces
-   * (https://www.drupal.org/docs/drupal-apis/database-api/static-queries).
-   * This allows Drupal to use table prefixes as specified in settings.php file.
-   * When working with PostgreSQL and multiple schemas, each table should be
-   * prefixed by its schema to avoid conflicting names (in wich case the
-   * search_path order is not enough). Since we may work with several
-   * Tripal DBX managed "databases" stored in different schemas and we might need to
-   * cross-query them, we introduce here a new table name denotation that
-   * enables the use of multiple schemas in a same static query without
-   * conflicts. This new denotation is backward compatible with Drupal's one.
-   *
-   * Table schemas can be selected using a number followed by a colon, just
-   * after the opening curly brace. For instance, we have 2 Tripal DBX managed schemas
-   * named "chado_main" and "chado_other". We will refer them in the $prefix
-   * array as $prefix['1'] = 'chado_main.' and $prefix['2'] = 'chado_other.'.
-   * Then, for instance, if we want to write a Drupal static query that searches
-   * all feature table entries that are in "chado_other" but not in
-   * "chado_main", we would write somthing similar to:
-   * @code
-   * $sql_query = "
-   *   SELECT f2.*
-   *   FROM {2:feature} f2
-   *   WHERE NOT EXISTS (
-   *     SELECT TRUE FROM {1:feature} f1 WHERE f1.uniquename = f2.uniquename
-   *   );";
-   * @endcode
-   * When no number is specified, we assume the 'default' table prefix will be
-   * used. The '0' prefix is reserved to Drupal schema and could be used in
-   * queries when Drupal table are used but it's optional.
-   *
-   * @param array|string $prefix
-   *   Either a single prefix, or an array of prefixes.
-   */
-  protected function setPrefix($prefix) {
-    if (is_array($prefix)) {
-      $this->prefixes = $prefix + [
-        'default' => '',
-      ];
-    }
-    else {
-      $this->prefixes = [
-        'default' => $prefix,
-      ];
-    }
-    [
-      $start_quote,
-      $end_quote,
-    ] = $this->identifierQuotes;
-
-    // Set up variables for use in prefixTables(). Replace table-specific
-    // prefixes first.
-    $this->prefixSearch = [];
-    $this->prefixReplace = [];
-    foreach ($this->prefixes as $key => $val) {
-      if (!preg_match('/^(?:default|\d+)$/', $key)) {
-        $this->prefixSearch[] = '{' . $key . '}';
-
-        // $val can point to another database like 'database.users'. In this
-        // instance we need to quote the identifiers correctly.
-        $val = str_replace('.', $end_quote . '.' . $start_quote, $val);
-        $this->prefixReplace[] = $start_quote . $val . $key . $end_quote;
-      }
-    }
-
-    // Then replace schema prefixes (specied in settings).
-    $i = 1;
-    while (array_key_exists("$i", $this->prefixes)
-      AND ($this->prefixes[$i] !== NULL)) {
-
-      $this->prefixSearch[] = '{' . $i . ':';
-      $this->prefixReplace[] =
-        $start_quote
-        . str_replace(
-          '.',
-          $end_quote . '.' . $start_quote,
-          $this->prefixes[$i]
-        );
-      ++$i;
-    }
-
-    // Then replace tables in default Drupal schema.
-    $this->prefixSearch[] = '{0:';
-
-    // $this->prefixes['default'] can point to another database like
-    // 'other_db.'. In this instance we need to quote the identifiers correctly.
-    // For example, "other_db"."PREFIX_table_name".
-    if (array_key_exists("default", $this->prefixes)
-      AND ($this->prefixes['default'] !== NULL)) {
-
-      $this->prefixReplace[] =
-        $start_quote
-        . str_replace(
-          '.',
-          $end_quote . '.' . $start_quote,
-          $this->prefixes['default']
-        );
-    }
-
-    if (!empty($this->schemaName)) {
-      $this->prefixSearch[] = '{1:';
-
-      $this->prefixReplace[] =
-        $start_quote
-        . $this->schemaName
-        . $end_quote
-        . '.'
-        . $start_quote
-      ;
-
-      // Then replace tables in Tripal DBX managed schemas.
-      for ($i = 2; $i <= array_key_last($this->extraSchemas); ++$i) {
-        $this->prefixSearch[] = '{' . $i . ':';
-        $this->prefixReplace[] =
-          $start_quote
-          . $this->extraSchemas[$i]
-          . $end_quote
-          . '.'
-          . $start_quote
-        ;
-      }
-    }
-
-    // Then replace remaining tables with the default prefix.
-    $this->prefixSearch[] = '{';
-
-    // $this->prefixes['default'] can point to another database like
-    // 'other_db.'. In this instance we need to quote the identifiers correctly.
-    // For example, "other_db"."PREFIX_table_name".
-    if (array_key_exists("default", $this->prefixes)
-      AND ($this->prefixes['default'] !== NULL)) {
-
-      $this->prefixReplace[] =
-        $start_quote
-        . str_replace(
-          '.',
-          $end_quote . '.' . $start_quote,
-          $this->prefixes['default']
-        );
-    }
-    $this->prefixSearch[] = '}';
-    $this->prefixReplace[] = $end_quote;
-
-    // Set up a map of prefixed => un-prefixed tables.
-    foreach ($this->prefixes as $table_name => $prefix) {
-      if (!preg_match('/^(?:default|\d+)$/', $key)) {
-        $this->unprefixedTablesMap[$prefix . $table_name] = $table_name;
-      }
-    }
   }
 
   /**
@@ -1079,48 +862,115 @@ abstract class TripalDbxConnection extends PgConnection {
    */
   public function prefixTables($sql) {
 
-    // Make sure there is no extra "{number:" in the query.
-    $matches = [];
-    if (preg_match_all('/\{(\d+):/', $sql, $matches)) {
-      $max_index = array_key_last($this->extraSchemas) ?? 1;
-      foreach ($matches[1] as $index) {
-        if (($index > $max_index)
-            && (!array_key_exists("$index", $this->prefixes))
-        ) {
-          throw new ConnectionException(
-            "Invalid extra schema specification '$index' in statement:\n$sql\nMaximum schema index is currently $max_index."
-          );
-        }
-        elseif ((1 == $index)
-          && empty($this->schemaName)
-          && (!array_key_exists('1', $this->prefixes))
-        ) {
-          throw new ConnectionException(
-            "No main Tripal DBX managed schema set for current connection while it has been referenced in the SQL statement:\n$sql."
-          );
-        }
+    // Replace schema prefixes if some.
+    if (preg_match('#\{\d+:#', $sql)) {
+      $sql = preg_replace_callback(
+        '#\{(\d+):(' . TripalDbx::TABLE_NAME_REGEXP . ')\}#',
+        function ($matches) {
+          // If the schema key is 0 then it indicates to use the drupal prefixing.
+          // As such., we will just remove the schema prefix and keet the curly
+          // brackets for the parent call replacements.
+          if (0 == $matches[1]) {
+            $prefixed = '{' . $matches[2] . '}';
+          }
+          // Next, check that the schema key we are given is associated with a
+          // known schema...
+          elseif (array_key_exists($matches[1], $this->usedSchemas) AND !empty($this->usedSchemas[ $matches[1] ])) {
+            // Quote schema.
+            $prefixed =
+              $this->identifierQuotes[0]
+              . $this->usedSchemas[$matches[1]]
+              . $this->identifierQuotes[1]
+              . '.'
+              . $this->identifierQuotes[0]
+              . $matches[2]
+              . $this->identifierQuotes[1];
+          }
+          // If this is not a known schema then throw an exception.
+          else {
+            // Note: Cannot include $sql here since it's not in scope.
+            // Add available schema info for easier debugging since this can
+            // be thrown if the schema exists but just was not set for the primary
+            // schema (key 1) and for unset Extra Schema (key 2,3,4).
+            $schema_note = [];
+            foreach ($this->usedSchemas as $key => $name) {
+              if (!empty($name)) {
+                $schema_note[] = "$name ($key)";
+              }
+            }
+            if (!empty($schema_note)) {
+              $schema_note_rendered = 'Available schema set for this connection: ' . implode(', ', $schema_note);
+            }
+            else {
+              $schema_note_rendered = 'No schema set for this connection.';
+            }
+            throw new ConnectionException(
+              "Invalid schema specification '{"
+              . $matches[1]
+              . ":"
+              . $matches[2]
+              . "}'. "
+              . $schema_note_rendered
+            );
+          }
+          return $prefixed;
+        },
+        $sql
+      );
+    }
+    else {
+      // No schema-prefixed tables in $sql.
+      // Check if caller should use cross schema as default.
+      $has_prefix = (FALSE !== strpos($sql, '{'));
+      if ($has_prefix && $this->shouldUseTripalDbxSchema()) {
+        // Replace default prefixes.
+        $default_replacement =
+          $this->identifierQuotes[0]
+          . $this->usedSchemas[1]
+          . $this->identifierQuotes[1]
+          . '.'
+          . $this->identifierQuotes[0]
+          . '\1'
+          . $this->identifierQuotes[1]
+        ;
+        $sql = preg_replace(
+          '#\{(' . TripalDbx::TABLE_NAME_REGEXP . ')\}#',
+          $default_replacement,
+          $sql
+        );
+      }
+      // In updates we have to replace the schema-prefixed table name in
+      // the escapeTables() method. That results in there being the following
+      // case in here: where our chado is in testchado,
+      // we may see {testchado.chadotable} at this point in the code.
+      // Here we want to remove the surrounding curly brackets.
+      $match_pattern = '#\{'
+        . '(' . TripalDbx::SCHEMA_NAME_REGEXP . ')'
+        . '\.'
+        . '(' . TripalDbx::TABLE_NAME_REGEXP . ')'
+        . '\}#';
+      if (preg_match($match_pattern, $sql, $matches) === 1) {
+        $sql = preg_replace_callback(
+          $match_pattern,
+          function ($matches) {
+            // For example, if given {testchado.chadotable}
+            // then return "testchado"."chadotable".
+            return
+              $this->identifierQuotes[0]
+              . $matches[1]
+              . $this->identifierQuotes[1]
+              . '.'
+              . $this->identifierQuotes[0]
+              . $matches[2]
+              . $this->identifierQuotes[1]
+            ;
+          },
+          $sql
+        );
       }
     }
 
-    // Check if any tables have already been prefixed. This can happen because
-    // Drupal uses different routes to convert a Select, Insert or Update to a
-    // string which may result in calling this function more than once. If so,
-    // we don't want to repeat it so remove the curly braces from the tables
-    // that have been prefixed already. These should have a period in the table name.
-    if (preg_match_all('/\{(.+?)\}/', $sql, $matches)) {
-      foreach ($matches[1] as $table) {
-        if (preg_match('/^.+?\./', $table)) {
-          $sql = str_replace("{" . $table .  "}", $table, $sql);
-        }
-      }
-    }
-
-    // Check if caller should use Tripal DBX managed schema as default.
-    $has_prefix = (FALSE !== strpos($sql, '{'));
-    if ($has_prefix && $this->shouldUseTripalDbxSchema()) {
-      // Replace default prefixes.
-      $sql = preg_replace('/\{([a-z])/i', '{1:\1', $sql);
-    }
+    // Finally let Drupal deal with any remaining table prefixing that is needed.
     return parent::prefixTables($sql);
   }
 
@@ -1128,6 +978,8 @@ abstract class TripalDbxConnection extends PgConnection {
    * Find the prefix for a table.
    *
    * OVERRIDES \Drupal\Core\Database\Connection:tablePrefix().
+   * REMOVED IN Drupal 10.1.x
+   * SEE https://www.drupal.org/node/3260849
    *
    * This function is for when you want to know the prefix of a table. This
    * is not used in prefixTables due to performance reasons.
@@ -1166,21 +1018,33 @@ abstract class TripalDbxConnection extends PgConnection {
    * @return string
    *   The prefix that would be used for a table in the specified schema.
    */
-  public function tablePrefix($table = 'default', bool $use_tdbx_schema = FALSE) {
+  public function tablePrefix(
+    $table = 'default',
+    bool $use_tdbx_schema = FALSE
+  ) {
     $use_tdbx_schema = ($use_tdbx_schema || $this->shouldUseTripalDbxSchema());
     if (('default' == $table) && $use_tdbx_schema) {
       $table = '1';
     }
+    $use_cross_schema = ($use_tdbx_schema || $this->shouldUseTripalDbxSchema());
 
-    if (isset($this->prefixes[$table])) {
-      return $this->prefixes[$table];
-    }
-    elseif ($use_tdbx_schema && !empty($this->schemaName)) {
-      return $this->schemaName . '.';
+    if ($use_cross_schema && !empty($this->usedSchemas[1])) {
+      return $this->usedSchemas[1] . '.';
     }
     else {
-      return $this->prefixes['default'];
+      return parent::tablePrefix($table);
     }
+  }
+
+  /**
+   * Returns the prefix of the tables.
+   *
+   * OVERRIDES \Drupal\Core\Database\Connection:getPrefix().
+   *
+   * @return string $prefix
+   */
+  public function getPrefix(): string {
+    return $this->usedSchemas[1] . '.';
   }
 
   /**
@@ -1377,7 +1241,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * Implements the magic __toString method.
    */
   public function __toString() {
-    return $this->databaseName . '.' . $this->schemaName;
+    return $this->databaseName . '.' . $this->usedSchemas[1];
   }
 
 }

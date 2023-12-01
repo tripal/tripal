@@ -7,9 +7,11 @@ services:
   tripal.bulkPgSchemaInstaller:
     class: Drupal\tripal\Services\bulkPgSchemaInstaller
   tripal.job:
-    class: Drupal\tripal\Services\Tripaljob
+    class: Drupal\tripal\Services\TripalJob
   tripal.logger:
     class: Drupal\tripal\Services\TripalLogger
+  tripal.token_parser:
+    class: Drupal\tripal\Services\TripalTokenParser
   tripal.dbx:
     class: Drupal\tripal\TripalDBX\TripalDbx
   tripal.storage:
@@ -24,5 +26,13 @@ services:
   tripal.importer:
     class: Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager
     parent: default_plugin_manager
-  tripal.fields:
-    class: Drupal\tripal\Services\TripalFieldsManager
+  tripal.tripalfield_collection:
+    class: Drupal\tripal\Services\TripalFieldCollection
+    arguments: ['@tripal.collection_plugin_manager.idspace',
+                '@tripal.collection_plugin_manager.vocabulary',
+                '@tripal.logger']
+  tripal.tripalentitytype_collection:
+    class: Drupal\tripal\Services\TripalEntityTypeCollection
+    arguments: ['@tripal.collection_plugin_manager.idspace',
+                '@tripal.collection_plugin_manager.vocabulary',
+                '@tripal.logger']

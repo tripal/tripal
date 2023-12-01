@@ -1,27 +1,33 @@
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
-# Tripal 4 (Drupal 9 + 10)
+# Tripal 4 (Drupal 10)
 
-                   _   _                 _____                 _                                  _   
-         /\       | | (_)               |  __ \               | |                                | |  
+                   _   _                 _____                 _                                  _
+         /\       | | (_)               |  __ \               | |                                | |
         /  \   ___| |_ ___   _____      | |  | | _____   _____| | ___  _ __  _ __ ___   ___ _ __ | |_
        / /\ \ / __| __| \ \ / / _ \     | |  | |/ _ \ \ / / _ \ |/ _ \| '_ \| '_ ` _ \ / _ \ '_ \| __|
       / ____ \ (__| |_| |\ V /  __/     | |__| |  __/\ V /  __/ | (_) | |_) | | | | | |  __/ | | | |_
      /_/    \_\___|\__|_| \_/ \___|     |_____/ \___| \_/ \___|_|\___/| .__/|_| |_| |_|\___|_| |_|\__|
-                                                                      | |                             
-                                                                      |_|                             
+                                                                      | |
+                                                                      |_|
 
 
 ## Compatibility
 
-![Target Drupal Version 9.4.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-9.4.x-informational)
+![Target Drupal Version 10.0.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-10.0.x-informational)
 
 ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success)
 
-| Drupal      | 9.2.x                                                                                                                                                                    | 9.3.x                                                                                                                                                                        | 9.4.x                                                                                                                                                                        | 9.5.x                                                                                                                                                                        | 10.0.x                                                                                                                                                                         |
-|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **PHP 8.0** | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_2x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_2x.yml) | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_3x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_3x.yml)     | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_4x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_4x.yml)     | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_5x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_5x.yml)     |                                                                                                                                                                                |
-| **PHP 8.1** |                                                                                                                                                                          | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_3x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_3x.yml) | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_4x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_4x.yml) | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_5x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_5x.yml) | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml) |
+| Drupal      | 10.0.x          | 10.1.x          |
+|-------------|-----------------|-----------------|
+| **PHP 8.1** | ![Grid1A-Badge] | ![Grid1B-Badge] |
+| **PHP 8.2** | ![Grid2A-Badge] | ![Grid2B-Badge] |
+
+[Grid1A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml/badge.svg
+[Grid1B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_1x.yml/badge.svg
+
+[Grid2A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_0x.yml/badge.svg
+[Grid2B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_1x.yml/badge.svg
 
 ### Code Coverage
 
@@ -36,12 +42,12 @@ This project uses Code Climate to determine the quality of our codebase and the 
 ### Required for Tripal 4.alpha2 Release
 
 - Publishing of the pages
-- Finish implementing Chado Storage for fields ([#238](https://github.com/tripal/t4d8/issues/238), [#239](https://github.com/tripal/t4d8/issues/239))
+- Finish implementing Chado Storage for fields ([#1350](https://github.com/tripal/tripal/issues/1350), [#1351](https://github.com/tripal/tripal/issues/1351))
 - Drush generator/updator for fields
 - Update existing core fields
-- Finish Chado Vocabs/ID Spaces/Terms ([#242](https://github.com/tripal/t4d8/issues/242), [#243](https://github.com/tripal/t4d8/issues/243))
+- Finish Chado Vocabs/ID Spaces/Terms ([#1354](https://github.com/tripal/tripal/issues/1354))
 - Legacy API
-- Move data type specific functionality into extension modules ([#281](https://github.com/tripal/t4d8/issues/281))
+- Move data type specific functionality into extension modules ([#1357](https://github.com/tripal/tripal/issues/1357))
 
 ### Required for Tripal 4.alpha3 Release
 
@@ -51,7 +57,7 @@ This project uses Code Climate to determine the quality of our codebase and the 
 
 ## How to get involved!
 
-This upgrade to Drupal 9 is a community effort. As such, we NEED YOUR HELP!
+This upgrade to Drupal 10 is a community effort. As such, we NEED YOUR HELP!
 
   - To get involved, please join [our Tripal Slack](http://tripal.info/join/slack) and comment in the #core-dev channel.
     - Alternatively, feel free to contact Lacey-Anne Sanderson through Slack direct message.
@@ -59,7 +65,7 @@ This upgrade to Drupal 9 is a community effort. As such, we NEED YOUR HELP!
   - We prefer [automated testing](https://tripaldoc.readthedocs.io/en/latest/dev_guide/testing.html) for all Pull Requests (PRs) and are happy to guide you through the process!
     - Just comment on the issue if you need help designing tests
     - If you need help implementing tests see our [documentation](https://tripaldoc.readthedocs.io/en/latest/dev_guide/testing.html)
-  - If more documentation would be helpful, [let us know what is missing here](https://github.com/tripal/t4d8/issues/16) and we'll add it
+  - If more documentation would be helpful, [please create an issue here](https://github.com/tripal/tripal_doc/issues) and we'll add it.
 
 ## Documentation
 

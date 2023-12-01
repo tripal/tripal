@@ -11,8 +11,8 @@ entity.tripal_entity.add_page:
     - entity.tripal_entity.collection
 
 # -- Remove orphaned content (i.e missing non-drupal record) link on Content Listing page.
-tripal.content_bio_data_unpublish:
-  route_name: tripal.content_bio_data_unpublish
+tripal.content_type_unpublish:
+  route_name: tripal.content_type_unpublish
   title: 'Unpublish Orphaned Content'
   weight: 100
   appears_on:
@@ -21,13 +21,20 @@ tripal.content_bio_data_unpublish:
 # -- Add Content Type link on the Type Listing page.
 entity.tripal_entity_type.add_form:
   route_name: 'entity.tripal_entity_type.add_form'
-  title: 'Add Tripal Content type'
+  title: 'Add custom type'
+  appears_on:
+    - entity.tripal_entity_type.collection
+
+# -- Add Content Type link on the Type Listing page.
+entity.tripal_entity_type.import_collection:
+  route_name: 'tripal.import_tripalentitytype_collection'
+  title: 'Import type collection'
   appears_on:
     - entity.tripal_entity_type.collection
 
 # -- Check for new fields link on the Manage Fields page.
-tripal.content_bio_data_field_check:
-  route_name: 'tripal.content_bio_data_field_check'
+tripal.content_type_field_check:
+  route_name: 'tripal.content_type_field_check'
   title: 'Check for new fields'
   appears_on:
     - entity.tripal_entity.field_ui_fields

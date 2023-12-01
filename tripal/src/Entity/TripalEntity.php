@@ -10,7 +10,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\field\Entity\FieldConfig;
-
+use Symfony\Component\Routing\Route;
+use Drupal\tripal\TripalField\TripalFieldItemBase;
 
 /**
  * Defines the Tripal Content entity.
@@ -22,7 +23,6 @@ use Drupal\field\Entity\FieldConfig;
  *   label = @Translation("Tripal Content"),
  *   bundle_label = @Translation("Tripal Content type"),
  *   handlers = {
- *     "schema" = "Drupal\tripal\Entity\TripalEntityStorageSchema",
  *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\tripal\ListBuilders\TripalEntityListBuilder",
@@ -69,7 +69,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @code
       $values = [
         'title' => 'laceytest'.time(),
-        'type' => 'bio_data_1',
+        'type' => 'organism',
         'uid' => 1,
       ];
       $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
@@ -79,7 +79,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @param array $values
    *   - *title: the title of the entity.
    *   - *user_id: the user_id of the user who authored the content.
-   *   - *type: the type of tripal entity this is (e.g. bio_data_1)
+   *   - *type: the type of tripal entity this is (e.g. organism)
    *   - status: whether the entity is published or not (boolean)
    *   - created: the unix timestamp for when this content was created.
    * @return object
@@ -95,7 +95,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
     parent::preCreate($storage_controller, $values);
     $values += array(
-      'user_id' => \Drupal::currentUser()->id(),
+      'uid' => \Drupal::currentUser()->id(),
     );
   }
 
@@ -104,9 +104,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function getID() {
     $entity_id = $this->id();
-    if (is_array($entity_id) AND array_key_exists(0, $entity_id)) {
-      return $entity_id[0]['value'];
-    }
     return $entity_id;
   }
 
@@ -129,12 +126,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
     }
 
-    // If no title was supplied then we should try to generate one using the
-    // default format set by admins.
-    // @todo figure out how to override the title while still allowing
-    //   tokenized titles to be updated on edit.
     $title = $bundle->getTitleFormat();
-    $title = $this->replaceTokens($title, ['tripal_entity_type' => $bundle]);
+    $title = $this->replaceTokens($title, $bundle);
 
     $this->title = $title;
   }
@@ -153,35 +146,19 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The alias to use. It can contain tokens the correspond to field values.
    *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
-   * @param array $cache
-   *   This array is used to store objects you want to cache for performance
-   *   reasons, as well as, cache related options. The following are supported:
-   *   - TripalEntityType $bundle
-   *       The bundle for the current entity.
    */
-  public function setAlias($path_alias = NULL, $cache = []) {
+  public function setAlias($path_alias = NULL) {
+
 
     $system_path = "/bio_data/" . $this->getID();
-    $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
 
     // If no alias was supplied then we should try to generate one using the
     // default format set by admins.
     if (!$path_alias) {
 
-      // Load the TripalEntityType entity for this TripalEntity (if it's not
-      // cached). First get the format for the url alias based on the bundle
-      // of the entity. Then replace all the tokens with values from the entity fields.
-      if (isset($cache['bundle'])) {
-        $bundle = $cache['bundle'];
-      }
-      else {
-        $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
-      }
-
+      $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
       $path_alias = $bundle->getURLFormat();
-      $path_alias = $this->replaceTokens($path_alias,
-        ['tripal_entity_type' => $bundle]);
-
+      $path_alias = $this->replaceTokens($path_alias, $bundle);
     }
 
     // Ensure there is a leading slash.
@@ -196,7 +173,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
       'path' => $system_path,
       'alias' => $path_alias,
-      'langcode' => $langcode,
     ]);
     $path->save();
   }
@@ -269,126 +245,37 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Replaces tokens in a given tokens in URL Aliases and Titles.
+   *
+   * @param string $string
+   *   The string to replace.
+   * @param array $cache
    */
-  public function replaceTokens($string, $cache = []) {
+  protected function replaceTokens($string, $bundle) {
 
-    // Pull any items out of the cache.
-    if (isset($cache['bundle'])) {
-      $bundle_entity = $cache['bundle'];
-    }
-    else {
-      $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
-    }
-
-    // Determine which tokens were used in the format string
-    $used_tokens = [];
-    if (preg_match_all('/\[.*?\]/', $string, $matches)) {
-      $used_tokens = $matches[0];
-    }
-
-    // If there are no tokens then just return the string.
-    if (count($used_tokens) == 0) {
-      return $string;
-    }
-
-    // @todo UPGRADE THIS CODE ONCE TRIPAL FIELDS HAVE BEEN ADDED
-    //
-    // If the fields are not loaded for the entity then we want to load them
-    // but we won't do a field_attach_load() as that will load all of the
-    // fields. For syncing (publishing) of content loading all fields for
-    // all synced entities causes extreme slowness, so we'll only attach
-    // the necessary fields for replacing tokens.
-    // $attach_fields = [];
-    //
-    // foreach ($used_tokens as $token) {
-    //   $token = preg_replace('/[\[\]]/', '', $token);
-    //   $elements = explode(',', $token);
-    //   $field_name = array_shift($elements);
-    //
-    //   if (!property_exists($entity, $field_name) or empty($entity->{$field_name})) {
-    //     $field = field_info_field($field_name);
-    //     $storage = $field['storage'];
-    //     $attach_fields[$storage['type']]['storage'] = $storage;
-    //     $attach_fields[$storage['type']]['fields'][] = $field;
-    //   }
-    // }
-    //
-    // // If we have any fields that need attaching, then do so now.
-    // if (count(array_keys($attach_fields)) > 0) {
-    //   foreach ($attach_fields as $storage_type => $details) {
-    //     $field_ids = [];
-    //     $storage = $details['storage'];
-    //     $fields = $details['fields'];
-    //     foreach ($fields as $field) {
-    //       $field_ids[$field['id']] = [$entity->id];
-    //     }
-    //     $entities = [$entity->id => $entity];
-    //     module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
-    //       $entities, FIELD_LOAD_CURRENT, $field_ids, []);
-    //   }
-    // }
-
-    // Now that all necessary fields are attached process the tokens.
-    foreach ($used_tokens as $token) {
-      $token = preg_replace('/[\[\]]/', '', $token);
-      $elements = explode(',', $token);
-      $field_name = array_shift($elements);
-      $value = '';
-
-      // The TripalBundle__bundle_id is a special token for substituting the
-      // bundle id.
-      if ($token === 'TripalBundle__bundle_id') {
-        // This token should be the id of the TripalBundle.
-        $value = $bundle_entity->getID();
-      }
-      // The TripalBundle__bundle_id is a special token for substituting the
-      // entity id.
-      elseif ($token === 'TripalEntity__entity_id') {
-        // This token should be the id of the TripalEntity.
-        $value = $this->getID();
-      }
-      elseif ($token == 'TripalEntityType__label') {
-        $value = $bundle_entity->getLabel();
-      }
-      else {
-        $value_obj = $this->get($field_name);
-        if ($value_obj) {
-          // A field may have multiple properties. We should use the
-          // main property key for the field when replacing the value.
-          $field_type = $this->getFieldDefinition($field_name)->getType();
-          $field_types = \Drupal::service('plugin.manager.field.field_type');
-          $field_type_def = $field_types->getDefinition($field_type);
-          $field_class = $field_type_def['class'];
-          $main_key = $field_class::mainPropertyName();
-
-          // Get the value if the property has one.
-          $value_raw = $value_obj->getValue();
-          $value = '';
-          if (array_key_exists($main_key, $value_raw[0])) {
-            $value = $value_raw[0][$main_key];
-          }
-
-          // If the value is an array it means we have sub elements and we can
-          // descend through the array to look for matching value.
-          if (is_array($value) and count($elements) > 0) {
-            // @todo we still need to handle this case.
-            $value = '';
-            //$value = _tripal_replace_entity_tokens_for_elements($elements, $value);
-          }
+    // Intiailze the Tripal token parser service.
+    /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
+    $token_parser = \Drupal::service('tripal.token_parser');
+    $token_parser->initParser($bundle, $this);
+    $field_defs = $this->getFieldDefinitions();
+    foreach ($field_defs as $field_name => $field_def) {
+      /** @var \Drupal\Core\Field\FieldItemList $items **/
+      $items = $this->get($field_name);
+      if ($items->count() == 1) {
+        /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem  $item **/
+        /** @var \Drupal\Core\TypedData\TypedDataInterface $prop **/
+        $item = $items->get(0);
+        if (! $item instanceof TripalFieldItemBase) {
+          continue;
+        }
+        $props = $item->getProperties();
+        foreach ($props as $prop) {
+          $token_parser->addFieldValue($field_name, $prop->getName(), $prop->getValue());
         }
       }
-
-      // We can't support tokens that have multiple elements (i.e. in an array).
-      if (is_array($value)) {
-        $string = str_replace('[' . $token . ']', '', $string);
-      }
-      else {
-        $string = str_replace('[' . $token . ']', $value, $string);
-      }
     }
-
-    return $string;
+    $replaced = $token_parser->replaceTokens([$string]);
+    return $replaced[0];
   }
 
   /**
@@ -399,13 +286,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Authored by'))
-      ->setDescription(t('The user ID of author of the Tripal Content entity.'))
+      ->setDescription(t('The user ID of the author of the Tripal Content entity.'))
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setSetting('handler', 'default')
       ->setTranslatable(TRUE)
       ->setDisplayOptions('view', array(
-        'label' => 'hidden',
+        'label' => 'above',
         'type' => 'author',
         'weight' => 0,
       ))
@@ -467,17 +354,15 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * - 3rd: Delta value of the field item.
    * - 4th: the property key.
    * - 5th: One of the following keys:
-   *   - 'type': The property type object.
-   *   - 'definition':  the field definition object for the field that this
-   *     property belongs to.
    *   - 'value': the property value object.
+   *   - 'operation': the operation to use when matching this value.
    *
    * This function also returns an array of TripalStorage objects.
    *
    * @param TripalEntity $entity
    *
    * @return array
-   *   The returned array has two elements: an an array of values as described
+   *   The returned array has two elements: an array of values as described
    *   above, and an array of TripalStorage objects,
    */
   public static function getValuesArray($entity) {
@@ -498,12 +383,28 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $tsid = $item->tripalStorageId();
 
 
+        // If the Tripal Storage Backend is not set on a Tripal-based field,
+        // we will log an error and not support the field. If developers want
+        // to use Drupal storage for a Tripal-based field then they need to
+        // indicate that by using our Drupal SQL Storage option OR by not
+        // creating a Tripal-based field at all depending on their needs.
+        if (empty($tsid)) {
+          \Drupal::logger('tripal')->error('The Tripal-based field :field on
+            this content type must indicate a TripalStorage backend and currently does not.',
+            [':field' => $field_name]
+          );
+          continue;
+        }
+
         // Create instance of the storage plugin so we can add the properties
         // to it as we go.
         if (!array_key_exists($tsid, $tripal_storages)) {
           $tripal_storage = \Drupal::service("tripal.storage")->getInstance(['plugin_id' => $tsid]);
           $tripal_storages[$tsid] = $tripal_storage;
         }
+
+        // Add the field definition to the storage for this field.
+        $tripal_storages[$tsid]->addFieldDefinition($field_name, $item->getFieldDefinition());
 
         // Get the empty property values for this field item and the
         // property type objects.
@@ -518,15 +419,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // property).
         $item->tripalClear($item, $field_name, $prop_types, $prop_values, $entity);
 
+        // Add the property types to the storage plugin.
+        $tripal_storages[$tsid]->addTypes($field_name, $prop_types);
 
-        // Prepare the properties for the storage plugin.
+        // Prepare the property values for the storage plugin.
+        // Note: We are assuming the key for the value is the
+        // same as the key for the type here... This is a temporary assumption
+        // as soon the values array will not contain types ;-)
         foreach ($prop_types as $prop_type) {
           $key = $prop_type->getKey();
-          $values[$tsid][$field_name][$delta][$key] = [
-            'definition' => $item->getFieldDefinition(),
-            'type' => $prop_type
-          ];
-          $tripal_storages[$tsid]->addTypes($prop_type);
+          $values[$tsid][$field_name][$delta][$key] = [];
         }
         foreach ($prop_values as $prop_value) {
           $key = $prop_value->getKey();
@@ -579,7 +481,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     // Set the property values that should be saved in Drupal, everything
-    // else will stay in the underlying data store (e.g. Chado)..
+    // else will stay in the underlying data store (e.g. Chado).
     $delta_remove = [];
     $fields = $this->getFields();
     foreach ($fields as $field_name => $items) {
@@ -593,11 +495,24 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $delta = $item->getName();
         $tsid = $item->tripalStorageId();
 
+        // If the Tripal Storage Backend is not set on a Tripal-based field,
+        // we will log an error and not support the field. If developers want
+        // to use Drupal storage for a Tripal-based field then they need to
+        // indicate that by using our Drupal SQL Storage option OR by not
+        // creating a Tripal-based field at all depending on their needs.
+        if (empty($tsid)) {
+          \Drupal::logger('tripal')->error('The Tripal-based field :field on
+            this content type must indicate a TripalStorage backend and currently does not.',
+            [':field' => $field_name]
+          );
+          continue;
+        }
+
         // Load into the entity the properties that are to be stored in Drupal.
         $prop_values = [];
         $prop_types = [];
-        foreach ($values[$tsid][$field_name][$delta] as $prop_info) {
-          $prop_type = $prop_info['type'];
+        foreach ($values[$tsid][$field_name][$delta] as $key => $prop_info) {
+          $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $key);
           $prop_value = $prop_info['value'];
           $settings = $prop_type->getStorageSettings();
           if (array_key_exists('drupal_store', $settings) and $settings['drupal_store'] == TRUE) {
@@ -611,7 +526,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           // Keep track of elements that have no value.
           foreach ($prop_values as $prop_value) {
             if (!$prop_value->getValue()) {
-              $delta_remove[$field_name][] = $delta;
+              // A given delta should only be present once here.
+              if (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name])) {
+                $delta_remove[$field_name][] = $delta;
+              }
               continue;
             }
           }
@@ -652,7 +570,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       // Create a values array appropriate for `loadValues()`
       list($values, $tripal_storages) = TripalEntity::getValuesArray($entity);
 
-
       // Call the loadValues() function for each storage type.
       $load_success = False;
       foreach ($values as $tsid => $tsid_values) {
@@ -674,7 +591,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $field_defs = $field_manager->getFieldDefinitions($entity_type_id, $bundle);
       foreach ($field_defs as $field_name => $field_def) {
 
-        // Createa  fieldItemlist and iterate through it.
+        // Create a fieldItemlist and iterate through it.
         $items = $field_type_manager->createFieldItemList($entity, $field_name, $entity->get($field_name)->getValue());
         foreach($items as $item) {
 
@@ -685,12 +602,25 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $delta = $item->getName();
           $tsid = $item->tripalStorageId();
 
+          // If the Tripal Storage Backend is not set on a Tripal-based field,
+          // we will log an error and not support the field. If developers want
+          // to use Drupal storage for a Tripal-based field then they need to
+          // indicate that by using our Drupal SQL Storage option OR by not
+          // creating a Tripal-based field at all depending on their needs.
+          if (empty($tsid)) {
+            \Drupal::logger('tripal')->error('The Tripal-based field :field on
+              this content type must indicate a TripalStorage backend and currently does not.',
+              [':field' => $field_name]
+            );
+            continue;
+          }
+
           // Create a new properties array for this field item.
           $prop_values = [];
           $prop_types = [];
           foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
             $prop_values[] = $info['value'];
-            $prop_types[] = $info['type'];
+            $prop_types[] = $tripal_storages[$tsid]->getPropertyType($bundle, $field_name, $key);
           }
 
           // Now set the entity values for this field.

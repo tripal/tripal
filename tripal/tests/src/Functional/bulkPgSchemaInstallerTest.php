@@ -14,7 +14,7 @@ use Drupal\Core\Database\Database;
 class bulkPgSchemaInstallerTest extends BrowserTestBase {
 
   // protected $htmlOutputEnabled = TRUE;
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   protected static $modules = ['tripal'];
 

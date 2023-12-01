@@ -3,6 +3,10 @@
 namespace Drupal\tripal_chado\Plugin\TripalVocabulary;
 
 use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Chado implementation of the TripalVocabularyBase.
@@ -12,7 +16,7 @@ use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
  *    label = @Translation("Vocabulary in Chado"),
  *  )
  */
-class ChadoVocabulary extends TripalVocabularyBase {
+class ChadoVocabulary extends TripalVocabularyBase implements ContainerFactoryPluginInterface {
 
   /**
    * The definition for the `db` table of Chado.
@@ -29,11 +33,18 @@ class ChadoVocabulary extends TripalVocabularyBase {
   protected $cv_def = NULL;
 
   /**
-   * An instance of the TripalLogger.
+   * The logger for reporting warnings and errors to admin.
    *
    * @var \Drupal\tripal\Services\TripalLogger
    */
   protected $messageLogger = NULL;
+
+  /**
+   * The database connection for querying Chado.
+   *
+   * @var Drupal\tripal_chado\Database\ChadoConnection
+   */
+  protected $connection;
 
   /**
    * A simple boolean to prevent Chado queries if the vocabulary isn't valid.
@@ -43,20 +54,42 @@ class ChadoVocabulary extends TripalVocabularyBase {
   protected $is_valid = False;
 
   /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static function
+   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
+   * this method is used to determine the parameters to pass to the contructor.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('tripal.logger'),
+      $container->get('tripal_chado.database')
+    );
+  }
+
+  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    // Instantiate the TripalLogger
-    $this->messageLogger = \Drupal::service('tripal.logger');
-
-    // Instantiate a TripalDBX connection for Chado.
-    $chado = \Drupal::service('tripal_chado.database');
+    $this->messageLogger = $logger;
+    $this->connection = $connection;
 
     // Get the chado definition for the `cv` and `db` tables.
-    $this->db_def = $chado->schema()->getTableDef('db', ['Source' => 'file']);
-    $this->cv_def = $chado->schema()->getTableDef('cv', ['Source' => 'file']);
+    $this->db_def = $this->connection->schema()->getTableDef('db', ['source' => 'file']);
+    $this->cv_def = $this->connection->schema()->getTableDef('cv', ['source' => 'file']);
   }
 
 
@@ -72,11 +105,12 @@ class ChadoVocabulary extends TripalVocabularyBase {
           'The value provided was: @value',
           ['@size' => $this->cv_def['fields']['name']['size'],
            '@value' => $this->getName()]);
+      $this->is_valid = FALSE;
+      return FALSE;
 
     }
-    $this->is_valid = True;
-
-    return $this->is_valid;
+    $this->is_valid = TRUE;
+    return TRUE;
   }
 
   /**
@@ -93,10 +127,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
   /**
    * {@inheritdoc}
    */
-  public function create(){
-
-    // Instantiate a TripalDBX connection for Chado.
-    $chado = \Drupal::service('tripal_chado.database');
+  public function createRecord(){
 
     // Check if the record already exists in the database, if it
     // doesn't then insert it.  We don't yet have the definition,
@@ -104,7 +135,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
     // a record in the `cv` table.
     $vocab = $this->loadVocab();
     if (!$vocab) {
-      $query = $chado->insert('1:cv')
+      $query = $this->connection->insert('1:cv')
         ->fields(['name' => $this->getName()]);
       $query->execute();
     }
@@ -120,6 +151,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
     // Let's let the collection be deleted as far as
     // Tripal is concerned but leave the record in Chado.
     // So, do nothing here.
+    $this->messageLogger->warning('The ChadoVocabulary::destroy() function is currently not implemented');
   }
 
 
@@ -135,11 +167,8 @@ class ChadoVocabulary extends TripalVocabularyBase {
    */
   protected function loadVocab() {
 
-    // Instantiate a TripalDBX connection for Chado.
-    $chado = \Drupal::service('tripal_chado.database');
-
     // Get the Chado `db` record for this ID space.
-    $query = $chado->select('1:cv', 'cv')
+    $query = $this->connection->select('1:cv', 'cv')
       ->condition('cv.name', $this->getName(), '=')
       ->fields('cv', ['name', 'definition']);
     $result = $query->execute();
@@ -163,11 +192,8 @@ class ChadoVocabulary extends TripalVocabularyBase {
    */
   protected function getIdSpaceCacheID() {
 
-    // Instantiate a TripalDBX connection for Chado.
-    $chado = \Drupal::service('tripal_chado.database');
-
     $idSpace = $this->getName();
-    $chado_schema = $chado->getSchemaName();
+    $chado_schema = $this->connection->getSchemaName();
     return 'chado_vocabulary_' . $chado_schema . '_' . $idSpace . '_id_spaces';
   }
 
@@ -253,7 +279,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
    * {@inheritdoc}
    */
   public function getTerms($name, $exact = True){
-
+    $this->messageLogger->warning('The ChadoVocabulary::getTerms() function is currently not implemented');
   }
 
   /**
@@ -272,13 +298,10 @@ class ChadoVocabulary extends TripalVocabularyBase {
       return NULL;
     }
 
-    // Instantiate a TripalDBX connection for Chado.
-    $chado = \Drupal::service('tripal_chado.database');
-
     // All of the ID spaces for the vocabulary should
     // have the same URL, so only query the first corresponding
     // `db` record to get the URL.
-    $db = $chado->select('1:db', 'db')
+    $db = $this->connection->select('1:db', 'db')
       ->fields('db', ['url'])
       ->condition('db.name', $id_spaces[0], '=')
       ->execute();
@@ -320,12 +343,9 @@ class ChadoVocabulary extends TripalVocabularyBase {
       return False;
     }
 
-    // Instantiate a TripalDBX connection for Chado.
-    $chado = \Drupal::service('tripal_chado.database');
-
     // Update the record in the Chado `db` table for the URL for all ID spaces.
     foreach ($id_spaces as $name) {
-      $num_updated = $chado->update('1:db')
+      $num_updated = $this->connection->update('1:db')
         ->fields(['url' => $url])
         ->condition('name', $name, '=')
         ->execute();
@@ -365,16 +385,13 @@ class ChadoVocabulary extends TripalVocabularyBase {
     // because the Chado column where this goes (cv.definition) is an
     // unlimited text field.
 
-    // Instantiate a TripalDBX connection for Chado.
-    $chado = \Drupal::service('tripal_chado.database');
-
     // Update the record in the Chado `cv` table.
-    $query = $chado->update('1:cv')
+    $query = $this->connection->update('1:cv')
       ->fields(['definition' => $label])
       ->condition('name', $this->getName(), '=');
     $num_updated = $query->execute();
     if ($num_updated != 1) {
-      $this->logInvalidCondition('ChadoVocabulary: The label could not be updated for the vocabulary.');
+      $this->messageLogger->error('ChadoVocabulary: The label could not be updated for the vocabulary.');
       return False;
     }
     return True;

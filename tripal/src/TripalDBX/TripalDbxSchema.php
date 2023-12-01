@@ -30,7 +30,7 @@ use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
  *   - createTable(), dropTable()
  *   - dropField(), dropIndex(), dropPrimaryKey(), dropUniqueKey(),
  *   - fieldExists(), findPrimaryKeyColumns(),
- *   - renameTable(), tableExists()
+ *   - renameTable()
  *   and more from the documentation.
  *
  * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Driver!pgsql!Schema.php/class/Schema/9.0.x
@@ -61,6 +61,13 @@ abstract class TripalDbxSchema extends PgSchema {
    * @var string
    */
   protected $quotedDefaultSchema = '';
+
+  /**
+   * Tells if builtin functions have been (temporarily) loaded.
+   *
+   * @var bool
+   */
+  protected $initialized = FALSE;
 
   /**
    * TripalDbx service object.
@@ -134,6 +141,56 @@ abstract class TripalDbxSchema extends PgSchema {
 
     $this->defaultSchema = $schema_name;
     $this->quotedDefaultSchema = $this->connection->getQuotedSchemaName();
+  }
+
+  /**
+   *
+   */
+  public function initialize() {
+    if (!$this->initialized) {
+      $check_func_sql_query = "
+        SELECT COUNT(1) AS \"funcs\"
+        FROM pg_proc p
+          JOIN pg_namespace n ON (p.pronamespace = n.oid)
+        WHERE
+          n.oid = pg_my_temp_schema()
+          AND p.proname IN ('tripal_get_table_ddl', 'tripal_clone_schema')
+      ";
+      $is_initialized = (bool) $this->connection->query($check_func_sql_query)->fetchField();
+      if (!$is_initialized) {
+        // Load functions.
+        $logger = \Drupal::service('tripal.logger');
+        $sql_cloner_path =
+          \Drupal::service('extension.list.module')->getPath('tripal')
+          . '/src/TripalDBX/pg-clone-schema/clone_schema.sql'
+        ;
+        // Retrieve the SQL file.
+        $sql = file_get_contents($sql_cloner_path);
+        if (!$sql) {
+          $message = "Failed to load PostgreSQL cloning functions: unable to read '$sql_cloner_path' file content.";
+          $logger->error($message);
+        }
+
+        // Remove starting comments (not the ones in functions).
+        $sql = preg_replace('/^--[^\n]*\n(?:\s*\n)*/m', '', $sql);
+        $this->connection->query(
+          $sql,
+          [],
+          [
+            'allow_delimiter_in_query' => TRUE,
+          ]
+        );
+
+        // Check functions were installed.
+        $func_count = $this->connection->query($check_func_sql_query)->fetch();
+        if (!$func_count || ($func_count->funcs < 2)) {
+          $message =
+            "Failed to load PostgreSQL cloning functions ($sql_cloner_path).";
+          $logger->error($message);
+        }
+      }
+      $this->initialized = TRUE;
+    }
   }
 
   /**
@@ -687,7 +744,7 @@ EOD;
    *   -'name': table name
    *   -'type': one of 'table', 'view', 'partition' and 'materialized view' for
    *     PostgreSQL materialized views.
-   *   -'status': either 'base' for base a table, or 'custom' for a custom table
+   *   -'status': either 'base' for a base table, or 'custom' for a custom table
    *     or a tripal materialized view, or 'other' for other elements.
    */
   public function getTables(
@@ -899,11 +956,11 @@ EOD;
     $cache_key = $this->defaultSchema . '/' . $table_name;
     if (!isset($db_ddls[$cache_key])) {
       $schema_name = $this->defaultSchema;
-      $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
+      $this->initialize();
 
       $sql_query = "
         SELECT
-          $drupal_schema.tripal_get_table_ddl(:schema, :table, TRUE)
+          pg_temp.tripal_get_table_ddl(:schema, :table, TRUE)
           AS \"definition\";
       ";
       $result = $this->connection->query(
@@ -1080,4 +1137,22 @@ EOD;
     $this->tripalDbxApi->dropSchema($this->defaultSchema, $this->connection);
   }
 
+  /**
+   * Overrides Drupal\Core\Database\Schema->tableExists().
+   *
+   * We needed to override it because core Drupal makes some assumptions
+   * when building the where condition that do not match our multi-schema setup.
+   */
+  public function tableExists($table) {
+
+    // We can't use \Drupal::database()->select() here
+    // because it would prefix information_schema.tables
+    // and the query would fail.
+    // Don't use {} around information_schema.tables table.
+    return (bool) $this->connection
+      ->query('SELECT TRUE AS table_exists FROM pg_tables
+          WHERE schemaname=:schema AND tablename = :table',
+          [':table' => $table, ':schema' => $this->getSchemaName()])
+      ->fetchField();
+  }
 }

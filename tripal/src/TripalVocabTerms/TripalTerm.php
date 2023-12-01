@@ -156,11 +156,19 @@ class TripalTerm {
    *   True if valid, False otherwise.
    */
   public function isValid() : bool {
-    if (!empty($this->name) and !empty($this->accession) and !empty($this->idSpace) and !empty($this->vocabulary)){
-      return True;
-    }
-    return False;
+    $is_valid = TRUE;
 
+    if (empty($this->getName())) {
+      $is_valid = FALSE;
+    }
+    if (empty($this->getIdSpace()) OR empty($this->getAccession())) {
+      $is_valid = FALSE;
+    }
+    if (empty($this->getVocabulary())) {
+      $is_valid = FALSE;
+    }
+
+    return $is_valid;
   }
 
   /**
@@ -818,7 +826,7 @@ class TripalTerm {
    * An array of synonyms.
    *
    * For easy lookup, this is an associative array where
-   * the key is the synonym and the value is the type term..
+   * the key is the synonym and the value is the type term.
    * Using the synonym as the key also prevents duplication.
    *
    * @var array

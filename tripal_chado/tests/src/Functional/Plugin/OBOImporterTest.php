@@ -12,9 +12,10 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
 /**
  * Tests for the ChadoCVTerm classes
  *
- * @group Tripal
- * @group Tripal Chado
- * @group Tripal Chado ChadoStorage
+ * @group TripalImporter
+ * @group ChadoImporter
+ * @group OntologyImporter
+ * @group OBOImporter
  */
 class OBOImporterTest extends ChadoTestBrowserBase {
 
@@ -47,7 +48,7 @@ class OBOImporterTest extends ChadoTestBrowserBase {
      */
     $importer_manager = \Drupal::service('tripal.importer');
     $obo_importer = $importer_manager->createInstance('chado_obo_loader');
-    $obo_importer->create([
+    $obo_importer->createImportJob([
       'obo_id' => $obo_id,
       'schema_name' => $test_chado->getSchemaName()
     ]);

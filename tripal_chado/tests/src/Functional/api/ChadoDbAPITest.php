@@ -8,7 +8,7 @@ use Drupal\Core\Database\Database;
 use Drupal\tripal_chado\api\ChadoSchema;
 
 /**
- * Testing the tripal_chado/api/tripal_chado.schema.api.inc functions.
+ * Testing the tripal_chado/api/tripal_chado.db.api.php functions.
  *
  * @group Tripal
  * @group Tripal Chado
@@ -16,7 +16,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
  */
 class ChadoDbAPITest extends BrowserTestBase {
 
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   /**
    * Modules to enable.
@@ -50,7 +50,7 @@ class ChadoDbAPITest extends BrowserTestBase {
 		$return = chado_insert_db($dbval, [], 'testchado');
 		$this->assertNotFalse($return, 'chado_insert_db failed unexpectedly.');
 		$this->assertIsObject($return, 'Should be an updated DB object.');
-		$this->assertObjectHasAttribute('db_id', $return,
+		$this->assertTrue(property_exists($return, 'db_id'),
 			"The returned object should have the primary key included.");
 		$this->assertEquals($dbval['name'], $return->name,
 			"The returned object should be the one we asked for.");
@@ -60,7 +60,7 @@ class ChadoDbAPITest extends BrowserTestBase {
 		$returnagain = chado_insert_db($dbval2, [], 'testchado');
 		$this->assertNotFalse($returnagain, 'chado_insert_db failed unexpectedly.');
 		$this->assertIsObject($returnagain, 'Should be an updated DB object.');
-		$this->assertObjectHasAttribute('db_id', $returnagain,
+		$this->assertTrue(property_exists($returnagain, 'db_id'),
 			"The returned object should have the primary key included.");
 		$this->assertEquals($dbval2['name'], $returnagain->name,
 			"The returned object should be the one we asked for.");
@@ -114,7 +114,7 @@ class ChadoDbAPITest extends BrowserTestBase {
 		$return = chado_insert_dbxref($dbxrefval, [], 'testchado');
 		$this->assertNotFalse($return, 'chado_insert_dbxref failed unexpectedly.');
 		$this->assertIsObject($return, 'Should be an updated Dbxref object.');
-		$this->assertObjectHasAttribute('dbxref_id', $return,
+		$this->assertTrue(property_exists($return, 'dbxref_id'),
 			"The returned object should have the primary key included.");
 		$this->assertEquals($dbxrefval['accession'], $return->accession,
 			"The returned object should be the one we asked for.");
@@ -122,7 +122,7 @@ class ChadoDbAPITest extends BrowserTestBase {
 		$returnagain = chado_insert_dbxref($dbxrefval, [], 'testchado');
 		$this->assertNotFalse($returnagain, 'chado_insert_dbxref failed unexpectedly.');
 		$this->assertIsObject($returnagain, 'Should be an updated Dbxref object.');
-		$this->assertObjectHasAttribute('dbxref_id', $returnagain,
+		$this->assertTrue(property_exists($returnagain, 'dbxref_id'),
 			"The returned object should have the primary key included.");
 			$this->assertEquals($dbxrefval['accession'], $return->accession,
 				"The returned object should be the one we asked for.");
@@ -148,7 +148,7 @@ class ChadoDbAPITest extends BrowserTestBase {
 		$return = chado_get_dbxref($dbxrefval, [], 'testchado');
 		$this->assertNotFalse($return, 'chado_get_dbxref failed unexpectedly.');
 		$this->assertIsObject($return, 'Should be an updated Dbxref object.');
-		$this->assertObjectHasAttribute('dbxref_id', $return,
+		$this->assertTrue(property_exists($return, 'dbxref_id'),
 			"The returned object should have the primary key included.");
 		$this->assertEquals($dbxrefval['accession'], $return->accession,
 			"The returned object should be the one we asked for.");

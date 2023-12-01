@@ -3,6 +3,7 @@
 namespace Drupal\tripal\TripalStorage\Interfaces;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\tripal\TripalField\TripalFieldItemBase;
 
 /**
  * Defines an interface for tripal storage plugins.
@@ -12,18 +13,22 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   /**
    * Adds the given array of new property types to this tripal storage plugin.
    *
+   * @param string $field_name
+   *   The name of the field the properties belong to.
    * @param array $types
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
    */
-  public function addTypes($types);
+  public function addTypes(string $field_name, array $types);
 
   /**
    * Removes the given array of property types from this tripal storage plugin.
    *
+   * @param string $field_name
+   *   The name of the field the properties belong to.
    * @param array $types
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
    */
-  public function removeTypes($types);
+  public function removeTypes(string $field_name, array $types);
 
   /**
    * Returns a list of all property types added to this storage plugin type.
@@ -36,6 +41,51 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   public function getTypes();
 
   /**
+   * Returns a single propertyType object based on the parameters.
+   *
+   * @param string $bundle_name
+   *   The name of the bundle on which the field is attached that the properties
+   *   belong to.
+   * @param string $field_name
+   *   The name of the field the properties belong to.
+   * @param string $key
+   *   The key of the property type to return.
+   * @return object
+   *   An instance of the propertyType indicated.
+   */
+  public function getPropertyType(string $field_name, string $key);
+
+  /**
+   * Stores the field definition for a given field.
+   *
+   * NOTE: the definition for every field mentioned in the values array
+   * of an insert/update/load/find/deleteValues() method must be added
+   * using this function before the *Values() method can be called.
+   *
+   * @param string $field_name
+   *   The name of the field based on it's annotation 'id'.
+   * @param object $field_definition
+   *   The field configuration object. This can be an instance of:
+   *   \Drupal\field\Entity\FieldStorageConfig or
+   *   \Drupal\field\Entity\FieldConfig
+   * @return boolean
+   *   Returns true if no errors were encountered and false otherwise.
+   */
+  public function addFieldDefinition(string $field_name, object $field_definition);
+
+  /**
+   * Retrieves the stored field definition of a given field.
+   *
+   * @param string $field_name
+   *   The name of the field based on it's annotation 'id'.
+   * @return object $field_definition
+   *   The field configuration object. This can be an instance of:
+   *   \Drupal\field\Entity\FieldStorageConfig or
+   *   \Drupal\field\Entity\FieldConfig
+   */
+  public function getFieldDefinition(string $field_name);
+
+  /**
    * Inserts values in the field data store.
    *
    * The record Ids of the inserted records will be set in the property
@@ -43,7 +93,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *
    * @param array $values
    *   Associative array 5-levels deep.
-   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 1st level is the field name (e.g. ChadoOrganismDefault).
    *   The 2nd level is the delta value (e.g. 0).
    *   The 3rd level is a field key name (i.e. record_id + value).
    *   The 4th level must contain the following three keys/value pairs
@@ -63,7 +113,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *
    * @param array $values
    *   Associative array 5-levels deep.
-   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 1st level is the field name (e.g. ChadoOrganismDefault).
    *   The 2nd level is the delta value (e.g. 0).
    *   The 3rd level is a field key name (i.e. record_id + value).
    *   The 4th level must contain the following three keys/value pairs
@@ -83,7 +133,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *
    * @param array $values
    *   Associative array 5-levels deep.
-   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 1st level is the field name (e.g. ChadoOrganismDefault).
    *   The 2nd level is the delta value (e.g. 0).
    *   The 3rd level is a field key name (i.e. record_id + value).
    *   The 4th level must contain the following three keys/value pairs

@@ -15,7 +15,7 @@ use Drupal\Core\Access\AccessResultForbidden;
  * @group Tripal Permissions
  */
 class EntityAccessTest extends BrowserTestBase {
-    protected $defaultTheme = 'stable';
+    protected $defaultTheme = 'stark';
 
     protected static $modules = ['tripal'];
 
@@ -53,6 +53,9 @@ class EntityAccessTest extends BrowserTestBase {
     // -- Content Type.
     $values = [];
     $values['label'] = 'Freddyopolis-' . uniqid();
+    $values['id'] = 'freddy';
+    $values['url_format'] = 'freddy/TripalEntity__entity_id';
+    $values['title_format'] = '[freddy_name]';
     $values['termIdSpace'] = 'FRED';
     $values['termAccession'] = '1g2h3j4k5';
     $values['help_text'] = 'This is just random text to meet the requirement of this field.';

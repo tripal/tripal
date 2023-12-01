@@ -2,10 +2,19 @@
 
 namespace Drupal\tripal\TripalStorage;
 
+
 /**
  * Base class for a Tripal storage property type or value.
  */
 class StoragePropertyBase {
+
+  /**
+   * The ID Space Plugin manager service.
+   * Note: Used to confirm the term passed in exists and to retrieve it.
+   *
+   * @var Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager
+   */
+  protected $idSpaceService;
 
   /**
    * Constructs a new Tripal storage property base object.
@@ -27,13 +36,24 @@ class StoragePropertyBase {
     $this->entityType = $entityType;
     $this->fieldType = $fieldType;
 
+    // Ideally we would use dependency injection to retrieve the idspace service
+    // but that is not available in a custom class like this one. Alternatively,
+    // we could pass the service into the constructor but as this class is inherited
+    // by many other classes and the constructor is used directly in fields,
+    // that would be a lot of work.
+    // Our approach: Manage the drupal container ourselves in this constructor.
+    // Try to get the current container... It should exist within a bootstrapped
+    // site (test or otherwise) and kernel tests.
+    // If it doesn't an exception is thrown here.
+    $container = \Drupal::getContainer();
+    $this->idSpaceService = $container->get('tripal.collection_plugin_manager.idspace');
+
     $matches = [];
     if (preg_match('/^(.+?):(.+)$/', $term_id, $matches)) {
       $this->termIdSpace = $matches[1];
       $this->termAccession = $matches[2];
 
-      $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-      $idspace = $idsmanager->loadCollection($this->termIdSpace);
+      $idspace = $this->idSpaceService->loadCollection($this->termIdSpace);
       if (!$idspace) {
         throw new \Exception('Cannot create a StorageProperty object as IdSpace for the property term is not recognized: ' . $term_id);
       }
@@ -43,8 +63,19 @@ class StoragePropertyBase {
       }
     }
     else {
-      throw new \Exception('Cannot create a StorageProperty object without a property formatted term: ' . $term_id);
+      throw new \Exception('Cannot create a StorageProperty object without a properly formatted term: ' . $term_id);
     }
+
+    // Ensure we have required values.
+    if (!$entityType) {
+	    throw new \Exception('Cannot create a StorageProperty object without specifying the entity type.');
+	  }
+    if (!$fieldType) {
+	    throw new \Exception('Cannot create a StorageProperty object without specifying the field that is using it.');
+	  }
+    if (!$key) {
+	    throw new \Exception('Cannot create a StorageProperty object without a key.');
+	  }
 
     // Drupal doesn't allow non alphanumeric characters in the key, so
     // remove any.
@@ -110,8 +141,7 @@ class StoragePropertyBase {
    *   The Tripal Controlled Vocabulary Term Object.
    */
   public function getTerm() {
-    $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idspace = $manager->loadCollection($this->termIdSpace);
+    $idspace = $this->idSpaceService->loadCollection($this->termIdSpace);
     return $idspace->getTerm($this->termAccession);
   }
 

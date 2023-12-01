@@ -14,6 +14,13 @@ class TripalJob {
    */
   protected $job = NULL;
 
+  /**
+   * An instance of the Drupal messenger.
+   *
+   * @var object \Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger = NULL;
+
 
   /**
    * The number of items that this importer needs to process. A progress
@@ -197,7 +204,7 @@ class TripalJob {
       }
     }
     if (!function_exists($details['callback'])) {
-      throw new \Exception("Must provide a valid callback function to the tripal_add_job() function.");
+      throw new \Exception("Must provide a valid callback function. You provided " . $details['callback'] . ".");
     }
     if (!is_numeric($details['uid'])) {
       throw new \Exception("Must provide a numeric \$uid argument to the tripal_add_job() function.");

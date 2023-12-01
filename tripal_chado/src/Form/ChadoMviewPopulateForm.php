@@ -35,7 +35,6 @@ class ChadoMviewPopulateForm extends FormBase {
     ];
 
     $form['sure'] = [
-      '#type' => 'markup',
       '#markup' => '<p>Please confirm you want to populate the "' . $mview->getTableName() .
       '" materialized view in the "' . $mview->getChadoSchema() . '" schema?</p>',
     ];

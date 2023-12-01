@@ -8,7 +8,7 @@ use Drupal\Core\Database\Database;
 use Drupal\tripal_chado\api\ChadoSchema;
 
 /**
- * Testing the tripal_chado/api/tripal_chado.schema.api.inc functions.
+ * Testing the tripal_chado/api/tripal_chado.schema.api.php functions.
  *
  * @group Tripal
  * @group Tripal Chado
@@ -17,7 +17,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
  */
 class SchemaAPITest extends BrowserTestBase {
 
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   /**
    * Modules to enable.

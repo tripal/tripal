@@ -28,9 +28,7 @@ class ChadoMview extends ChadoCustomTable {
 
     parent::__construct($table_name, $chado_schema);
 
-    $this->custom_table = NULL;
     $this->mview_id = NULL;
-
 
     if (!$table_name) {
       throw new \Exception('Please provide a value for the $table_name argument');

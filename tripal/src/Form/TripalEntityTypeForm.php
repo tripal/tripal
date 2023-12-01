@@ -23,20 +23,6 @@ class TripalEntityTypeForm extends EntityForm {
     $tripal_entity_type = $this->entity;
     $tripal_entity_type->setDefaults();
 
-    // Determine the machine name for the content type.
-    // Note, there may be some discrepancy here if others happen to be creating
-    // content types at the same time. Here we are making a prediction but
-    // the TripalEntityType->save() method will create the id at the time of
-    // saving, not based on what we provide it here.
-    if ($tripal_entity_type->isNew()) {
-      $config = \Drupal::config('tripal.settings');
-      $max_index = $config->get('tripal_entity_type.max_id');
-      $machine_name = 'bio_data_' . ($max_index + 1);
-    }
-    else {
-      $machine_name = $tripal_entity_type->id();
-    }
-
     // We need to choose a term if this is a new content type.
     // The term cannot be changed later!
     $term_autocomplete_default = '';
@@ -97,14 +83,18 @@ class TripalEntityTypeForm extends EntityForm {
       '#required' => TRUE,
     ];
 
-    $form['name'] = [
+    $form['id'] = [
       '#type' => 'machine_name',
-      '#default_value' => $machine_name,
+      '#default_value' => $tripal_entity_type->id(),
+      '#description' => $this->t('A unique name for this content type. It must only contain lowercase ' .
+          'letters, numbers, and underscores.'),
+      '#maxlength' => 64,
       '#required' => TRUE,
       '#machine_name' => [
         'exists' => '\Drupal\tripal\Entity\TripalEntityType::load',
       ],
-      '#disabled' => TRUE,
+      '#source' => 'label',
+      '#disabled' => !$tripal_entity_type->isNew(),
     ];
 
     $form['term'] = [
@@ -179,7 +169,6 @@ class TripalEntityTypeForm extends EntityForm {
     ];
 
     $form['title_settings']['tokens']['msg'] = [
-      '#type' => 'markup',
       '#markup' => 'Copy the token and paste it into the "Page Title Format" text field above.'
     ];
 
@@ -196,7 +185,7 @@ class TripalEntityTypeForm extends EntityForm {
     $form['url_settings']['msg'] = [
       '#type' => 'item',
       '#markup' => t('
-<p>hTe pattern below is used to specify the URL of content pages of this type. This allows you to present more friendly, informative URLs to your user.</p>
+<p>The pattern below is used to specify the URL of content pages of this type. This allows you to present more friendly, informative URLs to your user.</p>
 
 <p><strong>You must choose a combination of tokens that results in a unique path for each page!</strong></p>'),
     ];
@@ -214,7 +203,6 @@ class TripalEntityTypeForm extends EntityForm {
     ];
 
     $form['url_settings']['tokens']['msg'] = [
-      '#type' => 'markup',
       '#markup' => 'Copy the token and paste it into the "URL Alias Pattern" text field above.'
     ];
 
@@ -232,14 +220,17 @@ class TripalEntityTypeForm extends EntityForm {
     $values = $form_state->getValues();
     $tripal_entity_type = $this->entity;
 
-    // Ensure the label is not already taken.
-    $entities = \Drupal::entityTypeManager()
-      ->getStorage('tripal_entity_type')
-      ->loadByProperties(['label' => $values['label']]);
-    unset($entities[ $values['name'] ]);
-    if (!empty($entities)) {
-      $form_state->setErrorByName('label',
-        $this->t('A Tripal Content type with the label :label already exists. Please choose a unique label.', [':label' => $values['label']]));
+    if ($tripal_entity_type->getLabel() != $values['label']) {
+
+      // Ensure the label is not already taken.
+      $entities = \Drupal::entityTypeManager()
+        ->getStorage('tripal_entity_type')
+        ->loadByProperties(['label' => $values['label']]);
+      unset($entities[ $values['label'] ]);
+      if (!empty($entities)) {
+        $form_state->setErrorByName('label',
+          $this->t('A Tripal Content type with the label :label already exists. Please choose a unique label.', [':label' => $values['label']]));
+      }
     }
 
     $term_str = $form_state->getValue('term');
@@ -307,12 +298,14 @@ class TripalEntityTypeForm extends EntityForm {
     // Note: we have to reprocess the term ID Space + Accession because we can't
     // save what we learned in validate. We do not use an if around the preg_replace()
     // because in order to get here, this pattern has to work.
+    $matches = [];
     preg_match('/(.+?) \((.+?):(.+?)\)/', $values['term'], $matches);
     $idSpace = $matches[2];
     $accession = $matches[3];
 
     // Set the properties for the new Tripal Content Type
     // using those set in the form state.
+    $tripal_entity_type->setOriginalId($values['id']);
     $tripal_entity_type->setLabel($values['label']);
     $tripal_entity_type->setHelpText($values['help']);
     $tripal_entity_type->setTermIdSpace($idSpace);

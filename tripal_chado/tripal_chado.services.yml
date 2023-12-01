@@ -3,6 +3,9 @@ services:
   tripal_chado.database:
     class: Drupal\tripal_chado\Database\ChadoConnection
     arguments: ['']
+  tripal_chado.field_debugger:
+    class: Drupal\tripal_chado\Services\ChadoFieldDebugger
+    arguments: ['@tripal_chado.database', '@tripal.logger']
   tripal_chado.custom_tables:
     class: Drupal\tripal_chado\Services\ChadoCustomTableManager
   tripal_chado.materialized_views:

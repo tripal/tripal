@@ -241,4148 +241,4148 @@ COMMENT ON COLUMN public.tripal_entity.uid IS 'The ID of the target entity.';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_10_schema_comment (
+CREATE TABLE public.tripal_entity__phylotree_schema_comment (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_10_schema_comment_value text,
-    bio_data_10_schema_comment_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_10_schema_comment_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_10_schema_comment_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_10_schema_comment_revision_id_check CHECK ((revision_id >= 0))
+    phylotree_schema_comment_value text,
+    phylotree_schema_comment_record_id integer,
+    CONSTRAINT tripal_entity__phylotree_schema_comment_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__phylotree_schema_comment_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__phylotree_schema_comment_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_10_schema_comment OWNER TO drupal;
+ALTER TABLE public.tripal_entity__phylotree_schema_comment OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_10_schema_comment IS 'Data storage for tripal_entity field bio_data_10_schema_comment.';
+COMMENT ON TABLE public.tripal_entity__phylotree_schema_comment IS 'Data storage for tripal_entity field phylotree_schema_comment.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_comment.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_comment.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_comment.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_comment.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_comment.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_comment.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_comment.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_comment.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_comment.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_comment.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_comment.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_comment.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_10_schema_name (
+CREATE TABLE public.tripal_entity__phylotree_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_10_schema_name_value character varying(255),
-    bio_data_10_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_10_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_10_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_10_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    phylotree_schema_name_value character varying(255),
+    phylotree_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__phylotree_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__phylotree_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__phylotree_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_10_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__phylotree_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_10_schema_name IS 'Data storage for tripal_entity field bio_data_10_schema_name.';
+COMMENT ON TABLE public.tripal_entity__phylotree_schema_name IS 'Data storage for tripal_entity field phylotree_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_10_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__phylotree_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_11_schema_description (
+CREATE TABLE public.tripal_entity__physical_map_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_11_schema_description_value text,
-    bio_data_11_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_11_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_11_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_11_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    physical_map_schema_description_value text,
+    physical_map_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__physical_map_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__physical_map_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__physical_map_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_11_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__physical_map_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_11_schema_description IS 'Data storage for tripal_entity field bio_data_11_schema_description.';
+COMMENT ON TABLE public.tripal_entity__physical_map_schema_description IS 'Data storage for tripal_entity field physical_map_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_11_schema_name (
+CREATE TABLE public.tripal_entity__physical_map_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_11_schema_name_value character varying(255),
-    bio_data_11_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_11_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_11_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_11_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    physical_map_schema_name_value character varying(255),
+    physical_map_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__physical_map_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__physical_map_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__physical_map_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_11_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__physical_map_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_11_schema_name IS 'Data storage for tripal_entity field bio_data_11_schema_name.';
+COMMENT ON TABLE public.tripal_entity__physical_map_schema_name IS 'Data storage for tripal_entity field physical_map_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_11_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__physical_map_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_12_data_0842 (
+CREATE TABLE public.tripal_entity__dna_library_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_12_data_0842_value text,
-    bio_data_12_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_12_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_12_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_12_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    dna_library_data_0842_value text,
+    dna_library_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__dna_library_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__dna_library_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__dna_library_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_12_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__dna_library_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_12_data_0842 IS 'Data storage for tripal_entity field bio_data_12_data_0842.';
+COMMENT ON TABLE public.tripal_entity__dna_library_data_0842 IS 'Data storage for tripal_entity field dna_library_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__dna_library_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__dna_library_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__dna_library_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__dna_library_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__dna_library_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__dna_library_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_12_schema_name (
+CREATE TABLE public.tripal_entity__dna_library_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_12_schema_name_value character varying(255),
-    bio_data_12_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_12_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_12_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_12_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    dna_library_schema_name_value character varying(255),
+    dna_library_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__dna_library_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__dna_library_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__dna_library_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_12_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__dna_library_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_12_schema_name IS 'Data storage for tripal_entity field bio_data_12_schema_name.';
+COMMENT ON TABLE public.tripal_entity__dna_library_schema_name IS 'Data storage for tripal_entity field dna_library_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__dna_library_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__dna_library_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__dna_library_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__dna_library_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__dna_library_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_12_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__dna_library_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_13_data_1047 (
+CREATE TABLE public.tripal_entity__genome_assembly_data_1047 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_13_data_1047_value text,
-    bio_data_13_data_1047_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_13_data_1047_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_data_1047_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_data_1047_revision_id_check CHECK ((revision_id >= 0))
+    genome_assembly_data_1047_value text,
+    genome_assembly_data_1047_record_id integer,
+    CONSTRAINT tripal_entity__genome_assembly_data_1047_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_data_1047_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_data_1047_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_13_data_1047 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_assembly_data_1047 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_13_data_1047 IS 'Data storage for tripal_entity field bio_data_13_data_1047.';
+COMMENT ON TABLE public.tripal_entity__genome_assembly_data_1047 IS 'Data storage for tripal_entity field genome_assembly_data_1047.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_data_1047.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_data_1047.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_data_1047.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_data_1047.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_data_1047.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_data_1047.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_data_1047.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_data_1047.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_data_1047.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_data_1047.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_data_1047.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_data_1047.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_13_iao_0000064 (
+CREATE TABLE public.tripal_entity__genome_assembly_iao_0000064 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_13_iao_0000064_value character varying(255),
-    bio_data_13_iao_0000064_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_13_iao_0000064_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_iao_0000064_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_iao_0000064_revision_id_check CHECK ((revision_id >= 0))
+    genome_assembly_iao_0000064_value character varying(255),
+    genome_assembly_iao_0000064_record_id integer,
+    CONSTRAINT tripal_entity__genome_assembly_iao_0000064_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_iao_0000064_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_iao_0000064_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_13_iao_0000064 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_assembly_iao_0000064 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_13_iao_0000064 IS 'Data storage for tripal_entity field bio_data_13_iao_0000064.';
+COMMENT ON TABLE public.tripal_entity__genome_assembly_iao_0000064 IS 'Data storage for tripal_entity field genome_assembly_iao_0000064.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000064.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000064.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000064.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000064.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000064.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000064.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000064.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000064.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000064.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000064.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000064.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000064.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_13_iao_0000129 (
+CREATE TABLE public.tripal_entity__genome_assembly_iao_0000129 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_13_iao_0000129_value character varying(255),
-    bio_data_13_iao_0000129_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_13_iao_0000129_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_iao_0000129_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_iao_0000129_revision_id_check CHECK ((revision_id >= 0))
+    genome_assembly_iao_0000129_value character varying(255),
+    genome_assembly_iao_0000129_record_id integer,
+    CONSTRAINT tripal_entity__genome_assembly_iao_0000129_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_iao_0000129_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_iao_0000129_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_13_iao_0000129 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_assembly_iao_0000129 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_13_iao_0000129 IS 'Data storage for tripal_entity field bio_data_13_iao_0000129.';
+COMMENT ON TABLE public.tripal_entity__genome_assembly_iao_0000129 IS 'Data storage for tripal_entity field genome_assembly_iao_0000129.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000129.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000129.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000129.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000129.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000129.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000129.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000129.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000129.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000129.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000129.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_iao_0000129.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_iao_0000129.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_13_schema_description (
+CREATE TABLE public.tripal_entity__genome_assembly_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_13_schema_description_value text,
-    bio_data_13_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_13_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    genome_assembly_schema_description_value text,
+    genome_assembly_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__genome_assembly_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_13_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_assembly_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_13_schema_description IS 'Data storage for tripal_entity field bio_data_13_schema_description.';
+COMMENT ON TABLE public.tripal_entity__genome_assembly_schema_description IS 'Data storage for tripal_entity field genome_assembly_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_13_schema_name (
+CREATE TABLE public.tripal_entity__genome_assembly_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_13_schema_name_value character varying(255),
-    bio_data_13_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_13_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    genome_assembly_schema_name_value character varying(255),
+    genome_assembly_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__genome_assembly_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_13_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_assembly_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_13_schema_name IS 'Data storage for tripal_entity field bio_data_13_schema_name.';
+COMMENT ON TABLE public.tripal_entity__genome_assembly_schema_name IS 'Data storage for tripal_entity field genome_assembly_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_13_swo_0000001 (
+CREATE TABLE public.tripal_entity__genome_assembly_swo_0000001 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_13_swo_0000001_value character varying(255),
-    bio_data_13_swo_0000001_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_13_swo_0000001_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_swo_0000001_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_13_swo_0000001_revision_id_check CHECK ((revision_id >= 0))
+    genome_assembly_swo_0000001_value character varying(255),
+    genome_assembly_swo_0000001_record_id integer,
+    CONSTRAINT tripal_entity__genome_assembly_swo_0000001_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_swo_0000001_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_assembly_swo_0000001_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_13_swo_0000001 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_assembly_swo_0000001 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_13_swo_0000001 IS 'Data storage for tripal_entity field bio_data_13_swo_0000001.';
+COMMENT ON TABLE public.tripal_entity__genome_assembly_swo_0000001 IS 'Data storage for tripal_entity field genome_assembly_swo_0000001.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_swo_0000001.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_swo_0000001.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_swo_0000001.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_swo_0000001.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_swo_0000001.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_swo_0000001.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_swo_0000001.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_swo_0000001.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_swo_0000001.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_swo_0000001.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_13_swo_0000001.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_assembly_swo_0000001.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_14_data_1047 (
+CREATE TABLE public.tripal_entity__genome_annotation_data_1047 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_14_data_1047_value text,
-    bio_data_14_data_1047_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_14_data_1047_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_data_1047_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_data_1047_revision_id_check CHECK ((revision_id >= 0))
+    genome_annotation_data_1047_value text,
+    genome_annotation_data_1047_record_id integer,
+    CONSTRAINT tripal_entity__genome_annotation_data_1047_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_data_1047_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_data_1047_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_14_data_1047 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_annotation_data_1047 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_14_data_1047 IS 'Data storage for tripal_entity field bio_data_14_data_1047.';
+COMMENT ON TABLE public.tripal_entity__genome_annotation_data_1047 IS 'Data storage for tripal_entity field genome_annotation_data_1047.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_data_1047.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_data_1047.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_data_1047.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_data_1047.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_data_1047.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_data_1047.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_data_1047.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_data_1047.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_data_1047.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_data_1047.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_data_1047.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_data_1047.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_14_iao_0000064 (
+CREATE TABLE public.tripal_entity__genome_annotation_iao_0000064 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_14_iao_0000064_value character varying(255),
-    bio_data_14_iao_0000064_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_14_iao_0000064_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_iao_0000064_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_iao_0000064_revision_id_check CHECK ((revision_id >= 0))
+    genome_annotation_iao_0000064_value character varying(255),
+    genome_annotation_iao_0000064_record_id integer,
+    CONSTRAINT tripal_entity__genome_annotation_iao_0000064_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_iao_0000064_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_iao_0000064_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_14_iao_0000064 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_annotation_iao_0000064 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_14_iao_0000064 IS 'Data storage for tripal_entity field bio_data_14_iao_0000064.';
+COMMENT ON TABLE public.tripal_entity__genome_annotation_iao_0000064 IS 'Data storage for tripal_entity field genome_annotation_iao_0000064.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000064.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000064.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000064.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000064.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000064.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000064.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000064.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000064.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000064.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000064.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000064.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000064.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_14_iao_0000129 (
+CREATE TABLE public.tripal_entity__genome_annotation_iao_0000129 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_14_iao_0000129_value character varying(255),
-    bio_data_14_iao_0000129_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_14_iao_0000129_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_iao_0000129_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_iao_0000129_revision_id_check CHECK ((revision_id >= 0))
+    genome_annotation_iao_0000129_value character varying(255),
+    genome_annotation_iao_0000129_record_id integer,
+    CONSTRAINT tripal_entity__genome_annotation_iao_0000129_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_iao_0000129_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_iao_0000129_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_14_iao_0000129 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_annotation_iao_0000129 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_14_iao_0000129 IS 'Data storage for tripal_entity field bio_data_14_iao_0000129.';
+COMMENT ON TABLE public.tripal_entity__genome_annotation_iao_0000129 IS 'Data storage for tripal_entity field genome_annotation_iao_0000129.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000129.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000129.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000129.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000129.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000129.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000129.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000129.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000129.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000129.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000129.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_iao_0000129.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_iao_0000129.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_14_schema_description (
+CREATE TABLE public.tripal_entity__genome_annotation_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_14_schema_description_value text,
-    bio_data_14_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_14_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    genome_annotation_schema_description_value text,
+    genome_annotation_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__genome_annotation_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_14_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_annotation_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_14_schema_description IS 'Data storage for tripal_entity field bio_data_14_schema_description.';
+COMMENT ON TABLE public.tripal_entity__genome_annotation_schema_description IS 'Data storage for tripal_entity field genome_annotation_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_14_schema_name (
+CREATE TABLE public.tripal_entity__genome_annotation_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_14_schema_name_value character varying(255),
-    bio_data_14_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_14_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    genome_annotation_schema_name_value character varying(255),
+    genome_annotation_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__genome_annotation_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_14_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_annotation_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_14_schema_name IS 'Data storage for tripal_entity field bio_data_14_schema_name.';
+COMMENT ON TABLE public.tripal_entity__genome_annotation_schema_name IS 'Data storage for tripal_entity field genome_annotation_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_14_swo_0000001 (
+CREATE TABLE public.tripal_entity__genome_annotation_swo_0000001 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_14_swo_0000001_value character varying(255),
-    bio_data_14_swo_0000001_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_14_swo_0000001_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_swo_0000001_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_14_swo_0000001_revision_id_check CHECK ((revision_id >= 0))
+    genome_annotation_swo_0000001_value character varying(255),
+    genome_annotation_swo_0000001_record_id integer,
+    CONSTRAINT tripal_entity__genome_annotation_swo_0000001_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_swo_0000001_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_annotation_swo_0000001_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_14_swo_0000001 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_annotation_swo_0000001 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_14_swo_0000001 IS 'Data storage for tripal_entity field bio_data_14_swo_0000001.';
+COMMENT ON TABLE public.tripal_entity__genome_annotation_swo_0000001 IS 'Data storage for tripal_entity field genome_annotation_swo_0000001.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_swo_0000001.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_swo_0000001.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_swo_0000001.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_swo_0000001.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_swo_0000001.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_swo_0000001.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_swo_0000001.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_swo_0000001.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_swo_0000001.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_swo_0000001.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_14_swo_0000001.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_annotation_swo_0000001.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_15_schema_description (
+CREATE TABLE public.tripal_entity__genome_project_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_15_schema_description_value text,
-    bio_data_15_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_15_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_15_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_15_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    genome_project_schema_description_value text,
+    genome_project_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__genome_project_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_project_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_project_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_15_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_project_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_15_schema_description IS 'Data storage for tripal_entity field bio_data_15_schema_description.';
+COMMENT ON TABLE public.tripal_entity__genome_project_schema_description IS 'Data storage for tripal_entity field genome_project_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_15_schema_name (
+CREATE TABLE public.tripal_entity__genome_project_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_15_schema_name_value character varying(255),
-    bio_data_15_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_15_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_15_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_15_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    genome_project_schema_name_value character varying(255),
+    genome_project_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__genome_project_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genome_project_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genome_project_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_15_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genome_project_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_15_schema_name IS 'Data storage for tripal_entity field bio_data_15_schema_name.';
+COMMENT ON TABLE public.tripal_entity__genome_project_schema_name IS 'Data storage for tripal_entity field genome_project_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_15_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genome_project_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_16_schema_description (
+CREATE TABLE public.tripal_entity__genetic_map_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_16_schema_description_value text,
-    bio_data_16_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_16_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_16_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_16_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    genetic_map_schema_description_value text,
+    genetic_map_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__genetic_map_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genetic_map_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genetic_map_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_16_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genetic_map_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_16_schema_description IS 'Data storage for tripal_entity field bio_data_16_schema_description.';
+COMMENT ON TABLE public.tripal_entity__genetic_map_schema_description IS 'Data storage for tripal_entity field genetic_map_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_16_schema_name (
+CREATE TABLE public.tripal_entity__genetic_map_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_16_schema_name_value character varying(255),
-    bio_data_16_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_16_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_16_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_16_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    genetic_map_schema_name_value character varying(255),
+    genetic_map_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__genetic_map_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genetic_map_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genetic_map_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_16_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genetic_map_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_16_schema_name IS 'Data storage for tripal_entity field bio_data_16_schema_name.';
+COMMENT ON TABLE public.tripal_entity__genetic_map_schema_name IS 'Data storage for tripal_entity field genetic_map_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_16_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genetic_map_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_17_data_0842 (
+CREATE TABLE public.tripal_entity__QTL_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_17_data_0842_value text,
-    bio_data_17_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_17_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_17_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_17_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    QTL_data_0842_value text,
+    QTL_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__QTL_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__QTL_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__QTL_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_17_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__QTL_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_17_data_0842 IS 'Data storage for tripal_entity field bio_data_17_data_0842.';
+COMMENT ON TABLE public.tripal_entity__QTL_data_0842 IS 'Data storage for tripal_entity field QTL_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_17_data_1249 (
+CREATE TABLE public.tripal_entity__QTL_data_1249 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_17_data_1249_value integer,
-    bio_data_17_data_1249_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_17_data_1249_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_17_data_1249_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_17_data_1249_revision_id_check CHECK ((revision_id >= 0))
+    QTL_data_1249_value integer,
+    QTL_data_1249_record_id integer,
+    CONSTRAINT tripal_entity__QTL_data_1249_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__QTL_data_1249_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__QTL_data_1249_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_17_data_1249 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__QTL_data_1249 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_17_data_1249 IS 'Data storage for tripal_entity field bio_data_17_data_1249.';
+COMMENT ON TABLE public.tripal_entity__QTL_data_1249 IS 'Data storage for tripal_entity field QTL_data_1249.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_1249.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_1249.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_1249.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_1249.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_17_data_2044 (
+CREATE TABLE public.tripal_entity__QTL_data_2044 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_17_data_2044_value text,
-    bio_data_17_data_2044_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_17_data_2044_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_17_data_2044_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_17_data_2044_revision_id_check CHECK ((revision_id >= 0))
+    QTL_data_2044_value text,
+    QTL_data_2044_record_id integer,
+    CONSTRAINT tripal_entity__QTL_data_2044_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__QTL_data_2044_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__QTL_data_2044_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_17_data_2044 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__QTL_data_2044 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_17_data_2044 IS 'Data storage for tripal_entity field bio_data_17_data_2044.';
+COMMENT ON TABLE public.tripal_entity__QTL_data_2044 IS 'Data storage for tripal_entity field QTL_data_2044.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_2044.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_2044.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_2044.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_2044.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__QTL_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_17_schema_name (
+CREATE TABLE public.tripal_entity__QTL_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_17_schema_name_value character varying(255),
-    bio_data_17_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_17_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_17_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_17_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    QTL_schema_name_value character varying(255),
+    QTL_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__QTL_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__QTL_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__QTL_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_17_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__QTL_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_17_schema_name IS 'Data storage for tripal_entity field bio_data_17_schema_name.';
+COMMENT ON TABLE public.tripal_entity__QTL_schema_name IS 'Data storage for tripal_entity field QTL_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__QTL_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__QTL_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__QTL_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__QTL_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__QTL_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_17_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__QTL_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_18_data_0842 (
+CREATE TABLE public.tripal_entity__sequence_variant_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_18_data_0842_value text,
-    bio_data_18_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_18_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_18_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_18_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    sequence_variant_data_0842_value text,
+    sequence_variant_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__sequence_variant_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__sequence_variant_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__sequence_variant_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_18_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__sequence_variant_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_18_data_0842 IS 'Data storage for tripal_entity field bio_data_18_data_0842.';
+COMMENT ON TABLE public.tripal_entity__sequence_variant_data_0842 IS 'Data storage for tripal_entity field sequence_variant_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_18_data_1249 (
+CREATE TABLE public.tripal_entity__sequence_variant_data_1249 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_18_data_1249_value integer,
-    bio_data_18_data_1249_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_18_data_1249_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_18_data_1249_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_18_data_1249_revision_id_check CHECK ((revision_id >= 0))
+    sequence_variant_data_1249_value integer,
+    sequence_variant_data_1249_record_id integer,
+    CONSTRAINT tripal_entity__sequence_variant_data_1249_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__sequence_variant_data_1249_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__sequence_variant_data_1249_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_18_data_1249 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__sequence_variant_data_1249 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_18_data_1249 IS 'Data storage for tripal_entity field bio_data_18_data_1249.';
+COMMENT ON TABLE public.tripal_entity__sequence_variant_data_1249 IS 'Data storage for tripal_entity field sequence_variant_data_1249.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_1249.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_1249.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_1249.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_1249.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_18_data_2044 (
+CREATE TABLE public.tripal_entity__sequence_variant_data_2044 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_18_data_2044_value text,
-    bio_data_18_data_2044_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_18_data_2044_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_18_data_2044_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_18_data_2044_revision_id_check CHECK ((revision_id >= 0))
+    sequence_variant_data_2044_value text,
+    sequence_variant_data_2044_record_id integer,
+    CONSTRAINT tripal_entity__sequence_variant_data_2044_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__sequence_variant_data_2044_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__sequence_variant_data_2044_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_18_data_2044 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__sequence_variant_data_2044 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_18_data_2044 IS 'Data storage for tripal_entity field bio_data_18_data_2044.';
+COMMENT ON TABLE public.tripal_entity__sequence_variant_data_2044 IS 'Data storage for tripal_entity field sequence_variant_data_2044.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_2044.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_2044.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_2044.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_2044.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_18_schema_name (
+CREATE TABLE public.tripal_entity__sequence_variant_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_18_schema_name_value character varying(255),
-    bio_data_18_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_18_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_18_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_18_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    sequence_variant_schema_name_value character varying(255),
+    sequence_variant_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__sequence_variant_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__sequence_variant_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__sequence_variant_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_18_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__sequence_variant_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_18_schema_name IS 'Data storage for tripal_entity field bio_data_18_schema_name.';
+COMMENT ON TABLE public.tripal_entity__sequence_variant_schema_name IS 'Data storage for tripal_entity field sequence_variant_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_18_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__sequence_variant_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_19_data_0842 (
+CREATE TABLE public.tripal_entity__genetic_marker_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_19_data_0842_value text,
-    bio_data_19_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_19_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_19_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_19_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    genetic_marker_data_0842_value text,
+    genetic_marker_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__genetic_marker_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genetic_marker_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genetic_marker_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_19_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genetic_marker_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_19_data_0842 IS 'Data storage for tripal_entity field bio_data_19_data_0842.';
+COMMENT ON TABLE public.tripal_entity__genetic_marker_data_0842 IS 'Data storage for tripal_entity field genetic_marker_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_19_data_1249 (
+CREATE TABLE public.tripal_entity__genetic_marker_data_1249 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_19_data_1249_value integer,
-    bio_data_19_data_1249_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_19_data_1249_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_19_data_1249_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_19_data_1249_revision_id_check CHECK ((revision_id >= 0))
+    genetic_marker_data_1249_value integer,
+    genetic_marker_data_1249_record_id integer,
+    CONSTRAINT tripal_entity__genetic_marker_data_1249_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genetic_marker_data_1249_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genetic_marker_data_1249_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_19_data_1249 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genetic_marker_data_1249 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_19_data_1249 IS 'Data storage for tripal_entity field bio_data_19_data_1249.';
+COMMENT ON TABLE public.tripal_entity__genetic_marker_data_1249 IS 'Data storage for tripal_entity field genetic_marker_data_1249.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_1249.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_1249.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_1249.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_1249.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_19_data_2044 (
+CREATE TABLE public.tripal_entity__genetic_marker_data_2044 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_19_data_2044_value text,
-    bio_data_19_data_2044_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_19_data_2044_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_19_data_2044_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_19_data_2044_revision_id_check CHECK ((revision_id >= 0))
+    genetic_marker_data_2044_value text,
+    genetic_marker_data_2044_record_id integer,
+    CONSTRAINT tripal_entity__genetic_marker_data_2044_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genetic_marker_data_2044_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genetic_marker_data_2044_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_19_data_2044 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genetic_marker_data_2044 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_19_data_2044 IS 'Data storage for tripal_entity field bio_data_19_data_2044.';
+COMMENT ON TABLE public.tripal_entity__genetic_marker_data_2044 IS 'Data storage for tripal_entity field genetic_marker_data_2044.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_2044.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_2044.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_2044.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_2044.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_19_schema_name (
+CREATE TABLE public.tripal_entity__genetic_marker_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_19_schema_name_value character varying(255),
-    bio_data_19_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_19_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_19_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_19_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    genetic_marker_schema_name_value character varying(255),
+    genetic_marker_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__genetic_marker_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__genetic_marker_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__genetic_marker_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_19_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__genetic_marker_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_19_schema_name IS 'Data storage for tripal_entity field bio_data_19_schema_name.';
+COMMENT ON TABLE public.tripal_entity__genetic_marker_schema_name IS 'Data storage for tripal_entity field genetic_marker_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_19_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__genetic_marker_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_1_local_abbreviation (
+CREATE TABLE public.tripal_entity__organism_local_abbreviation (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_1_local_abbreviation_value character varying(255),
-    bio_data_1_local_abbreviation_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_1_local_abbreviation_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_local_abbreviation_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_local_abbreviation_revision_id_check CHECK ((revision_id >= 0))
+    organism_local_abbreviation_value character varying(255),
+    organism_local_abbreviation_record_id integer,
+    CONSTRAINT tripal_entity__organism_local_abbreviation_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__organism_local_abbreviation_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__organism_local_abbreviation_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_1_local_abbreviation OWNER TO drupal;
+ALTER TABLE public.tripal_entity__organism_local_abbreviation OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_1_local_abbreviation IS 'Data storage for tripal_entity field bio_data_1_local_abbreviation.';
+COMMENT ON TABLE public.tripal_entity__organism_local_abbreviation IS 'Data storage for tripal_entity field organism_local_abbreviation.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_local_abbreviation.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__organism_local_abbreviation.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_local_abbreviation.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__organism_local_abbreviation.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_local_abbreviation.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__organism_local_abbreviation.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_local_abbreviation.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__organism_local_abbreviation.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_local_abbreviation.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__organism_local_abbreviation.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_local_abbreviation.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__organism_local_abbreviation.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_1_ncbitaxon_common_name (
+CREATE TABLE public.tripal_entity__organism_ncbitaxon_common_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_1_ncbitaxon_common_name_value character varying(255),
-    bio_data_1_ncbitaxon_common_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_1_ncbitaxon_common_na_revision_id_check CHECK ((revision_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_ncbitaxon_common_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_ncbitaxon_common_name_entity_id_check CHECK ((entity_id >= 0))
+    organism_ncbitaxon_common_name_value character varying(255),
+    organism_ncbitaxon_common_name_record_id integer,
+    CONSTRAINT tripal_entity__organism_ncbitaxon_common_na_revision_id_check CHECK ((revision_id >= 0)),
+    CONSTRAINT tripal_entity__organism_ncbitaxon_common_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__organism_ncbitaxon_common_name_entity_id_check CHECK ((entity_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_1_ncbitaxon_common_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__organism_ncbitaxon_common_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_1_ncbitaxon_common_name IS 'Data storage for tripal_entity field bio_data_1_ncbitaxon_common_name.';
+COMMENT ON TABLE public.tripal_entity__organism_ncbitaxon_common_name IS 'Data storage for tripal_entity field organism_ncbitaxon_common_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_ncbitaxon_common_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__organism_ncbitaxon_common_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_ncbitaxon_common_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__organism_ncbitaxon_common_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_ncbitaxon_common_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__organism_ncbitaxon_common_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_ncbitaxon_common_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__organism_ncbitaxon_common_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_ncbitaxon_common_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__organism_ncbitaxon_common_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_ncbitaxon_common_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__organism_ncbitaxon_common_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_1_schema_description (
+CREATE TABLE public.tripal_entity__organism_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_1_schema_description_value text,
-    bio_data_1_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_1_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    organism_schema_description_value text,
+    organism_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__organism_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__organism_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__organism_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_1_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__organism_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_1_schema_description IS 'Data storage for tripal_entity field bio_data_1_schema_description.';
+COMMENT ON TABLE public.tripal_entity__organism_schema_description IS 'Data storage for tripal_entity field organism_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__organism_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__organism_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__organism_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__organism_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__organism_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__organism_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_1_taxrank_0000005 (
+CREATE TABLE public.tripal_entity__organism_taxrank_0000005 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_1_taxrank_0000005_value character varying(255),
-    bio_data_1_taxrank_0000005_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_1_taxrank_0000005_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_taxrank_0000005_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_taxrank_0000005_revision_id_check CHECK ((revision_id >= 0))
+    organism_taxrank_0000005_value character varying(255),
+    organism_taxrank_0000005_record_id integer,
+    CONSTRAINT tripal_entity__organism_taxrank_0000005_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__organism_taxrank_0000005_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__organism_taxrank_0000005_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_1_taxrank_0000005 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__organism_taxrank_0000005 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_1_taxrank_0000005 IS 'Data storage for tripal_entity field bio_data_1_taxrank_0000005.';
+COMMENT ON TABLE public.tripal_entity__organism_taxrank_0000005 IS 'Data storage for tripal_entity field organism_taxrank_0000005.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000005.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000005.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000005.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000005.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000005.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000005.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000005.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000005.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000005.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000005.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000005.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000005.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_1_taxrank_0000006 (
+CREATE TABLE public.tripal_entity__organism_taxrank_0000006 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_1_taxrank_0000006_value character varying(255),
-    bio_data_1_taxrank_0000006_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_1_taxrank_0000006_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_taxrank_0000006_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_taxrank_0000006_revision_id_check CHECK ((revision_id >= 0))
+    organism_taxrank_0000006_value character varying(255),
+    organism_taxrank_0000006_record_id integer,
+    CONSTRAINT tripal_entity__organism_taxrank_0000006_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__organism_taxrank_0000006_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__organism_taxrank_0000006_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_1_taxrank_0000006 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__organism_taxrank_0000006 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_1_taxrank_0000006 IS 'Data storage for tripal_entity field bio_data_1_taxrank_0000006.';
+COMMENT ON TABLE public.tripal_entity__organism_taxrank_0000006 IS 'Data storage for tripal_entity field organism_taxrank_0000006.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000006.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000006.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000006.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000006.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000006.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000006.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000006.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000006.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000006.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000006.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000006.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000006.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_1_taxrank_0000045 (
+CREATE TABLE public.tripal_entity__organism_taxrank_0000045 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_1_taxrank_0000045_value character varying(1024),
-    bio_data_1_taxrank_0000045_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_1_taxrank_0000045_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_taxrank_0000045_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_1_taxrank_0000045_revision_id_check CHECK ((revision_id >= 0))
+    organism_taxrank_0000045_value character varying(1024),
+    organism_taxrank_0000045_record_id integer,
+    CONSTRAINT tripal_entity__organism_taxrank_0000045_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__organism_taxrank_0000045_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__organism_taxrank_0000045_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_1_taxrank_0000045 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__organism_taxrank_0000045 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_1_taxrank_0000045 IS 'Data storage for tripal_entity field bio_data_1_taxrank_0000045.';
+COMMENT ON TABLE public.tripal_entity__organism_taxrank_0000045 IS 'Data storage for tripal_entity field organism_taxrank_0000045.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000045.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000045.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000045.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000045.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000045.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000045.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000045.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000045.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000045.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000045.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_1_taxrank_0000045.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__organism_taxrank_0000045.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_20_data_0842 (
+CREATE TABLE public.tripal_entity__phenotypic_marker_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_20_data_0842_value text,
-    bio_data_20_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_20_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_20_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_20_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    phenotypic_marker_data_0842_value text,
+    phenotypic_marker_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__phenotypic_marker_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__phenotypic_marker_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__phenotypic_marker_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_20_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__phenotypic_marker_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_20_data_0842 IS 'Data storage for tripal_entity field bio_data_20_data_0842.';
+COMMENT ON TABLE public.tripal_entity__phenotypic_marker_data_0842 IS 'Data storage for tripal_entity field phenotypic_marker_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_20_data_1249 (
+CREATE TABLE public.tripal_entity__phenotypic_marker_data_1249 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_20_data_1249_value integer,
-    bio_data_20_data_1249_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_20_data_1249_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_20_data_1249_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_20_data_1249_revision_id_check CHECK ((revision_id >= 0))
+    phenotypic_marker_data_1249_value integer,
+    phenotypic_marker_data_1249_record_id integer,
+    CONSTRAINT tripal_entity__phenotypic_marker_data_1249_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__phenotypic_marker_data_1249_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__phenotypic_marker_data_1249_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_20_data_1249 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__phenotypic_marker_data_1249 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_20_data_1249 IS 'Data storage for tripal_entity field bio_data_20_data_1249.';
+COMMENT ON TABLE public.tripal_entity__phenotypic_marker_data_1249 IS 'Data storage for tripal_entity field phenotypic_marker_data_1249.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_1249.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_1249.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_1249.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_1249.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_20_data_2044 (
+CREATE TABLE public.tripal_entity__phenotypic_marker_data_2044 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_20_data_2044_value text,
-    bio_data_20_data_2044_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_20_data_2044_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_20_data_2044_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_20_data_2044_revision_id_check CHECK ((revision_id >= 0))
+    phenotypic_marker_data_2044_value text,
+    phenotypic_marker_data_2044_record_id integer,
+    CONSTRAINT tripal_entity__phenotypic_marker_data_2044_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__phenotypic_marker_data_2044_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__phenotypic_marker_data_2044_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_20_data_2044 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__phenotypic_marker_data_2044 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_20_data_2044 IS 'Data storage for tripal_entity field bio_data_20_data_2044.';
+COMMENT ON TABLE public.tripal_entity__phenotypic_marker_data_2044 IS 'Data storage for tripal_entity field phenotypic_marker_data_2044.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_2044.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_2044.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_2044.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_2044.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_20_schema_name (
+CREATE TABLE public.tripal_entity__phenotypic_marker_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_20_schema_name_value character varying(255),
-    bio_data_20_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_20_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_20_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_20_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    phenotypic_marker_schema_name_value character varying(255),
+    phenotypic_marker_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__phenotypic_marker_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__phenotypic_marker_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__phenotypic_marker_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_20_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__phenotypic_marker_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_20_schema_name IS 'Data storage for tripal_entity field bio_data_20_schema_name.';
+COMMENT ON TABLE public.tripal_entity__phenotypic_marker_schema_name IS 'Data storage for tripal_entity field phenotypic_marker_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_20_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__phenotypic_marker_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_21_data_0842 (
+CREATE TABLE public.tripal_entity__germplasm_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_21_data_0842_value text,
-    bio_data_21_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_21_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_21_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_21_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    germplasm_data_0842_value text,
+    germplasm_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__germplasm_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__germplasm_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__germplasm_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_21_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__germplasm_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_21_data_0842 IS 'Data storage for tripal_entity field bio_data_21_data_0842.';
+COMMENT ON TABLE public.tripal_entity__germplasm_data_0842 IS 'Data storage for tripal_entity field germplasm_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__germplasm_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__germplasm_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__germplasm_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__germplasm_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__germplasm_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__germplasm_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_21_schema_description (
+CREATE TABLE public.tripal_entity__germplasm_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_21_schema_description_value text,
-    bio_data_21_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_21_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_21_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_21_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    germplasm_schema_description_value text,
+    germplasm_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__germplasm_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__germplasm_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__germplasm_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_21_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__germplasm_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_21_schema_description IS 'Data storage for tripal_entity field bio_data_21_schema_description.';
+COMMENT ON TABLE public.tripal_entity__germplasm_schema_description IS 'Data storage for tripal_entity field germplasm_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_21_schema_name (
+CREATE TABLE public.tripal_entity__germplasm_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_21_schema_name_value character varying(255),
-    bio_data_21_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_21_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_21_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_21_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    germplasm_schema_name_value character varying(255),
+    germplasm_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__germplasm_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__germplasm_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__germplasm_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_21_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__germplasm_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_21_schema_name IS 'Data storage for tripal_entity field bio_data_21_schema_name.';
+COMMENT ON TABLE public.tripal_entity__germplasm_schema_name IS 'Data storage for tripal_entity field germplasm_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_21_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__germplasm_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_22_data_0842 (
+CREATE TABLE public.tripal_entity__breeding_cross_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_22_data_0842_value text,
-    bio_data_22_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_22_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_22_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_22_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    breeding_cross_data_0842_value text,
+    breeding_cross_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__breeding_cross_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__breeding_cross_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__breeding_cross_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_22_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__breeding_cross_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_22_data_0842 IS 'Data storage for tripal_entity field bio_data_22_data_0842.';
+COMMENT ON TABLE public.tripal_entity__breeding_cross_data_0842 IS 'Data storage for tripal_entity field breeding_cross_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_22_schema_description (
+CREATE TABLE public.tripal_entity__breeding_cross_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_22_schema_description_value text,
-    bio_data_22_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_22_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_22_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_22_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    breeding_cross_schema_description_value text,
+    breeding_cross_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__breeding_cross_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__breeding_cross_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__breeding_cross_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_22_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__breeding_cross_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_22_schema_description IS 'Data storage for tripal_entity field bio_data_22_schema_description.';
+COMMENT ON TABLE public.tripal_entity__breeding_cross_schema_description IS 'Data storage for tripal_entity field breeding_cross_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_22_schema_name (
+CREATE TABLE public.tripal_entity__breeding_cross_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_22_schema_name_value character varying(255),
-    bio_data_22_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_22_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_22_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_22_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    breeding_cross_schema_name_value character varying(255),
+    breeding_cross_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__breeding_cross_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__breeding_cross_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__breeding_cross_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_22_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__breeding_cross_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_22_schema_name IS 'Data storage for tripal_entity field bio_data_22_schema_name.';
+COMMENT ON TABLE public.tripal_entity__breeding_cross_schema_name IS 'Data storage for tripal_entity field breeding_cross_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_22_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__breeding_cross_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_23_data_0842 (
+CREATE TABLE public.tripal_entity__germplasm_variety_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_23_data_0842_value text,
-    bio_data_23_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_23_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_23_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_23_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    germplasm_variety_data_0842_value text,
+    germplasm_variety_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__germplasm_variety_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__germplasm_variety_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__germplasm_variety_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_23_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__germplasm_variety_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_23_data_0842 IS 'Data storage for tripal_entity field bio_data_23_data_0842.';
+COMMENT ON TABLE public.tripal_entity__germplasm_variety_data_0842 IS 'Data storage for tripal_entity field germplasm_variety_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_23_schema_description (
+CREATE TABLE public.tripal_entity__germplasm_variety_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_23_schema_description_value text,
-    bio_data_23_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_23_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_23_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_23_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    germplasm_variety_schema_description_value text,
+    germplasm_variety_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__germplasm_variety_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__germplasm_variety_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__germplasm_variety_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_23_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__germplasm_variety_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_23_schema_description IS 'Data storage for tripal_entity field bio_data_23_schema_description.';
+COMMENT ON TABLE public.tripal_entity__germplasm_variety_schema_description IS 'Data storage for tripal_entity field germplasm_variety_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_23_schema_name (
+CREATE TABLE public.tripal_entity__germplasm_variety_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_23_schema_name_value character varying(255),
-    bio_data_23_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_23_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_23_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_23_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    germplasm_variety_schema_name_value character varying(255),
+    germplasm_variety_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__germplasm_variety_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__germplasm_variety_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__germplasm_variety_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_23_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__germplasm_variety_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_23_schema_name IS 'Data storage for tripal_entity field bio_data_23_schema_name.';
+COMMENT ON TABLE public.tripal_entity__germplasm_variety_schema_name IS 'Data storage for tripal_entity field germplasm_variety_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_23_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__germplasm_variety_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_24_data_0842 (
+CREATE TABLE public.tripal_entity__RIL_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_24_data_0842_value text,
-    bio_data_24_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_24_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_24_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_24_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    RIL_data_0842_value text,
+    RIL_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__RIL_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__RIL_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__RIL_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_24_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__RIL_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_24_data_0842 IS 'Data storage for tripal_entity field bio_data_24_data_0842.';
+COMMENT ON TABLE public.tripal_entity__RIL_data_0842 IS 'Data storage for tripal_entity field RIL_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__RIL_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__RIL_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__RIL_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__RIL_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__RIL_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__RIL_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_24_schema_description (
+CREATE TABLE public.tripal_entity__RIL_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_24_schema_description_value text,
-    bio_data_24_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_24_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_24_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_24_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    RIL_schema_description_value text,
+    RIL_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__RIL_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__RIL_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__RIL_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_24_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__RIL_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_24_schema_description IS 'Data storage for tripal_entity field bio_data_24_schema_description.';
+COMMENT ON TABLE public.tripal_entity__RIL_schema_description IS 'Data storage for tripal_entity field RIL_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_24_schema_name (
+CREATE TABLE public.tripal_entity__RIL_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_24_schema_name_value character varying(255),
-    bio_data_24_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_24_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_24_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_24_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    RIL_schema_name_value character varying(255),
+    RIL_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__RIL_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__RIL_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__RIL_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_24_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__RIL_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_24_schema_name IS 'Data storage for tripal_entity field bio_data_24_schema_name.';
+COMMENT ON TABLE public.tripal_entity__RIL_schema_name IS 'Data storage for tripal_entity field RIL_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_24_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__RIL_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_25_schema_description (
+CREATE TABLE public.tripal_entity__biosample_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_25_schema_description_value text,
-    bio_data_25_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_25_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_25_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_25_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    biosample_schema_description_value text,
+    biosample_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__biosample_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__biosample_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__biosample_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_25_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__biosample_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_25_schema_description IS 'Data storage for tripal_entity field bio_data_25_schema_description.';
+COMMENT ON TABLE public.tripal_entity__biosample_schema_description IS 'Data storage for tripal_entity field biosample_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_25_schema_name (
+CREATE TABLE public.tripal_entity__biosample_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_25_schema_name_value text,
-    bio_data_25_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_25_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_25_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_25_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    biosample_schema_name_value text,
+    biosample_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__biosample_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__biosample_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__biosample_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_25_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__biosample_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_25_schema_name IS 'Data storage for tripal_entity field bio_data_25_schema_name.';
+COMMENT ON TABLE public.tripal_entity__biosample_schema_name IS 'Data storage for tripal_entity field biosample_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_25_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__biosample_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_27_iao_0000129 (
+CREATE TABLE public.tripal_entity__array_design_iao_0000129 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_27_iao_0000129_value text,
-    bio_data_27_iao_0000129_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_27_iao_0000129_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_27_iao_0000129_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_27_iao_0000129_revision_id_check CHECK ((revision_id >= 0))
+    array_design_iao_0000129_value text,
+    array_design_iao_0000129_record_id integer,
+    CONSTRAINT tripal_entity__array_design_iao_0000129_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__array_design_iao_0000129_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__array_design_iao_0000129_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_27_iao_0000129 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__array_design_iao_0000129 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_27_iao_0000129 IS 'Data storage for tripal_entity field bio_data_27_iao_0000129.';
+COMMENT ON TABLE public.tripal_entity__array_design_iao_0000129 IS 'Data storage for tripal_entity field array_design_iao_0000129.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_iao_0000129.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__array_design_iao_0000129.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_iao_0000129.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__array_design_iao_0000129.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_iao_0000129.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__array_design_iao_0000129.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_iao_0000129.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__array_design_iao_0000129.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_iao_0000129.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__array_design_iao_0000129.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_iao_0000129.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__array_design_iao_0000129.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_27_local_array_dimensio (
+CREATE TABLE public.tripal_entity__array_design_local_array_dimensio (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_27_local_array_dimensio_value text,
-    bio_data_27_local_array_dimensio_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_27_local_array_dimens_revision_id_check CHECK ((revision_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_27_local_array_dimensio_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_27_local_array_dimensio_entity_id_check CHECK ((entity_id >= 0))
+    array_design_local_array_dimensio_value text,
+    array_design_local_array_dimensio_record_id integer,
+    CONSTRAINT tripal_entity__array_design_local_array_dimens_revision_id_check CHECK ((revision_id >= 0)),
+    CONSTRAINT tripal_entity__array_design_local_array_dimensio_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__array_design_local_array_dimensio_entity_id_check CHECK ((entity_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_27_local_array_dimensio OWNER TO drupal;
+ALTER TABLE public.tripal_entity__array_design_local_array_dimensio OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_27_local_array_dimensio IS 'Data storage for tripal_entity field bio_data_27_local_array_dimensio.';
+COMMENT ON TABLE public.tripal_entity__array_design_local_array_dimensio IS 'Data storage for tripal_entity field array_design_local_array_dimensio.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_array_dimensio.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_array_dimensio.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_array_dimensio.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_array_dimensio.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_array_dimensio.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_array_dimensio.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_array_dimensio.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_array_dimensio.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_array_dimensio.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_array_dimensio.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_array_dimensio.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_array_dimensio.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_27_local_element_dimens (
+CREATE TABLE public.tripal_entity__array_design_local_element_dimens (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_27_local_element_dimens_value text,
-    bio_data_27_local_element_dimens_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_27_local_element_dime_revision_id_check CHECK ((revision_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_27_local_element_dimens_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_27_local_element_dimens_entity_id_check CHECK ((entity_id >= 0))
+    array_design_local_element_dimens_value text,
+    array_design_local_element_dimens_record_id integer,
+    CONSTRAINT tripal_entity__array_design_local_element_dime_revision_id_check CHECK ((revision_id >= 0)),
+    CONSTRAINT tripal_entity__array_design_local_element_dimens_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__array_design_local_element_dimens_entity_id_check CHECK ((entity_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_27_local_element_dimens OWNER TO drupal;
+ALTER TABLE public.tripal_entity__array_design_local_element_dimens OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_27_local_element_dimens IS 'Data storage for tripal_entity field bio_data_27_local_element_dimens.';
+COMMENT ON TABLE public.tripal_entity__array_design_local_element_dimens IS 'Data storage for tripal_entity field array_design_local_element_dimens.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_element_dimens.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_element_dimens.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_element_dimens.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_element_dimens.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_element_dimens.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_element_dimens.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_element_dimens.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_element_dimens.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_element_dimens.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_element_dimens.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_local_element_dimens.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__array_design_local_element_dimens.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_27_schema_description (
+CREATE TABLE public.tripal_entity__array_design_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_27_schema_description_value text,
-    bio_data_27_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_27_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_27_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_27_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    array_design_schema_description_value text,
+    array_design_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__array_design_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__array_design_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__array_design_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_27_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__array_design_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_27_schema_description IS 'Data storage for tripal_entity field bio_data_27_schema_description.';
+COMMENT ON TABLE public.tripal_entity__array_design_schema_description IS 'Data storage for tripal_entity field array_design_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_27_schema_name (
+CREATE TABLE public.tripal_entity__array_design_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_27_schema_name_value text,
-    bio_data_27_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_27_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_27_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_27_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    array_design_schema_name_value text,
+    array_design_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__array_design_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__array_design_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__array_design_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_27_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__array_design_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_27_schema_name IS 'Data storage for tripal_entity field bio_data_27_schema_name.';
+COMMENT ON TABLE public.tripal_entity__array_design_schema_name IS 'Data storage for tripal_entity field array_design_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_27_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__array_design_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_2_data_1047 (
+CREATE TABLE public.tripal_entity__analysis_data_1047 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_2_data_1047_value text,
-    bio_data_2_data_1047_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_2_data_1047_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_data_1047_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_data_1047_revision_id_check CHECK ((revision_id >= 0))
+    analysis_data_1047_value text,
+    analysis_data_1047_record_id integer,
+    CONSTRAINT tripal_entity__analysis_data_1047_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__analysis_data_1047_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__analysis_data_1047_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_2_data_1047 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__analysis_data_1047 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_2_data_1047 IS 'Data storage for tripal_entity field bio_data_2_data_1047.';
+COMMENT ON TABLE public.tripal_entity__analysis_data_1047 IS 'Data storage for tripal_entity field analysis_data_1047.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_data_1047.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__analysis_data_1047.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_data_1047.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__analysis_data_1047.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_data_1047.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__analysis_data_1047.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_data_1047.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__analysis_data_1047.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_data_1047.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__analysis_data_1047.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_data_1047.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__analysis_data_1047.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_2_iao_0000064 (
+CREATE TABLE public.tripal_entity__analysis_iao_0000064 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_2_iao_0000064_value character varying(255),
-    bio_data_2_iao_0000064_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_2_iao_0000064_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_iao_0000064_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_iao_0000064_revision_id_check CHECK ((revision_id >= 0))
+    analysis_iao_0000064_value character varying(255),
+    analysis_iao_0000064_record_id integer,
+    CONSTRAINT tripal_entity__analysis_iao_0000064_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__analysis_iao_0000064_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__analysis_iao_0000064_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_2_iao_0000064 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__analysis_iao_0000064 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_2_iao_0000064 IS 'Data storage for tripal_entity field bio_data_2_iao_0000064.';
+COMMENT ON TABLE public.tripal_entity__analysis_iao_0000064 IS 'Data storage for tripal_entity field analysis_iao_0000064.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000064.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000064.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000064.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000064.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000064.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000064.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000064.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000064.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000064.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000064.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000064.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000064.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_2_iao_0000129 (
+CREATE TABLE public.tripal_entity__analysis_iao_0000129 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_2_iao_0000129_value character varying(255),
-    bio_data_2_iao_0000129_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_2_iao_0000129_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_iao_0000129_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_iao_0000129_revision_id_check CHECK ((revision_id >= 0))
+    analysis_iao_0000129_value character varying(255),
+    analysis_iao_0000129_record_id integer,
+    CONSTRAINT tripal_entity__analysis_iao_0000129_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__analysis_iao_0000129_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__analysis_iao_0000129_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_2_iao_0000129 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__analysis_iao_0000129 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_2_iao_0000129 IS 'Data storage for tripal_entity field bio_data_2_iao_0000129.';
+COMMENT ON TABLE public.tripal_entity__analysis_iao_0000129 IS 'Data storage for tripal_entity field analysis_iao_0000129.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000129.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000129.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000129.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000129.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000129.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000129.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000129.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000129.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000129.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000129.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_iao_0000129.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__analysis_iao_0000129.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_2_schema_description (
+CREATE TABLE public.tripal_entity__analysis_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_2_schema_description_value text,
-    bio_data_2_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_2_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    analysis_schema_description_value text,
+    analysis_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__analysis_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__analysis_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__analysis_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_2_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__analysis_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_2_schema_description IS 'Data storage for tripal_entity field bio_data_2_schema_description.';
+COMMENT ON TABLE public.tripal_entity__analysis_schema_description IS 'Data storage for tripal_entity field analysis_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_2_schema_name (
+CREATE TABLE public.tripal_entity__analysis_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_2_schema_name_value character varying(255),
-    bio_data_2_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_2_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    analysis_schema_name_value character varying(255),
+    analysis_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__analysis_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__analysis_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__analysis_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_2_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__analysis_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_2_schema_name IS 'Data storage for tripal_entity field bio_data_2_schema_name.';
+COMMENT ON TABLE public.tripal_entity__analysis_schema_name IS 'Data storage for tripal_entity field analysis_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__analysis_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_2_swo_0000001 (
+CREATE TABLE public.tripal_entity__analysis_swo_0000001 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_2_swo_0000001_value character varying(255),
-    bio_data_2_swo_0000001_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_2_swo_0000001_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_swo_0000001_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_2_swo_0000001_revision_id_check CHECK ((revision_id >= 0))
+    analysis_swo_0000001_value character varying(255),
+    analysis_swo_0000001_record_id integer,
+    CONSTRAINT tripal_entity__analysis_swo_0000001_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__analysis_swo_0000001_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__analysis_swo_0000001_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_2_swo_0000001 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__analysis_swo_0000001 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_2_swo_0000001 IS 'Data storage for tripal_entity field bio_data_2_swo_0000001.';
+COMMENT ON TABLE public.tripal_entity__analysis_swo_0000001 IS 'Data storage for tripal_entity field analysis_swo_0000001.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_swo_0000001.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__analysis_swo_0000001.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_swo_0000001.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__analysis_swo_0000001.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_swo_0000001.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__analysis_swo_0000001.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_swo_0000001.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__analysis_swo_0000001.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_swo_0000001.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__analysis_swo_0000001.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_2_swo_0000001.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__analysis_swo_0000001.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_3_schema_description (
+CREATE TABLE public.tripal_entity__project_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_3_schema_description_value text,
-    bio_data_3_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_3_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_3_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_3_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    project_schema_description_value text,
+    project_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__project_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__project_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__project_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_3_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__project_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_3_schema_description IS 'Data storage for tripal_entity field bio_data_3_schema_description.';
+COMMENT ON TABLE public.tripal_entity__project_schema_description IS 'Data storage for tripal_entity field project_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__project_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__project_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__project_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__project_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__project_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__project_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_3_schema_name (
+CREATE TABLE public.tripal_entity__project_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_3_schema_name_value character varying(255),
-    bio_data_3_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_3_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_3_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_3_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    project_schema_name_value character varying(255),
+    project_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__project_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__project_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__project_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_3_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__project_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_3_schema_name IS 'Data storage for tripal_entity field bio_data_3_schema_name.';
+COMMENT ON TABLE public.tripal_entity__project_schema_name IS 'Data storage for tripal_entity field project_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__project_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__project_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__project_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__project_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__project_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_3_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__project_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_4_schema_description (
+CREATE TABLE public.tripal_entity__study_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_4_schema_description_value text,
-    bio_data_4_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_4_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_4_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_4_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    study_schema_description_value text,
+    study_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__study_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__study_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__study_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_4_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__study_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_4_schema_description IS 'Data storage for tripal_entity field bio_data_4_schema_description.';
+COMMENT ON TABLE public.tripal_entity__study_schema_description IS 'Data storage for tripal_entity field study_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__study_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__study_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__study_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__study_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__study_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__study_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_4_schema_name (
+CREATE TABLE public.tripal_entity__study_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_4_schema_name_value text,
-    bio_data_4_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_4_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_4_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_4_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    study_schema_name_value text,
+    study_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__study_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__study_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__study_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_4_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__study_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_4_schema_name IS 'Data storage for tripal_entity field bio_data_4_schema_name.';
+COMMENT ON TABLE public.tripal_entity__study_schema_name IS 'Data storage for tripal_entity field study_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__study_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__study_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__study_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__study_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__study_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_4_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__study_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_5_schema_description (
+CREATE TABLE public.tripal_entity__contact_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_5_schema_description_value character varying(255),
-    bio_data_5_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_5_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_5_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_5_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    contact_schema_description_value character varying(255),
+    contact_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__contact_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__contact_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__contact_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_5_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__contact_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_5_schema_description IS 'Data storage for tripal_entity field bio_data_5_schema_description.';
+COMMENT ON TABLE public.tripal_entity__contact_schema_description IS 'Data storage for tripal_entity field contact_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_5_schema_name (
+CREATE TABLE public.tripal_entity__contact_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_5_schema_name_value character varying(255),
-    bio_data_5_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_5_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_5_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_5_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    contact_schema_name_value character varying(255),
+    contact_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__contact_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__contact_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__contact_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_5_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__contact_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_5_schema_name IS 'Data storage for tripal_entity field bio_data_5_schema_name.';
+COMMENT ON TABLE public.tripal_entity__contact_schema_name IS 'Data storage for tripal_entity field contact_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_5_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__contact_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_7_data_1047 (
+CREATE TABLE public.tripal_entity__protocol_data_1047 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_7_data_1047_value text,
-    bio_data_7_data_1047_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_7_data_1047_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_7_data_1047_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_7_data_1047_revision_id_check CHECK ((revision_id >= 0))
+    protocol_data_1047_value text,
+    protocol_data_1047_record_id integer,
+    CONSTRAINT tripal_entity__protocol_data_1047_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__protocol_data_1047_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__protocol_data_1047_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_7_data_1047 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__protocol_data_1047 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_7_data_1047 IS 'Data storage for tripal_entity field bio_data_7_data_1047.';
+COMMENT ON TABLE public.tripal_entity__protocol_data_1047 IS 'Data storage for tripal_entity field protocol_data_1047.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_data_1047.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__protocol_data_1047.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_data_1047.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__protocol_data_1047.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_data_1047.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__protocol_data_1047.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_data_1047.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__protocol_data_1047.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_data_1047.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__protocol_data_1047.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_data_1047.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__protocol_data_1047.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_7_efo_0000548 (
+CREATE TABLE public.tripal_entity__protocol_efo_0000548 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_7_efo_0000548_value text,
-    bio_data_7_efo_0000548_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_7_efo_0000548_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_7_efo_0000548_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_7_efo_0000548_revision_id_check CHECK ((revision_id >= 0))
+    protocol_efo_0000548_value text,
+    protocol_efo_0000548_record_id integer,
+    CONSTRAINT tripal_entity__protocol_efo_0000548_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__protocol_efo_0000548_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__protocol_efo_0000548_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_7_efo_0000548 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__protocol_efo_0000548 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_7_efo_0000548 IS 'Data storage for tripal_entity field bio_data_7_efo_0000548.';
+COMMENT ON TABLE public.tripal_entity__protocol_efo_0000548 IS 'Data storage for tripal_entity field protocol_efo_0000548.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_efo_0000548.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__protocol_efo_0000548.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_efo_0000548.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__protocol_efo_0000548.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_efo_0000548.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__protocol_efo_0000548.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_efo_0000548.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__protocol_efo_0000548.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_efo_0000548.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__protocol_efo_0000548.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_efo_0000548.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__protocol_efo_0000548.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_7_schema_description (
+CREATE TABLE public.tripal_entity__protocol_schema_description (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_7_schema_description_value text,
-    bio_data_7_schema_description_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_7_schema_description_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_7_schema_description_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_7_schema_description_revision_id_check CHECK ((revision_id >= 0))
+    protocol_schema_description_value text,
+    protocol_schema_description_record_id integer,
+    CONSTRAINT tripal_entity__protocol_schema_description_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__protocol_schema_description_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__protocol_schema_description_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_7_schema_description OWNER TO drupal;
+ALTER TABLE public.tripal_entity__protocol_schema_description OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_7_schema_description IS 'Data storage for tripal_entity field bio_data_7_schema_description.';
+COMMENT ON TABLE public.tripal_entity__protocol_schema_description IS 'Data storage for tripal_entity field protocol_schema_description.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_description.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_description.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_description.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_description.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_description.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_description.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_description.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_description.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_7_schema_name (
+CREATE TABLE public.tripal_entity__protocol_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_7_schema_name_value text,
-    bio_data_7_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_7_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_7_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_7_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    protocol_schema_name_value text,
+    protocol_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__protocol_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__protocol_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__protocol_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_7_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__protocol_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_7_schema_name IS 'Data storage for tripal_entity field bio_data_7_schema_name.';
+COMMENT ON TABLE public.tripal_entity__protocol_schema_name IS 'Data storage for tripal_entity field protocol_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__protocol_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_7_swo_0000001 (
+CREATE TABLE public.tripal_entity__protocol_swo_0000001 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_7_swo_0000001_value text,
-    bio_data_7_swo_0000001_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_7_swo_0000001_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_7_swo_0000001_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_7_swo_0000001_revision_id_check CHECK ((revision_id >= 0))
+    protocol_swo_0000001_value text,
+    protocol_swo_0000001_record_id integer,
+    CONSTRAINT tripal_entity__protocol_swo_0000001_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__protocol_swo_0000001_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__protocol_swo_0000001_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_7_swo_0000001 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__protocol_swo_0000001 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_7_swo_0000001 IS 'Data storage for tripal_entity field bio_data_7_swo_0000001.';
+COMMENT ON TABLE public.tripal_entity__protocol_swo_0000001 IS 'Data storage for tripal_entity field protocol_swo_0000001.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_swo_0000001.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__protocol_swo_0000001.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_swo_0000001.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__protocol_swo_0000001.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_swo_0000001.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__protocol_swo_0000001.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_swo_0000001.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__protocol_swo_0000001.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_swo_0000001.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__protocol_swo_0000001.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_7_swo_0000001.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__protocol_swo_0000001.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_8_data_0842 (
+CREATE TABLE public.tripal_entity__gene_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_8_data_0842_value text,
-    bio_data_8_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_8_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_8_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_8_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    gene_data_0842_value text,
+    gene_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__gene_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__gene_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__gene_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_8_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__gene_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_8_data_0842 IS 'Data storage for tripal_entity field bio_data_8_data_0842.';
+COMMENT ON TABLE public.tripal_entity__gene_data_0842 IS 'Data storage for tripal_entity field gene_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__gene_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__gene_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__gene_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__gene_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__gene_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__gene_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_8_data_1249 (
+CREATE TABLE public.tripal_entity__gene_data_1249 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_8_data_1249_value integer,
-    bio_data_8_data_1249_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_8_data_1249_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_8_data_1249_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_8_data_1249_revision_id_check CHECK ((revision_id >= 0))
+    gene_data_1249_value integer,
+    gene_data_1249_record_id integer,
+    CONSTRAINT tripal_entity__gene_data_1249_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__gene_data_1249_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__gene_data_1249_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_8_data_1249 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__gene_data_1249 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_8_data_1249 IS 'Data storage for tripal_entity field bio_data_8_data_1249.';
+COMMENT ON TABLE public.tripal_entity__gene_data_1249 IS 'Data storage for tripal_entity field gene_data_1249.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__gene_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__gene_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_1249.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__gene_data_1249.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__gene_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_1249.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__gene_data_1249.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__gene_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_8_data_2044 (
+CREATE TABLE public.tripal_entity__gene_data_2044 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_8_data_2044_value text,
-    bio_data_8_data_2044_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_8_data_2044_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_8_data_2044_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_8_data_2044_revision_id_check CHECK ((revision_id >= 0))
+    gene_data_2044_value text,
+    gene_data_2044_record_id integer,
+    CONSTRAINT tripal_entity__gene_data_2044_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__gene_data_2044_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__gene_data_2044_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_8_data_2044 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__gene_data_2044 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_8_data_2044 IS 'Data storage for tripal_entity field bio_data_8_data_2044.';
+COMMENT ON TABLE public.tripal_entity__gene_data_2044 IS 'Data storage for tripal_entity field gene_data_2044.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__gene_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__gene_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_2044.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__gene_data_2044.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__gene_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_2044.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__gene_data_2044.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__gene_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_8_obi_0100026 (
+CREATE TABLE public.tripal_entity__gene_obi_0100026 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_8_obi_0100026_value integer,
-    bio_data_8_obi_0100026_rdfs_label character varying(2558),
-    "bio_data_8_obi_0100026_TAXRANK_0000005" character varying(255),
-    "bio_data_8_obi_0100026_TAXRANK_0000006" character varying(255),
-    "bio_data_8_obi_0100026_TAXRANK_0000045" character varying(1024),
-    bio_data_8_obi_0100026_local_infraspecific_type integer,
-    bio_data_8_obi_0100026_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_8_obi_0100026_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_8_obi_0100026_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_8_obi_0100026_revision_id_check CHECK ((revision_id >= 0))
+    gene_obi_0100026_value integer,
+    gene_obi_0100026_rdfs_label character varying(2558),
+    "gene_obi_0100026_TAXRANK_0000005" character varying(255),
+    "gene_obi_0100026_TAXRANK_0000006" character varying(255),
+    "gene_obi_0100026_TAXRANK_0000045" character varying(1024),
+    gene_obi_0100026_local_infraspecific_type integer,
+    gene_obi_0100026_record_id integer,
+    CONSTRAINT tripal_entity__gene_obi_0100026_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__gene_obi_0100026_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__gene_obi_0100026_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_8_obi_0100026 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__gene_obi_0100026 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_8_obi_0100026 IS 'Data storage for tripal_entity field bio_data_8_obi_0100026.';
+COMMENT ON TABLE public.tripal_entity__gene_obi_0100026 IS 'Data storage for tripal_entity field gene_obi_0100026.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_obi_0100026.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__gene_obi_0100026.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_obi_0100026.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__gene_obi_0100026.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_obi_0100026.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__gene_obi_0100026.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_obi_0100026.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__gene_obi_0100026.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_obi_0100026.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__gene_obi_0100026.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_obi_0100026.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__gene_obi_0100026.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_8_schema_name (
+CREATE TABLE public.tripal_entity__gene_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_8_schema_name_value character varying(255),
-    bio_data_8_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_8_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_8_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_8_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    gene_schema_name_value character varying(255),
+    gene_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__gene_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__gene_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__gene_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_8_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__gene_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_8_schema_name IS 'Data storage for tripal_entity field bio_data_8_schema_name.';
+COMMENT ON TABLE public.tripal_entity__gene_schema_name IS 'Data storage for tripal_entity field gene_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__gene_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__gene_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__gene_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__gene_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__gene_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_8_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__gene_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_9_data_0842 (
+CREATE TABLE public.tripal_entity__mRNA_data_0842 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_9_data_0842_value text,
-    bio_data_9_data_0842_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_9_data_0842_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_9_data_0842_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_9_data_0842_revision_id_check CHECK ((revision_id >= 0))
+    mRNA_data_0842_value text,
+    mRNA_data_0842_record_id integer,
+    CONSTRAINT tripal_entity__mRNA_data_0842_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__mRNA_data_0842_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__mRNA_data_0842_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_9_data_0842 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__mRNA_data_0842 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_9_data_0842 IS 'Data storage for tripal_entity field bio_data_9_data_0842.';
+COMMENT ON TABLE public.tripal_entity__mRNA_data_0842 IS 'Data storage for tripal_entity field mRNA_data_0842.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_0842.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_0842.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_0842.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_0842.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_0842.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_0842.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_0842.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_0842.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_9_data_1249 (
+CREATE TABLE public.tripal_entity__mRNA_data_1249 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_9_data_1249_value integer,
-    bio_data_9_data_1249_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_9_data_1249_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_9_data_1249_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_9_data_1249_revision_id_check CHECK ((revision_id >= 0))
+    mRNA_data_1249_value integer,
+    mRNA_data_1249_record_id integer,
+    CONSTRAINT tripal_entity__mRNA_data_1249_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__mRNA_data_1249_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__mRNA_data_1249_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_9_data_1249 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__mRNA_data_1249 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_9_data_1249 IS 'Data storage for tripal_entity field bio_data_9_data_1249.';
+COMMENT ON TABLE public.tripal_entity__mRNA_data_1249 IS 'Data storage for tripal_entity field mRNA_data_1249.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_1249.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_1249.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_1249.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_1249.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_1249.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_1249.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_1249.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_1249.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_9_data_2044 (
+CREATE TABLE public.tripal_entity__mRNA_data_2044 (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_9_data_2044_value text,
-    bio_data_9_data_2044_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_9_data_2044_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_9_data_2044_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_9_data_2044_revision_id_check CHECK ((revision_id >= 0))
+    mRNA_data_2044_value text,
+    mRNA_data_2044_record_id integer,
+    CONSTRAINT tripal_entity__mRNA_data_2044_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__mRNA_data_2044_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__mRNA_data_2044_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_9_data_2044 OWNER TO drupal;
+ALTER TABLE public.tripal_entity__mRNA_data_2044 OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_9_data_2044 IS 'Data storage for tripal_entity field bio_data_9_data_2044.';
+COMMENT ON TABLE public.tripal_entity__mRNA_data_2044 IS 'Data storage for tripal_entity field mRNA_data_2044.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_2044.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_2044.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_2044.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_2044.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_2044.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_2044.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_2044.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__mRNA_data_2044.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__bio_data_9_schema_name (
+CREATE TABLE public.tripal_entity__mRNA_schema_name (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    bio_data_9_schema_name_value character varying(255),
-    bio_data_9_schema_name_record_id integer,
-    CONSTRAINT tripal_entity__bio_data_9_schema_name_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__bio_data_9_schema_name_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__bio_data_9_schema_name_revision_id_check CHECK ((revision_id >= 0))
+    mRNA_schema_name_value character varying(255),
+    mRNA_schema_name_record_id integer,
+    CONSTRAINT tripal_entity__mRNA_schema_name_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__mRNA_schema_name_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__mRNA_schema_name_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__bio_data_9_schema_name OWNER TO drupal;
+ALTER TABLE public.tripal_entity__mRNA_schema_name OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__bio_data_9_schema_name IS 'Data storage for tripal_entity field bio_data_9_schema_name.';
+COMMENT ON TABLE public.tripal_entity__mRNA_schema_name IS 'Data storage for tripal_entity field mRNA_schema_name.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__mRNA_schema_name.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__mRNA_schema_name.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_schema_name.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__mRNA_schema_name.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__mRNA_schema_name.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_schema_name.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__mRNA_schema_name.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__bio_data_9_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__mRNA_schema_name.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 
-CREATE TABLE public.tripal_entity__schema__additionaltype (
+CREATE TABLE public.tripal_entity__chado_additional_type_default (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    schema__additionaltype_value integer,
-    schema__additionaltype_record_id integer,
-    CONSTRAINT tripal_entity__schema__additionaltype_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__schema__additionaltype_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__schema__additionaltype_revision_id_check CHECK ((revision_id >= 0))
+    chado_additional_type_default_value integer,
+    chado_additional_type_default_record_id integer,
+    CONSTRAINT tripal_entity__chado_additional_type_default_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__chado_additional_type_default_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__chado_additional_type_default_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__schema__additionaltype OWNER TO drupal;
+ALTER TABLE public.tripal_entity__chado_additional_type_default OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__schema__additionaltype IS 'Data storage for tripal_entity field schema__additionaltype.';
+COMMENT ON TABLE public.tripal_entity__chado_additional_type_default IS 'Data storage for tripal_entity field chado_additional_type_default.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.langcode IS 'The language code for this data item.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 

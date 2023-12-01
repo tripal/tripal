@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
@@ -15,63 +16,19 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    id = "chado_gff3_loader",
  *    label = @Translation("Chado GFF3 File Loader"),
  *    description = @Translation("Import a GFF3 file into Chado"),
- *    file_types = {"gff","gff3"},
- *    upload_description = @Translation("Please provide the GFF3 file."),
+ *    file_types = {"gff","gff3", "txt"},
+ *    upload_description = @Translation("Please provide a plain text, tab-delimited file following the <a target='_blank' href='https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md'>GFF3 Specification</a>. It is expected that all landmark features are associated with the same organism and that the type (column 3) are sequence ontology terms."),
  *    upload_title = @Translation("GFF3 File"),
  *    use_analysis = True,
  *    require_analysis = True,
  *    button_text = @Translation("Import GFF3 file"),
  *    file_upload = True,
- *    file_load = False,
- *    file_remote = False,
- *    file_required = False,
- *    cardinality = 1,
- *    menu_path = "",
- *    callback = "",
- *    callback_module = "",
- *    callback_path = "",
+ *    file_remote = True,
+ *    file_local = True,
+ *    file_required = True,
  *  )
  */
 class GFF3Importer extends ChadoImporterBase {
-  /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
-  public static $name = 'Chado GFF3 File Loader';
-
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
-  public static $machine_name = 'chado_gff3_loader';
-
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
-  public static $description = 'Import a GFF3 file into Chado';
-
-  /**
-   * An array containing the extensions of allowed file types.
-   */
-  public static $file_types = ['gff', 'gff3'];
-
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
-  public static $upload_description = 'Please provide the GFF3 file.';
-
-  /**
-   * The title that should appear above the upload button.
-   */
-  public static $upload_title = 'GFF3 File';
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
-  public static $button_text = 'Import GFF3 file';
 
   /**
    * A handle to a temporary file for caching the GFF features. This allows for
@@ -134,12 +91,10 @@ class GFF3Importer extends ChadoImporterBase {
    */
   private $update = TRUE;
 
-
-    /**
+  /**
    * A list of features to have names updated.
    */
   private $update_names = [];
-
 
   /**
    * If the GFF file contains a 'Target' attribute then the feature and the
@@ -191,13 +146,24 @@ class GFF3Importer extends ChadoImporterBase {
    * file (e.g. 'chromosome'), if the GFF file contains a '##sequence-region'
    * line that describes the landmark sequences. Default = ''
    */
-  private $landmark_type = '';
+  private $default_landmark_type = '';
 
   /**
-   * The results object for the landmark type cvterm.
+   * $this->landmark_types which is an associative array.
+   * The key is the landmark name, and the value is the type name.
    */
-  private $landmark_cvterm = NULL;
+  private $landmark_types = [];
 
+  /**
+   * $this->landmark_types_type_ids which is an associative array.
+   * The key is the type, and the value is the type_id.
+   */
+  private $landmark_types_type_ids = [];
+
+  /**
+   * The cvterm_id for the landmark type cvterm.
+   */
+  private $landmark_cvterm_id = NULL;
 
   /**
    * Regular expression to pull out the mRNA name.
@@ -229,7 +195,7 @@ class GFF3Importer extends ChadoImporterBase {
    * "organism=[genus]:[species]", where [genus] is the organism's genus and
    * [species] is the species name. Check this box to automatically add the
    * organism to the database if it does not already exists. Otherwise lines
-   * with an oraganism attribute where the organism is not present in the
+   * with an organism attribute where the organism is not present in the
    * database will be skipped.
    */
   private $create_organism = FALSE;
@@ -330,12 +296,14 @@ class GFF3Importer extends ChadoImporterBase {
     $form = parent::form($form, $form_state);
 
     // get the list of organisms
-    $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-    $org_rset = $chado->query($sql);
-    $organisms = [];
-    while ($organism = $org_rset->fetchObject()) {
-      $organisms[$organism->organism_id] = chado_get_organism_scientific_name($organism);
-    }
+    $organisms = chado_get_organism_select_options(FALSE, TRUE);
+
+    // get the sequence ontology CV ID
+    $cv_results = $chado->select('1:cv', 'cv')
+      ->fields('cv')
+      ->condition('name', 'sequence')
+      ->execute();
+    $cv_id = $cv_results->fetchObject()->cv_id;
 
     $form['organism_id'] = [
       '#title' => t('Existing Organism'),
@@ -347,11 +315,13 @@ class GFF3Importer extends ChadoImporterBase {
     ];
 
     $form['landmark_type'] = [
-      '#title' => t('Landmark Type'),
+      '#title' => t('Default Landmark Type'),
       '#type' => 'textfield',
       '#description' => t("Optional. Use this field to specify a Sequence Ontology type
-       for the landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
+       for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
+      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     $form['proteins'] = [
@@ -366,7 +336,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#title' => t('Skip automatic protein creation'),
       '#required' => FALSE,
       '#description' => t('The GFF loader will automatically create a protein feature for each transcript in the GFF file if a protein feature is missing in the GFF file. Check this box to disable this functionality. Protein features that are specifically present in the GFF will always be created.'),
-      '#default_value' => 0,
+      '#empty_option' => t('- Select -'),
     ];
 
     $form['proteins']['re_mrna'] = [
@@ -418,6 +388,7 @@ class GFF3Importer extends ChadoImporterBase {
         different species then the organism must be specified using the 'target_organism=genus:species'
         attribute in the GFF file."),
       '#options' => $organisms,
+      '#empty_option' => t('- Select -'),
     ];
 
     $form['targets']['target_type'] = [
@@ -428,6 +399,8 @@ class GFF3Importer extends ChadoImporterBase {
        the targets are of different types then the type must be specified using the 'target_type=type' attribute
        in the GFF file. This must be a valid Sequence Ontology (SO) term. If the matches in the GFF3 file
        use specific match types (e.g. cDNA_match, EST_match, etc.) then this can be left blank. "),
+      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     $form['targets']['create_target'] = [
@@ -460,10 +433,12 @@ class GFF3Importer extends ChadoImporterBase {
 
     $form['additional_options']['line_number'] = [
       '#type' => 'textfield',
-      '#title' => t('Start Line Number'),
+      '#title' => t('Starting Line Number'),
       '#description' => t('Enter the line number in the GFF file where you would like to begin processing.  The
       first line is line number 1.  This option is useful for examining loading problems with large GFF files.'),
       '#size' => 10,
+      '#default_value' => 1,
+      '#required' => TRUE,
     ];
 
     $form['additional_options']['alt_id_attr'] = [
@@ -488,12 +463,12 @@ class GFF3Importer extends ChadoImporterBase {
     // These form inputs are not yet being validated:
     // $organism_id = $form_state_values['organism_id'];
     // $target_organism_id = $form_state_values['target_organism_id'];
-    // $target_type = trim($form_state_values['target_type']);
+    $target_type = trim($form_state_values['target_type']);
     // $create_target = $form_state_values['create_target'];
     // $create_organism = $form_state_values['create_organism'];
     // $refresh = 0; //$form_state['values']['refresh'];
     // $remove = 0; //$form_state['values']['remove'];
-    // $landmark_type = trim($form_state_values['landmark_type']);
+    $landmark_type = trim($form_state_values['landmark_type']);
     // $alt_id_attr = trim($form_state_values['alt_id_attr']);
 
     $line_number = trim($form_state_values['line_number']);
@@ -501,49 +476,65 @@ class GFF3Importer extends ChadoImporterBase {
     $re_mrna = trim($form_state_values['re_mrna']);
     $re_protein = trim($form_state_values['re_protein']);
 
+    // The parent class will validate that a file has been specified and is valid.
 
     if ($line_number and !is_numeric($line_number) or $line_number < 0) {
-      form_set_error('line_number', t("Please provide an integer line number greater than zero."));
+      $form_state->setErrorByName('line_number', t('Please provide an integer line number greater than zero'));
     }
 
     if (!($re_mrna and $re_protein) and ($re_mrna or $re_protein)) {
-      form_set_error('re_uname', t("You must provide both a regular expression for mRNA and a replacement string for protein"));
+      $form_state->setErrorByName('re_mrna', t('You must provide both a regular expression for mRNA and a replacement string for protein'));
     }
 
     // check the regular expression to make sure it is valid
     set_error_handler(function () {}, E_WARNING);
-    $result_re = preg_match("/" . $re_mrna . "/", NULL);
-    $result = preg_replace("/" . $re_mrna . "/", $re_protein, NULL);
+    $result_re = preg_match("/" . $re_mrna . "/", "");
+    $result = preg_replace("/" . $re_mrna . "/", $re_protein, "");
     restore_error_handler();
     if ($result_re === FALSE) {
-      form_set_error('re_mrna', 'Invalid regular expression.');
+      $form_state->setErrorByName('re_mrna', t('Invalid regular expression'));
     }
-    else {
-      if ($result === FALSE) {
-        form_set_error('re_protein', 'Invalid replacement string.');
+    elseif ($result === FALSE) {
+      $form_state->setErrorByName('re_protein', t('Invalid replacement string'));
+    }
+
+    // check to make sure the types exists
+    $cv_autocomplete = new ChadoCVTermAutocompleteController();
+    $landmark_cvterm_id = $cv_autocomplete->getCVtermId($landmark_type, 'sequence');
+    if (!$landmark_cvterm_id) {
+      $form_state->setErrorByName('landmark_type', t('The Sequence Ontology (SO) term selected for the landmark type is not'
+                                                   . ' available in the database. Please check the spelling or select another'));
+    }
+    if ($target_type) {
+      $target_type_id = $cv_autocomplete->getCVtermId($target_type, 'sequence');
+      if (!$target_type_id) {
+        $form_state->setErrorByName('target_type', t('The Sequence Ontology (SO) term selected for the target type is not'
+                                                   . ' available in the database. Please check the spelling or select another'));
       }
     }
+
   }
 
   /**
    * {@inheritDoc}
    */
   public function run() {
+    $arguments = $this->arguments['run_args'];
+
     $chado = $this->getChadoConnection();
 
-    $arguments = $this->arguments['run_args'];
     $this->gff_file = $this->arguments['files'][0]['file_path'];
 
     // Set the private member variables of this class using the loader inputs.
     $this->organism_id = $arguments['organism_id'];
     $this->analysis_id = $arguments['analysis_id'];
-    $this->add_only = $arguments['add_only'];
-    $this->update = $arguments['update'];
+    $this->add_only = $arguments['add_only'] ?? 0;
+    $this->update = $arguments['update'] ?? 0;
     $this->target_organism_id = $arguments['target_organism_id'];
     $this->target_type = $arguments['target_type'];
     $this->create_target = $arguments['create_target'];
     $this->start_line = $arguments['line_number'];
-    $this->landmark_type = $arguments['landmark_type'];
+    $this->default_landmark_type = $arguments['landmark_type'];
     $this->alt_id_attr = $arguments['alt_id_attr'];
     $this->create_organism = $arguments['create_organism'];
     $this->re_mrna = $arguments['re_mrna'];
@@ -552,29 +543,29 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Check to see if the file is located local to Drupal
     $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $this->gff_file;
-    if (!file_exists($dfile)) {
+    if (file_exists($dfile)) {
       $this->gff_file = $dfile;
     }
     // If the file is not local to Drupal check if it exists on the system.
     else if (!file_exists($this->gff_file)) {
-      throw new \Exception(t("Cannot find the file: !file", ['!file' => $this->gff_file]));
+      throw new \Exception(t("Cannot find the file: %file", ['%file' => $this->gff_file]));
     }
 
     // Open the GFF3 file.
     $this->logger->notice("Opening @gff_file", ['@gff_file' => $this->gff_file]);
     $this->gff_file_h = fopen($this->gff_file, 'r');
     if (!$this->gff_file_h) {
-      throw new \Exception(t("Cannot open file: !file", ['!file' => $this->gff_file]));
+      throw new \Exception(t("Cannot open file: %file", ['%file' => $this->gff_file]));
     }
 
     // Get the feature property CV object
-    $this->feature_prop_cv = $chado->select('cv')
+    $this->feature_prop_cv = $chado->select('1:cv','cv')
     ->fields('cv')
     ->condition('name', 'feature_property')
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('cv')
+    $num_found = $chado->select('1:cv','cv')
     ->fields('cv')
     ->condition('name', 'feature_property')
     ->countQuery()
@@ -583,17 +574,17 @@ class GFF3Importer extends ChadoImporterBase {
 
 
     if ($num_found == 0) {
-      throw new \Exception(t("Cannot find the 'feature_property' ontology'", []));
+      throw new \Exception(t("Cannot find the 'feature_property' ontology'"));
     }
 
     // Get the sequence CV object.
-    $this->feature_cv = $chado->select('cv')
+    $this->feature_cv = $chado->select('1:cv','cv')
     ->fields('cv')
     ->condition('name', 'sequence')
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('cv')
+    $num_found = $chado->select('1:cv', 'cv')
     ->fields('cv')
     ->condition('name', 'sequence')
     ->countQuery()
@@ -601,17 +592,17 @@ class GFF3Importer extends ChadoImporterBase {
     ->fetchField();
 
     if ($num_found == 0) {
-      throw new \Exception(t("Cannot find the 'sequence' ontology'", []));
+      throw new \Exception(t("Cannot find the 'sequence' ontology'"));
     }
 
     // Get the organism object.
-    $this->organism = $chado->select('organism','o')
+    $this->organism = $chado->select('1:organism','o')
     ->fields('o')
     ->condition('organism_id', $this->organism_id)
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('organism','o')
+    $num_found = $chado->select('1:organism','o')
     ->fields('o')
     ->condition('organism_id', $this->organism_id)
     ->countQuery()
@@ -623,13 +614,13 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the analysis object.
-    $this->analysis = $chado->select('analysis','a')
+    $this->analysis = $chado->select('1:analysis','a')
     ->fields('a')
     ->condition('analysis_id', $this->analysis_id)
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('analysis','a')
+    $num_found = $chado->select('1:analysis','a')
     ->fields('a')
     ->condition('analysis_id', $this->analysis_id)
     ->countQuery()
@@ -640,52 +631,23 @@ class GFF3Importer extends ChadoImporterBase {
       throw new \Exception(t("Cannot find the specified organism for this GFF3 file."));
     }
 
-    // If a landmark type was provided then get that object.
-    if ($this->landmark_type) {
-      $this->landmark_cvterm = $chado->select('cvterm', 'c')
-      ->fields('c')
-      ->condition('cv_id', $this->feature_cv->cv_id)
-      ->condition('name', $this->landmark_type)
-      ->execute()
-      ->fetchObject();
-
-
-      $num_found = $chado->select('cvterm', 'c')
-      ->fields('c')
-      ->condition('cv_id', $this->feature_cv->cv_id)
-      ->condition('name', $this->landmark_type)
-      ->countQuery()
-      ->execute()
-      ->fetchField();
-
-      if ($num_found == 0) {
-        throw new \Exception(t('Cannot find landmark feature type \'%landmark_type\'.', ['%landmark_type' => $this->landmark_type]));
+    // If a landmark type was provided then get the ID.
+    if ($this->default_landmark_type) {
+      $cv_autocomplete = new ChadoCVTermAutocompleteController();
+      $this->landmark_cvterm_id = $cv_autocomplete->getCVtermId($this->default_landmark_type, 'sequence');
+      if (!$this->landmark_cvterm_id) {
+        throw new \Exception(t('Cannot find landmark feature type \'%landmark_type\'.',
+          ['%landmark_type' => $this->default_landmark_type]));
       }
     }
 
     // If a target type is provided then get the ID.
     if ($this->target_type) {
-
-      $target_type = $chado->select('cvterm','c')
-      ->fields('c')
-      ->condition('name', $this->target_type)
-      ->condition('cv_id', $this->feature_cv->cv_id)
-      ->execute()
-      ->fetchObject();
-
-
-      $num_found = $chado->select('cvterm','c')
-      ->fields('c')
-      ->condition('name', $this->target_type)
-      ->condition('cv_id', $this->feature_cv->cv_id)
-      ->countQuery()
-      ->execute()
-      ->fetchField();
-
-      if ($num_found == 0) {
-        throw new \Exception(t("Cannot find the specified target type, !type.", ['!type' => $this->target_type]));
+      $cv_autocomplete = new ChadoCVTermAutocompleteController();
+      $this->target_type_id = $cv_autocomplete->getCVtermId($this->target_type, 'sequence');
+      if (!$this->target_type_id) {
+        throw new \Exception(t("Cannot find the specified target type, %type.", ['%type' => $this->target_type]));
       }
-      $this->target_type_id = $target_type->cvterm_id;
     }
 
     // Create the cache file for storing parsed GFF entries.
@@ -693,7 +655,7 @@ class GFF3Importer extends ChadoImporterBase {
     // Load the GFF3.
     try {
 
-      $this->logger->notice("Step  1 of 27: Caching GFF3 file...                             ");
+      $this->logger->notice("Step  1 of 27: Caching GFF3 file...                                ");
       $this->parseGFF3();
 
       // Prep the database for necessary records.
@@ -701,95 +663,99 @@ class GFF3Importer extends ChadoImporterBase {
       $this->prepNullPub();
       $this->prepDBs();
 
-      $this->logger->notice("Step  2 of 27: Find existing landmarks...                         ");
+      $this->logger->notice("Step  2 of 27: Find existing landmarks...                          ");
       $this->findLandmarks();
 
-      $this->logger->notice("Step  3 of 27: Insert new landmarks (if needed)...                ");
+      $this->logger->notice("Step  3 of 27: Insert new landmarks (if needed)...                 ");
       $this->insertLandmarks();
 
       if (!$this->skip_protein) {
-        $this->logger->notice("Step  4 of 27: Find missing proteins...                           ");
+        $this->logger->notice("Step  4 of 27: Find missing proteins...                            ");
         $this->findMissingProteins();
 
-        $this->logger->notice("Step  5 of 27: Add missing proteins to list of features...        ");
+        $this->logger->notice("Step  5 of 27: Add missing proteins to list of features...         ");
         $this->addMissingProteins();
       }
       else {
-        $this->logger->notice("Step  4 of 27: Find missing proteins (Skipped)...                ");
-        $this->logger->notice("Step  5 of 27: Add missing proteins to list of features (Skipped)...");
+        $this->logger->notice("Step  4 of 27: Find missing proteins (Skipped)                     ");
+        $this->logger->notice("Step  5 of 27: Add missing proteins to list of features (Skipped)  ");
       }
 
-      $this->logger->notice("Step  6 of 27: Find existing features...                          ");
+      $this->logger->notice("Step  6 of 27: Find existing features...                           ");
       $this->findFeatures();
 
       $this->logger->notice("Step  7 of 27: Clear attributes of existing features...            ");
       $this->deleteFeatureData();
 
-      $this->logger->notice("Step  8 of 27: Processing @num_features features...               ",
-      ['@num_features' => number_format(count(array_keys($this->features)))]);
+      $this->logger->notice("Step  8 of 27: Processing @num_features features...                ",
+        ['@num_features' => number_format(count(array_keys($this->features)))]
+      );
 
       $this->insertFeatures();
       $this->logger->notice("Step  9 of 27: Processing @num_features feature Names to update...               ",
-      ['@num_features' =>  number_format(count(array_keys($this->update_names)))]);
+        ['@num_features' =>  number_format(count(array_keys($this->update_names)))]
+      );
 
       $this->updateFeatureNames();
 
-      $this->logger->notice("Step  10 of 27: Get new feature IDs...                             ");
+      $this->logger->notice("Step 10 of 27: Get new feature IDs...                              ");
       $this->findFeatures();
 
-      $this->logger->notice("Step 11 of 27: Insert locations...                               ");
+      $this->logger->notice("Step 11 of 27: Insert locations...                                 ");
       $this->insertFeatureLocs();
 
-      $this->logger->notice("Step 12 of 27: Associate parents and children...                 ");
+      $this->logger->notice("Step 12 of 27: Associate parents and children...                   ");
       $this->associateChildren();
 
-      $this->logger->notice("Step 13 of 27: Calculate child ranks...                          ");
+      $this->logger->notice("Step 13 of 27: Calculate child ranks...                            ");
       $this->calculateChildRanks();
 
-      $this->logger->notice("Step 14 of 27: Add child-parent relationships...                 ");
+      $this->logger->notice("Step 14 of 27: Add child-parent relationships...                   ");
       $this->insertFeatureParents();
 
-      $this->logger->notice("Step 15 of 27: Insert properties...                               ");
+      $this->logger->notice("Step 15 of 27: Insert properties...                                ");
       $this->insertFeatureProps();
 
-      $this->logger->notice("Step 16 of 27: Find synonyms (aliases)...                         ");
+      $this->logger->notice("Step 16 of 27: Find synonyms (aliases)...                          ");
       $this->findSynonyms();
 
-      $this->logger->notice("Step 17 of 27: Insert new synonyms (aliases)...                  ");
+      $this->logger->notice("Step 17 of 27: Insert new synonyms (aliases)...                    ");
       $this->insertSynonyms();
 
-      $this->logger->notice("Step 18 of 27: Insert feature synonyms (aliases)...              ");
+      $this->logger->notice("Step 18 of 27: Insert feature synonyms (aliases)...                ");
       $this->insertFeatureSynonyms();
 
-      $this->logger->notice("Step 19 of 27: Find cross references...                          ");
+      $this->logger->notice("Step 19 of 27: Find cross references...                            ");
       $this->findDbxrefs();
 
-      $this->logger->notice("Step 20 of 27: Insert new cross references...                    ");
+      $this->logger->notice("Step 20 of 27: Insert new cross references...                      ");
       $this->insertDbxrefs();
 
-      $this->logger->notice("Step 21 of 27: Get new cross references IDs...                   ");
+      $this->logger->notice("Step 21 of 27: Get new cross references IDs...                     ");
       $this->findDbxrefs();
 
-      $this->logger->notice("Step 22 of 27: Insert feature cross references...                ");
+      $this->logger->notice("Step 22 of 27: Insert feature cross references...                  ");
       $this->insertFeatureDbxrefs();
 
-      $this->logger->notice("Step 23 of 27: Insert feature ontology terms...                  ");
+      $this->logger->notice("Step 23 of 27: Insert feature ontology terms...                    ");
       $this->insertFeatureCVterms();
 
-      $this->logger->notice("Step 24 of 27: Insert 'derives_from' relationships...            ");
+      $this->logger->notice("Step 24 of 27: Insert 'derives_from' relationships...              ");
       $this->insertFeatureDerivesFrom();
 
-      $this->logger->notice("Step 25 of 27: Insert Targets...                                 ");
+      $this->logger->notice("Step 25 of 27: Insert Targets...                                   ");
       $this->insertFeatureTargets();
 
-      $this->logger->notice("Step 26 of 27: Associate features with analysis....              ");
+      $this->logger->notice("Step 26 of 27: Associate features with analysis...                 ");
       $this->insertFeatureAnalysis();
 
       if (!empty($this->residue_index)) {
-        $this->logger->notice("Step 27 of 27: Adding sequences data...                        ");
+        $this->logger->notice("Step 27 of 27: Adding sequences data...                            ");
         $this->insertFeatureSeqs();
       }
-      $this->logger->notice("Step 27 of 27: Adding sequences data (Skipped: none available)...");
+      else {
+        $this->logger->notice("Step 27 of 27: Adding sequences data (Skipped: none available)     ");
+      }
     }
     // On exception, catch the error, clean up the cache file and rethrow
     catch (\Exception $e) {
@@ -829,8 +795,8 @@ class GFF3Importer extends ChadoImporterBase {
 
     $sel_cvterm_sql = "
       SELECT CVT.cvterm_id, CVT.name, CVTS.synonym
-      FROM {cvterm} CVT
-        LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+      FROM {1:cvterm} CVT
+        LEFT JOIN {1:cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
       WHERE CVT.cv_id = :cv_id and
        (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
     ";
@@ -855,7 +821,8 @@ class GFF3Importer extends ChadoImporterBase {
         'is_relationship' => FALSE,
       ];
       // @todo convert api call
-      $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
+      $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE], $this->chado_schema_main);
+      // $cvterm = (object) $this->insert_cvterm($term, ['update_existing' => FALSE]);
       $cvterm_match = $cvterm;
     }
 
@@ -874,31 +841,44 @@ class GFF3Importer extends ChadoImporterBase {
    * Makes sure Chado is ready with the necessary synonym type records.
    */
   private function prepSynonms() {
+    $chado = $this->getChadoConnection();
     // make sure we have a 'synonym_type' vocabulary
     $select = ['name' => 'synonym_type'];
-    $results = chado_select_record('cv', ['*'], $select);
+    // $results = chado_select_record('cv', ['*'], $select, NULL, $this->chado_schema_main);
+    $results_query = $chado->select('1:cv', 'cv')
+      ->fields('cv')
+      ->condition('name', 'synonym_type');
+    $results = $results_query->execute()->fetchObject();
+    $results_count = $results_query->countQuery()->execute()->fetchField();
 
-    if (count($results) == 0) {
+
+    if ($results_count == 0) {
       // insert the 'synonym_type' vocabulary
       $values = [
           'name' => 'synonym_type',
           'definition' => 'vocabulary for synonym types',
       ];
-      $success = chado_insert_record('cv', $values, array(
-          'skip_validation' => TRUE,
-      ));
+      $success = $chado->insert('1:cv')
+        ->fields($values)
+        ->execute();
+
       if (!$success) {
         $this->logger->warning("Failed to add the synonyms type vocabulary.");
         return 0;
       }
       // now that we've added the cv we need to get the record
-      $results = chado_select_record('cv', ['*'], $select);
-      if (count($results) > 0) {
-        $syncv = $results[0];
+      // $results = chado_select_record('cv', ['*'], $select, NULL, $this->chado_schema_main);
+      $results_query = $chado->select('1:cv', 'cv')
+        ->fields('cv')
+        ->condition('name', 'synonym_type');
+      $results = $results_query->execute()->fetchObject();
+      $results_count = $results_query->countQuery()->execute()->fetchField();
+      if ($results_count > 0) {
+        $syncv = $results;
       }
     }
     else {
-      $syncv = $results[0];
+      $syncv = $results;
     }
 
     // get the 'exact' cvterm, which is the type of synonym we're adding
@@ -908,8 +888,23 @@ class GFF3Importer extends ChadoImporterBase {
         'name' => 'synonym_type',
       ],
     ];
-    $result = chado_select_record('cvterm', ['*'], $select);
-    if (count($result) == 0) {
+    $result_cv = $chado->select('1:cv', 'cv')
+      ->fields('cv')
+      ->condition('name', 'synonym_type')
+      ->execute();
+    if (!$result_cv) {
+      $this->logger->warning("DB synonym_type could not be found");
+      return 0;
+    }
+
+    $result_query = $chado->select('1:cvterm', 'cvterm')
+      ->fields('cvterm')
+      ->condition('name', 'exact')
+      ->condition('cv_id', $result_cv->fetchObject()->cv_id);
+    $result = $result_query->execute()->fetchObject();
+    $result_count = $result_query->countQuery()->execute()->fetchField();
+
+    if ($result_count == 0) {
       $term = [
         'name' => 'exact',
         'id' => "synonym_type:exact",
@@ -918,14 +913,14 @@ class GFF3Importer extends ChadoImporterBase {
         'cv_name' => $syncv->name,
         'is_relationship' => FALSE,
       ];
-      $syntype = chado_insert_cvterm($term, ['update_existing' => TRUE]);
+      $syntype = chado_insert_cvterm($term, ['update_existing' => TRUE], $this->chado_schema_main);
       if (!$syntype) {
         $this->logger->warning("Cannot add synonym type: synonym_type:exact");
         return 0;
       }
     }
     else {
-      $syntype = $result[0];
+      $syntype = $result;
     }
     $this->exact_syn = $syntype;
   }
@@ -938,37 +933,39 @@ class GFF3Importer extends ChadoImporterBase {
     // Check to see if we have a NULL publication in the pub table.  If not,
     // then add one.
     $select = ['uniquename' => 'null'];
-    $result = chado_select_record('pub', ['*'], $select);
-    if (count($result) == 0) {
+    $result_query = $chado->select('1:pub', 'pub')
+      ->fields('pub')
+      ->condition('uniquename', 'null');
+    $result_count = $result_query->countQuery()->execute()->fetchField();
+
+    if ($result_count == 0) {
       $pub_sql = "
-        INSERT INTO {pub} (uniquename,type_id)
+        INSERT INTO {1:pub} (uniquename,type_id)
         VALUES (:uname,
           (SELECT cvterm_id
-           FROM {cvterm} CVT
-             INNER JOIN {dbxref} DBX ON DBX.dbxref_id = CVT.dbxref_id
-             INNER JOIN {db} DB      ON DB.db_id      = DBX.db_id
+           FROM {1:cvterm} CVT
+             INNER JOIN {1:dbxref} DBX ON DBX.dbxref_id = CVT.dbxref_id
+             INNER JOIN {1:db} DB      ON DB.db_id      = DBX.db_id
            WHERE CVT.name = :type_id))
       ";
-      $status = $chado->query($pub_sql);
+      $status = $chado->query($pub_sql, [
+        ':uname' => 'null',
+        ':type_id' => 'null',
+      ]);
       if (!$status) {
-        $this->logger->warning("Cannot prepare statement 'ins_pub_uniquename_typeid.");
+        $this->logger->error("Cannot add null publication needed for setup of alias.");
         return 0;
       }
 
-      // Insert the null pub.
-      $result = $chado->query($pub_sql, [
-          ':uname' => 'null',
-          ':type_id' => 'null',
-      ])->fetchObject();
-      if (!$result) {
-        $this->logger->warning("Cannot add null publication needed for setup of alias.");
-        return 0;
-      }
-      $result = chado_select_record('pub', ['*'], $select);
-      $pub = $result[0];
+      $result_query = $chado->select('1:pub','pub')
+        ->fields('pub')
+        ->condition('uniquename','null');
+      $result = $result_query->execute()->fetchObject();
+      $pub = $result;
     }
     else {
-      $pub = $result[0];
+      $result = $result_query->execute()->fetchObject();
+      $pub = $result;
     }
     $this->null_pub = $pub;
   }
@@ -977,7 +974,7 @@ class GFF3Importer extends ChadoImporterBase {
    * Makes sure Chado is ready with the necessary DB records.
    */
   private function prepDBs() {
-
+    $chado = $this->getChadoConnection();
     // Get the list of database records that are needed by this GFF file. If
     // they do not exist then add them.
     foreach (array_keys($this->db_lookup) as $dbname) {
@@ -986,30 +983,61 @@ class GFF3Importer extends ChadoImporterBase {
       // can't be found then look for the name as is.  If it still can't be found
       // the create the database
       $values = ['name' => "DB:$dbname"];
-      $db = chado_select_record('db', ['db_id'], $values);
-      if (count($db) == 0) {
+      // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
+      $db_query = $chado->select('1:db','db')
+        ->fields('db')
+        ->condition('name', "DB:$dbname");
+      $db_count = $db_query->countQuery()->execute()->fetchField();
+      $db = $db_query->execute()->fetchObject();
+      if ($db_count == 0) {
         $values = ['name' => "$dbname"];
-        $db = chado_select_record('db', ['db_id'], $values);
+        // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
+        $db_query = $chado->select('1:db', 'db')
+          ->fields('db')
+          ->condition('name', "$dbname");
+        $db_count = $db_query->countQuery()->execute()->fetchField();
+        $db = $db_query->execute()->fetchObject();
       }
-      if (count($db) == 0) {
+
+      if ($db_count == 0) {
         $values = [
           'name' => $dbname,
-          'description' => 'Added automatically by the Triapl GFF loader.',
+          'description' => 'Added automatically by the Tripal GFF loader.',
         ];
-        $success = chado_insert_record('db', $values, array(
-          'skip_validation' => TRUE,
-        ));
+        // $success = chado_insert_record('db', $values, array(
+        //   'skip_validation' => TRUE,
+        // ), $this->chado_schema_main);
+        // print_r("DB NAME:" . $dbname . "\n");
+        $debug_dbs = $chado->query("SELECT * FROM {1:db} ORDER BY db_id ASC");
+        // while ($obj = $debug_dbs->fetchObject()) {
+        //   print_r($obj);
+        //   print_r("\n");
+        // }
+        // $debug_db_serial = $chado->query("SELECT currval(pg_get_serial_sequence('" . $chado->getSchemaName() . ".db', 'db_id'));");
+        // while($obj = $debug_db_serial->fetchObject()) {
+        //   print_r($obj);
+        //   print_r("\n");
+        // }
+        $success = $chado->insert('1:db')
+          ->fields($values)
+          ->execute();
         if ($success) {
           $values = ['name' => "$dbname"];
-          $db = chado_select_record('db', ['db_id'], $values);
+          // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
+          $db_query = $chado->select('1:db', 'db')
+            ->fields('db')
+            ->condition('name', "$dbname");
+          $db = $db_query->execute()->fetchObject();
         }
         else {
-          $this->logger->warning("Cannot find or add the database $dbname.");
+          $this->logger->warning('Cannot find or add the database "@dbname".',
+            ['@dbname' => $dbname]
+          );
           return 0;
         }
       }
 
-      $this->db_lookup[$dbname] = $db[0]->db_id;
+      $this->db_lookup[$dbname] = $db->db_id;
     }
   }
 
@@ -1025,7 +1053,8 @@ class GFF3Importer extends ChadoImporterBase {
     // get the columns
     $cols = explode("\t", $line);
     if (sizeof($cols) != 9) {
-      throw new \Exception(t('Improper number of columns on line %line_num: %line', ['%line_num' => $this->current_line, '%line' => $line]));
+      throw new \Exception(t('Improper number of columns on line %line_num: %line',
+        ['%line_num' => $this->current_line, '%line' => $line]));
     }
 
     $ret = [
@@ -1058,15 +1087,15 @@ class GFF3Importer extends ChadoImporterBase {
     preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?\-\|]*/', $ret['landmark'], $matches);
     if ($matches[0] != $ret['landmark']) {
       throw new \Exception(t("Landmark/seqid !landmark contains invalid
-        characters. Only characters included in this regular expression is
+        characters. Only characters included in this regular expression are
         allowed [a-zA-Z0-9.:^*$@!+_?-|]",
         ['!landmark' => $ret['landmark']]));
     }
 
     // Check to make sure strand has a valid character
     if (preg_match('/[\+-\?\.]/',$ret['strand']) == false) {
-      throw new \Exception(t('Invalid strand detected on line !line,
-        strand can only be +-?.',['!line' => $line]));
+      throw new \Exception(t('Invalid strand detected on line %line,
+        strand can only be +-?.', ['%line' => $line]));
     }
 
     // Format the strand for chado
@@ -1085,8 +1114,8 @@ class GFF3Importer extends ChadoImporterBase {
 
 
     if (preg_match('/[012\.]/',$ret['phase']) == false) {
-      throw new \Exception(t('Invalid phase detected on line !line,
-        phase can only be 0,1,2 or . (period)',['!line' => $line]));
+      throw new \Exception(t('Invalid phase detected on line %line,
+        phase can only be 0,1,2 or . (period)', ['%line' => $line]));
     }
 
 
@@ -1118,8 +1147,8 @@ class GFF3Importer extends ChadoImporterBase {
         continue;
       }
       if (!preg_match('/^[^\=]+\=.+$/', $attr)) {
-        throw new \Exception(t('Attribute is not correctly formatted on line !line_num: !attr',
-            ['!line_num' => $this->current_line, '!attr' => $attr]));
+        throw new \Exception(t('Attribute is not correctly formatted on line %line_num: %attr',
+          ['%line_num' => $this->current_line, '%attr' => $attr]));
       }
 
       // Break apart each attribute into key/value pairs.
@@ -1154,15 +1183,17 @@ class GFF3Importer extends ChadoImporterBase {
       }
       elseif (strcmp($tag_name, 'organism') == 0) {
         if (count($tags[$tag_name]) > 1) {
-          throw new \Exception(t('Each feature can only have one "organism" attribute. The feature %uniquename has more than one: %organism',
+          throw new \Exception(t('Each feature can only have one "organism" attribute.
+            The feature %uniquename has more than one: %organism',
             ['%uniquename' => $ret['uniquename'], '%organism' => $ret['organism']]));
         }
         $attr_organism = $this->findOrganism($tags[$tag_name][0], $this->current_line);
       }
       elseif (strcmp($tag_name, 'Target') == 0) {
         if (count($tags[$tag_name]) > 1) {
-          throw new \Exception(t('Each feature can only have one "Target" attribute. The feature %uniquename has more than one.',
-              ['%uniquename' => $ret['uniquename']]));
+          throw new \Exception(t('Each feature can only have one "Target" attribute.
+            The feature %uniquename has more than one.',
+            ['%uniquename' => $ret['uniquename']]));
         }
         // Get the elements of the target.
         $matches = [];
@@ -1202,8 +1233,8 @@ class GFF3Importer extends ChadoImporterBase {
           }
         }
         else {
-          throw new \Exception(t('The "Target" attribute is incorreclty formatted for the feature "%uniquename."',
-              ['%uniquename' => $ret['uniquename']]));
+          throw new \Exception(t('The "Target" attribute "%attribute" is incorrectly formatted for the
+            feature "%feature"', ['%attribute' => $tags[$tag_name][0], '%feature' => $ret['uniquename']]));
         }
       }
       elseif (strcmp($tag_name, 'target_organism') == 0) {
@@ -1308,7 +1339,8 @@ class GFF3Importer extends ChadoImporterBase {
       $ret['derives_from'] = $attr_derives[0];
     }
     if (count($attr_derives) > 1) {
-      throw new \Exception(t('Each feature can only have one "Derives_from" attribute. The feature %uniquename has more than one: %derives',
+      throw new \Exception(t('Each feature can only have one "Derives_from" attribute.
+        The feature %uniquename has more than one: %derives',
         [
           '%uniquename' => $ret['uniquename'],
           '%derives' => $ret['derives_from'],
@@ -1337,10 +1369,9 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Make sure we only have one Gap if it exists
     if (array_key_exists('Gap', $attr_others) and count($attr_others['Gap']) > 1) {
-      throw new \Exception(t('Each feature can only have one "Gap" attribute. The feature %uniquename has more than one.',
-          [
-            '%uniquename' => $ret['uniquename'],
-          ]));
+      throw new \Exception(t('Each feature can only have one "Gap" attribute.
+        The feature %uniquename has more than one.',
+        ['%uniquename' => $ret['uniquename']]));
     }
 
     // Add the properties and parent.
@@ -1386,8 +1417,11 @@ class GFF3Importer extends ChadoImporterBase {
       // or landmark name.
       if (!(array_key_exists($uniquename, $this->features) and $this->features[$uniquename]) and
           !(array_key_exists($uniquename, $this->landmarks) and $this->landmarks[$uniquename])) {
-        $this->logger->warning('Assigning Sequence: cannot find a feature with a unique name of: "@uname". Please ensure the sequence names in the ##FASTA section use the same name as the ID in the feature in the GFF file. ',
-        ['@uname' => $uniquename]);
+        $this->logger->warning('Assigning Sequence: cannot find a feature with a unique name of: "@uname".'
+                             . ' Please ensure the sequence names in the ##FASTA section use the same name'
+                             . ' as the ID in the feature in the GFF file.',
+          ['@uname' => $uniquename]
+        );
         $count++;
         continue;
       }
@@ -1405,7 +1439,7 @@ class GFF3Importer extends ChadoImporterBase {
 
 
       // Seek to the position in the GFF file where this sequence is housed.
-      // iterate through the lines and get store the value.
+      // Iterate through the lines and get and then store the value.
       $residues = [];
       fseek($this->gff_file_h, $offset);
       while ($line = fgets($this->gff_file_h)) {
@@ -1421,7 +1455,7 @@ class GFF3Importer extends ChadoImporterBase {
         'seqlen' => strlen($residues),
         'md5checksum' => md5($residues),
       ];
-      chado_update_record('feature', ['feature_id' => $feature_id], $values);
+      chado_update_record('feature', ['feature_id' => $feature_id], $values, NULL, $this->chado_schema_main);
       $count++;
       $this->setItemsHandled($count);
     }
@@ -1439,7 +1473,7 @@ class GFF3Importer extends ChadoImporterBase {
    */
   private function findLandmark($landmark_name) {
     $chado = $this->getChadoConnection();
-    $landmark_type = $this->landmark_type;
+    $landmark_type = $this->default_landmark_type;
 
     // Before performing a database query check to see if
     // this landmark is already in our lookup list.
@@ -1447,13 +1481,13 @@ class GFF3Importer extends ChadoImporterBase {
       return $this->landmarks[$landmark_name];
     }
 
-    $landmark_select = $chado->select('feature')
+    $landmark_select = $chado->select('1:feature')
       ->fields('feature')
       ->condition('organism_id', $this->organism_id)
       ->condition('uniquename', $landmark_name);
 
     if($landmark_type) {
-      $landmark_select->condition('type_id', $landmark_type->getValue('cvterm_id'));
+      $landmark_select->condition('type_id', $this->landmark_cvterm_id);
     }
 
     // Make sure we only match on one landmark.
@@ -1462,10 +1496,11 @@ class GFF3Importer extends ChadoImporterBase {
       return NULL;
     }
     if ($num_found > 1) {
-      throw new \Exception(t("The landmark '%landmark' has more than one entry for this organism (%species). Did you provide a landmark type? If not, try resubmitting and providing a type." .
-        "Cannot continue", [
+      throw new \Exception(t("The landmark '%landmark' has more than one entry for
+      this organism (%species). Did you provide a landmark type? If not, try resubmitting and providing a type.",
+        [
           '%landmark' => $landmark_name,
-          '%species' => $this->organism->genus . " " . $this->organism->species,
+          '%species' => chado_get_organism_scientific_name($this->organism),
         ]));
     }
 
@@ -1487,10 +1522,10 @@ class GFF3Importer extends ChadoImporterBase {
       $rid = $region_matches[1];
       $landmark = $this->findLandmark($rid);
       if (!$landmark) {
-        if (!$this->landmark_type) {
-          throw new \Exception(t('The landmark, !landmark, cannot be added becuase no landmark ' .
+        if (!$this->default_landmark_type) {
+          throw new \Exception(t('The landmark, %landmark, cannot be added because no landmark ' .
               'type was provided. Please redo the importer job and specify a landmark type.',
-              ['!landmark' => $rid]));
+              ['%landmark' => $rid]));
         }
         $this->insertLandmark($rid);
       }
@@ -1503,12 +1538,14 @@ class GFF3Importer extends ChadoImporterBase {
   private function insertLandmark($name) {
     $chado = $this->getChadoConnection();
     $residues = '';
-    $insert_id = $chado->insert('feature')
+    $insert_id = $chado->insert('1:feature')
     ->fields([
       'organism_id' => $this->organism->organism_id,
       'uniquename' => $name,
       'name' => $name,
-      'type_id' => $this->landmark_cvterm->cvterm_id,
+      // ORIGINAL CODE FROM STEPHEN
+      // 'type_id' => $this->landmark_cvterm_id,
+      'type_id' => $this->getLandmarkTypeID($name),
       'md5checksum' => md5($residues),
       'is_analysis' => 0,
       'is_obsolete' => 0,
@@ -1595,10 +1632,21 @@ class GFF3Importer extends ChadoImporterBase {
    * Prepare the database prior to working with the feature.
    */
   private function prepareFeature($gff_feature, &$feature_cvterms, &$featureprop_cvterms) {
-
     // Add the landmark if it doesn't exist in the landmark list.
     if (!array_key_exists($gff_feature['landmark'], $this->landmarks)) {
       $this->landmarks[$gff_feature['landmark']] = FALSE;
+
+      // Check whether landmark_id matches the feature type
+      // Keep track of the landmark types using the class variable
+      // landmark_types
+      $landmark_id = $gff_feature['attrs']['ID'][0];
+      if ($landmark_id == $gff_feature['landmark']) {
+        $this->landmark_types[$landmark_id] = $gff_feature['type'];
+      }
+      else {
+        $this->landmark_types[$landmark_id] = $this->default_landmark_type;
+      }
+
     }
 
     // Organize DBs and DBXrefs for faster access later on.
@@ -1683,16 +1731,17 @@ class GFF3Importer extends ChadoImporterBase {
       $feature = $this->getCachedFeature($findex);
       $type = $feature['type'];
       if ($type == 'cds' or $type == 'protein' or $type == 'polypeptide') {
-        $parent_name = $feature['parent'];
-        if ($parent_name) {
-          if (!array_key_exists($parent_name, $this->proteins)) {
-            $this->proteins[$parent_name] = [];
-          }
-          if ($type == 'cds') {
-            $this->proteins[$parent_name]['cds'][] = $findex;
-          }
-          if ($type == 'protein' or $type == 'polypeptide') {
-            $this->proteins[$parent_name]['protein'] = $findex;
+        if (isset($feature['parent'])) {
+          foreach (explode(',', $feature['parent']) as $parent_name) {
+            if (!array_key_exists($parent_name, $this->proteins)) {
+              $this->proteins[$parent_name] = [];
+            }
+            if ($type == 'cds') {
+              $this->proteins[$parent_name]['cds'][] = $findex;
+            }
+            if ($type == 'protein' or $type == 'polypeptide') {
+              $this->proteins[$parent_name]['protein'] = $findex;
+            }
           }
         }
       }
@@ -1749,10 +1798,12 @@ class GFF3Importer extends ChadoImporterBase {
         // Get the name for the protein
         $name = $parent_name;
         $uname = $parent_name . '-protein';
-        // If regexes are provdied then use those to create the protein name.
+        // If regexes are provided then use those to create the protein name.
         if ($this->re_mrna and $this->re_protein) {
           $uname = preg_replace("/" . $this->re_mrna . "/", $this->re_protein, $parent_name);
         }
+
+        $cds_organism_id = array_key_exists('organism_id', $cds)?$cds['organism_id']:NULL;
 
         // Now create the protein feature.
         $feature = [
@@ -1772,7 +1823,7 @@ class GFF3Importer extends ChadoImporterBase {
           'dbxrefs' => [],
           'terms' => [],
           'derives_from' => NULL,
-          'organism' => $cds['organism_id'],
+          'organism' => $cds_organism_id,
           'target' => [],
           'properties' => [],
           'parent' => $cds['parent'],
@@ -1825,7 +1876,8 @@ class GFF3Importer extends ChadoImporterBase {
     $this->gff_cache_file_name = \Drupal::service('file_system')->realpath($temp_file);
 
     $this->logger->notice("Opening temporary cache file: @cfile",
-    ['@cfile' => $this->gff_cache_file_name]);
+      ['@cfile' => $this->gff_cache_file_name]
+    );
     $this->gff_cache_file = fopen($this->gff_cache_file_name, "r+");
   }
 
@@ -1835,7 +1887,8 @@ class GFF3Importer extends ChadoImporterBase {
   private function closeCacheFile() {
     fclose($this->gff_cache_file);
     $this->logger->notice("Removing temporary cache file: @cfile",
-    ['@cfile' => $this->gff_cache_file_name]);
+      ['@cfile' => $this->gff_cache_file_name]
+    );
     unlink($this->gff_cache_file_name);
   }
 
@@ -1862,8 +1915,8 @@ class GFF3Importer extends ChadoImporterBase {
   private function getCachedFeature($findex) {
     $retval = fseek($this->gff_cache_file, $findex);
     if ($retval == -1) {
-      throw new \Exception(t('Cannot seek to file location, !findex, in cache file !file.',
-          ['!findex' => $findex, '!file' -> $this->gff_cache_file]));
+      throw new \Exception(t('Cannot seek to file location, %findex, in cache file %file.',
+        ['%findex' => $findex, '%file' -> $this->gff_cache_file]));
     }
     $feature = fgets($this->gff_cache_file);
     $feature = unserialize($feature);
@@ -1882,13 +1935,20 @@ class GFF3Importer extends ChadoImporterBase {
         if (array_key_exists($uniquename, $this->seq_region_headers)) {
           $this->insertHeaderLandmark($this->seq_region_headers[$uniquename]);
         }
-        // Second, if a landmark_type is provided then just add the landmark feature.
-        else if ($this->landmark_type) {
+        // Second, if a landmark_type is provided from the GFF file
+        else if (array_key_exists($uniquename, $this->landmark_types)) {
+          $this->insertLandmark($uniquename);
+        }
+        // Third, if a landmark_type is provided then just add the landmark feature.
+        else if ($this->default_landmark_type) {
           $this->insertLandmark($uniquename);
         }
         else {
-          throw new \Exception(t('The landmark (reference) sequence, !landmark, is not in the database and not specified in the GFF3 file. Please either pre-load the landmark sequences or set a "Landmark Type" in the GFF importer.',
-              ['!landmark' => $uniquename]));
+          throw new \Exception(t('The landmark (reference) sequence, %landmark,
+            is not in the database and not specified in the GFF3 file.
+            Please either pre-load the landmark sequences or set a "Landmark Type"
+            in the GFF importer',
+            ['%landmark' => $uniquename]));
         }
       }
     }
@@ -1907,7 +1967,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     $init_sql = "
-      INSERT INTO {feature}
+      INSERT INTO {1:feature}
         (uniquename, name, type_id, organism_id, residues, md5checksum,
          seqlen, is_analysis, is_obsolete)
       VALUES\n";
@@ -1971,10 +2031,10 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
     // Batch update: https://www.alibabacloud.com/blog/how-does-postgresql-implement-batch-update-deletion-and-insertion_596030
-    $init_sql = "UPDATE {feature}
+    $init_sql = "UPDATE {1:feature}
         SET name=tmp.name from (values\n";
 
-    $fin_sql = ") as tmp (name,feature_id) where {feature}.feature_id::text=tmp.feature_id\n";
+    $fin_sql = ") as tmp (name,feature_id) where {1:feature}.feature_id::text=tmp.feature_id\n";
 
     $i = 0;
     $total = 0;
@@ -1986,7 +2046,7 @@ class GFF3Importer extends ChadoImporterBase {
       $total++;
       $i++;
       // Only do an update if this feature already exist in the database and is flagged for update.
-      // TO DO: make is_obsolute updatable. Make sure to add is_obsolute collection to cached feature
+      // TO DO: make is_obsolete updatable. Make sure to add is_obsolute collection to cached feature
       $sql .= "(:name_$i, :feature_id_$i),\n";
       $args[":name_$i"] = $new_name;
       $args[":feature_id_$i"] = $feature_id;
@@ -2020,7 +2080,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql = "SELECT uniquename, name, type_id, organism_id, feature_id FROM {feature} WHERE uniquename in (:uniquenames[])";
+    $sql = "SELECT uniquename, name, type_id, organism_id, feature_id FROM {1:feature} WHERE uniquename in (:uniquenames[])";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2051,12 +2111,12 @@ class GFF3Importer extends ChadoImporterBase {
               if ($matched_type_id == $f->type_id and $matched_organism_id == $f->organism_id) {
                 $this->features[$f->uniquename]['feature_id'] = $f->feature_id;
                 $this->features[$f->uniquename]['name'] = $f->name;
-		// Checking to see if the name has changed and therefore needs updating
-		if ($f->name != $matched_feature['name']) {
+                // Checking to see if the name has changed and therefore needs updating
+                if ($f->name != $matched_feature['name']) {
                   // Yes. we need to update name of this feature.
-		  // Adding flag to cached feature that indicates updated needed.
-		  $this->update_names[$f->feature_id] = $matched_feature['name'];
-	        }
+                  // Adding flag to cached feature that indicates updated needed.
+                  $this->update_names[$f->feature_id] = $matched_feature['name'];
+                }
               }
             }
           }
@@ -2083,13 +2143,13 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql1 = "DELETE from {featureprop} WHERE feature_id IN (:feature_ids[])";
-    $sql2 = "DELETE from {featureloc} WHERE feature_id IN (:feature_ids[])";
-    $sql3 = "DELETE from {feature_cvterm} WHERE feature_id IN (:feature_ids[])";
-    $sql4 = "DELETE from {feature_dbxref} WHERE feature_id IN (:feature_ids[])";
-    $sql5 = "DELETE from {feature_synonym} WHERE feature_id IN (:feature_ids[])";
-    $sql6 = "DELETE from {feature_relationship} WHERE subject_id IN (:feature_ids[])";
-    $sql7 = "DELETE from {analysisfeature} WHERE feature_id IN (:feature_ids[])";
+    $sql1 = "DELETE from {1:featureprop} WHERE feature_id IN (:feature_ids[])";
+    $sql2 = "DELETE from {1:featureloc} WHERE feature_id IN (:feature_ids[])";
+    $sql3 = "DELETE from {1:feature_cvterm} WHERE feature_id IN (:feature_ids[])";
+    $sql4 = "DELETE from {1:feature_dbxref} WHERE feature_id IN (:feature_ids[])";
+    $sql5 = "DELETE from {1:feature_synonym} WHERE feature_id IN (:feature_ids[])";
+    $sql6 = "DELETE from {1:feature_relationship} WHERE subject_id IN (:feature_ids[])";
+    $sql7 = "DELETE from {1:analysisfeature} WHERE feature_id IN (:feature_ids[])";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2140,7 +2200,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "INSERT INTO {featureprop} (feature_id, type_id, value, rank) VALUES\n";
+    $init_sql = "INSERT INTO {1:featureprop} (feature_id, type_id, value, rank) VALUES\n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -2206,7 +2266,7 @@ class GFF3Importer extends ChadoImporterBase {
     $part_of = $this->getTypeID('part_of', FALSE);
     $derives_from = $this->getTypeID('derives_from', FALSE);
 
-    $init_sql = "INSERT INTO {feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
+    $init_sql = "INSERT INTO {1:feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -2275,9 +2335,9 @@ class GFF3Importer extends ChadoImporterBase {
     // looking for them and then insert those that don't exist.
     $init_sql = "
       SELECT DB.name, DBX.db_id, DBX.accession, DBX.dbxref_id, CVT.cvterm_id
-      FROM {dbxref} DBX
-        INNER JOIN {db} DB on DB.db_id = DBX.db_id
-        LEFT JOIN {cvterm} CVT on DBX.dbxref_id = CVT.dbxref_id
+      FROM {1:dbxref} DBX
+        INNER JOIN {1:db} DB on DB.db_id = DBX.db_id
+        LEFT JOIN {1:cvterm} CVT on DBX.dbxref_id = CVT.dbxref_id
       WHERE
     ";
     $i = 0;
@@ -2373,6 +2433,78 @@ class GFF3Importer extends ChadoImporterBase {
   }
 
   /**
+   * This function goes through each landmark found, looks up the landmark_types
+   * and then gets the type_id for the landmark if it's not already cached.
+   * If it is already cached, it does not perform a lookup.
+   */
+  private function findLandmarksTypeIDs() {
+    $chado = $this->getChadoConnection();
+    // Get landmark type_ids and cache them
+    foreach ($this->landmarks as $landmark_name => $feature_id) {
+      // If there is no cached type_id for this landmark via landmark_types_type_ids
+
+      // Determine the cvterm_name for the landmark
+      $type = NULL;
+      // If there is a type from the landmark_types that match, use this
+      if (isset($this->landmark_types[$landmark_name])) {
+        $type = $this->landmark_types[$landmark_name];
+      }
+      // Else use the default landmark_type
+      else {
+        $type = $this->default_landmark_type;
+      }
+      if ($type == NULL) {
+        $error_msg = 'Could not determine a type for landmark name: %landmark_name';
+        $error_msg .= '. There was no default landmark type to force either.';
+        throw new \Exception(t($error_msg, ['%landmark_name' => $landmark_name]));
+      }
+
+      // If there is no cached type_id for this landmark type, try to lookup and cache
+      if (!isset($this->landmark_types_type_ids[$type])) {
+        $sql_landmark_type_id = "SELECT cvterm_id FROM {1:cvterm} WHERE name = :name";
+        $args_type = array(':name' => $type);
+        $results_type_ids = $chado->query($sql_landmark_type_id, $args_type);
+        $rowsCount = 0;
+        foreach ($results_type_ids as $row) {
+          $rowsCount++;
+          $this->landmark_types_type_ids[$type] = $row->cvterm_id;
+        }
+        // If the database lookup was not successful
+        if ($rowsCount == 0) {
+          // Try to default to the default landmark type cvterm
+          if ($this->landmark_cvterm_id) {
+            $this->landmark_types_type_ids[$type] = $this->landmark_cvterm_id;
+          }
+          // Else if the default could not be found (if default landmark is empty in the form)
+          else {
+            $error_msg = 'Could not lookup cvterm / type id for landmark type: %type.';
+            $error_msg .= ' Also since there is no default landmark type specified, could not force a default landmark type_id.';
+            throw new \Exception(t($error_msg, ['%type' => $type]));
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * This looks up the landmark type_id by utilizing the landmark_types associate
+   * array cached values and then checks the landmark_types_type_ids associate
+   * array cached values.
+   */
+  function getLandmarkTypeID($landmark_name) {
+    // If there is a type from the landmark_types that match, use this
+    if (isset($this->landmark_types[$landmark_name])) {
+      $type = $this->landmark_types[$landmark_name];
+    }
+    // Else use the default landmark_type
+    else {
+      $type = $this->default_landmark_type;
+    }
+
+    return $this->landmark_types_type_ids[$type];
+  }
+
+  /**
    *
    */
   private function findLandmarks() {
@@ -2384,10 +2516,16 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql = "SELECT name, uniquename, feature_id FROM {feature} WHERE uniquename in (:landmarks[])";
+    // Perform cache of Landmarks Type IDs
+    $this->findLandmarksTypeIDs();
+
+    // NEW IMPROVED CODE WITH BATCH PROCESSING
+    $init_sql = "SELECT name, uniquename, feature_id FROM {1:feature} WHERE \n";
     $i = 0;
+    $j = 0;
     $total = 0;
     $batch_num = 1;
+    $sql = '';
     $names = [];
     foreach ($this->landmarks as $landmark_name => $feature_id) {
       $i++;
@@ -2401,9 +2539,17 @@ class GFF3Importer extends ChadoImporterBase {
 
       // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_landmarks) {
+        foreach ($names as $name) {
+          $j++;
+          $sql .= "(uniquename = :landmark_$j AND type_id = :type_id_$j AND organism_id = :organism_id_$j) OR\n";
+          $type_id = $this->getLandmarkTypeID($name);
+          $args[":landmark_$j"] = $name;
+          $args[":type_id_$j"] = $type_id;
+          $args[":organism_id_$j"] = $this->organism_id;
+        }
         if (count($names) > 0) {
-          $args = [':landmarks[]' => $names];
-          // $results = chado_query($sql, $args);
+          $sql = rtrim($sql, " OR\n");
+          $sql = $init_sql . $sql;
           $results = $chado->query($sql, $args);
           while ($f = $results->fetchObject()) {
             $this->landmarks[$f->uniquename] = $f->feature_id;
@@ -2412,11 +2558,15 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the variables for the next batch.
+        // Now reset all of the varables for the next batch.
+        $sql = '';
         $i = 0;
+        $j = 0;
+        $args = [];
         $names = [];
       }
     }
+
   }
 
   /**
@@ -2431,7 +2581,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "INSERT INTO {dbxref} (db_id, accession) VALUES\n";
+    $init_sql = "INSERT INTO {1:dbxref} (db_id, accession) VALUES\n";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2481,7 +2631,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     // Don't need to use placeholders for this insert since we are only using integers.
-    $init_sql = "INSERT INTO {feature_dbxref} (feature_id, dbxref_id) VALUES \n";
+    $init_sql = "INSERT INTO {1:feature_dbxref} (feature_id, dbxref_id) VALUES \n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -2540,7 +2690,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Don't need to use placeholders for this insert since we are only using integers.
 
-    $init_sql = "INSERT INTO {feature_cvterm} (feature_id, cvterm_id, pub_id) VALUES \n";
+    $init_sql = "INSERT INTO {1:feature_cvterm} (feature_id, cvterm_id, pub_id) VALUES \n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -2603,7 +2753,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     $init_sql = "
-      INSERT INTO {featureloc}
+      INSERT INTO {1:featureloc}
         (srcfeature_id, feature_id, fmin, fmax, strand, phase, rank)
       VALUES\n";
     $i = 0;
@@ -2676,7 +2826,7 @@ class GFF3Importer extends ChadoImporterBase {
     // Get the 'derives_from' cvterm
     $type_id = $this->getTypeID('derives_from', FALSE);
 
-    $init_sql = "INSERT INTO {feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
+    $init_sql = "INSERT INTO {1:feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2694,9 +2844,10 @@ class GFF3Importer extends ChadoImporterBase {
       if (!$feature['skipped'] and $feature['derives_from']) {
         $object_id = $this->features[$feature['derives_from']]['feature_id'];
         if (!$object_id) {
-          $this->logger->warning("Skipping 'derives_from' relationship for feature @feature_name. " .
-            "Could not find the derives_from feature: @derives_from.",
-            ['@feature_name' => $feature['uniquename'], '@derives_from' => $feature['derives_from']]);
+          $this->logger->warning("Skipping 'derives_from' relationship for feature @feature_name. "
+                               . "Could not find the derives_from feature: @derives_from.",
+            ['@feature_name' => $feature['uniquename'], '@derives_from' => $feature['derives_from']]
+          );
           continue;
         }
         $sql .= "(:subject_id_$i, :object_id_$i, :type_id_$i, 0),\n";
@@ -2736,7 +2887,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     $init_sql = "
-      INSERT INTO {featureloc}
+      INSERT INTO {1:featureloc}
         (srcfeature_id, feature_id, fmin, fmax, strand, phase, rank)
       VALUES\n";
     $i = 0;
@@ -2796,7 +2947,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Get the organism object.
     list($genus, $species) = explode(':', $organism_attr, 2);
-    $organism_select = $chado->select('organism','o');
+    $organism_select = $chado->select('1:organism','o');
     $organism_select->fields('o');
     $organism_select->condition('genus', $genus);
     $organism_select->condition('species', $species);
@@ -2812,11 +2963,11 @@ class GFF3Importer extends ChadoImporterBase {
 
     if ($num_found > 1) {
       throw new \Exception(t('Multiple organisms were found for the "organism" attribute, %organism, on line %line_num',
-          ['%organism' => $organism_attr, '%line_num' => $line_num]));
+        ['%organism' => $organism_attr, '%line_num' => $line_num]));
     }
 
     if ($this->create_organism) {
-      $organism_insert = $chado->insert('organism');
+      $organism_insert = $chado->insert('1:organism');
       $organism_insert->fields([
         'genus' => $genus,
         'species' => $species
@@ -2840,7 +2991,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "SELECT synonym_id, name FROM {synonym} WHERE \n";
+    $init_sql = "SELECT synonym_id, name FROM {1:synonym} WHERE \n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -2910,7 +3061,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "INSERT INTO {synonym} (type_id, name, synonym_sgml) VALUES\n";
+    $init_sql = "INSERT INTO {1:synonym} (type_id, name, synonym_sgml) VALUES\n";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2960,7 +3111,8 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "INSERT INTO {feature_synonym} (synonym_id, feature_id, pub_id) VALUES \n";
+    $init_sql = "INSERT INTO {1:feature_synonym} (synonym_id, feature_id, pub_id) VALUES \n";
+    $sql = "";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -3093,7 +3245,8 @@ class GFF3Importer extends ChadoImporterBase {
         // Do nothing.
       }
       else {
-        throw new \Exception(t("A feature with the same ID exists multiple times: !uname", ['!uname' => $uniquename]));
+        throw new \Exception(t("A feature with the same ID exists multiple times: %uname",
+          ['%uname' => $uniquename]));
       }
     }
     return [
@@ -3114,7 +3267,8 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id, significance) VALUES \n";
+    $init_sql = "INSERT INTO {1:analysisfeature} (feature_id, analysis_id, significance) VALUES \n";
+    $sql = "";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -3132,7 +3286,7 @@ class GFF3Importer extends ChadoImporterBase {
         $sql .= "(:feature_id_$i, :analysis_id_$i, :significance_$i),\n";
         $args[":feature_id_$i"] = $feature_id;
         $args[":analysis_id_$i"] = $this->analysis->analysis_id;
-        if (strcmp($feature['score'], '.') != 0) {
+        if (array_key_exists('score', $feature) and (strcmp($feature['score'], '.') != 0)) {
           $args[":significance_$i"] = $feature['score'];
         }
         else {
@@ -3170,5 +3324,46 @@ class GFF3Importer extends ChadoImporterBase {
    */
   public function formSubmit($form, &$form_state) {
 
+  }
+
+
+  function insert_cvterm($term, $options = []) {
+    $chado = $this->getChadoConnection();
+    // This will get a vocab and create it if it is not found (great)
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $vocabulary = $vmanager->loadCollection($term['cv_name'], 'chado_vocabulary');
+    if (!$vocabulary) {
+      $vocabulary = $vmanager->createCollection($term['cv_name'], 'chado_vocabulary');
+    }
+
+
+
+    // This will get an id space or create it if it is not found (great)
+    $idspace_name = explode(':', $term['id'])[0];
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $idspace = $idsmanager->loadCollection($idspace_name, 'chado_id_space');
+    if (!$idspace) {
+      $idspace = $idsmanager->createCollection($idspace_name, 'chado_id_space');
+    }
+
+    $accession = explode(':', $term['id'])[1];
+    // Create the term
+    if ($idspace) {
+      $term = new TripalTerm([
+        'name' => $term['name'], // entire term id
+        'accession' => $accession, // second part of term id
+        'idSpace' => $idspace_name, // first part of term id
+        'vocabulary' => $term['cv_name'], // vocabulary
+        'definition' => '', // this is not given by the term object (???)
+      ]);
+      $idspace->saveTerm($term);
+    }
+
+    $cvterm_object = $chado->select('1:cvterm', 'cvterm')
+    ->fields('cvterm')
+    ->condition('cvterm.name', $accession)
+    ->execute()->fetchObject();
+
+    return $cvterm_object;
   }
 }

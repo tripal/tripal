@@ -103,6 +103,30 @@ tripal.storage:
   parent: tripal.admin
   weight: 90
 
+# -- Root link for Tripal managed configurations
+tripal.config:
+  route_name: tripal.config
+  title: 'Configuration'
+  description: "Both core Tripal and extension modules can provide default configuration models. Here you can view and sometimes edit those defaults."
+  parent: tripal.admin
+  weight: 95
+
+# -- Configuration for Tripal Content Types link.
+entity.tripalentitytype_collection.collection:
+  title: 'Tripal Content Type Collection'
+  parent: tripal.config
+  description: 'Manage default configurations for Tripal content types which specify the details of content types automatically created in this site.'
+  route_name: entity.tripalentitytype_collection.collection
+  weight: 20
+
+# -- Configuration for Tripal Field link.
+entity.tripalfield_collection.collection:
+  title: 'Tripal Field Collection'
+  parent: tripal.config
+  description: 'Manage default configurations for Tripal Fields which specify the details of fields automatically created in this site.'
+  route_name: entity.tripalfield_collection.collection
+  weight: 30
+
 # -- Root link for Tripal extension listing.
 tripal.extension:
   route_name: tripal.extension

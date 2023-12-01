@@ -4,9 +4,11 @@ namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+
 /**
  * OBO Importer implementation of the TripalImporterBase.
  *
@@ -17,18 +19,13 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    file_types = {"obo"},
  *    upload_description = @Translation("Please provide the details for importing a new OBO file. The file must have a .obo extension."),
  *    upload_title = @Translation("New OBO File"),
- *    use_analysis = False,
- *    require_analysis = True,
+ *    use_analysis = FALSE,
+ *    require_analysis = FALSE,
  *    button_text = @Translation("Import OBO File"),
- *    file_upload = False,
- *    file_load = False,
- *    file_remote = False,
- *    file_required = False,
- *    cardinality = 1,
- *    menu_path = "",
- *    callback = "",
- *    callback_module = "",
- *    callback_path = "",
+ *    file_upload = FALSE,
+ *    file_local = FALSE,
+ *    file_remote = FALSE,
+ *    file_required = FALSE,
  *  )
  */
 class OBOImporter extends ChadoImporterBase {
@@ -39,7 +36,6 @@ class OBOImporter extends ChadoImporterBase {
    * @var array
    */
   private $obo_namespaces = [];
-
 
   /**
    * Holds the list of all CVs on this site. By storing them here it saves
@@ -67,7 +63,6 @@ class OBOImporter extends ChadoImporterBase {
     'narrow' => NULL,
     'related' => NULL,
   ];
-
 
   // An alternative cache to the temp_obo table.
   private $termStanzaCache = [
@@ -101,7 +96,6 @@ class OBOImporter extends ChadoImporterBase {
    */
   private $default_namespace = '';
 
-
   /**
    * Holds the idspace elements from the header. These will correspond
    * to the accession prefixes, or short names (e.g. GO) for the terms. For
@@ -117,13 +111,11 @@ class OBOImporter extends ChadoImporterBase {
    */
   private $default_db = '';
 
-
   /**
    * An array of used cvterm objects so that we don't have to look them
    * up repeatedly.
    */
   private $used_terms = [];
-
 
   /**
    * An array of base IRIs returned from the EBI OLS lookup service.  We
@@ -156,7 +148,6 @@ class OBOImporter extends ChadoImporterBase {
    * @var array
    */
   private $term_names = [];
-
 
   /**
    * {@inheritdoc}
@@ -231,7 +222,7 @@ class OBOImporter extends ChadoImporterBase {
       '#options' => $obos,
       '#default_value' => $obo_id,
       '#ajax' => [
-        'callback' =>  [$this, 'formAjaxCallback'],
+        'callback' =>  [$this::class, 'formAjaxCallback'],
         'wrapper' => 'obo-existing-fieldset',
       ],
       '#description' => t('Select a vocabulary to import.'),
@@ -385,7 +376,7 @@ class OBOImporter extends ChadoImporterBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
-  public function formAjaxCallback($form, &$form_state) {
+  public static function formAjaxCallback($form, &$form_state) {
 
     $uobo_name = $form['obo_existing']['uobo_name']['#default_value'];
     $uobo_url = $form['obo_existing']['uobo_url']['#default_value'];
@@ -407,12 +398,18 @@ class OBOImporter extends ChadoImporterBase {
     $public = \Drupal::database();
 
     $obo_id = $form_state->getValue('obo_id');
-    $obo_name = trim($form_state->getValue('obo_name'));
-    $obo_url = trim($form_state->getValue('obo_url'));
-    $obo_file = trim($form_state->getValue('obo_file'));
-    $uobo_name = trim($form_state->getValue('uobo_name'));
-    $uobo_url = trim($form_state->getValue('uobo_url'));
-    $uobo_file = trim($form_state->getValue('uobo_file'));
+    $obo_name = $form_state->getValue('obo_name');
+    $obo_url = $form_state->getValue('obo_url');
+    $obo_file = $form_state->getValue('obo_file');
+    $uobo_name = $form_state->getValue('uobo_name');
+    $uobo_url = $form_state->getValue('uobo_url');
+    $uobo_file = $form_state->getValue('uobo_file');
+    // Now trim variables. We do it this way to avoid trimming an empty value.
+    foreach(['obo_name', 'obo_url', 'obo_file', 'uobo_name', 'uobo_url', 'uobo_file'] as $varname) {
+      if (!empty($$varname)) {
+        $$varname = trim($$varname);
+      }
+    }
 
     // If the user requested to alter the details then do that.
 
@@ -461,7 +458,7 @@ class OBOImporter extends ChadoImporterBase {
         \Drupal::messenger()->addMessage(t("The vocabulary @vocab has been added.", ['@vocab' => $obo_name]));
       }
       else {
-        $form_state['rebuild'] = TRUE;
+        $form_state->setRebuild(True);
         \Drupal::messenger()->addError(t("The vocabulary @vocab could not be added.", ['@vocab' => $obo_name]));
       }
     }
@@ -471,69 +468,129 @@ class OBOImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function formValidate($form, &$form_state) {
-    $public = \Drupal::database();
 
     $obo_id = $form_state->getValue('obo_id');
-    $obo_name = trim($form_state->getValue('obo_name'));
-    $obo_url = trim($form_state->getValue('obo_url'));
-    $obo_file = trim($form_state->getValue('obo_file'));
-    $uobo_name = trim($form_state->getValue('uobo_name'));
-    $uobo_url = trim($form_state->getValue('uobo_url'));
-    $uobo_file = trim($form_state->getValue('uobo_file'));
+    $obo_name = trim($form_state->getValue('obo_name') ?? '');
+    $obo_url = trim($form_state->getValue('obo_url') ?? '');
+    $obo_file = trim($form_state->getValue('obo_file') ?? '');
+    $uobo_name = trim($form_state->getValue('uobo_name') ?? '');
+    $uobo_url = trim($form_state->getValue('uobo_url') ?? '');
+    $uobo_file = trim($form_state->getValue('uobo_file') ?? '');
 
-    // Make sure if the name is changed it doesn't conflict with another OBO.
-    if ($form_state->getTriggeringElement()['#name'] == 'update_obo_details'  or
-        $form_state->getTriggeringElement()['#name'] == 'update_load_obo') {
+    // Possible triggering element #name values:
+    //   'op' from the default submit 'Import OBO File'
+    //   'update_obo' and 'obo_id' from 'Update Ontology Details'
+    //   'delete_obo' and 'obo_id' two times from 'Delete Ontology'
 
-      // Get the current record
-      $vocab = $public->select('tripal_cv_obo', 't')
-        ->fields('t', ['obo_id', 'name', 'path'])
-        ->condition('name', $uobo_name)
-        ->execute()
-        ->fetchObject();
-      if ($vocab and $vocab->obo_id != $obo_id) {
+    // Submitted with 'Update Ontology Details' button
+    if ($form_state->getTriggeringElement()['#name'] == 'update_obo' ) {
+
+      // Make sure if the name is changed it doesn't conflict with another OBO.
+      $vocab_id = $this->getVocabID($uobo_name);
+      if ($vocab_id and $vocab_id != $obo_id) {
         $form_state->setErrorByName('uobo_name', t('The vocabulary name must be different from existing vocabularies'));
       }
-      // Make sure the file exists. First check if it is a relative path
-      $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $uobo_file;
-      if (!file_exists($dfile)) {
-        if (!file_exists($uobo_file)) {
-          $form_state->setErrorByName('uobo_file',
-              t('The specified path, @path, does not exist or cannot be read.'), ['@path' => $dfile]);
-        }
+      // If file specified, make sure it exists, either as a relative or absolute path.
+      if (!$this->formValidateFile($uobo_file)) {
+        $form_state->setErrorByName('uobo_file',
+            t('The specified path, @path, does not exist or cannot be read.', ['@path' => $uobo_file]));
       }
       if (!$uobo_url and !$uobo_file) {
-        $form_state->setErrorByName('uobo_url', t('Please provide a URL or a path for the vocabulary.'));
+        $form_state->setErrorByName('uobo_url', t('Please provide either a URL or a path for the vocabulary.'));
       }
       if ($uobo_url and $uobo_file) {
         $form_state->setErrorByName('uobo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
       }
     }
-    if ($form_state->getTriggeringElement()['#name'] == 'add_new_obo') {
-      // Get the current record
-      $vocab = $public->select('tripal_cv_obo', 't')
-        ->fields('t', ['obo_id', 'name', 'path'])
-        ->condition('name', $obo_name)
-        ->execute()
-        ->fetchObject();
-      if ($vocab) {
-        $form_state->setErrorByName('obo_name', t('The vocabulary name must be different from existing vocabularies'));
+
+    // Submitted with 'Import OBO File' button. This is used both for
+    // reloading a saved ontology and for loading a new ontology.
+    if ($form_state->getTriggeringElement()['#name'] == 'op') {
+      if ($uobo_name and $obo_name) {
+        $form_state->setErrorByName('obo_name', t('New and existing ontologies are both selected, please select only one'));
       }
-      // Make sure the file exists. First check if it is a relative path
-      $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
-      if (!file_exists($dfile)) {
-        if (!file_exists($obo_file)) {
-          $form_state->setErrorByName('obo_file',
-              t('The specified path, @path, does not exist or cannot be read.'), ['@path' => $dfile]);
+      // Generate error if supplied new vocabulary name already exists.
+      if ($obo_name) {
+        $vocab_id = $this->getVocabID($obo_name);
+        if ($vocab_id) {
+          $form_state->setErrorByName('obo_name', t('The vocabulary name must be different from existing vocabularies'));
         }
       }
-      if (!$obo_url and !$obo_file) {
-        $form_state->setErrorByName('obo_url', t('Please provide a URL or a path for the vocabulary.'));
+      if ($uobo_name) {
+        // Validate the update existing ontology section
+        if (!$uobo_url and !$uobo_file) {
+          $form_state->setErrorByName('uobo_url', t('Please provide either a URL or a path for the vocabulary.'));
+        }
+        if ($uobo_url and $uobo_file) {
+          $form_state->setErrorByName('uobo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
+        }
+        // If file specified, make sure it exists, either as a relative or absolute path.
+        if (!$this->formValidateFile($uobo_file)) {
+          $form_state->setErrorByName('uobo_file',
+              t('The specified path, @path, does not exist or cannot be read.', ['@path' => $uobo_file]));
+        }
       }
-      if ($obo_url and $obo_file) {
-        $form_state->setErrorByName('obo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
+      else {
+        // Validate the load new ontology section
+        if (!$obo_url and !$obo_file) {
+          $form_state->setErrorByName('obo_url', t('Please provide either a URL or a path for the vocabulary.'));
+        }
+        if ($obo_url and $obo_file) {
+          $form_state->setErrorByName('obo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
+        }
+        // If file specified, make sure it exists, either as a relative or absolute path.
+        if (!$this->formValidateFile($obo_file)) {
+          $form_state->setErrorByName('obo_file',
+              t('The specified path, @path, does not exist or cannot be read.', ['@path' => $obo_file]));
+        }
       }
     }
+  }
+
+  /**
+   * Returns the obo_id in the tripal_cv_obo table
+   * from the supplied vocabulary name.
+   *
+   * @param string $vocab_name
+   *   The name of the vocabulary to query in the
+   *   public.tripal_cv_obo table.
+   * @return int
+   *   The obo_id value of the vocabulary, or NULL if this
+   *   vocabulary does not exist.
+   */
+  private function getVocabID($vocab_name) {
+    $obo_id = NULL;
+    $public = \Drupal::database();
+    $vocab = $public->select('tripal_cv_obo', 't')
+      ->fields('t', ['obo_id', 'name', 'path'])
+      ->condition('name', $vocab_name)
+      ->execute()
+      ->fetchObject();
+    if ($vocab) {
+      $obo_id = $vocab->obo_id;
+    }
+    return $obo_id;
+  }
+
+  /**
+   * Validates that the passed file specifier exists either as
+   * specified, or when the default base path is prepended.
+   * Valid also if no file is specified.
+   *
+   * @param string $file
+   *   A file on the local filesystem.
+   * @return bool
+   *   Returns TRUE if $file exists or if $file evaluates to FALSE.
+   *   Returns FALSE if file identifier does not exist.
+   */
+  private function formValidateFile($file) {
+    if ($file) {
+      $checkpath = $_SERVER['DOCUMENT_ROOT'] . base_path() . $file;
+      if (!file_exists($checkpath) and !file_exists($file)) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
@@ -1120,6 +1177,7 @@ class OBOImporter extends ChadoImporterBase {
     // If we have the namespace but not the short name then we have to
     // do a few tricks to try and find it.
     if ($namespace and !$short_name) {
+      $chado = $this->getChadoConnection();
 
       // First see if we've seen this ontology before and get its currently
       // loaded database.
@@ -1256,7 +1314,7 @@ class OBOImporter extends ChadoImporterBase {
       $this->setInterval(1);
     }
 
-    $this->logger->notice(t("Performing EBI OLS Lookup for: @id", ['@id' => $id]));
+    $this->logger->notice('Performing EBI OLS Lookup for: @id', ['@id' => $id]);
 
     // Get the short name and accession for the term.
     $pair = explode(":", $id, 2);
@@ -1273,20 +1331,30 @@ class OBOImporter extends ChadoImporterBase {
     }
     else {
       $ontology_results =  $this->oboEbiLookup($id, 'query');
+      if ($ontology_results === FALSE OR !is_array($ontology_results)) {
+        throw new \Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !id',
+          ['!id' => $ontologyID]));
+      }
       // If results were received but the number of results is 0, do a query-non-local lookup.
       if ($ontology_results['response']['numFound'] == 0) {
         $ontology_results =  $this->oboEbiLookup($id, 'query-non-local');
       }
-      if (!$ontology_results) {
-        throw new \Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !id',
-          ['!id' => $id]));
-      }
-      if ($ontology_results['error']) {
+      if (array_key_exists('error', $ontology_results) AND !empty($ontology_results['error'])) {
         $message = t('Cannot find the ontology via an EBI OLS lookup: @short_name. ' .
           'EBI Reported: @message. Consider finding the OBO file for this ' .
           ' ontology and manually loading it first.', ['@message' => $ontology_results['message'],
             '@short_name' => $short_name]);
-        $this->logger->warning($message);
+        $this->logger->error($message);
+        throw new \Exception('Unable to lookup ontology via EBI. See previous error for details.');
+      }
+      // If results were received but the number of results is 0 and we already
+      // tried a query-non-local lookup then we just have to admin defeat.
+      if ($ontology_results['response']['numFound'] == 0) {
+        $this->logger->error('Cannot find the ontology via an EBI OLS lookup: @short_name. ' .
+          'While EBI did not provide an error, no results were found. Consider ' .
+          ' finding the OBO file for this ontology and manually loading it first.',
+          ['@short_name' => $short_name]);
+        throw new \Exception('Unable to lookup ontology via EBI. See previous error for details.');
       }
       // The following foreach code works but, I am not sure that
       // I am retrieving each query result from the json associative
@@ -1341,7 +1409,7 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     // If EBI sent an error message then throw an error.
-    if ($results['error']) {
+    if (array_key_exists('error', $results) AND !empty($results['error'])) {
       $message = t('Cannot find the term via an EBI OLS lookup: @term. EBI ' .
         'Reported: @message. Consider finding the OBO file for this ontology ' .
          'and manually loading it first.', ['@message' => $results['message'], '@term' => $id]);
@@ -1356,11 +1424,11 @@ class OBOImporter extends ChadoImporterBase {
 
     // Make an OBO stanza array as if this term were in the OBO file and
     // return it.
-    $this->logMessage("Found @term in EBI OLS.", ['@term' => $id]);
+    $this->logger->notice("Found @term in EBI OLS.", ['@term' => $id]);
     $stanza = [];
     $stanza['id'][0] = $id;
     $stanza['name'][0] = $results['label'];
-    $stanza['def'][0] = $results['def'];
+    $stanza['def'][0] = (array_key_exists('def', $results)) ? $results['def'] : '';
     $stanza['namespace'][0] = $results['ontology_name'];
     $stanza['is_obsolete'][0] = $results['is_obsolete'] ? 'true' : '';
     $stanza['is_relationshiptype'][0] = '';
@@ -1982,13 +2050,13 @@ class OBOImporter extends ChadoImporterBase {
     // Create a new stanza using the values of this cvterm.
     $stanza = [];
     $stanza['id'][0] = $short_name . ':' . $accession;
-    $stanza['name'][0] = $cvterm->getValue('name');
-    $stanza['def'][0] = $cvterm->getValue('definition');
-    $stanza['namespace'][0] = $cv->getValue('name');
-    $stanza['is_obsolete'][0] = $cvterm->getValue('is_obsolete') == 1 ? 'true' : '';
+    $stanza['name'][0] = $cvterm->name;
+    $stanza['def'][0] = $cvterm->definition;
+    $stanza['namespace'][0] = $cv->name;
+    $stanza['is_obsolete'][0] = ($cvterm->is_obsolete == 1) ? 'true' : '';
     $stanza['is_relationshiptype'][0] = '';
     $stanza['db_name'][0] = $db->name;
-    $stanza['cv_name'][0] = $cv->getValue('name');
+    $stanza['cv_name'][0] = $cv->name;
     return $stanza;
   }
 
@@ -2310,19 +2378,36 @@ class OBOImporter extends ChadoImporterBase {
               $stanza['namespace'][0] = 'EDAM';
             }
             $namespace = $stanza['namespace'][0];
-            $cv = $this->all_cvs[$namespace];
-            $this->obo_namespaces[$namespace] = $cv->cv_id;
+            if (array_key_exists($namespace, $this->all_cvs)) {
+              $cv = $this->all_cvs[$namespace];
+              $this->obo_namespaces[$namespace] = $cv->cv_id;
+            }
+            else {
+              $this->obo_namespaces[$namespace] = NULL;
+            }
           }
 
-          // Before caching this stanza, check the term's name to
-          // make sure it doesn't conflict. If it does we'll just
-          // add the ID to the name to ensure it doesn't.
-          if (array_key_exists($stanza['name'][0], $this->term_names)) {
-            $new_name = $stanza['name'][0] . '(' . $stanza['id'][0] . ')';
-            $stanza['name'][0] = $new_name;
+          // Before caching this stanza...
+          // We need to ensure this term has an id.
+          // This one is non-negotiable!
+          if (!array_key_exists('id', $stanza)) {
+            $this->logger->warning('We are skipping the following term because it does not have an id. Term information: ' . print_r($stanza, TRUE));
           }
+          else {
+            // We need to ensure this term has a name.
+            // If it doesn't then we will use the id.
+            if (!array_key_exists('name', $stanza)) {
+              $stanza['name'][0] = $stanza['id'][0];
+            }
+            // make sure it doesn't conflict. If it does we'll just
+            // add the ID to the name to ensure it doesn't.
+            if (array_key_exists($stanza['name'][0], $this->term_names)) {
+              $new_name = $stanza['name'][0] . '(' . $stanza['id'][0] . ')';
+              $stanza['name'][0] = $new_name;
+            }
 
-          $this->cacheTermStanza($stanza, $type);
+            $this->cacheTermStanza($stanza, $type);
+          }
 
         }
 
@@ -2370,8 +2455,13 @@ class OBOImporter extends ChadoImporterBase {
       // If this term has a namespace then we want to keep track of it.
       if (array_key_exists('namespace', $stanza)) {
         $namespace = $stanza['namespace'][0];
-        $cv = $this->all_cvs[$namespace];
-        $this->obo_namespaces[$namespace] = $cv->cv_id;
+        if (array_key_exists($namespace, $this->all_cvs)) {
+          $cv = $this->all_cvs[$namespace];
+          $this->obo_namespaces[$namespace] = $cv->cv_id;
+        }
+        else {
+          $this->obo_namespaces[$namespace] = NULL;
+        }
       }
       $this->cacheTermStanza($stanza, $type);
       $this->setItemsHandled($num_read);
@@ -2660,7 +2750,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The name of the vocabulary to add.
    *
    * @return object|NULL
-   *   The newly inserted CV object..
+   *   The newly inserted CV object.
    */
   private function insertChadoCv($cvname) {
     $chado = $this->getChadoConnection();
@@ -2795,6 +2885,8 @@ class OBOImporter extends ChadoImporterBase {
    * @ingroup tripal_obo_loader
    */
   private function oboEbiLookup($accession, $type_of_search, $found_iri = NULL, $found_ontology = NULL) {
+    $client = \Drupal::httpClient();
+
     // Grab just the ontology from the $accession.
     $parts = explode(':', $accession);
     $ontology = strtolower($parts[0]);
@@ -2813,55 +2905,43 @@ class OBOImporter extends ChadoImporterBase {
       }
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . $type . '/' . $found_iri;
       $options = [];
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
     elseif ($type_of_search == 'ontology') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology;
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
     elseif ($type_of_search == 'term') {
       // The IRI of the terms, this value must be double URL encoded
       $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':', '_', $accession)));
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'terms/' . $iri;
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
     elseif ($type_of_search == 'property') {
       // The IRI of the terms, this value must be double URL encoded
       $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':', '_', $accession)));
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'properties/' . $iri;
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
     elseif ($type_of_search == 'query') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id&local=true';
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
     elseif ($type_of_search == 'query-non-local') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id';
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
     }
-    return $response;
+
+    try {
+      $response = $client->get($full_url, $options);
+      $response = $response->getBody();
+      $response = Json::decode($response);
+      return $response;
+    }
+    catch (RequestException $e) {
+      $this->logger->error('Unable to get response from @url when trying to retrieve data for @accession. @exception',
+          ['@url' => $full_url, '@accession' => $accession, '@exception' => $e->getMessage()]);
+    }
+
+    return FALSE;
   }
 }

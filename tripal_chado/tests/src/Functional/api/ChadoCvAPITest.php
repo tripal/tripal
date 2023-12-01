@@ -8,7 +8,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
 use Drupal\Core\Test\FunctionalTestSetupTrait;
 
 /**
- * Testing the tripal_chado/api/tripal_chado.schema.api.inc functions.
+ * Testing the tripal_chado/api/tripal_chado.cv.api.php functions.
  *
  * @group Tripal
  * @group Tripal Chado
@@ -56,7 +56,7 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
       $return = chado_insert_cv($cvval['name'], $cvval['definition'], [], $this->schema_name);
       $this->assertNotFalse($return, 'chado_insert_cv failed unexpectedly.');
       $this->assertIsObject($return, 'Should be an updated cv object.');
-      $this->assertObjectHasAttribute('cv_id', $return,
+      $this->assertTrue(property_exists($return, 'cv_id'),
         "The returned object should have the primary key included.");
       $this->assertEquals($cvval['name'], $return->name,
         "The returned object should be the one we asked for.");
@@ -64,7 +64,7 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
       $returnagain = chado_insert_cv($cvval['name'], $cvval['definition'], [], $this->schema_name);
       $this->assertNotFalse($returnagain, 'chado_insert_cv failed unexpectedly.');
       $this->assertIsObject($returnagain, 'Should be an updated cv object.');
-      $this->assertObjectHasAttribute('cv_id', $returnagain,
+      $this->assertTrue(property_exists($returnagain, 'cv_id'),
         "The returned object should have the primary key included.");
       $this->assertEquals($cvval['name'], $returnagain->name,
         "The returned object should be the one we asked for.");
@@ -122,7 +122,7 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
       $return = chado_insert_cvterm($cvtermval, [], $this->schema_name);
       $this->assertNotFalse($return, 'chado_insert_cvterm failed unexpectedly.');
       $this->assertIsObject($return, 'Should be an updated cvterm object.');
-      $this->assertObjectHasAttribute('cvterm_id', $return,
+      $this->assertTrue(property_exists($return, 'cvterm_id'),
         "The returned object should have the primary key included.");
       $this->assertEquals($cvtermval['name'], $return->name,
         "The returned object should be the one we asked for.");
@@ -131,7 +131,7 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
       $returnagain = chado_insert_cvterm($cvtermval, [], $this->schema_name);
       $this->assertNotFalse($returnagain, 'chado_insert_cvterm failed unexpectedly.');
       $this->assertIsObject($returnagain, 'Should be an updated cvterm object.');
-      $this->assertObjectHasAttribute('cvterm_id', $returnagain,
+      $this->assertTrue(property_exists($returnagain, 'cvterm_id'),
         "The returned object should have the primary key included.");
         $this->assertEquals($cvtermval['name'], $return->name,
           "The returned object should be the one we asked for.");
@@ -157,7 +157,7 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
       $return = chado_get_cvterm($cvterm, [], $this->schema_name);
       $this->assertNotFalse($return, 'chado_get_cvterm failed unexpectedly.');
       $this->assertIsObject($return, 'Should be a cvterm object.');
-      $this->assertObjectHasAttribute('cvterm_id', $return,
+      $this->assertTrue(property_exists($return, 'cvterm_id'),
         "The returned object should have the primary key included.");
       $this->assertEquals($cvtermval['name'], $return->name,
         "The returned object should be the one we asked for.");

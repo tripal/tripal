@@ -24,7 +24,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   /**
    * {@inheritdoc}
@@ -39,7 +39,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
    * Creates a Tripal Field for testing purposes.
    *
    * @param string $entity_type
-   *   The machine name of the entity to add the field to (i.e. bio_data_5)
+   *   The machine name of the entity to add the field to (e.g., organism)
    * @param array $values
    *   These values are passed directly to the create() method. Suggested values are:
    *    - field_name (string)
@@ -95,9 +95,9 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     ];
 
     /**
-     * @var \Drupal\tripal\Services\TripalFieldsManager $tripal_fields
+     * @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields
      */
-    $tripal_fields = \Drupal::service('tripal.fields');
+    $tripal_fields = \Drupal::service('tripal.tripalfield_collection');
     $tripal_fields->addBundleField($entity_type, $field);
 
     return $field;
@@ -177,7 +177,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
    * @param array $values
    *   These values are passed directly to the create() method. Suggested values are:
    *    - title (string)
-   *    - type (string; eg. bio_data_5)
+   *    - type (string; eg. organism)
    *    - user_id (integer)
    *    - status (boolean; TRUE if published)
    */
@@ -187,6 +187,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $random = $this->getRandomGenerator();
     // Provides a title with ~8 latin capitalized words.
     $values['title'] = $values['title'] ?? $random->sentences(8, TRUE);
+    $values['id'] = $values['id'] ?? $random->sentences(1, TRUE);
 
     // Creates a type if one is not provided.
     if (!isset($values['type'])) {
@@ -213,8 +214,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
    *
    * @param array $values
    *   These values are passed directly to the create() method. Suggested values are:
-   *    -     id (integer)
-   *    -     name (string)
+   *    -     id (string)
    *    -     label (label; string)
    *    -     termIdSpace (string)
    *    -     termAccession (string)
@@ -231,6 +231,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $random = $this->getRandomGenerator();
     // Provides a title with ~3 latin capitalized words.
     $values['label'] = $values['label'] ?? $random->sentences(3,TRUE);
+    $values['id'] = $values['id'] ?? $random->sentences(1,TRUE);
     // Provides a random non-unique 4 character string.
     $values['termIdSpace'] = $values['termIdSpace'] ?? $random->string(4);
     // Provides a random non-unique 10 character string.

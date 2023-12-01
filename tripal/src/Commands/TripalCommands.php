@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Commands;
 
 use Drush\Commands\DrushCommands;
+use Drush\Drush;
 
 /**
  * Drush commands
@@ -127,5 +128,65 @@ class TripalCommands extends DrushCommands {
       $this->output()->writeln("-------------------");
       tripal_launch_job(0, $new_job_id, $max_jobs, $single);
     }
+  }
+
+  /**
+   * Returns the current version of Tripal that is installed
+   *
+   * @command tripal:version
+   * @aliases trp-version
+   * @usage drush trp-version
+   *   Returns the current Tripal version string.
+   */
+  public function tripalVersion() {
+    $this->output()->writeln(tripal_version());
+  }
+
+  /**
+   * Imports a collection of Tripal Content Types and associated fields
+   * for a specific collection id.
+   *
+   * @command tripal:trp-import-types
+   * @aliases trp-import-types
+   * @options collection_id
+   *   The id specified in the YAML file for the particular TripalEntityType-Collection
+   *   you would like to import. Note: fields will also be added automatically if the
+   *   TripalField-Collection YAML file has the same id.
+   * @options username
+   *   The name of the user for whom the content types created are associated.
+   * @usage drush trp-import-types --username=[USERNAME] --collection_id=genomic_chado
+   *   Runs a job importing the genomic content types focused on a Chado backend.
+   */
+  public function tripalImportContentTypes($options = ['username' => NULL, 'collection_id' => NULL]) {
+
+    if (!$options['username']) {
+      throw new \Exception(dt('The --username argument is required.'));
+    }
+    if (!$options['collection_id']) {
+      throw new \Exception(dt('The --collection_id argument is required.'));
+    }
+
+    $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
+
+
+    // Check that the id supplied is valid.
+    $collections = $content_type_setup->getTypeCollections();
+    if (!array_key_exists($options['collection_id'], $collections)) {
+      Drush::logger()->notice('The following are the found collection ids:');
+      foreach($collections as $id => $details) {
+        Drush::logger()->notice('  - ' . $id . ' (' . $details['description'] . ')');
+      }
+      throw new \Exception(dt('The collection ID you provided was not valid. Please try again with one of the above listed ids (e.g. general_chado).'));
+    }
+
+    $chosen_collection_ids = [ $options['collection_id'] ];
+
+    // Import the content types
+    $content_type_setup->install($chosen_collection_ids);
+
+    // Import the fields.
+    $fields = \Drupal::service('tripal.tripalfield_collection');
+    $fields->install($chosen_collection_ids);
+
   }
 }
