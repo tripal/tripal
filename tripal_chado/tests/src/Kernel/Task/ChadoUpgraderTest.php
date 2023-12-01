@@ -28,21 +28,30 @@ class ChadoUpgraderTest extends ChadoTestKernelBase {
     // Create a temporary schema.
     $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
 
+    // Now modify the schema.
+    $tripaldbx_db->query('ALTER TABLE {1:project} DROP COLUMN description');
+    $tripaldbx_db->query('ALTER TABLE {1:feature} ADD COLUMN testsum INT');
+    $tripaldbx_db->query('DROP TABLE {1:analysis} CASCADE');
+
+    $this->assertFalse($tripaldbx_db->schema()->fieldExists('project', 'description'), 'Unable to prepare chado for test by removing project.description column.');
+    $this->assertTrue($tripaldbx_db->schema()->fieldExists('feature', 'testsum'), 'Unable to prepare chado for test by adding feature.testsum column.');
+    $this->assertFalse($tripaldbx_db->schema()->tableExists('analysis'), 'Unable to prepare chado for test by removing analysis table.');
+
     // Test upgrader.
     $upgrader = \Drupal::service('tripal_chado.upgrader');
     $upgrader->setParameters([
       'output_schemas'  => [$tripaldbx_db->getSchemaName()],
       'cleanup'  => TRUE,
-      'filename'  => '/tmp/upgrade_test.sql',
+      //'filename'  => '/tmp/upgrade_test.sql',
     ]);
 
     $success = $upgrader->performTask();
     $this->assertTrue($success, 'Task performed.');
 
     // Check some of the upgraded changes are present.
-    $this->assertTrue($tripaldbx_db->schema()->fieldExists('feature', 'md5checksum'), 'Missing column added.');
-    $this->assertFalse($tripaldbx_db->schema()->fieldExists('feature', 'testsum'), 'Extra column removed.');
-    $this->assertTrue($tripaldbx_db->schema()->tableExists('analysis'), 'Missing table added.');
+    $this->assertTrue($tripaldbx_db->schema()->fieldExists('project', 'description'), 'Missing column project.description was not added.');
+    $this->assertFalse($tripaldbx_db->schema()->fieldExists('feature', 'testsum'), 'Extra column feature.testsum should not have been removed but was.');
+    $this->assertTrue($tripaldbx_db->schema()->tableExists('analysis'), 'Missing analysis table should have been added.');
     // @todo: test column types int --> bigint
     // @todo: test indexes
   }
