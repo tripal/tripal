@@ -25,10 +25,6 @@ class ChadoUpgraderTest extends ChadoTestKernelBase {
    */
   public function testPerformTaskUpgrader() {
 
-    // $this->markTestIncomplete(
-    //   'This test has not been fully implemented yet.'
-    // );
-
     // Create a temporary schema.
     $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
 
@@ -49,5 +45,15 @@ class ChadoUpgraderTest extends ChadoTestKernelBase {
     $this->assertTrue($tripaldbx_db->schema()->tableExists('analysis'), 'Missing table added.');
     // @todo: test column types int --> bigint
     // @todo: test indexes
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function tearDownAfterClass() :void {
+    parent::tearDownAfterClass();
+    if (file_exists('/tmp/upgrade_test.sql')) {
+      unlink('/tmp/upgrade_test.sql');
+    }
   }
 }
