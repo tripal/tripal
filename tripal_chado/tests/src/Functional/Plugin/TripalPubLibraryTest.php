@@ -9,6 +9,10 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
    * @group taxonomy
    */
   public function testTripalPubLibraryTestSimpleTest() {
+
+    // Installs up the chado with the test chado data
+    $chado = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+
     $pub_library_manager = \Drupal::service('tripal.pub_library');
 
     $pub_library_defs = $pub_library_manager->getDefinitions();
