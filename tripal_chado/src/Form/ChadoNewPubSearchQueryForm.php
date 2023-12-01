@@ -31,7 +31,11 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       $public = \Drupal::database();
 
       // This is the edit version of the form, we need to lookup the current pub_import_id
-      $publication = $public->select('tripal_pub_import', 'tpi')->fields('tpi')->condition('pub_import_id', $pub_import_id, '=')->execute()->fetchObject();
+      $publication = $public->select('tripal_pub_import', 'tpi')
+        ->fields('tpi')
+        ->condition('pub_import_id', $pub_import_id, '=')
+        ->execute()
+        ->fetchObject();
       $criteria = unserialize($publication->criteria);
 
 
@@ -61,7 +65,11 @@ class ChadoNewPubSearchQueryForm extends FormBase {
     }
 
     $html = "<ul class='action-links'>";
-    $html .= '  <li>' . Link::fromTextAndUrl('Return to manage pub search queries', Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries'))->toString() . '</li>';
+    $html .= '  <li>' . 
+      Link::fromTextAndUrl(
+        'Return to manage pub search queries', 
+        Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries')
+      )->toString() . '</li>';
     $html .= '</ul>';
     $form['new_publication_link'] = [
       '#type' => 'markup',
@@ -89,7 +97,9 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       
       // handle previous user input
       if ($pub_import_id != 'null') {
-        $this->form_elements_load_previous_user_input($this->form_state_previous_user_input, $form['pub_library']);
+        $this->form_elements_load_previous_user_input(
+          $this->form_state_previous_user_input, $form['pub_library']
+        );
       }
 
       // If the test button was clicked - run the TripalPubLibrary Plugin specific test function
@@ -97,7 +107,8 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         $plugin_id = $form['plugin_id']['#default_value'];
         if ($plugin_id) {
           // Instantiate the selected plugin
-          // Pub Library Manager is found in tripal module: tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+          // Pub Library Manager is found in tripal module: 
+          // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
           $pub_library_manager = \Drupal::service('tripal.pub_library');
           $plugin = $pub_library_manager->createInstance($plugin_id, []);
 
@@ -106,7 +117,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
           $results = $plugin->test($form, $form_state, $criteria_column_array);
 
           // On successful results, it should return array with keys total_records, search_str, pubs(array)
-          $headers = ['', 'Publication', 'Raw results'];
+          $headers = ['', 'Publication', 'Authors'];
           $form['test_results_table'] = [
             '#type' => 'table',
             '#header' => $headers,
@@ -116,11 +127,11 @@ class ChadoNewPubSearchQueryForm extends FormBase {
           ];
 
           if ($results != NULL) {
-            $results_count = count($results['pubs']);
-            
+
             $form['test_results_count_info'] = [
               '#type' => 'markup',
-              '#markup' => '<h1>Test results</h1><div>Found ' . $results_count . ' publications.</div>',
+              '#markup' => '<h1>Test results</h1><div>Found ' . $results['total_records'] . 
+                ' publications. Showing the first 5 publications.</div>',
               '#weight' => 998
             ];
             
@@ -141,15 +152,10 @@ class ChadoNewPubSearchQueryForm extends FormBase {
                 '#type' => 'markup',
                 '#markup' => $pubs_row['Title'],
               ];
-              $raw_html = '';
-              $raw_html .= '<div style="cursor: pointer;" onclick="javascript:console.log(\'click\');console.log(jQuery(this));jQuery(this).parent().find(\'#test_results_' . $index . '\').css(\'display\', \'block\');">Show</div>';
-              $raw_html .= '<div id="test_results_' . $index . '" style="display: none; border-radius: 2px; position: fixed; top: 20%; left: 10%; width: 80%; height: 50%; padding: 10px; background-color: #000000; color: #FFFFFF; border: 1px solid #000000;">';
-              $raw_html .= '<div onclick="javascript:jQuery(this).parent().css(\'display\',\'none\');" style="display: inline-block; background-color: #000000; color: #FFFFFF; padding: 2px; border-radius: 2px; border: 1px solid #000000; cursor: pointer; font-size: 10px;">Close</div>';
-              $raw_html .= '<div style="height: 90%; overflow-y: scroll">' . htmlentities($pubs_row['raw']) . '</div></div>';
-              $row["raw"] = [
+              $row["authors"] = [
                 '#type' => 'markup',
-                '#markup' => Markup::create($raw_html),
-              ];
+                '#markup' => $pubs_row['Authors'],
+              ];              
               $form['test_results_table'][$index - 1] = $row;                           
             }
           }
@@ -391,7 +397,8 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       '#type' => 'textfield',
       '#description' => t('<span style="white-space: normal">Please provide a list of words for searching. You may use
         conjunctions such as "AND" or "OR" to separate words if they are expected in
-        the same scope, but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions as part of the text to search</span>'),
+        the same scope, but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions 
+        as part of the text to search</span>'),
       '#description_display' => 'after',
       '#default_value' => $search_terms,
       '#required' => TRUE,
@@ -434,9 +441,9 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       $plugin_id = $form['plugin_id']['#default_value'];
     }
     if ($plugin_id) {
-
       // Instantiate the selected plugin
-      // Pub Library Manager is found in tripal module: tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+      // Pub Library Manager is found in tripal module: 
+      // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
       $pub_library_manager = \Drupal::service('tripal.pub_library');
       $plugin = $pub_library_manager->createInstance($plugin_id, []);
 
@@ -496,8 +503,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
    * {@inheritDoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // $form_state_values = $form_state->getValues();
-    // dpm($form_state_values);
     $public = \Drupal::database();
     $user_input = $form_state->getUserInput();
     $form_mode = $user_input['mode'];
@@ -521,7 +526,8 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         $plugin_id = $user_input['plugin_id'];
         if ($plugin_id) {
           // Instantiate the selected plugin
-          // Pub Library Manager is found in tripal module: tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+          // Pub Library Manager is found in tripal module: 
+          // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
           $pub_library_manager = \Drupal::service('tripal.pub_library');
           $plugin = $pub_library_manager->createInstance($plugin_id, []);
 
@@ -548,6 +554,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
         }
+
         // If form_mode is 'edit', this is an update to the database
         else {
           $public->update('tripal_pub_import')
@@ -559,7 +566,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
           $form_state->setRedirectUrl($url);
         }
         
-        $form_state->setRebuild(FALSE); // @TODO change this to false after developing this form
+        $form_state->setRebuild(FALSE);
 
       }
       else if ($op == 'Delete Search Query') {

@@ -19,13 +19,9 @@ use Drupal\Core\Url;
 class TripalPubLibraryPubmed extends TripalPubLibraryBase {
 
   public function formSubmit($form, &$form_state) {
-    // DUMMY function from inheritance
-  }
-
-  // @TODO: Create a tripal job, get all results, save it to db (?)
-  public function parse($pub_import_id) {
-    // Perhaps as a Tripal Job
-    // Do we just run this and get the XML - where do we save it?
+    // DUMMY function from inheritance so it had to be kept.
+    // The form_submit function which is called by TripalPubLibrary
+    // is needed to receive and process the criteria data. See below.
   }
 
   /** 
@@ -85,80 +81,26 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    * Return an array with keys total_records, search_str, pubs(array)
    */
   public function test($form, &$form_state, $search_array) {
-    // dpm('TEST FUNCTION EXECUTED');
     $results = NULL;
     try {
-      $results = $this->tripal_pub_remote_search_PMID($search_array, 2, 1);
-      return $results;
+      $results = $this->tripal_pub_remote_search_PMID($search_array, 5, 1);
     }
     catch (\Exception $ex) {
-      // dpm($ex);
+
     }
+    return $results;
   }
 
-  // @TODO Parse or Run? Not both right?
+  // @TODO To be completed - will need to likely call other classes to push data into chado
   public function run(array $criteria) {
-    dpm('RUN FUNCTION EXECUTED');
-  }
 
+  }
 
   /** THIS IS FROM 7.x-3.x/tripal_chado/includes/loaders/tripal_chado.pub_importer_PMID.inc */
-  /* https://www.nlm.nih.gov/dataguide/eutilities/how_eutilities_works.html */
-
-  // /**
-  //  * A hook for altering the publication importer form.  It Changes the
-  //  * 'Abstract' filter to be 'Abstract/Title'.
-  //  *
-  //  * @param $form
-  //  *   The Drupal form array
-  //  * @param $form_state
-  //  *   The form state array
-  //  * @param $num_criteria
-  //  *   The number of criteria the user currently has added to the form
-  //  *
-  //  * @return
-  //  *   The form (drupal form api)
-  //  *
-  //  * @ingroup tripal_pub
-  //  */
-  // function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1) {
-  //   // PubMed doesn't have an 'Abstract' field, so we need to convert the criteria
-  //   // from 'Abstract' to 'Title/Abstract'
-  //   for ($i = 1; $i <= $num_criteria; $i++) {
-  //     $form['themed_element']['criteria'][$i]["scope-$i"]['#options']['abstract'] = 'Abstract/Title';
-  //   }
-  
-  //   return $form;
-  // }
-  
-  // /**
-  //  * A hook for providing additional validation of importer setup form.
-  //  *
-  //  * @param $form
-  //  *   The Drupal form array
-  //  * @param $form_state
-  //  *   The form state array
-  //  *
-  //  * @return
-  //  *  The form (drupal form api)
-  //  *
-  //  * @ingroup tripal_pub
-  //  */
-  // function tripal_pub_remote_validate_form_PMID($form, $form_state) {
-  //   $num_criteria = $form_state['values']['num_criteria'];
-  
-  //   for ($i = 1; $i <= $num_criteria; $i++) {
-  //     $search_terms = trim($form_state['values']["search_terms-$i"]);
-  //     $scope = $form_state['values']["scope-$i"];
-  //     if ($scope == 'id' and !preg_match('/^PMID:\d+$/', $search_terms)) {
-  //       form_set_error("search_terms-$i", "The PubMed accession must be a numeric value, prefixed with 'PMID:' (e.g. PMID:23024789).");
-  //     }
-  //   }
-  //   return $form;
-  // }
+  /** UPGRADED FOR TRIPAL 4 USE */
   
   /**
-   * A hook for performing the search on the PubMed database.
+   * A function for performing the search on the PubMed database.
    * T4 - this is not a hook any longer but can still be used
    *
    * @param $search_array
@@ -325,8 +267,6 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     if (!$rfh) {
       \Drupal::messenger()->addMessage('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
       \Drupal::service('tripal.logger')->error("Could not perform Pubmed query. Cannot connect to Entrez.");
-      // tripal_report_error('tripal_pubmed', TRIPAL_ERROR, "Could not perform Pubmed query. Cannot connect to Entrez.",
-      //   []);
       return 0;
     }
   
@@ -434,8 +374,6 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     if (!$rfh) {
       \Drupal::messenger()->addMessage('ERROR: Could not perform PubMed query.', 'error');
       \Drupal::service('tripal.logger')->error("Could not perform PubMed query: $fetch_url.");
-      // tripal_report_error('tripal_pubmed', TRIPAL_ERROR, "Could not perform PubMed query: %fetch_url.",
-      //   ['%fetch_url' => $fetch_url]);
       return '';
     }
     $results = '';
@@ -487,7 +425,6 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
           case 'ERROR':
             $xml->read(); // get the value for this element
             \Drupal::service('tripal.logger')->error("Error: " . $xml->value);
-            // tripal_report_error('tripal_pubmed', TRIPAL_ERROR, "Error: %err", ['%err' => $xml->value]);
             break;
           case 'PMID':
             // thre are multiple places where a PMID is present in the XML and
@@ -749,10 +686,8 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
               ];
               $pub_cvterm = chado_get_cvterm($identifiers, $options, $chado->getSchemaName());
               if (!$pub_cvterm) {
-                \Drupal::service('tripal.logger')->error('Cannot find a valid vocabulary term for the publication type: "' . $value . '".');
-                // tripal_report_error('tripal_pubmed', TRIPAL_ERROR,
-                //   'Cannot find a valid vocabulary term for the publication type: "%term".',
-                //   ['%term' => $value]);
+                \Drupal::service('tripal.logger')->error('Cannot find a valid vocabulary term ' . 
+                  'for the publication type: "' . $value . '".');
               }
             }
             else {
