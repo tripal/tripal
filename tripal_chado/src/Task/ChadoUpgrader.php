@@ -1260,41 +1260,48 @@ class ChadoUpgrader extends ChadoTaskBase {
 
     // Report table changes.
     if (!empty($old_tables)) {
-      if ($this->parameters['cleanup']) {
-        foreach ($old_tables as $old_table_name => $old_table) {
-          $sql_query =
-            "DROP TABLE IF EXISTS "
-            . $chado_schema->getQuotedSchemaName()
-            . ".$old_table_name CASCADE;"
-          ;
-          $this->upgradeQueries['#cleanup'][] = $sql_query;
+      // Determine what tables were in the old version but not the new one.
+      $removed_tables = [];
+      foreach ($old_tables as $old_table_name => $old_table) {
+        if (!array_key_exists($old_table_name, $new_tables)) {
+          $removed_tables[$old_table_name] = $old_table;
         }
-        $this->logger->warning(
-          t(
-            "The following tables have been removed:\n%tables",
-            ['%tables' => implode(', ', array_keys($old_tables))]
-          )
-        );
       }
-      else {
-        $this->logger->warning(
-          t(
-            "The following tables are not part of the new Chado schema specifications but have been left unchanged. If they are useless, they could be removed:\n%tables",
-            ['%tables' => implode(', ', array_keys($old_tables))]
-          )
-        );
+
+      if (!empty($removed_tables)) {
+        if ($this->parameters['cleanup']) {
+          foreach ($removed_tables as $table_name => $table) {
+            $sql_query =
+              "DROP TABLE IF EXISTS "
+              . $chado_schema->getQuotedSchemaName()
+              . ".$table_name CASCADE;"
+            ;
+            $this->upgradeQueries['#cleanup'][] = $sql_query;
+          }
+          $this->logger->warning(
+            t(
+              "The following tables have been removed:\n%tables",
+              ['%tables' => implode(', ', array_keys($removed_tables))]
+            )
+          );
+        }
+        else {
+          $this->logger->warning(
+            t(
+              "The following tables are not part of the new Chado schema specifications but have been left unchanged. If they are useless, they could be removed:\n%tables",
+              ['%tables' => implode(', ', array_keys($removed_tables))]
+            )
+          );
+        }
       }
     }
     if (!empty($new_tables)) {
       $this->logger->notice(
         t(
-          "The following schema tables were upgraded:\n%tables",
+          "The following schema tables were in the new schema and checked for upgrades:\n%tables",
           ['%tables' => implode(', ', array_keys($new_tables))]
         )
       );
-    }
-    if (empty($old_tables) && empty($new_tables)) {
-      $this->logger->notice(t("All tables were already up-to-date."));
     }
   }
 
@@ -1318,7 +1325,7 @@ class ChadoUpgrader extends ChadoTaskBase {
    *   undergoing an upgrade. The values are objects specifying additional info
    *   about these tables.
    */
-  private function prepareUpgradeTables_existingTables(&$chado_column_upgrade, &$context, $tables, ) {
+  private function prepareUpgradeTables_existingTables(&$chado_column_upgrade, &$context, $tables) {
     $chado_schema = $this->outputSchemas[0];
     $ref_schema = $this->inputSchemas[0];
 
