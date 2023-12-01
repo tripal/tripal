@@ -324,7 +324,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     $rfh = fopen($query_url, "r");
     if (!$rfh) {
       \Drupal::messenger()->addMessage('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
-      // @TODO
+      \Drupal::service('tripal.logger')->error("Could not perform Pubmed query. Cannot connect to Entrez.");
       // tripal_report_error('tripal_pubmed', TRIPAL_ERROR, "Could not perform Pubmed query. Cannot connect to Entrez.",
       //   []);
       return 0;
@@ -433,7 +433,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     $rfh = fopen($fetch_url, "r");
     if (!$rfh) {
       \Drupal::messenger()->addMessage('ERROR: Could not perform PubMed query.', 'error');
-      // @TODO
+      \Drupal::service('tripal.logger')->error("Could not perform PubMed query: $fetch_url.");
       // tripal_report_error('tripal_pubmed', TRIPAL_ERROR, "Could not perform PubMed query: %fetch_url.",
       //   ['%fetch_url' => $fetch_url]);
       return '';
@@ -486,7 +486,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
         switch ($element) {
           case 'ERROR':
             $xml->read(); // get the value for this element
-            // @TODO
+            \Drupal::service('tripal.logger')->error("Error: " . $xml->value);
             // tripal_report_error('tripal_pubmed', TRIPAL_ERROR, "Error: %err", ['%err' => $xml->value]);
             break;
           case 'PMID':
@@ -749,7 +749,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
               ];
               $pub_cvterm = chado_get_cvterm($identifiers, $options, $chado->getSchemaName());
               if (!$pub_cvterm) {
-                // @TODO
+                \Drupal::service('tripal.logger')->error('Cannot find a valid vocabulary term for the publication type: "' . $value . '".');
                 // tripal_report_error('tripal_pubmed', TRIPAL_ERROR,
                 //   'Cannot find a valid vocabulary term for the publication type: "%term".',
                 //   ['%term' => $value]);
