@@ -63,7 +63,7 @@ fields:
         type: chado_contact_default
         description: An entity (e.g. individual or organization) through whom a person can gain access to information, favors, influential people, and the like.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -89,7 +89,7 @@ fields:
         type: chado_organism_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -115,7 +115,7 @@ fields:
         type: chado_integer_type
         description: The primary key of the database reference (dbxref) to attach to this biosample. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -195,7 +195,7 @@ fields:
         type: chado_text_type
         description: An instrument design which describes the design of the array.
         cardinality: 1
-        required: false
+        required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -221,7 +221,7 @@ fields:
         type: chado_integer_type
         description: The primary key of the protocol reference to attach to this assay. This field is a placeholder until we develop a more user friendly protocol reference field.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -327,7 +327,7 @@ fields:
         type: chado_integer_type
         description: The primary key of the database reference (dbxref) to attach to this assay. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -487,7 +487,7 @@ fields:
         type: chado_integer_type
         description: The primary key of the protocol reference to attach to this array_design. This field is a placeholder until we develop a more user friendly protocol reference field.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -513,7 +513,7 @@ fields:
         type: chado_integer_type
         description: The primary key of the database reference (dbxref) to attach to this array_design. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -617,7 +617,7 @@ fields:
         type: chado_integer_type
         description: The number of elements.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -643,7 +643,7 @@ fields:
         type: chado_integer_type
         description: The number of columns in an array.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -669,7 +669,7 @@ fields:
         type: chado_integer_type
         description: The number of rows in an array.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -695,7 +695,7 @@ fields:
         type: chado_integer_type
         description: The number of columns in a grid.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -721,7 +721,7 @@ fields:
         type: chado_integer_type
         description: The number of rows in a grid.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -747,7 +747,7 @@ fields:
         type: chado_integer_type
         description: The number of sub columns.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -773,7 +773,7 @@ fields:
         type: chado_integer_type
         description: The number of sub rows.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
