@@ -25,7 +25,7 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-    // Get the list of organisms. Second parameter includes common names.
+    // Get the list of organisms. Second parameter true includes common names.
     $organisms = chado_get_organism_select_options(FALSE, TRUE);
 
     $item_vals = $items[$delta]->getValue();
