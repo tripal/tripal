@@ -6,9 +6,6 @@ use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\InvokeCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
  * PubMed publication parser
@@ -720,7 +717,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    * @ingroup tripal_pub
    */
   function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
-  
+    $chado = \Drupal::service('tripal_chado.database');
     while ($xml->read()) {
       $element = $xml->name;
   
@@ -741,7 +738,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
               ],
             ];
             $options = ['case_insensitive_columns' => ['name']];
-            $pub_cvterm = chado_get_cvterm($identifiers, $options);
+            $pub_cvterm = chado_get_cvterm($identifiers, $options, $chado->getSchemaName());
             if (!$pub_cvterm) {
               // see if this we can find the name using a synonym
               $identifiers = [
@@ -750,7 +747,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
                   'cv_name' => 'tripal_pub',
                 ],
               ];
-              $pub_cvterm = chado_get_cvterm($identifiers, $options);
+              $pub_cvterm = chado_get_cvterm($identifiers, $options, $chado->getSchemaName());
               if (!$pub_cvterm) {
                 // @TODO
                 // tripal_report_error('tripal_pubmed', TRIPAL_ERROR,
