@@ -461,7 +461,7 @@ class ChadoUpgrader extends ChadoTaskBase {
             . \Drupal::time()->getRequestTime()
             . '\' WHERE schema_name = \''
             . $chado_schema->getSchemaName()
-            . "\';\n"
+            . "';\n"
           ;
           fwrite($this->parameters['fh'], $sql_query);
         }
