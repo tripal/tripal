@@ -1686,20 +1686,22 @@ class ChadoUpgrader extends ChadoTaskBase {
       $index_to_skip = [];
 
       foreach ($new_cstr_def as $new_constraint_name => $new_constraint_def) {
+
         // Skip foreign keys for now.
-        if (!preg_match('/(?:^|\s)FOREIGN\s+KEY(?:\s|$)/', $new_constraint_def)) {
-          $constraint_def = str_replace(
-            $ref_schema->getQuotedSchemaName() . '.',
-            $chado_schema->getQuotedSchemaName() . '.',
-            $new_constraint_def
-          );
-          $alter_sql[] =
-            "ADD CONSTRAINT $new_constraint_name $constraint_def"
-          ;
-          // Skip implicit indexes.
-          if (preg_match('/(?:^|\s)(?:UNIQUE|PRIMARY\s+KEY)(?:\s|$)/', $constraint_def)) {
-            $index_to_skip[$new_constraint_name] = TRUE;
-          }
+        if (preg_match('/(?:^|\s)FOREIGN\s+KEY(?:\s|$)/', $new_constraint_def)) {
+          continue;
+        }
+
+        $constraint_def = str_replace(
+          $ref_schema->getQuotedSchemaName() . '.',
+          $chado_schema->getQuotedSchemaName() . '.',
+          $new_constraint_def
+        );
+        $alter_sql[] = "ADD CONSTRAINT $new_constraint_name $constraint_def";
+
+        // Skip implicit indexes.
+        if (preg_match('/(?:^|\s)(?:UNIQUE|PRIMARY\s+KEY)(?:\s|$)/', $constraint_def)) {
+          $index_to_skip[$new_constraint_name] = TRUE;
         }
       }
 
@@ -1717,15 +1719,9 @@ class ChadoUpgrader extends ChadoTaskBase {
 
       // Create new indexes.
       foreach ($new_table_def['indexes'] as $new_index_name => $new_index_def) {
-        if (!isset($index_to_skip[$new_index_name])) {
-          $index_def = str_replace(
-            $ref_schema->getQuotedSchemaName() . '.',
-            $chado_schema->getQuotedSchemaName() . '.',
-            $new_index_def['query']
-          );
-          $this->upgradeQueries[$upgq_id][] = $index_def;
-        }
-        // Add comment if one.
+
+        // We always want to add the comment if there is one,
+        // so do that first.
         $sql_query =
           "SELECT
             'COMMENT ON INDEX "
@@ -1738,20 +1734,28 @@ class ChadoUpgrader extends ChadoTaskBase {
           WHERE
             c.reltype = 0
             AND n.nspname = :ref_schema
-            AND c.relname = :index_name;"
-        ;
-        $comment_result = $this->connection->query(
-            $sql_query,
-            [
-              ':ref_schema' => $ref_schema->getSchemaName(),
-              ':index_name' => $new_index_name,
-            ]
-          )
-          ->fetch()
-        ;
+            AND c.relname = :index_name;";
+        $args = [
+          ':ref_schema' => $ref_schema->getSchemaName(),
+          ':index_name' => $new_index_name,
+        ];
+        $comment_result = $this->connection->query($sql_query, $args)->fetch();
         if (!empty($comment_result) && !empty($comment_result->comment)) {
           $this->upgradeQueries[$upgq_id][] = $comment_result->comment . ';';
         }
+
+        // Now check if we should skip adding the index query for this index.
+        if (isset($index_to_skip[$new_index_name])) {
+          continue;
+        }
+
+        // Finally add the index query if this index was not skipped.
+        $index_def = str_replace(
+          $ref_schema->getQuotedSchemaName() . '.',
+          $chado_schema->getQuotedSchemaName() . '.',
+          $new_index_def['query']
+        );
+        $this->upgradeQueries[$upgq_id][] = $index_def;
       }
     }
   }
