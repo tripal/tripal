@@ -5,6 +5,7 @@ namespace Drupal\tripal\Services;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -55,34 +56,65 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
   }
 
   /**
-   * Installs content types using all appropriate YAML files.
-   *
-   * The YAML config file prefix is tripal.tripalentitytype_collection.*
+   * Retrieve a list of Tripal Entity Collections.
    */
-  public function install() {
+  public function getTypeCollections() {
 
-    // Get the list of all configurations that match the config schema name.
     $config_factory = \Drupal::service('config.factory');
     $config_list = $config_factory->listAll('tripal.tripalentitytype_collection');
 
-    // Iterate through the configurations and create the content types.
+    $collections = [];
     foreach ($config_list as $config_item) {
       $config = $config_factory->get($config_item);
       $label = $config->get('label');
-      $this->logger->notice("Creating Tripal Content Types from: " . $label);
+      $id = $config->get('id');
+      $collections[$id] = [
+        'id' => $id,
+        'label' => $config->get('label'),
+        'description' => $config->get('description'),
+      ];
+    }
 
-      // Iterate through each of the content types in the config.
-      $content_types = $config->get('content_types');
-      foreach ($content_types as $content_type) {
+    return $collections;
+  }
 
-        // Replace the term ID with a term object
-        list($termIdSpace, $termAccession) = explode(':', $content_type['term']);
-        $idspace = $this->idSpaceManager->loadCollection($termIdSpace);
-        $term =  $idspace->getTerm($termAccession);
-        $content_type['term'] = $term;
+  /**
+   * Installs content types using all appropriate YAML files.
+   *
+   * @param array $collection_ids
+   *   An array of the collection 'id' you would like to install.
+   */
+  public function install(array $collection_ids) {
+    $yaml_prefix = 'tripal.tripalentitytype_collection.';
 
-        // Add the content type
-        $content_type = $this->createContentType($content_type);
+    $config_factory = \Drupal::service('config.factory');
+
+    // Iterate through the configurations and create the content types.
+    foreach ($collection_ids as $config_id) {
+
+      $config_item = $yaml_prefix . $config_id;
+      $config = $config_factory->get($config_item);
+
+      if (is_object($config)) {
+        $label = $config->get('label');
+        $this->logger->notice("Creating Tripal Content Types from: " . $label);
+
+        // Iterate through each of the content types in the config.
+        $content_types = $config->get('content_types');
+        foreach ($content_types as $content_type) {
+
+          // Replace the term ID with a term object
+          list($termIdSpace, $termAccession) = explode(':', $content_type['term']);
+          $idspace = $this->idSpaceManager->loadCollection($termIdSpace);
+          $term =  $idspace->getTerm($termAccession);
+          $content_type['term'] = $term;
+
+          // Add the content type
+          $content_type = $this->createContentType($content_type);
+        }
+      }
+      else {
+        throw new \Exception("Unable to retrieve the configuration with an id of $config_id using the assumption that its in the file $config_item.");
       }
     }
   }
@@ -118,14 +150,14 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
       return FALSE;
     }
 
-    if (get_class($details['term']) != 'Drupal\tripal\TripalVocabTerms\TripalTerm') {
-      $this->logger->error(t('Creation of content type, "@type", failed. The provided term was not a valid TripalTerm object.',
+    if (!is_a($details['term'],TripalTerm::class)) {
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided term was not an instance of the TripalTerm class.',
           ['@type' => $details['label']]));
       return FALSE;
     }
 
     if (!$details['term']->isValid()) {
-      $this->logger->error(t('Creation of content type, "@type", failed. The provided TripalTerm object was not valid.',
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided TripalTerm object was not valid due to missing details.',
           ['@type' => $details['label']]));
       return FALSE;
     }
@@ -137,7 +169,7 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
     }
 
     if (!array_key_exists('help_text', $details) or !$details['help_text']) {
-      $this->logger->error(t('Creation of content type, "@type", failed. No help_text was provided.',
+      $this->logger->error(t('Creation of content type, "@type", failed. No help text was provided.',
           ['@type' => $details['label']]));
       return FALSE;
     }
@@ -189,7 +221,8 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
     if (!empty($entityTypes)) {
       $this->logger->notice(t('Skipping content type, "@type", as it already exists.',
           ['@type' => $details['label']]));
-      $bundle = array_pop(array_keys($entityTypes));
+      $entity_ids = array_keys($entityTypes);
+      $bundle = array_pop($entity_ids);
       $entityType = $entityTypes[$bundle];
     }
     else {

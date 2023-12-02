@@ -35,7 +35,6 @@ class ChadoMviewDeleteForm extends FormBase {
     ];
 
     $form['sure'] = [
-      '#type' => 'markup',
       '#markup' => '<p>Are you sure you want to delete the "' . $mview->getTableName() .
       '" materialized view in the "' . $mview->getChadoSchema() . '" schema?</p>',
     ];

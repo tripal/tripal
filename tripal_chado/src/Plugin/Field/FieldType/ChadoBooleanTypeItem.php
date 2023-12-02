@@ -10,6 +10,9 @@ use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
+
 
 /**
  * Plugin implementation of the 'boolean' field type for Chado.
@@ -19,7 +22,12 @@ use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
  *   label = @Translation("Chado Boolean Field Type"),
  *   description = @Translation("A boolean field."),
  *   default_widget = "chado_boolean_type_widget",
- *   default_formatter = "chado_boolean_type_formatter"
+ *   default_formatter = "chado_boolean_type_formatter",
+ *   select_base_column = TRUE,
+ *   valid_base_column_types = {
+ *     "boolean",
+ *   },
+ *   cardinality = 1
  * )
  */
 class ChadoBooleanTypeItem extends ChadoFieldItemBase {
@@ -41,9 +49,12 @@ class ChadoBooleanTypeItem extends ChadoFieldItemBase {
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
+    $base_table = $settings['base_table'];
+    if (!$base_table) {
+      return;
+    }
 
     // Get the base table columns needed for this field.
-    $base_table = $settings['base_table'];
     $base_column = $settings['base_column'];
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
@@ -63,11 +74,12 @@ class ChadoBooleanTypeItem extends ChadoFieldItemBase {
         'chado_table' => $base_table,
         'chado_column' => $base_pkey_col
       ]),
-      new ChadoBoolStoragePropertyType($entity_type_id, self::$id, "value", $value_term, [
+      new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'chado_table' => $base_table,
         'chado_column' => $base_column,
       ]),
     ];
   }
+
 }

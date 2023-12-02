@@ -280,21 +280,32 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
 
   /**
    * Attaches fields to Tripal content types.
+   *
+   * @param array $collection_ids
+   *   An array of the collection 'id' you would like to install.
    */
-  public function install() {
+  public function install(array $collection_ids) {
+    $yaml_prefix = 'tripal.tripalfield_collection.';
+
     $config_factory = \Drupal::service('config.factory');
-    $config_list = $config_factory->listAll('tripal.tripalfield_collection');
 
-    // Iterate through the configuration items.
-    foreach ($config_list as $config_item) {
+    foreach ($collection_ids as $config_id) {
+
+      $config_item = $yaml_prefix . $config_id;
       $config = $config_factory->get($config_item);
-      $label = $config->get('label');
-      $this->logger->notice("Attaching fields to Tripal content types from: " . $label);
-      $fields = $config->get('fields');
 
-      // Iterate through each field in the config file.
-      foreach ($fields as $field) {
-        $this->addBundleField($field);
+      if (is_object($config)) {
+        $label = $config->get('label');
+        $this->logger->notice("Attaching fields to Tripal content types from: " . $label);
+        $fields = $config->get('fields');
+
+        // Iterate through each field in the config file.
+        foreach ($fields as $field) {
+          $this->addBundleField($field);
+        }
+      }
+      else {
+        throw new \Exception("Unable to retrieve the configuration with an id of $config_id using the assumption that its in the file $config_item.");
       }
     }
   }

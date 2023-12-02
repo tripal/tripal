@@ -95,7 +95,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
     parent::preCreate($storage_controller, $values);
     $values += array(
-      'user_id' => \Drupal::currentUser()->id(),
+      'uid' => \Drupal::currentUser()->id(),
     );
   }
 
@@ -104,9 +104,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function getID() {
     $entity_id = $this->id();
-    if (is_array($entity_id) AND array_key_exists(0, $entity_id)) {
-      return $entity_id[0]['value'];
-    }
     return $entity_id;
   }
 
@@ -289,13 +286,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Authored by'))
-      ->setDescription(t('The user ID of author of the Tripal Content entity.'))
+      ->setDescription(t('The user ID of the author of the Tripal Content entity.'))
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setSetting('handler', 'default')
       ->setTranslatable(TRUE)
       ->setDisplayOptions('view', array(
-        'label' => 'hidden',
+        'label' => 'above',
         'type' => 'author',
         'weight' => 0,
       ))
@@ -529,7 +526,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           // Keep track of elements that have no value.
           foreach ($prop_values as $prop_value) {
             if (!$prop_value->getValue()) {
-              $delta_remove[$field_name][] = $delta;
+              // A given delta should only be present once here.
+              if (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name])) {
+                $delta_remove[$field_name][] = $delta;
+              }
               continue;
             }
           }
@@ -569,7 +569,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
       // Create a values array appropriate for `loadValues()`
       list($values, $tripal_storages) = TripalEntity::getValuesArray($entity);
-
 
       // Call the loadValues() function for each storage type.
       $load_success = False;

@@ -1,0 +1,84 @@
+id: 'genomic_chado'
+label: 'Genomic Content Types (Chado)'
+description: 'Content types based on Chado focused on supporting genomic data such as genome assembelies and genes.'
+content_types:
+
+    -   label: Gene
+        term: SO:0000704
+        help_text: Use the gene page for a region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.
+        category: Genomic
+        id: gene
+        title_format: "[gene_name]"
+        url_format: "gene/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_8
+
+    -   label: mRNA
+        term: SO:0000234
+        help_text: Use the mRNA page for a messenger RNA whic is the intermediate molecule between DNA and protein. It includes UTR and coding sequences. It does not contain introns.
+        category: Genomic
+        id: mRNA
+        title_format: "[mrna_name]"
+        url_format: "mRNA/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_9
+
+    -   label: Phylogenetic Tree
+        term: data:0872
+        help_text: Use the phylogenetic tree page for data or plotting of phylogenetic trees. Usually includes information such as topology, lengths (in time or in expected amounts of variance) and a confidence interval for each length.
+        category: Genomic
+        id: phylotree
+        title_format: "[phylotree_name]"
+        url_format: "phylotree/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_10
+
+    -   label: Physical Map
+        term: data:1280
+        help_text: Use the physical map page for a map of annotated with physical features or landmarks such as restriction sites, cloned DNA fragments, genes or genetic markers, along with the physical distances between them. Distance in a physical map is measured in base pairs. A physical map might be ordered relative to a reference map (typically a genetic map) in the process of genome sequencing.
+        category: Genomic
+        id: physical_map
+        title_format: "[physical_map_name]"
+        url_format: "physical_map/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_11
+
+    -   label: DNA Library
+        term: NCIT:C16223
+        help_text: Use the DNA library page for a collection of DNA molecules that have been cloned in vectors.
+        category: Genomic
+        id: dna_library
+        title_format: "[dna_library_name]"
+        url_format: "dna_library/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_12
+
+    -   label: Genome Assembly
+        term: operation:0525
+        help_text: Use the genome assembly page for an analyses specifcally for genome assembly. Such an analysis typically involves one or more workflows of bioinormatics tools to generate the assembly.
+        category: Genomic
+        id:  genome_assembly
+        title_format: "[genome_assembly_name]"
+        url_format: "genome_assembly/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_13
+
+    -   label: Genome Annotation
+        term: operation:0362
+        help_text: Use the genome annotation page for an analyses specifcally for genome annotation. Such an analysis typically involves one or more workflows of bioinormatics tools to generate the structural and functional annotations of the genome.
+        category: Genomic
+        id: genome_annotation
+        title_format: "[genome_annotation_name]"
+        url_format: "genome_annotation/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_14
+
+    -   label: Genome Project
+        term: local:Genome Project
+        help_text: Use the genome project page to provide information about a genome assembly and annotation project that many be linked to multiple sub analyses.
+        category: Genomic
+        id: genome_project
+        title_format: "[genome_project_name]"
+        url_format: "genome_project/[TripalEntity__entity_id]"
+        synonyms:
+            - bio_data_15

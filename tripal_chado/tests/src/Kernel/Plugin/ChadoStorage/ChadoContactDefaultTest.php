@@ -30,9 +30,8 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  *
  * @group Tripal
  * @group Tripal Chado
- * @group Tripal Chado Fields
- * @group Tripal Chado Fields Contact
  * @group ChadoStorage
+ * @group ChadoStorage Fields
  */
 class ChadoContactDefaultTest extends ChadoTestKernelBase {
 
@@ -53,7 +52,7 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
       'chado_column' => $base_fkey_col,
     ]);
     $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $contact_name_term, $contact_name_length, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $base_table . '.' . $base_fkey_col . '>contact.contact_id',
       'chado_column' => 'name',
       'as' => 'contact_name',
@@ -89,7 +88,7 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
         ],
         'contact_name' => [
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'join',
+          'action' => 'read_value',
           'path' => 'study.contact_id>contact.contact_id',
           'chado_column' => 'name',
           'as' => 'contact_name',
@@ -121,7 +120,7 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
         ],
         'contact_name' => [
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'join',
+          'action' => 'read_value',
           'path' => 'arraydesign.manufacturer_id>contact.contact_id',
           'chado_column' => 'name',
           'as' => 'contact_name',

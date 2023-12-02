@@ -330,7 +330,7 @@ function tripal_cancel_job($job_id, $redirect = NULL) {
   }
 
   try {
-    $job = new Tripaljob();
+    $job = new TripalJob();
     $job->load($job_id);
     $job->cancel();
 
