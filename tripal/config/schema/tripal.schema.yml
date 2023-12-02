@@ -333,9 +333,38 @@ tripal.tripalfield_collection.*:
                            label: 'Weight'
                            nullable: false
 
-field.formatter.settings.chado_contact_formatter_default:
+field.formatter.settings.*:
   type: mapping
   mapping:
+    case_setting:
+      type: string
+      label: 'Case setting'
+      nullable: true
+    false_string:
+      type: string
+      label: 'Text to display for a boolean FALSE value'
+      nullable: false
+    true_string:
+      type: string
+      label: 'Text to display for a boolean TRUE value'
+      nullable: false
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    thousand_separator:
+      type: string
+      label: 'Thousand marker'
+      nullable: true
     token_string:
       type: string
-      label: 'Set display format'
+      label: 'Token string for field display'
+      nullable: false
+    wrap_setting:
+      type: integer
+      label: 'Word wrap setting'
+      nullable: true
