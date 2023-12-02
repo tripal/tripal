@@ -1464,35 +1464,12 @@ class ChadoUpgrader extends ChadoTaskBase {
         );
         $alter_sql = array_merge($alter_sql, $column_alter_sql);
 
-        // Report old columns still there.
-        if (!empty($old_table_definition['columns'])) {
-          $old_col_def = $old_table_definition['columns'];
-          if ($this->parameters['cleanup']) {
-            foreach ($old_col_def as $old_column_name => $old_column) {
-              $alter_sql[] = "DROP COLUMN $old_column_name";
-            }
-            $this->logger->notice(
-              t(
-                "The following columns of table '%table' have been removed:\n%columns",
-                [
-                  '%columns' => implode(', ', array_keys($old_col_def)),
-                  '%table' => $new_table_name,
-                ]
-              )
-            );
-          }
-          else {
-            $this->logger->notice(
-              t(
-                "The following columns of table '%table' should be removed manually if not used:\n%columns",
-                [
-                  '%columns' => implode(', ', array_keys($old_col_def)),
-                  '%table' => $new_table_name,
-                ]
-              )
-            );
-          }
-        }
+        // Drop or Report remaining old columns.
+        $column_drop_sql = $this->prepareUpgradeTables_newTablesStep1_remainingOldColumns(
+          $old_table_definition['columns'],
+          $new_table_name
+        );
+        $alter_sql = array_merge($alter_sql, $column_drop_sql);
 
         // Remove all constraints.
         $old_cstr_def = $old_table_definition['constraints'];
@@ -1523,9 +1500,6 @@ class ChadoUpgrader extends ChadoTaskBase {
 
         // Saves table definition.
         $context['new_table_definitions'][$new_table_name] = $new_table_definition;
-
-        // Processed: remove from $old_tables for change report.
-        unset($old_tables[$new_table_name]);
       }
       else {
         // Does not exist, add it.
@@ -1555,7 +1529,7 @@ class ChadoUpgrader extends ChadoTaskBase {
   }
 
   /**
-   * Step 1a: Compare columns for a single table between schema.
+   * Step 1 HELPER: Compare columns for a single table between schema.
    *
    * @param array $new_table_columns
    *   An araay of the columns in a specific table in the reference schema. This
@@ -1618,6 +1592,50 @@ class ChadoUpgrader extends ChadoTaskBase {
         $alter_sql[] =
           "ADD COLUMN $new_column " . $new_column_type
           . ($new_not_null ? ' NOT NULL' : ' NULL' ) ;
+      }
+    }
+
+    return $alter_sql;
+  }
+
+  /**
+   * Step 1 HELPER: Drop or Report remaining old columns.
+   *
+   * @param array $old_col_def
+   *   The column array of the old table schema definition.
+   * @param string $table_name
+   *   The name of the table
+   * @return array
+   *   An array of drop column SQL commands if we were told to cleanup.
+   */
+  private function prepareUpgradeTables_newTablesStep1_remainingOldColumns(array $old_col_def, string $table_name) {
+    $alter_sql = [];
+
+    if (!empty($old_col_def)) {
+      if ($this->parameters['cleanup']) {
+        foreach ($old_col_def as $old_column_name => $old_column) {
+          $alter_sql[] = "DROP COLUMN $old_column_name";
+        }
+        $this->logger->notice(
+          t(
+            "The following columns of table '%table' have been removed:\n%columns",
+            [
+              '%columns' => implode(', ', array_keys($old_col_def)),
+              '%table' => $table_name,
+            ]
+          )
+        );
+      }
+      else {
+        $this->logger->notice(
+          t(
+            "The following columns of table '%table' should be removed manually if not used:\n%columns",
+            [
+              '%columns' => implode(', ', array_keys($old_col_def)),
+              '%table' => $table_name,
+            ]
+          )
+        );
       }
     }
 
