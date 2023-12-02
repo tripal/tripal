@@ -1682,28 +1682,15 @@ class ChadoUpgrader extends ChadoTaskBase {
 
       $alter_sql = [];
       $new_table_def = $context['new_table_definitions'][$new_table_name];
-      $new_cstr_def = $new_table_def['constraints'];
+
+      // Generate SQL statements to add all contraints for this table.
+      // Also keep track of all implicit indecies so they can be skipped later.
       $index_to_skip = [];
-
-      foreach ($new_cstr_def as $new_constraint_name => $new_constraint_def) {
-
-        // Skip foreign keys for now.
-        if (preg_match('/(?:^|\s)FOREIGN\s+KEY(?:\s|$)/', $new_constraint_def)) {
-          continue;
-        }
-
-        $constraint_def = str_replace(
-          $ref_schema->getQuotedSchemaName() . '.',
-          $chado_schema->getQuotedSchemaName() . '.',
-          $new_constraint_def
-        );
-        $alter_sql[] = "ADD CONSTRAINT $new_constraint_name $constraint_def";
-
-        // Skip implicit indexes.
-        if (preg_match('/(?:^|\s)(?:UNIQUE|PRIMARY\s+KEY)(?:\s|$)/', $constraint_def)) {
-          $index_to_skip[$new_constraint_name] = TRUE;
-        }
-      }
+      $add_constrain_sql = $this->prepareUpgradeTables_newTablesStep2_addConstraints(
+        $new_table_def['constraints'],
+        $index_to_skip
+      );
+      $alter_sql = array_merge($alter_sql, $add_constrain_sql);
 
       // Alter table.
       if (!empty($alter_sql)) {
@@ -1718,45 +1705,106 @@ class ChadoUpgrader extends ChadoTaskBase {
       }
 
       // Create new indexes.
-      foreach ($new_table_def['indexes'] as $new_index_name => $new_index_def) {
+      // Queries are added directly to the upgradeQueries queue.
+      $this->prepareUpgradeTables_newTablesStep2_addIndicies(
+        $new_table_def['indexes'],
+        $index_to_skip,
+        $upgq_id
+      );
+    }
+  }
 
-        // We always want to add the comment if there is one,
-        // so do that first.
-        $sql_query =
-          "SELECT
-            'COMMENT ON INDEX "
-            . $chado_schema->getQuotedSchemaName()
-            . ".' || quote_ident(c.relname) || ' IS ' || quote_literal(d.description) AS \"comment\"
-          FROM pg_class c
-            JOIN pg_namespace n ON (n.oid = c.relnamespace)
-            JOIN pg_index i ON (i.indexrelid = c.oid)
-            JOIN pg_description d ON (d.objoid = c.oid)
-          WHERE
-            c.reltype = 0
-            AND n.nspname = :ref_schema
-            AND c.relname = :index_name;";
-        $args = [
-          ':ref_schema' => $ref_schema->getSchemaName(),
-          ':index_name' => $new_index_name,
-        ];
-        $comment_result = $this->connection->query($sql_query, $args)->fetch();
-        if (!empty($comment_result) && !empty($comment_result->comment)) {
-          $this->upgradeQueries[$upgq_id][] = $comment_result->comment . ';';
-        }
+  /**
+   * Step 2 HELPER: Generate SQL statements to add all contraints for this table.
+   *
+   * @param array $new_cstr_def
+   *    An array of the contraint definitions we want to add.
+   * @param array $index_to_skip
+   *    An array which starts out empty but allows us to keep track of implicit
+   *    indicies so they can be skipped later on in step 2.
+   * @return array
+   *    An array of SQL statements to be added to the queue.
+   */
+  private function prepareUpgradeTables_newTablesStep2_addConstraints(array $new_cstr_def, array &$index_to_skip) {
+    $chado_schema = $this->outputSchemas[0];
+    $ref_schema = $this->inputSchemas[0];
 
-        // Now check if we should skip adding the index query for this index.
-        if (isset($index_to_skip[$new_index_name])) {
-          continue;
-        }
+    $alter_sql = [];
+    foreach ($new_cstr_def as $new_constraint_name => $new_constraint_def) {
 
-        // Finally add the index query if this index was not skipped.
-        $index_def = str_replace(
-          $ref_schema->getQuotedSchemaName() . '.',
-          $chado_schema->getQuotedSchemaName() . '.',
-          $new_index_def['query']
-        );
-        $this->upgradeQueries[$upgq_id][] = $index_def;
+      // Skip foreign keys for now.
+      if (preg_match('/(?:^|\s)FOREIGN\s+KEY(?:\s|$)/', $new_constraint_def)) {
+        continue;
       }
+
+      $constraint_def = str_replace(
+        $ref_schema->getQuotedSchemaName() . '.',
+        $chado_schema->getQuotedSchemaName() . '.',
+        $new_constraint_def
+      );
+      $alter_sql[] = "ADD CONSTRAINT $new_constraint_name $constraint_def";
+
+      // Skip implicit indexes.
+      if (preg_match('/(?:^|\s)(?:UNIQUE|PRIMARY\s+KEY)(?:\s|$)/', $constraint_def)) {
+        $index_to_skip[$new_constraint_name] = TRUE;
+      }
+    }
+
+    return $alter_sql;
+  }
+
+  /**
+   * Step 2 HELPER: Create all indicies.
+   *
+   * @param array $new_index_def
+   *    An array of the index definitions we want to add.
+   * @param array $index_to_skip
+   *    An array of implicit indicies we want to skip.
+   * @param string $upgq_id
+   *    The key for this table in the upgradeQueries queue.
+   */
+  private function prepareUpgradeTables_newTablesStep2_addIndicies($new_index_def, $index_to_skip, $upgq_id) {
+    $chado_schema = $this->outputSchemas[0];
+    $ref_schema = $this->inputSchemas[0];
+
+    foreach ($new_index_def as $new_index_name => $new_index_def) {
+
+      // We always want to add the comment if there is one,
+      // so do that first.
+      $sql_query =
+        "SELECT
+          'COMMENT ON INDEX "
+          . $chado_schema->getQuotedSchemaName()
+          . ".' || quote_ident(c.relname) || ' IS ' || quote_literal(d.description) AS \"comment\"
+        FROM pg_class c
+          JOIN pg_namespace n ON (n.oid = c.relnamespace)
+          JOIN pg_index i ON (i.indexrelid = c.oid)
+          JOIN pg_description d ON (d.objoid = c.oid)
+        WHERE
+          c.reltype = 0
+          AND n.nspname = :ref_schema
+          AND c.relname = :index_name;";
+      $args = [
+        ':ref_schema' => $ref_schema->getSchemaName(),
+        ':index_name' => $new_index_name,
+      ];
+      $comment_result = $this->connection->query($sql_query, $args)->fetch();
+      if (!empty($comment_result) && !empty($comment_result->comment)) {
+        $this->upgradeQueries[$upgq_id][] = $comment_result->comment . ';';
+      }
+
+      // Now check if we should skip adding the index query for this index.
+      if (isset($index_to_skip[$new_index_name])) {
+        continue;
+      }
+
+      // Finally add the index query if this index was not skipped.
+      $index_def = str_replace(
+        $ref_schema->getQuotedSchemaName() . '.',
+        $chado_schema->getQuotedSchemaName() . '.',
+        $new_index_def['query']
+      );
+      $this->upgradeQueries[$upgq_id][] = $index_def;
     }
   }
 
