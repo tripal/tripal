@@ -465,14 +465,38 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // Add in any joins.
     if (array_key_exists('joins', $record)) {
+
+      // Make sure joins are in correct dependency order. If a lalias
+      // has not yet been seen as ralias, and if it is not 'ct', then
+      // it is out of order. To make sure this does not happen,
+      // create an array in sorted order for the subsequent step.
+      $ordered_joins = [];
       $j_index = 0;
-      foreach ($record['joins'] as $rtable => $rjoins) {
-        foreach ($rjoins as $jinfo) {
+      $n_added = 0;
+      $defined_aliases[$j_index] = [0 => 'ct'];
+      do {
+        $n_added = 0;
+        foreach ($record['joins'] as $rtable => $rjoins) {
+          foreach ($rjoins as $jinfo) {
+            $lalias = $jinfo['on']['left_alias'];
+            $ralias = $jinfo['on']['right_alias'];
+            if (in_array($lalias, $defined_aliases[$j_index])) {
+              $ordered_joins[] = [$rtable => $jinfo];
+              $defined_aliases[$j_index+1][] = $ralias;
+              $n_added++;
+            }
+          }
+        }
+        $j_index++;
+      } while ($n_added > 0);
+
+      $j_index = 0;
+      foreach ($ordered_joins as $join) {
+        foreach ($join as $rtable => $jinfo) {
           $lalias = $jinfo['on']['left_alias'];
           $ralias = $jinfo['on']['right_alias'];
           $lcol = $jinfo['on']['left_col'];
           $rcol = $jinfo['on']['right_col'];
-
           $select->leftJoin('1:' . $rtable, $ralias, $lalias . '.' .  $lcol . '=' .  $ralias . '.' . $rcol);
 
           foreach ($jinfo['columns'] as $column) {
@@ -1423,7 +1447,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // is first called.
     $parent_table = !$parent_table ? $left_table : $parent_table;
     $parent_column = !$parent_column ? $left_col : $parent_column;
-
 
     // Make sure the parent table has a 'joins' array.
     if (!array_key_exists($parent_table, $records) or
