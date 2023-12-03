@@ -68,6 +68,13 @@ class ChadoPubFormatterDefault extends ChadoFormatterBase {
         'pubplace' => $item->get('pub_pubplace')->getString(),
       ];
 
+      // Change the non-user-friendly 'null' publication.
+      // Note that since title does not have a "not null" constraint,
+      // this also could happen for other publications.
+      if ($values['title'] == '') {
+        $values['title'] = 'Unknown';
+      }
+
       // Substitute values in token string to generate displayed string.
       $displayed_string = $token_string;
       foreach ($values as $key => $value) {

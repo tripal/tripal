@@ -38,7 +38,12 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
 
     while ($pub = $results->fetchObject()) {
       $pubs[$pub->pub_id] = $pub->title;
+      // Change the non-user-friendly 'null' publication.
+      if ($pubs[$pub->pub_id] == '') {
+        $pubs[$pub->pub_id] = '-- Unknown --';  // This will sort to the top.
+      }
     }
+    natcasesort($pubs);
 
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
