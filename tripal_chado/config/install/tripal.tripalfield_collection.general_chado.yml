@@ -199,6 +199,33 @@ fields:
               region: content
               weight: 35
 
+    -   name: organism_pub
+        content_type: organism
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                linker_table: organism_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 40
+          form:
+            default:
+              region: content
+              weight: 40
+
 ## Analysis ##
 ## Chado Table: analysis
 ## Required Columns: program (varchar 255), programversion(varchar 255), timeexecuted (timestamp)
@@ -422,6 +449,33 @@ fields:
               region: content
               weight: 45
 
+    -   name: analysis_pub
+        content_type: analysis
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 50
+          form:
+            default:
+              region: content
+              weight: 50
+
 ## Project ##
 ## Chado Table: project
 ## Required Columns: name (varchar 255)
@@ -536,6 +590,33 @@ fields:
               region: content
               weight: 25
 
+    -   name: project_pub
+        content_type: project
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
 ## Publication ##
 ## Chado Table: pub
 ## Required Columns: uniquename (text), type_id (cvterm FK)
@@ -565,7 +646,7 @@ fields:
                 base_column: title
         settings:
             termIdSpace: TPUB
-            termAccession: '0000039'
+            termAccession: "0000039"
         display:
           view:
             default:
@@ -644,7 +725,7 @@ fields:
                 base_column: volumetitle
         settings:
             termIdSpace: TPUB
-            termAccession: '0000243'
+            termAccession: "0000243"
         display:
           view:
             default:
@@ -671,7 +752,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: TPUB
-            termAccession: '0000042'
+            termAccession: "0000042"
         display:
           view:
             default:
@@ -698,7 +779,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: TPUB
-            termAccession: '0000256'
+            termAccession: "0000256"
         display:
           view:
             default:
@@ -725,7 +806,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: TPUB
-            termAccession: '0000043'
+            termAccession: "0000043"
         display:
           view:
             default:
@@ -752,7 +833,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: TPUB
-            termAccession: '0000059'
+            termAccession: "0000059"
         display:
           view:
             default:
@@ -779,7 +860,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: TPUB
-            termAccession: '0000044'
+            termAccession: "0000044"
         display:
           view:
             default:
@@ -859,7 +940,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: TPUB
-            termAccession: '0000244'
+            termAccession: "0000244"
         display:
           view:
             default:
@@ -886,7 +967,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: TPUB
-            termAccession: '0000245'
+            termAccession: "0000245"
         display:
           view:
             default:

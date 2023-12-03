@@ -217,6 +217,33 @@ fields:
               region: content
               weight: 80
 
+    -   name: gene_pub
+        content_type: gene
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
     -   name: gene_is_analysis
         content_type: gene
         label: Is Analysis
@@ -511,6 +538,33 @@ fields:
             default:
               region: content
               weight: 80
+
+    -   name: mrna_pub
+        content_type: mrna
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
 
     -   name: mrna_is_analysis
         content_type: mRNA
@@ -837,6 +891,33 @@ fields:
               region: content
               weight: 30
 
+    -   name: physical_map_pub
+        content_type: physical_map
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: featuremap_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
 ## DNA Library ##
 
     -   name: dna_library_name
@@ -999,6 +1080,33 @@ fields:
             default:
               region: content
               weight: 50
+
+    -   name: dna_library_pub
+        content_type: dna_library
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                linker_table: library_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
 
 ## Genome Assembly ##
 
@@ -1218,6 +1326,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genome_assembly_pub
+        content_type: genome_assembly
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
 ## Genome Annotation ##
 
     -   name: genome_annotation_name
@@ -1435,6 +1570,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genome_annotation_pub
+        content_type: genome_annotation
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
 ## Genome Project ##
 
     -   name: genome_project_name
@@ -1517,3 +1679,31 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: genome_project_pub
+        content_type: genome_project
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+

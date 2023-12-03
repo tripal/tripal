@@ -112,6 +112,33 @@ fields:
               region: content
               weight: 30
 
+    -   name: genetic_map_pub
+        content_type: genetic_map
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: featuremap_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
 ## QTL ##
 
     -   name: qtl_name
@@ -327,6 +354,33 @@ fields:
               region: content
               weight: 80
 
+    -   name: qtl_pub
+        content_type: qtl
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
     -   name: qtl_is_analysis
         content_type: QTL
         label: Is Analysis
@@ -402,11 +456,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 95
           form:
             default:
               region: content
-              weight: 10
+              weight: 95
 
 ## Sequence Variant ##
 
@@ -621,6 +675,33 @@ fields:
             default:
               region: content
               weight: 80
+
+    -   name: sequence_variant_pub
+        content_type: sequence_variant
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
 
     -   name: sequence_variant_is_analysis
         content_type: sequence_variant
@@ -917,6 +998,33 @@ fields:
               region: content
               weight: 80
 
+    -   name: genetic_marker_pub
+        content_type: genetic_marker
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
     -   name: genetic_marker_is_analysis
         content_type: genetic_marker
         label: Is Analysis
@@ -1211,6 +1319,33 @@ fields:
             default:
               region: content
               weight: 80
+
+    -   name: phenotypic_marker_pub
+        content_type: phenotypic_marker
+        label: Publication
+        type: chado_pub_default
+        description: The title of the published work.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000039"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
 
     -   name: phenotypic_marker_is_analysis
         content_type: phenotypic_marker
