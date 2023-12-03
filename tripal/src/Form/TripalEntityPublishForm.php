@@ -74,7 +74,7 @@ class TripalEntityPublishForm extends FormBase {
 
     // If the user has selected the data storage backend then add any
     // form options to it that the storage backend needs.
-    if ($datastore = $form_state->getValue('datastore')) {
+    if ($datastore = $form_state->getValue('datastore') AND $storage_manager->datastoreExists($datastore)) {
       $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
       $datastore_form = $storage->publishForm($form, $form_state);
       if (!empty($datastore_form)) {
@@ -126,8 +126,15 @@ class TripalEntityPublishForm extends FormBase {
     // Run the form validate for the storage backend.
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
     $storage_manager = \Drupal::service('tripal.storage');
-    $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
-    $storage->publishFormValidate($form, $form_state);
+
+    if ($storage_manager->datastoreExists($datastore) !== TRUE) {
+      $form_state->setErrorByName('datastore',t('The chosen datastore is not registered properly with TripalStorage.'));
+    }
+    // Only try to call the datastore custom validation if the datastore actually exists.
+    else {
+      $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
+      $storage->publishFormValidate($form, $form_state);
+    }
   }
 
 
