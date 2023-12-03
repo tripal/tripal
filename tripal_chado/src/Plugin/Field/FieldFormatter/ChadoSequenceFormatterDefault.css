@@ -2,7 +2,8 @@
   font-family: Consolas, monaco, monospace;
   font-size: 12px;
   height: 195px; /* height set to bisect characters in last row as visible scroll feedback */
-  max-width: 400px;
+  display: inline-block;
+  max-width: 100%;
   overflow: scroll;
   line-height: normal !important;
   border: 1px solid #DDDDDD;
