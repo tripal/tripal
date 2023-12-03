@@ -540,7 +540,7 @@ fields:
               weight: 80
 
     -   name: mrna_pub
-        content_type: mrna
+        content_type: mRNA
         label: Publication
         type: chado_pub_default
         description: The title of the published work.

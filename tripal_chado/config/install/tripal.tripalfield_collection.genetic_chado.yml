@@ -355,7 +355,7 @@ fields:
               weight: 80
 
     -   name: qtl_pub
-        content_type: qtl
+        content_type: QTL
         label: Publication
         type: chado_pub_default
         description: The title of the published work.
