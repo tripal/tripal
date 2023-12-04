@@ -298,6 +298,34 @@ fields:
               region: content
               weight: 10
 
+    -   name: gene_sequence_coordinates
+        content_type: gene
+        label: Sequence Coordinates
+        type: chado_sequence_coordinates_default
+        description: Locations on reference sequences where the feature is located.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featureloc
+                linker_table: feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: data
+            termAccession: "2012"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+
 ## mRNA ##
 
     -   name: mrna_name
