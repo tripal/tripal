@@ -241,6 +241,32 @@ fields:
               region: content
               weight: 25
 
+    -   name: assay_study
+        content_type: assay
+        label: Study
+        type: chado_study_default
+        description: A study is a process that realizes the steps of a study design.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: study_id
+        settings:
+            termIdSpace: SIO
+            termAccession: "001066"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
 # placeholder for assaydate
 
     -   name: assay_arrayidentifier
