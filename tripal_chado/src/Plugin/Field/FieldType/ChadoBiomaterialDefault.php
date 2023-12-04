@@ -105,7 +105,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
     $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
     $db_term = $mapping->getColumnTermId('db', 'name');
-    $db_len = $dbxref_schema_def['fields']['name']['size'];
+    $db_len = $db_schema_def['fields']['name']['size'];
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
     $infraspecific_type_term = $mapping->getColumnTermId('cvterm', 'name');
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
