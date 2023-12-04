@@ -23,7 +23,11 @@ gene:
         action: 'store_id'
         chado_table: 'feature'
         chado_column: 'feature_id'
-      # value:
+      value:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
+        action: store
+        chado_table: feature
+        chado_column: name
   gene_uniquename:
     field_name: 'gene_uniquename'
     base_table: 'feature'
@@ -42,10 +46,11 @@ gene:
         action: 'store_id'
         chado_table: 'feature'
         chado_column: 'feature_id'
-      # type_id:
-      # term_name:
-      # id_space:
-      # accession:
+      type_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: feature
+        chado_column: type_id
   gene_organism:
     field_name: 'gene_organism'
     base_table: 'feature'
@@ -55,6 +60,11 @@ gene:
         action: 'store_id'
         chado_table: 'feature'
         chado_column: 'feature_id'
+      organism_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'feature'
+        chado_column: 'organism_id'
   gene_sequence:
     field_name: 'gene_sequence'
     base_table: 'feature'
@@ -93,6 +103,11 @@ gene:
         action: 'store_id'
         chado_table: 'feature'
         chado_column: 'feature_id'
+      value:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
+        action: 'store'
+        chado_table: 'feature'
+        chado_column: 'is_analysis'
   gene_is_obsolete:
     field_name: 'gene_is_obsolete'
     base_table: 'feature'
@@ -102,6 +117,11 @@ gene:
         action: 'store_id'
         chado_table: 'feature'
         chado_column: 'feature_id'
+      value:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType'
+        action: 'store'
+        chado_table: 'feature'
+        chado_column: 'is_analysis'
   gene_synonym:
     field_name: 'gene_synonym'
     base_table: 'feature'
@@ -111,9 +131,23 @@ gene:
         action: 'store_id'
         chado_table: 'feature'
         chado_column: 'feature_id'
-      # linker_pkey_id:
-      # linker_base_fkey_id:
-      # linker_synonym_fkey_id:
+      linker_pkey_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'feature_synonym'
+        chado_column: 'feature_synonym_id'
+      linker_base_fkey_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_link'
+        left_table: 'feature'
+        left_table_id: 'feature_id'
+        right_table: 'feature_synonym'
+        right_table_id: 'feature_id'
+      linker_synonym_fkey_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'feature_synonym'
+        chado_column: 'synonym_id'
   gene_contact:
     field_name: 'gene_contact'
     base_table: 'feature'
@@ -123,6 +157,20 @@ gene:
         action: 'store_id'
         chado_table: 'feature'
         chado_column: 'feature_id'
-      # linker_id:
-      # link:
-      # contact_id:
+      linker_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_pkey'
+        chado_table: 'feature_contact'
+        chado_column: 'feature_contact_id'
+      link:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_link'
+        left_table: 'feature'
+        left_table_id: 'feature_id'
+        right_table: 'feature_contact'
+        right_table_id: 'contact_id'
+      contact_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store'
+        chado_table: 'feature_contact'
+        chado_column: 'contact_id'
