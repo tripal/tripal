@@ -1,0 +1,128 @@
+##
+## Used to provide file/property definitions for the tests in
+## ChadoStorageFindValuesTest.php
+##
+## The format is as follows:
+## [test method which will be using the fields]:
+##   [field name]:
+##      field_name: [field name]
+##      base_table: [base table]
+##      properties:
+##        [property key]:
+##           propertyType class: [full class name + namespace]
+##           action: [action]
+##           [additional key/value pairs associated with the action]
+
+gene:
+  gene_name:
+    field_name: 'gene_name'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+      # value:
+  gene_uniquename:
+    field_name: 'gene_uniquename'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+  gene_type:
+    field_name: 'gene_type'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+      # type_id:
+      # term_name:
+      # id_space:
+      # accession:
+  gene_organism:
+    field_name: 'gene_organism'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+  gene_sequence:
+    field_name: 'gene_sequence'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+  gene_length:
+    field_name: 'gene_length'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+      # seqlen:
+  gene_sequence_md5_checksum:
+    field_name: 'gene_sequence_md5_checksum'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+      # md5checksum:
+  gene_is_analysis:
+    field_name: 'gene_is_analysis'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+  gene_is_obsolete:
+    field_name: 'gene_is_obsolete'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+  gene_synonym:
+    field_name: 'gene_synonym'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+      # linker_pkey_id:
+      # linker_base_fkey_id:
+      # linker_synonym_fkey_id:
+  gene_contact:
+    field_name: 'gene_contact'
+    base_table: 'feature'
+    properties:
+      record_id:
+        propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
+        action: 'store_id'
+        chado_table: 'feature'
+        chado_column: 'feature_id'
+      # linker_id:
+      # link:
+      # contact_id:
