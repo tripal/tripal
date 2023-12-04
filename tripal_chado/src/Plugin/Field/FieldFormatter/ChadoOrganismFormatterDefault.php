@@ -51,7 +51,7 @@ class ChadoOrganismFormatterDefault extends ChadoFormatterBase {
     // Implement the shortcut token "[scientific_name]". Rather than the overhead
     // of the chado_get_organism_scientific_name() api call, replicate its behavior
     // with an equivalent token string.
-    $token_string = preg_replace('\[scientific_name\]', $token_string,
+    $token_string = preg_replace('/\[scientific_name\]/', $token_string,
         '[genus] [species] [infratype_abbrev] [infraname]');
 
     foreach ($items as $delta => $item) {
