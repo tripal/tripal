@@ -510,7 +510,7 @@ fields:
               weight: 20
 
     -   name: project_analysis
-        content_type: analysis
+        content_type: project
         label: Analysis
         type: chado_analysis_default
         description: Application of analytical methods to existing data of a specific type
