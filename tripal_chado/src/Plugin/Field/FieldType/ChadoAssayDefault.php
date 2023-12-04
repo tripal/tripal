@@ -106,7 +106,7 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
     $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
     $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
     $db_term = $mapping->getColumnTermId('db', 'name');
-    $db_len = $dbxref_schema_def['fields']['name']['size'];
+    $db_len = $db_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
     // For single hop, in the yaml we support using the usual 'base_table'
