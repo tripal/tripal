@@ -52,6 +52,11 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
 
     $this->setFieldsFromYaml($this->yaml_file, 'gene');
     $this->setUpChadoStorageTestEnviro();
+
+    $success = $this->chado_connection->executeSqlFile(
+      __DIR__ . '/../../../../fixtures/TripalusDatabasicaChr1Genes.sql',
+      ['chado' => $this->testSchemaName]);
+    $this->assertTrue($success, 'Imported gene reports for Tripalus databasica.');
   }
 
   /**
