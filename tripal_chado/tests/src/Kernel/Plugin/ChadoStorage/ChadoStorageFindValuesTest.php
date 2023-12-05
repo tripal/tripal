@@ -105,5 +105,7 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
     // Now finally call findValues()
     $found_list = $this->chadoStorage->findValues($this->dataStoreValues);
     $this->assertIsArray($found_list, 'We were not able to call the findValues method without error.');
+    $this->assertCount(50, $found_list,
+      "There were 50 genes in the SQL file we populated the database with for this test. We should have found all of them and none others BUT we forgot to restrict the find to genes!!!");
   }
 }
