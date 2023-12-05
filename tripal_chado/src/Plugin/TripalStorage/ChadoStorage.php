@@ -515,6 +515,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
+    // @debug print "Query in findChadoRecord(): " . strtr((string) $select, $select->arguments());
 
     // Execute the query.
     $results = $select->execute();
