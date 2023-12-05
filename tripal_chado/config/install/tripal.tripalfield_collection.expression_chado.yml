@@ -252,7 +252,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: assay
-                base_column: study_id
+                linker_table: assay_study
+                linker_fkey_column: study_id
         settings:
             termIdSpace: SIO
             termAccession: "001066"
