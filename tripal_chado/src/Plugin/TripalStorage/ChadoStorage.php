@@ -1326,12 +1326,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       ];
 
       $this->base_record_ids[$table_alias] = $record_id;
+    }
 
-      // Additionally, if this is a find record request,
-      // then we want to add the value to the 'field' as well.
-      if ($is_find) {
-        $records[$table_alias][0]['fields'][$chado_table_pkey] = $record_id;
-      }
+    // Additionally, if this is a find record request,
+    // then we want to add the value to the 'field' as well.
+    if ($is_find) {
+      $records[$table_alias][0]['fields'][$chado_table_pkey] = $record_id;
     }
   }
 
