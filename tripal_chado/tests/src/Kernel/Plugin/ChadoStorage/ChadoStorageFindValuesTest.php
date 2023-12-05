@@ -72,6 +72,12 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
         $values[$field_name][0][$propery_key] = NULL;
       }
     }
+    // Set the values for the gene_type field to indicate we only want genes.
+    $values['gene_type'][0]['type_id'] = $this->getCvtermId('SO', '0000704');
+    $values['gene_type'][0]['term_name'] = 'gene';
+    $values['gene_type'][0]['id_space'] = 'SO';
+    $values['gene_type'][0]['accession'] = '0000704';
+
     $field_names = array_keys($this->fields);
     // Count total number of properties expected for the fields in the
     // values array we are testing.
