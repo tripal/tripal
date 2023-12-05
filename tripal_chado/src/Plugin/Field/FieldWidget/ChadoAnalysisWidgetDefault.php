@@ -25,6 +25,11 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
+    // Get the field settings.
+    $field_definition = $items[$delta]->getFieldDefinition();
+    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
+    $linker_fkey_column = $storage_settings['linker_fkey_column'];
+
     // Get the list of analyses.
     $analyses = [];
     $chado = \Drupal::service('tripal_chado.database');
@@ -73,7 +78,12 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $link,
     ];
-    $elements['analysis_id'] = $element + [
+    // pass the foreign key name through the form for massageFormValues()
+    $elements['linker_fkey_column'] = [
+      '#type' => 'value',
+      '#default_value' => $linker_fkey_column,
+    ];
+    $elements[$linker_fkey_column] = $element + [
       '#type' => 'select',
       '#options' => $analyses,
       '#default_value' => $analysis_id,
@@ -104,16 +114,19 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+
     // Handle any empty values.
     foreach ($values as $val_key => $value) {
-      if ($value['analysis_id'] == '') {
+      // Foreign key is analysis_id
+      $linker_fkey_column = $value['linker_fkey_column'];
+      if ($value[$linker_fkey_column] == '') {
         if ($value['record_id']) {
-          // If there is a record_id, but no analysis_id, this means
+          // If there is a record_id, but no contact_id, this means
           // we need to pass in this record to chado storage to
           // have the linker record be deleted there. To do this,
           // we need to have the correct primitive type for this
           // field, so change from empty string to zero.
-          $values[$val_key]['analysis_id'] = 0;
+          $values[$val_key][$linker_fkey_column] = 0;
         }
         else {
           unset($values[$val_key]);
