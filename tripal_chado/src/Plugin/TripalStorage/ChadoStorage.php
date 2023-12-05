@@ -698,6 +698,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
     $base_record_ids = $this->base_record_ids;
+
+    // Start an array to keep track of the results we find.
+    // Each element in this array will be a clone of the full $values array
+    // passed into this method with it's propertyValue objects set to match
+    // the values in chado for a single record.
     $found_list = [];
 
     // Find all of property values for the base record. We need to
@@ -707,13 +712,30 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     try {
       foreach (array_keys($base_record_ids) as $base_table) {
         foreach ($records[$base_table] as $delta => $record) {
+
+          // First we use findChadoRecords() to query chado for all records
+          // in the table specified as $base_table. Each match returned here
+          // is a query result.
+          // @debug print "\t$base_table Record: " . print_r($record, TRUE);
           $matches = $this->findChadoRecords($base_table, $delta, $record);
+          // Now for each of these query results...
           while ($match = $matches->fetchAssoc()) {
+            // @debug print "\t\tWorking on Query Record: " . print_r($match, TRUE);
+
+            // We start by cloning the records array
+            // (includes all tables, not just the current $base_table)
             $new_records = $records;
+            // and then replace the fields with the match we found.
             $new_records[$base_table][0]['fields'] = $match;
+            // We also clone the $values array passed into findValues()
+            // including all fields and their propertyValue objects.
             $base_values = $this->cloneValues($values);
+            // Now we set the PropertyValue values using the query result.
             $this->setPropValues($base_values, $new_records);
+            // Then we set the values of any propertyValue objects
+            // with an action of stor_id, store_pkey or store_link.
             $this->setRecordIds($base_values, $new_records, TRUE);
+            // Finally, we can add this result to our found list.
             $found_list[] = $base_values;
           }
         }
@@ -949,7 +971,19 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               // the column alias will actually include the right table alias
               // in order to keep the joins separate.
               // So we will grab that here.
-              $as = $this->join_column_alias[$field_name][$key][$as];
+              if (array_key_exists($field_name, $this->join_column_alias)) {
+                $as = $this->join_column_alias[$field_name][$key][$as];
+              }
+              else {
+                // If this field does not have a join_alias set
+                // but it has a property with a path... then we cannot
+                // set it's property. Hopefully it got here via findValues()
+                // in which case this it will be set in a later iteration.
+                // Just in case it is a problem though we will report it to the
+                // field debugger.
+                $this->field_debugger->printText("There was no JOIN alias set for $field_name when trying to set property values. If you see this message on a content page then there is a bug somewhere.");
+                continue;
+              }
             }
             $value = $records[$chado_table_alias][$delta]['fields'][$as];
             $values[$field_name][$delta][$key]['value']->setValue($value);
