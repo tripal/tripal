@@ -14,6 +14,51 @@
 ##           [additional key/value pairs associated with the action]
 
 gene:
+  field_multi_value_chado_property:
+    field_name: field_multi_value_chado_property
+    base_table: feature
+    properties:
+      record_id:
+        action: store_id
+        drupal_store: true
+        chado_table: feature
+        chado_column: feature_id
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+      prop_id:
+        action: store_pkey
+        drupal_store: true
+        chado_table: featureprop
+        chado_column: featureprop_id
+        chado_table_alias: featureprop_longest
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+      linker_id:
+        action: store_link
+        left_table: feature
+        left_table_id: feature_id
+        right_table: featureprop
+        right_table_alias: featureprop_longest
+        right_table_id: feature_id
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+      value:
+        action: store
+        chado_table: featureprop
+        chado_table_alias: featureprop_longest
+        chado_column: value
+        delete_if_empty: true
+        empty_value: ''
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType
+      rank:
+        action: store
+        chado_table: featureprop
+        chado_table_alias: featureprop_longest
+        chado_column: rank
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+      type_id:
+        action: store
+        chado_table: featureprop
+        chado_table_alias: featureprop_longest
+        chado_column: type_id
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
   gene_contact:
     field_name: gene_contact
     base_table: feature
