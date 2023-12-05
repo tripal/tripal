@@ -123,7 +123,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
 
     // Linker table, when used
     $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_col = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
+    $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
@@ -131,13 +131,13 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
       $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col);
-      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_col);
+      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column);
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
-        if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_col)) {
+        if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
           $term = $mapping->getColumnTermId($linker_table, $column);
           if ($term) {
             $extra_linker_columns[$column] = $term;
@@ -146,7 +146,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
       }
     }
     else {
-      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_col);
+      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column);
     }
 
     $properties = [];
@@ -165,7 +165,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
         'action' => 'store',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
-        'chado_column' => $linker_fkey_col,
+        'chado_column' => $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -195,7 +195,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
         'action' => 'store',
         'drupal_store' => TRUE,
         'chado_table' => $linker_table,
-        'chado_column' => $linker_fkey_col,
+        'chado_column' => $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -218,7 +218,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_name', $value_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
       'chado_column' => self::$value_column,
       'as' => 'biomaterial_name',
@@ -229,7 +229,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_description', $description_term, $description_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => 'description',
       'as' => 'biomaterial_description',
     ]);
@@ -237,7 +237,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_biosourceprovider', $biomaterial_biosourceprovider_term, $biomaterial_biosourceprovider_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id',
       'chado_column' => 'name',
       'as' => 'biomaterial_biosourceprovider',
@@ -246,7 +246,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_genus', $genus_term, $genus_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
       'chado_column' => 'genus',
       'as' => 'biomaterial_genus',
@@ -255,7 +255,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_species', $species_term, $species_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
       'chado_column' => 'species',
       'as' => 'biomaterial_species',
@@ -264,7 +264,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_infraspecific_type', $infraspecific_type_term, $infraspecific_type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id',
       'chado_column' => 'name',
       'as' => 'organism_infraspecific_type',
@@ -273,7 +273,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_infraspecific_name', $infraspecific_name_term, $infraspecific_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
       'chado_column' => 'infraspecific_name',
       'as' => 'biomaterial_infraspecific_name',
@@ -282,7 +282,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_abbreviation', $abbreviation_term, $abbreviation_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
       'chado_column' => 'abbreviation',
       'as' => 'biomaterial_abbreviation',
@@ -291,7 +291,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_common_name', $common_name_term, $common_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
       'chado_column' => 'common_name',
       'as' => 'organism_common_name',
@@ -300,7 +300,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_database_accession', $dbxref_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id',
       'chado_column' => 'accession',
       'as' => 'biomaterial_database_accession',
@@ -309,7 +309,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_database_name', $db_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
       'chado_column' => 'name',
       'as' => 'biomaterial_database_name',
