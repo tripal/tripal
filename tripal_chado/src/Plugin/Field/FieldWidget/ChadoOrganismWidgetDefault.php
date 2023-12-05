@@ -28,7 +28,8 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-    $linker_fkey_column = $storage_settings['linker_fkey_column'];
+    $linker_fkey_column = $storage_settings['linker_fkey_column']
+      ?? $storage_settings['base_column'] ?? 'organism_id';
 
     // Get the list of organisms. Second parameter true includes common names.
     $organisms = chado_get_organism_select_options(FALSE, TRUE);
@@ -57,7 +58,12 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $link,
     ];
-    $elements['organism_id'] = $element + [
+    // pass the foreign key name through the form for massageFormValues()
+    $elements['linker_fkey_column'] = [
+      '#type' => 'value',
+      '#default_value' => $linker_fkey_column,
+    ];
+    $elements[$linker_fkey_column] = $element + [
       '#type' => 'select',
       '#options' => $organisms,
       '#default_value' => $organism_id,

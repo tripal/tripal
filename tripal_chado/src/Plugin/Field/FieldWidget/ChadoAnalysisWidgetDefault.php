@@ -28,7 +28,8 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-    $linker_fkey_column = $storage_settings['linker_fkey_column'];
+    $linker_fkey_column = $storage_settings['linker_fkey_column']
+      ?? $storage_settings['base_column'] ?? 'analysis_id';
 
     // Get the list of analyses.
     $analyses = [];
