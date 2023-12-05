@@ -509,6 +509,33 @@ fields:
               region: content
               weight: 20
 
+    -   name: project_analysis
+        content_type: project
+        label: Analysis
+        type: chado_analysis_default
+        description: Application of analytical methods to existing data of a specific type
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_analysis
+                linker_fkey_column: analysis_id
+        settings:
+            termIdSpace: operation
+            termAccession: "2945"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
 ## Study ##
 ## Chado Table: study
 ## Required Columns: name (varchar 255), contact_id (contact FK)
@@ -652,7 +679,7 @@ fields:
 ## Optional columns: type_id (cvtem FK), description (text)
 ## Related: contactprop, contact_relationship,
 ##         arraydesign, biomaterial, quantification, study, stockcollection,
-##         feature_contact, featuremap_contact, library_contact, nd_experiment_contact, projact_contact, pubauthor_contact
+##         feature_contact, featuremap_contact, library_contact, nd_experiment_contact, project_contact, pubauthor_contact
 
     -   name: contact_name
         content_type: contact
