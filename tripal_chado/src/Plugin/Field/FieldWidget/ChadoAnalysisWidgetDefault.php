@@ -30,6 +30,7 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $linker_fkey_column = $storage_settings['linker_fkey_column']
       ?? $storage_settings['base_column'] ?? 'analysis_id';
+    $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
 
     // Get the list of analyses.
     $analyses = [];
@@ -60,11 +61,6 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
     $analysis_id = $item_vals['analysis_id'] ?? 0;
-    // If a linker table is used, values for additional columns that
-    // may or may not be present in that table.
-    $linker_type_id = $item_vals['linker_type_id'] ?? 1;
-    $linker_rank = $item_vals['linker_rank'] ?? $delta;
-    $linker_pub_id = $item_vals['linker_pub_id'] ?? 1;
 
     $elements = [];
     $elements['record_id'] = [
@@ -91,22 +87,18 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
       '#empty_option' => '-- Select --',
     ];
 
-    // For linker table columns that may or may not be present,
-    // it doesn't hurt to always include them, they will be ignored
-    // when not needed.
-    $elements['linker_type_id'] = [
-      '#type' => 'value',
-      '#default_value' => $linker_type_id,
-    ];
-    $elements['linker_rank'] = [
-      '#type' => 'value',
-      '#default_value' => $linker_rank,
-    ];
-    // e.g. cell_line_feature has pub_id with not null constraint
-    $elements['linker_pub_id'] = [
-      '#type' => 'value',
-      '#default_value' => $linker_pub_id,
-    ];
+    // If there are any additional columns present in the linker table,
+    // use a default of 1 which will work for type_id or rank.
+    // or pub_id. Any existing value will pass through as the default.
+    foreach ($property_definitions as $property => $definition) {
+      if (($property != 'linker_id') and preg_match('/^linker_/', $property)) {
+        $default_value = $item_vals[$property] ?? 1;
+        $elements[$property] = [
+          '#type' => 'value',
+          '#default_value' => $default_value,
+        ];
+      }
+    }
 
     return $elements;
   }
@@ -122,7 +114,7 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
       $linker_fkey_column = $value['linker_fkey_column'];
       if ($value[$linker_fkey_column] == '') {
         if ($value['record_id']) {
-          // If there is a record_id, but no contact_id, this means
+          // If there is a record_id, but no analysis_id, this means
           // we need to pass in this record to chado storage to
           // have the linker record be deleted there. To do this,
           // we need to have the correct primitive type for this
