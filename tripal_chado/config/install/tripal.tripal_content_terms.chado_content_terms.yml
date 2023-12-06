@@ -781,6 +781,9 @@ vocabularies:
             -   id: 'NCIT:C47954'
                 name: 'Communication Contact'
                 description: 'A channel for communication between groups.'
+            -   id: 'OBI:0000181'
+                name: 'Population'
+                description: 'A population is a collection of individuals from the same taxonomic class living, counted or sampled at a particular site or in a particular area'
 
     -   name: 'ncbitaxon'
         label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'
