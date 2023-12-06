@@ -1108,13 +1108,14 @@ fields:
               region: content
               weight: 85
 
-    -   name: gene_is_obsolete
-        content_type: gene
+    -   name: library_is_obsolete
+        content_type: dna_library
         label: Is Obsolete
         type: chado_integer_type
         description: Indicates if this record is obsolete.
         cardinality: 1
-        required: false
+        required: true
+        default_value: 0
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:

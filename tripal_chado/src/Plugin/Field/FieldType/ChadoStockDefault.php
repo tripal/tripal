@@ -4,33 +4,35 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 
 /**
- * Plugin implementation of default Tripal biomaterial field type.
+ * Plugin implementation of default Tripal stock field type.
  *
  * @FieldType(
- *   id = "chado_biomaterial_default",
- *   object_table = "biomaterial",
- *   label = @Translation("Chado Biomaterial"),
- *   description = @Translation("Add a Chado biomaterial to the content type."),
- *   default_widget = "chado_biomaterial_widget_default",
- *   default_formatter = "chado_biomaterial_formatter_default",
+ *   id = "chado_stock_default",
+ *   object_table = "stock",
+ *   label = @Translation("Chado Stock"),
+ *   description = @Translation("Add a Chado stock to the content type."),
+ *   default_widget = "chado_stock_widget_default",
+ *   default_formatter = "chado_stock_formatter_default",
  * )
  */
-class ChadoBiomaterialDefault extends ChadoFieldItemBase {
+class ChadoStockDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_biomaterial_default';
+  public static $id = 'chado_stock_default';
   // The following needs to match the object_table annotation above
-  protected static $object_table = 'biomaterial';
-  protected static $object_id = 'biomaterial_id';
+  protected static $object_table = 'stock';
+  protected static $object_id = 'stock_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'biomaterial_name';
+    return 'stock_name';
   }
 
   /**
@@ -51,9 +53,9 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Biologically Derived Material'
-    $field_settings['termIdSpace'] = 'NCIT';
-    $field_settings['termAccession'] = 'C43376';
+    // CV Term is 'Population'
+    $field_settings['termIdSpace'] = 'OBI';
+    $field_settings['termAccession'] = '0000181';
     return $field_settings;
   }
 
@@ -91,7 +93,10 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
     $name_term = $mapping->getColumnTermId($object_table, 'name');
-    $description_term = $mapping->getColumnTermId($object_table, 'description');
+    $name_len = $object_schema_def['fields']['name']['size'];
+    $uniquename_term = $mapping->getColumnTermId($object_table, 'uniquename');  // text
+    $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
+    $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete');  // boolean
 
     // Columns from linked tables
     $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
@@ -100,10 +105,9 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
     $db_term = $mapping->getColumnTermId('db', 'name');
     $db_len = $db_schema_def['fields']['name']['size'];
-    $contact_schema_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
-    $biosourceprovider_term = $mapping->getColumnTermId('contact', 'name');
-    $biosourceprovider_len = $contact_schema_def['fields']['name']['size'];
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $stock_type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $stock_type_len = $cvterm_schema_def['fields']['name']['size'];
     $infraspecific_type_term = $mapping->getColumnTermId('cvterm', 'name');
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
     $organism_schema_def = $schema->getTableDef('organism', ['format' => 'Drupal']);
@@ -212,107 +216,123 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_name', $name_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
       'chado_column' => 'name',
-      'as' => 'biomaterial_name',
+      'as' => 'stock_name',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_description', $description_term, $description_len, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_uniquename', $uniquename_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'uniquename',
+      'as' => 'stock_uniquename',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => 'description',
-      'as' => 'biomaterial_description',
+      'as' => 'stock_description',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_biosourceprovider', $biosourceprovider_term, $biosourceprovider_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_type', $stock_type_term, $stock_type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.biosourceprovider_id>contact.contact_id',
+        . ';' . $object_table . '.type_id>cvterm.cvterm_id',
       'chado_column' => 'name',
-      'as' => 'biomaterial_biosourceprovider',
+      'as' => 'stock_type',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_genus', $genus_term, $genus_len, [
+    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'stock_is_obsolete', $is_obsolete_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'is_obsolete',
+      'as' => 'stock_is_obsolete',
+    ]);
+
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_genus', $genus_term, $genus_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id',
+        . ';' . $object_table . '.organism_id>organism.organism_id',
       'chado_table' => $object_table,
       'chado_column' => 'genus',
-      'as' => 'biomaterial_genus',
+      'as' => 'stock_genus',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_species', $species_term, $species_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_species', $species_term, $species_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id',
+        . ';' . $object_table . '.organism_id>organism.organism_id',
       'chado_table' => $object_table,
       'chado_column' => 'species',
-      'as' => 'biomaterial_species',
+      'as' => 'stock_species',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_infraspecific_type', $infraspecific_type_term, $infraspecific_type_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_infraspecific_type', $infraspecific_type_term, $infraspecific_type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
+        . ';' . $object_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
       'chado_column' => 'name',
-      'as' => 'biomaterial_infraspecific_type',
+      'as' => 'stock_infraspecific_type',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_infraspecific_name', $infraspecific_name_term, $infraspecific_name_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_infraspecific_name', $infraspecific_name_term, $infraspecific_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id',
+        . ';' . $object_table . '.organism_id>organism.organism_id',
       'chado_table' => $object_table,
       'chado_column' => 'infraspecific_name',
-      'as' => 'biomaterial_infraspecific_name',
+      'as' => 'stock_infraspecific_name',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_abbreviation', $abbreviation_term, $abbreviation_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_abbreviation', $abbreviation_term, $abbreviation_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id',
+        . ';' . $object_table . '.organism_id>organism.organism_id',
       'chado_table' => $object_table,
       'chado_column' => 'abbreviation',
-      'as' => 'biomaterial_abbreviation',
+      'as' => 'stock_abbreviation',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_common_name', $common_name_term, $common_name_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_common_name', $common_name_term, $common_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id',
+        . ';' . $object_table . '.organism_id>organism.organism_id',
       'chado_table' => $object_table,
       'chado_column' => 'common_name',
-      'as' => 'biomaterial_common_name',
+      'as' => 'stock_common_name',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_database_accession', $dbxref_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_database_accession', $dbxref_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id',
       'chado_column' => 'accession',
-      'as' => 'biomaterial_database_accession',
+      'as' => 'stock_database_accession',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_database_name', $db_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_database_name', $db_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
       'chado_column' => 'name',
-      'as' => 'biomaterial_database_name',
+      'as' => 'stock_database_name',
     ]);
 
     return $properties;

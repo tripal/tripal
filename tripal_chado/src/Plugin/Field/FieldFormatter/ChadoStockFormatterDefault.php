@@ -6,19 +6,21 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of default Tripal biomaterial formatter.
+ * Plugin implementation of default Tripal stock formatter.
  *
  * @FieldFormatter(
- *   id = "chado_biomaterial_formatter_default",
- *   label = @Translation("Chado biomaterial formatter"),
- *   description = @Translation("A chado biomaterial formatter"),
+ *   id = "chado_stock_formatter_default",
+ *   label = @Translation("Chado stock formatter"),
+ *   description = @Translation("A chado stock formatter"),
  *   field_types = {
- *     "chado_biomaterial_default"
+ *     "chado_stock_default"
  *   },
  *   valid_tokens = {
  *     "[name]",
+ *     "[uniquename]",
  *     "[description]",
- *     "[biosourceprovider]",
+ *     "[type]",
+ *     "[is_obsolete]",
  *     "[database_name]",
  *     "[database_accession]",
  *     "[genus]",
@@ -31,7 +33,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   },
  * )
  */
-class ChadoBiomaterialFormatterDefault extends ChadoFormatterBase {
+class ChadoStockFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}
@@ -52,17 +54,19 @@ class ChadoBiomaterialFormatterDefault extends ChadoFormatterBase {
 
     foreach ($items as $delta => $item) {
       $values = [
-        'name' => $item->get('biomaterial_name')->getString(),
-        'description' => $item->get('biomaterial_description')->getString(),
-        'biosourceprovider' => $item->get('biomaterial_biosourceprovider')->getString(),
-        'database_name' => $item->get('biomaterial_database_name')->getString(),
-        'database_accession' => $item->get('biomaterial_database_accession')->getString(),
-        'genus' => $item->get('biomaterial_genus')->getString(),
-        'species' => $item->get('biomaterial_species')->getString(),
-        'infratype' => $item->get('biomaterial_infraspecific_type')->getString(),
-        'infraname' => $item->get('biomaterial_infraspecific_name')->getString(),
-        'abbreviation' => $item->get('biomaterial_abbreviation')->getString(),
-        'common_name' => $item->get('biomaterial_common_name')->getString(),
+        'name' => $item->get('stock_name')->getString(),
+        'uniquename' => $item->get('stock_uniquename')->getString(),
+        'description' => $item->get('stock_description')->getString(),
+        'is_obsolete' => $item->get('stock_is_obsolete')->getString(),
+        'type' => $item->get('stock_type')->getString(),
+        'database_name' => $item->get('stock_database_name')->getString(),
+        'database_accession' => $item->get('stock_database_accession')->getString(),
+        'genus' => $item->get('stock_genus')->getString(),
+        'species' => $item->get('stock_species')->getString(),
+        'infratype' => $item->get('stock_infraspecific_type')->getString(),
+        'infraname' => $item->get('stock_infraspecific_name')->getString(),
+        'abbreviation' => $item->get('stock_abbreviation')->getString(),
+        'common_name' => $item->get('stock_common_name')->getString(),
       ];
 
       // Special case handling for abbreviation of infraspecific type
