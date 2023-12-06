@@ -1108,6 +1108,33 @@ fields:
               region: content
               weight: 85
 
+    -   name: gene_is_obsolete
+        content_type: gene
+        label: Is Obsolete
+        type: chado_integer_type
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
 ## Genome Assembly ##
 
     -   name: genome_assembly_name
