@@ -1115,7 +1115,6 @@ fields:
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: true
-        default_value: 0
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -1125,6 +1124,7 @@ fields:
             termIdSpace: local
             termAccession: is_obsolete
             fixed_value: local:is_obsolete
+            default_value: 0
         display:
           view:
             default:
