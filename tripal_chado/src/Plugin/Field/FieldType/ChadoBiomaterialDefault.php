@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
 /**
@@ -53,7 +54,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
     $field_settings = parent::defaultFieldSettings();
     // CV Term is 'Biologically Derived Material'
     $field_settings['termIdSpace'] = 'NCIT';
-    $field_settings['termAccession'] = 'C43376';
+    $field_settings['termAccession'] = 'C70699';
     return $field_settings;
   }
 
@@ -221,7 +222,7 @@ class ChadoBiomaterialDefault extends ChadoFieldItemBase {
       'as' => 'biomaterial_name',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_description', $description_term, $description_len, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,

@@ -389,7 +389,7 @@ fields:
                 linker_fkey_column: biomaterial_id
         settings:
             termIdSpace: NCIT
-            termAccession: C43376
+            termAccession: C70699
         display:
           view:
             default:
