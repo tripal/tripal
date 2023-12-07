@@ -11,33 +11,6 @@ fields:
 ##          feature, library, stock, biomaterial, cell_line,
 ##          featuremap_organism, phenotype_comparison, phylonode_organism
 
-    -   name: organism_abbreviation
-        content_type: organism
-        label: Abbreviation
-        type: chado_string_type
-        description: A shortened name (or abbreviation) for the organism (e.g. O. sativa).
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: organism
-                base_column: abbreviation
-            max_length: 255
-        settings:
-            termIdSpace: local
-            termAccession: abbreviation
-        display:
-            view:
-                default:
-                    region: content
-                    label: above
-                    weight: 25
-            form:
-                default:
-                    region: content
-                    weight: 25
-
     -   name: organism_genus
         content_type: organism
         label: Genus
@@ -59,11 +32,11 @@ fields:
                 default:
                     region: content
                     label: above
-                    weight: 5
+                    weight: 10
             form:
                 default:
                     region: content
-                    weight: 5
+                    weight: 10
 
     -   name: organism_species
         content_type: organism
@@ -86,38 +59,38 @@ fields:
                 default:
                     region: content
                     label: above
-                    weight: 10
+                    weight: 15
             form:
                 default:
                     region: content
-                    weight: 10
+                    weight: 15
 
-    -   name: organism_common_name
+    -   name: organism_infraspecific_type
         content_type: organism
-        label: Common Name
-        type: chado_string_type
-        description: "The common name for the organism."
+        label: Infraspecific Type
+        type: chado_additional_type_default
+        description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
         cardinality: 1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: organism
-                base_column: common_name
-            max_length: 255
+                type_table: organism
+                type_column: type_id
         settings:
-            termIdSpace: NCBITaxon
-            termAccession: common_name
+            termIdSpace: local
+            termAccession: "infraspecific_type"
         display:
             view:
                 default:
                     region: content
                     label: above
-                    weight: 30
+                    weight: 20
             form:
                 default:
                     region: content
-                    weight: 30
+                    weight: 20
 
     -   name: organism_infraspecific_name
         content_type: organism
@@ -140,38 +113,65 @@ fields:
                 default:
                     region: content
                     label: above
-                    weight: 20
+                    weight: 25
             form:
                 default:
                     region: content
-                    weight: 20
+                    weight: 25
 
-    -   name: organism_infraspecific_type
+    -   name: organism_abbreviation
         content_type: organism
-        label: Infraspecific Type
-        type: chado_additional_type_default
-        description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
+        label: Abbreviation
+        type: chado_string_type
+        description: A shortened name (or abbreviation) for the organism (e.g. O. sativa).
         cardinality: 1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: organism
-                type_table: organism
-                type_column: type_id
+                base_column: abbreviation
+            max_length: 255
         settings:
             termIdSpace: local
-            termAccession: "infraspecific_type"
+            termAccession: abbreviation
         display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 15
-          form:
-            default:
-              region: content
-              weight: 15
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 30
+            form:
+                default:
+                    region: content
+                    weight: 30
+
+    -   name: organism_common_name
+        content_type: organism
+        label: Common Name
+        type: chado_string_type
+        description: "The common name for the organism."
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: common_name
+            max_length: 255
+        settings:
+            termIdSpace: NCBITaxon
+            termAccession: common_name
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 35
+            form:
+                default:
+                    region: content
+                    weight: 35
 
     -   name: organism_comment
         content_type: organism
@@ -193,11 +193,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 35
+              weight: 40
           form:
             default:
               region: content
-              weight: 35
+              weight: 40
 
     -   name: organism_pub
         content_type: organism
@@ -220,11 +220,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 40
+              weight: 45
           form:
             default:
               region: content
-              weight: 40
+              weight: 45
 
 ## Analysis ##
 ## Chado Table: analysis
