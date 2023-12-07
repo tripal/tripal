@@ -396,7 +396,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
         display:
           view:
             default:
@@ -423,7 +422,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
@@ -718,7 +716,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
         display:
           view:
             default:
@@ -745,7 +742,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
@@ -1040,7 +1036,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
         display:
           view:
             default:
@@ -1067,7 +1062,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
@@ -1362,7 +1356,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
         display:
           view:
             default:
@@ -1389,7 +1382,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:

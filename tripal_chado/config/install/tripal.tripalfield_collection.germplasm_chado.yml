@@ -154,7 +154,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
@@ -317,7 +316,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
@@ -480,7 +478,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
@@ -643,7 +640,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
