@@ -192,7 +192,7 @@ fields:
     -   name: assay_array_design
         content_type: assay
         label: Array Design
-        type: chado_text_type
+        type: chado_array_design_default
         description: An instrument design which describes the design of the array.
         cardinality: 1
         required: true

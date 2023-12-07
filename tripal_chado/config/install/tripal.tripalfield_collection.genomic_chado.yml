@@ -1123,8 +1123,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
-            default_value: 0
         display:
           view:
             default:
