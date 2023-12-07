@@ -476,6 +476,33 @@ fields:
               region: content
               weight: 50
 
+    -   name: analysis_project
+        content_type: analysis
+        label: Project
+        type: chado_project_default
+        description: The project which this analysis is a part of
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: project_analysis
+                linker_fkey_column: project_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47885
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 60
+          form:
+            default:
+              region: content
+              weight: 60
+
 ## Project ##
 ## Chado Table: project
 ## Required Columns: name (varchar 255)
@@ -1199,11 +1226,38 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 20
           form:
             default:
               region: content
-              weight: 10
+              weight: 20
+
+    -   name: contact_project
+        content_type: contact
+        label: Project
+        type: chado_project_default
+        description: The project which this contact is a part of
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                linker_table: project_contact
+                linker_fkey_column: project_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47885
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 60
+          form:
+            default:
+              region: content
+              weight: 60
 
 ## Protocol ##
 ## Chado Table: protocol
