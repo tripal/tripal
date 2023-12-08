@@ -9,30 +9,30 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 
 /**
- * Plugin implementation of default Tripal stock field type.
+ * Plugin implementation of default Tripal feature field type.
  *
  * @FieldType(
- *   id = "chado_stock_default",
- *   object_table = "stock",
- *   label = @Translation("Chado Stock"),
- *   description = @Translation("Add a Chado stock to the content type."),
- *   default_widget = "chado_stock_widget_default",
- *   default_formatter = "chado_stock_formatter_default",
+ *   id = "chado_feature_default",
+ *   object_table = "feature",
+ *   label = @Translation("Chado Feature"),
+ *   description = @Translation("Add a Chado feature to the content type."),
+ *   default_widget = "chado_feature_widget_default",
+ *   default_formatter = "chado_feature_formatter_default",
  * )
  */
-class ChadoStockDefault extends ChadoFieldItemBase {
+class ChadoFeatureDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_stock_default';
+  public static $id = 'chado_feature_default';
   // The following needs to match the object_table annotation above
-  protected static $object_table = 'stock';
-  protected static $object_id = 'stock_id';
+  protected static $object_table = 'feature';
+  protected static $object_id = 'feature_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'stock_name';
+    return 'feature_name';
   }
 
   /**
@@ -54,10 +54,12 @@ class ChadoStockDefault extends ChadoFieldItemBase {
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
     // No default CV Term for this field
-    // Germplasm Accession is CO_010:0000044
-    // Breeding Cross is CO_010:0000255
-    // Germplasm Variety is CO_010:0000029
-    // Recombinant Inbred Line is CO_010:0000162
+    // Gene is SO:0000704
+    // mRNA is SO:0000234
+    // QTL is SO:0000771
+    // Genetic Marker is SO:0001645
+    // Heritable Phenotypic Marker is SO:0001500
+    // Sequence Variant is SO:0001060
     return $field_settings;
   }
 
@@ -94,11 +96,18 @@ class ChadoStockDefault extends ChadoFieldItemBase {
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
+
+    // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');
     $name_len = $object_schema_def['fields']['name']['size'];
-    $uniquename_term = $mapping->getColumnTermId($object_table, 'uniquename');  // text
-    $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
-    $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete');  // boolean
+    $uniquename_term = $mapping->getColumnTermId($object_table, 'uniquename'); // text
+    // residues is not implemented in this field since it can be millions of characters long
+    $seqlen_term = $mapping->getColumnTermId($object_table, 'seqlen');
+    $md5checksum_term = $mapping->getColumnTermId($object_table, 'md5checksum');
+    $md5checksum_len = $object_schema_def['fields']['md5checksum']['size'];
+    $is_analysis_term = $mapping->getColumnTermId($object_table, 'is_analysis'); // boolean
+    $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete'); // boolean
+    // @todo timeaccessioned, timelastmodified not yet implemented
 
     // Columns from linked tables
     $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
@@ -108,10 +117,8 @@ class ChadoStockDefault extends ChadoFieldItemBase {
     $db_term = $mapping->getColumnTermId('db', 'name');
     $db_len = $db_schema_def['fields']['name']['size'];
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $stock_type_term = $mapping->getColumnTermId('cvterm', 'name');
-    $stock_type_len = $cvterm_schema_def['fields']['name']['size'];
-    $infraspecific_type_term = $mapping->getColumnTermId('cvterm', 'name');
-    $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
+    $type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $type_len = $cvterm_schema_def['fields']['name']['size'];
     $organism_schema_def = $schema->getTableDef('organism', ['format' => 'Drupal']);
     $genus_term = $mapping->getColumnTermId('organism', 'genus');
     $genus_len = $organism_schema_def['fields']['genus']['size'];
@@ -124,9 +131,13 @@ class ChadoStockDefault extends ChadoFieldItemBase {
     $common_name_term = $mapping->getColumnTermId('organism', 'common_name');
     $common_name_len = $organism_schema_def['fields']['common_name']['size'];
 
-    // Linker table, when used
+    // Linker table, when used, requires specifying the linker table and column.
+    // For single hop, in the yaml we support using the usual 'base_table'
+    // and 'base_column' settings.
     $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
+    $linker_fkey_column = $storage_settings['linker_fkey_column']
+      ?? $storage_settings['base_column'] ?? $object_pkey_col;
+
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
@@ -218,125 +229,150 @@ class ChadoStockDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_name', $name_term, [
+    // The feature name
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_name', $name_term, $name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
       'chado_column' => 'name',
-      'as' => 'stock_name',
+      'as' => 'feature_name',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_uniquename', $uniquename_term, [
+    // The feature uniquename - not null
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'feature_uniquename', $uniquename_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => 'uniquename',
-      'as' => 'stock_uniquename',
+      'as' => 'feature_uniquename',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_description', $description_term, [
+    // The feature sequence length
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'feature_seqlen', $seqlen_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'description',
-      'as' => 'stock_description',
+      'chado_column' => 'seqlen',
+      'as' => 'feature_seqlen',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_type', $stock_type_term, $stock_type_len, [
+    // The feature md5checksum
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_md5checksum', $md5checksum_term, $md5checksum_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'md5checksum',
+      'as' => 'feature_md5checksum',
+    ]);
+
+    // Feature is analysis - not null, default=false
+    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'feature_is_analysis', $is_analysis_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'is_analysis',
+      'as' => 'feature_is_analysis',
+    ]);
+
+    // Feature is obsolete - not null, default=false
+    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'feature_is_obsolete', $is_obsolete_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
+      'chado_column' => 'is_obsolete',
+      'as' => 'feature_is_obsolete',
+    ]);
+
+    // @todo timeaccessioned, timelastmodified not yet implemented - not null, default CURRENT_TIMESTAMP
+
+    // The type of feature
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_type', $type_term, $type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.type_id>cvterm.cvterm_id',
       'chado_column' => 'name',
-      'as' => 'stock_type',
+      'as' => 'feature_type',
     ]);
 
-    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'stock_is_obsolete', $is_obsolete_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'is_obsolete',
-      'as' => 'stock_is_obsolete',
-    ]);
-
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_genus', $genus_term, $genus_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_genus', $genus_term, $genus_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.organism_id>organism.organism_id',
+        . ';' . $object_table . '.taxon_id>organism.organism_id',
       'chado_table' => $object_table,
       'chado_column' => 'genus',
-      'as' => 'stock_genus',
+      'as' => 'feature_genus',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_species', $species_term, $species_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_species', $species_term, $species_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.organism_id>organism.organism_id',
+        . ';' . $object_table . '.taxon_id>organism.organism_id',
       'chado_table' => $object_table,
       'chado_column' => 'species',
-      'as' => 'stock_species',
+      'as' => 'feature_species',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_infraspecific_type', $infraspecific_type_term, $infraspecific_type_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_infraspecific_type', $type_term, $type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
+        . ';' . $object_table . '.taxon_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
       'chado_column' => 'name',
-      'as' => 'stock_infraspecific_type',
+      'as' => 'feature_infraspecific_type',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_infraspecific_name', $infraspecific_name_term, $infraspecific_name_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_infraspecific_name', $infraspecific_name_term, $infraspecific_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.organism_id>organism.organism_id',
+        . ';' . $object_table . '.taxon_id>organism.organism_id',
       'chado_table' => $object_table,
       'chado_column' => 'infraspecific_name',
-      'as' => 'stock_infraspecific_name',
+      'as' => 'feature_infraspecific_name',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_abbreviation', $abbreviation_term, $abbreviation_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_abbreviation', $abbreviation_term, $abbreviation_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.organism_id>organism.organism_id',
+        . ';' . $object_table . '.taxon_id>organism.organism_id',
       'chado_table' => $object_table,
       'chado_column' => 'abbreviation',
-      'as' => 'stock_abbreviation',
+      'as' => 'feature_abbreviation',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'stock_common_name', $common_name_term, $common_name_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_common_name', $common_name_term, $common_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.organism_id>organism.organism_id',
+        . ';' . $object_table . '.taxon_id>organism.organism_id',
       'chado_table' => $object_table,
       'chado_column' => 'common_name',
-      'as' => 'stock_common_name',
+      'as' => 'feature_common_name',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_database_accession', $dbxref_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'feature_database_accession', $dbxref_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id',
       'chado_column' => 'accession',
-      'as' => 'stock_database_accession',
+      'as' => 'feature_database_accession',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'stock_database_name', $db_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'feature_database_name', $db_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
       'chado_column' => 'name',
-      'as' => 'stock_database_name',
+      'as' => 'feature_database_name',
     ]);
-
+  
     return $properties;
   }
 

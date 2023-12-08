@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
 /**
@@ -51,9 +52,9 @@ class ChadoFeatureMapDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'map'
-    $field_settings['termIdSpace'] = 'data';
-    $field_settings['termAccession'] = '1274';
+    // No default CV Term for this field
+    // Genetic Map is data:1278
+    // Physical Map is data:1280
     return $field_settings;
   }
 
@@ -94,8 +95,7 @@ class ChadoFeatureMapDefault extends ChadoFieldItemBase {
     // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');
     $name_len = $object_schema_def['fields']['name']['size'];
-    $description_term = $mapping->getColumnTermId($object_table, 'description');
-    $description_len = $object_schema_def['fields']['description']['size'];
+    $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
 
     // Cvterm table, to retrieve the name for the unit type
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
@@ -211,7 +211,7 @@ class ChadoFeatureMapDefault extends ChadoFieldItemBase {
     ]);
 
     // The featuremap description
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'featuremap_description', $description_term, $description_len, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'featuremap_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,

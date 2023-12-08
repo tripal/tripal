@@ -52,9 +52,10 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Analysis'
-    $field_settings['termIdSpace'] = 'operation';
-    $field_settings['termAccession'] = '2945';
+    // No default CV Term for this field
+    // Analysis is operation:2945
+    // Genome Assembly is operation:0525
+    // Genome Annotation is operation:0362
     return $field_settings;
   }
 
