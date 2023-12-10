@@ -3,49 +3,27 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
-use Drupal\core\Field\FieldStorageDefinitionInterface;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\ReplaceCommand;
-
 
 /**
- * Plugin implementation of Tripal contact field type.
+ * Plugin implementation of default Tripal contact field type.
  *
  * @FieldType(
  *   id = "chado_contact_default",
+ *   object_table = "contact",
  *   label = @Translation("Chado Contact"),
  *   description = @Translation("Add a Chado contact to the content type."),
  *   default_widget = "chado_contact_widget_default",
- *   default_formatter = "chado_contact_formatter_default"
+ *   default_formatter = "chado_contact_formatter_default",
  * )
  */
 class ChadoContactDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_contact_default";
+  public static $id = 'chado_contact_default';
+  // The following needs to match the object_table annotation above
   protected static $object_table = 'contact';
   protected static $object_id = 'contact_id';
-  protected static $value_column = 'name';
-  // delimiter between table name and column name in form select
-  protected static $table_column_delimiter = " \u{2192} ";  # right arrow
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultStorageSettings() {
-    $settings = parent::defaultStorageSettings();
-    $settings['storage_plugin_settings']['base_table'] = '';
-    $settings['storage_plugin_settings']['linker_table_and_column'] = '';
-    $settings['storage_plugin_settings']['linker_table'] = '';
-    $settings['storage_plugin_settings']['linker_fkey_column'] = '';
-    $settings['storage_plugin_settings']['object_table'] = self::$object_table;
-    return $settings;
-  }
 
   /**
    * {@inheritdoc}
@@ -58,12 +36,25 @@ class ChadoContactDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function defaultStorageSettings() {
+    $storage_settings = parent::defaultStorageSettings();
+    $storage_settings['storage_plugin_settings']['base_table'] = '';
+    $storage_settings['storage_plugin_settings']['linking_method'] = '';
+    $storage_settings['storage_plugin_settings']['linker_table'] = '';
+    $storage_settings['storage_plugin_settings']['linker_fkey_column'] = '';
+    $storage_settings['storage_plugin_settings']['object_table'] = self::$object_table;
+    return $storage_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function defaultFieldSettings() {
-    $settings = parent::defaultFieldSettings();
+    $field_settings = parent::defaultFieldSettings();
     // CV Term is 'Communication Contact'
-    $settings['termIdSpace'] = 'NCIT';
-    $settings['termAccession'] = 'C47954';
-    return $settings;
+    $field_settings['termIdSpace'] = 'NCIT';
+    $field_settings['termAccession'] = 'C47954';
+    return $field_settings;
   }
 
   /**
@@ -71,10 +62,9 @@ class ChadoContactDefault extends ChadoFieldItemBase {
    */
   public static function tripalTypes($field_definition) {
 
-    // Create variables for easy access to settings.
-    $entity_type_id = $field_definition->getTargetEntityTypeId(); // 'tripal_entity'
-    $settings = $field_definition->getSetting('storage_plugin_settings');
-    $base_table = $settings['base_table'];
+    // Create a variable for easy access to settings.
+    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
+    $base_table = $storage_settings['base_table'];
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
@@ -88,6 +78,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     $schema = $chado->schema();
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
+    $entity_type_id = $field_definition->getTargetEntityTypeId();
     $record_id_term = 'SIO:000729';
 
     // Base table
@@ -99,20 +90,28 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
-    $object_type_col = 'type_id';
-    $value_term = $mapping->getColumnTermId($object_table, self::$value_column);
-    $value_len = $object_schema_def['fields'][self::$value_column]['size'];
+
+    // Columns specific to the object table
+    $name_term = $mapping->getColumnTermId($object_table, 'name');
+    $name_len = $object_schema_def['fields']['name']['size'];
     $description_term = $mapping->getColumnTermId($object_table, 'description');
     $description_len = $object_schema_def['fields']['description']['size'];
 
-    // Cvterm table, for the name for the contact type
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $value_type_term = $mapping->getColumnTermId('cvterm', 'name');
-    $value_type_len = $cvterm_schema_def['fields']['name']['size'];
+    // Object columns that link to another table
+    $object_type_col = 'type_id';
 
-    // Linker table, when used
-    $linker_table = $settings['linker_table'];
-    $linker_fkey_col = $settings['linker_fkey_column'];
+    // Cvterm table, to retrieve the name for the contact type
+    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $contact_type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $contact_type_len = $cvterm_schema_def['fields']['name']['size'];
+
+    // Linker table, when used, requires specifying the linker table and column.
+    // For single hop, in the yaml we support using the usual 'base_table'
+    // and 'base_column' settings.
+    $linker_table = $storage_settings['linker_table'] ?? $base_table;
+    $linker_fkey_col = $storage_settings['linker_fkey_column']
+      ?? $storage_settings['base_column'] ?? $object_pkey_col;
+
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
@@ -129,7 +128,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_col)) {
           $term = $mapping->getColumnTermId($linker_table, $column);
           if ($term) {
-            $extra_linker_columns[] = [$column => $term];
+            $extra_linker_columns[$column] = $term;
           }
         }
       }
@@ -150,7 +149,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
 
     // Base table links directly
     if ($base_table == $linker_table) {
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'contact_id', $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
@@ -180,7 +179,7 @@ class ChadoContactDefault extends ChadoFieldItemBase {
       ]);
 
       // Define the link between the linker table and the object table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'contact_id', $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'chado_table' => $linker_table,
@@ -189,29 +188,32 @@ class ChadoContactDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
 
-      // Other columns in the linker table. These are set by the widget.
-      // Note that type_id and rank are not present in all linker tables,
+      // Other columns in the linker table. Set in the widget, but currently not implemented in the formatter.
+      // Typically these are type_id and rank, but are not present in all linker tables,
       // so they are added only if present in the linker table.
       foreach ($extra_linker_columns as $column => $term) {
-        $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $column, $term,  [
+        $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',
+          'drupal_store' => FALSE,
           'chado_table' => $linker_table,
           'chado_column' => $column,
+          'as' => 'linker_' . $column,
         ]);
       }
     }
 
-    // The object table, the destination table of the linker table.
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $value_term, $value_len, [
+    // The object table, the destination table of the linker table
+    // The contact name
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $name_term, $name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
-      'chado_column' => self::$value_column,
+      'chado_column' => 'name',
       'as' => 'contact_name',
     ]);
 
-    // The contact description.
+    // The contact description
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_description', $description_term, $description_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -220,8 +222,8 @@ class ChadoContactDefault extends ChadoFieldItemBase {
       'as' => 'contact_description',
     ]);
 
-    // The name for the type of contact.
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_type', $value_type_term, $value_type_len, [
+    // The type of contact
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_type', $contact_type_term, $contact_type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col
@@ -231,134 +233,6 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     ]);
 
     return $properties;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    $storage_settings = $this->getSetting('storage_plugin_settings');
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-    $object_table = self::$object_table;
-
-    // Base tables presented here are only those that have foreign
-    // keys through a linker table to our object table, the TRUE
-    // parameter to getBaseTables() selects this option.
-    $elements['storage_plugin_settings']['base_table']['#options'] = $this->getBaseTables($object_table, TRUE);
-
-    // In addition to base_table, we need to also specify the
-    // linker_table and foreign key for this field. Normally there will
-    // only be one, but a site or module may have a different custom
-    // linker table, so we need to provide a selection mechanism.
-    // Add an ajax callback so that when the base table is selected, the
-    // linker table select can be populated with candidate linker tables.
-    $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-      'callback' =>  [$this, 'storageSettingsFormAjaxCallback'],
-      'event' => 'change',
-      'progress' => [
-        'type' => 'throbber',
-        'message' => $this->t('Retrieving linker tables...'),
-      ],
-      'wrapper' => 'edit-linker_table',
-    ];
-
-    $linker_is_disabled = FALSE;
-    $linker_tables = [];
-    $default_linker_table_and_column = $storage_settings['linker_table_and_column'] ?? '';
-    if ($default_linker_table_and_column) {
-      $linker_is_disabled = TRUE;
-      $linker_tables = [$default_linker_table_and_column => $default_linker_table_and_column];
-    }
-    else {
-      $linker_tables = $this->getLinkerTables($object_table, $base_table, self::$table_column_delimiter);
-    }
-    $elements['storage_plugin_settings']['linker_table_and_column'] = [
-      '#type' => 'select',
-      '#title' => t('Linking Method'),
-      '#description' => t('Select the table that links the selected base table to the linked table. ' .
-        'If the base table includes the link as a column, then this will reference the base table. ' .
-        'When a linker table is used, the linking table name is typically a ' .
-        'combination of the two table names, but they might be in either order. ' .
-        'Generally this select will have only one option, unless a module has added additional custom linker tables. ' .
-        'For example to link "feature" to "contact", the linker table would be "feature_contact".'),
-      '#options' => $linker_tables,
-      '#default_value' => $default_linker_table_and_column,
-      '#required' => TRUE,
-      '#disabled' => $linker_is_disabled or !$base_table,
-      '#prefix' => '<div id="edit-linker_table">',
-      '#suffix' => '</div>',
-    ];
-
-    // Add new validation functions for each selected table so we can
-    // check validity and set the proper storage settings.
-    $elements['storage_plugin_settings']['base_table']['#element_validate'] = [[static::class, 'storageSettingsFormValidateBaseTable']];
-    $elements['storage_plugin_settings']['linker_table_and_column']['#element_validate'] = [[static::class, 'storageSettingsFormValidateLinkerTable']];
-
-    return $elements;
-  }
-
-  /**
-   * Form element validation handler for base table
-   *
-   * @param array $form
-   *   The form where the settings form is being included in.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the (entire) configuration form.
-   */
-  public static function storageSettingsFormValidateBaseTable(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
-    if (!array_key_exists('storage_plugin_settings', $settings)) {
-      return;
-    }
-    $base_table = $settings['storage_plugin_settings']['base_table'];
-    $object_table = self::$object_table;
-
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-    if ($schema->tableExists($base_table)) {
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'base_table'], $base_table);
-    }
-    else {
-      $form_state->setErrorByName('storage_plugin_settings][base_table',
-          'The selected base table does not exist in Chado.');
-    }
-  }
-
-  /**
-   * Form element validation handler for linker table
-   *
-   * @param array $form
-   *   The form where the settings form is being included in.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the (entire) configuration form.
-   */
-  public static function storageSettingsFormValidateLinkerTable(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
-    if (!array_key_exists('storage_plugin_settings', $settings)) {
-      return;
-    }
-
-    // Convert the single value from the linker form select into two separate variables
-    $linker_table_and_column = $settings['storage_plugin_settings']['linker_table_and_column'];
-    list($linker_table, $linker_fkey_column) = explode(self::$table_column_delimiter, $linker_table_and_column);
-    $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_table'], $linker_table);
-    $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_fkey_column'], $linker_fkey_column);
-  }
-
-  /**
-   * Ajax callback to update the linker table select. The select
-   * can't be populated until we know the base table.
-   *
-   * @param array $form
-   *   The form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state object.
-   */
-  public function storageSettingsFormAjaxCallback($form, &$form_state) {
-    $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['settings']['storage_plugin_settings']['linker_table_and_column']));
-    return $response;
   }
 
 }
