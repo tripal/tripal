@@ -153,6 +153,21 @@ tripal_chado.cvterm_autocomplete:
       cv_id:
         type: integer
 
+tripal_chado.dbxref_autocomplete:
+  path: 'chado/dbxref/autocomplete/{count}/{db_id}'
+  defaults:
+    _controller: '\Drupal\tripal_chado\Controller\ChadoDbxrefAutocompleteController::handleAutocomplete'
+    _title: 'Chado Database Accession Autocomplete'
+    _format: json
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      count:
+        type: integer
+      db_id:
+        type: integer
+
 tripal_chado.project_autocomplete:
   path: 'chado/project/autocomplete/{count}/{type_id}'
   defaults:

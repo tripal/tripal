@@ -775,6 +775,9 @@ tables:
             -   name: 'url'
                 term_id: 'schema:url'
                 term_name: 'url'
+            -   name: 'urlprefix'
+                term_id: 'schema:ItemPage'
+                term_name: 'ItemPage'
 
     -   name: 'db2cv_mview'
         columns:
