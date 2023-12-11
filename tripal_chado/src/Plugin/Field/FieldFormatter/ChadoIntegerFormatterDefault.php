@@ -2,24 +2,24 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
-use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalStringTypeFormatter;
+use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalIntegerTypeFormatter;
 use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Plugin implementation of default Chado string type formatter.
+ * Plugin implementation of default Chado integer type formatter.
  *
  * @FieldFormatter(
- *   id = "chado_string_type_formatter",
- *   label = @Translation("Chado String Type Formatter"),
- *   description = @Translation("The Chado string type formatter."),
+ *   id = "chado_integer_type_formatter",
+ *   label = @Translation("Chado Integer Type Formatter"),
+ *   description = @Translation("The Chado integer type formatter."),
  *   field_types = {
- *     "chado_string_type"
+ *     "chado_integer_type"
  *   }
  * )
  */
-class ChadoStringTypeFormatter extends DefaultTripalStringTypeFormatter {
+class ChadoIntegerFormatterDefault extends DefaultTripalIntegerTypeFormatter {
 
   /**
    * {@inheritDoc}

@@ -2,24 +2,24 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\Plugin\Field\FieldWidget\TripalBooleanTypeWidget;
+use Drupal\tripal\Plugin\Field\FieldWidget\TripalIntegerTypeWidget;
 use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Plugin implementation of default Chado boolean type widget.
+ * Plugin implementation of default Chado integer type widget.
  *
  * @FieldWidget(
- *   id = "chado_boolean_type_widget",
- *   label = @Translation("Chado Boolean Widget"),
- *   description = @Translation("The default boolean type widget."),
+ *   id = "chado_integer_type_widget",
+ *   label = @Translation("Chado Integer Widget"),
+ *   description = @Translation("The default integer type widget."),
  *   field_types = {
- *     "chado_boolean_type"
+ *     "chado_integer_type"
  *   }
  * )
  */
-class ChadoBooleanTypeWidget extends TripalBooleanTypeWidget {
+class ChadoIntegerWidgetDefault extends TripalIntegerTypeWidget {
 
   /**
    * {@inheritdoc}
@@ -28,9 +28,9 @@ class ChadoBooleanTypeWidget extends TripalBooleanTypeWidget {
 
     $item_vals = $items[$delta]->getValue();
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
-    $default_value = !empty($item_vals['record_id']);
     $element['record_id'] = [
-      '#default_value' => !empty($item_vals['record_id']),
+      '#type' => 'value',
+      '#default_value' => $item_vals['record_id'] ?? 0,
     ];
     return $element;
   }

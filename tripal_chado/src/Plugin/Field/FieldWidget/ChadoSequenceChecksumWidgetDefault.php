@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Sequence Checksum Widget"),
  *   description = @Translation("The default chado sequence checksum widget."),
  *   field_types = {
- *     "chado_sequence_checksum_default"
+ *     "chado_sequence_checksum_type_default"
  *   }
  * )
  */

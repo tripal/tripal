@@ -61,7 +61,7 @@ fields:
     -   name: gene_sequence
         content_type: gene
         label: Sequence Residues
-        type: chado_sequence_default
+        type: chado_sequence_type_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -87,7 +87,7 @@ fields:
     -   name: gene_length
         content_type: gene
         label: Sequence Length
-        type: chado_sequence_length_default
+        type: chado_sequence_length_type_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -113,7 +113,7 @@ fields:
     -   name: gene_sequence_md5_checksum
         content_type: gene
         label: Sequence MD5 Checksum
-        type: chado_sequence_checksum_default
+        type: chado_sequence_checksum_type_default
         description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
         cardinality: 1
         required: false
@@ -139,7 +139,7 @@ fields:
     -   name: gene_organism
         content_type: gene
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -165,7 +165,7 @@ fields:
     -   name: gene_type
         content_type: gene
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -193,7 +193,7 @@ fields:
     -   name: gene_contact
         content_type: gene
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -274,7 +274,7 @@ fields:
     -   name: gene_synonym
         content_type: gene
         label: Synonyms
-        type: chado_synonym_default
+        type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
         cardinality: -1
         required: false
@@ -356,7 +356,7 @@ fields:
     -   name: mrna_sequence
         content_type: mRNA
         label: Sequence Residues
-        type: chado_sequence_default
+        type: chado_sequence_type_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -382,7 +382,7 @@ fields:
     -   name: mrna_sequence_length
         content_type: mRNA
         label: Sequence Length
-        type: chado_sequence_length_default
+        type: chado_sequence_length_type_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -408,7 +408,7 @@ fields:
     -   name: mrna_sequence_md5_checksum
         content_type: mRNA
         label: Sequence MD5 Checksum
-        type: chado_sequence_checksum_default
+        type: chado_sequence_checksum_type_default
         description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
         cardinality: 1
         required: false
@@ -434,7 +434,7 @@ fields:
     -   name: mrna_organism
         content_type: mRNA
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -460,7 +460,7 @@ fields:
     -   name: mrna_type
         content_type: mRNA
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -488,7 +488,7 @@ fields:
     -   name: mrna_contact
         content_type: mRNA
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -569,7 +569,7 @@ fields:
     -   name: mrna_synonym
         content_type: mRNA
         label: Synonyms
-        type: chado_synonym_default
+        type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
         cardinality: -1
         required: false
@@ -651,7 +651,7 @@ fields:
     -   name: phylotree_type
         content_type: phylotree
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: false
@@ -679,7 +679,7 @@ fields:
     -   name: phylotree_analysis
         content_type: phylotree
         label: Analysis
-        type: chado_analysis_default
+        type: chado_analysis_type_default
         description: The analysis from which the tree was generated.
         cardinality: 1
         required: false
@@ -786,7 +786,7 @@ fields:
     -   name: physical_map_unit_type
         content_type: physical_map
         label: Unit Type
-        type: chado_unit_default
+        type: chado_unit_type_default
         description: A unit of measurement is a standardized quantity of a physical quality.
         cardinality: 1
         required: false
@@ -813,7 +813,7 @@ fields:
     -   name: physical_map_contact
         content_type: physical_map
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -895,7 +895,7 @@ fields:
     -   name: dna_library_type
         content_type: dna_library
         label: Library Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -923,7 +923,7 @@ fields:
     -   name: dna_library_organism
         content_type: dna_library
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -949,7 +949,7 @@ fields:
     -   name: dna_library_synonym
         content_type: dna_library
         label: Synonyms
-        type: chado_synonym_default
+        type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
         cardinality: -1
         required: false
@@ -976,7 +976,7 @@ fields:
     -   name: dna_library_contact
         content_type: dna_library
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -1193,7 +1193,7 @@ fields:
     -   name: genome_assembly_type
         content_type: genome_assembly
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1410,7 +1410,7 @@ fields:
     -   name: genome_annotation_type
         content_type: genome_annotation
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1493,7 +1493,7 @@ fields:
     -   name: genome_project_type
         content_type: genome_project
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true

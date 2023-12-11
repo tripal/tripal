@@ -16,7 +16,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Alias Widget"),
  *   description = @Translation("The default chado synonym widget."),
  *   field_types = {
- *     "chado_synonym_default"
+ *     "chado_synonym_type_default"
  *   }
  * )
  */

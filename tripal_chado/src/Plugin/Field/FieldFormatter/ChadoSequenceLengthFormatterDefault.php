@@ -14,7 +14,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   label = @Translation("Chado Sequence Length Formatter"),
  *   description = @Translation("A chado sequence length formatter"),
  *   field_types = {
- *     "chado_sequence_length_default"
+ *     "chado_sequence_length_type_default"
  *   }
  * )
  */

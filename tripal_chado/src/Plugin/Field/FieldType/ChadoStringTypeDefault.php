@@ -29,7 +29,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   cardinality = 1
  * )
  */
-class ChadoStringTypeItem extends ChadoFieldItemBase {
+class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_string_type";
 

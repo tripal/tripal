@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Sequence Residues Widget"),
  *   description = @Translation("The default chado sequence widget which allows curators to manually enter sequence residues on the content edit page."),
  *   field_types = {
- *     "chado_sequence_default"
+ *     "chado_sequence_type_default"
  *   }
  * )
  */

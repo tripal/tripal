@@ -15,7 +15,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado Organism Reference Formatter"),
  *   description = @Translation("A chado organism reference formatter"),
  *   field_types = {
- *     "chado_organism_default"
+ *     "chado_organism_type_default"
  *   }
  * )
  */

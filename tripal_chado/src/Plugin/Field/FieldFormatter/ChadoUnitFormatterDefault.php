@@ -13,7 +13,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado unit type formatter"),
  *   description = @Translation("A Chado unit type formatter."),
  *   field_types = {
- *     "chado_unit_default"
+ *     "chado_unit_type_default"
  *   }
  * )
  */

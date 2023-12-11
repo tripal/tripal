@@ -87,7 +87,7 @@ fields:
     -   name: germplasm_type
         content_type: germplasm
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -223,7 +223,7 @@ fields:
     -   name: breeding_cross_type
         content_type: breeding_cross
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -359,7 +359,7 @@ fields:
     -   name: germplasm_variety_type
         content_type: germplasm_variety
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -495,7 +495,7 @@ fields:
     -   name: ril_type
         content_type: RIL
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true

@@ -16,7 +16,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado Property"),
  *   description = @Translation("Add a property or attribute to the content type."),
  *   field_types = {
- *     "chado_linker_property_default"
+ *     "chado_linker_property_type_default"
  *   }
  * )
  */

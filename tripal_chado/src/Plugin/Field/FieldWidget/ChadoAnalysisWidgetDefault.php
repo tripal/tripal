@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Analysis Widget"),
  *   description = @Translation("The default analysis widget."),
  *   field_types = {
- *     "chado_analysis_default"
+ *     "chado_analysis_type_default"
  *   }
  * )
  */

@@ -149,7 +149,7 @@ fields:
     -   name: organism_infraspecific_type
         content_type: organism
         label: Infraspecific Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
         cardinality: 1
         required: false
@@ -485,7 +485,7 @@ fields:
     -   name: project_contact
         content_type: project
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -512,7 +512,7 @@ fields:
     -   name: project_analysis
         content_type: project
         label: Analysis
-        type: chado_analysis_default
+        type: chado_analysis_type_default
         description: Application of analytical methods to existing data of a specific type
         cardinality: -1
         required: false
@@ -597,7 +597,7 @@ fields:
     -   name: study_contact
         content_type: study
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: 1
         required: true
@@ -738,7 +738,7 @@ fields:
     -   name: contact_type
         content_type: contact
         label: Contact Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: false
@@ -901,7 +901,7 @@ fields:
     -   name: protocol_type
         content_type: protocol
         label: Protocol Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true

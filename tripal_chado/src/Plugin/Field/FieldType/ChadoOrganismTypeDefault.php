@@ -13,16 +13,16 @@ use Drupal\core\Field\FieldDefinitionInterface;
  * Plugin implementation of Tripal organism field type.
  *
  * @FieldType(
- *   id = "chado_organism_default",
+ *   id = "chado_organism_type_default",
  *   label = @Translation("Chado Organism Reference"),
  *   description = @Translation("A chado organism reference"),
  *   default_widget = "chado_organism_widget_default",
  *   default_formatter = "chado_organism_formatter_default"
  * )
  */
-class ChadoOrganismDefault extends ChadoFieldItemBase {
+class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_organism_default";
+  public static $id = "chado_organism_type_default";
 
   /**
    * {@inheritdoc}

@@ -16,16 +16,16 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * Plugin implementation of Tripal string field type.
  *
  * @FieldType(
- *   id = "chado_synonym_default",
+ *   id = "chado_synonym_type_default",
  *   label = @Translation("Chado Synonym"),
  *   description = @Translation("A chado syonym"),
  *   default_widget = "chado_synonym_widget_default",
  *   default_formatter = "chado_synonym_formatter_default"
  * )
  */
-class ChadoSynonymDefault extends ChadoFieldItemBase {
+class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_synonym_default";
+  public static $id = "chado_synonym_type_default";
 
   /**
    * {@inheritdoc}

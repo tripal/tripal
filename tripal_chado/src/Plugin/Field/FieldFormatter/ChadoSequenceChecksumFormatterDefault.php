@@ -14,7 +14,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   label = @Translation("Chado Sequence checksum Formatter"),
  *   description = @Translation("A chado sequence checksum formatter"),
  *   field_types = {
- *     "chado_sequence_checksum_default"
+ *     "chado_sequence_checksum_type_default"
  *   }
  * )
  */

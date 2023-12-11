@@ -168,7 +168,7 @@ fields:
     -   name: array_design_manufacturer
         content_type: array_design
         label: Manufacturer
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: A manufacturer's contact details
         cardinality: 1
         required: true
@@ -325,7 +325,7 @@ fields:
     -   name: array_design_substrate_type
         content_type: array_design
         label: Substrate Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: Controlled terms for descriptors of types of array substrates.
         cardinality: 1
         required: false
@@ -352,7 +352,7 @@ fields:
     -   name: array_design_platform_type
         content_type: array_design
         label: Platform Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: The specific version (manufacturer, model, etc.) of a technology that is used to carry out a laboratory or computational experiment.
         cardinality: 1
         required: true
