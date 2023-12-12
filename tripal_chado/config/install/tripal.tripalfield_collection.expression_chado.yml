@@ -69,7 +69,7 @@ fields:
             storage_plugin_settings:
                 base_table: biomaterial
                 linker_table: biomaterial_dbxref
-                linker_fkey_col: dbxref_id
+                linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
             termAccession: 0000554

@@ -211,7 +211,7 @@ fields:
             storage_plugin_settings:
                 base_table: organism
                 linker_table: organism_dbxref
-                linker_fkey_col: dbxref_id
+                linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
             termAccession: 0000554
@@ -461,7 +461,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 linker_table: analysis_dbxref
-                linker_fkey_col: dbxref_id
+                linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
             termAccession: 0000554
@@ -602,7 +602,7 @@ fields:
             storage_plugin_settings:
                 base_table: project
                 linker_table: project_dbxref
-                linker_fkey_col: dbxref_id
+                linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
             termAccession: 0000554
