@@ -676,32 +676,6 @@ fields:
               region: content
               weight: 10
 
-    -   name: phylotree_dbxref_id
-        content_type: phylotree
-        label: Dbxref ID
-        type: chado_integer_type
-        description: The primary key of the database reference (dbxref) to attach to this tree. This field is a placeholder until we develop a more user friendly database reference field.
-        cardinality: 1
-        required: true
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: phylotree
-                base_column: dbxref_id
-        settings:
-            termIdSpace: data
-            termAccession: "2091"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 15
-          form:
-            default:
-              region: content
-              weight: 15
-
     -   name: phylotree_type
         content_type: phylotree
         label: Type
