@@ -436,7 +436,7 @@ fields:
               weight: 66
 
     -   name: qtl_dbxref
-        content_type: qtl
+        content_type: QTL
         label: Cross Reference
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
