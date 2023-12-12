@@ -761,7 +761,7 @@ fields:
         label: Cross Reference
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
-        cardinality: -1
+        cardinality: 1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
