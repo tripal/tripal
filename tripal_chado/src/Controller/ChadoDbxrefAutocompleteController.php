@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class ChadoDbxrefAutocompleteController extends ControllerBase {
   /**
-   * Controller method, autocomplete db:accession.
+   * Controller method, autocomplete db:accession. Not case sensitive.
    *
    * @param Request request
    *
@@ -41,6 +41,14 @@ class ChadoDbxrefAutocompleteController extends ControllerBase {
         // Proceed to autocomplete when string is at least a character
         // long and result count is set to a value greater than 0.
 
+        // If there is a colon in the string, extract the left part as the
+        // DB name and the right part as the accession.
+        $db_name = '';
+        if (preg_match('/^([^:]*):(.*)$/', $string, $matches)) {
+          $db_name = strtolower($matches[1]);
+          $string = $matches[2];
+        }
+
         // Transform string as a case-insensitive search keyword pattern.
         $keyword = strtolower($string) . '%';
 
@@ -48,20 +56,27 @@ class ChadoDbxrefAutocompleteController extends ControllerBase {
         // the keyword pattern and return each row in the format specified.
         // Tables indicate schema sequence number #1 to use default schema.
         $sql = "
-          SELECT dbxref.accession, db.name,
+          SELECT xr.accession, db.name
           FROM {1:dbxref} AS xr
             LEFT JOIN {1:db} AS db USING(db_id)
           WHERE LOWER(xr.accession) LIKE :keyword";
         $args = [':keyword' => $keyword, ':limit' => $count];
+
         // Limit terms to selected DB when this is specified.
         if ($db_id) {
           $sql .= " AND xr.db_id = :db_id";
           $args[':db_id'] = $db_id;
         }
+
+        // If user typed a DB: prefix, limit by that.
+        if ($db_name) {
+          $sql .= " AND LOWER(db.name) = :db_name";
+          $args[':db_name'] = $db_name;
+        }
+
         $sql .= " ORDER BY xr.accession ASC LIMIT :limit";
 
-        // Prepare Chado database connection and execute sql query by providing value
-        // for :keyword placeholder text.
+        // Prepare Chado database connection and execute sql query
         $connection = \Drupal::service('tripal_chado.database');
         $results = $connection->query($sql, $args);
 
@@ -86,53 +101,46 @@ class ChadoDbxrefAutocompleteController extends ControllerBase {
    * value returned by the handler method above.
    *
    * @param string $accession
-   *   String value returned by autocomplete handler method.
+   *   String value returned by autocomplete handler method. Case sensitive.
    *
    * @param string $db_name
-   *   Optional name of a database. Can be used if user
-   *   bypassed autocomplete and entered just a dbxref accession manually.
+   *   Optional name of a database. Can be used if user bypassed autocomplete
+   *   and entered just a dbxref accession manually. Case sensitive.
    *
    * @return integer
    *   Id number corresponding to chado.dbxref_id field of the matching accession
-   *   or 0 if no match was found.
+   *   or 0 if no match or multiple matches were found.
    */
   public static function getDbxrefId(string $accession, $db_name = ''): int {
     $id = 0;
 
     if (strlen($accession) > 0) {
+
+      // If there is a colon in the accession, extract the left part as
+      // the DB name and the right part as the accession.
+      if (preg_match('/^([^:]*):(.*)$/', $accession, $matches)) {
+        $db_name = $matches[1];
+        $accession = $matches[2];
+      }
+
       $sql = "
         SELECT xr.dbxref_id FROM {1:dbxref} AS xr
           LEFT JOIN {1:db} AS db USING(db_id)
-        WHERE CONCAT(db.name, ':', xr.accession) = :accession
-      ";
+        WHERE xr.accession = :keyword";
+      $args = [':keyword' => $accession];
+
+      if ($db_name) {
+        $sql .= " AND db.name = :db_name";
+        $args[':db_name'] = $db_name;
+      }
 
       $connection = \Drupal::service('tripal_chado.database');
       $result = $connection
-        ->query($sql, [':accession' => $accession])
+        ->query($sql, $args)
         ->fetchAll();
 
-      if(count($result) == 1) {
+      if (count($result) == 1) {
         $id = $result[0]->dbxref_id;
-      }
-
-      // If no match, and if a disambiguating DB was specified,
-      // try again using only that DB. This happens if the user
-      // types in the accession and doesn't let the autocomplete
-      // prefix with the DB:.
-      else if ($db_name) {
-        $sql = "
-          SELECT xr.dbxref_id FROM {1:dbxref} AS xr
-            LEFT JOIN {1:db} AS db USING(db_id)
-          WHERE xr.accession = :accession AND db.name = :dbname
-        ";
-
-        $result = $connection
-          ->query($sql, [':accession' => $accession, ':dbname' => $db_name])
-          ->fetchAll();
-
-        if(count($result) == 1) {
-          $id = $result[0]->dbxref_id;
-        }
       }
     }
     return $id;
@@ -159,11 +167,12 @@ class ChadoDbxrefAutocompleteController extends ControllerBase {
         WHERE xr.dbxref_id = :dbxref_id
         LIMIT 1
       ";
+      $args = [':dbxref_id' => $id];
 
       $connection = \Drupal::service('tripal_chado.database');
-      $result = $connection->query($sql, [':dbxref_id' => $id]);
+      $result = $connection->query($sql, $args);
 
-      if($result) {
+      if ($result) {
         $accession = $result->fetchField();
       }
     }
