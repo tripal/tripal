@@ -112,7 +112,7 @@ fields:
               region: content
               weight: 30
 
-   -   name: genetic_map_dbxref
+    -   name: genetic_map_dbxref
         content_type: genetic_map
         label: Cross Reference
         type: chado_dbxref_type_default
