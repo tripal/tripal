@@ -48,7 +48,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
     // Retrieve a value we need to get from the form state after an ajax callback
     $field_name = $items->getFieldDefinition()->get('field_name');
-    $db_id = $form_state->getValue([$field_name, $delta, 'db_id']);
+    $db_id = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_id']);
 
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
@@ -72,9 +72,12 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $link,
     ];
 
-    $elements['db_id'] = [
+    // The next two fields are inserted into the passed $element so they
+    // will be grouped, and we need to indicate that this is a fieldset.
+    $element['#type'] = 'fieldset';
+
+    $element['db_id'] = [
       '#type' => 'select',
-      '#width' => 100,
       '#title' => t('Database Name'),
       '#required' => FALSE,
       '#weight' => 1,
@@ -91,20 +94,18 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
         'wrapper' => 'edit-accession-' . $delta,
       ],
     ];
-
-    $elements['dbxref'] = $element;
-
-    $elements['dbxref_accession'] = [
+    $element['dbxref_accession'] = [
       '#type' => 'textfield',
-      '#width' => 100,
-      '#title' => $db_id?'Database Accession':'',
-      '#id' => 'edit-accession-' . $delta,
+      '#title' => 'Database Accession',
+      '#prefix' => '<div id="edit-accession-' . $delta . '">',
+      '#suffix' => '</div>',
       '#weight' => 2,
       '#default_value' => $accession,
       '#disabled' => $db_id?FALSE:TRUE,
       '#autocomplete_route_name' => 'tripal_chado.dbxref_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 5, 'db_id' => $db_id],
     ];
+    $elements['dbxref'] = $element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
@@ -205,7 +206,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $delta = $matches[2];
 
     $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-accession-' . $delta, $form[$machine_name]['widget'][$delta]['dbxref_accession']));
+    $response->addCommand(new ReplaceCommand('#edit-accession-' . $delta, $form[$machine_name]['widget'][$delta]['dbxref']['dbxref_accession']));
     return $response;
   }
 }
