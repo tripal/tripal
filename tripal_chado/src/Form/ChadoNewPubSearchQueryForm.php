@@ -608,6 +608,10 @@ class ChadoNewPubSearchQueryForm extends FormBase {
     if ($do_contact == null) {
       $do_contact = 0;
     }
+    $pub_import_id = NULL;
+    if (isset($user_input['pub_import_id'])) {
+      $pub_import_id = $user_input['pub_import_id'];
+    }
     $criteria_column_array = [
       'remote_db' => explode('tripal_pub_library_', $user_input['plugin_id'])[1],
       // 'days' => $user_input['days'],
@@ -615,7 +619,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       'loader_name' => $user_input['loader_name'],
       'disabled' => $disabled,
       'do_contact' => $do_contact,
-      'pub_import_id' => $user_input['pub_import_id'],
+      'pub_import_id' => $pub_import_id,
       'criteria' => [],
       'form_state_user_input' => NULL, // used for edit form
     ];
