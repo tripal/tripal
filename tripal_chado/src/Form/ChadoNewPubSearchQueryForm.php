@@ -59,9 +59,11 @@ class ChadoNewPubSearchQueryForm extends FormBase {
     $form_state_values = $form_state->getValues();
 
     // If performing a test we need to change the state etc to make sure the form appears correctly
-    if ($_SESSION['tripal_pub_import']['perform_test'] == 1) {
-      $this->form_state_previous_user_input = $_SESSION['tripal_pub_import']['perform_test_user_input'];
-      $form_state_values['button_next'] = "Next";
+    if (isset($_SESSION['tripal_pub_import'])) {
+      if ($_SESSION['tripal_pub_import']['perform_test'] == 1) {
+        $this->form_state_previous_user_input = $_SESSION['tripal_pub_import']['perform_test_user_input'];
+        $form_state_values['button_next'] = "Next";
+      }
     }
 
     $html = "<ul class='action-links'>";
@@ -72,7 +74,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       )->toString() . '</li>';
     $html .= '</ul>';
     $form['new_publication_link'] = [
-      '#type' => 'markup',
       '#markup' => $html
     ];
     unset($html);
@@ -103,66 +104,63 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       }
 
       // If the test button was clicked - run the TripalPubLibrary Plugin specific test function
-      if ($_SESSION['tripal_pub_import']['perform_test'] == 1) {
-        $plugin_id = $form['plugin_id']['#default_value'];
-        if ($plugin_id) {
-          // Instantiate the selected plugin
-          // Pub Library Manager is found in tripal module: 
-          // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
-          $pub_library_manager = \Drupal::service('tripal.pub_library');
-          $plugin = $pub_library_manager->createInstance($plugin_id, []);
+      if (isset($_SESSION['tripal_pub_import'])) {
+        if ($_SESSION['tripal_pub_import']['perform_test'] == 1) {
+          $plugin_id = $form['plugin_id']['#default_value'];
+          if ($plugin_id) {
+            // Instantiate the selected plugin
+            // Pub Library Manager is found in tripal module: 
+            // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+            $pub_library_manager = \Drupal::service('tripal.pub_library');
+            $plugin = $pub_library_manager->createInstance($plugin_id, []);
 
-          // The selected plugin defines a test specific to itself.
-          $criteria_column_array = $_SESSION['tripal_pub_import']['perform_test_criteria_array'];
-          $results = $plugin->test($form, $form_state, $criteria_column_array);
+            // The selected plugin defines a test specific to itself.
+            $criteria_column_array = $_SESSION['tripal_pub_import']['perform_test_criteria_array'];
+            $results = $plugin->test($form, $form_state, $criteria_column_array);
 
-          // On successful results, it should return array with keys total_records, search_str, pubs(array)
-          $headers = ['', 'Publication', 'Authors'];
-          $form['test_results_table'] = [
-            '#type' => 'table',
-            '#header' => $headers,
-            '#prefix' => '<div id="test_results_table">',
-            '#suffix' => '</div>',
-            '#weight' => 1000, // arbitrary heavier number so table is below most options
-          ];
-
-          if ($results != NULL) {
-
-            $form['test_results_count_info'] = [
-              '#type' => 'markup',
-              '#markup' => '<h1>Test results</h1><div>Found ' . $results['total_records'] . 
-                ' publications. Showing the first 5 publications.</div>',
-              '#weight' => 998
+            // On successful results, it should return array with keys total_records, search_str, pubs(array)
+            $headers = ['', 'Publication', 'Authors'];
+            $form['test_results_table'] = [
+              '#type' => 'table',
+              '#header' => $headers,
+              '#prefix' => '<div id="test_results_table">',
+              '#suffix' => '</div>',
+              '#weight' => 1000, // arbitrary heavier number so table is below most options
             ];
-            
-            $form['test_results_search_string'] = [
-              '#type' => 'markup',
-              '#markup' => 'Search String: ' .  $results['search_str'],
-              '#weight' => 999,
-            ];  
 
-            $index = 0;
-            foreach ($results['pubs'] as $pubs_row) {
-              $index++;
-              $row["index"] = [
-                '#type' => 'markup',
-                '#markup' => $index,
+            if ($results != NULL) {
+
+              $form['test_results_count_info'] = [
+                '#markup' => '<h1>Test results</h1><div>Found ' . $results['total_records'] . 
+                  ' publications. Showing the first 5 publications.</div>',
+                '#weight' => 998
               ];
-              $row["publication"] = [
-                '#type' => 'markup',
-                '#markup' => $pubs_row['Title'],
-              ];
-              $row["authors"] = [
-                '#type' => 'markup',
-                '#markup' => $pubs_row['Authors'],
-              ];              
-              $form['test_results_table'][$index - 1] = $row;                           
+              
+              $form['test_results_search_string'] = [
+                '#markup' => 'Search String: ' .  $results['search_str'],
+                '#weight' => 999,
+              ];  
+
+              $index = 0;
+              foreach ($results['pubs'] as $pubs_row) {
+                $index++;
+                $row["index"] = [
+                  '#markup' => $index,
+                ];
+                $row["publication"] = [
+                  '#markup' => $pubs_row['Title'],
+                ];
+                $row["authors"] = [
+                  '#markup' => $pubs_row['Authors'],
+                ];              
+                $form['test_results_table'][$index - 1] = $row;                           
+              }
             }
-          }
 
-          // Set the session variable perform_test back to 0 since the test has finished
-          $_SESSION['tripal_pub_import']['perform_test'] = 0;
-          $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = [];
+            // Set the session variable perform_test back to 0 since the test has finished
+            $_SESSION['tripal_pub_import']['perform_test'] = 0;
+            $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = [];
+          }
         }
       }
     }
@@ -174,13 +172,15 @@ class ChadoNewPubSearchQueryForm extends FormBase {
    * key for the specific form element
    */
   public function form_elements_load_previous_user_input(&$input, &$form_element) {
-    foreach ($input as $key => $value) {
-      if (!is_array($input[$key])) {
-        // dpm($key . ' and ' . $value);
-        $form_element[$key]['#default_value'] = $value;
-      }
-      else {
-        $this->form_elements_load_previous_user_input($input[$key], $form_element[$key]);
+    if (isset($input)) {
+      foreach ($input as $key => $value) {
+        if (!is_array($input[$key])) {
+          // dpm($key . ' and ' . $value);
+          $form_element[$key]['#default_value'] = $value;
+        }
+        else {
+          $this->form_elements_load_previous_user_input($input[$key], $form_element[$key]);
+        }
       }
     }
   }
@@ -505,7 +505,10 @@ class ChadoNewPubSearchQueryForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $public = \Drupal::database();
     $user_input = $form_state->getUserInput();
-    $form_mode = $user_input['mode'];
+    $form_mode = NULL;
+    if (isset($user_input['mode'])) {
+      $form_mode = $user_input['mode'];
+    }
     // dpm($user_input);
     $trigger = $form_state->getTriggeringElement()['#name'];
     

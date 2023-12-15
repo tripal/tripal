@@ -145,14 +145,14 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       // if this is not a phase then we want to separate each 'OR or 'AND' into a unique criteria
       else {
         $search_str .= "(";
-        if (preg_match('/and/i', $search_terms)) {
+        if (preg_match('/\s+and+\s/i', $search_terms)) {
           $elements = preg_split('/\s+and+\s/i', $search_terms);
           foreach ($elements as $element) {
             $search_str .= "($element |SCOPE|) AND ";
           }
           $search_str = substr($search_str, 0, -5); // remove trailing 'AND '
         }
-        elseif (preg_match('/or/i', $search_terms)) {
+        elseif (preg_match('/\s+or+\s/i', $search_terms)) {
           $elements = preg_split('/\s+or+\s/i', $search_terms);
           foreach ($elements as $element) {
             $search_str .= "($element |SCOPE|) OR ";

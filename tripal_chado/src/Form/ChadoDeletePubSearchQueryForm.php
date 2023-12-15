@@ -25,7 +25,6 @@ class ChadoDeletePubSearchQueryForm extends FormBase {
     $public = \Drupal::database();
     $publication = $public->select('tripal_pub_import', 'tpi')->fields('tpi')->condition('pub_import_id', $pub_import_id, '=')->execute()->fetchObject();
     $form['are_you_sure'] = [
-      '#type' => 'markup',
       '#markup' => 'Are you sure you want to delete "' . $publication->name . '"?<br />'
     ];
 

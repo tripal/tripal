@@ -68,7 +68,6 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
   $html .= '  <li>' . Link::fromTextAndUrl('New search query', Url::fromUri('internal:/admin/tripal/loaders/publications/new_publication_search_query'))->toString() . '</li>';
   $html .= '</ul>';
   $form['new_publication_link'] = [
-    '#type' => 'markup',
     '#markup' => $html
   ];
   unset($html); 
@@ -86,7 +85,6 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
           importer to run periodically by adding a cron job. </li>
      </ol><br>");
   $form['heading'] = [
-    '#type' => 'markup',
     '#markup' => $html
   ];
 
@@ -143,7 +141,6 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
 
       // This should contain edit test and import pubs links @TODO
       $row['col-1'] = [
-        '#type' => 'markup',
         '#markup' => 
           Link::fromTextAndUrl(
             'Edit/Test', 
@@ -153,29 +150,24 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
           '<br /><a href="">Import Pubs</a>'
       ];
       $row['col-2'] = [
-        '#type' => 'markup',
         '#markup' => $pub_importer->name
       ];
       $row['col-3'] = [
-        '#type' => 'markup',
         '#markup' => $criteria_column_array['remote_db']
       ];
 
       // Search string
       $row['col-4'] = [
-        '#type' => 'markup',
         '#markup' => $search_string
       ];
 
       // Disabled
       $row['col-5'] = [
-        '#type' => 'markup',
         '#markup' => $disabled
       ];
 
       // Create contact
       $row['col-6'] = [
-        '#type' => 'markup',
         '#markup' => $do_contact
       ]; 
 
@@ -199,31 +191,24 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
   else {
     // No publication importers have been added by users
     $row['col-1'] = [
-      '#type' => 'markup',
       '#markup' => ''
     ];
     $row['col-2'] = [
-      '#type' => 'markup',
       '#markup' => 'There are currently no importers'
     ];
     $row['col-3'] = [
-      '#type' => 'markup',
       '#markup' => ''
     ];
     $row['col-4'] = [
-      '#type' => 'markup',
       '#markup' => ''
     ];
     $row['col-5'] = [
-      '#type' => 'markup',
       '#markup' => ''
     ];
     $row['col-6'] = [
-      '#type' => 'markup',
       '#markup' => ''
     ]; 
     $row['col-7'] = [
-      '#type' => 'markup',
       '#markup' => ''
     ];       
     $form['pub_manager']['table']['no_publications'] = $row;

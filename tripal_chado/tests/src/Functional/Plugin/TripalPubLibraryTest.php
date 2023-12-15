@@ -23,7 +23,6 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       $plugins[$plugin_key] = $plugin_value;
     }
     asort($plugins);
-    // print_r($plugins);
     $this->assertEquals($plugins['tripal_pub_library_pubmed'], 'NIH PubMed database');
     
 
@@ -58,6 +57,5 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
 
     $this->assertNotEquals($results['pubs'][0]['Title'], NULL, 'There should be a title but a title was not found');
 
-    // print_r($plugin);
   }
 }
