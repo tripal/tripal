@@ -79,13 +79,7 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table or !$type_table) {
-      $record_id_term = 'SIO:000729';
-      return [
-        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-        ])
-      ];
+      return;
     }
 
     // Get the connecting information about the base table and the
@@ -157,19 +151,19 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
     // This field needs the term name, idspace and accession for proper
     // display of the type.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', $name_term, 128, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id',
       'chado_column' => 'name',
       'as' => 'term_name'
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'id_space', $idspace_term, 128, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
       'chado_column' => 'name',
       'as' => 'idSpace'
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'accession', $accession_term, 128, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id',
       'chado_column' => 'accession',
       'as' => 'accession'
@@ -256,8 +250,8 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
     }
     else {
       // Store the separated table and column in their respective settings variables
-      $form_state->setValue(['settings','storage_plugin_settings','type_table'], $parts[0]);
-      $form_state->setValue(['settings','storage_plugin_settings','type_column'], $parts[1]);
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'type_table'], $parts[0]);
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'type_column'], $parts[1]);
     }
   }
 

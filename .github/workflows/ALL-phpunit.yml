@@ -1,9 +1,6 @@
-
 name: PHPUnit Matrixed
 on:
-  push:
-    branches-ignore:
-      - 4.x
+  workflow_dispatch:
   pull_request:
     types: [opened, synchronize]
 
@@ -15,29 +12,13 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "8.0"
           - "8.1"
           - "8.2"
         pgsql-version:
           - "13"
         drupal-version:
-          - "9.4.x-dev"
-          - "9.5.x-dev"
           - "10.0.x-dev"
           - "10.1.x-dev"
-        exclude:
-          - php-version: "8.2"
-            pgsql-version: "13"
-            drupal-version: "9.4.x-dev"
-          - php-version: "8.2"
-            pgsql-version: "13"
-            drupal-version: "9.5.x-dev"
-          - php-version: "8.0"
-            pgsql-version: "13"
-            drupal-version: "10.0.x-dev"
-          - php-version: "8.0"
-            pgsql-version: "13"
-            drupal-version: "10.1.x-dev"
 
     steps:
       # Check out the repo
@@ -55,19 +36,19 @@ jobs:
       - name: Spin up Local Docker
         run: |
           docker run --publish=80:80 --name=tripaldocker -tid \
-            --volume=`pwd`:/var/www/drupal9/web/modules/contrib/tripal \
+            --volume=`pwd`:/var/www/drupal/web/modules/contrib/tripal \
             tripaldocker:localdocker
           docker exec tripaldocker service postgresql restart
       # Runs the PHPUnit tests.
       - name: Run PHPUnit Tests
         env:
           SIMPLETEST_BASE_URL: "http://localhost"
-          SIMPLETEST_DB: "pgsql://drupaladmin:drupal9developmentonlylocal@localhost/sitedb"
-          BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal9/web/sites/default/files/simpletest"
+          SIMPLETEST_DB: "pgsql://drupaladmin:drupaldevelopmentonlylocal@localhost/sitedb"
+          BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal/web/sites/default/files/simpletest"
         run: |
           docker exec tripaldocker service postgresql restart
           docker exec -e SIMPLETEST_BASE_URL=$SIMPLETEST_BASE_URL \
             -e SIMPLETEST_DB=$SIMPLETEST_DB \
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
-            --workdir=/var/www/drupal9/web/modules/contrib/tripal \
+            --workdir=/var/www/drupal/web/modules/contrib/tripal \
             tripaldocker phpunit

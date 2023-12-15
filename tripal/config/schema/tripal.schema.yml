@@ -332,3 +332,39 @@ tripal.tripalfield_collection.*:
                            type: integer
                            label: 'Weight'
                            nullable: false
+
+field.formatter.settings.*:
+  type: mapping
+  mapping:
+    case_setting:
+      type: string
+      label: 'Case setting'
+      nullable: true
+    false_string:
+      type: string
+      label: 'Text to display for a boolean FALSE value'
+      nullable: false
+    true_string:
+      type: string
+      label: 'Text to display for a boolean TRUE value'
+      nullable: false
+    field_prefix:
+      type: string
+      label: 'Field prefix'
+      nullable: true
+    field_suffix:
+      type: string
+      label: 'Field suffix'
+      nullable: true
+    thousand_separator:
+      type: string
+      label: 'Thousand marker'
+      nullable: true
+    token_string:
+      type: string
+      label: 'Token string for field display'
+      nullable: false
+    wrap_setting:
+      type: integer
+      label: 'Word wrap setting'
+      nullable: true

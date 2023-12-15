@@ -152,7 +152,7 @@ class NewickImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/newick_loader/newick_T92076.tree',
     ];
 
-    $newick_importer->create($run_args, $file_details);
+    $newick_importer->createImportJob($run_args, $file_details);
     $newick_importer->prepareFiles();
     $newick_importer->run();
     $newick_importer->postRun();

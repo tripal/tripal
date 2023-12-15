@@ -6,6 +6,8 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
+use Symfony\Component\Yaml\Yaml;
+
 /**
  * Provides functions and member variables to be used when testing Chado Storage.
  * This allows for less duplication of setup and more focus on the particular
@@ -231,12 +233,13 @@ trait ChadoStorageTestTrait {
 
     // Create the property types based on our fields array.
     $this->createPropertyTypes($field_names, $expected_property_counts);
+
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
 
-
     // Create the property values + format them for testing with *Values methods.
     $this->createDataStoreValues($field_names, $values);
+
     // Set the values in the propertyValue objects.
     $this->setExpectedValues($field_names, $values);
 
@@ -324,7 +327,6 @@ trait ChadoStorageTestTrait {
     $this->createPropertyTypes($field_names, $expected_property_counts);
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
-
 
     // Create the property values + format them for testing with *Values methods.
     $this->createDataStoreValues($field_names, $values);
@@ -621,7 +623,7 @@ trait ChadoStorageTestTrait {
       $total_num_properties += count($retrieved_properties);
     }
     $this->assertEquals($expected_property_counts['total'], $total_num_properties,
-      "Did not revieve the expected number of PropertyTypes after adding $field_name_string.");
+      "Did not retrieve the expected number of PropertyTypes after adding $field_name_string.");
   }
 
   /**
@@ -653,7 +655,7 @@ trait ChadoStorageTestTrait {
         foreach($current_values as $property_key => $val) {
 
           $this->assertArrayHasKey($property_key, $this->dataStoreValues[$field_name][$delta],
-            "The key $property_key does not exist in the data store values for $field_name[$delta], it may be missing from your \$fields definition");
+            "The key $property_key does not exist in the data store values for ".$field_name."[".$delta."], it may be missing from your \$fields definition");
 
           $this->dataStoreValues[$field_name][$delta][$property_key]['value']->setValue($val);
 
@@ -711,7 +713,7 @@ trait ChadoStorageTestTrait {
     print "\tData Store Values:\n";
 
     foreach ($this->dataStoreValues as $field_name => $level1) {
-      print "\n\tFEILD: $field_name:\n";
+      print "\n\tFIELD: $field_name:\n";
       foreach ($level1 as $delta => $level2) {
         print "\t\tDelta: $delta\n";
         foreach ($level2 as $property_key => $level3) {
@@ -728,5 +730,53 @@ trait ChadoStorageTestTrait {
 
     print "\n\n";
 
+  }
+
+  /**
+   * Allows you to set the 'fields' by specifying the top level key of a YAML file.
+   *
+   * @param string $yaml_file
+   *   The full path to a yaml file which follows the format descripbed above.
+   * @param string $top_level_key
+   *   The top level key in the yaml file which contains the fields you would
+   *   like to set.
+   */
+  public function setFieldsFromYaml($yaml_file, $top_level_key) {
+
+    if (!file_exists($yaml_file)) {
+      throw new \Exception("Cannot open YAML file $yaml_file in order to set the fields for testing chadostorage.");
+    }
+
+    $file_contents = file_get_contents($yaml_file);
+    if (empty($file_contents)) {
+      throw new \Exception("Unable to retrieve contents for YAML file $yaml_file in order to set the fields for testing chadostorage.");
+    }
+
+    $yaml_data = Yaml::parse($file_contents);
+    if (empty($yaml_data)) {
+      throw new \Exception("Unable to parse YAML file $yaml_file in order to set the fields for testing chadostorage.");
+    }
+
+    // Check if we have a single top level key or if there are more levels.
+    $levels = explode('.', $top_level_key);
+    $data2return = $yaml_data;
+    $deepest_level = max(array_keys($levels));
+    foreach($levels as $i => $key) {
+      if (!array_key_exists($key, $data2return)) {
+        throw new \Exception("The key $key (part of $top_level_key) that you provided does not exist in the parsed YAML file: $yaml_file.");
+      }
+
+
+      if ($i === $deepest_level AND $i !== 0) {
+        // If this is the deepest level and not the only level then we want to
+        // do something different to ensure we keep the structure of the fields array.
+        $data2return = [ $key => $data2return[$key] ];
+      }
+      else {
+        $data2return = $data2return[$key];
+      }
+    }
+
+    $this->fields = $data2return;
   }
 }

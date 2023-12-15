@@ -92,7 +92,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       ))->toString() . '.',
       '#default_value' => \Drupal::state()->get('tripal_ncbi_api_key', NULL),
       '#ajax' => array(
-        'callback' => [$this, 'tripal_taxon_importer_set_ncbi_api_key'],
+        'callback' => [$this::class, 'tripal_taxon_importer_set_ncbi_api_key'],
         'wrapper' => 'ncbi_api_key',
         'disable-refocus' => true,
       ),
@@ -557,7 +557,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         while (($retries > 0) and (!$rfh)) {
           $start = microtime(TRUE);
           // Get the search response from NCBI.
-          $rfh = fopen($search_url, "r");
+          $rfh = @fopen($search_url, "r");
           // If error, delay then retry
           if ((!$rfh) and ($retries)) {
             $this->logger->warning("Error contacting NCBI to look up @sci_name, will retry",
@@ -810,7 +810,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $retries = 3;
     while (($retries > 0) and (!$rfh)) {
       $start = microtime(TRUE);
-      $rfh = fopen($fetch_url, "r");
+      $rfh = @fopen($fetch_url, "r");
       if ($rfh) {
         $xml_text = '';
         while (!feof($rfh)) {
@@ -1169,7 +1169,7 @@ class TaxonomyImporter extends ChadoImporterBase {
    * @return array
    *   The new api key field.
    */
-  function tripal_taxon_importer_set_ncbi_api_key($form, &$form_state) {
+  public static function tripal_taxon_importer_set_ncbi_api_key($form, &$form_state) {
     $key_value = $form_state->getValue(['ncbi_api_key']);
     \Drupal::state()->set('tripal_ncbi_api_key', \Drupal\Component\Utility\HTML::escape($key_value));
     \Drupal::messenger()->addMessage(t('NCBI API key has been saved successfully!'));
