@@ -66,7 +66,7 @@ class ChadoTermsInit{
     $config_factory = \Drupal::service('config.factory');
 
     $config_key = 'tripal.tripal_content_terms.' . $id;
-    $config = $config_factory->get($id);
+    $config = $config_factory->get($config_key);
     if (!$config) {
       throw new \Exception("Unable to find configuration with the key $id.");
     }
