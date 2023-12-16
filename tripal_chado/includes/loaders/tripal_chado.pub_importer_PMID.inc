@@ -406,6 +406,9 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
         case 'MedlineJournalInfo':
           tripal_pub_PMID_parse_medline_journal_info($xml, $pub);
           break;
+        case 'BookDocument':
+          tripal_pub_PMID_parse_book_document($xml, $pub);
+          break;
         case 'ChemicalList':
           // TODO: handle this
           break;
@@ -577,7 +580,7 @@ function tripal_pub_PMID_parse_article($xml, &$pub) {
           // TODO: handle this case
           break;
         case 'PublicationTypeList':
-          tripal_pub_PMID_parse_publication_type($xml, $pub);
+          tripal_pub_PMID_parse_publication_type_list($xml, $pub);
           break;
         case 'VernacularTitle':
           $xml->read();
@@ -587,6 +590,155 @@ function tripal_pub_PMID_parse_article($xml, &$pub) {
           // TODO: figure out what to do with this element. We already have the
           // published date in the <PubDate> field, but this date should be in numeric
           // form and may have more information.
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+
+/**
+ * Parses the section from the XML returned from PubMed that contains
+ * information about a book.
+ *
+ * @param $xml
+ *   The XML to parse
+ * @param $pub
+ *   The publication object to which additional details will be added
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_PMID_parse_book_document($xml, &$pub) {
+
+  while ($xml->read()) {
+    // get this element name
+    $element = $xml->name;
+
+    // if we're at the </Book> element then we're done with the book...
+    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'BookDocument') {
+      return;
+    }
+    if ($xml->nodeType == XMLReader::ELEMENT) {
+      switch ($element) {
+        case 'PMID':
+          $xml->read(); // get the value for this element
+          if (!array_key_exists('Publication Dbxref', $pub)) {
+            $pub['Publication Dbxref'] = 'PMID:' . $xml->value;
+          }
+          break;
+        case 'BookTitle':
+          $pub['Title'] = $xml->readString();
+          break;
+        case 'ArticleTitle':
+          // This can happen if there is a chapter in a book, append to the book title
+          $title = $xml->readString();
+          $pub['Title'] = $pub['Title'] ? ($pub['Title'] . '. ' . $title) : $title;
+          break;
+        case 'Abstract':
+          tripal_pub_PMID_parse_abstract($xml, $pub);
+          break;
+        case 'Pagination':
+          tripal_pub_PMID_parse_pagination($xml, $pub);
+          break;
+        case 'ELocationID':
+          $type = $xml->getAttribute('EIdType');
+          $valid = $xml->getAttribute('ValidYN');
+          $xml->read();
+          $elocation = $xml->value;
+          if ($type == 'doi' and $valid == 'Y') {
+            $pub['DOI'] = $elocation;
+          }
+          if ($type == 'pii' and $valid == 'Y') {
+            $pub['PII'] = $elocation;
+          }
+          $pub['Elocation'] = $elocation;
+          break;
+        case 'Affiliation':
+          // the affiliation tag at this level is meant solely for the first author
+          $xml->read();
+          $pub['Author List'][0]['Affiliation'] = $xml->value;
+          break;
+        case 'AuthorList':
+          $complete = $xml->getAttribute('CompleteYN');
+          tripal_pub_PMID_parse_authorlist($xml, $pub);
+          break;
+        case 'Language':
+          $xml->read();
+          $lang_abbr = $xml->value;
+          // there may be multiple languages so we store these in an array
+          $pub['Language'][] = tripal_pub_remote_search_get_language($lang_abbr);
+          $pub['Language Abbr'][] = $lang_abbr;
+          break;
+        case 'PublicationTypeList':
+          tripal_pub_PMID_parse_publication_type_list($xml, $pub);
+          break;
+        case 'PublicationType':
+          tripal_pub_PMID_parse_publication_type($xml, $pub);
+          break;
+        case 'VernacularTitle':
+          $xml->read();
+          $pub['Vernacular Title'][] = $xml->value;
+          break;
+        case 'PublisherName':
+          $xml->read();
+          $pub['Publisher'] = $xml->value;
+          break;
+        case 'PubDate':
+          $date = tripal_pub_PMID_parse_date($xml, 'PubDate');
+          $year = $date['year'];
+          $month = array_key_exists('month', $date) ? $date['month'] : '';
+          $day = array_key_exists('day', $date) ? $date['day'] : '';
+          $medline = array_key_exists('medline', $date) ? $date['medline'] : '';
+
+          $pub['Year'] = $year;
+          if ($month and $day and $year) {
+            $pub['Publication Date'] = "$year $month $day";
+          }
+          elseif ($month and !$day and $year) {
+            $pub['Publication Date'] = "$year $month";
+          }
+          elseif (!$month and !$day and $year) {
+            $pub['Publication Date'] = $year;
+          }
+          elseif ($medline) {
+            $pub['Publication Date'] = $medline;
+          }
+          else {
+            $pub['Publication Date'] = "Date Unknown";
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+
+/**
+ * Parses the section from the XML returned from PubMed that contains
+ * a list of publication types
+ *
+ * @param $xml
+ *   The XML to parse
+ * @param $pub
+ *   The publication object to which additional details will be added
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_PMID_parse_publication_type_list($xml, &$pub) {
+
+  while ($xml->read()) {
+    $element = $xml->name;
+
+    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'PublicationTypeList') {
+      // we've reached the </PublicationTypeList> element so we're done.
+      return;
+    }
+    if ($xml->nodeType == XMLReader::ELEMENT) {
+      switch ($element) {
+        case 'PublicationType':
+          tripal_pub_PMID_parse_publication_type($xml, $pub);
           break;
         default:
           break;
@@ -614,50 +766,34 @@ function tripal_pub_PMID_parse_article($xml, &$pub) {
  */
 function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
 
-  while ($xml->read()) {
-    $element = $xml->name;
+  $xml->read();
+  $value = $xml->value;
 
-    if ($xml->nodeType == XMLReader::END_ELEMENT and $element == 'PublicationTypeList') {
-      // we've reached the </PublicationTypeList> element so we're done.
-      return;
+  $identifiers = [
+    'name' => $value,
+    'cv_id' => [
+      'name' => 'tripal_pub',
+    ],
+  ];
+  $options = ['case_insensitive_columns' => ['name']];
+  $pub_cvterm = chado_get_cvterm($identifiers, $options);
+  if (!$pub_cvterm) {
+    // see if this we can find the name using a synonym
+    $identifiers = [
+      'synonym' => [
+        'name' => $value,
+        'cv_name' => 'tripal_pub',
+      ],
+    ];
+    $pub_cvterm = chado_get_cvterm($identifiers, $options);
+    if (!$pub_cvterm) {
+      tripal_report_error('tripal_pubmed', TRIPAL_ERROR,
+        'Cannot find a valid vocabulary term for the publication type: "%term".',
+        ['%term' => $value]);
     }
-    if ($xml->nodeType == XMLReader::ELEMENT) {
-      switch ($element) {
-        case 'PublicationType':
-          $xml->read();
-          $value = $xml->value;
-
-          $identifiers = [
-            'name' => $value,
-            'cv_id' => [
-              'name' => 'tripal_pub',
-            ],
-          ];
-          $options = ['case_insensitive_columns' => ['name']];
-          $pub_cvterm = chado_get_cvterm($identifiers, $options);
-          if (!$pub_cvterm) {
-            // see if this we can find the name using a synonym
-            $identifiers = [
-              'synonym' => [
-                'name' => $value,
-                'cv_name' => 'tripal_pub',
-              ],
-            ];
-            $pub_cvterm = chado_get_cvterm($identifiers, $options);
-            if (!$pub_cvterm) {
-              tripal_report_error('tripal_pubmed', TRIPAL_ERROR,
-                'Cannot find a valid vocabulary term for the publication type: "%term".',
-                ['%term' => $value]);
-            }
-          }
-          else {
-            $pub['Publication Type'][] = $pub_cvterm->name;
-          }
-          break;
-        default:
-          break;
-      }
-    }
+  }
+  else {
+    $pub['Publication Type'][] = $pub_cvterm->name;
   }
 }
 
