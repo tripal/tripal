@@ -96,7 +96,7 @@ class TripalEntityPublishForm extends FormBase {
 
     $form['submit_button'] = [
       '#type' => 'submit',
-      '#value' => t('Pubish'),
+      '#value' => t('Publish'),
     ];
 
     return $form;
