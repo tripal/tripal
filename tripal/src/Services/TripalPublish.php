@@ -331,8 +331,8 @@ class TripalPublish {
         $field_class = $this->field_info[$field_name]['class'];
 
         // We only want to add fields where we support the action for all property types in it.
-        foreach ($this->field_info[$field_name]['prop_types'] as $prop_key => $prop_type) {
-          $settings = $prop_type->getStorageSettings();
+        foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
+          $settings = $checking_prop_type->getStorageSettings();
           if (!in_array($settings['action'], $this->supported_actions)) {
             $not_supported = TRUE;
           }
