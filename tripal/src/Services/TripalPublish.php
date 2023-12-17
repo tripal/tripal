@@ -96,6 +96,22 @@ class TripalPublish {
    */
   protected $required_types = [];
 
+  /**
+   * Supported actions during publishing.
+   * Any field containing properties that are not in this list, will not be published!
+   *
+   * DO NOT YET SUPPORT store_pkey and store_link.
+   *
+   * @var array $supported_actions
+   */
+  protected $supported_actions = ['store_id', 'store', 'read_value', 'replace', 'function'];
+
+  /**
+   * Keep track of fields which are not supported in order to let the user know.
+   *
+   * @var array $unsupported_fields
+   */
+  protected $unsupported_fields;
 
   /**
    * Stores the last percentage that progress was reported.
@@ -299,14 +315,42 @@ class TripalPublish {
     // Iterate through the property types that can uniquely identify an entity.
     foreach ($this->required_types as $field_name => $keys) {
       foreach ($keys as $key => $prop_type) {
+        $not_supported = FALSE;
+
+        // This property may be part of a field which has already been marked as unsupported...
+        // If so then it won't be in the field_info and we should skip it.
+        if (!array_key_exists($field_name, $this->field_info)) {
+          // Add it to the list of unsupported fields just in case
+          // it wasn't added before...
+          $this->unsupported_fields[$field_name] = $field_name;
+          continue;
+        }
 
         // Add this property value to the search values array.
         $field_definition = $this->field_info[$field_name]['definition'];
         $field_class = $this->field_info[$field_name]['class'];
 
-        $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
-            $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
-        $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
+        // We only want to add fields where we support the action for all property types in it.
+        foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
+          $settings = $checking_prop_type->getStorageSettings();
+          if (!in_array($settings['action'], $this->supported_actions)) {
+            $not_supported = TRUE;
+          }
+        }
+
+        if ($not_supported !== TRUE) {
+          $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
+              $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+          $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
+        }
+        // If it is not supported then we need to remove it from the required types list.
+        else {
+          // Note: We are adding the field to the unsupported list
+          // and will let the admin know later on in this job.
+          $this->unsupported_fields[$field_name] = $field_name;
+          unset($this->required_types[$field_name]);
+          unset($this->field_info[$field_name]);
+        }
       }
     }
   }
@@ -802,6 +846,11 @@ class TripalPublish {
     // information about it (say if we are publishing genes from a noSQL back-end bu the
     // original entity was created when it was first published when using the Chado backend).
     $this->logger->notice("Step  6 of 6: Add field items to published entities...");
+
+    if (!empty($this->unsupported_fields)) {
+      $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
+    }
+
     $total_items = 0;
     foreach ($this->field_info as $field_name => $field_info) {
 
