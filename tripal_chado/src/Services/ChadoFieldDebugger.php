@@ -217,4 +217,19 @@ class ChadoFieldDebugger {
       [], ['drupal_set_message' => TRUE, 'logger' => FALSE]
     );
   }
+
+  /**
+   * Print random debugging text.
+   */
+  public function printText(string $text) {
+
+    if ($this->has_fields2debug === FALSE) {
+      return;
+    }
+
+    $this->logger->notice(
+      $text . ' (' . date("H:i:s") . ')',
+      [], ['drupal_set_message' => TRUE, 'logger' => FALSE]
+    );
+  }
 }

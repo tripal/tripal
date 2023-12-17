@@ -541,10 +541,19 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   /**
    * {@inheritdoc}
    */
-  public function tripalValuesTemplate($field_definition) {
-    $entity = $this->getEntity();
-    $entity_type_id = $entity->getEntityTypeId();
-    $entity_id = $entity->id();
+  public function tripalValuesTemplate($field_definition, $default_value = NULL) {
+
+    // If we have a parent, they the field is attached ot an entity. If it's just
+    // an instance withouta parent then the entity_id should stay null.
+    $entity_id = NULL;
+    $entity_type_id = 'tripal_entity';
+    if ($this->getParent()) {
+      $entity = $this->getEntity();
+      $entity_type_id = $entity->getEntityTypeId();
+      $entity_id = $entity->id();
+    }
+
+    $value_key = $this->mainPropertyName();
 
     // Get the list of property types defind by this field and then
     // return a corresponding array of property value objects.
@@ -552,8 +561,14 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $prop_types = $field_class::tripalTypes($field_definition);
     $prop_values = [];
     foreach ($prop_types as $prop_type) {
-      $prop_values[] = new StoragePropertyValue($entity_type_id, $field_class::$id,
-          $prop_type->getKey(), $prop_type->getTerm()->getTermId(), $entity_id);
+      $key = $prop_type->getKey();
+      $prop_value = new StoragePropertyValue($entity_type_id, $field_class::$id,
+          $key, $prop_type->getTerm()->getTermId(), $entity_id);
+
+      if ($key == $value_key and $default_value) {
+        $prop_value->setValue($default_value);
+      }
+      $prop_values[] = $prop_value;
     }
     return $prop_values;
   }

@@ -472,7 +472,7 @@ trait ChadoStorageTestTrait {
         // Note: varchar properties have an extra parameter so must be handled
         // separately. We use ends with since the property class should include
         // the namespace.
-        if (str_ends_with($propertyTypeClass, 'ChadoVarCharStoragePropertyType')) {
+        if (str_ends_with($propertyTypeClass, 'CharStoragePropertyType')) {
           $type = new $propertyTypeClass(
             $this->content_type,
             $field_name,

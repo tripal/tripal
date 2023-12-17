@@ -4,6 +4,9 @@ namespace Drupal\tripal\TripalStorage\Interfaces;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
+use Symfony\Component\HttpKernel\DependencyInjection\AddAnnotatedClassesToCachePass;
+use Drupal\Core\Form\FormStateInterface;
+
 
 /**
  * Defines an interface for tripal storage plugins.
@@ -86,6 +89,32 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   public function getFieldDefinition(string $field_name);
 
   /**
+   * Returns a list of property types that should be stored.
+   *
+   * In order to link data in the storage backend, the storage
+   * system must link the record in someway with Drupal entities.
+   * This most likely happens in tables in the Drupal schema
+   * (usually the `public` schema).  This function should return
+   * the list of properties that must be stored in order
+   * to uniquely identify an entity in the datastore.
+   *
+   * @return @array
+   *   Array of \Drupal\tripal\Base\StoragePropertyTypeBase objects.
+   */
+  public function getStoredTypes();
+
+  /**
+   * Returns a list of property values for stored types..
+   *
+   * This function returns an array of property value objects that
+   * correspond to the types returned by getStoredTypes().
+   *
+   * @return @array
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   */
+  public function getStoredValues();
+
+  /**
    * Inserts values in the field data store.
    *
    * The record Ids of the inserted records will be set in the property
@@ -161,14 +190,24 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * Finds and returns all property values stored in this storage plugin
    * implementation that matches the given match argument.
    *
-   * @param mixed $match
-   *   The value that is matched.
+   * @param array $values
+   *   Associative array 5-levels deep.
+   *   The 1st level is the field name (e.g. ChadoOrganismDefault).
+   *   The 2nd level is the delta value (e.g. 0).
+   *   The 3rd level is a field key name (i.e. record_id + value).
+   *   The 4th level must contain the following three keys/value pairs
+   *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
+   *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
+   *   - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *   When the function returns, any values retrieved from the data store
+   *   will be set in the StoragePropertyValue object.
    *
    * @return array
+   *   @todo fix this return value...
    *   Array of all \Drupal\tripal\TripalStorage\StoragePropertyValue objects
    *   that match.
    */
-  public function findValues($match);
+  public function findValues($values);
 
 
 
@@ -182,5 +221,42 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   An array of \Symfony\Component\Validator\ConstraintViolation objects.
    */
   public function validateValues($values);
+
+
+  /**
+   * Provides form elements to be added to the Tripal entity publish form.
+   *
+   * @param array $form
+   *   The form array definition.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   * @return array
+   *   A new form array definition containing the form elements to add
+   *   to the publish form.
+   */
+  public function publishForm($form, FormStateInterface &$form_state);
+
+  /**
+   * Handles validation of the publish form elements.
+   *
+   * @param array $form
+   *   The form array definition.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   */
+  public function publishFormValidate($form, FormStateInterface &$form_state);
+
+  /**
+   * Handles submission of the form elements for the storage backend.
+   *
+   * @param array $form
+   *   The form array definition.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  public function publishFromSubmit($form, FormStateInterface &$form_state);
+
 
 }
