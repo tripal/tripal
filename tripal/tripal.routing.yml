@@ -142,6 +142,19 @@ entity.tripal_entity.add_page:
   requirements:
     _permission: 'administer tripal content'
 
+# tripal_publish_content_form
+tripal.content_bio_data_publish_form:
+  path: 'admin/content/bio_data/publish'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalEntityPublishForm'
+    _title: 'Publish Tripal Content'
+    _description: 'Publish content from Chado or other datastores to Tripal.'
+  options:
+    _admin_route: 'TRUE'
+  requirements:
+    _permission: 'publish tripal content+administer tripal content'
+
+
 # tripal_unpublish_orphans_form
 tripal.content_type_unpublish:
   path: 'admin/content/bio_data/unpublish'

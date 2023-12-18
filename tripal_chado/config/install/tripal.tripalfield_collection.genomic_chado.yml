@@ -298,10 +298,10 @@ fields:
               region: content
               weight: 10
 
-## mRNA ##
+## mrna ##
 
     -   name: mrna_name
-        content_type: mRNA
+        content_type: mrna
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -328,10 +328,10 @@ fields:
               weight: 10
 
     -   name: mrna_uniquename
-        content_type: mRNA
+        content_type: mrna
         label: Unique Name
         type: chado_text_type
-        description: A name that uniquely identifies the mRNA within the organism.
+        description: A name that uniquely identifies the mrna within the organism.
         cardinality: 1
         required: true
         storage_settings:
@@ -354,7 +354,7 @@ fields:
               weight: 15
 
     -   name: mrna_sequence
-        content_type: mRNA
+        content_type: mrna
         label: Sequence Residues
         type: chado_sequence_type_default
         description: One or more molecular sequences, possibly with associated annotation.
@@ -380,7 +380,7 @@ fields:
               weight: 20
 
     -   name: mrna_sequence_length
-        content_type: mRNA
+        content_type: mrna
         label: Sequence Length
         type: chado_sequence_length_type_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
@@ -406,7 +406,7 @@ fields:
               weight: 25
 
     -   name: mrna_sequence_md5_checksum
-        content_type: mRNA
+        content_type: mrna
         label: Sequence MD5 Checksum
         type: chado_sequence_checksum_type_default
         description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
@@ -432,7 +432,7 @@ fields:
               weight: 30
 
     -   name: mrna_organism
-        content_type: mRNA
+        content_type: mrna
         label: Organism
         type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
@@ -458,7 +458,7 @@ fields:
               weight: 10
 
     -   name: mrna_type
-        content_type: mRNA
+        content_type: mrna
         label: Type
         type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -486,7 +486,7 @@ fields:
               weight: 10
 
     -   name: mrna_contact
-        content_type: mRNA
+        content_type: mrna
         label: Contact
         type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
@@ -513,7 +513,7 @@ fields:
               weight: 80
 
     -   name: mrna_is_analysis
-        content_type: mRNA
+        content_type: mrna
         label: Is Analysis
         type: chado_boolean_type
         description: Indicates if this feature was predicted computationally using another feature.
@@ -540,7 +540,7 @@ fields:
               weight: 90
 
     -   name: mrna_is_obsolete
-        content_type: mRNA
+        content_type: mrna
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -567,7 +567,7 @@ fields:
               weight: 90
 
     -   name: mrna_synonym
-        content_type: mRNA
+        content_type: mrna
         label: Synonyms
         type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
