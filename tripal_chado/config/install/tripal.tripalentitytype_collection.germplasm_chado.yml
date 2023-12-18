@@ -37,7 +37,7 @@ content_types:
         term: CO_010:0000162
         help_text: Use the recombinant inbred line page to describe a collection of germplasm that were created by crossing and can be used to map quantitative trait loci.
         category: Germplasm
-        id: RIL
+        id: ril
         title_format: "[ril_name]"
         url_format: "RIL/[TripalEntity__entity_id]"
         synonyms:
