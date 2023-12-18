@@ -1048,6 +1048,12 @@ fields:
             termIdSpace: SBO
             termAccession: 0000554
               weight: 68
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
           form:
             default:
               region: content
