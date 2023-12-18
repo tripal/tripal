@@ -1047,7 +1047,6 @@ fields:
         settings:
             termIdSpace: SBO
             termAccession: 0000554
-              weight: 68
         display:
           view:
             default:
