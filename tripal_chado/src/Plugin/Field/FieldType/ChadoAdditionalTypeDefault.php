@@ -173,14 +173,47 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
   }
 
   /**
-   * A callback function for setting the type property value.
-   *
-   * This function is called by the ChadoStorage class if a property type
-   * sets the action as 'function'.
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\TripalFieldItemBase::tripalValuesTemplate()
    */
-  public static function setTypePropertyValue() {
+  public function tripalValuesTemplate($field_definition, $default_value = NULL) {
+    $prop_values = parent::tripalValuesTemplate($field_definition, $default_value);
 
+    // The type value is an ontology term ID.  This isn't searchable that way
+    // in Chado, so we need to override this function and set the default
+    // property values if one is provided.
+    $matches = [];
+    if ($default_value and preg_match('/^(.+?):(.+?)$/', $default_value, $matches)) {
+
+      $termIdSpace = $matches[1];
+      $termAccession = $matches[2];
+
+      /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idSpace_manager **/
+      /** @var \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase $idSpace **/
+      /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term **/
+      $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+      $idSpace = $idSpace_manager->loadCollection($termIdSpace);
+      $term = $idSpace->getTerm($termAccession);
+
+      foreach ($prop_values as $index => $prop_value) {
+        if ($prop_value->getKey() == 'type_id') {
+          $prop_values[$index]->setValue($term->getInternalId());
+        }
+        if ($prop_value->getKey() == 'accession') {
+          $prop_values[$index]->setValue($term->getAccession());
+        }
+        if ($prop_value->getKey() == 'term_name') {
+          $prop_values[$index]->setValue($term->getName());
+        }
+        if ($prop_value->getKey() == 'id_space') {
+          $prop_values[$index]->setValue($term->getIdSpace());
+        }
+      }
+    }
+
+    return $prop_values;
   }
+
 
   /**
    * {@inheritdoc}
