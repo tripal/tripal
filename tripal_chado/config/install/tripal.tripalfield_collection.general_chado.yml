@@ -1172,7 +1172,7 @@ fields:
               region: content
               weight: 35
 
-    -   name: pub_dbxref
+    -   name: publication_dbxref
         content_type: pub
         label: Cross Reference
         type: chado_dbxref_type_default
@@ -1188,6 +1188,11 @@ fields:
         settings:
             termIdSpace: SBO
             termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
               weight: 68
           form:
             default:
