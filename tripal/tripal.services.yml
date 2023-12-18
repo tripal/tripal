@@ -36,3 +36,5 @@ services:
     arguments: ['@tripal.collection_plugin_manager.idspace',
                 '@tripal.collection_plugin_manager.vocabulary',
                 '@tripal.logger']
+  tripal.publish:
+    class: Drupal\tripal\Services\TripalPublish

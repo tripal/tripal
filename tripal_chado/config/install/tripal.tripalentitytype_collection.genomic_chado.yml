@@ -17,7 +17,7 @@ content_types:
         term: SO:0000234
         help_text: Use the mRNA page for a messenger RNA whic is the intermediate molecule between DNA and protein. It includes UTR and coding sequences. It does not contain introns.
         category: Genomic
-        id: mRNA
+        id: mrna
         title_format: "[mrna_name]"
         url_format: "mRNA/[TripalEntity__entity_id]"
         synonyms:

@@ -47,4 +47,24 @@ class TripalStorageManager extends DefaultPluginManager {
     $plugin_id = $options['plugin_id'];
     return $this->createInstance($plugin_id, $options);
   }
+
+  /**
+   * Checks if a datastore has been registered properly and exists
+   * according to the storage manager.
+   *
+   * @param string
+   *   The plugin ID of the datastore you want to check.
+   *   This is the 'id' in the annotation block.
+   * @return bool
+   *  True if the datastore exists and false otherwise.
+   */
+  public function datastoreExists($plugin_id) {
+    $definitions = $this->getDefinitions();
+    if (array_key_exists($plugin_id, $definitions)) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
 }

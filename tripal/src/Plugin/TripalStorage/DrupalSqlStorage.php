@@ -75,7 +75,6 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
     return TRUE;
   }
 
-
   /**
    * {@inheritDoc}
    */
@@ -94,4 +93,15 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
     $violations = [];
     return $violations;
   }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function getStoredTypes() {
+
+    // All types are stored for this storage backend.
+    // Thus we can return all of them!
+    return $this->getTypes();
+  }
+
 }
