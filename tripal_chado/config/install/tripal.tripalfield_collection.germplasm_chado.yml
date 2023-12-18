@@ -58,6 +58,32 @@ fields:
               region: content
               weight: 15
 
+    -   name: germplasm_organism
+        content_type: germplasm
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: germplasm_description
         content_type: germplasm
         label: Description
@@ -246,6 +272,32 @@ fields:
             default:
               region: content
               weight: 15
+
+    -   name: breeding_cross_organism
+        content_type: breeding_cross
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
 
     -   name: breeding_cross_description
         content_type: breeding_cross
@@ -436,6 +488,32 @@ fields:
               region: content
               weight: 15
 
+    -   name: germplasm_variety_organism
+        content_type: germplasm_variety
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: germplasm_variety_description
         content_type: germplasm_variety
         label: Description
@@ -573,7 +651,7 @@ fields:
 ## Recombinant Inbred Line ##
 
     -   name: ril_name
-        content_type: RIL
+        content_type: ril
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -600,10 +678,10 @@ fields:
               weight: 10
 
     -   name: ril_unique_name
-        content_type: RIL
+        content_type: ril
         label: Unique Name
         type: chado_text_type
-        description: A name that uniquely identifies the RIL within this organism.
+        description: A name that uniquely identifies the ril within this organism.
         cardinality: 1
         required: true
         storage_settings:
@@ -625,8 +703,34 @@ fields:
               region: content
               weight: 15
 
+    -   name: ril_organism
+        content_type: ril
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: ril_description
-        content_type: RIL
+        content_type: ril
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -652,7 +756,7 @@ fields:
               weight: 20
 
     -   name: ril_type
-        content_type: RIL
+        content_type: ril
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -734,7 +838,7 @@ fields:
               weight: 83
 
     -   name: ril_is_obsolete
-        content_type: RIL
+        content_type: ril
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.

@@ -230,7 +230,7 @@ fields:
 ## Chado Table: analysis
 ## Required Columns: program (varchar 255), programversion(varchar 255), timeexecuted (timestamp)
 ## Optional columns: name (varchar 255), description (text), algorithm (varchar 255), sourcename (varchar 255), sourceversion (varchar 255), sourceuri (text)
-## Related: analysis_cvterm, analysis_dbxref, analysis_pub, analysis_relationship, analysisprop, 
+## Related: analysis_cvterm, analysis_dbxref, analysis_pub, analysis_relationship, analysisprop,
 ##          phylotree, quantification,
 ##          analysisfeature, nd_experiment_analysis, project_analysis
 ## MISSING FIELD: Timestamp
@@ -1501,3 +1501,117 @@ fields:
             default:
               region: content
               weight: 15
+
+## Publication ##
+## Chado Table: conpubtact
+## Required Columns: type_id (cvterm FK), uniquename (text)
+## Optional columns: title (text), volumetitle (text), volume (varchar 255),
+##         series_name (varchar 255), issue (varchar 255), pyear (varchar 255),
+##         pages (varchar 255), miniref (varchar 255), is_obsolete (bool),
+##         publisher (varchar 255), pubplace (varchar 255)
+
+    -   name: publication_uniquename
+        content_type: pub
+        label: Citation
+        type: chado_text_type
+        description: The citation for this publication.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: uniquename
+        settings:
+            termIdSpace: TPUB
+            termAccession: 0000003
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
+    -   name: publication_type
+        content_type: pub
+        label: Publication Type
+        type: chado_additional_type_default
+        description: the type of publication.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                type_table: pub
+                type_column: type_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: 0000015
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: publication_title
+        content_type: pub
+        label: Title
+        type: chado_text_type
+        description: The title for this publication.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: title
+        settings:
+            termIdSpace: TPUB
+            termAccession: 0000039
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
+
+    -   name: publication_volumetitle
+        content_type: pub
+        label: Volume Title
+        type: chado_text_type
+        description: The volume title for this publication.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: volumetitle
+        settings:
+            termIdSpace: TPUB
+            termAccession: 0000243
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35

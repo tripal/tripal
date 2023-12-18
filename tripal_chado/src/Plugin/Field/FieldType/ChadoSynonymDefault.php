@@ -215,7 +215,7 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
     //
     // E.g. feature_synonym.synonym_id>synonym.synonym_id : synonym.name as synonym_name
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'name', $syn_name_term, $syn_name_len, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $linker_table . '.synonym_id>synonym.synonym_id',
       'chado_column' => 'name',
       'as' => 'synonym_name',
@@ -223,7 +223,7 @@ class ChadoSynonymDefault extends ChadoFieldItemBase {
     ]);
     // E.g. feature_synonym.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id : cvterm.name as synonym_type
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'synonym_type', $syn_type_id_term, $syn_type_name_len, [
-      'action' => 'join',
+      'action' => 'read_value',
       'path' => $linker_table . '.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id',
       'chado_column' => 'name',
       'as' => 'synonym_type',
