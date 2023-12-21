@@ -8,7 +8,7 @@ fields:
     -   name: genetic_map_name
         content_type: genetic_map
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -35,7 +35,7 @@ fields:
     -   name: genetic_map_description
         content_type: genetic_map
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -117,7 +117,7 @@ fields:
     -   name: qtl_name
         content_type: QTL
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -144,7 +144,7 @@ fields:
     -   name: qtl_unique_name
         content_type: QTL
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the QTL within the organism.
         cardinality: 1
         required: true
@@ -330,7 +330,7 @@ fields:
     -   name: qtl_is_analysis
         content_type: QTL
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -357,7 +357,7 @@ fields:
     -   name: qtl_is_obsolete
         content_type: QTL
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -413,7 +413,7 @@ fields:
     -   name: sequence_variant_name
         content_type: sequence_variant
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -440,7 +440,7 @@ fields:
     -   name: sequence_variant_unique_name
         content_type: sequence_variant
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the sequence variant within the organism.
         cardinality: 1
         required: true
@@ -625,7 +625,7 @@ fields:
     -   name: sequence_variant_is_analysis
         content_type: sequence_variant
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -652,7 +652,7 @@ fields:
     -   name: sequence_variant_is_obsolete
         content_type: sequence_variant
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -708,7 +708,7 @@ fields:
     -   name: genetic_marker_name
         content_type: genetic_marker
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -735,7 +735,7 @@ fields:
     -   name: genetic_marker_unique_name
         content_type: genetic_marker
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the genetic marker within the organism.
         cardinality: 1
         required: true
@@ -920,7 +920,7 @@ fields:
     -   name: genetic_marker_is_analysis
         content_type: genetic_marker
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -947,7 +947,7 @@ fields:
     -   name: genetic_marker_is_obsolete
         content_type: genetic_marker
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -1003,7 +1003,7 @@ fields:
     -   name: phenotypic_marker_name
         content_type: phenotypic_marker
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -1030,7 +1030,7 @@ fields:
     -   name: phenotypic_marker_unique_name
         content_type: phenotypic_marker
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the heritable phenotypic marker within the organism.
         cardinality: 1
         required: true
@@ -1215,7 +1215,7 @@ fields:
     -   name: phenotypic_marker_is_analysis
         content_type: phenotypic_marker
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -1242,7 +1242,7 @@ fields:
     -   name: phenotypic_marker_is_obsolete
         content_type: phenotypic_marker
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false

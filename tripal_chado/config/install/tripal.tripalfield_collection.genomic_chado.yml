@@ -8,7 +8,7 @@ fields:
     -   name: gene_name
         content_type: gene
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -35,7 +35,7 @@ fields:
     -   name: gene_uniquename
         content_type: gene
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the gene within the organism.
         cardinality: 1
         required: true
@@ -220,7 +220,7 @@ fields:
     -   name: gene_is_analysis
         content_type: gene
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -247,7 +247,7 @@ fields:
     -   name: gene_is_obsolete
         content_type: gene
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -303,7 +303,7 @@ fields:
     -   name: mrna_name
         content_type: mrna
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -330,7 +330,7 @@ fields:
     -   name: mrna_uniquename
         content_type: mrna
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the mrna within the organism.
         cardinality: 1
         required: true
@@ -515,7 +515,7 @@ fields:
     -   name: mrna_is_analysis
         content_type: mrna
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -542,7 +542,7 @@ fields:
     -   name: mrna_is_obsolete
         content_type: mrna
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -598,7 +598,7 @@ fields:
     -   name: phylotree_name
         content_type: phylotree
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -625,7 +625,7 @@ fields:
     -   name: phylotree_dbxref_id
         content_type: phylotree
         label: Dbxref ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the database reference (dbxref) to attach to this tree. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
         required: true
@@ -705,7 +705,7 @@ fields:
     -   name: phylotree_comment
         content_type: phylotree
         label: Notes
-        type: chado_text_type
+        type: chado_text_type_default
         description: Comments, typically from users.
         cardinality: 1
         required: false
@@ -733,7 +733,7 @@ fields:
     -   name: physical_map_name
         content_type: physical_map
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -760,7 +760,7 @@ fields:
     -   name: physical_map_description
         content_type: physical_map
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -842,7 +842,7 @@ fields:
     -   name: dna_library_name
         content_type: dna_library
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -869,7 +869,7 @@ fields:
     -   name: dna_library_uniquename
         content_type: dna_library
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the DNA library on this site.
         cardinality: 1
         required: true
@@ -1005,7 +1005,7 @@ fields:
     -   name: genome_assembly_name
         content_type: genome_assembly
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -1032,7 +1032,7 @@ fields:
     -   name: genome_assembly_description
         content_type: genome_assembly
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -1058,7 +1058,7 @@ fields:
     -   name: genome_assembly_software
         content_type: genome_assembly
         label: Program, Pipeline, Workflow or Method Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
         cardinality: 1
         required: true
@@ -1085,7 +1085,7 @@ fields:
     -   name: genome_assembly_program_version
         content_type: genome_assembly
         label: Program Version
-        type: chado_string_type
+        type: chado_string_type_default
         description: The version of the program, pipeline, workflow or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
         cardinality: 1
         required: true
@@ -1113,7 +1113,7 @@ fields:
     -   name: genome_assembly_source_name
         content_type: genome_assembly
         label: Data Source Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the source where data was obtained for this analysis.
         cardinality: 1
         required: false
@@ -1140,7 +1140,7 @@ fields:
     -   name: genome_assembly_source_version
         content_type: genome_assembly
         label: Data Source Version
-        type: chado_string_type
+        type: chado_string_type_default
         description: The version number of the data source (if applicable).
         cardinality: 1
         required: false
@@ -1167,7 +1167,7 @@ fields:
     -   name: genome_assembly_uri
         content_type: genome_assembly
         label: Data Source URI
-        type: chado_text_type
+        type: chado_text_type_default
         description: The URI (e.g. web URL) where the source data can be retrieved.
         cardinality: 1
         required: false
@@ -1223,7 +1223,7 @@ fields:
     -   name: genome_annotation_name
         content_type: genome_annotation
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -1250,7 +1250,7 @@ fields:
     -   name: genome_annotation_description
         content_type: genome_annotation
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -1276,7 +1276,7 @@ fields:
     -   name: genome_annotation_software
         content_type: genome_annotation
         label: Program, Pipeline, Workflow or Method Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
         cardinality: 1
         required: true
@@ -1303,7 +1303,7 @@ fields:
     -   name: genome_annotation_prog_version
         content_type: genome_annotation
         label: Program Version
-        type: chado_string_type
+        type: chado_string_type_default
         description: The version of the program, pipeline, workflow or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
         cardinality: 1
         required: true
@@ -1330,7 +1330,7 @@ fields:
     -   name: genome_annotation_src_name
         content_type: genome_annotation
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the source where data was obtained for this analysis.
         cardinality: 1
         required: false
@@ -1357,7 +1357,7 @@ fields:
     -   name: genome_annotation_src_version
         content_type: genome_annotation
         label: Data Source Version
-        type: chado_string_type
+        type: chado_string_type_default
         description: The version number of the data source (if applicable).
         cardinality: 1
         required: false
@@ -1384,7 +1384,7 @@ fields:
     -   name: genome_annotation_uri
         content_type: genome_annotation
         label: Data Source URI
-        type: chado_text_type
+        type: chado_text_type_default
         description: The URI (e.g. web URL) where the source data can be retrieved.
         cardinality: 1
         required: false
@@ -1440,7 +1440,7 @@ fields:
     -   name: genome_project_name
         content_type: genome_project
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: true
@@ -1467,7 +1467,7 @@ fields:
     -   name: genome_project_description
         content_type: genome_project
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
