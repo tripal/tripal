@@ -18,7 +18,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * Plugin implementation of the 'text' field type for Chado.
  *
  * @FieldType(
- *   id = "chado_text_type",
+ *   id = "chado_text_type_default",
  *   label = @Translation("Chado Text Field Type"),
  *   description = @Translation("A text field."),
  *   default_widget = "chado_text_type_widget",

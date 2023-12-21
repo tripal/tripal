@@ -15,7 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   label = @Translation("Chado Boolean Type Formatter"),
  *   description = @Translation("The Chado boolean type formatter."),
  *   field_types = {
- *     "chado_boolean_type"
+ *     "chado_boolean_type_default"
  *   }
  * )
  */

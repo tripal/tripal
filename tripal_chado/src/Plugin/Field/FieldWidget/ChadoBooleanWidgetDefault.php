@@ -15,7 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   label = @Translation("Chado Boolean Widget"),
  *   description = @Translation("The default boolean type widget."),
  *   field_types = {
- *     "chado_boolean_type"
+ *     "chado_boolean_type_default"
  *   }
  * )
  */

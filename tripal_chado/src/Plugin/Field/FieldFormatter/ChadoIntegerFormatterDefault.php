@@ -15,7 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   label = @Translation("Chado Integer Type Formatter"),
  *   description = @Translation("The Chado integer type formatter."),
  *   field_types = {
- *     "chado_integer_type"
+ *     "chado_integer_type_default"
  *   }
  * )
  */

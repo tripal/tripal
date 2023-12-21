@@ -15,7 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   label = @Translation("Chado String Widget"),
  *   description = @Translation("The default string type widget."),
  *   field_types = {
- *     "chado_string_type"
+ *     "chado_string_type_default"
  *   }
  * )
  */

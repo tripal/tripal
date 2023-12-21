@@ -15,7 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   label = @Translation("Chado Integer Widget"),
  *   description = @Translation("The default integer type widget."),
  *   field_types = {
- *     "chado_integer_type"
+ *     "chado_integer_type_default"
  *   }
  * )
  */

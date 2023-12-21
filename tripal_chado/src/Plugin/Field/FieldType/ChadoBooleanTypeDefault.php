@@ -18,7 +18,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * Plugin implementation of the 'boolean' field type for Chado.
  *
  * @FieldType(
- *   id = "chado_boolean_type",
+ *   id = "chado_boolean_type_default",
  *   label = @Translation("Chado Boolean Field Type"),
  *   description = @Translation("A boolean field."),
  *   default_widget = "chado_boolean_type_widget",

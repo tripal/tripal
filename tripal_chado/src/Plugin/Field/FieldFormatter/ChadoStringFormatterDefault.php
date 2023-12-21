@@ -15,7 +15,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   label = @Translation("Chado String Type Formatter"),
  *   description = @Translation("The Chado string type formatter."),
  *   field_types = {
- *     "chado_string_type"
+ *     "chado_string_type_default"
  *   }
  * )
  */
