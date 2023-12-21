@@ -4,29 +4,28 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
 
 /**
  * Plugin implementation of Default Tripal field for sequence data.
  *
  * @FieldType(
- *   id = "chado_sequence_length_default",
- *   label = @Translation("Chado Feature Sequence Length"),
- *   description = @Translation("A chado feature sequence length"),
- *   default_widget = "chado_sequence_length_widget_default",
- *   default_formatter = "chado_sequence_length_formatter_default"
+ *   id = "chado_sequence_checksum_type_default",
+ *   label = @Translation("Chado Feature Sequence Checksum"),
+ *   description = @Translation("A chado feature sequence md5 checksum"),
+ *   default_widget = "chado_sequence_checksum_widget_default",
+ *   default_formatter = "chado_sequence_checksum_formatter_default"
  * )
  */
- 
+class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
 
-class ChadoSequenceLengthDefault extends ChadoFieldItemBase {
-
-  public static $id = "chado_sequence_length_default";
+  public static $id = "chado_sequence_checksum_type_default";
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    return 'seqlen';
+    return 'md5checksum';
   }
 
   /**
@@ -35,7 +34,7 @@ class ChadoSequenceLengthDefault extends ChadoFieldItemBase {
   public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'data';
-    $settings['termAccession'] = '1249';
+    $settings['termAccession'] = '2190';
     $settings['fixed_value'] = TRUE;
     return $settings;
   }
@@ -62,7 +61,14 @@ class ChadoSequenceLengthDefault extends ChadoFieldItemBase {
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $record_id_term = 'SIO:000729';
+    $md5checksum_term = $mapping->getColumnTermId('feature', 'md5checksum');
     $seqlen_term = $mapping->getColumnTermId('feature', 'seqlen');
+
+    // Get the length of the database fields so we don't go over the size limit.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $feature_def = $schema->getTableDef('feature', ['format' => 'Drupal']);
+    $md5_checksum_len = $feature_def['fields']['md5checksum']['size'];
 
     // Return the properties for this field.
     $properties = [];
@@ -75,6 +81,11 @@ class ChadoSequenceLengthDefault extends ChadoFieldItemBase {
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
       'action' => 'read_value',
       'chado_column' => 'seqlen',
+      'chado_table' => 'feature'
+    ]);
+    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5_checksum_len, [
+      'action' => 'read_value',
+      'chado_column' => 'md5checksum',
       'chado_table' => 'feature'
     ]);
     return $properties;

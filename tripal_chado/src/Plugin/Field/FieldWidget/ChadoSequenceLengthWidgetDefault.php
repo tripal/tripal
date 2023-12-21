@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Sequence Length Widget"),
  *   description = @Translation("The default chado sequence length widget."),
  *   field_types = {
- *     "chado_sequence_length_default"
+ *     "chado_sequence_length_type_default"
  *   }
  * )
  */

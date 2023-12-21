@@ -18,16 +18,16 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * Plugin implementation of Tripal additional type field type.
  *
  * @FieldType(
- *   id = "chado_additional_type_default",
+ *   id = "chado_additional_type_type_default",
  *   label = @Translation("Chado Type Reference"),
  *   description = @Translation("A Chado type reference"),
  *   default_widget = "chado_additional_type_widget_default",
  *   default_formatter = "chado_additional_type_formatter_default"
  * )
  */
-class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
+class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_additional_type_default';
+  public static $id = 'chado_additional_type_type_default';
 
   // delimiter between table name and column name in form select
   public static $table_column_delimiter = " \u{2192} ";  # right arrow
