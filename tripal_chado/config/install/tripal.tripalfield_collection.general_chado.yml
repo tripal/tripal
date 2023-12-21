@@ -1015,7 +1015,7 @@ fields:
     -   name: publication_type
         content_type: pub
         label: Publication Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: the type of publication.
         cardinality: 1
         required: false
