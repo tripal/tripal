@@ -34,7 +34,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  */
 class ChadoIntegerTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_integer_type";
+  public static $id = "chado_integer_type_default";
 
   /**
    * {@inheritdoc}

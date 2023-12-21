@@ -31,7 +31,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  */
 class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_string_type";
+  public static $id = "chado_string_type_default";
 
   /**
    * {@inheritdoc}

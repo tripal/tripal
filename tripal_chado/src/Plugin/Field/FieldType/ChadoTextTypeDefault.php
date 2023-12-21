@@ -32,7 +32,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  */
 class ChadoTextTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_text_type";
+  public static $id = "chado_text_type_default";
 
   /**
    * {@inheritdoc}

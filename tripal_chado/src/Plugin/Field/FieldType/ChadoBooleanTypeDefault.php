@@ -32,7 +32,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  */
 class ChadoBooleanTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_boolean_type";
+  public static $id = "chado_boolean_type_default";
 
   /**
    * {@inheritdoc}
