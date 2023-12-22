@@ -402,8 +402,8 @@ class TripalPublish {
    * Adds search criteria for fixed values.
    *
    * Sometimes type values are fixed and the user cannot change
-   * them.  An example of this is are cases where the ChadoAdditionalTypeDefault
-   * field has a type_id that will never changed.  Content types such as "mRNA"
+   * them.  An example of this is are cases where the ChadoAdditionalTypeTypeDefault
+   * field has a type_id that will never change.  Content types such as "mRNA"
    * or "gene" use these.  We need to add these to our search filter.
    *
    * @param array $seach_values

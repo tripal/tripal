@@ -60,7 +60,7 @@ fields:
     -   name: biosample_biosourceprovider
         content_type: biosample
         label: Biosource Provider
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An entity (e.g. individual or organization) through whom a person can gain access to information, favors, influential people, and the like.
         cardinality: 1
         required: false
@@ -86,7 +86,7 @@ fields:
     -   name: biosample_organism
         content_type: biosample
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: false
@@ -112,7 +112,7 @@ fields:
     -   name: biosample_dbxref_id
         content_type: biosample
         label: Dbxref ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the database reference (dbxref) to attach to this biosample. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
         required: false
@@ -271,7 +271,7 @@ fields:
     -   name: assay_protocol_id
         content_type: assay
         label: Protocol ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the protocol reference to attach to this assay. This field is a placeholder until we develop a more user friendly protocol reference field.
         cardinality: 1
         required: false
@@ -326,7 +326,7 @@ fields:
     -   name: assay_arrayidentifier
         content_type: assay
         label: Array Identifier
-        type: chado_text_type
+        type: chado_text_type_default
         description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
         cardinality: 1
         required: false
@@ -352,7 +352,7 @@ fields:
     -   name: assay_arraybatchidentifier
         content_type: assay
         label: Array Batch Identifier
-        type: chado_text_type
+        type: chado_text_type_default
         description: A unique identifier for an array batch.
         cardinality: 1
         required: false
@@ -378,7 +378,7 @@ fields:
     -   name: assay_operator
         content_type: assay
         label: Operator
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: A person that operates some apparatus or machine
         cardinality: 1
         required: true
@@ -404,7 +404,7 @@ fields:
     -   name: assay_dbxref_id
         content_type: assay
         label: Dbxref ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the database reference (dbxref) to attach to this assay. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
         required: false
@@ -592,7 +592,7 @@ fields:
     -   name: array_design_substrate_type
         content_type: array_design
         label: Substrate Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: Controlled terms for descriptors of types of array substrates.
         cardinality: 1
         required: false
@@ -619,7 +619,7 @@ fields:
     -   name: array_design_protocol_id
         content_type: array_design
         label: Protocol ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the protocol reference to attach to this array_design. This field is a placeholder until we develop a more user friendly protocol reference field.
         cardinality: 1
         required: false
@@ -645,7 +645,7 @@ fields:
     -   name: array_design_dbxref_id
         content_type: array_design
         label: Dbxref ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the database reference (dbxref) to attach to this array_design. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
         required: false
@@ -671,7 +671,7 @@ fields:
     -   name: array_design_version_num
         content_type: array_design
         label: Array Version
-        type: chado_text_type
+        type: chado_text_type_default
         description: A version number is an information content entity which is a sequence of characters borne by part of each of a class of manufactured products or its packaging and indicates its order within a set of other products having the same name.
         cardinality: 1
         required: false
@@ -697,7 +697,7 @@ fields:
     -   name: array_design_dimensions
         content_type: array_design
         label: Array Dimensions
-        type: chado_text_type
+        type: chado_text_type_default
         description: The dimensions of an array.
         cardinality: 1
         required: false
@@ -723,7 +723,7 @@ fields:
     -   name: array_design_element_dims
         content_type: array_design
         label: Element Dimensions
-        type: chado_text_type
+        type: chado_text_type_default
         description: The dimensions of an element.
         cardinality: 1
         required: false
@@ -749,7 +749,7 @@ fields:
     -   name: array_design_num_of_elements
         content_type: array_design
         label: Num Of Elements
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The number of elements.
         cardinality: 1
         required: false
@@ -775,7 +775,7 @@ fields:
     -   name: array_design_num_array_columns
         content_type: array_design
         label: Num Array Columns
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The number of columns in an array.
         cardinality: 1
         required: false
@@ -801,7 +801,7 @@ fields:
     -   name: array_design_num_array_rows
         content_type: array_design
         label: Num Array Rows
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The number of rows in an array.
         cardinality: 1
         required: false
@@ -827,7 +827,7 @@ fields:
     -   name: array_design_num_grid_columns
         content_type: array_design
         label: Num Grid Columns
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The number of columns in a grid.
         cardinality: 1
         required: false
@@ -853,7 +853,7 @@ fields:
     -   name: array_design_num_grid_rows
         content_type: array_design
         label: Num Grid Rows
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The number of rows in a grid.
         cardinality: 1
         required: false
@@ -879,7 +879,7 @@ fields:
     -   name: array_design_num_sub_columns
         content_type: array_design
         label: Num Sub Columns
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The number of sub columns.
         cardinality: 1
         required: false
@@ -905,7 +905,7 @@ fields:
     -   name: array_design_num_sub_rows
         content_type: array_design
         label: Num Sub Rows
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The number of sub rows.
         cardinality: 1
         required: false

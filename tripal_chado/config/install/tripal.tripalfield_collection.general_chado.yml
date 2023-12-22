@@ -68,7 +68,7 @@ fields:
     -   name: organism_infraspecific_type
         content_type: organism
         label: Infraspecific Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
         cardinality: 1
         required: false
@@ -149,7 +149,7 @@ fields:
     -   name: organism_common_name
         content_type: organism
         label: Common Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: "The common name for the organism."
         cardinality: 1
         required: false
@@ -662,7 +662,7 @@ fields:
     -   name: pub_title
         content_type: pub
         label: Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: The title of the published work.
         cardinality: 1
         required: false
@@ -688,7 +688,7 @@ fields:
     -   name: pub_uniquename
         content_type: pub
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: This publication is housed in Chado which requires a unique identifer (or name) be provided for every publication. This identifier need not be shown to end-users but it is required. Each site must decide on a format for this unique name.
         cardinality: 1
         required: true
@@ -714,7 +714,7 @@ fields:
     -   name: pub_type
         content_type: pub
         label: Publication Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: The type of publication.
         cardinality: 1
         required: true
@@ -741,7 +741,7 @@ fields:
     -   name: pub_volumetitle
         content_type: pub
         label: Volume Title
-        type: chado_text_type
+        type: chado_text_type_default
         description: The title of the volume (if applicable).
         cardinality: 1
         required: false
@@ -767,7 +767,7 @@ fields:
     -   name: pub_volume
         content_type: pub
         label: Volume
-        type: chado_string_type
+        type: chado_string_type_default
         description: The volume of the series (e.g. journal) where the publication was printed.
         cardinality: 1
         required: false
@@ -794,7 +794,7 @@ fields:
     -   name: pub_series_name
         content_type: pub
         label: Series Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name media that produces a series of publications (e.g. journal, conference proceedings, etc.).
         cardinality: 1
         required: false
@@ -821,7 +821,7 @@ fields:
     -   name: pub_issue
         content_type: pub
         label: Issue
-        type: chado_string_type
+        type: chado_string_type_default
         description: The issue of the series (e.g. journal) where the publication was printed.
         cardinality: 1
         required: false
@@ -848,7 +848,7 @@ fields:
     -   name: pub_pyear
         content_type: pub
         label: Publication Year
-        type: chado_string_type
+        type: chado_string_type_default
         description:
         cardinality: 1
         required: false
@@ -875,7 +875,7 @@ fields:
     -   name: pub_pages
         content_type: pub
         label: Page Numbers
-        type: chado_string_type
+        type: chado_string_type_default
         description:
         cardinality: 1
         required: false
@@ -902,7 +902,7 @@ fields:
     -   name: pub_miniref
         content_type: pub
         label: Mini Local identifier
-        type: chado_string_type
+        type: chado_string_type_default
         description: Some sites use small identifiers for each publication. if your site uses this please provide the proper miniref for this publication.
         cardinality: 1
         required: false
@@ -929,7 +929,7 @@ fields:
     -   name: pub_is_obsolete
         content_type: pub
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description:
         cardinality: 1
         required: false
@@ -955,7 +955,7 @@ fields:
     -   name: pub_publisher
         content_type: pub
         label: Publisher
-        type: chado_string_type
+        type: chado_string_type_default
         description:
         cardinality: 1
         required: false
@@ -982,7 +982,7 @@ fields:
     -   name: pub_pubplace
         content_type: pub
         label: Publication Location
-        type: chado_string_type
+        type: chado_string_type_default
         description:
         cardinality: 1
         required: false

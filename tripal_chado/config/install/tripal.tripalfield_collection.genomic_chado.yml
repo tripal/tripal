@@ -1165,7 +1165,7 @@ fields:
     -   name: library_is_obsolete
         content_type: dna_library
         label: Is Obsolete
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: true
