@@ -15,7 +15,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado Source Data Formatter"),
  *   description = @Translation("The default source data widget which allows curators to manually enter analysis source data information on the content edit page."),
  *   field_types = {
- *     "chado_source_data_default"
+ *     "chado_source_data_type_default"
  *   }
  * )
  */

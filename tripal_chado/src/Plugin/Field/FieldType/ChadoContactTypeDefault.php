@@ -10,7 +10,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * Plugin implementation of default Tripal contact field type.
  *
  * @FieldType(
- *   id = "chado_contact_default",
+ *   id = "chado_contact_type_default",
  *   object_table = "contact",
  *   label = @Translation("Chado Contact"),
  *   description = @Translation("Add a Chado contact to the content type."),
@@ -18,9 +18,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *   default_formatter = "chado_contact_formatter_default",
  * )
  */
-class ChadoContactDefault extends ChadoFieldItemBase {
+class ChadoContactTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_contact_default';
+  public static $id = 'chado_contact_type_default';
   // The following needs to match the object_table annotation above
   protected static $object_table = 'contact';
   protected static $object_id = 'contact_id';

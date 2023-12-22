@@ -16,7 +16,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Type Reference Widget"),
  *   description = @Translation("A chado type reference widget"),
  *   field_types = {
- *     "chado_additional_type_default"
+ *     "chado_additional_type_type_default"
  *   }
  * )
  */

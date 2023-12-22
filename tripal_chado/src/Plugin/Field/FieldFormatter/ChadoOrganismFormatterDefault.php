@@ -13,7 +13,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado organism formatter"),
  *   description = @Translation("A chado organism formatter"),
  *   field_types = {
- *     "chado_organism_default"
+ *     "chado_organism_type_default"
  *   },
  *   valid_tokens = {
  *     "[genus]",

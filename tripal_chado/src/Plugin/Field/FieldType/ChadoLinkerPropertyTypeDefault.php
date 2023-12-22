@@ -16,16 +16,16 @@ use Drupal\core\Field\FieldDefinitionInterface;
  * Plugin implementation of Tripal linker property field type.
  *
  * @FieldType(
- *   id = "chado_linker_property_default",
+ *   id = "chado_linker_property_type_default",
  *   label = @Translation("Chado Property"),
  *   description = @Translation("Add a property or attribute to the content type."),
  *   default_widget = "chado_linker_property_widget_default",
  *   default_formatter = "chado_linker_property_formatter_default"
  * )
  */
-class ChadoLinkerPropertyDefault extends ChadoFieldItemBase {
+class ChadoLinkerPropertyTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_linker_property_default";
+  public static $id = "chado_linker_property_type_default";
 
   /**
    * {@inheritdoc}

@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Organism Widget"),
  *   description = @Translation("The default organism widget."),
  *   field_types = {
- *     "chado_organism_default"
+ *     "chado_organism_type_default"
  *   }
  * )
  */

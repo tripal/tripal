@@ -11,17 +11,17 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
  * Plugin implementation of default Tripal organism field type.
  *
  * @FieldType(
- *   id = "chado_organism_default",
+ *   id = "chado_organism_type_default",
  *   object_table = "organism",
  *   label = @Translation("Chado Organism"),
- *   description = @Translation("Add a Chado organism to the content type."),
+ *   description = @Translation("A chado organism reference"),
  *   default_widget = "chado_organism_widget_default",
  *   default_formatter = "chado_organism_formatter_default",
  * )
  */
-class ChadoOrganismDefault extends ChadoFieldItemBase {
+class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_organism_default';
+  public static $id = 'chado_organism_type_default';
   // The following needs to match the object_table annotation above
   protected static $object_table = 'organism';
   protected static $object_id = 'organism_id';

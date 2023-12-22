@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * Plugin implementation of Default Tripal field for sequence data.
  *
  * @FieldType(
- *   id = "chado_source_data_default",
+ *   id = "chado_source_data_type_default",
  *   label = @Translation("Chado Data Source"),
  *   description = @Translation("The source and version of data used for this analysis"),
  *   default_widget = "chado_source_data_widget_default",
@@ -19,9 +19,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *   cardinality = 1,
  * )
  */
-class ChadoSourceDataDefault extends ChadoFieldItemBase {
+class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_source_data_default";
+  public static $id = "chado_source_data_type_default";
 
   /**
    * {@inheritdoc}
