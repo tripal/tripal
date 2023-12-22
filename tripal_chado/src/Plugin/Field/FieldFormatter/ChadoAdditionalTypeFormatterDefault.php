@@ -15,7 +15,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado Type Reference Formatter"),
  *   description = @Translation("A Chado type reference formatter"),
  *   field_types = {
- *     "chado_additional_type_default"
+ *     "chado_additional_type_type_default"
  *   }
  * )
  */

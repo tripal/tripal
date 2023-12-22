@@ -10,7 +10,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * Plugin implementation of Default Tripal field for unit of measurement.
  *
  * @FieldType(
- *   id = "chado_unit_default",
+ *   id = "chado_unit_type_default",
  *   label = @Translation("Chado Unit"),
  *   description = @Translation("Provide unit of measurement of content, for example, Genetic Map."),
  *   default_widget = "chado_unit_widget_default",
@@ -18,9 +18,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * )
  */
 
-class ChadoUnitDefault extends ChadoFieldItemBase {
+class ChadoUnitTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_unit_default";
+  public static $id = "chado_unit_type_default";
 
   /**
    * {@inheritdoc}

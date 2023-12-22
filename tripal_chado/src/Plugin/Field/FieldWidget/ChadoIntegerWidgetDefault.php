@@ -2,24 +2,24 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\Plugin\Field\FieldWidget\TripalStringTypeWidget;
+use Drupal\tripal\Plugin\Field\FieldWidget\TripalIntegerTypeWidget;
 use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Plugin implementation of default Chado string type widget.
+ * Plugin implementation of default Chado integer type widget.
  *
  * @FieldWidget(
- *   id = "chado_string_type_widget",
- *   label = @Translation("Chado String Widget"),
- *   description = @Translation("The default string type widget."),
+ *   id = "chado_integer_type_widget",
+ *   label = @Translation("Chado Integer Widget"),
+ *   description = @Translation("The default integer type widget."),
  *   field_types = {
- *     "chado_string_type"
+ *     "chado_integer_type_default"
  *   }
  * )
  */
-class ChadoStringTypeWidget extends TripalStringTypeWidget {
+class ChadoIntegerWidgetDefault extends TripalIntegerTypeWidget {
 
   /**
    * {@inheritdoc}
@@ -34,4 +34,5 @@ class ChadoStringTypeWidget extends TripalStringTypeWidget {
     ];
     return $element;
   }
+
 }

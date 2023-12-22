@@ -8,7 +8,7 @@ fields:
     -   name: genetic_map_name
         content_type: genetic_map
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -35,7 +35,7 @@ fields:
     -   name: genetic_map_description
         content_type: genetic_map
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -61,7 +61,7 @@ fields:
     -   name: genetic_map_unit_type
         content_type: genetic_map
         label: Unit Type
-        type: chado_unit_default
+        type: chado_unit_type_default
         description: A unit of measurement is a standardized quantity of a physical quality.
         cardinality: 1
         required: false
@@ -88,7 +88,7 @@ fields:
     -   name: genetic_map_contact
         content_type: genetic_map
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -144,7 +144,7 @@ fields:
     -   name: qtl_name
         content_type: QTL
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -171,7 +171,7 @@ fields:
     -   name: qtl_unique_name
         content_type: QTL
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the QTL within the organism.
         cardinality: 1
         required: true
@@ -197,7 +197,7 @@ fields:
     -   name: qtl_sequence
         content_type: QTL
         label: Sequence Residues
-        type: chado_sequence_default
+        type: chado_sequence_type_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -223,7 +223,7 @@ fields:
     -   name: qtl_sequence_length
         content_type: QTL
         label: Sequence Length
-        type: chado_sequence_length_default
+        type: chado_sequence_length_type_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -249,7 +249,7 @@ fields:
     -   name: qtl_md5_checksum
         content_type: QTL
         label: Sequence MD5 Checksum
-        type: chado_sequence_checksum_default
+        type: chado_sequence_checksum_type_default
         description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
         cardinality: 1
         required: false
@@ -276,7 +276,7 @@ fields:
     -   name: qtl_organism
         content_type: QTL
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -302,7 +302,7 @@ fields:
     -   name: qtl_type
         content_type: QTL
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -330,7 +330,7 @@ fields:
     -   name: qtl_contact
         content_type: QTL
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -357,7 +357,7 @@ fields:
     -   name: qtl_is_analysis
         content_type: QTL
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -384,7 +384,7 @@ fields:
     -   name: qtl_is_obsolete
         content_type: QTL
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -411,7 +411,7 @@ fields:
     -   name: qtl_synonym
         content_type: QTL
         label: Synonyms
-        type: chado_synonym_default
+        type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
         cardinality: -1
         required: false
@@ -467,7 +467,7 @@ fields:
     -   name: sequence_variant_name
         content_type: sequence_variant
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -494,7 +494,7 @@ fields:
     -   name: sequence_variant_unique_name
         content_type: sequence_variant
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the sequence variant within the organism.
         cardinality: 1
         required: true
@@ -520,7 +520,7 @@ fields:
     -   name: sequence_variant_sequence
         content_type: sequence_variant
         label: Sequence Residues
-        type: chado_sequence_default
+        type: chado_sequence_type_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -546,7 +546,7 @@ fields:
     -   name: sequence_variant_sequence_length
         content_type: sequence_variant
         label: Sequence Length
-        type: chado_sequence_length_default
+        type: chado_sequence_length_type_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -572,7 +572,7 @@ fields:
     -   name: sequence_variant_md5_checksum
         content_type: sequence_variant
         label: Sequence MD5 Checksum
-        type: chado_sequence_checksum_default
+        type: chado_sequence_checksum_type_default
         description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
         cardinality: 1
         required: false
@@ -598,7 +598,7 @@ fields:
     -   name: sequence_variant_organism
         content_type: sequence_variant
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -624,7 +624,7 @@ fields:
     -   name: sequence_variant_type
         content_type: sequence_variant
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -652,7 +652,7 @@ fields:
     -   name: sequence_variant_contact
         content_type: sequence_variant
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -679,7 +679,7 @@ fields:
     -   name: sequence_variant_is_analysis
         content_type: sequence_variant
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -706,7 +706,7 @@ fields:
     -   name: sequence_variant_is_obsolete
         content_type: sequence_variant
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -733,7 +733,7 @@ fields:
     -   name: sequence_variant_synonym
         content_type: sequence_variant
         label: Synonyms
-        type: chado_synonym_default
+        type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
         cardinality: -1
         required: false
@@ -789,7 +789,7 @@ fields:
     -   name: genetic_marker_name
         content_type: genetic_marker
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -816,7 +816,7 @@ fields:
     -   name: genetic_marker_unique_name
         content_type: genetic_marker
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the genetic marker within the organism.
         cardinality: 1
         required: true
@@ -842,7 +842,7 @@ fields:
     -   name: genetic_marker_sequence
         content_type: genetic_marker
         label: Sequence Residues
-        type: chado_sequence_default
+        type: chado_sequence_type_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -868,7 +868,7 @@ fields:
     -   name: genetic_marker_sequence_length
         content_type: genetic_marker
         label: Sequence Length
-        type: chado_sequence_length_default
+        type: chado_sequence_length_type_default
         description: The size (length) of a sequence, subsequence or region in a sequence,or range(s) of lengths.
         cardinality: 1
         required: false
@@ -894,7 +894,7 @@ fields:
     -   name: genetic_marker_md5_checksum
         content_type: genetic_marker
         label: Sequence MD5 Checksum
-        type: chado_sequence_checksum_default
+        type: chado_sequence_checksum_type_default
         description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
         cardinality: 1
         required: false
@@ -920,7 +920,7 @@ fields:
     -   name: genetic_marker_organism
         content_type: genetic_marker
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -946,7 +946,7 @@ fields:
     -   name: genetic_marker_type
         content_type: genetic_marker
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -974,7 +974,7 @@ fields:
     -   name: genetic_marker_contact
         content_type: genetic_marker
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -1001,7 +1001,7 @@ fields:
     -   name: genetic_marker_is_analysis
         content_type: genetic_marker
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -1028,7 +1028,7 @@ fields:
     -   name: genetic_marker_is_obsolete
         content_type: genetic_marker
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -1055,7 +1055,7 @@ fields:
     -   name: genetic_marker_synonym
         content_type: genetic_marker
         label: Synonyms
-        type: chado_synonym_default
+        type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
         cardinality: -1
         required: false
@@ -1111,7 +1111,7 @@ fields:
     -   name: phenotypic_marker_name
         content_type: phenotypic_marker
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -1138,7 +1138,7 @@ fields:
     -   name: phenotypic_marker_unique_name
         content_type: phenotypic_marker
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the heritable phenotypic marker within the organism.
         cardinality: 1
         required: true
@@ -1164,7 +1164,7 @@ fields:
     -   name: phenotypic_marker_sequence
         content_type: phenotypic_marker
         label: Sequence Residues
-        type: chado_sequence_default
+        type: chado_sequence_type_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -1190,7 +1190,7 @@ fields:
     -   name: phenotypic_marker_length
         content_type: phenotypic_marker
         label: Sequence Length
-        type: chado_sequence_length_default
+        type: chado_sequence_length_type_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -1216,7 +1216,7 @@ fields:
     -   name: phenotypic_marker_md5_checksum
         content_type: phenotypic_marker
         label: Sequence MD5 Checksum
-        type: chado_sequence_checksum_default
+        type: chado_sequence_checksum_type_default
         description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
         cardinality: 1
         required: false
@@ -1242,7 +1242,7 @@ fields:
     -   name: phenotypic_marker_organism
         content_type: phenotypic_marker
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -1268,7 +1268,7 @@ fields:
     -   name: phenotypic_marker_type
         content_type: phenotypic_marker
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1296,7 +1296,7 @@ fields:
     -   name: phenotypic_marker_contact
         content_type: phenotypic_marker
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -1323,7 +1323,7 @@ fields:
     -   name: phenotypic_marker_is_analysis
         content_type: phenotypic_marker
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -1350,7 +1350,7 @@ fields:
     -   name: phenotypic_marker_is_obsolete
         content_type: phenotypic_marker
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -1377,7 +1377,7 @@ fields:
     -   name: phenotypic_marker_synonym
         content_type: phenotypic_marker
         label: Synonyms
-        type: chado_synonym_default
+        type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
         cardinality: -1
         required: false
