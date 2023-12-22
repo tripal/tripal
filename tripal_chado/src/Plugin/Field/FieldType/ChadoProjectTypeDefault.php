@@ -4,33 +4,34 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 
 /**
- * Plugin implementation of default Tripal assay field type.
+ * Plugin implementation of default Tripal project field type.
  *
  * @FieldType(
- *   id = "chado_assay_default",
- *   object_table = "assay",
- *   label = @Translation("Chado Assay"),
- *   description = @Translation("Add a Chado assay to the content type."),
- *   default_widget = "chado_assay_widget_default",
- *   default_formatter = "chado_assay_formatter_default",
+ *   id = "chado_project_type_default",
+ *   object_table = "project",
+ *   label = @Translation("Chado Project"),
+ *   description = @Translation("Add a Chado project to the content type."),
+ *   default_widget = "chado_project_widget_default",
+ *   default_formatter = "chado_project_formatter_default",
  * )
  */
-class ChadoAssayDefault extends ChadoFieldItemBase {
+class ChadoProjectTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_assay_default';
+  public static $id = 'chado_project_type_default';
   // The following needs to match the object_table annotation above
-  protected static $object_table = 'assay';
-  protected static $object_id = 'assay_id';
+  protected static $object_table = 'project';
+  protected static $object_id = 'project_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'assay_name';
+    return 'project_name';
   }
 
   /**
@@ -51,9 +52,9 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'assay'
-    $field_settings['termIdSpace'] = 'SIO';
-    $field_settings['termAccession'] = '001007';
+    // CV Term is 'Project'
+    $field_settings['termIdSpace'] = 'NCIT';
+    $field_settings['termAccession'] = 'C47885';
     return $field_settings;
   }
 
@@ -93,22 +94,8 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
 
     // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');
-    $description_term = $mapping->getColumnTermId($object_table, 'description');
-    $arrayidentifier_term = $mapping->getColumnTermId($object_table, 'arrayidentifier');
-    $arraybatchidentifier_term = $mapping->getColumnTermId($object_table, 'arraybatchidentifier');
-
-    // Columns from linked tables
-    $arraydesign_term = $mapping->getColumnTermId('arraydesign', 'name');
-    $protocol_term = $mapping->getColumnTermId('protocol', 'name');
-    $contact_schema_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
-    $operator_term = $mapping->getColumnTermId('contact', 'name');
-    $operator_len = $contact_schema_def['fields']['name']['size'];
-    $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
-    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
-    $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
-    $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
-    $db_term = $mapping->getColumnTermId('db', 'name');
-    $db_len = $db_schema_def['fields']['name']['size'];
+    $name_len = $object_schema_def['fields']['name']['size'];
+    $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
 
     // Linker table, when used, requires specifying the linker table and column.
     // For single hop, in the yaml we support using the usual 'base_table'
@@ -154,7 +141,7 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
 
     // Base table links directly
     if ($base_table == $linker_table) {
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
@@ -184,7 +171,7 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
       ]);
 
       // Define the link between the linker table and the object table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'chado_table' => $linker_table,
@@ -208,103 +195,23 @@ class ChadoAssayDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_name', $name_term, [
+    // The project name
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'project_name', $name_term, $name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
       'chado_column' => 'name',
-      'as' => 'assay_name',
+      'as' => 'project_name',
     ]);
 
-    // Other columns specific to the object table
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_description', $description_term, [
+    // The project description
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'project_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . $object_pkey_col,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => 'description',
-      'as' => 'assay_description',
-    ]);
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_arrayidentifier', $arrayidentifier_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'arrayidentifier',
-      'as' => 'assay_arrayidentifier',
-    ]);
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_arraybatchidentifier', $arraybatchidentifier_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'arraybatchidentifier',
-      'as' => 'assay_arraybatchidentifier',
-    ]);
-
-    // Values from tables linked to by the object table
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_arraydesign', $arraydesign_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.arraydesign_id>arraydesign.arraydesign_id',
-      'chado_column' => 'name',
-      'as' => 'assay_arraydesign',
-    ]);
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_protocol', $protocol_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.protocol_id>protocol.protocol_id',
-      'chado_column' => 'name',
-      'as' => 'assay_protocol',
-    ]);
-
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'assay_operator', $operator_term, $operator_len, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.operator_id>contact.contact_id',
-      'chado_column' => 'name',
-      'as' => 'assay_operator',
-    ]);
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_database_accession', $dbxref_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id',
-      'chado_column' => 'accession',
-      'as' => 'assay_database_accession',
-    ]);
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_database_name', $db_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
-      'chado_column' => 'name',
-      'as' => 'assay_database_name',
-    ]);
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_database_accession', $dbxref_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id',
-      'chado_column' => 'accession',
-      'as' => 'assay_database_accession',
-    ]);
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_database_name', $db_term, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
-      'chado_column' => 'name',
-      'as' => 'assay_database_name',
+      'as' => 'project_description',
     ]);
 
     return $properties;

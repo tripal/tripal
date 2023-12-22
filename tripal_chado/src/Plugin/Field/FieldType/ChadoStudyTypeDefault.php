@@ -4,34 +4,34 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
 /**
- * Plugin implementation of default Tripal project field type.
+ * Plugin implementation of default Tripal study field type.
  *
  * @FieldType(
- *   id = "chado_project_default",
- *   object_table = "project",
- *   label = @Translation("Chado Project"),
- *   description = @Translation("Add a Chado project to the content type."),
- *   default_widget = "chado_project_widget_default",
- *   default_formatter = "chado_project_formatter_default",
+ *   id = "chado_study_type_default",
+ *   object_table = "study",
+ *   label = @Translation("Chado Study"),
+ *   description = @Translation("Add a Chado study to the content type."),
+ *   default_widget = "chado_study_widget_default",
+ *   default_formatter = "chado_study_formatter_default",
  * )
  */
-class ChadoProjectDefault extends ChadoFieldItemBase {
+class ChadoStudyTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_project_default';
+  public static $id = 'chado_study_type_default';
   // The following needs to match the object_table annotation above
-  protected static $object_table = 'project';
-  protected static $object_id = 'project_id';
+  protected static $object_table = 'study';
+  protected static $object_id = 'study_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'project_name';
+    return 'study_name';
   }
 
   /**
@@ -52,9 +52,9 @@ class ChadoProjectDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Project'
-    $field_settings['termIdSpace'] = 'NCIT';
-    $field_settings['termAccession'] = 'C47885';
+    // CV Term is 'study'
+    $field_settings['termIdSpace'] = 'SIO';
+    $field_settings['termAccession'] = '001066';
     return $field_settings;
   }
 
@@ -94,8 +94,17 @@ class ChadoProjectDefault extends ChadoFieldItemBase {
 
     // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');
-    $name_len = $object_schema_def['fields']['name']['size'];
-    $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
+    $description_term = $mapping->getColumnTermId($object_table, 'description');
+
+    // Columns from linked tables
+    $contact_term = $mapping->getColumnTermId('contact', 'name');
+    $pub_title_term = $mapping->getColumnTermId('pub', 'title');
+    $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
+    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
+    $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
+    $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
+    $db_term = $mapping->getColumnTermId('db', 'name');
+    $db_len = $db_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
     // For single hop, in the yaml we support using the usual 'base_table'
@@ -195,23 +204,61 @@ class ChadoProjectDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    // The project name
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'project_name', $name_term, $name_len, [
+    // The study name
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_table' => $object_table,
       'chado_column' => 'name',
-      'as' => 'project_name',
+      'as' => 'study_name',
     ]);
 
-    // The project description
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'project_description', $description_term, [
+    // The study description
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
       'chado_column' => 'description',
-      'as' => 'project_description',
+      'as' => 'study_description',
+    ]);
+
+    // The linked contact
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_contact', $contact_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.contact_id>contact.contact_id',
+      'chado_column' => 'name',
+      'as' => 'study_contact_name',
+    ]);
+
+    // The linked publication title
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_pub_title', $pub_title_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.pub_id>pub.pub_id',
+      'chado_column' => 'title',
+      'as' => 'study_pub_title',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_database_accession', $dbxref_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id',
+      'chado_column' => 'accession',
+      'as' => 'study_database_accession',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_database_name', $db_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
+      'chado_column' => 'name',
+      'as' => 'study_database_name',
     ]);
 
     return $properties;

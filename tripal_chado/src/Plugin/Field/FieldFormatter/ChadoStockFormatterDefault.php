@@ -13,7 +13,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado stock formatter"),
  *   description = @Translation("A chado stock formatter"),
  *   field_types = {
- *     "chado_stock_default"
+ *     "chado_stock_type_default"
  *   },
  *   valid_tokens = {
  *     "[name]",

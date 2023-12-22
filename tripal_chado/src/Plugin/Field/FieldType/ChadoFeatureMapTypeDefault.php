@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * Plugin implementation of default Tripal featuremap field type.
  *
  * @FieldType(
- *   id = "chado_featuremap_default",
+ *   id = "chado_featuremap_type_default",
  *   object_table = "featuremap",
  *   label = @Translation("Chado FeatureMap"),
  *   description = @Translation("Add a Chado featuremap to the content type."),
@@ -19,9 +19,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *   default_formatter = "chado_featuremap_formatter_default",
  * )
  */
-class ChadoFeatureMapDefault extends ChadoFieldItemBase {
+class ChadoFeatureMapTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_featuremap_default';
+  public static $id = 'chado_featuremap_type_default';
   // The following needs to match the object_table annotation above
   protected static $object_table = 'featuremap';
   protected static $object_id = 'featuremap_id';

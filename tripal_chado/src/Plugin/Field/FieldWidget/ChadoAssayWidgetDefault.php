@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Assay Widget"),
  *   description = @Translation("The default assay widget."),
  *   field_types = {
- *     "chado_assay_default"
+ *     "chado_assay_type_default"
  *   }
  * )
  */

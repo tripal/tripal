@@ -220,7 +220,7 @@ fields:
     -   name: gene_pub
         content_type: gene
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -247,7 +247,7 @@ fields:
     -   name: gene_project
         content_type: gene
         label: Project
-        type: chado_project_default
+        type: chado_project_type_default
         description: The project which this gene is a part of
         cardinality: -1
         required: false
@@ -569,7 +569,7 @@ fields:
     -   name: mrna_pub
         content_type: mRNA
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -596,7 +596,7 @@ fields:
     -   name: mrna_project
         content_type: mRNA
         label: Project
-        type: chado_project_default
+        type: chado_project_type_default
         description: The project which this mRNA is a part of
         cardinality: -1
         required: false
@@ -948,7 +948,7 @@ fields:
     -   name: physical_map_pub
         content_type: physical_map
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -1138,7 +1138,7 @@ fields:
     -   name: dna_library_pub
         content_type: dna_library
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -1409,7 +1409,7 @@ fields:
     -   name: genome_assembly_pub
         content_type: genome_assembly
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -1436,7 +1436,7 @@ fields:
     -   name: genome_assembly_project
         content_type: genome_assembly
         label: Project
-        type: chado_project_default
+        type: chado_project_type_default
         description: The project which this genome assembly is a part of
         cardinality: -1
         required: false
@@ -1680,7 +1680,7 @@ fields:
     -   name: genome_annotation_pub
         content_type: genome_annotation
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -1707,7 +1707,7 @@ fields:
     -   name: genome_annotation_project
         content_type: genome_annotation
         label: Project
-        type: chado_project_default
+        type: chado_project_type_default
         description: The project which this genome annotation is a part of
         cardinality: -1
         required: false
@@ -1817,7 +1817,7 @@ fields:
     -   name: genome_project_pub
         content_type: genome_project
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false

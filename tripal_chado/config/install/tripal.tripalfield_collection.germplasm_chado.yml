@@ -141,7 +141,7 @@ fields:
     -   name: germplasm_pub
         content_type: germplasm
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -168,7 +168,7 @@ fields:
     -   name: germplasm_featuremap
         content_type: germplasm
         label: Map
-        type: chado_featuremap_default
+        type: chado_featuremap_type_default
         description: One or more genetic or physical maps using this germplasm
         cardinality: -1
         required: false
@@ -356,7 +356,7 @@ fields:
     -   name: breeding_cross_pub
         content_type: breeding_cross
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -383,7 +383,7 @@ fields:
     -   name: breeding_cross_featuremap
         content_type: breeding_cross
         label: Map
-        type: chado_featuremap_default
+        type: chado_featuremap_type_default
         description: One or more genetic or physical maps using this breeding cross
         cardinality: -1
         required: false
@@ -571,7 +571,7 @@ fields:
     -   name: germplasm_variety_pub
         content_type: germplasm_variety
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -598,7 +598,7 @@ fields:
     -   name: germplasm_variety_featuremap
         content_type: germplasm_variety
         label: Map
-        type: chado_featuremap_default
+        type: chado_featuremap_type_default
         description: One or more genetic or physical maps using this germplasm variety
         cardinality: -1
         required: false
@@ -786,7 +786,7 @@ fields:
     -   name: ril_pub
         content_type: RIL
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -813,7 +813,7 @@ fields:
     -   name: ril_featuremap
         content_type: RIL
         label: Map
-        type: chado_featuremap_default
+        type: chado_featuremap_type_default
         description: One or more genetic or physical maps using this RIL
         cardinality: -1
         required: false

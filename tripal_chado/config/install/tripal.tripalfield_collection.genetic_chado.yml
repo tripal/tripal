@@ -115,7 +115,7 @@ fields:
     -   name: genetic_map_pub
         content_type: genetic_map
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -357,7 +357,7 @@ fields:
     -   name: qtl_pub
         content_type: QTL
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -677,7 +677,7 @@ fields:
     -   name: sequence_variant_pub
         content_type: sequence_variant
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -997,7 +997,7 @@ fields:
     -   name: genetic_marker_pub
         content_type: genetic_marker
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false
@@ -1317,7 +1317,7 @@ fields:
     -   name: phenotypic_marker_pub
         content_type: phenotypic_marker
         label: Publication
-        type: chado_pub_default
+        type: chado_pub_type_default
         description: The title of the published work.
         cardinality: -1
         required: false

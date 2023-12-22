@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Study Widget"),
  *   description = @Translation("The default study widget."),
  *   field_types = {
- *     "chado_study_default"
+ *     "chado_study_type_default"
  *   }
  * )
  */

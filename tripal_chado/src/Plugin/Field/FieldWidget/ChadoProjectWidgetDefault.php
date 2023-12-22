@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Project Widget"),
  *   description = @Translation("The default project widget."),
  *   field_types = {
- *     "chado_project_default"
+ *     "chado_project_type_default"
  *   }
  * )
  */

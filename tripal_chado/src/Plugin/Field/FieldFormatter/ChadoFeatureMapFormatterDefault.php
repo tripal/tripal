@@ -13,7 +13,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado featuremap formatter"),
  *   description = @Translation("A chado featuremap formatter"),
  *   field_types = {
- *     "chado_featuremap_default"
+ *     "chado_featuremap_type_default"
  *   },
  *   valid_tokens = {
  *     "[name]",

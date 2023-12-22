@@ -13,7 +13,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado biomaterial formatter"),
  *   description = @Translation("A chado biomaterial formatter"),
  *   field_types = {
- *     "chado_biomaterial_default"
+ *     "chado_biomaterial_type_default"
  *   },
  *   valid_tokens = {
  *     "[name]",

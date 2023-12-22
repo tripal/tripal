@@ -188,7 +188,6 @@ fields:
             default:
               region: content
               weight: 15
->>>>>>> 4.x
 
     -   name: assay_name
         content_type: assay
@@ -245,7 +244,7 @@ fields:
     -   name: assay_array_design
         content_type: assay
         label: Array Design
-        type: chado_array_design_default
+        type: chado_array_design_type_default
         description: An instrument design which describes the design of the array.
         cardinality: 1
         required: true
@@ -297,7 +296,7 @@ fields:
     -   name: assay_study
         content_type: assay
         label: Study
-        type: chado_study_default
+        type: chado_study_type_default
         description: A study is a process that realizes the steps of a study design.
         cardinality: 1
         required: false
@@ -430,7 +429,7 @@ fields:
     -   name: assay_biomaterial
         content_type: assay
         label: Biosample
-        type: chado_biomaterial_default
+        type: chado_biomaterial_type_default
         description: A biological sample used in this assay
         cardinality: 1
         required: false
@@ -457,7 +456,7 @@ fields:
     -   name: assay_project
         content_type: assay
         label: Project
-        type: chado_project_default
+        type: chado_project_type_default
         description: The project which this assay is a part of
         cardinality: -1
         required: false

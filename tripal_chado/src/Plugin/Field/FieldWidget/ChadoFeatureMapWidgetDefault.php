@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado FeatureMap Widget"),
  *   description = @Translation("The default featuremap widget."),
  *   field_types = {
- *     "chado_featuremap_default"
+ *     "chado_featuremap_type_default"
  *   }
  * )
  */

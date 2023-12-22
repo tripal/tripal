@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Publication Widget"),
  *   description = @Translation("The default publication widget."),
  *   field_types = {
- *     "chado_pub_default"
+ *     "chado_pub_type_default"
  *   }
  * )
  */

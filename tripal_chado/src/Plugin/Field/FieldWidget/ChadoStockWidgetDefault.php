@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Stock Widget"),
  *   description = @Translation("The default stock widget."),
  *   field_types = {
- *     "chado_stock_default"
+ *     "chado_stock_type_default"
  *   }
  * )
  */

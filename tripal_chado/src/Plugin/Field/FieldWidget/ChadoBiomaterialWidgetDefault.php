@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Biomaterial Widget"),
  *   description = @Translation("The default biomaterial widget."),
  *   field_types = {
- *     "chado_biomaterial_default"
+ *     "chado_biomaterial_type_default"
  *   }
  * )
  */

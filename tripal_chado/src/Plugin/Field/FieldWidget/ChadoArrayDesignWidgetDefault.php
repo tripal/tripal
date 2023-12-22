@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Array Design Widget"),
  *   description = @Translation("The default array design widget."),
  *   field_types = {
- *     "chado_array_design_default"
+ *     "chado_array_design_type_default"
  *   }
  * )
  */
