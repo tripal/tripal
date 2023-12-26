@@ -154,7 +154,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
@@ -209,7 +209,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -502,7 +502,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
@@ -557,7 +557,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -849,7 +849,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
@@ -904,7 +904,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -1196,7 +1196,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
@@ -1251,7 +1251,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -1543,7 +1543,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:

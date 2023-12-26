@@ -46,7 +46,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -207,7 +207,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
@@ -288,7 +288,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -449,7 +449,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
@@ -530,7 +530,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -609,8 +609,8 @@ fields:
                 type_column: type_id
         settings:
             termIdSpace: CO_010
-            termAccession: 0000029
-            fixed_value: CO_010:0000029
+            termAccession: "0000029"
+            fixed_value: "CO_010:0000029"
         display:
           view:
             default:
@@ -691,7 +691,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
@@ -772,7 +772,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -933,7 +933,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
