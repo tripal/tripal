@@ -57,7 +57,7 @@ fields:
               region: content
               weight: 15
 
-    -   name: biomaterial_dbxref
+    -   name: biosample_dbxref
         content_type: biosample
         label: Cross Reference
         type: chado_dbxref_type_default
