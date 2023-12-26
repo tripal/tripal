@@ -153,7 +153,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
@@ -342,7 +342,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
@@ -531,7 +531,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
@@ -720,7 +720,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000554
+            termAccession: "0000554"
         display:
           view:
             default:
