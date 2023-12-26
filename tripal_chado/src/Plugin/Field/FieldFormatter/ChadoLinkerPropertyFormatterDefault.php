@@ -2,10 +2,12 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
-use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Url;
+use Drupal\Component\Utility\UrlHelper;
+use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
@@ -32,32 +34,30 @@ class ChadoLinkerPropertyFormatterDefault extends ChadoFormatterBase {
     foreach($items as $delta => $item) {
       $value = $item->get('value')->getString();
       // any URLs are made into clickable links
-      if (preg_match('/^https?:/i', $value) ) {
-        $value = Link::fromTextAndUrl($value, $value);
+      if (UrlHelper::isExternal($value)) {
+        $value = Link::fromTextAndUrl($value, Url::fromUri($value))->toString();
       }
-      $list[$delta] = $value;
+      $list[$delta] = [
+        '#markup' => $value,
+      ];
     }
 
-    // Also need to make sure to not return markup if the field is empty.
-    if (empty($list)) {
-      return $elements;
+    // If only one element has been found, don't make into a list.
+    if (count($list) == 1) {
+      $elements = $list;
     }
 
-    // If more than one value has been found display all values in an unordered
-    // list.
-    if (count($list) > 1) {
+    // If more than one value has been found, display all values in an
+    // unordered list.
+    elseif (count($list) > 1) {
       $elements[0] = [
         '#theme' => 'item_list',
         '#list_type' => 'ul',
         '#items' => $list,
         '#wrapper_attributes' => ['class' => 'container'],
       ];
-      return $elements;
     }
 
-    $elements[0] = [
-      "#markup" => $list[0]
-    ];
     return $elements;
   }
 }
