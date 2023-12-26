@@ -192,6 +192,33 @@ fields:
               region: content
               weight: 83
 
+    -   name: germplasm_dbxref
+        content_type: germplasm
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
     -   name: germplasm_is_obsolete
         content_type: germplasm
         label: Is Obsolete
@@ -406,6 +433,33 @@ fields:
             default:
               region: content
               weight: 83
+
+    -   name: breeding_cross_dbxref
+        content_type: breeding_cross
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
     -   name: breeding_cross_is_obsolete
         content_type: breeding_cross
@@ -622,6 +676,33 @@ fields:
               region: content
               weight: 83
 
+    -   name: germplasm_variety_dbxref
+        content_type: germplasm_variety
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
     -   name: germplasm_variety_is_obsolete
         content_type: germplasm_variety
         label: Is Obsolete
@@ -836,6 +917,33 @@ fields:
             default:
               region: content
               weight: 83
+
+    -   name: ril_dbxref
+        content_type: RIL
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
     -   name: ril_is_obsolete
         content_type: ril

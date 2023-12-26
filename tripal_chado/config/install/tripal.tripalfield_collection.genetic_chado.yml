@@ -139,6 +139,33 @@ fields:
               region: content
               weight: 35
 
+    -   name: genetic_map_dbxref
+        content_type: genetic_map
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: featuremap_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## QTL ##
 
     -   name: qtl_name
@@ -454,13 +481,40 @@ fields:
             default:
               region: content
               label: above
-              weight: 95
+              weight: 66
           form:
             default:
               region: content
-              weight: 95
+              weight: 66
 
-## Sequence Variant ##
+    -   name: qtl_dbxref
+        content_type: QTL
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+#### Sequence Variant ##
 
     -   name: sequence_variant_name
         content_type: sequence_variant
@@ -774,11 +828,38 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
+
+    -   name: sequence_variant_dbxref
+        content_type: sequence_variant
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Genetic Marker ##
 
@@ -1094,11 +1175,38 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
+
+    -   name: genetic_marker_dbxref
+        content_type: genetic_marker
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Heritable Phenotpic Marker ##
 
@@ -1414,8 +1522,35 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
+
+    -   name: phenotypic_marker_dbxref
+        content_type: phenotypic_marker
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68

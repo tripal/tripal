@@ -109,31 +109,32 @@ fields:
               region: content
               weight: 25
 
-    -   name: biosample_dbxref_id
+    -   name: biomaterial_dbxref
         content_type: biosample
-        label: Dbxref ID
-        type: chado_integer_type_default
-        description: The primary key of the database reference (dbxref) to attach to this biosample. This field is a placeholder until we develop a more user friendly database reference field.
-        cardinality: 1
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: biomaterial
-                base_column: dbxref_id
+                linker_table: biomaterial_dbxref
+                linker_fkey_column: dbxref_id
         settings:
-            termIdSpace: data
-            termAccession: "2091"
+            termIdSpace: SBO
+            termAccession: 0000554
         display:
           view:
             default:
-              region: hidden
+              region: content
               label: above
-              weight: 30
+              weight: 68
           form:
             default:
               region: content
-              weight: 30
+              weight: 68
 
 ## Assay ##
 
@@ -400,32 +401,6 @@ fields:
               region: content
               weight: 45
 
-    -   name: assay_dbxref_id
-        content_type: assay
-        label: Dbxref ID
-        type: chado_integer_type_default
-        description: The primary key of the database reference (dbxref) to attach to this assay. This field is a placeholder until we develop a more user friendly database reference field.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: assay
-                base_column: dbxref_id
-        settings:
-            termIdSpace: data
-            termAccession: "2091"
-        display:
-          view:
-            default:
-              region: hidden
-              label: above
-              weight: 50
-          form:
-            default:
-              region: content
-              weight: 50
-
     -   name: assay_biomaterial
         content_type: assay
         label: Biosample
@@ -479,6 +454,32 @@ fields:
             default:
               region: content
               weight: 60
+
+    -   name: assay_dbxref
+        content_type: assay
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Array Design ##
 
@@ -640,32 +641,6 @@ fields:
             default:
               region: content
               weight: 35
-
-    -   name: array_design_dbxref_id
-        content_type: array_design
-        label: Dbxref ID
-        type: chado_integer_type_default
-        description: The primary key of the database reference (dbxref) to attach to this array_design. This field is a placeholder until we develop a more user friendly database reference field.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: arraydesign
-                base_column: dbxref_id
-        settings:
-            termIdSpace: data
-            termAccession: "2091"
-        display:
-          view:
-            default:
-              region: hidden
-              label: above
-              weight: 40
-          form:
-            default:
-              region: content
-              weight: 40
 
     -   name: array_design_version_num
         content_type: array_design
@@ -926,3 +901,29 @@ fields:
             default:
               region: content
               weight: 58
+
+    -   name: array_design_dbxref
+        content_type: array_design
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68

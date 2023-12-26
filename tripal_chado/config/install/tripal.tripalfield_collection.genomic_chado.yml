@@ -319,11 +319,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 90
+              weight: 98
           form:
             default:
               region: content
-              weight: 90
+              weight: 98
 
     -   name: gene_synonym
         content_type: gene
@@ -346,11 +346,38 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
+
+    -   name: gene_dbxref
+        content_type: gene
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## mrna ##
 
@@ -695,11 +722,38 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
+
+    -   name: mrna_dbxref
+        content_type: mRNA
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Phylogenetic Tree ##
 
@@ -729,32 +783,6 @@ fields:
             default:
               region: content
               weight: 10
-
-    -   name: phylotree_dbxref_id
-        content_type: phylotree
-        label: Dbxref ID
-        type: chado_integer_type_default
-        description: The primary key of the database reference (dbxref) to attach to this tree. This field is a placeholder until we develop a more user friendly database reference field.
-        cardinality: 1
-        required: true
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: phylotree
-                base_column: dbxref_id
-        settings:
-            termIdSpace: data
-            termAccession: "2091"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 15
-          form:
-            default:
-              region: content
-              weight: 15
 
     -   name: phylotree_type
         content_type: phylotree
@@ -835,6 +863,32 @@ fields:
             default:
               region: content
               weight: 30
+
+    -   name: phylotree_dbxref
+        content_type: phylotree
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: phylotree
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Physical Map ##
 
@@ -971,6 +1025,33 @@ fields:
             default:
               region: content
               weight: 85
+
+    -   name: physical_map_dbxref
+        content_type: physical_map
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: featuremap_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## DNA Library ##
 
@@ -1134,6 +1215,33 @@ fields:
             default:
               region: content
               weight: 50
+
+    -   name: dna_library_dbxref
+        content_type: dna_library
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                linker_table: library_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
     -   name: dna_library_pub
         content_type: dna_library
@@ -1406,6 +1514,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genome_assembly_dbxref
+        content_type: genome_assembly
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
     -   name: genome_assembly_pub
         content_type: genome_assembly
         label: Publication
@@ -1677,6 +1812,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genome_annotation_dbxref
+        content_type: genome_annotation
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
     -   name: genome_annotation_pub
         content_type: genome_annotation
         label: Publication
@@ -1814,6 +1976,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genome_project_dbxref
+        content_type: genome_project
+        label: Cross Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: 0000554
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
     -   name: genome_project_pub
         content_type: genome_project
         label: Publication
@@ -1840,4 +2029,3 @@ fields:
             default:
               region: content
               weight: 85
-
