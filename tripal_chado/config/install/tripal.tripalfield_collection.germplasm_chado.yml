@@ -865,7 +865,7 @@ fields:
               weight: 25
 
     -   name: ril_pub
-        content_type: RIL
+        content_type: ril
         label: Publication
         type: chado_pub_type_default
         description: The title of the published work.
@@ -892,7 +892,7 @@ fields:
               weight: 30
 
     -   name: ril_featuremap
-        content_type: RIL
+        content_type: ril
         label: Map
         type: chado_featuremap_type_default
         description: One or more genetic or physical maps using this RIL
@@ -919,7 +919,7 @@ fields:
               weight: 83
 
     -   name: ril_dbxref
-        content_type: RIL
+        content_type: ril
         label: Cross Reference
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.

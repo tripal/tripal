@@ -594,7 +594,7 @@ fields:
               weight: 80
 
     -   name: mrna_pub
-        content_type: mRNA
+        content_type: mrna
         label: Publication
         type: chado_pub_type_default
         description: The title of the published work.
@@ -621,7 +621,7 @@ fields:
               weight: 82
 
     -   name: mrna_project
-        content_type: mRNA
+        content_type: mrna
         label: Project
         type: chado_project_type_default
         description: The project which this mRNA is a part of
@@ -729,7 +729,7 @@ fields:
               weight: 66
 
     -   name: mrna_dbxref
-        content_type: mRNA
+        content_type: mrna
         label: Cross Reference
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
