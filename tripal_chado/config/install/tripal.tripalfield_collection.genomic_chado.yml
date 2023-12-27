@@ -621,7 +621,7 @@ fields:
               weight: 66
 
     -   name: mrna_dbxref
-        content_type: mRNA
+        content_type: mrna
         label: Cross Reference
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.

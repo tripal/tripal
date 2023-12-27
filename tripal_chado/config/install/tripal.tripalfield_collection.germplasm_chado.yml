@@ -706,7 +706,7 @@ fields:
               weight: 10
 
     -   name: ril_dbxref
-        content_type: RIL
+        content_type: ril
         label: Cross Reference
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
