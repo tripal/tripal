@@ -34,6 +34,8 @@ final class ImportTripalEntityTypeCollection extends FormBase {
 
     $manager = \Drupal::service('tripal.tripalentitytype_collection');
     $collections = $manager->getTypeCollections();
+    $collections = $this->orderCollections($collections);
+
     $form['collection_id'] = [
       '#type' => 'checkboxes',
       '#title' => 'Tripal Entity Type Collection',
@@ -91,4 +93,43 @@ final class ImportTripalEntityTypeCollection extends FormBase {
     $form_state->setRedirect('entity.tripal_entity_type.collection');
   }
 
+  /**
+   * Make sure that the list of collections is in dependency order.
+   *
+   * Some collections may require that other collections are
+   * already present when the job to create the collection is run,
+   * so ensure that the array is appropriately ordered.
+   *
+   * @param array $collections
+   *   Array from \Drupal::service('tripal.tripalentitytype_collection')->getTypeCollections()
+   *
+   * @return array
+   *   The same array, but in dependency order.
+   */
+  private function orderCollections(array $collections) {
+    // Note that in the case of a yaml dependency typo, the collection
+    // will never be added.
+    $ordered_collections = [];
+    $added = 1;
+    while ($added) {
+      $added = 0;
+      foreach ($collections as $id => $details) {
+        if (!array_key_exists($id, $ordered_collections)) {
+          $ready = TRUE;
+          if (array_key_exists('dependency', $details)) {
+            foreach ($details['dependency'] as $dependency) {
+              if (!array_key_exists($dependency, $ordered_collections)) {
+                $ready = FALSE;
+              }
+            }
+          }
+          if ($ready) {
+            $ordered_collections[$id] = $details;
+            $added++;
+          }
+        }
+      }
+    }
+    return $ordered_collections;
+  }
 }
