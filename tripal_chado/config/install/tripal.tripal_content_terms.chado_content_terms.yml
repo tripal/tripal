@@ -904,6 +904,12 @@ vocabularies:
         terms:
             -   id: 'TPUB:0000002'
                 name: 'Publication'
+            -   id: 'TPUB:0000003'
+                name: 'Citation'
+            -   id: 'TPUB:0000015'
+                name: 'Publication Type'
+            -   id: 'TPUB:0000243'
+                name: 'Volume Title'
 
     -   name: 'foaf'
         label: 'Friend of a Friend. A dictionary of people-related terms that can be used in structured data).'

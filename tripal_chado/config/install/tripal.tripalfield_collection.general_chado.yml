@@ -265,7 +265,7 @@ fields:
         content_type: analysis
         label: Program, Pipeline, Workflow or Method Name
         type: chado_string_type_default
-        description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
+        description: Tchado_string_type_defaulte.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
         cardinality: 1
         required: true
         storage_settings:
@@ -1000,7 +1000,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: TPUB
-            termAccession: 0000003
+            termAccession: "0000003"
         display:
           view:
             default:
@@ -1027,7 +1027,7 @@ fields:
                 type_column: type_id
         settings:
             termIdSpace: TPUB
-            termAccession: 0000015
+            termAccession: "0000015"
         display:
           view:
             default:
@@ -1053,7 +1053,7 @@ fields:
                 base_column: title
         settings:
             termIdSpace: TPUB
-            termAccession: 0000039
+            termAccession: "0000039"
         display:
           view:
             default:
@@ -1080,7 +1080,7 @@ fields:
                 base_column: volumetitle
         settings:
             termIdSpace: TPUB
-            termAccession: 0000243
+            termAccession: "0000243"
         display:
           view:
             default:
