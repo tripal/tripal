@@ -15,7 +15,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado Synonym Formatter"),
  *   description = @Translation("A chado synonym formatter"),
  *   field_types = {
- *     "chado_synonym_default"
+ *     "chado_synonym_type_default"
  *   }
  * )
  */

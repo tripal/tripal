@@ -1783,7 +1783,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       // If the field requires a value but doesn't have one then it may be
       // a problem.
-      if ($info['not null'] == TRUE and !$col_val) {
+      if ($info['not null'] == TRUE and (!isset($col_val) or ($col_val == ''))) {
         // If the column  has a default value then it's not a problem.
         if (array_key_exists('default', $info)) {
           continue;

@@ -2,24 +2,24 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
-use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalBooleanTypeFormatter;
+use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalIntegerTypeFormatter;
 use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Plugin implementation of default Chado boolean type formatter.
+ * Plugin implementation of default Chado integer type formatter.
  *
  * @FieldFormatter(
- *   id = "chado_boolean_type_formatter",
- *   label = @Translation("Chado Boolean Type Formatter"),
- *   description = @Translation("The Chado boolean type formatter."),
+ *   id = "chado_integer_type_formatter",
+ *   label = @Translation("Chado Integer Type Formatter"),
+ *   description = @Translation("The Chado integer type formatter."),
  *   field_types = {
- *     "chado_boolean_type"
+ *     "chado_integer_type_default"
  *   }
  * )
  */
-class ChadoBooleanTypeFormatter extends DefaultTripalBooleanTypeFormatter {
+class ChadoIntegerFormatterDefault extends DefaultTripalIntegerTypeFormatter {
 
   /**
    * {@inheritDoc}

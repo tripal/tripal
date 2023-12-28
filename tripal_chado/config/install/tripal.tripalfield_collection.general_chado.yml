@@ -14,7 +14,7 @@ fields:
     -   name: organism_abbreviation
         content_type: organism
         label: Abbreviation
-        type: chado_string_type
+        type: chado_string_type_default
         description: A shortened name (or abbreviation) for the organism (e.g. O. sativa).
         cardinality: 1
         required: false
@@ -41,7 +41,7 @@ fields:
     -   name: organism_genus
         content_type: organism
         label: Genus
-        type: chado_string_type
+        type: chado_string_type_default
         description: "The genus name of the organism."
         cardinality: 1
         required: true
@@ -68,7 +68,7 @@ fields:
     -   name: organism_species
         content_type: organism
         label: Species
-        type: chado_string_type
+        type: chado_string_type_default
         description: "The species name of the organism."
         cardinality: 1
         required: true
@@ -95,7 +95,7 @@ fields:
     -   name: organism_common_name
         content_type: organism
         label: Common Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: "The common name for the organism."
         cardinality: 1
         required: false
@@ -122,7 +122,7 @@ fields:
     -   name: organism_infraspecific_name
         content_type: organism
         label: Infraspecies
-        type: chado_string_type
+        type: chado_string_type_default
         description: "The infraspecfic name for the organism."
         cardinality: 1
         required: false
@@ -149,7 +149,7 @@ fields:
     -   name: organism_infraspecific_type
         content_type: organism
         label: Infraspecific Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
         cardinality: 1
         required: false
@@ -176,7 +176,7 @@ fields:
     -   name: organism_comment
         content_type: organism
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the organism.
         cardinality: 1
         required: false
@@ -211,7 +211,7 @@ fields:
     -   name: analysis_name
         content_type: analysis
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the analysis.
         cardinality: 1
         required: false
@@ -238,7 +238,7 @@ fields:
     -   name: analysis_description
         content_type: analysis
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the analysis.
         cardinality: 1
         required: false
@@ -264,7 +264,7 @@ fields:
     -   name: analysis_software
         content_type: analysis
         label: Program, Pipeline, Workflow or Method Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
         cardinality: 1
         required: true
@@ -291,7 +291,7 @@ fields:
     -   name: analysis_program_version
         content_type: analysis
         label: Software Version
-        type: chado_string_type
+        type: chado_string_type_default
         description: The version of the program, pipeline or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
         cardinality: 1
         required: true
@@ -318,7 +318,7 @@ fields:
     -   name: analysis_algorithm
         content_type: analysis
         label: Algorithm
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the algorithm used to produce the dataset if different from the program.
         cardinality: 1
         required: false
@@ -345,7 +345,7 @@ fields:
     -   name: analysis_source
         content_type: analysis
         label: Data Source Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the source where data was obtained for this analysis.
         cardinality: 1
         required: false
@@ -372,7 +372,7 @@ fields:
     -   name: analysis_source_version
         content_type: analysis
         label: Data Source Version
-        type: chado_string_type
+        type: chado_string_type_default
         description: The version number of the data source (if applicable).
         cardinality: 1
         required: false
@@ -399,7 +399,7 @@ fields:
     -   name: analysis_source_uri
         content_type: analysis
         label: Data Source URI
-        type: chado_text_type
+        type: chado_text_type_default
         description: The URI (e.g. web URL) where the source data can be retrieved.
         cardinality: 1
         required: false
@@ -432,7 +432,7 @@ fields:
     -   name: project_name
         content_type: project
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: true
@@ -459,7 +459,7 @@ fields:
     -   name: project_description
         content_type: project
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -485,7 +485,7 @@ fields:
     -   name: project_contact
         content_type: project
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -512,7 +512,7 @@ fields:
     -   name: project_analysis
         content_type: project
         label: Analysis
-        type: chado_analysis_default
+        type: chado_analysis_type_default
         description: Application of analytical methods to existing data of a specific type
         cardinality: -1
         required: false
@@ -545,7 +545,7 @@ fields:
     -   name: study_name
         content_type: study
         label: Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: The name of the item.
         cardinality: 1
         required: true
@@ -571,7 +571,7 @@ fields:
     -   name: study_description
         content_type: study
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -597,7 +597,7 @@ fields:
     -   name: study_contact
         content_type: study
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: 1
         required: true
@@ -624,7 +624,7 @@ fields:
     -   name: study_dbxref_id
         content_type: study
         label: Dbxref ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the database reference (dbxref) to attach to this study. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
         required: true
@@ -650,7 +650,7 @@ fields:
     -   name: study_pub_id
         content_type: study
         label: Publication ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the publication to attach to this study. This field is a placeholder until we develop a more user friendly publication field.
         cardinality: 1
         required: true
@@ -684,7 +684,7 @@ fields:
     -   name: contact_name
         content_type: contact
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: true
@@ -711,7 +711,7 @@ fields:
     -   name: contact_description
         content_type: contact
         label: Description
-        type: chado_string_type
+        type: chado_string_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -738,7 +738,7 @@ fields:
     -   name: contact_type
         content_type: contact
         label: Contact Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: false
@@ -771,7 +771,7 @@ fields:
     -   name: protocol_name
         content_type: protocol
         label: Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: The name of the item.
         cardinality: 1
         required: true
@@ -797,7 +797,7 @@ fields:
     -   name: protocol_uri
         content_type: protocol
         label: URI
-        type: chado_text_type
+        type: chado_text_type_default
         description: The name of a biological or bioinformatics database.
         cardinality: 1
         required: false
@@ -823,7 +823,7 @@ fields:
     -   name: protocol_description
         content_type: protocol
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -849,7 +849,7 @@ fields:
     -   name: protocol_instrument
         content_type: protocol
         label: Instrument
-        type: chado_text_type
+        type: chado_text_type_default
         description: An instrument is a device which provides a mechanical or electronic function.
         cardinality: 1
         required: false
@@ -875,7 +875,7 @@ fields:
     -   name: protocol_software
         content_type: protocol
         label: Software
-        type: chado_text_type
+        type: chado_text_type_default
         description: Computer software, or generally just software, is any set of machine-readable instructions (most often in the form of a computer program) that conform to a given syntax (sometimes referred to as a language) that is interpretable by a given processor and that directs a computer's processor to perform specific operations.
         cardinality: 1
         required: false
@@ -901,7 +901,7 @@ fields:
     -   name: protocol_type
         content_type: protocol
         label: Protocol Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -929,7 +929,7 @@ fields:
     -   name: protocol_dbxref_id
         content_type: protocol
         label: Dbxref ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the database reference (dbxref) to attach to this protocol. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
         required: true
@@ -955,7 +955,7 @@ fields:
     -   name: protocol_pub_id
         content_type: protocol
         label: Publication ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the publication to attach to this protocol. This field is a placeholder until we develop a more user friendly publication field.
         cardinality: 1
         required: true
@@ -989,7 +989,7 @@ fields:
     -   name: publication_uniquename
         content_type: pub
         label: Citation
-        type: chado_text_type
+        type: chado_text_type_default
         description: The citation for this publication.
         cardinality: 1
         required: true
@@ -1015,7 +1015,7 @@ fields:
     -   name: publication_type
         content_type: pub
         label: Publication Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: the type of publication.
         cardinality: 1
         required: false
@@ -1042,7 +1042,7 @@ fields:
     -   name: publication_title
         content_type: pub
         label: Title
-        type: chado_text_type
+        type: chado_text_type_default
         description: The title for this publication.
         cardinality: 1
         required: true
@@ -1069,7 +1069,7 @@ fields:
     -   name: publication_volumetitle
         content_type: pub
         label: Volume Title
-        type: chado_text_type
+        type: chado_text_type_default
         description: The volume title for this publication.
         cardinality: 1
         required: true
