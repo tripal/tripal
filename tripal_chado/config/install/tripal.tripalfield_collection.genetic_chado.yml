@@ -1554,3 +1554,34 @@ fields:
             default:
               region: content
               weight: 68
+
+### Additional genetic fields to add to core content types ###
+
+## Publication ##
+
+    -   name: publication_featuremap
+        content_type: pub
+        label: Map
+        type: chado_featuremap_type_default
+        description: One or more genetic or physical maps mentioned in this publication
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                linker_table: featuremap_pub
+                linker_fkey_column: featuremap_id
+        settings:
+            termIdSpace: data
+            termAccession: "1274"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 83
+          form:
+            default:
+              region: content
+              weight: 83
