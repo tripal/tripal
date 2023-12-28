@@ -165,33 +165,6 @@ fields:
               region: content
               weight: 30
 
-    -   name: germplasm_featuremap
-        content_type: germplasm
-        label: Map
-        type: chado_featuremap_type_default
-        description: One or more genetic or physical maps using this germplasm
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_featuremap
-                linker_fkey_column: featuremap_id
-        settings:
-            termIdSpace: data
-            termAccession: "1274"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 83
-          form:
-            default:
-              region: content
-              weight: 83
-
     -   name: germplasm_dbxref
         content_type: germplasm
         label: Cross Reference
@@ -406,33 +379,6 @@ fields:
             default:
               region: content
               weight: 30
-
-    -   name: breeding_cross_featuremap
-        content_type: breeding_cross
-        label: Map
-        type: chado_featuremap_type_default
-        description: One or more genetic or physical maps using this breeding cross
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_featuremap
-                linker_fkey_column: featuremap_id
-        settings:
-            termIdSpace: data
-            termAccession: "1274"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 83
-          form:
-            default:
-              region: content
-              weight: 83
 
     -   name: breeding_cross_dbxref
         content_type: breeding_cross
@@ -649,33 +595,6 @@ fields:
               region: content
               weight: 30
 
-    -   name: germplasm_variety_featuremap
-        content_type: germplasm_variety
-        label: Map
-        type: chado_featuremap_type_default
-        description: One or more genetic or physical maps using this germplasm variety
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_featuremap
-                linker_fkey_column: featuremap_id
-        settings:
-            termIdSpace: data
-            termAccession: "1274"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 83
-          form:
-            default:
-              region: content
-              weight: 83
-
     -   name: germplasm_variety_dbxref
         content_type: germplasm_variety
         label: Cross Reference
@@ -890,33 +809,6 @@ fields:
             default:
               region: content
               weight: 30
-
-    -   name: ril_featuremap
-        content_type: ril
-        label: Map
-        type: chado_featuremap_type_default
-        description: One or more genetic or physical maps using this RIL
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_featuremap
-                linker_fkey_column: featuremap_id
-        settings:
-            termIdSpace: data
-            termAccession: "1274"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 83
-          form:
-            default:
-              region: content
-              weight: 83
 
     -   name: ril_dbxref
         content_type: ril

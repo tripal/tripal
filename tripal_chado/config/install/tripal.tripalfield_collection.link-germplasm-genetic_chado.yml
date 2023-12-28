@@ -1,0 +1,120 @@
+id: 'link-germplasm-genetic_chado'
+label: 'Germplasm ↔ Genetic Linking Fields (Chado)'
+description: 'Fields linking between Germplasm and Genetic content types. No new entities are added.'
+fields:
+
+## Germplasm ##
+
+    -   name: germplasm_featuremap
+        content_type: germplasm
+        label: Map
+        type: chado_featuremap_type_default
+        description: One or more genetic or physical maps using this germplasm
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_featuremap
+                linker_fkey_column: featuremap_id
+        settings:
+            termIdSpace: data
+            termAccession: "1274"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 83
+          form:
+            default:
+              region: content
+              weight: 83
+
+## Breeding Cross ##
+
+    -   name: breeding_cross_featuremap
+        content_type: breeding_cross
+        label: Map
+        type: chado_featuremap_type_default
+        description: One or more genetic or physical maps using this breeding cross
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_featuremap
+                linker_fkey_column: featuremap_id
+        settings:
+            termIdSpace: data
+            termAccession: "1274"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 83
+          form:
+            default:
+              region: content
+              weight: 83
+
+## Germplasm Variety ##
+
+    -   name: germplasm_variety_featuremap
+        content_type: germplasm_variety
+        label: Map
+        type: chado_featuremap_type_default
+        description: One or more genetic or physical maps using this germplasm variety
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_featuremap
+                linker_fkey_column: featuremap_id
+        settings:
+            termIdSpace: data
+            termAccession: "1274"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 83
+          form:
+            default:
+              region: content
+              weight: 83
+
+## Recombinant Inbred Line ##
+
+    -   name: ril_featuremap
+        content_type: ril
+        label: Map
+        type: chado_featuremap_type_default
+        description: One or more genetic or physical maps using this RIL
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_featuremap
+                linker_fkey_column: featuremap_id
+        settings:
+            termIdSpace: data
+            termAccession: "1274"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 83
+          form:
+            default:
+              region: content
+              weight: 83
