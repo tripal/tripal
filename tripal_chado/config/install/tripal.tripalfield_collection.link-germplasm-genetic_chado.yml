@@ -1,9 +1,117 @@
 id: 'link-germplasm-genetic_chado'
 label: 'Germplasm ↔ Genetic Linking Fields (Chado)'
-description: 'Fields linking between Germplasm and Genetic content types. No new entities are added.'
+description: 'Fields linking between Germplasm and Genetic content types. No new entity types are added.'
 fields:
 
 ## Germplasm ##
+
+    -   name: germplasm_qtl
+        content_type: germplasm
+        label: QTL
+        type: chado_feature_type_default
+        description: One or more QTL observed in this germplasm
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0000771"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: germplasm_phenotypic_marker
+        content_type: germplasm
+        label: Phenotypic Marker
+        type: chado_feature_type_default
+        description: One or more phenotypic markers observed in this germplasm
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001500"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 82
+          form:
+            default:
+              region: content
+              weight: 82
+
+    -   name: germplasm_genetic_marker
+        content_type: germplasm
+        label: Genetic Marker
+        type: chado_feature_type_default
+        description: One or more genetic markers observed in this germplasm
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001645"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 83
+          form:
+            default:
+              region: content
+              weight: 83
+
+    -   name: germplasm_sequence_variant
+        content_type: germplasm
+        label: Sequence Variant
+        type: chado_feature_type_default
+        description: One or more phenotypic markers observed in this germplasm
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001060"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 84
+          form:
+            default:
+              region: content
+              weight: 84
 
     -   name: germplasm_featuremap
         content_type: germplasm
@@ -26,13 +134,256 @@ fields:
             default:
               region: content
               label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
+    -   name: qtl_germplasm
+        content_type: QTL
+        label: Germplasm
+        type: chado_stock_type_default
+        description: Germplasm associated with this QTL
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: phenotypic_marker_germplasm
+        content_type: phenotypic_marker
+        label: Germplasm
+        type: chado_stock_type_default
+        description: Germplasm associated with this phenotypic marker
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: genetic_marker_germplasm
+        content_type: genetic_marker
+        label: Germplasm
+        type: chado_stock_type_default
+        description: Germplasm associated with this genetic marker
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: sequence_variant_germplasm
+        content_type: sequence_variant
+        label: Germplasm
+        type: chado_stock_type_default
+        description: Germplasm associated with this sequence variant
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: genetic_map_germplasm
+        content_type: genetic_map
+        label: Germplasm
+        type: chado_stock_type_default
+        description: Germplasm associated with this genetic map
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
+## Breeding Cross ##
+
+    -   name: breeding_cross_qtl
+        content_type: breeding_cross
+        label: QTL
+        type: chado_feature_type_default
+        description: One or more QTL observed in this breeding cross
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0000771"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: breeding_cross_phenotypic_marker
+        content_type: breeding_cross
+        label: Phenotypic Marker
+        type: chado_feature_type_default
+        description: One or more phenotypic markers observed in this breeding cross
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001500"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 82
+          form:
+            default:
+              region: content
+              weight: 82
+
+    -   name: breeding_cross_genetic_marker
+        content_type: breeding_cross
+        label: Genetic Marker
+        type: chado_feature_type_default
+        description: One or more genetic markers observed in this breeding_cross
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001645"
+        display:
+          view:
+            default:
+              region: content
+              label: above
               weight: 83
           form:
             default:
               region: content
               weight: 83
 
-## Breeding Cross ##
+    -   name: breeding_cross_sequence_variant
+        content_type: breeding_cross
+        label: Sequence Variant
+        type: chado_feature_type_default
+        description: One or more phenotypic markers observed in this breeding_cross
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001060"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 84
+          form:
+            default:
+              region: content
+              weight: 84
 
     -   name: breeding_cross_featuremap
         content_type: breeding_cross
@@ -55,13 +406,256 @@ fields:
             default:
               region: content
               label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
+    -   name: qtl_breeding_cross
+        content_type: QTL
+        label: Breeding Cross
+        type: chado_stock_type_default
+        description: Breeding cross associated with this QTL
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: phenotypic_marker_breeding_cross
+        content_type: phenotypic_marker
+        label: Breeding Cross
+        type: chado_stock_type_default
+        description: Breeding cross associated with this phenotypic marker
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: genetic_marker_breeding_cross
+        content_type: genetic_marker
+        label: Breeding Cross
+        type: chado_stock_type_default
+        description: Breeding cross associated with this genetic marker
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: sequence_variant_breeding_cross
+        content_type: sequence_variant
+        label: Breeding Cross
+        type: chado_stock_type_default
+        description: Breeding cross associated with this sequence variant
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: genetic_map_breeding_cross
+        content_type: genetic_map
+        label: breeding_cross
+        type: chado_stock_type_default
+        description: Breeding cross associated with this genetic map
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000255"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
+## Germplasm Variety ##
+
+    -   name: germplasm_variety_qtl
+        content_type: germplasm_variety
+        label: QTL
+        type: chado_feature_type_default
+        description: One or more QTL observed in this variety
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0000771"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: germplasm_variety_phenotypic_marker
+        content_type: germplasm_variety
+        label: Phenotypic Marker
+        type: chado_feature_type_default
+        description: One or more phenotypic markers observed in this variety
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001500"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 82
+          form:
+            default:
+              region: content
+              weight: 82
+
+    -   name: germplasm_variety_genetic_marker
+        content_type: germplasm_variety
+        label: Genetic Marker
+        type: chado_feature_type_default
+        description: One or more genetic markers observed in this germplasm_variety
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001645"
+        display:
+          view:
+            default:
+              region: content
+              label: above
               weight: 83
           form:
             default:
               region: content
               weight: 83
 
-## Germplasm Variety ##
+    -   name: germplasm_variety_sequence_variant
+        content_type: germplasm_variety
+        label: Sequence Variant
+        type: chado_feature_type_default
+        description: One or more phenotypic markers observed in this germplasm_variety
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001060"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 84
+          form:
+            default:
+              region: content
+              weight: 84
 
     -   name: germplasm_variety_featuremap
         content_type: germplasm_variety
@@ -84,19 +678,262 @@ fields:
             default:
               region: content
               label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
+    -   name: qtl_germplasm_variety
+        content_type: QTL
+        label: Germplasm Variety
+        type: chado_stock_type_default
+        description: Germplasm Variety associated with this QTL
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: phenotypic_marker_germplasm_variety
+        content_type: phenotypic_marker
+        label: Germplasm Variety
+        type: chado_stock_type_default
+        description: Germplasm Variety associated with this phenotypic marker
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: genetic_marker_germplasm_variety
+        content_type: genetic_marker
+        label: Germplasm Variety
+        type: chado_stock_type_default
+        description: Germplasm Variety associated with this genetic marker
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: sequence_variant_germplasm_variety
+        content_type: sequence_variant
+        label: Germplasm Variety
+        type: chado_stock_type_default
+        description: Germplasm Variety associated with this sequence variant
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: genetic_map_germplasm_variety
+        content_type: genetic_map
+        label: germplasm_variety
+        type: chado_stock_type_default
+        description: Variety associated with this genetic map
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000029"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
+## Recombinant Inbred Line ##
+
+    -   name: ril_qtl
+        content_type: ril
+        label: QTL
+        type: chado_feature_type_default
+        description: One or more QTL observed in this recombinant inbred line
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0000771"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: ril_phenotypic_marker
+        content_type: ril
+        label: Phenotypic Marker
+        type: chado_feature_type_default
+        description: One or more phenotypic markers observed in this recombinant inbred line
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001500"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 82
+          form:
+            default:
+              region: content
+              weight: 82
+
+    -   name: ril_genetic_marker
+        content_type: ril
+        label: Genetic Marker
+        type: chado_feature_type_default
+        description: One or more genetic markers observed in this recombinant inbred line
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001645"
+        display:
+          view:
+            default:
+              region: content
+              label: above
               weight: 83
           form:
             default:
               region: content
               weight: 83
 
-## Recombinant Inbred Line ##
+    -   name: ril_sequence_variant
+        content_type: ril
+        label: Sequence Variant
+        type: chado_feature_type_default
+        description: One or more phenotypic markers observed in this recombinant inbred line
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001060"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 84
+          form:
+            default:
+              region: content
+              weight: 84
 
     -   name: ril_featuremap
         content_type: ril
         label: Map
         type: chado_featuremap_type_default
-        description: One or more genetic or physical maps using this RIL
+        description: One or more genetic or physical maps using this recombinant inbred line
         cardinality: -1
         required: false
         storage_settings:
@@ -113,8 +950,143 @@ fields:
             default:
               region: content
               label: above
-              weight: 83
+              weight: 85
           form:
             default:
               region: content
-              weight: 83
+              weight: 85
+
+    -   name: qtl_ril
+        content_type: QTL
+        label: RIL
+        type: chado_stock_type_default
+        description: Recombinant inbred line associated with this QTL
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: phenotypic_marker_ril
+        content_type: phenotypic_marker
+        label: RIL
+        type: chado_stock_type_default
+        description: Recombinant inbred line associated with this phenotypic marker
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: genetic_marker_ril
+        content_type: genetic_marker
+        label: RIL
+        type: chado_stock_type_default
+        description: Recombinant inbred line associated with this genetic marker
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: sequence_variant_ril
+        content_type: sequence_variant
+        label: RIL
+        type: chado_stock_type_default
+        description: Recombinant inbred line associated with this sequence variant
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 81
+          form:
+            default:
+              region: content
+              weight: 81
+
+    -   name: genetic_map_ril
+        content_type: genetic_map
+        label: RIL
+        type: chado_stock_type_default
+        description: Recombinant inbred line associated with this genetic map
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: stock_featuremap
+                linker_fkey_column: stock_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000162"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
