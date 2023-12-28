@@ -265,7 +265,7 @@ fields:
         content_type: analysis
         label: Program, Pipeline, Workflow or Method Name
         type: chado_string_type_default
-        description: Tchado_string_type_defaulte.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
+        description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
         cardinality: 1
         required: true
         storage_settings:
