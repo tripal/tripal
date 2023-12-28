@@ -698,6 +698,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
+    print_r($records);
     $base_record_ids = $this->base_record_ids;
 
     // Start an array to keep track of the results we find.
@@ -722,6 +723,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Now for each of these query results...
           while ($match = $matches->fetchAssoc()) {
             // @debug print "\t\tWorking on Query Record: " . print_r($match, TRUE);
+            print_r($match);
 
             // We start by cloning the records array
             // (includes all tables, not just the current $base_table)
@@ -776,6 +778,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
+
+    exit;
     return $found_list;
   }
 
@@ -1480,6 +1484,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       if ($is_find) {
         $base_table = $context['base_table'];
         $base_record_id = $this->base_record_ids[$base_table];
+
+        $path = [$link_base . "." . $link_base_id . ">" . $linker . "." . $linker_id];
+        $this->addChadoRecordJoins($records, $linker_id, $context['property_key'], $delta, $path, $context['field_name'], $context['property_key']);
+
+        // Add the condition to the linker table so we get the correct record.
         $records[$linker_alias][$delta]['conditions'][$linker_id] = [
           'value' => $base_record_id,
           'operation' => '='
@@ -1579,11 +1588,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // If this is a find operation then we want to add a condition
     // for all stored values.
-    if ($is_find AND !empty($value)) {
-      $records[$table_alias][$delta]['conditions'][$chado_column] = [
-        'value' => $value,
-        'operation' => '='
-      ];
+    if ($is_find) {
+      if (!empty($value)) {
+        $records[$table_alias][$delta]['conditions'][$chado_column] = [
+          'value' => $value,
+          'operation' => '='
+        ];
+      }
     }
   }
 

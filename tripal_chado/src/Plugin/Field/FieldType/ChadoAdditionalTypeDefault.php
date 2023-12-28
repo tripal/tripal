@@ -131,8 +131,11 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
       ]);
       $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', $link_term, [
         'action' => 'store_link',
-        'chado_table' => $type_table,
-        'chado_column' => $type_fkey_col,
+        'drupal_store' => TRUE,
+        'left_table' => $base_table,
+        'left_table_id' => $base_pkey_col,
+        'right_table' => $type_table,
+        'right_table_id' => $type_fkey_col,
       ]);
       $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
@@ -144,6 +147,7 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
     // We need to store the numeric cvterm ID for this field.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
       'action' => 'store',
+      'drupal_store' => TRUE,
       'chado_table' => $type_table,
       'chado_column' => $type_column,
       'empty_value' => 0

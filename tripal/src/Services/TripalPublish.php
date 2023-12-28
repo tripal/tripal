@@ -104,7 +104,7 @@ class TripalPublish {
    *
    * @var array $supported_actions
    */
-  protected $supported_actions = ['store_id', 'store', 'read_value', 'replace', 'function'];
+  protected $supported_actions = ['store_id', 'store', 'store_pkey', 'store_link', 'read_value', 'replace', 'function'];
 
   /**
    * Keep track of fields which are not supported in order to let the user know.
@@ -311,7 +311,6 @@ class TripalPublish {
    * @param array $seach_values
    */
   protected function addRequiredValues(&$search_values) {
-
     // Iterate through the property types that can uniquely identify an entity.
     foreach ($this->required_types as $field_name => $keys) {
       foreach ($keys as $key => $prop_type) {
