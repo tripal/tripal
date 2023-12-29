@@ -906,6 +906,7 @@ vocabularies:
                 name: 'Publication'
             -   id: 'TPUB:0000003'
                 name: 'Citation'
+                description: 'Biblographic reference for the publication.'
             -   id: 'TPUB:0000015'
                 name: 'Publication Type'
             -   id: 'TPUB:0000243'
