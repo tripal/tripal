@@ -1000,7 +1000,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: TPUB
-            termAccession: 0000003
+            termAccession: "0000003"
         display:
           view:
             default:
@@ -1027,7 +1027,7 @@ fields:
                 type_column: type_id
         settings:
             termIdSpace: TPUB
-            termAccession: 0000015
+            termAccession: "0000015"
         display:
           view:
             default:
@@ -1053,7 +1053,7 @@ fields:
                 base_column: title
         settings:
             termIdSpace: TPUB
-            termAccession: 0000039
+            termAccession: "0000039"
         display:
           view:
             default:
@@ -1080,7 +1080,7 @@ fields:
                 base_column: volumetitle
         settings:
             termIdSpace: TPUB
-            termAccession: 0000243
+            termAccession: "0000243"
         display:
           view:
             default:
