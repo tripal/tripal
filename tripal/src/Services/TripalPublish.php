@@ -100,8 +100,6 @@ class TripalPublish {
    * Supported actions during publishing.
    * Any field containing properties that are not in this list, will not be published!
    *
-   * DO NOT YET SUPPORT store_pkey and store_link.
-   *
    * @var array $supported_actions
    */
   protected $supported_actions = ['store_id', 'store', 'store_pkey', 'store_link', 'read_value', 'replace', 'function'];
