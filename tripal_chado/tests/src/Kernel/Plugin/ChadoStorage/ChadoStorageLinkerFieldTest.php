@@ -40,7 +40,7 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
-class ChadoLinkerTableTest extends ChadoTestKernelBase {
+class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
@@ -48,7 +48,7 @@ class ChadoLinkerTableTest extends ChadoTestKernelBase {
   // with fields specific to that test.
   protected $fields = [];
 
-  protected $yaml_file = __DIR__ . "/ChadoLinkerTable-FieldDefinitions.yml";
+  protected $yaml_file = __DIR__ . "/ChadoStorageLinkerFields-FieldDefinitions.yml";
 
   protected int $organism_id;
   protected int $cvterm_id;
