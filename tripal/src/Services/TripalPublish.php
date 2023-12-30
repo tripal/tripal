@@ -814,8 +814,32 @@ class TripalPublish {
     $this->addTokenValues($search_values);
     $this->addFixedTypeValues($search_values);
 
+    /** DEBUGGING
+    print "\nDEBUGGING Search Values:\n";
+    foreach ($search_values as $k1 => $lvl1) {
+      foreach ($lvl1 as $k2 => $lvl2) {
+        print "  - $k1 > $k2: " . implode(', ', array_keys($lvl2)) . "\n";
+      }
+    }
+    print "\n";
+    */
+
     $this->logger->notice("Step  1 of 6: Find matching records... ");
     $matches = $this->storage->findValues($search_values);
+
+    /** DEBUGGING
+    print "\nDEBUGGING Matches:\n";
+    foreach ($matches as $k1 => $lvl1) {
+      foreach ($lvl1 as $k2 => $lvl2) {
+        foreach ($lvl2 as $k3 => $lvl3) {
+          foreach ($lvl3 as $k4 => $lvl4) {
+            print "  - $k1 > $k2 > $k3 > $k4: " . $lvl4['value']->getValue() . "\n";
+          }
+        }
+      }
+    }
+    print "\n";
+    */
 
     $this->logger->notice("Step  2 of 6: Generate page titles...");
     $titles = $this->getEntityTitles($matches);
@@ -847,6 +871,14 @@ class TripalPublish {
     if (!empty($this->unsupported_fields)) {
       $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
     }
+
+    /** DEBUGGING
+    print "\nDEBUGGING Required Types:\n";
+    foreach ($this->required_types as $k1 => $lvl1) {
+      print "  - $k1: " . implode(', ', array_keys($lvl1)) . "\n";
+    }
+    print "\n";
+    */
 
     $total_items = 0;
     foreach ($this->field_info as $field_name => $field_info) {
