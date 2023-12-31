@@ -18,7 +18,7 @@ class ChadoRecords  {
    *
    * @var array
    */
-  protected $records = [];
+  protected array $records = [];
 
   /**
    * A collection of the primary key values for various base tables.
@@ -31,14 +31,14 @@ class ChadoRecords  {
    *   record with that table alias. If the ID is not yet known then the
    *   value is NULL.
    */
-  protected $base_record_ids = [];
+  protected array $base_record_ids = [];
 
   /**
    * Holds the violations during validatin.
    *
    * @var array
    */
-  protected $violations = [];
+  protected array $violations = [];
 
 
   /**
@@ -46,7 +46,7 @@ class ChadoRecords  {
    *
    * @var \Drupal\tripal_chado\Services\ChadoFieldDebugger
    */
-  protected $field_debugger;
+  protected ChadoFieldDebugger $field_debugger;
 
 
   /**
@@ -62,14 +62,14 @@ class ChadoRecords  {
    *
    * @var array
    */
-  protected $values;
+  protected array $values;
 
   /**
    * The database connection for querying Chado.
    *
    * @var \Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected $connection;
+  protected ChadoConnection $connection;
 
 
   /**
@@ -124,10 +124,20 @@ class ChadoRecords  {
     // Intialize the delta if it doesn't exist.
     if (!array_key_exists($delta, $this->records[$table_alias]['items'])) {
       $this->records[$table_alias]['items'][$delta] = [
+        // Keeps track of the table fields that are needed for property values.
         'fields' => [],
+        // Keeps track of all of the condisions used for finding/loading.
         'conditions' => [],
+        // Keeps track of all of the joins for this table.
         'joins' => [],
-        'delete_if_empty' => []
+        // If the item should be deleted when a colun is emplty tthen
+        // keep track of the column and the empty value here.
+        'delete_if_empty' => [],
+        // If this table has columns that link to a base table then
+        // keep track of the column that has the ID and the base table.
+        'id_fields' => [],
+        // Maps fields and their aliases.
+        'field_aliases' => []
       ];
     }
   }
@@ -135,9 +145,10 @@ class ChadoRecords  {
   /**
    *
    * @param array $elements
-   * @throws \Exception
+   * @param bool $isID
+   * @param string $base_table
    */
-  public function setField(array $elements) {
+  public function setField(array $elements, bool $isID = FALSE) {
 
     // Make sure the table is initalized.
     $this->initTable($elements);
@@ -156,6 +167,7 @@ class ChadoRecords  {
 
     // Add the field.
     $this->records[$table_alias]['items'][$delta]['fields'][$column_alias] = $value;
+    $this->records[$table_alias]['items'][$delta]['field_aliases'][$chado_column] = $column_alias;
 
     // Add the optional delete_if_empty.
     if (array_key_exists('delete_if_empty', $elements) and $elements['delete_if_empty'] === TRUE) {
@@ -165,38 +177,20 @@ class ChadoRecords  {
         'empty_value' => $elements['empty_value']
       ];
     }
-  }
 
-
-  /**
-   * Sets the values of a given field.
-   *
-   * The field must have already been added using the setField() function.
-   * This function should be used with care.  The values set should not be
-   * more or less than the values currently in the field.
-   *
-   * @param array $elements
-   */
-  public function setFieldValues(array $elements) {
-
-    // Make sure all of the required elements are preesent.
-    $this->checkElement($elements, 'table_alias', 'Setting', 'field value');
-    $this->checkElement($elements, 'delta', 'Setting', 'field value');
-    $this->checkElement($elements, 'values', 'Setting', 'field value');
-
-    $table_alias = $elements['table_alias'];
-    $delta = $elements['delta'];
-    $values = $elements['values'];
-
-    if (!array_key_exists($table_alias, $this->records)) {
-      throw new \Exception(t('Cannot update fields in a ChadoRecord for a field that has not been added yet: @elements',
-          ['@elements' => print_r($elements, TRUE)]));
+    // If this field is for an ID and it has no value then set a marker
+    // so we can replace it later.
+    if ($isID) {
+      $this->checkElement($elements, 'base_table', 'Setting', 'field');
+      $base_table = $elements['base_table'];
+      $this->records[$table_alias]['items'][$delta]['id_fields'][$column_alias] = $base_table;
+      if ($value === NULL) {
+        $value = ['REPLACE_RECORD_ID', $base_table];
+      }
+      if (is_int($value) and $value > 0) {
+        $this->setBaseRecordID($base_table, $value);
+      }
     }
-
-    // @todo: we should make sure that all of the fields in the $values array match
-    // those that are already present for the field.
-
-    $this->records[$table_alias]['items'][$delta]['fields'] = $values;
   }
 
   /**
@@ -224,6 +218,30 @@ class ChadoRecords  {
 
     // Add the condition.
     $this->records[$table_alias]['items'][$delta]['conditions'][$column_alias] = ['value' => $value, 'operation' => $operation];
+  }
+
+  /**
+   *
+   * @param string $table_alias
+   * @param int  $delta
+   * @param string $column_alias
+   * @param mixed $value
+   */
+  public function setConditionValue(string $table_alias, int $delta, $column_alias, $value) {
+
+    if (!array_key_exists($table_alias, $this->records)) {
+      throw new \Exception(t('ChadoRecords::setConditionValue(): table_alias, "@alias", does not exist in the records array: @record',
+          ['@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+    }
+    if (!array_key_exists($delta, $this->records[$table_alias]['items'])) {
+      throw new \Exception(t('ChadoRecords::setConditionValue(): delta, "@delta", for table_alias, "@alias", does not exist in the records array: @record',
+          ['@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+    }
+    if (!array_key_exists($column_alias, $this->records[$table_alias]['items'][$delta]['conditions'])) {
+      throw new \Exception(t('ChadoRecords::setConditionValue(): column_alias, "@calias", for delta, "@delta", of table_alias, "@alias", does not exist in the records array: @record',
+          ['@calias' => $column_alias, '@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+    }
+    $this->records[$table_alias]['items'][$delta]['conditions'][$column_alias]['value'] = $value;
   }
 
   /**
@@ -304,43 +322,39 @@ class ChadoRecords  {
   }
 
   /**
-   * Replaces aall IDs if they are known.
+   * Replaces all IDs if they are known for a given table.
+   *
+   * IDs may not be known when ChadoRecords is setup. But
+   * before a database operation like an insert, select, update,
+   * or delete, this function can be used to populate IDs that
+   * may have been set somewhere along the way for base tables.
    */
-  public function setIDs() {
+  public function setIdFields($table_alias) {
 
-    foreach ($this->getTables() as $table_name) {
-      foreach ($this->records[$table_name]['items'] as $delta => $record) {
+    $base_table_ids = $this->getBaseRecordsIDs();
 
-        // First for all the fields...
-        if (array_key_exists('fields', $record)) {
-          foreach ($record['fields'] as $chado_column => $val) {
-            if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
-              $core_table = $val[1];
-
-              // If the core table is set in the base record ids array and the
-              // value is not 0 then we can set this chado field now!
-              if (array_key_exists($core_table, $this->base_record_ids) and $this->base_record_ids[$core_table] != 0) {
-                $this->records[$table_name][$delta]['fields'][$chado_column] = $this->base_record_ids[$core_table];
-              }
-            }
-          }
-        }
-        // All records should have conditions set!
-        if (!array_key_exists('conditions', $record)) {
-          throw new \Exception('All Chado records built should have a conditions array set by this point. However, the following record does not: ' . print_r($record, TRUE));
-        }
-        foreach ($record['conditions'] as $chado_column => $val) {
-          if (is_array($val['value']) and $val['value'][0] == 'REPLACE_BASE_RECORD_ID') {
-            $core_table = $val['value'][1];
-
-            // If the core table is set in the base record ids array and the
-            // value is not 0 then we can set this condition now!
-            if (array_key_exists($core_table, $this->base_record_ids) and $this->base_record_ids[$core_table] != 0) {
-              $this->records[$table_name][$delta]['conditions'][$chado_column]['value'] = $this->base_record_ids[$core_table];
-            }
-          }
+    // Iterate through the records and see if any fields link to this base ID
+    // and if so, then update those.
+    foreach ($this->records[$table_alias]['items'] as $delta => $record) {
+      foreach ($record['fields'] as $column_alias => $value) {
+        // if this column is an ID field and links to this base table then update the value.
+        if (array_key_exists($column_alias, $record['id_fields'])) {
+          $base_table =  $record['id_fields'][$column_alias];
+          $record_id = $base_table_ids[$base_table];
+          $this->setFieldValue($table_alias, $delta, $column_alias, $record_id);
         }
       }
+    }
+  }
+
+  /**
+   * Adds a base table.
+   *
+   * @param string $base_table
+   */
+  public function addBaseTable(string $base_table) {
+    if (!array_key_exists($base_table, $this->base_record_ids)) {
+      $this->base_record_ids[$base_table] = 0;
     }
   }
 
@@ -349,10 +363,12 @@ class ChadoRecords  {
    * @param string $base_table
    * @param int $record_id
    */
-  public function setBaseRecord(string $base_table, int $record_id) {
-    if (!array_key_exists($base_table, $this->base_record_ids) and $record_id > 0) {
-      $this->base_record_ids[$base_table] = $record_id;
+  protected function setBaseRecordID(string $base_table, int $record_id) {
+    if (!array_key_exists($base_table, $this->base_record_ids)) {
+      throw new \Exception(t('ChadoRecords::setBaseRecordID(). Cannot set the record ID as the base table has not been added yet: @base_table.',
+          ['@base_table' => $base_table]));
     }
+    $this->base_record_ids[$base_table] = $record_id;
   }
 
   /**
@@ -380,8 +396,49 @@ class ChadoRecords  {
    * @param int $delta
    * @param string $column_alias
    */
-  public function getValue(string $table_alias, int $delta, $column_alias) {
+  public function getFieldValue(string $table_alias, int $delta, $column_alias) {
+    if (!array_key_exists($table_alias, $this->records)) {
+      return NULL;
+    }
+    if (!array_key_exists($delta, $this->records[$table_alias]['items'])) {
+      return NULL;
+    }
+    if (!array_key_exists($column_alias, $this->records[$table_alias]['items'][$delta]['fields'])) {
+      return NULL;
+    }
     return $this->records[$table_alias]['items'][$delta]['fields'][$column_alias];
+  }
+
+  /**
+   * Sets the values of a given field.
+   *
+   * The field must have already been added using the setField() function.
+   * This function should be used with care.  The values set should not be
+   * more or less than the values currently in the field.
+   *
+   * @param array $elements
+   */
+  public function setFieldValues(array $elements) {
+
+    // Make sure all of the required elements are preesent.
+    $this->checkElement($elements, 'table_alias', 'Setting', 'field value');
+    $this->checkElement($elements, 'delta', 'Setting', 'field value');
+    $this->checkElement($elements, 'values', 'Setting', 'field value');
+
+    $table_alias = $elements['table_alias'];
+    $delta = $elements['delta'];
+    $values = $elements['values'];
+
+    if (!array_key_exists($table_alias, $this->records)) {
+      throw new \Exception(t('Cannot update fields in a ChadoRecord for a field that has not been added yet: @elements',
+          ['@elements' => print_r($elements, TRUE)]));
+    }
+
+    // @todo: we should make sure that all of the fields in the $values array match
+    // those that are already present for the field.
+
+    $this->records[$table_alias]['items'][$delta]['fields'] = $values;
+
   }
 
   /**
@@ -391,7 +448,20 @@ class ChadoRecords  {
    * @param string $column_alias
    * @param mixed $value
    */
-  public function setValue(string $table_alias, int $delta, $column_alias, $value) {
+  public function setFieldValue(string $table_alias, int $delta, $column_alias, $value) {
+
+    if (!array_key_exists($table_alias, $this->records)) {
+      throw new \Exception(t('ChadoRecords::setFieldValue(): table_alias, "@alias", does not exist in the records array: @record',
+          ['@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+    }
+    if (!array_key_exists($delta, $this->records[$table_alias]['items'])) {
+      throw new \Exception(t('ChadoRecords::setFieldValue(): delta, "@delta", for table_alias, "@alias", does not exist in the records array: @record',
+          ['@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+    }
+    if (!array_key_exists($column_alias, $this->records[$table_alias]['items'][$delta]['fields'])) {
+      throw new \Exception(t('ChadoRecords::setFieldValue(): column_alias, "@calias", for delta, "@delta", of table_alias, "@alias", does not exist in the records array: @record',
+          ['@calias' => $column_alias, '@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+    }
     $this->records[$table_alias]['items'][$delta]['fields'][$column_alias] = $value;
   }
   /**
@@ -403,14 +473,14 @@ class ChadoRecords  {
     if (array_key_exists($base_table, $this->base_record_ids)) {
       return $this->base_record_ids[$base_table];
     }
-    return NULL;
+    return 0;
   }
 
   /***
    *
    * @return array
    */
-  public function getBaseRecords() {
+  public function getBaseRecordsIDs() {
     return $this->base_record_ids;
   }
 
@@ -445,9 +515,10 @@ class ChadoRecords  {
     // We only need to validate the base table properties because
     // the linker table values get completely replaced on an update and
     // should not exist for an insert.
-    foreach ($this->base_record_ids as $base_table => $record_id) {
-      foreach ($this->records[$base_table] as $delta => $record) {
-        $record = $this->records[$base_table][$delta];
+    $base_table_ids = $this->getBaseRecordsIDs();
+
+    foreach ($base_table_ids as $base_table => $record_id) {
+      foreach ($this->records[$base_table]['items'] as $delta => $record) {
         $this->validateRequired($base_table, $record_id, $record);
         $this->validateTypes($base_table, $record_id, $record);
         $this->validateSize($base_table, $record_id, $record);
@@ -789,6 +860,31 @@ class ChadoRecords  {
     }
   }
 
+  /**
+   * A helper function for the insetTable() function.
+   *
+   * Checks to see if the record should not be inserted.
+   *
+   * @param array $record
+   *   The record being considered for insertion.
+   * @return bool
+   *   Returns TRUE if the record should be skipped, FALSE otherwise.
+   */
+  protected function isSkipInsert(array $record) : bool {
+    $skip_record = FALSE;
+
+    // Don't insert any records if any of the columns have field that
+    // are marked as "delete if empty".
+    if (array_key_exists('delete_if_empty', $record)) {
+      foreach ($record['delete_if_empty'] as $details) {
+        if ($record['fields'][$details['chado_column']] == $details['empty_value']) {
+          $skip_record = TRUE;
+        }
+      }
+    }
+    return $skip_record;
+  }
+
 
   /**
    * Inserts all records for a single Chado table.
@@ -798,8 +894,13 @@ class ChadoRecords  {
    */
   public function insertTable($table_alias) {
 
-    // Get informatino about this Chado table.
+    // Make sure all IDs are up to date.
+    $this->setIdFields($table_alias);
+
+    // Get the Chado table for this given table alias.
     $chado_table = $this->records[$table_alias]['chado_table'];
+
+    // Get informatino about this Chado table.
     $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
@@ -807,36 +908,21 @@ class ChadoRecords  {
     // Iterate through each item of the table and perform an insert.
     foreach ($this->records[$table_alias]['items'] as $delta => $record) {
 
-      // Don't insert any records if any of the columns have field that
-      // are marked as "delete if empty".
-      if (array_key_exists('delete_if_empty', $record)) {
-        $skip_record = FALSE;
-        foreach ($record['delete_if_empty'] as $del_record) {
-          if ($record['fields'][$del_record['chado_column']] == $del_record['empty_value']) {
-            $skip_record = TRUE;
-          }
-        }
-        if ($skip_record) {
-          continue;
-        }
+      // If we need to skip this insert because it's empty then continue.
+      if ($this->isSkipInsert($record)) {
+        continue;
       }
 
-      // Replace fields that link to base tables with values.
-      if (!array_key_exists($table_alias, $this->base_record_ids)) {
-        foreach ($record['fields'] as $column => $val) {
-          if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
-            $base_table_alias = $val[1];
-            $record_id = $this->base_record_ids[$base_table_alias];
-            $this->records[$base_table_alias][$delta]['fields'][$column] = $record_id;
-            $record['fields'][$column] = $record_id;
-          }
-        }
-      }
+      // Remove the pkey field as we need set it with an insert.
+      $pkey_alias = $record['field_aliases'][$pkey];
+      unset($record['fields'][$pkey_alias]);
 
-      // Insert the record.
+      // Build the Insert.
       $insert = $this->connection->insert('1:' . $chado_table);
       $insert->fields($record['fields']);
       $this->field_debugger->reportQuery($insert, "Insert Query for $chado_table ($delta)");
+
+      // Execute the insert.
       $record_id = $insert->execute();
       if (!$record_id) {
         throw new \Exception(t('Failed to insert a record in the Chado "@table" table. Alias: @alias, Record: @record',
@@ -844,20 +930,7 @@ class ChadoRecords  {
       }
 
       // Update the field with the record id.
-      $elements = [
-        'chado_table' => $chado_table,
-        'table_alias' => $table_alias,
-        'delta' => $delta,
-        'chado_column' => $pkey,
-        'column_alias' => $pkey,
-        'value' => $record_id
-      ];
-      $this->setField($elements);
-
-      // If this is the base table record_id then store it for later use.
-      if (array_key_exists($table_alias, $this->base_record_ids)) {
-        $this->base_record_ids[$table_alias] = $record_id;
-      }
+      $this->setFieldValue($table_alias, $delta, $pkey_alias, $record_id);
     }
   }
 
@@ -909,7 +982,7 @@ class ChadoRecords  {
       // Add the select condition
       foreach ($record['conditions'] as $chado_column => $value) {
         // If we don't have a primary key for the base table then skip the condition.
-        if (is_array($value['value']) and in_array('REPLACE_BASE_RECORD_ID', array_values($value['value']))) {
+        if (is_array($value['value']) and in_array('REPLACE_RECORD_ID', array_values($value['value']))) {
           continue;
         }
         if (!empty($value)) {
@@ -957,17 +1030,15 @@ class ChadoRecords  {
    */
   private function updateTable($table_alias) {
 
+    // Make sure all IDs are up to date.
+    $this->setIdFields($table_alias);
+
+    // Get the Chado table for this given table alias.
     $chado_table = $this->records[$table_alias]['chado_table'];
 
 
     // Iterate through each item of the table and perform an insert.
     foreach ($this->records[$table_alias]['items'] as $delta => $record) {
-
-      // If this is the base table then do an update.
-      if (!array_key_exists('conditions', $record)) {
-        throw new \Exception(t('Cannot update record in the Chado "@table" table due to missing conditions. Record: @record',
-            ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-      }
 
       // Don't update if we don't have any conditions set.
       if (!$this->hasValidConditions($record)) {
@@ -1010,8 +1081,11 @@ class ChadoRecords  {
    */
   private function deleteChadoRecord($table_alias) {
 
-    $chado_table = $this->records[$table_alias]['chado_table'];
+    // Make sure all IDs are up to date.
+    $this->setIdFields($table_alias);
 
+    // Get the Chado table for this given table alias.
+    $chado_table = $this->records[$table_alias]['chado_table'];
 
     // Iterate through each item of the table and perform an insert.
     foreach ($this->records[$table_alias]['items'] as $delta => $record) {
@@ -1045,7 +1119,7 @@ class ChadoRecords  {
       }
 
       // Unset the record Id for this deleted record.
-      $this->setValue($table_alias, $delta, $pkey, 0);
+      $this->setFieldValue($table_alias, $delta, $pkey, 0);
     }
   }
 
@@ -1061,6 +1135,10 @@ class ChadoRecords  {
    */
   public function selectTable($table_alias) {
 
+    // Make sure all IDs are up to date.
+    $this->setIdFields($table_alias);
+
+    // Get the Chado table for this given table alias.
     $chado_table = $this->records[$table_alias]['chado_table'];
 
     // Iterate through each item of the table and perform an insert.
@@ -1071,8 +1149,7 @@ class ChadoRecords  {
             ['@table' => $table_alias, '@record' => print_r($record, TRUE)]));
       }
 
-      // If we are selecting on the base table and we don't have a proper
-      // condition then throw an error.
+      // Make sure conditions are valid.
       if (!$this->hasValidConditions($record)) {
         throw new \Exception(t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
             ['@table' => $table_alias, '@record' => print_r($record, TRUE)]));
