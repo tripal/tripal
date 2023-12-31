@@ -34,7 +34,7 @@ testAnalysis:
       analysis_name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: read_value
-        path: phylotree.analysis_id>analysis.analysis_id # ;name
+        path: phylotree.analysis_id>analysis.analysis_id #READY ;name
         chado_column: name # deprecated
         as: analysis_name
   # Just adds in any properties needed to meet the unique constraints on the
@@ -77,7 +77,7 @@ testAnalysis:
       analysis_name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: read_value
-        path: quantification.analysis_id>analysis.analysis_id # ;name
+        path: quantification.analysis_id>analysis.analysis_id #READY ;name
         chado_column: name # deprecated
         as: analysis_name
   # Just adds in any properties needed to meet the unique constraints on the

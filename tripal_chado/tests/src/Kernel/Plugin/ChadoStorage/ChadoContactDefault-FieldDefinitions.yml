@@ -40,7 +40,7 @@ testContact:
       contact_name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: read_value
-        path: study.contact_id>contact.contact_id # ;name
+        path: study.contact_id>contact.contact_id #READY ;name
         chado_column: name # deprecated
         as: contact_name
   testContactFieldArrayDesign:
@@ -69,7 +69,7 @@ testContact:
       contact_name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: read_value
-        path: arraydesign.manufacturer_id>contact.contact_id # ;name
+        path: arraydesign.manufacturer_id>contact.contact_id #READY ;name
         chado_column: name # deprecated
         as: contact_name
       # platformtype_id corresponds to a cvterm.cvterm_id
