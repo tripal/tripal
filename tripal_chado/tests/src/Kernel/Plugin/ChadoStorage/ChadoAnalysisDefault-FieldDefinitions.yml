@@ -22,18 +22,20 @@ testAnalysis:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store_id
         drupal_store: TRUE
-        chado_table: phylotree
-        chado_column: phylotree_id
+        path: phylotree.phylotree_id
+        chado_table: phylotree # deprecated
+        chado_column: phylotree_id # deprecated
       analysis_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
-        chado_table: phylotree
-        chado_column: analysis_id
+        path: phylotree.analysis_id
+        chado_table: phylotree # deprecated
+        chado_column: analysis_id # deprecated
       analysis_name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: read_value
-        path: phylotree.analysis_id>analysis.analysis_id
-        chado_column: name
+        path: phylotree.analysis_id>analysis.analysis_id # ;name
+        chado_column: name # deprecated
         as: analysis_name
   # Just adds in any properties needed to meet the unique constraints on the
   # phylotree table.
@@ -45,14 +47,16 @@ testAnalysis:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store_id
         drupal_store: TRUE
-        chado_table: phylotree
-        chado_column: phylotree_id
+        path: phylotree.phylotree_id
+        chado_table: phylotree # deprecated
+        chado_column: phylotree_id # deprecated
       # Foreign key to dbxref table.
       dbxref_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
-        chado_table: phylotree
-        chado_column: dbxref_id
+        path: phylotree.dbxref_id
+        chado_table: phylotree # deprecated
+        chado_column: dbxref_id # deprecated
   testAnalysisFieldQuantification:
     field_name: testAnalysisFieldQuantification
     base_table: quantification
@@ -61,18 +65,20 @@ testAnalysis:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store_id
         drupal_store: TRUE
-        chado_table: quantification
-        chado_column: quantification_id
+        path: quantification.quantification_id
+        chado_table: quantification # deprecated
+        chado_column: quantification_id # deprecated
       analysis_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
-        chado_table: quantification
-        chado_column: analysis_id
+        path: quantification.analysis_id
+        chado_table: quantification # deprecated
+        chado_column: analysis_id # deprecated
       analysis_name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: read_value
-        path: quantification.analysis_id>analysis.analysis_id
-        chado_column: name
+        path: quantification.analysis_id>analysis.analysis_id # ;name
+        chado_column: name # deprecated
         as: analysis_name
   # Just adds in any properties needed to meet the unique constraints on the
   # quantification table.
@@ -83,12 +89,14 @@ testAnalysis:
       other_record_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store_id
-        drupal_store: TRUE,
-        chado_table: quantification
-        chado_column: quantification_id
+        drupal_store: TRUE
+        path: quantification.quantification_id
+        chado_table: quantification # deprecated
+        chado_column: quantification_id # deprecated
       # Foreign key to aquisition table.
       acquisition_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
-        chado_table: quantification
-        chado_column: acquisition_id
+        path: quantification.acquisition_id
+        chado_table: quantification # deprecated
+        chado_column: acquisition_id # deprecated
