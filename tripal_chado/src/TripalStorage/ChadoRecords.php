@@ -167,6 +167,7 @@ class ChadoRecords  {
     }
   }
 
+
   /**
    * Sets the values of a given field.
    *
@@ -379,8 +380,19 @@ class ChadoRecords  {
    * @param int $delta
    * @param string $column_alias
    */
-  public function getValue($table_alias, $delta, $column_alias) {
+  public function getValue(string $table_alias, int $delta, $column_alias) {
     return $this->records[$table_alias]['items'][$delta]['fields'][$column_alias];
+  }
+
+  /**
+   *
+   * @param string $table_alias
+   * @param int  $delta
+   * @param string $column_alias
+   * @param mixed $value
+   */
+  public function setValue(string $table_alias, int $delta, $column_alias, $value) {
+    $this->records[$table_alias]['items'][$delta]['fields'][$column_alias] = $value;
   }
   /**
    *
@@ -991,6 +1003,53 @@ class ChadoRecords  {
   }
 
   /**
+   * Deletes record for a given table.
+   *
+   * @param string $table_alias
+   * @throws \Exception
+   */
+  private function deleteChadoRecord($table_alias) {
+
+    $chado_table = $this->records[$table_alias]['chado_table'];
+
+
+    // Iterate through each item of the table and perform an insert.
+    foreach ($this->records[$table_alias]['items'] as $delta => $record) {
+
+      $schema = $this->connection->schema();
+      $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+      $pkey = $table_def['primary key'];
+
+      // Don't delete if we don't have any conditions set.
+      if (!$this->hasValidConditions($record)) {
+        throw new \Exception($this->t('Cannot update record in the Chado "@table" table due to unset conditions. Record: @record',
+            ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+      }
+
+      $delete = $this->connection->delete('1:'. $chado_table);
+      foreach ($record['conditions'] as $chado_column => $cond_value) {
+        $delete->condition($chado_column, $cond_value['value']);
+      }
+
+      $this->field_debugger->reportQuery($delete, "Delete Query for $chado_table ($delta)");
+
+      $rows_affected = $delete->execute();
+      if ($rows_affected == 0) {
+        // @debug print "\n" . strtr((string) $delete, $delete->arguments()) . "\n";
+        throw new \Exception($this->t('Failed to delete a record in the Chado "@table" table. Record: @record',
+            ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+      }
+      if ($rows_affected > 1) {
+        throw new \Exception($this->t('Incorrectly tried to delete multiple records in the Chado "@table" table. Record: @record',
+            ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+      }
+
+      // Unset the record Id for this deleted record.
+      $this->setValue($table_alias, $delta, $pkey, 0);
+    }
+  }
+
+  /**
    * Selects a single record from Chado.
    *
    * @param array $records
@@ -1001,7 +1060,6 @@ class ChadoRecords  {
    * @throws \Exception
    */
   public function selectTable($table_alias) {
-    dpm($this->records);
 
     $chado_table = $this->records[$table_alias]['chado_table'];
 
