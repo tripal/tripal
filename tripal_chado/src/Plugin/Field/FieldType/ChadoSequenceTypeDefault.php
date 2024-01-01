@@ -94,7 +94,7 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     $md5checksum_len = 32;
     $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5checksum_len, [
       'action' => 'store',
-      'path' => 'feature.md6checksum',
+      'path' => 'feature.md5checksum',
       //'chado_column' => 'md5checksum',
       //'chado_table' => 'feature'
     ]);

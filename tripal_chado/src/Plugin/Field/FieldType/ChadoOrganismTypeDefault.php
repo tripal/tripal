@@ -125,7 +125,8 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'infraspecific_type', $iftype_term, [
       'action' => 'read_value',
       'path' => $base_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name',
-      'chado_column' => 'name',
+      'as' => 'infraspecific_type',
+      //'chado_column' => 'name',
     ]);
     return $properties;
   }
