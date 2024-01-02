@@ -18,8 +18,8 @@ jobs:
           git config user.email "laceyannesanderson@gmail.com"
           git config credential.helper 'store --file ~/.drupal-org-credentials'
           git remote add drupal https://git.drupal.org/project/tripal.git
-     - name: "Authenticate and Push"
-       run: |
+      - name: "Authenticate and Push"
+        run: |
           echo "https://laceysanderson:${{ secrets.DRUPALORG_TOKEN }}@git.drupalcode.org" > ~/.drupal-org-credentials
           git push drupal 4.x
          
