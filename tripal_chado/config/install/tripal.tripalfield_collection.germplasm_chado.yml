@@ -138,9 +138,35 @@ fields:
               region: content
               weight: 10
 
-    -   name: germplasm_dbxref
+    -   name: germplasm_dbxref_base
         content_type: germplasm
-        label: Cross Reference
+        label: Cross Reference from Base Table
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: germplasm_dbxref_linker
+        content_type: germplasm
+        label: Cross Reference from Linker Table
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -153,7 +179,8 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+# 'reference annotation' for the linker table version, 'database cross reference' for the base table version
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -327,9 +354,35 @@ fields:
               region: content
               weight: 10
 
-    -   name: breeding_cross_dbxref
+    -   name: breeding_cross_dbxref_base
         content_type: breeding_cross
-        label: Cross Reference
+        label: Cross Reference from Base Table
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: breeding_cross_dbxref_linker
+        content_type: breeding_cross
+        label: Cross Reference from Linker Table
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -342,7 +395,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -516,9 +569,35 @@ fields:
               region: content
               weight: 10
 
-    -   name: germplasm_variety_dbxref
+    -   name: germplasm_variety_dbxref_base
         content_type: germplasm_variety
-        label: Cross Reference
+        label: Cross Reference from Base Table
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: germplasm_variety_dbxref_linker
+        content_type: germplasm_variety
+        label: Cross Reference from Linker Table
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -531,7 +610,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -705,9 +784,35 @@ fields:
               region: content
               weight: 10
 
-    -   name: ril_dbxref
+    -   name: ril_dbxref_base
         content_type: ril
-        label: Cross Reference
+        label: Cross Reference from Base Table
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: ril_dbxref_linker
+        content_type: ril
+        label: Cross Reference from Linker Table
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -720,7 +825,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
