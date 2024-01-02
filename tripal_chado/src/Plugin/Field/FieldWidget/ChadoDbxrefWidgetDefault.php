@@ -49,14 +49,16 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     // Retrieve a value we need to get from the form state after an ajax callback
     $field_name = $items->getFieldDefinition()->get('field_name');
     $db_id = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_id']);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
-    $db_id = $db_id ?? $item_vals['dbxref_db_id'] ?? 0;
+    if (!$db_id) {
+      $db_id = $item_vals['dbxref_db_id'] ?? 0;
+    }
     $dbxref_id = $item_vals['dbxref_id'] ?? 0;
     $accession = $item_vals['dbxref_accession'] ?? '';
+    $machine_name = $items->getName();
 
     $elements = [];
     $elements['record_id'] = [
@@ -91,13 +93,13 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
           'type' => 'throbber',
           'message' => $this->t('Preparing Accession field...'),
         ],
-        'wrapper' => 'edit-accession-' . $delta,
+        'wrapper' => 'edit-' . $machine_name . '-accession-' . $delta,
       ],
     ];
     $element['dbxref_accession'] = [
       '#type' => 'textfield',
       '#title' => 'Database Accession',
-      '#prefix' => '<div id="edit-accession-' . $delta . '">',
+      '#prefix' => '<div id="edit-' . $machine_name . '-accession-' . $delta . '">',
       '#suffix' => '</div>',
       '#weight' => 2,
       '#default_value' => $accession,
@@ -206,7 +208,8 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $delta = $matches[2];
 
     $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-accession-' . $delta, $form[$machine_name]['widget'][$delta]['dbxref']['dbxref_accession']));
+    $response->addCommand(new ReplaceCommand('#edit-' . $machine_name . '-accession-' . $delta,
+        $form[$machine_name]['widget'][$delta]['dbxref']['dbxref_accession']));
     return $response;
   }
 }
