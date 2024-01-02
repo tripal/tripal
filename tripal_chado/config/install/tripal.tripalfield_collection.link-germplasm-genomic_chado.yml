@@ -1,0 +1,61 @@
+id: 'link-germplasm-genomic_chado'
+label: 'Germplasm ↔ Genomic Linking Fields (Chado)'
+description: 'Fields linking between Germplasm and Genomic content types. No new entity types are added.'
+fields:
+
+## Germplasm ##
+
+    -   name: germplasm_feature
+        content_type: germplasm
+        label: Feature
+        type: chado_feature_type_default
+        description: One or more features observed in this germplasm
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_feature
+                linker_fkey_column: feature_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0000704"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 86
+              token_string: "[name] ([type])"
+          form:
+            default:
+              region: content
+              weight: 86
+
+    -   name: germplasm_featuremap
+        content_type: germplasm
+        label: Map
+        type: chado_featuremap_type_default
+        description: One or more genetic or physical maps using this germplasm
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_featuremap
+                linker_fkey_column: featuremap_id
+        settings:
+            termIdSpace: data
+            termAccession: "1274"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85

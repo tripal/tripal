@@ -1,0 +1,3 @@
+id: 'link-germplasm-genomic_chado'
+label: 'Germplasm ↔ Genomic Linking Fields (Chado)'
+description: 'Fields linking between Germplasm and Genomic content types. No new entity types are added.'
