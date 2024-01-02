@@ -20,8 +20,8 @@ jobs:
           git remote add drupal https://git.drupal.org/project/tripal.git
       - name: "Authenticate and Push"
         run: |
-          echo "Specifically pulling and then pushing branch ${GITHUB_REF##*/}"
-          git pull drupal ${GITHUB_REF##*/}
+          echo "Specifically for branch ${GITHUB_REF##*/}"
+          git fetch drupal
           echo "https://laceysanderson:${{ secrets.DRUPALORG_TOKEN }}@git.drupalcode.org" > ~/.drupal-org-credentials
           git push drupal ${GITHUB_REF##*/}
          
