@@ -180,7 +180,7 @@ gene:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       seqlen:
         action: read_value
-       path: feature.seqlen
+        path: feature.seqlen
         # chado_column: seqlen # deprecated
         # chado_table: feature # deprecated
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType

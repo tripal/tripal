@@ -129,7 +129,7 @@ testReadValueActionJoin:
         action: 'read_value'
         # chado_table: 'cvterm' # deprecated
         # chado_column: 'name' # deprecated
-        path: 'stock.stock_id>stock_cvterm.stock_id;stock_cvterm.cvterm_id>cvterm.cvterm_id';name
+        path: stock.stock_id>stock_cvterm.stock_id;stock_cvterm.cvterm_id>cvterm.cvterm_id;name
 # Ensure joins accessing the same column stay separate.
 testReadValueActionJoinDouble:
   test_join1:
@@ -153,7 +153,7 @@ testReadValueActionJoinDouble:
         action: 'read_value'
         # chado_table: 'dbxref' # deprecated
         # chado_column: 'accession' # deprecated
-        path: 'arraydesign.platformtype_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id';accession
+        path: arraydesign.platformtype_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession
   test_join2:
     field_name: 'test_join2'
     base_table: 'arraydesign'
@@ -175,7 +175,7 @@ testReadValueActionJoinDouble:
         action: 'read_value'
         # chado_table: 'dbxref' # deprecated
         # chado_column: 'accession' # deprecated
-        path: 'arraydesign.substratetype_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id';accession
+        path: arraydesign.substratetype_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession
 # Ensure read_value works when there isn't a store action for the same column.
 testReadValueActionNoStore:
   test_read:
