@@ -129,7 +129,6 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
     // Handle any empty values.
     foreach ($values as $val_key => $value) {
-dpm($value, "CP1 value"); //@@@
       $db_id = $value['dbxref']['db_id'];
       $accession = $value['dbxref']['dbxref_accession'];
       if ($accession == '') {
