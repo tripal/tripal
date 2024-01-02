@@ -21,59 +21,43 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       prop_id:
         action: store_pkey
         drupal_store: true
-        path: feature.feature_id>featureprop_longest.feature_id;featureprop_id
-        table_alias_mapping:
-          featureprop_longest: featureprop
-        # chado_table: featureprop # deprecated
-        # chado_column: featureprop_id # deprecated
-        # chado_table_alias: featureprop_longest # deprecated
+        chado_table: featureprop
+        chado_column: featureprop_id
+        chado_table_alias: featureprop_longest
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       linker_id:
         action: store_link
-        path: feature.feature_id>featureprop_longest.feature_id
-        table_alias_mapping:
-          featureprop_longest: featureprop
-        # left_table: feature # deprecated
-        # left_table_id: feature_id # deprecated
-        # right_table: featureprop # deprecated
-        # right_table_alias: featureprop_longest # deprecated
-        # right_table_id: feature_id # deprecated
+        left_table: feature
+        left_table_id: feature_id
+        right_table: featureprop
+        right_table_alias: featureprop_longest
+        right_table_id: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       value:
         action: store
-        path: feature.feature_id>featureprop_longest.feature_id;value
-        table_alias_mapping:
-          featureprop_longest: featureprop
-        # chado_table: featureprop # deprecated
-        # chado_table_alias: featureprop_longest # deprecated
-        # chado_column: value # deprecated
+        chado_table: featureprop
+        chado_table_alias: featureprop_longest
+        chado_column: value
         delete_if_empty: true
         empty_value: ''
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType
       rank:
         action: store
-        path: feature.feature_id>featureprop_longest.feature_id;rank
-        table_alias_mapping:
-          featureprop_longest: featureprop
-        # chado_table: featureprop # deprecated
-        # chado_table_alias: featureprop_longest # deprecated
-        # chado_column: rank # deprecated
+        chado_table: featureprop
+        chado_table_alias: featureprop_longest
+        chado_column: rank
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       type_id:
         action: store
-        path: feature.feature_id>featureprop_longest.feature_id;type_id
-        table_alias_mapping:
-          featureprop_longest: featureprop
-        # chado_table: featureprop # deprecated
-        # chado_table_alias: featureprop_longest # deprecated
-        # chado_column: type_id # deprecated
+        chado_table: featureprop
+        chado_table_alias: featureprop_longest
+        chado_column: type_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
   gene_contact:
     field_name: gene_contact
@@ -82,55 +66,51 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       linker_id:
         action: store_pkey
         drupal_store: true
-        path: feature.feature_id>feature_contact.feature_id;feature_contact_id
-        # chado_table: feature_contact # deprecated
-        # chado_column: feature_contact_id # deprecated
+        chado_table: feature_contact
+        chado_column: feature_contact_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       link:
         action: store_link
         drupal_store: false
-        path: feature.feature_id>feature_contact.feature_id
-        # left_table: feature # deprecated
-        # left_table_id: feature_id # deprecated
-        # right_table: feature_contact # deprecated
-        # right_table_id: feature_id # deprecated
+        left_table: feature
+        left_table_id: feature_id
+        right_table: feature_contact
+        right_table_id: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       contact_id:
         action: store
         drupal_store: true
-        path: feature.feature_id>feature_contact.feature_id;contact_id
-        # chado_table: feature_contact # deprecated
-        # chado_column: contact_id # deprecated
+        chado_table: feature_contact
+        chado_column: contact_id
         delete_if_empty: true
         empty_value: 0
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       contact_name:
         action: read_value
         drupal_store: false
-        path: feature_contact.contact_id>contact.contact_id;name
-        # chado_table: contact # deprecated
-        # chado_column: name # deprecated
+        path: feature_contact.contact_id>contact.contact_id
+        chado_table: contact
+        chado_column: name
         as: contact_name
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
       contact_description:
         action: read_value
         drupal_store: false
-        path: feature_contact.contact_id>contact.contact_id;description
-        # chado_column: description # deprecated
+        path: feature_contact.contact_id>contact.contact_id
+        chado_column: description
         as: contact_description
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
       contact_type:
         action: read_value
         drupal_store: false
-        path: feature_contact.contact_id>contact.contact_id;contact.type_id>cvterm.cvterm_id;name
-        # chado_column: name # deprecated
+        path: feature_contact.contact_id>contact.contact_id;contact.type_id>cvterm.cvterm_id
+        chado_column: name
         as: contact_type
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
   gene_is_obsolete:
@@ -140,15 +120,13 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       value:
         action: store
-        path: feature.is_obsolete
-        # chado_table: feature # deprecated
-        # chado_column: is_obsolete # deprecated
+        chado_table: feature
+        chado_column: is_obsolete
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType
   gene_is_analysis:
     field_name: gene_is_analysis
@@ -157,15 +135,13 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       value:
         action: store
-        path: feature.is_analysis
-        # chado_table: feature # deprecated
-        # chado_column: is_analysis # deprecated
+        chado_table: feature
+        chado_column: is_analysis
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType
   gene_length:
     field_name: gene_length
@@ -174,15 +150,13 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       seqlen:
         action: read_value
-       path: feature.seqlen
-        # chado_column: seqlen # deprecated
-        # chado_table: feature # deprecated
+        chado_column: seqlen
+        chado_table: feature
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
   gene_name:
     field_name: gene_name
@@ -191,15 +165,13 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       value:
         action: store
-        path: feature.name
-        # chado_table: feature # deprecated
-        # chado_column: name # deprecated
+        chado_table: feature
+        chado_column: name
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
   gene_organism:
     field_name: gene_organism
@@ -208,15 +180,13 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       organism_id:
         action: store
-        path: feature.organism_id
-        # chado_table: feature # deprecated
-        # chado_column: organism_id # deprecated
+        chado_table: feature
+        chado_column: organism_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       label:
         action: replace
@@ -224,23 +194,23 @@ gene:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
       genus:
         action: read_value
-        path: feature.organism_id>organism.organism_id;genus
-        # chado_column: genus # deprecated
+        path: feature.organism_id>organism.organism_id
+        chado_column: genus
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
       species:
         action: read_value
-        path: feature.organism_id>organism.organism_id;species
-        # chado_column: species # deprecated
+        path: feature.organism_id>organism.organism_id
+        chado_column: species
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
       infraspecific_name:
         action: read_value
-        path: feature.organism_id>organism.organism_id;infraspecific_name
-        # chado_column: infraspecific_name # deprecated
+        path: feature.organism_id>organism.organism_id
+        chado_column: infraspecific_name
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
       infraspecific_type:
         action: read_value
-        path: feature.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name
-        # chado_column: name # deprecated
+        path: feature.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id
+        chado_column: name
         as: infraspecific_type_name
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
   gene_sequence:
@@ -250,27 +220,23 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       residues:
         action: store
-        path: feature.residues
-        # chado_column: residues # deprecated
-        # chado_table: feature # deprecated
+        chado_column: residues
+        chado_table: feature
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType
       seqlen:
         action: store
-        path: feature.seqlen
-        # chado_column: seqlen # deprecated
-        # chado_table: feature # deprecated
+        chado_column: seqlen
+        chado_table: feature
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       md5checksum:
         action: store
-        path: feature.md5checksum
-        # chado_column: md5checksum # deprecated
-        # chado_table: feature # deprecated
+        chado_column: md5checksum
+        chado_table: feature
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType
   gene_sequence_md5_checksum:
     field_name: gene_sequence_md5_checksum
@@ -279,21 +245,18 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       seqlen:
         action: read_value
-        path: feature.seqlen
-        # chado_column: seqlen # deprecated
-        # chado_table: feature # deprecated
+        chado_column: seqlen
+        chado_table: feature
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       md5checksum:
         action: read_value
-        path: feature.md5checksum
-        # chado_column: md5checksum # deprecated
-        # chado_table: feature # deprecated
+        chado_column: md5checksum
+        chado_table: feature
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType
   gene_synonym:
     field_name: gene_synonym
@@ -302,67 +265,60 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       linker_pkey_id:
         action: store_pkey
         drupal_store: true
-        path: feature.feature_id>feature_synonym.feature_id;feature_synonym_id
-        # chado_table: feature_synonym # deprecated
-        # chado_column: feature_synonym_id # deprecated
+        chado_table: feature_synonym
+        chado_column: feature_synonym_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       linker_base_fkey_id:
         action: store_link
         drupal_store: true
-        path: feature.feature_id>feature_synonym.feature_id
-        # left_table: feature # deprecated
-        # left_table_id: feature_id # deprecated
-        # right_table: feature_synonym # deprecated
-        # right_table_id: feature_id # deprecated
+        left_table: feature
+        left_table_id: feature_id
+        right_table: feature_synonym
+        right_table_id: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       linker_synonym_fkey_id:
         action: store
         drupal_store: true
-        path: feature.feature_id>feature_synonym.feature_id;synonym_id
-        # chado_table: feature_synonym # deprecated
-        # chado_column: synonym_id # deprecated
+        chado_table: feature_synonym
+        chado_column: synonym_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       is_current:
         action: store
+        chado_table: feature_synonym
         drupal_store: false
-        path: feature.feature_id>feature_synonym.feature_id;is_current
-        # chado_table: feature_synonym # deprecated
-        # chado_column: is_current # deprecated
+        chado_column: is_current
         empty_value: true
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType
       is_internal:
         action: store
+        chado_table: feature_synonym
         drupal_store: false
-        path: feature.feature_id>feature_synonym.feature_id;is_internal
-        # chado_table: feature_synonym # deprecated
-        # chado_column: is_internal # deprecated
+        chado_column: is_internal
         empty_value: false
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType
       linker_pub_id:
         action: store
         drupal_store: false
-        path: feature.feature_id>feature_synonym.feature_id;pub_id
-        # chado_table: feature_synonym # deprecated
-        # chado_column: pub_id # deprecated
+        chado_table: feature_synonym
+        chado_column: pub_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       name:
         action: read_value
-        path: feature_synonym.synonym_id>synonym.synonym_id;name
-        # chado_column: name # deprecated
+        path: feature_synonym.synonym_id>synonym.synonym_id
+        chado_column: name
         as: synonym_name
         drupal_store: false
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
       synonym_type:
         action: read_value
-        path: feature_synonym.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id;name
-        # chado_column: name # deprecated
+        path: feature_synonym.synonym_id>synonym.synonym_id;synonym.type_id>cvterm.cvterm_id
+        chado_column: name
         as: synonym_type
         drupal_store: false
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
@@ -373,33 +329,31 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       type_id:
         action: store
-        path: feature.type_id
-        # chado_table: feature # deprecated
-        # chado_column: type_id # deprecated
+        chado_table: feature
+        chado_column: type_id
         empty_value: 0
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       term_name:
         action: read_value
-        path: feature.type_id>cvterm.cvterm_id;name
-        # chado_column: name # deprecated
+        path: feature.type_id>cvterm.cvterm_id
+        chado_column: name
         as: term_name
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
       id_space:
         action: read_value
-        path: feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name
-        # chado_column: name # deprecated
+        path: feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id
+        chado_column: name
         as: idSpace
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
       accession:
         action: read_value
-        path: feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession
-        # chado_column: accession # deprecated
+        path: feature.type_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id
+        chado_column: accession
         as: accession
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
   gene_uniquename:
@@ -409,13 +363,11 @@ gene:
       record_id:
         action: store_id
         drupal_store: true
-        path: feature.feature_id
-        # chado_table: feature # deprecated
-        # chado_column: feature_id # deprecated
+        chado_table: feature
+        chado_column: feature_id
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
       value:
         action: store
-        path: feature.uniquename
-        # chado_table: feature # deprecated
-        # chado_column: uniquename # deprecated
+        chado_table: feature
+        chado_column: uniquename
         propertyType class: Drupal\tripal\TripalStorage\TextStoragePropertyType
