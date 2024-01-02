@@ -103,21 +103,22 @@ class ChadoDbxrefAutocompleteController extends ControllerBase {
    * @param string $accession
    *   String value returned by autocomplete handler method. Case sensitive.
    *
-   * @param string $db_name
-   *   Optional name of a database. Can be used if user bypassed autocomplete
+   * @param string $db_id
+   *   Optional db_id of a database. Can be used if user bypassed autocomplete
    *   and entered just a dbxref accession manually. Case sensitive.
    *
    * @return integer
    *   Id number corresponding to chado.dbxref_id field of the matching accession
    *   or 0 if no match or multiple matches were found.
    */
-  public static function getDbxrefId(string $accession, $db_name = ''): int {
+  public static function getDbxrefId(string $accession, $db_id = null): int {
     $id = 0;
 
     if (strlen($accession) > 0) {
 
       // If there is a colon in the accession, extract the left part as
       // the DB name and the right part as the accession.
+      $db_name = '';
       if (preg_match('/^([^:]*):(.*)$/', $accession, $matches)) {
         $db_name = $matches[1];
         $accession = $matches[2];
@@ -132,6 +133,10 @@ class ChadoDbxrefAutocompleteController extends ControllerBase {
       if ($db_name) {
         $sql .= " AND db.name = :db_name";
         $args[':db_name'] = $db_name;
+      }
+      elseif ($db_id) {
+        $sql .= " AND db.db_id = :db_id";
+        $args[':db_id'] = $db_id;
       }
 
       $connection = \Drupal::service('tripal_chado.database');

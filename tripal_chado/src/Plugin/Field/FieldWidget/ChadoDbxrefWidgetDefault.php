@@ -129,6 +129,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
     // Handle any empty values.
     foreach ($values as $val_key => $value) {
+dpm($value, "CP1 value"); //@@@
       $db_id = $value['dbxref']['db_id'];
       $accession = $value['dbxref']['dbxref_accession'];
       if ($accession == '') {
@@ -144,13 +145,13 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
       else {
         // See if we can convert the returned string to its dbxref_id value
         $dbxref_autocomplete = new ChadoDbxrefAutocompleteController();
-        $db_name = '';
-        $dbxref_id = $dbxref_autocomplete->getDbxrefId($accession, $db_name);
+        $dbxref_id = $dbxref_autocomplete->getDbxrefId($accession, $db_id);
 
         // This is a new dbxref, we need to insert it and retrieve the dbxref_id.
         if (!$dbxref_id) {
           $chado = \Drupal::service('tripal_chado.database');
 
+          $db_name = '';
           if (preg_match('/([^:]+):(.+)$/', $accession, $matches)) {
             $db_name = $matches[1];
             $accession = $matches[2];
