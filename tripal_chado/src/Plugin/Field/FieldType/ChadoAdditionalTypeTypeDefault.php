@@ -124,6 +124,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $link_term = $mapping->getColumnTermId($type_table, $type_fkey_col);
       $value_term = $mapping->getColumnTermId($type_table, 'value');
 
+      // (e.g., analysisprop.analysisprop_id)
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
@@ -131,12 +132,14 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
         //'chado_table' => $type_table,
         //'chado_column' => $type_pkey_col,
       ]);
+      // (e.g., analysisprop.feature_id)
       $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', $link_term, [
         'action' => 'store_link',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $type_table . '.' . $type_fkey_col,
         //'chado_table' => $type_table,
         //'chado_column' => $type_fkey_col,
       ]);
+      // (e.g., analysisprop.value)
       $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'path' => $type_table . '.' . 'value',
@@ -146,6 +149,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     }
 
     // We need to store the numeric cvterm ID for this field.
+    // (e.g., feature.type_id or analysisprop.type_id)
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
       'action' => 'store',
       'path' => $type_table . '.' . $type_column,
@@ -153,6 +157,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       //'chado_column' => $type_column,
       'empty_value' => 0
     ]);
+
     // This field needs the term name, idspace and accession for proper
     // display of the type.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', $name_term, 128, [
