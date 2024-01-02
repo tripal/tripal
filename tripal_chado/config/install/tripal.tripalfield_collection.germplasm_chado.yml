@@ -138,11 +138,11 @@ fields:
               region: content
               weight: 10
 
-    -   name: germplasm_dbxref_base
+    -   name: germplasm_dbxref
         content_type: germplasm
-        label: Cross Reference from Base Table
+        label: Primary Database Reference
         type: chado_dbxref_type_default
-        description: The ID where this record may be available in other external online databases.
+        description: The ID where this record may be available in an external online database.
         cardinality: -1
         required: false
         storage_settings:
@@ -164,9 +164,9 @@ fields:
               region: content
               weight: 68
 
-    -   name: germplasm_dbxref_linker
+    -   name: germplasm_dbxref_annotation
         content_type: germplasm
-        label: Cross Reference from Linker Table
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -179,7 +179,6 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-# 'reference annotation' for the linker table version, 'database cross reference' for the base table version
             termAccession: "0000552"
         display:
           view:
@@ -354,11 +353,11 @@ fields:
               region: content
               weight: 10
 
-    -   name: breeding_cross_dbxref_base
+    -   name: breeding_cross_dbxref
         content_type: breeding_cross
-        label: Cross Reference from Base Table
+        label: Primary Database Reference
         type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+        description: The ID where this record may be available in an external online database.
         cardinality: -1
         required: false
         storage_settings:
@@ -380,9 +379,9 @@ fields:
               region: content
               weight: 68
 
-    -   name: breeding_cross_dbxref_linker
+    -   name: breeding_cross_dbxref_annotation
         content_type: breeding_cross
-        label: Cross Reference from Linker Table
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -569,11 +568,11 @@ fields:
               region: content
               weight: 10
 
-    -   name: germplasm_variety_dbxref_base
+    -   name: germplasm_variety_dbxref
         content_type: germplasm_variety
-        label: Cross Reference from Base Table
+        label: Primary Database Reference
         type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+        description: The ID where this record may be available in an external online database.
         cardinality: -1
         required: false
         storage_settings:
@@ -595,9 +594,9 @@ fields:
               region: content
               weight: 68
 
-    -   name: germplasm_variety_dbxref_linker
+    -   name: germplasm_variety_dbxref_annotation
         content_type: germplasm_variety
-        label: Cross Reference from Linker Table
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -784,11 +783,11 @@ fields:
               region: content
               weight: 10
 
-    -   name: ril_dbxref_base
+    -   name: ril_dbxref
         content_type: ril
-        label: Cross Reference from Base Table
+        label: Primary Database Reference
         type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+        description: The ID where this record may be available in an external online database.
         cardinality: -1
         required: false
         storage_settings:
@@ -810,9 +809,9 @@ fields:
               region: content
               weight: 68
 
-    -   name: ril_dbxref_linker
+    -   name: ril_dbxref_annotation
         content_type: ril
-        label: Cross Reference from Linker Table
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
