@@ -1,9 +1,9 @@
 name: Push Recent Commits to Drupal.org
 on:
+  workflow_dispatch:
   push:
     branches:
       - 4.x
-      - tv4g0-issue1720-workflowSyncDrupalOrg
 
 jobs:
   push_to_drupal:
