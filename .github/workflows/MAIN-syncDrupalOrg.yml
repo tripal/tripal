@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     name: "Push to Drupal.org"
     steps:
-      - uses: actions/checkout@v3
-        name: Check out code
+      - uses: actions/checkout@v4
+        name: "Check out all history for all tags + branches"
+        with:
+          fetch-depth: 0
       - name: "Configure git to push to drupal.org"
         run: |
           git config user.name "Lacey Sanderson"
@@ -20,8 +22,7 @@ jobs:
           git remote add drupal https://git.drupal.org/project/tripal.git
       - name: "Authenticate and Push"
         run: |
-          echo "Specifically for branch ${GITHUB_REF##*/}"
           git fetch drupal
           echo "https://laceysanderson:${{ secrets.DRUPALORG_TOKEN }}@git.drupalcode.org" > ~/.drupal-org-credentials
-          git push drupal ${GITHUB_REF##*/}
+          git push drupal
          
