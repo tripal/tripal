@@ -37,11 +37,104 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
-  protected $fields = [];
-
-  protected $yaml_file = __DIR__ . "/ChadoContactDefault-FieldDefinitions.yml";
+  /**
+   * Properties directly from the ChadoContactDefault field type:
+   * @code
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+      'action' => 'store_id',
+      'drupal_store' => TRUE,
+      'chado_table' => $base_table,
+      'chado_column' => $base_pkey_col,
+    ]);
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'contact_id', $contact_id_term, [
+      'action' => 'store',
+      'chado_table' => $base_table,
+      'chado_column' => $base_fkey_col,
+    ]);
+    $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $contact_name_term, $contact_name_length, [
+      'action' => 'read_value',
+      'path' => $base_table . '.' . $base_fkey_col . '>contact.contact_id',
+      'chado_column' => 'name',
+      'as' => 'contact_name',
+    ]);
+   * @endcode
+   *
+   * These will be repeated in the testContactFieldStudy and
+   * testContactFieldArrayDesign properties array below for testing.
+   */
+  protected $fields = [
+    'testContactFieldStudy' => [
+      'field_name' => 'testContactFieldStudy',
+      'base_table' => 'study',
+      'properties' => [
+        'record_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_id',
+          'drupal_store' => TRUE,
+          'chado_table' => 'study',
+          'chado_column' => 'study_id'
+        ],
+        'contact_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'study',
+          'chado_column' => 'contact_id'
+        ],
+        'name' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'study',
+          'chado_column' => 'name',
+        ],
+        'contact_name' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
+          'action' => 'read_value',
+          'path' => 'study.contact_id>contact.contact_id',
+          'chado_column' => 'name',
+          'as' => 'contact_name',
+        ],
+      ],
+    ],
+    'testContactFieldArrayDesign' => [
+      'field_name' => 'testContactFieldArrayDesign',
+      'base_table' => 'arraydesign',
+      'properties' => [
+        'record_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_id',
+          'drupal_store' => TRUE,
+          'chado_table' => 'arraydesign',
+          'chado_column' => 'arraydesign_id'
+        ],
+        'manufacturer_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'arraydesign',
+          'chado_column' => 'manufacturer_id'
+        ],
+        'name' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'arraydesign',
+          'chado_column' => 'name',
+        ],
+        'contact_name' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
+          'action' => 'read_value',
+          'path' => 'arraydesign.manufacturer_id>contact.contact_id',
+          'chado_column' => 'name',
+          'as' => 'contact_name',
+        ],
+        // platformtype_id corresponds to a cvterm.cvterm_id
+        'platformtype_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'arraydesign',
+          'chado_column' => 'platformtype_id'
+        ],
+      ],
+    ],
+  ];
 
   protected array $contact_id;
 
@@ -51,9 +144,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
   protected function setUp() :void {
     parent::setUp();
     $this->setUpChadoStorageTestEnviro();
-
-    $this->setFieldsFromYaml($this->yaml_file, "testContact");
-    $this->cleanChadoStorageValues();
 
     // Create basic contact records for use with these fields.
     // This field does not create a contact but rather just links to one.

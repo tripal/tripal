@@ -116,15 +116,13 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
-        'path' => $base_table . '.' . $base_pkey_col,
-        //'chado_table' => $base_table,
-        //'chado_column' => $base_pkey_col
+        'chado_table' => $base_table,
+        'chado_column' => $base_pkey_col
       ]),
       new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, $max_length, [
         'action' => 'store',
-        'path' => $base_table . '.' . $base_column,
-        //'chado_table' => $base_table,
-        //'chado_column' => $base_column,
+        'chado_table' => $base_table,
+        'chado_column' => $base_column,
       ]),
     ];
   }
