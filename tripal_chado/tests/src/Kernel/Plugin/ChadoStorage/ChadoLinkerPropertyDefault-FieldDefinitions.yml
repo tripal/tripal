@@ -1,0 +1,213 @@
+##
+## Used to provide file/property definitions for the tests in
+## ChadoStorageFindValuesTest.php
+##
+## The format is as follows:
+## [test method which will be using the fields]:
+##   [field name]:
+##      field_name: [field name]
+##      base_table: [base table]
+##      properties:
+##        [property key]:
+##           propertyType class: [full class name + namespace]
+##           action: [action]
+##           [additional key/value pairs associated with the action]
+
+testPropertyField:
+  testpropertyfieldA:
+    field_name: testpropertyfieldA
+    base_table: feature
+    properties:
+      # Keeps track of the feature record our hypothetical field cares about.
+      record_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_id
+        drupal_store: TRUE
+        path: feature.feature_id
+        # chado_table: feature # deprecated
+        # chado_column: feature_id # deprecated
+      # Store the primary key for the prop table.
+      prop_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_pkey
+        path: feature.feature_id>featureprop_A.feature_id;featureprop_id
+        table_alias_mapping:
+          featureprop_A: featureprop
+        # chado_table: featureprop # deprecated
+        # chado_table_alias: featureprop_A # deprecated
+        # chado_column: featureprop_id # deprecated
+      # Generate `JOIN {featureprop} ON feature.feature_id = featureprop.feature_id`
+      # Will also store the feature.feature_id so no need for drupal_store => TRUE.
+      linker_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_link
+        path: feature.feature_id>featureprop_A.feature_id
+        table_alias_mapping:
+          featureprop_A: featureprop
+        # left_table: feature # deprecated
+        # left_table_id: feature_id # deprecated
+        # right_table: featureprop # deprecated
+        # right_table_alias: featureprop_A # deprecated
+        # right_table_id: feature_id # deprecated
+      # Now we are going to store all the core columns of the featureprop table to
+      # ensure we can meet the unique and not null requirements of the table.
+      type_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store
+        path: feature.feature_id>featureprop_A.feature_id;type_id
+        table_alias_mapping:
+          featureprop_A: featureprop
+        # chado_table: featureprop # deprecated
+        # chado_table_alias: featureprop_A # deprecated
+        # chado_column: type_id # deprecated
+      value:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType
+        action: store
+        path: feature.feature_id>featureprop_A.feature_id;value
+        table_alias_mapping:
+          featureprop_A: featureprop
+        # chado_table: featureprop # deprecated
+        # chado_table_alias: featureprop_A # deprecated
+        # chado_column: value # deprecated
+        delete_if_empty: TRUE
+        empty_value: ''
+      rank:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store
+        path: feature.feature_id>featureprop_A.feature_id;rank
+        table_alias_mapping:
+          featureprop_A: featureprop
+        # chado_table: featureprop # deprecated
+        # chado_table_alias: featureprop_A # deprecated
+        # chado_column: rank # deprecated
+  testpropertyfieldB:
+    field_name: testpropertyfieldB
+    base_table: feature
+    properties:
+      record_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_id
+        drupal_store: TRUE
+        path: feature.feature_id
+        # chado_table: feature # deprecated
+        # chado_column: feature_id # deprecated
+      prop_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_pkey
+        path: feature.feature_id>featureprop_B.feature_id;featureprop_id
+        table_alias_mapping:
+          featureprop_B: featureprop
+        # chado_table: featureprop # deprecated
+        # chado_table_alias: featureprop_B # deprecated
+        # chado_column: featureprop_id # deprecated
+      linker_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_link
+        path: feature.feature_id>featureprop_B.feature_id
+        table_alias_mapping:
+          featureprop_B: featureprop
+        # left_table: feature # deprecated
+        # left_table_id: feature_id # deprecated
+        # right_table: featureprop # deprecated
+        # right_table_alias: featureprop_B # deprecated
+        # right_table_id: feature_id # deprecated
+      type_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store
+        path: feature.feature_id>featureprop_B.feature_id;type_id
+        table_alias_mapping:
+          featureprop_B: featureprop
+        # chado_table: featureprop # deprecated
+        # chado_table_alias: featureprop_B # deprecated
+        # chado_column: type_id # deprecated
+      value:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType
+        action: store
+        path: feature.feature_id>featureprop_B.feature_id;value
+        table_alias_mapping:
+          featureprop_B: featureprop
+        # chado_table: featureprop # deprecated
+        # chado_table_alias: featureprop_B # deprecated
+        # chado_column: value # deprecated
+        delete_if_empty: TRUE
+        empty_value: ''
+      rank:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store
+        path: feature.feature_id>featureprop_B.feature_id;rank
+        table_alias_mapping:
+          featureprop_B: featureprop
+        # chado_table: featureprop # deprecated
+        # chado_table_alias: featureprop_B # deprecated
+        # chado_column: rank # deprecated
+  testotherfeaturefield:
+    field_name: testotherfeaturefield
+    base_table: feature
+    properties:
+      record_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_id
+        path: feature.feature_id
+        # chado_table: feature # deprecated
+        # chado_column: feature_id # deprecated
+      feature_type:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store
+        path: feature.type_id
+        # chado_table: feature # deprecated
+        # chado_column: type_id # deprecated
+      feature_organism:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store
+        path: feature.organism_id
+        # chado_table: feature # deprecated
+        # chado_column: organism_id # deprecated
+      feature_uname:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
+        action: store
+        path: feature.uniquename
+        # chado_table: feature # deprecated
+        # chado_column: uniquename # deprecated
+  testBackwardsCompatiblePropertyField:
+    field_name: testpropertyfieldABackwardsCompatible
+    base_table: feature
+    properties:
+      record_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_id
+        drupal_store: TRUE
+        path: feature.feature_id
+        # chado_table: feature # deprecated
+        # chado_column: feature_id # deprecated
+      prop_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_pkey
+        path: feature.feature_id>featureprop.feature_id;featureprop_id
+        # chado_table: featureprop # deprecated
+        # chado_column: featureprop_id # deprecated
+      linker_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_link
+        path: feature.feature_id>featureprop.feature_id
+        # chado_table: featureprop # deprecated
+        # chado_column: feature_id # deprecated
+      type_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store
+        path: feature.feature_id>featureprop.feature_id;type_id
+        # chado_table: featureprop # deprecated
+        # chado_column: type_id # deprecated
+      value:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType
+        action: store
+        path: feature.feature_id>featureprop.feature_id;value
+        # chado_table: featureprop # deprecated
+        # chado_column: value # deprecated
+        delete_if_empty: TRUE
+        empty_value: ''
+      rank:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store
+        path: feature.feature_id>featureprop.feature_id;rank
+        # chado_table: featureprop # deprecated
+        # chado_column: rank # deprecated

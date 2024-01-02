@@ -16,7 +16,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
  *   default_formatter = "chado_sequence_length_formatter_default"
  * )
  */
- 
+
 
 class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
 
@@ -69,13 +69,15 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
-        'chado_table' => 'feature',
-        'chado_column' => 'feature_id'
+        'path' => 'feature.feature_id',
+        //'chado_table' => 'feature',
+        //'chado_column' => 'feature_id'
     ]);
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
       'action' => 'read_value',
-      'chado_column' => 'seqlen',
-      'chado_table' => 'feature'
+      'path' => 'feature.seqlen',
+      //'chado_column' => 'seqlen',
+      //'chado_table' => 'feature'
     ]);
     return $properties;
   }
