@@ -423,12 +423,18 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             // Get the value column information for this property.
             $base_table = $storage_plugin_settings['base_table'];
             $value_col_info = $this->getPathValueColumn($path_array);
-            $chado_table  = $value_col_info['chado_table'];
-            $chado_column  = $value_col_info['chado_column'];
             $table_alias  = $value_col_info['table_alias'];
             $column_alias  = $value_col_info['column_alias'];
 
-            $value = $records->getFieldValue($base_table, $chado_table, $delta, $column_alias);
+            $value = NULL;
+            if(array_key_exists('join', $path_array)) {
+              $root_alias  = $value_col_info['root_alias'];
+              $value = $records->getFieldValue($base_table, $root_alias, $delta, $column_alias);
+            }
+            else {
+              $value = $records->getFieldValue($base_table, $table_alias, $delta, $column_alias);
+            }
+            // dpm([$field_name, $delta, $key, $value_col_info, $value]);
             $values[$field_name][$delta][$key]['value']->setValue($value);
           }
         }

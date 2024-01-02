@@ -166,7 +166,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
-        'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_pkey_col,
+        'path' => $linker_table . '.' . $linker_pkey_col,
         //'chado_table' => $linker_table,
         //'chado_column' => $linker_pkey_col,
       ]);
