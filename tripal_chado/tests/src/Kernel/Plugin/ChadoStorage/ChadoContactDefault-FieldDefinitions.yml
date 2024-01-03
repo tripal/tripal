@@ -23,25 +23,25 @@ testContact:
         action: store_id
         drupal_store: TRUE
         path: study.study_id
-        chado_table: study # deprecated
-        chado_column: study_id # deprecated
+        # chado_table: study # deprecated
+        # chado_column: study_id # deprecated
       contact_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
         path: study.contact_id
-        chado_table: study # deprecated
-        chado_column: contact_id # deprecated
+        # chado_table: study # deprecated
+        # chado_column: contact_id # deprecated
       name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: store
         path: study.name
-        chado_table: study # deprecated
-        chado_column: name # deprecated
+        # chado_table: study # deprecated
+        # chado_column: name # deprecated
       contact_name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: read_value
-        path: study.contact_id>contact.contact_id #READY ;name
-        chado_column: name # deprecated
+        path: study.contact_id>contact.contact_id;name
+        # chado_column: name # deprecated
         as: contact_name
   testContactFieldArrayDesign:
     field_name: testContactFieldArrayDesign
@@ -52,30 +52,30 @@ testContact:
         action: store_id
         drupal_store: TRUE
         path: arraydesign.arraydesign_id
-        chado_table: arraydesign # deprecated
-        chado_column: arraydesign_id # deprecated
+        # chado_table: arraydesign # deprecated
+        # chado_column: arraydesign_id # deprecated
       manufacturer_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
         path: arraydesign.manufacturer_id
-        chado_table: arraydesign # deprecated
-        chado_column: manufacturer_id # deprecated
+        # chado_table: arraydesign # deprecated
+        # chado_column: manufacturer_id # deprecated
       name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: store
         path: arraydesign.name
-        chado_table: arraydesign # deprecated
-        chado_column: name # deprecated
+        # chado_table: arraydesign # deprecated
+        # chado_column: name # deprecated
       contact_name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: read_value
-        path: arraydesign.manufacturer_id>contact.contact_id #READY ;name
-        chado_column: name # deprecated
+        path: arraydesign.manufacturer_id>contact.contact_id;name
+        # chado_column: name # deprecated
         as: contact_name
       # platformtype_id corresponds to a cvterm.cvterm_id
       platformtype_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
         path: arraydesign.platformtype_id
-        chado_table: arraydesign # deprecated
-        chado_column: platformtype_id # deprecated
+        # chado_table: arraydesign # deprecated
+        # chado_column: platformtype_id # deprecated

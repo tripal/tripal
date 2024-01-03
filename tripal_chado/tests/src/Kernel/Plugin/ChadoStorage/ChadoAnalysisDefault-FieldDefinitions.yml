@@ -23,19 +23,19 @@ testAnalysis:
         action: store_id
         drupal_store: TRUE
         path: phylotree.phylotree_id
-        chado_table: phylotree # deprecated
-        chado_column: phylotree_id # deprecated
+        # chado_table: phylotree # deprecated
+        # chado_column: phylotree_id # deprecated
       analysis_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
         path: phylotree.analysis_id
-        chado_table: phylotree # deprecated
-        chado_column: analysis_id # deprecated
+        # chado_table: phylotree # deprecated
+        # chado_column: analysis_id # deprecated
       analysis_name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: read_value
-        path: phylotree.analysis_id>analysis.analysis_id #READY ;name
-        chado_column: name # deprecated
+        path: phylotree.analysis_id>analysis.analysis_id;name
+        # chado_column: name # deprecated
         as: analysis_name
   # Just adds in any properties needed to meet the unique constraints on the
   # phylotree table.
@@ -48,15 +48,15 @@ testAnalysis:
         action: store_id
         drupal_store: TRUE
         path: phylotree.phylotree_id
-        chado_table: phylotree # deprecated
-        chado_column: phylotree_id # deprecated
+        # chado_table: phylotree # deprecated
+        # chado_column: phylotree_id # deprecated
       # Foreign key to dbxref table.
       dbxref_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
         path: phylotree.dbxref_id
-        chado_table: phylotree # deprecated
-        chado_column: dbxref_id # deprecated
+        # chado_table: phylotree # deprecated
+        # chado_column: dbxref_id # deprecated
   testAnalysisFieldQuantification:
     field_name: testAnalysisFieldQuantification
     base_table: quantification
@@ -66,19 +66,19 @@ testAnalysis:
         action: store_id
         drupal_store: TRUE
         path: quantification.quantification_id
-        chado_table: quantification # deprecated
-        chado_column: quantification_id # deprecated
+        # chado_table: quantification # deprecated
+        # chado_column: quantification_id # deprecated
       analysis_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
         path: quantification.analysis_id
-        chado_table: quantification # deprecated
-        chado_column: analysis_id # deprecated
+        # chado_table: quantification # deprecated
+        # chado_column: analysis_id # deprecated
       analysis_name:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType
         action: read_value
-        path: quantification.analysis_id>analysis.analysis_id #READY ;name
-        chado_column: name # deprecated
+        path: quantification.analysis_id>analysis.analysis_id;name
+        # chado_column: name # deprecated
         as: analysis_name
   # Just adds in any properties needed to meet the unique constraints on the
   # quantification table.
@@ -91,12 +91,12 @@ testAnalysis:
         action: store_id
         drupal_store: TRUE
         path: quantification.quantification_id
-        chado_table: quantification # deprecated
-        chado_column: quantification_id # deprecated
+        # chado_table: quantification # deprecated
+        # chado_column: quantification_id # deprecated
       # Foreign key to aquisition table.
       acquisition_id:
         propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
         action: store
         path: quantification.acquisition_id
-        chado_table: quantification # deprecated
-        chado_column: acquisition_id # deprecated
+        # chado_table: quantification # deprecated
+        # chado_column: acquisition_id # deprecated
