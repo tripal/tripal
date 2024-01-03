@@ -1169,9 +1169,9 @@ fields:
 
     -   name: protocol_dbxref
         content_type: protocol
-        label: Cross Reference
+        label: Primary Database Reference
         type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+        description: The ID where this record may be available in an external online database.
         cardinality: 1
         required: false
         storage_settings:

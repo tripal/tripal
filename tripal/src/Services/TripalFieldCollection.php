@@ -272,8 +272,11 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
     }
     $term = $idSpace->getTerm($field_def['settings']['termAccession']);
     if (!$term) {
-      $this->logger->error(t('The term accession "@accession" for term Id Space "@idspace" is not known in the Term Id Space. Check the "termIdSpace" and "termAccession" elements.',
-                             ['@idspace' => $field_def['settings']['termIdSpace'], '@accession' => $field_def['settings']['termAccession']]));
+      $this->logger->error('The term accession. "@id:@accession", is not known in the Term Id Space for field, "@field". Check the "termIdSpace" and "termAccession" elements.',
+          ['@id' => $field_def['settings']['termIdSpace'],
+           '@accession' => $field_def['settings']['termAccession'],
+           '@field' => $field_def['name']
+          ]);
       return FALSE;
     }
 
