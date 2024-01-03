@@ -150,7 +150,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::insertValues');
 
     // Build the ChadoRecords object.
-    $this->records = new ChadoRecords($this->field_debugger, $values, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
     $this->buildChadoRecords($values);
 
     $transaction_chado = $this->connection->startTransaction();
@@ -162,7 +162,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         $this->records->insertRecords($base_table, $base_table);
       }
 
-      // Second: Insert records from the anciallary tables of
+      // Second: Insert records from the ancillary tables of
       // each base table.
       foreach ($base_tables as $base_table) {
         $tables = $this->records->getAncillaryTables($base_table);
@@ -192,7 +192,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::updateValues');
 
     // Build the ChadoRecords object.
-    $this->records = new ChadoRecords($this->field_debugger, $values, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
     $this->buildChadoRecords($values);
 
 
@@ -226,6 +226,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       // Now taht we've done the updates, set the property values.
       $this->setPropValues($values, $this->records);
+      dpm($this->records->getRecordsArray());
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
@@ -244,7 +245,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::loadValues');
 
     // Build the ChadoRecords object.
-    $this->records = new ChadoRecords($this->field_debugger, $values, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
     $this->buildChadoRecords($values);
 
     $transaction_chado = $this->connection->startTransaction();
@@ -252,7 +253,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       $base_tables = $this->records->getBaseTables();
       foreach ($base_tables as $base_table) {
+
+        // Do the select for the base tables
         $this->records->selectRecords($base_table, $base_table);
+
+        // Then do the selects for the ancillary tables.
         $tables = $this->records->getAncillaryTables($base_table);
         foreach ($tables as $table_alias) {
           $this->records->selectRecords($base_table, $table_alias);
@@ -276,7 +281,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $this->field_debugger->printHeader('Delete');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::deleteValues');
-    $this->records = new ChadoRecords($this->field_debugger, $values, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
 
     return FALSE;
   }
@@ -286,12 +291,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function findValues($values) {
 
+    // Setup field debugging.
     $this->field_debugger->printHeader('Find');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::findValues');
-    $this->records = new ChadoRecords($this->field_debugger, $values, $this->connection);
 
+    // Build the ChadoRecords object.
+    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
     $this->buildChadoRecords($values, TRUE);
-    $base_tables = $this->records->getBaseTables();
 
     // Start an array to keep track of the results we find.
     // Each element in this array will be a clone of the full $values array
@@ -304,58 +310,25 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // from linked tables need to know the record_id.
     $transaction_chado = $this->connection->startTransaction();
     try {
+      $base_tables = $this->records->getBaseTables();
       foreach ($base_tables as $base_table) {
 
-        // First we use findChadoRecords() to query chado for all records
-        // in the table specified as $base_table. Each match returned here
-        // is a query result.
-        // @debug print "\t$base_table Record: " . print_r($record, TRUE);
-        $matches = $this->findChadoRecords($base_table);
-        // Now for each of these query results...
-        while ($match = $matches->fetchAssoc()) {
-          // @debug print "\t\tWorking on Query Record: " . print_r($match, TRUE);
+        // First we find all matching base records.
+        $matches = $this->records->findRecords($base_table, $base_table);
 
-          // We start by cloning the records array
-          // (includes all tables, not just the current $base_table)
-          $new_records = $records;
-          // and then replace the fields with the match we found.
-          $new_records[$base_table][0]['fields'] = $match;
-          // We also clone the $values array passed into findValues()
-          // including all fields and their propertyValue objects.
-          $base_values = $this->cloneValues($values);
-          // Now we set the PropertyValue values using the query result.
-          $this->setPropValues($base_values, $new_records);
-          // Finally, we can add this result to our found list.
-          $found_list[] = $base_values;
-        }
-      }
+        // Now for each of each matching base record we need to select
+        // the anciallry tables.
+        foreach ($matches as $match) {
 
-      // Now that we have the record IDs for the properties in
-      // the base table we can query for the properties in linked
-      // tables.
-      foreach ($found_list as $i => $base_values) {
-        $build = $this->buildChadoRecords($base_values, TRUE);
-        $base_records = $build['records'];
-        foreach ($base_records as $chado_table_alias => $deltas) {
-
-          // Skip base tables as we've already done those.
-          if (in_array($chado_table_alias, array_keys($base_record_ids))) {
-            continue;
+          $tables = $this->records->getAncillaryTables($base_table);
+          foreach ($tables as $table_alias) {
+            $match->selectRecords($base_table, $table_alias);
           }
 
-          // Now query for non base records, and add each match to the
-          // records array.
-          $j = 0;
-          foreach ($deltas as $delta => $record) {
-            $matches = $this->findChadoRecords($chado_table_alias, $delta, $record);
-            while ($match = $matches->fetchAssoc()) {
-              $base_records[$chado_table_alias][$j]['fields'] = $match;
-              $j++;
-            }
-          }
-          if ($j > 0) {
-            $this->setPropValues($found_list[$i], $base_records);
-          }
+          // Clone the value array for this match and set it's properties
+          $new_values = $this->cloneValues($values);
+          $this->setPropValues($new_values, $match);
+          $found_list[] = $new_values;
         }
       }
     }
@@ -363,6 +336,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
+
     return $found_list;
   }
 
@@ -426,19 +400,36 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $table_alias  = $value_col_info['table_alias'];
             $column_alias  = $value_col_info['column_alias'];
 
-            $value = NULL;
+            // For values that come from joins, we need to use the root table
+            // becuase this is the table that will have the value.
+            $my_delta = $delta;
             if(array_key_exists('join', $path_array)) {
-              $root_alias  = $value_col_info['root_alias'];
-              $value = $records->getFieldValue($base_table, $root_alias, $delta, $column_alias);
+              $root_table = $value_col_info['root_table'];
+              $root_alias = $value_col_info['root_table'];
+              $table_alias = $root_alias;
+
+              // For values that come from a join on the base table we need
+              // to get the value from there but cardinatlity on the base table
+              // is always just 1.
+              if ($base_table == $root_table) {
+                $my_delta = 0;
+              }
             }
-            else {
-              $value = $records->getFieldValue($base_table, $table_alias, $delta, $column_alias);
-            }
-            // dpm([$field_name, $delta, $key, $value_col_info, $value]);
+
+            // Set the value.
+
+            $value = $records->getColumnValue($base_table, $table_alias, $my_delta, $column_alias);
             $values[$field_name][$delta][$key]['value']->setValue($value);
+
+            if ($key == 'link' or $key == 'linker_id' or $key == 'analysis_id' or $key == 'analysis_name') {
+              //dpm([$field_name, $delta, $key, $base_table, $table_alias, $my_delta, $column_alias, $value]);
+              //dpm($values[$field_name][$delta][$key]['value']->getValue());
+            }
+
           }
         }
       }
+      //dpm($this->records->getRecordsArray());
     }
 
     // Now that we have all stored and loaded values set, let's do any
@@ -678,7 +669,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     // If this is a store_id then we're storing the base table record.
-    $this->records->addField($elements, TRUE);
+    $this->records->addColumn($elements, TRUE);
 
     // Set the field and the condition if we have a record_id.
     if ($record_id > 0) {
@@ -716,20 +707,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'table_alias' => $value_col_info['table_alias'],
       'column_alias' => $value_col_info['column_alias'],
       'delta' => $context['delta'],
-      'value' => $pkey_id,
+      'value' => $pkey_id ? $pkey_id : 0,
     ];
-    $this->records->addField($elements);
+    $this->records->addColumn($elements);
 
     if ($pkey_id) {
       $elements['operation'] = $context['operation'];
       $this->records->addCondition($elements);
-    }
-
-    // When we are trying to find a value we need to add the field
-    // so it will be included in the uqery, but set an empty value.
-    if ($context['is_find']) {
-      $elements['value'] = NULL;
-      $this->records->addField($elements);
     }
   }
 
@@ -768,17 +752,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // Setting the value to NULL and indicating this field contains a link
       // to the base table will cause the value to be set automatically by
       // ChadoRecord once it's available.
-      'value' => $link_id ? $link_id : NULL,
+      'value' => $link_id ? $link_id : 0,
       'operation' => $context['operation'],
       'delta' => $context['delta'],
     ];
-    $this->records->addField($elements, TRUE);
-
-    // If this is a find operation then we need to add a condition to search
-    // on the base record id..
-    if ($context['is_find']) {
-      $this->records->addCondition($elements);
-    }
+    $this->records->addColumn($elements, TRUE);
+    $this->records->addCondition($elements);
   }
 
   /**
@@ -818,7 +797,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'empty_value' => array_key_exists('empty_value', $context['property_settings']) ? $context['property_settings']['empty_value'] : '',
     ];
 
-    $this->records->addField($elements);
+    $this->records->addColumn($elements);
 
     // If this is a find operation then we want to add a condition.
     if ($context['is_find'] and !empty($value)) {
@@ -850,7 +829,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     if (array_key_exists('join', $context['path_array'])) {
       return;
     }
-
+    $value = $prop_value->getValue();
+    if (is_string($value)) {
+      $value = trim($value);
+    }
     $value_col_info = $this->getPathValueColumn($context['path_array']);
     $elements = [
       'base_table' => $value_col_info['base_table'],
@@ -859,10 +841,16 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'chado_column' => $value_col_info['chado_column'],
       'column_alias' => $value_col_info['column_alias'],
       'delta' => $context['delta'],
-      'value' => NULL,
+      'value' => $value ? $value : NULL,
       'operation' => $context['operation'],
     ];
-    $this->records->addField($elements);
+    $this->records->addColumn($elements);
+
+    // If this is a find operation then we want to add a condition on the
+    // value.
+    if ($context['is_find'] and !empty($value)) {
+      $this->records->addCondition($elements);
+    }
   }
 
   /**
@@ -942,8 +930,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           'root_alias' => $root_alias,
           'path' => $full_path,
           // The path string has no way to specify the type of join so
-          // we'll default it to an 'inner' join.
-          'type' => 'inner',
+          // we'll default it to an 'outer' join.
+          'type' => 'outer',
           'chado_table' => $right_table,
           'table_alias' => $right_alias,
           'left_column' => $left_column,
@@ -1101,7 +1089,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::validateValues');
 
     // Build the ChadoRecord object.
-    $this->records = new ChadoRecords($this->field_debugger, $values, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
     $this->buildChadoRecords($values);
 
     // Validate the records.

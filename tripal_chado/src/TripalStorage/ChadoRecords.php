@@ -40,21 +40,6 @@ class ChadoRecords  {
 
 
   /**
-   * The values array passed to CharoStorage. An Associative array 5-levels deep
-   *
-   *   The 1st level is the field name (e.g. ChadoOrganismDefault).
-   *   The 2nd level is the delta value (e.g. 0).
-   *   The 3rd level is a field key name (i.e. record_id + value).
-   *   The 4th level must contain the following three keys/value pairs
-   *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
-   *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
-   *   - "definition": a \Drupal\Field\Entity\FieldConfig object
-   *
-   * @var array
-   */
-  protected array $values;
-
-  /**
    * The database connection for querying Chado.
    *
    * @var \Drupal\tripal_chado\Database\ChadoConnection
@@ -67,8 +52,7 @@ class ChadoRecords  {
    *
    * @param ChadoFieldDebugger $field_debugger
    */
-  public function __construct(ChadoFieldDebugger $field_debugger, array $values, ChadoConnection $connection) {
-    $this->values = $values;
+  public function __construct(ChadoFieldDebugger $field_debugger, ChadoConnection $connection) {
     $this->field_debugger = $field_debugger;
     $this->connection = $connection;
   }
@@ -100,8 +84,14 @@ class ChadoRecords  {
    *   An array of items used to initalize the internal records array.
    *
    * @throws \Exception
+   *
+   * @return book:
+   *   TRUE if the table and delta were enitalized. FASLSE otherwise. The
+   *   base table can only be initialized once. This function will
+   *   return FALSE if there is an attempt to initalize it with a delta
+   *   higher than 1.
    */
-  protected function initTable($elements) {
+  protected function initTable($elements) : bool {
 
     // Make sure all of the required elements are preesent
     $this->checkElement($elements, 'base_table', 'Initializing', 'table');
@@ -114,6 +104,14 @@ class ChadoRecords  {
     $chado_table = $elements['chado_table'];
     $table_alias = $elements['table_alias'];
     $delta = $elements['delta'];
+
+    // We do not want to initalize the base table more than once. When a
+    // field has a cardinality > 0 then it can pass a delta value > 0. That
+    // delta value is for the item not for the base table.  There can only
+    // be one base table record.
+    if ($base_table == $chado_table and $delta > 0)  {
+      return FALSE;
+    }
 
     // If this base table has not been yet added to the records array then
     // add it.  The first level holds all of the bsae tables for all records
@@ -162,6 +160,7 @@ class ChadoRecords  {
         'values' => []
       ];
     }
+    return TRUE;
   }
 
   /**
@@ -199,10 +198,13 @@ class ChadoRecords  {
    * @throws \Exception
    *   If the any required fields are missing an error is thrown.
    */
-  public function addField(array $elements, bool $is_link = FALSE) {
+  public function addColumn(array $elements, bool $is_link = FALSE) {
 
-    // Make sure the table is initalized.
-    $this->initTable($elements);
+    // Initlaize the table. If the function returns FALSE
+    // then the caller is trying to re-intalize the base table so jus quit.
+    if(!$this->initTable($elements)){
+      return;
+    }
 
     // Make sure all of the required elements are preesent.
     $this->checkElement($elements, 'chado_column', 'Setting', 'field');
@@ -238,16 +240,13 @@ class ChadoRecords  {
       ];
     }
 
-    // If this field is for an ID and it has no value then set a marker
-    // so we can replace it later.
+    // If this field is for an ID then keep track of it. If this is the base
+    // table thnn we can set the ID from any value provided.
     if ($is_link) {
       $this->checkElement($elements, 'base_table', 'Setting', 'field');
       $base_table = $elements['base_table'];
       $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['link_columns'][$column_alias] = $base_table;
-      if ($value === NULL) {
-        $value = ['REPLACE_RECORD_ID', $base_table];
-      }
-      else if ($base_table == $table_alias) {
+      if ($value and $base_table == $table_alias) {
         $this->setRecordID($base_table, $value);
       }
     }
@@ -278,8 +277,11 @@ class ChadoRecords  {
    */
   public function addCondition(array $elements) {
 
-    // Make sure the table is initalized.
-    $this->initTable($elements);
+    // Initlaize the table. If the function returns FALSE
+    // then the caller is trying to re-intalize the base table so jus quit.
+    if(!$this->initTable($elements)){
+      return;
+    }
 
     // Make sure all of the required elements are preesent
     $this->checkElement($elements, 'column_alias', 'Setting', 'condition');
@@ -357,7 +359,7 @@ class ChadoRecords  {
    *   - join_path:  the path from the StoragePropertyType that indicates
    *     the sequences of tables joined together.
    *   - join_type: corresponds to 'inner', 'outer', etc. Currently, only
-   *     'inner' is supported.
+   *     'outer' is supported.
    *   - left_table: the left table in the join.
    *   - left_column: the left column in the join.
    *   - right_table: the right table in the join.
@@ -370,8 +372,11 @@ class ChadoRecords  {
    */
   public function addJoin(array $elements) {
 
-    // Make sure the table is initalized.
-    $this->initTable($elements);
+    // Initlaize the table. If the function returns FALSE
+    // then the caller is trying to re-intalize the base table so jus quit.
+    if(!$this->initTable($elements)){
+      return;
+    }
 
     // Make sure all of the required elements are preesent
     $this->checkElement($elements, 'join_path', 'Setting', 'join');
@@ -385,6 +390,7 @@ class ChadoRecords  {
 
     // Get the elements needed to add a join..
     $base_table = $elements['base_table'];
+    $chado_table = $elements['chado_table'];
     $table_alias = $elements['table_alias'];
     $delta = $elements['delta'];
     $join_path = $elements['join_path'];
@@ -487,8 +493,12 @@ class ChadoRecords  {
    */
   public function addJoinColumn(array $elements) {
 
-    // Make sure the table is initalized.
-    $this->initTable($elements);
+    // Initlaize the table. If the function returns FALSE
+    // then the caller is trying to re-intalize the base table so jus quit.
+    if(!$this->initTable($elements)){
+      return;
+    }
+
 
     // Make sure all of the required elements are preesent
     $this->checkElement($elements, 'join_path', 'Setting', 'join column');
@@ -552,7 +562,8 @@ class ChadoRecords  {
     // and if so, then update those.
     $tables = $this->getTables($base_table);
     foreach ($tables as $table_alias) {
-      foreach ($this->records[$base_table]['tables'][$table_alias]['items'] as $delta => $record) {
+      $items = $this->getTableItems($base_table, $table_alias);
+      foreach ($items as $delta => $record) {
         foreach (array_keys($record['values']) as $column_alias) {
 
           // if this column is an ID field and links to this base table then update the value.
@@ -806,7 +817,7 @@ class ChadoRecords  {
     $column_aliases = array_keys($this->records[$base_table]['tables'][$table_alias]['items'][$delta]['column_aliases']);
     foreach ($column_aliases as $column_alias) {
       if ($chado_column === $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['column_aliases'][$column_alias]['chado_column']) {
-        $aliases[] = $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['column_aliases'][$column_alias]['chado_column'];
+        $aliases[] = $column_alias;
       }
     }
 
@@ -878,7 +889,7 @@ class ChadoRecords  {
    * @return mixed
    *   The value of the field.
    */
-  public function getFieldValue(string $base_table, string $table_alias, int $delta, $column_alias) {
+  public function getColumnValue(string $base_table, string $table_alias, int $delta, $column_alias) {
 
     if (!array_key_exists($base_table, $this->records)) {
       throw new \Exception(t('ChadoRecords::getFieldValue(): The base table has not been added to the ChadoRecords object: @base_table.',
@@ -887,13 +898,16 @@ class ChadoRecords  {
     if (!array_key_exists($table_alias, $this->records[$base_table]['tables'])) {
       return NULL;
     }
-    if (!array_key_exists($delta, $this->records[$base_table]['tables'][$table_alias]['items'])) {
+
+    $items = $this->getTableItems($base_table, $table_alias);
+    if (!array_key_exists($delta, $items)) {
       return NULL;
     }
-    if (!array_key_exists($column_alias, $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'])) {
+    if (!array_key_exists($column_alias, $items[$delta]['values'])) {
       return NULL;
     }
-    return $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias];
+
+    return $items[$delta]['values'][$column_alias];
   }
 
 
@@ -991,7 +1005,7 @@ class ChadoRecords  {
 
         // If an FK allows nulls and the value is null then skip this one.
         $col_val = $record['values'][$lcol_alias];
-        if ($table_def['fields'][$lcol]['not null'] == FALSE and $col_val === NULL) {
+        if ($table_def['fields'][$lcol]['not null'] == FALSE and !$col_val) {
           continue;
         }
 
@@ -1225,6 +1239,7 @@ class ChadoRecords  {
               $col = trim($col);
               $col_val = NULL;
               if (array_key_exists($col, $record['columns'])) {
+                // @todo need to use the column alias when getting the value.
                 $col_val = $record['values'][$col];
               }
               if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
@@ -1380,10 +1395,14 @@ class ChadoRecords  {
       if (!$column_aliases){
         throw new \Exception(t('Failed to insert a record in the Chado "@table" because the primary key is missing as a field. Alias: @alias, Record: @record',
             ['@alias' => $table_alias, '@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-
       }
-      $pkey_alias = $column_aliases[0];
+      $pkey_alias = array_shift($column_aliases);
+
       $this->setColumnValue($base_table, $table_alias, $delta, $pkey_alias, $record_id);
+      if ($base_table === $table_alias) {
+        $this->setRecordID($base_table, $record_id);
+        $this->setLinks($base_table);
+      }
     }
   }
 
@@ -1402,53 +1421,57 @@ class ChadoRecords  {
 
     $found_records = [];
 
+    // Make sure all IDs are up to date.
+    $this->setLinks($base_table);
+
     // Get informatino about this Chado table.
-    $chado_table = $this->getTableFromAlias($table_alias);
+    $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
     // Iterate through each item of the table and perform an insert.
-    foreach ($this->records[$base_table]['tables'][$table_alias]['items'] as $delta => $record) {
+    $items = $this->getTableItems($base_table, $table_alias);
+    foreach ($items as $delta => $record) {
 
-      // Select the fields in the chado table.
+      // Start the select
       $select = $this->connection->select('1:' . $chado_table, $table_alias);
-      $select->fields($table_alias, array_keys($record['columns']));
+
+      // Add the fields in the chado table.
+      foreach ($record['columns'] as $column_alias) {
+        $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
+        $select->addField($table_alias, $chado_column, $column_alias);
+      }
 
       // Add in any joins.
       if (array_key_exists('joins', $record)) {
-        $j_index = 0;
-        foreach ($record['joins'] as $join_path => $join_info) {
+        $join_paths = array_keys($record['joins']);
+        sort($join_paths);
+        foreach ($join_paths as $join_path) {
+          $join_info = $record['joins'][$join_path];
           $right_table = $join_info['on']['right_table'];
           $right_alias = $join_info['on']['right_alias'];
-          $right_colmn = $join_info['on']['right_column'];
+          $right_column = $join_info['on']['right_column'];
           $left_alias = $join_info['on']['left_alias'];
           $left_column = $join_info['on']['left_column'];
 
-          $select->leftJoin('1:' . $right_table, $right_alias, $left_alias . '.' .  $left_column . '=' .  $right_alias . '.' . $right_colmn);
+          $select->leftJoin('1:' . $right_table, $right_alias, $left_alias . '.' .  $left_column . '=' .  $right_alias . '.' . $right_column);
 
           foreach ($join_info['columns'] as $column) {
-            $sel_col = $column['chado_column'];
-            $sel_col_as = $right_alias . '_' . $column['column_alias'];
-            $field_name = $column['field_name'];
-            $property_key = $column['property_key'];
-            $this->join_column_alias[$field_name][$property_key][$column[1]] = $sel_col_as;
-            $select->addField($right_alias, $sel_col, $sel_col_as);
+            $join_column = $column['chado_column'];
+            $join_column_alias = $column['column_alias'];
+            $select->addField($right_alias, $join_column, $join_column_alias);
           }
-          $j_index++;
         }
       }
 
       // Add the select condition
-      foreach ($record['conditions'] as $chado_column => $value) {
+      foreach ($record['conditions'] as $column_alias => $value) {
         // If we don't have a primary key for the base table then skip the condition.
-        if (is_array($value['value']) and in_array('REPLACE_RECORD_ID', array_values($value['value']))) {
+        if (array_key_exists($column_alias, $record['link_columns']) and !$this->getRecordID($base_table)) {
           continue;
         }
-        if (!empty($value)) {
-          $select->condition($chado_table_alias . '.' . $chado_column, $value['value'], $value['operation']);
-        }
+        $select->condition($table_alias . '.' . $column_alias, $value['value'], $value['operation']);
       }
 
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
-      // @debug print "Query in findChadoRecord(): " . strtr((string) $select, $select->arguments());
 
       // Execute the query.
       $results = $select->execute();
@@ -1457,21 +1480,23 @@ class ChadoRecords  {
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
       }
 
-      while ($match = $results->fetchAssoc()) {
-        // @debug print "\t\tWorking on Query Record: " . print_r($match, TRUE);
+      while ($values = $results->fetchAssoc()) {
+
+        // Update the values in the new record.
+        foreach ($values as $column_alias => $value) {
+          $this->setColumnValue($base_table, $table_alias, $delta, $column_alias, $value);
+
+          // If this is the base table be sure to set the record ID.
+          if ($base_table === $table_alias and array_key_exists($column_alias, $record['link_columns'])) {
+            $this->setRecordID($base_table, $value);
+            $this->setLinks($base_table);
+          }
+        }
 
         // We start by cloning the records array
         // (includes all tables, not just the current $base_table)
-        $new_record = new ChadoRecords($this->field_debugger, $this->values);
-        $new_record->setRecords($this->records);
-
-        // Update the values in the new record.
-        $elements = [
-          'table_alias' => $table_alias,
-          'delta' => $delta,
-          'values' => $match
-        ];
-        $new_record->setColumnValue($elements);
+        $new_record = new ChadoRecords($this->field_debugger, $this->connection);
+        $new_record->copyRecords($this);
 
         // Save the new record object. to be returned later.
         $found_records[] = $new_record;
@@ -1498,6 +1523,11 @@ class ChadoRecords  {
 
     // Get the Chado table for this given table alias.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
+
+    // Get informatino about this Chado table.
+    $schema = $this->connection->schema();
+    $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+    $pkey = $table_def['primary key'];
 
     // Iterate through each item of the table and perform an insert.
     $items = $this->getTableItems($base_table, $table_alias);
@@ -1582,6 +1612,17 @@ class ChadoRecords  {
             ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
       }
 
+      // Don't delete if the primary key is not set.
+      $column_aliases = $this->getColumnFieldAliases($base_table, $table_alias, $delta, $pkey);
+      if (!$column_aliases) {
+        continue;
+      }
+      $pkey_alias = array_shift($column_aliases);
+      if (empty($record['values'][$pkey_alias])) {
+        continue;
+      }
+
+
       $delete = $this->connection->delete('1:'. $chado_table);
       foreach ($record['conditions'] as $chado_column => $cond_value) {
         $delete->condition($chado_column, $cond_value['value']);
@@ -1616,7 +1657,7 @@ class ChadoRecords  {
    *
    * @throws \Exception
    */
-  public function selectRecords($base_table, $table_alias) {
+  public function selectRecords(string $base_table, string $table_alias) {
 
     // Make sure all IDs are up to date.
     $this->setLinks($base_table);
@@ -1642,7 +1683,7 @@ class ChadoRecords  {
       // Start the select
       $select = $this->connection->select('1:' . $chado_table, $table_alias);
 
-      // Select the fields in the chado table.
+      // Add the fields in the chado table.
       foreach ($record['columns'] as $column_alias) {
         $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
         $select->addField($table_alias, $chado_column, $column_alias);
@@ -1651,6 +1692,7 @@ class ChadoRecords  {
       // Add in any joins.
       if (array_key_exists('joins', $record)) {
         $join_paths = array_keys($record['joins']);
+        sort($join_paths);
         foreach ($join_paths as $join_path) {
           $join_info = $record['joins'][$join_path];
           $right_table = $join_info['on']['right_table'];
@@ -1684,9 +1726,17 @@ class ChadoRecords  {
         throw new \Exception(t('Failed to select record in the Chado "@table" table. Record: @record',
             ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
       }
+
+      // Update the values in the record.
       $values = $results->fetchAssoc();
-      foreach ($values as $column_alias => $value) {
-        $this->setColumnValue($base_table, $table_alias, $delta, $column_alias, $value);
+      if (!empty($values)) {
+        foreach ($values as $column_alias => $value) {
+          $this->setColumnValue($base_table, $table_alias, $delta, $column_alias, $value);
+          // If this is the base table be sure to set the record ID.
+          if ($base_table === $table_alias and array_key_exists($column_alias, $record['link_columns'])) {
+            $this->setRecordID($base_table, $value);
+          }
+        }
       }
     }
   }

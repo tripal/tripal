@@ -167,18 +167,20 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     // An intermediate linker table is used
     else {
       // Define the linker table that links the base table to the object table.
+      // (e.g., project_analysis.project_analysis_id)
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
-        'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_pkey_col,
+        'path' => $linker_table . '.' . $linker_pkey_col,
         //'chado_table' => $linker_table,
         //'chado_column' => $linker_pkey_col,
       ]);
 
       // Define the link between the base table and the linker table.
+      // (e.g., project_analysis.project_id)
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
         'action' => 'store_link',
-        'drupal_store' => FALSE,
+        'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
         //'left_table' => $base_table,
         //'left_table_id' => $base_pkey_col,
@@ -187,19 +189,21 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       ]);
 
       // Define the link between the linker table and the object table.
+      // (e.g., project_analysis.analysis_id)
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
-        'path' => $base_table . '.' . $linker_fkey_col,
+        'path' => $linker_table . '.' . $linker_fkey_col,
         //'chado_table' => $linker_table,
         //'chado_column' => $linker_fkey_col,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
 
-      // Other columns in the linker table. Set in the widget, but currently not implemented in the formatter.
-      // Typically these are type_id and rank, but are not present in all linker tables,
-      // so they are added only if present in the linker table.
+      // Other columns in the linker table. Set in the widget, but currently
+      // not implemented in the formatter. Typically these are type_id and rank,
+      // but are not present in all linker tables, so they are added only if
+      // present in the linker table.
       foreach ($extra_linker_columns as $column => $term) {
         $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',

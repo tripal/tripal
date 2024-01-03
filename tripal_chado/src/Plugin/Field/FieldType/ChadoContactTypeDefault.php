@@ -174,7 +174,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       // Define the link between the base table and the linker table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
         'action' => 'store_link',
-        'drupal_store' => FALSE,
+        'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
         //'left_table' => $base_table,
         //'left_table_id' => $base_pkey_col,

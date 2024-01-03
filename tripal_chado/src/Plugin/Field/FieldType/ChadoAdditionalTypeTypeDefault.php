@@ -135,7 +135,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       // (e.g., analysisprop.feature_id)
       $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', $link_term, [
         'action' => 'store_link',
-        'path' => $base_table . '.' . $base_pkey_col . '>' . $type_table . '.' . $type_fkey_col,
+        'path' => $type_table . '.' . $type_fkey_col,
         //'chado_table' => $type_table,
         //'chado_column' => $type_fkey_col,
       ]);
