@@ -201,7 +201,7 @@ fields:
 
     -   name: organism_dbxref
         content_type: organism
-        label: Cross Reference
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -214,7 +214,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -451,7 +451,7 @@ fields:
 
     -   name: analysis_dbxref
         content_type: analysis
-        label: Cross Reference
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -464,7 +464,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -592,7 +592,7 @@ fields:
 
     -   name: project_dbxref
         content_type: project
-        label: Cross Reference
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -605,7 +605,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -730,9 +730,9 @@ fields:
 
     -   name: study_dbxref
         content_type: study
-        label: Cross Reference
+        label: Primary Database Reference
         type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+        description: The ID where this record may be available in an external online database.
         cardinality: 1
         required: false
         storage_settings:
@@ -1034,9 +1034,9 @@ fields:
 
     -   name: protocol_dbxref
         content_type: protocol
-        label: Cross Reference
+        label: Primary Database Reference
         type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+        description: The ID where this record may be available in an external online database.
         cardinality: 1
         required: false
         storage_settings:
@@ -1174,7 +1174,7 @@ fields:
 
     -   name: publication_dbxref
         content_type: pub
-        label: Cross Reference
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -1187,7 +1187,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:

@@ -300,7 +300,33 @@ fields:
 
     -   name: gene_dbxref
         content_type: gene
-        label: Cross Reference
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: gene_dbxref_ann
+        content_type: gene
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -313,7 +339,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -622,7 +648,33 @@ fields:
 
     -   name: mrna_dbxref
         content_type: mrna
-        label: Cross Reference
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: mrna_dbxref_ann
+        content_type: mrna
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -635,7 +687,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -758,9 +810,9 @@ fields:
 
     -   name: phylotree_dbxref
         content_type: phylotree
-        label: Cross Reference
+        label: Primary Database Reference
         type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
+        description: The ID where this record may be available in an external online database.
         cardinality: 1
         required: false
         storage_settings:
@@ -891,9 +943,9 @@ fields:
               region: content
               weight: 30
 
-    -   name: physical_map_dbxref
+    -   name: physical_map_dbxref_ann
         content_type: physical_map
-        label: Cross Reference
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -906,7 +958,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -1081,9 +1133,9 @@ fields:
               region: content
               weight: 50
 
-    -   name: dna_library_dbxref
+    -   name: dna_library_dbxref_ann
         content_type: dna_library
-        label: Cross Reference
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -1096,7 +1148,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -1326,9 +1378,9 @@ fields:
               region: content
               weight: 10
 
-    -   name: genome_assembly_dbxref
+    -   name: genome_assembly_dbxref_ann
         content_type: genome_assembly
-        label: Cross Reference
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -1341,7 +1393,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -1570,9 +1622,9 @@ fields:
               region: content
               weight: 10
 
-    -   name: genome_annotation_dbxref
+    -   name: genome_annotation_dbxref_ann
         content_type: genome_annotation
-        label: Cross Reference
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -1585,7 +1637,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -1680,9 +1732,9 @@ fields:
               region: content
               weight: 10
 
-    -   name: genome_project_dbxref
+    -   name: genome_project_dbxref_ann
         content_type: genome_project
-        label: Cross Reference
+        label: Database Reference Annotations
         type: chado_dbxref_type_default
         description: The IDs where this record may be available in other external online databases.
         cardinality: -1
@@ -1695,7 +1747,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: "0000554"
+            termAccession: "0000552"
         display:
           view:
             default:

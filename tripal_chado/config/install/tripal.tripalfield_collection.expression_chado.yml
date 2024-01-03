@@ -83,7 +83,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: biosample_dbxref_annotation
+    -   name: biosample_dbxref_ann
         content_type: biosample
         label: Database Reference Annotations
         type: chado_dbxref_type_default
