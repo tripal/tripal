@@ -164,7 +164,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: germplasm_dbxref_annotation
+    -   name: germplasm_dbxref_ann
         content_type: germplasm
         label: Database Reference Annotations
         type: chado_dbxref_type_default
@@ -379,7 +379,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: breeding_cross_dbxref_annotation
+    -   name: breeding_cross_dbxref_ann
         content_type: breeding_cross
         label: Database Reference Annotations
         type: chado_dbxref_type_default
@@ -594,7 +594,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: germplasm_variety_dbxref_annotation
+    -   name: germplasm_variety_dbxref_ann
         content_type: germplasm_variety
         label: Database Reference Annotations
         type: chado_dbxref_type_default
@@ -809,7 +809,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: ril_dbxref_annotation
+    -   name: ril_dbxref_ann
         content_type: ril
         label: Database Reference Annotations
         type: chado_dbxref_type_default
