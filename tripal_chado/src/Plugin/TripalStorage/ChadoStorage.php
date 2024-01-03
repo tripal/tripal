@@ -527,6 +527,44 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
+   * Sorts joins into correct dependency order.
+   *
+   * @param array $record
+   *
+   * @return array
+   */
+  public function orderJoins($record) {
+    // Make sure joins are in correct dependency order. If a lalias
+    // has not yet been seen as ralias, and if it is not 'ct', then
+    // it is out of order. This can happen because the information in
+    // $record is stored indexed by $rtable, not in the original order.
+    // To make sure we can construct proper SQL, create an array in
+    // proper dependency order.
+    $ordered_joins = [];
+    if (array_key_exists('joins', $record)) {
+      $j_index = 0;
+      $n_added = 0;
+      $defined_aliases[$j_index] = [0 => 'ct'];
+      do {
+      $n_added = 0;
+        foreach ($record['joins'] as $rtable => $rjoins) {
+          foreach ($rjoins as $jinfo) {
+            $lalias = $jinfo['on']['left_alias'];
+            $ralias = $jinfo['on']['right_alias'];
+            if (in_array($lalias, $defined_aliases[$j_index])) {
+              $ordered_joins[] = [$rtable => $jinfo];
+              $defined_aliases[$j_index+1][] = $ralias;
+              $n_added++;
+            }
+          }
+        }
+        $j_index++;
+      } while ($n_added > 0);
+    }
+    return $ordered_joins;
+  }
+
+  /**
    * Selects a single record from Chado.
    *
    * @param array $records
@@ -559,10 +597,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     // Add in any joins.
-    if (array_key_exists('joins', $record)) {
+    $joins = $this->orderJoins($record);
+    if ($joins) {
       $j_index = 0;
-      foreach ($record['joins'] as $rtable => $rjoins) {
-        foreach ($rjoins as $jinfo) {
+      foreach ($joins as $join) {
+        foreach ($join as $rtable => $jinfo) {
           $lalias = $jinfo['on']['left_alias'];
           $ralias = $jinfo['on']['right_alias'];
           $lcol = $jinfo['on']['left_col'];
@@ -1683,7 +1722,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // is first called.
     $parent_table = !$parent_table ? $left_table : $parent_table;
     $parent_column = !$parent_column ? $left_col : $parent_column;
-
 
     // Make sure the parent table has a 'joins' array.
     if (!array_key_exists($parent_table, $records) or
