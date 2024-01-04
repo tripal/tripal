@@ -21,13 +21,13 @@ fields:
         settings:
             termIdSpace: SO
             termAccession: "0000110"
+            token_string: "[name] ([type])"
         display:
           view:
             default:
               region: content
               label: above
               weight: 81
-              token_string: "[name] ([type])"
           form:
             default:
               region: content
