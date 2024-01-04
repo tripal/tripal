@@ -92,7 +92,6 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
    */
   public function provideSinglePropFieldNames() {
     return [
-      ['testBackwardsCompatiblePropertyField'],
       ['testpropertyfieldA']
     ];
   }
@@ -155,13 +154,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     ob_start();
     $this->chadoStorageTestInsertValues($insert_values);
     $printed_output = ob_get_clean();
-    if ($prop_field_name == 'testBackwardsCompatiblePropertyField') {
-      $this->assertStringContainsString('backwards compatible mode', $printed_output,
-        "We expect this field to be in backwards compatible mode and should have been informed during insert.");
-    }
-    else {
-      $this->assertEmpty($printed_output, "There should not be any messages logged.");
-    }
+    $this->assertEmpty($printed_output, "There should not be any messages logged.");
+
     // @debug $this->debugChadoStorageTestTraitArrays();
 
     // Check that the base feature record was created in the database as expected.
@@ -249,13 +243,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     ob_start();
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
     $printed_output = ob_get_clean();
-    if ($prop_field_name == 'testBackwardsCompatiblePropertyField') {
-      $this->assertStringContainsString('backwards compatible mode', $printed_output,
-        "We expect this field to be in backwards compatible mode and should have been informed during load.");
-    }
-    else {
-      $this->assertEmpty($printed_output, "There should not be any messages logged.");
-    }
+    $this->assertEmpty($printed_output, "There should not be any messages logged.");
+
 
     // Now test that the additional values have been loaded.
     // @debug $this->debugChadoStorageTestTraitArrays();
@@ -300,13 +289,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     ob_start();
     $this->chadoStorageTestUpdateValues($update_values);
     $printed_output = ob_get_clean();
-    if ($prop_field_name == 'testBackwardsCompatiblePropertyField') {
-      $this->assertStringContainsString('backwards compatible mode', $printed_output,
-        "We expect this field to be in backwards compatible mode and should have been informed during update.");
-    }
-    else {
-      $this->assertEmpty($printed_output, "There should not be any messages logged.");
-    }
+    $this->assertEmpty($printed_output, "There should not be any messages logged.");
 
     // Now we check chado to see if these values were changed...
     // Still the expected number of records in the featureprop table?

@@ -226,7 +226,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       // Now taht we've done the updates, set the property values.
       $this->setPropValues($values, $this->records);
-      dpm($this->records->getRecordsArray());
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
@@ -403,9 +402,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             // For values that come from joins, we need to use the root table
             // becuase this is the table that will have the value.
             $my_delta = $delta;
-            if(array_key_exists('join', $path_array)) {
+            if($action == 'read_value' and array_key_exists('join', $path_array)) {
               $root_table = $value_col_info['root_table'];
-              $root_alias = $value_col_info['root_table'];
+              $root_alias = $value_col_info['root_alias'];
               $table_alias = $root_alias;
 
               // For values that come from a join on the base table we need
@@ -417,20 +416,21 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             }
 
             // Set the value.
-
             $value = $records->getColumnValue($base_table, $table_alias, $my_delta, $column_alias);
             $values[$field_name][$delta][$key]['value']->setValue($value);
 
-            if ($key == 'link' or $key == 'linker_id' or $key == 'analysis_id' or $key == 'analysis_name') {
-              //dpm([$field_name, $delta, $key, $base_table, $table_alias, $my_delta, $column_alias, $value]);
-              //dpm($values[$field_name][$delta][$key]['value']->getValue());
-            }
+            //if ($field_name == 'field_note') {
+            //  dpm([$field_name, $delta, $key, '--', $base_table, $table_alias, $my_delta, $column_alias, $value]);
+            //  dpm($value_col_info);
+            //  dpm($values[$field_name][$delta][$key]['value']->getValue());
+            //}
 
           }
         }
       }
-      //dpm($this->records->getRecordsArray());
     }
+    //dpm($this->records->getRecordsArray());
+
 
     // Now that we have all stored and loaded values set, let's do any
     // replacements.
@@ -572,8 +572,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $context['path_string'] = $prop_storage_settings['path'];
             $context['path_array'] = $path_array;
 
-            // Handle the joins.
-            if (array_key_exists('join', $path_array)) {
+            // We only add joins when the action is 'read_value' because
+            // they guarantee a single value (meaning a 1:1 join). For
+            // other joins there may be a many to one so we don't want to add
+            // those joins off the base table.
+            if ($action == 'read_value' and array_key_exists('join', $path_array)) {
               $this->handleJoins($path_array, $context);
             }
           }
