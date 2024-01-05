@@ -178,7 +178,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-
+    //print_r($this->records->getRecordsArray());
     return TRUE;
   }
 
@@ -272,7 +272,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
     $this->field_debugger->reportValues($values, 'The values after loading is complete.');
 
-    //dpm($this->records->getRecordsArray());
+    //print_r($this->records->getRecordsArray());
     return TRUE;
   }
 
@@ -409,13 +409,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               $root_table = $value_col_info['root_table'];
               $root_alias = $value_col_info['root_alias'];
               $table_alias = $root_alias;
+            }
 
-              // For values that come from a join on the base table we need
-              // to get the value from there but cardinatlity on the base table
-              // is always just 1.
-              if ($base_table == $root_table) {
-                $my_delta = 0;
-              }
+            // Anytime we need to pull data from the base table, the delta
+            // should always be zero. There will only ever be one base record.
+            if ($table_alias == $base_table) {
+              $my_delta = 0;
             }
 
             // Set the value.

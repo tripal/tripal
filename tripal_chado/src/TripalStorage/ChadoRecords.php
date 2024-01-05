@@ -126,6 +126,16 @@ class ChadoRecords  {
     $table_alias = $elements['table_alias'];
     $delta = $elements['delta'];
 
+    if ($base_table == $chado_table) {
+      if ($base_table != $table_alias) {
+        throw new \Exception(t('ChadoRecords::initTable(). Invalid attempt to '
+            . 'initalize a table as the base table cannot have an alias. '
+            . 'The element tries to set a table alias, which is not supported: '
+            . '@elements',
+            ['@elements' => print_r($elements, TRUE)]));
+      }
+    }
+
     // We do not want to initalize the base table more than once. When a
     // field has a cardinality > 0 then it can pass a delta value > 0. That
     // delta value is for the item not for the base table.  There can only
