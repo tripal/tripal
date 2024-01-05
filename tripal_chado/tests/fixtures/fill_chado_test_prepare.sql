@@ -16462,7 +16462,7 @@ SELECT pg_catalog.setval('chado.cvterm_relationship_cvterm_relationship_id_seq',
 SELECT pg_catalog.setval('chado.cvtermprop_cvtermprop_id_seq', 1341, true);
 SELECT pg_catalog.setval('chado.cvtermsynonym_cvtermsynonym_id_seq', 4556, true);
 SELECT pg_catalog.setval('chado.db_db_id_seq', 41, true);
-SELECT pg_catalog.setval('chado.dbxref_dbxref_id_seq', 3460, true);
+SELECT pg_catalog.setval('chado.dbxref_dbxref_id_seq', 3461, true);
 SELECT pg_catalog.setval('chado.acquisition_acquisition_id_seq', 1, false);
 SELECT pg_catalog.setval('chado.acquisition_relationship_acquisition_relationship_id_seq', 1, false);
 SELECT pg_catalog.setval('chado.acquisitionprop_acquisitionprop_id_seq', 1, false);
