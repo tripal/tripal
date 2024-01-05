@@ -581,7 +581,31 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         // This session variable gets checked when the form reloads so you can find the code 
         // in the buildForm function
         $_SESSION['tripal_pub_import']['perform_test'] = 1;
-        $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $this->criteria_convert_to_array($form, $form_state);
+
+        // Translate the submitted data into a variable which can be serialized into a criteria column
+        // of the tripal_pub_import table
+        $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
+
+        // Load the plugin and initialize an instance to perform it's unique form_submit function
+        // This will run plugin specific form submit operations that can alter the criteria database column
+        // which stores the specific plugin importer settings (basically all the form data)
+        $plugin_id = $user_input['plugin_id'];
+        if ($plugin_id) {
+          // Instantiate the selected plugin
+          // Pub Library Manager is found in tripal module: 
+          // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+          $pub_library_manager = \Drupal::service('tripal.pub_library');
+          $plugin = $pub_library_manager->createInstance($plugin_id, []);
+
+          // The selected plugin defines form elements specific
+          // to itself.
+          $plugin->form_submit($form, $form_state, $criteria_column_array);
+        }
+        $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $criteria_column_array;
+        dpm($criteria_column_array);
+
+        // Older code before 1/5/2024
+        // $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $this->criteria_convert_to_array($form, $form_state);
         $_SESSION['tripal_pub_import']['perform_test_user_input'] = $form_state->getUserInput();
       }
     }
@@ -599,7 +623,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
   public function criteria_convert_to_array($form, FormStateInterface $form_state) {
     $user_input = $form_state->getUserInput();
     
-    // dpm($user_input);
     $disabled = $user_input['disabled'];
     if ($disabled == null) {
       $disabled = 0;
