@@ -150,7 +150,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::insertValues');
 
     // Build the ChadoRecords object.
-    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
     $this->buildChadoRecords($values);
 
     $transaction_chado = $this->connection->startTransaction();
@@ -192,7 +192,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::updateValues');
 
     // Build the ChadoRecords object.
-    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
     $this->buildChadoRecords($values);
 
 
@@ -231,6 +231,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
+
+    //dpm($this->records->getRecordsArray());
     return TRUE;
   }
 
@@ -244,7 +246,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::loadValues');
 
     // Build the ChadoRecords object.
-    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
     $this->buildChadoRecords($values);
 
     $transaction_chado = $this->connection->startTransaction();
@@ -270,6 +272,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
     $this->field_debugger->reportValues($values, 'The values after loading is complete.');
 
+    //dpm($this->records->getRecordsArray());
     return TRUE;
   }
 
@@ -280,7 +283,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $this->field_debugger->printHeader('Delete');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::deleteValues');
-    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
 
     return FALSE;
   }
@@ -295,7 +298,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::findValues');
 
     // Build the ChadoRecords object.
-    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
     $this->buildChadoRecords($values, TRUE);
 
     // Start an array to keep track of the results we find.
@@ -391,7 +394,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $path = $prop_storage_settings['path'];
             $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : '';
             $table_alias_mapping = array_key_exists('table_alias_mapping', $prop_storage_settings) ? $prop_storage_settings['table_alias_mapping'] : [];
-            $path_array = $this->parsePath($base_table, $path, $table_alias_mapping, $as);
+            $path_array = $this->parsePath($field_name, $base_table, $path, $table_alias_mapping, $as);
 
             // Get the value column information for this property.
             $base_table = $storage_plugin_settings['base_table'];
@@ -419,12 +422,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $value = $records->getColumnValue($base_table, $table_alias, $my_delta, $column_alias);
             $values[$field_name][$delta][$key]['value']->setValue($value);
 
-            //if ($field_name == 'field_note') {
+            if ($field_name == 'gene_contact') {
             //  dpm([$field_name, $delta, $key, '--', $base_table, $table_alias, $my_delta, $column_alias, $value]);
             //  dpm($value_col_info);
             //  dpm($values[$field_name][$delta][$key]['value']->getValue());
-            //}
-
+            }
           }
         }
       }
@@ -558,6 +560,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $context['property_key'] = $key;
           $context['property_settings'] = $prop_storage_settings;
           $context['delta'] = $delta;
+          $context['action'] = $action;
+
 
           // Get the path array for this field and add any joins if any are needed.
           if (array_key_exists('path', $prop_storage_settings)) {
@@ -566,7 +570,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $path = $prop_storage_settings['path'];
             $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : '';
             $table_alias_mapping = array_key_exists('table_alias_mapping', $prop_storage_settings) ? $prop_storage_settings['table_alias_mapping'] : [];
-            $path_array = $this->parsePath($base_table, $path, $table_alias_mapping, $as);
+            $path_array = $this->parsePath($field_name, $base_table, $path, $table_alias_mapping, $as);
+            //dpm($path_array);
 
             // Add to the context.
             $context['path_string'] = $prop_storage_settings['path'];
@@ -649,7 +654,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'column_alias' => $value_col_info['column_alias'],
       'delta' => $context['delta'],
       'value' => $record_id > 0 ? $record_id : NULL,
-      'operation' => $context['operation']
+      'operation' => $context['operation'],
+      'field_name' => $context['field_name'],
+      'property_key' => $context['property_key'],
     ];
 
     // The store_id action should only be used for the base table...
@@ -711,6 +718,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'column_alias' => $value_col_info['column_alias'],
       'delta' => $context['delta'],
       'value' => $pkey_id ? $pkey_id : 0,
+      'field_name' => $context['field_name'],
+      'property_key' => $context['property_key'],
     ];
     $this->records->addColumn($elements);
 
@@ -758,6 +767,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'value' => $link_id ? $link_id : 0,
       'operation' => $context['operation'],
       'delta' => $context['delta'],
+      'field_name' => $context['field_name'],
+      'property_key' => $context['property_key'],
     ];
     $this->records->addColumn($elements, TRUE);
     $this->records->addCondition($elements);
@@ -798,6 +809,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'operation' => $context['operation'],
       'delete_if_empty' => array_key_exists('delete_if_empty', $context['property_settings']) ? $context['property_settings']['delete_if_empty'] : FALSE,
       'empty_value' => array_key_exists('empty_value', $context['property_settings']) ? $context['property_settings']['empty_value'] : '',
+      'field_name' => $context['field_name'],
+      'property_key' => $context['property_key'],
     ];
 
     $this->records->addColumn($elements);
@@ -846,8 +859,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'delta' => $context['delta'],
       'value' => $value ? $value : NULL,
       'operation' => $context['operation'],
+      'field_name' => $context['field_name'],
+      'property_key' => $context['property_key'],
     ];
-    $this->records->addColumn($elements);
+    $this->records->addColumn($elements, FALSE, TRUE);
 
     // If this is a find operation then we want to add a condition on the
     // value.
@@ -875,7 +890,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @return array
    *
    */
-  protected function parsePath(string $base_table, mixed $path, array $aliases = [], string $as = '', string $full_path = '') {
+  protected function parsePath(string $field_name, string $base_table, mixed $path, array $aliases = [], string $as = '', string $full_path = '') {
 
     // If the path is a string then split it.
     $path_arr = [];
@@ -946,7 +961,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // if so, then recurse.
       $sub_path_arr = [];
       if (count($path_arr) > 0) {
-        $sub_path_arr = $this->parsePath($base_table, $path_arr, $aliases, $as, $full_path);
+        $sub_path_arr = $this->parsePath($field_name, $base_table, $path_arr, $aliases, $as, $full_path);
       }
       // If there are no more joins, then we need to set the value column to be
       // the same as the last column in tge join.
@@ -980,6 +995,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       if (array_key_exists($table_alias, $aliases)) {
         $chado_table = $aliases[$table_alias];
       }
+
+      // If the base table is not the same as the root table then
+      // we should add the field name to the colun alias. Otherwise
+      // we may have conflicts if mutiple fields use the same alias.
+      $value_alias = $as ? $as : $value_column;
+      if ($base_table != $root_table) {
+        $value_alias = $field_name . '__' . $value_alias;
+      }
       return [
         'path' => $full_path,
         'base_table' => $base_table,
@@ -988,19 +1011,24 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         'chado_table' => $chado_table,
         'table_alias' => $table_alias,
         'value_column' => $value_column,
-        'value_alias' => $as ? $as : $value_column
+        'value_alias' => $value_alias
       ];
     }
 
     // There is no period in the path so there is no Chado table. We are at the
     // end of the path with joins and we can just return the value column.
     else {
+      // If the base table is not the same as the root table then
+      // we should add the field name to the colun alias. Otherwise
+      // we may have conflicts if mutiple fields use the same alias.
+      $value_alias = $as ? $as : $curr_path;
+      $value_alias = $field_name . '__' . $value_alias;
       return [
         'base_table' => $base_table,
         'root_table' => $root_table,
         'root_alias' => $root_alias,
         'value_column' => $curr_path,
-        'value_alias' => $as ? $as : $curr_path
+        'value_alias' => $value_alias
       ];
     }
   }
@@ -1092,7 +1120,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::validateValues');
 
     // Build the ChadoRecord object.
-    $this->records = new ChadoRecords($this->field_debugger, $this->connection);
+    $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
     $this->buildChadoRecords($values);
 
     // Validate the records.

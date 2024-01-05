@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\TripalStorage;
 
+use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 use Symfony\Component\Validator\ConstraintViolation;
@@ -30,6 +31,16 @@ class ChadoRecords  {
    */
   protected array $violations = [];
 
+  /**
+   * Holds the aliases for tables in joins. We keep track of aliases for joins
+   * via their join paths, but converting a join path to an alias for each
+   * table will be too long for SQL. Instead, we store the hashes here
+   * for easy lookup when performing the join in SQL.
+   *
+   * @var array
+   */
+  protected array $join_aliases = [];
+
 
   /**
    * A service to provide debugging for fields to developers.
@@ -48,12 +59,22 @@ class ChadoRecords  {
 
 
   /**
+   * The TripalLogger for logging messages.
+   *
+   * @var TripalLogger
+   */
+  protected TripalLogger $logger;
+
+
+
+  /**
    * Constructor
    *
    * @param ChadoFieldDebugger $field_debugger
    */
-  public function __construct(ChadoFieldDebugger $field_debugger, ChadoConnection $connection) {
+  public function __construct(ChadoFieldDebugger $field_debugger, TripalLogger $logger, ChadoConnection $connection) {
     $this->field_debugger = $field_debugger;
+    $this->logger = $logger;
     $this->connection = $connection;
   }
 
@@ -72,7 +93,7 @@ class ChadoRecords  {
    */
   protected function checkElement($elements, $key, $method, $what) {
     if (!array_key_exists($key, $elements)) {
-      throw new \Exception(t('@method a ChadoRecord @what without a "@key" element: @elements',
+      throw new \Exception(t('ChadoRecords::checkElement(). @method a ChadoRecord @what without a "@key" element: @elements',
           ['@method' => $method, '@what' => $what, '@key' => $key, '@elements' => print_r($elements, TRUE)]));
     }
   }
@@ -113,6 +134,9 @@ class ChadoRecords  {
       return FALSE;
     }
 
+    // Use the table alias provided for joining.
+    $this->join_aliases[$table_alias] = $table_alias;
+
     // If this base table has not been yet added to the records array then
     // add it.  The first level holds all of the bsae tables for all records
     // needed by fields.  It also holds the record ID if known.
@@ -120,6 +144,11 @@ class ChadoRecords  {
       $this->records[$base_table] = [
         'tables' => [],
         'record_id' => 0,
+      ];
+      // The base table doesn't have an alias so make sure we have an entry for it..
+      $this->records[$base_table]['tables'][$base_table] = [
+        'chado_table' => $base_table,
+        'items' => [],
       ];
     }
 
@@ -141,22 +170,39 @@ class ChadoRecords  {
     // it's empty and a mapping array for column aliases.
     if (!array_key_exists($delta, $this->records[$base_table]['tables'][$table_alias]['items'])) {
       $this->records[$base_table]['tables'][$table_alias]['items'][$delta] = [
-        // columns for this table.
+        // columns for this table. This is just a simple list of columns
+        // for the base table that should be included in the record.
         'columns' => [],
+
+        // An array the indicates which fields want column values.
+        'field_columns' => [],
+
         // Conditinos for this table when performing a query.
         'conditions' => [],
-        // Joins that should be made with this table.
+
+        // Joins that should be made with this table. The keys in this
+        // array is the full join point from the root table. It will contain
+        // two sub keys: 'on' (providing details about how to do the join) and
+        // 'columns' with information about which columns from the join to
+        // include in the final values set.
         'joins' => [],
+
         // Helps indicate if a record should be removed if it's empty.
         // this only applies to recrods in ancillary tables.
         'delete_if_empty' => [],
+
         // Indicates the list of columns that store the base table record_id.
         'link_columns' => [],
-        // Aliases for columns.
+
+        // Aliases for columns. This is indexed by the column alias. The value
+        // is a set of key value pairs indicating the chado_table, table_alias and
+        // chado column names.
         'column_aliases' => [],
+
         // The values. It will combine all of the columns from the table, and
-        // any columns from joined tables.  This contains a key/value pair
-        // for each value.
+        // any columns from joined tables.  There is no guarnatee that fields
+        // won't give the same name to the same fields in the same tables so
+        // these values will be indexed by the field and key they belong to.
         'values' => []
       ];
     }
@@ -195,10 +241,15 @@ class ChadoRecords  {
    *   be used to fill in the record.  The value will be set automatically
    *   once it's known. Defaults to FALSE.
    *
+   * @param bool $read_only
+   *   If the column requested has a read-only value then we want to make
+   *   sure that the column is present in the query and we get results for it
+   *   but any value that might be set coming in should be ignored.
+   *
    * @throws \Exception
    *   If the any required fields are missing an error is thrown.
    */
-  public function addColumn(array $elements, bool $is_link = FALSE) {
+  public function addColumn(array $elements, bool $is_link = FALSE, bool $read_only = FALSE) {
 
     // Initlaize the table. If the function returns FALSE
     // then the caller is trying to re-intalize the base table so jus quit.
@@ -210,6 +261,9 @@ class ChadoRecords  {
     $this->checkElement($elements, 'chado_column', 'Setting', 'field');
     $this->checkElement($elements, 'column_alias', 'Setting', 'field');
     $this->checkElement($elements, 'value', 'Setting', 'field');
+    $this->checkElement($elements, 'field_name', 'Setting', 'field');
+    $this->checkElement($elements, 'property_key', 'Setting', 'field');
+
 
     // Get the elements needed to add a field.
     $base_table = $elements['base_table'];
@@ -219,23 +273,45 @@ class ChadoRecords  {
     $chado_column = $elements['chado_column'];
     $column_alias = $elements['column_alias'];
     $value = $elements['value'];
+    $field_name = $elements['field_name'];
+    $property_key = $elements['property_key'];
 
     // Add the field.
     if (!in_array($column_alias, $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['columns'])) {
       $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['columns'][] = $column_alias;
+      $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] = NULL;
+      $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['column_aliases'][$column_alias] = [
+        'chado_table' => $chado_table,
+        'table_alias' => $table_alias,
+        'chado_column' => $chado_column
+      ];
+    }
+
+    $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['field_columns'][$column_alias][] = [
+      'chado_column' => $chado_column,
+      'column_alias' => $column_alias,
+      'field_name' => $field_name,
+      'property_key' => $property_key
+    ];
+
+    // If this is a read-only field then don't set the value. It will get set
+    // after a load.
+    if ($read_only) {
+      return;
+    }
+
+    // If the value is set (i.e., not null) then don't reset it.
+    if ($this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] !== NULL)  {
+      return;
     }
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] = $value;
-    $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['column_aliases'][$column_alias] = [
-      'chado_table' => $chado_table,
-      'table_alias' => $table_alias,
-      'chado_column' => $chado_column
-    ];
+
 
     // Add the optional delete_if_empty.
     if (array_key_exists('delete_if_empty', $elements) and $elements['delete_if_empty'] === TRUE) {
       $this->checkElement($elements, 'empty_value', 'Adding', 'field');
       $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['delete_if_empty'][] = [
-        'chado_column' => $chado_column,
+        'chado_column' => $column_alias,
         'empty_value' => $elements['empty_value']
       ];
     }
@@ -402,16 +478,8 @@ class ChadoRecords  {
     $left_alias = $elements['left_alias'];
     $right_alias = $elements['right_alias'];
 
-    // So that we don't have conflicts when multiple joins use the same
-    // tables we'll give the table an alias if the callee didn't give it one.
-    $trail = $this->getJoinTrail($join_path);
-    if ($right_alias == $right_table) {
-      $right_alias = $trail;
-    }
-    // The left alias is one table less than the right alias.
-    if ($left_alias == $left_table) {
-      $left_alias = preg_replace('/^(.+)__.+$/', '$1', $trail);
-    }
+    // Get the left and right aliases.
+    [$left_alias, $right_alias] = $this->getJoinAliases($elements);
 
     // Add the join.
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['joins'][$join_path]['on'] = [
@@ -423,43 +491,88 @@ class ChadoRecords  {
       'left_alias' => $left_alias,
       'right_alias' => $right_alias,
     ];
+
+    // Add an empty columns array. It is possible that a property has a join
+    // path that goes multiple tables deep and some of those interior joins
+    // may not have any columns to be selected for the record.  In this case,
+    // we need to have an empty columns array to prevent missing key errors.
+    if (!array_key_exists('columns', $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['joins'][$join_path])) {
+      $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['joins'][$join_path]['columns'] = [];
+    }
   }
 
   /**
-   * Gets the trail of tables in a join path.
+   * Generates unique aliases for tables used in joins.
    *
-   * @param string $join_path
-   *   A string for the join path.
+   * This function will generate unique aliases if the callee did not
+   * provide them.
+   *
+   * @param array $elements
+   *   The array of elements passed to the addJoin() function
+   * @return array
+   *   An array of two strings: the left table alias and the right table alias.
+   */
+  protected function getJoinAliases(array $elements) : array {
+    $base_table = $elements['base_table'];
+    $right_table = $elements['right_table'];
+    $left_table = $elements['left_table'];
+    $join_path = $elements['join_path'];
+    $left_alias = $elements['left_alias'];
+    $right_alias = $elements['right_alias'];
+
+    // So that we don't have conflicts when multiple joins use the same
+    // tables we'll give the table an alias if the callee didn't give it one.
+    // This alias needs to be short so that the SQL doesn't bork itself.
+    // We know a property is referring to the same join if the join path
+    // is the same, so we can assign a short random hash of letters to
+    // each join path table/column to ensure the SQL won't break.
+    // We only do this if the user didn't provide an alias.
+    if ($right_alias == $right_table) {
+      // The right path is everything up to the final column
+      $right_path = preg_replace('/^(.+)\..+$/', '$1', $join_path);
+      if (!array_key_exists($right_path, $this->join_aliases)) {
+        $this->join_aliases[$right_path] = $this->generateJoinHash();
+      }
+      $right_alias = $this->join_aliases[$right_path];
+    }
+    if ($left_alias == $left_table and $left_table != $base_table) {
+      // The left path is the table just before the right table.
+      $left_path = preg_replace('/^(.+)\>.+$/', '$1', $join_path);
+      $left_path = preg_replace('/^(.+)\..+$/', '$1', $left_path);
+      $left_path = preg_replace('/^(.+)\;.+$/', '$1', $left_path);
+      $left_path = preg_replace('/^(.+)\..+$/', '$1', $left_path);
+      if (!array_key_exists($left_path, $this->join_aliases)) {
+        $this->join_aliases[$left_path] = $this->generateJoinHash();
+      }
+      $left_alias = $this->join_aliases[$left_path];
+    }
+
+    return [$left_alias, $right_alias];
+  }
+
+  /**
+   * Generates a random character string.
+   *
+   * @param int $length
+   *   The length of the unique string.
    *
    * @return string
-   *   A string containing just the tables in the join path.
    */
-  protected function getJoinTrail($join_path) {
+  protected function generateJoinHash(int $length = 20) {
 
-    // If the path is a string then split it.
-    $path_arr = [];
-    if (is_string($join_path)) {
-      $path_arr = explode(";", $join_path);
+    $characters = 'abcdefghijklmnopqrstuvwxyz_';
+    $characters_length = strlen($characters);
+    $random_string = '';
+    for ($i = 0; $i < $length; $i++) {
+      $random_string .= $characters[random_int(0, $characters_length - 1)];
     }
-    else {
-      $path_arr = $join_path;
+
+    // If the string created already exists in the list (shouldn't happen)
+    // then repeat until we get a unique one.
+    while (array_key_exists($random_string, $this->join_aliases)) {
+      $random_string = $this->generateJoinHash($length);
     }
-    $curr_path = array_shift($path_arr);
-
-    // Get the current path in the list.
-    if (preg_match('/>/', $curr_path)) {
-
-      list($left, $right) = explode(">", $curr_path);
-      list($left_alias, $left_column) = explode(".", $left);
-      list($right_alias, $right_column) = explode(".", $right);
-
-      if (count($path_arr) == 0) {
-        return $left_alias . '__' . $right_alias;
-      }
-      else {
-        return $left_alias . '__' . $this->getJoinTrail($path_arr);
-      }
-    }
+    return $random_string;
   }
 
   /**
@@ -499,7 +612,6 @@ class ChadoRecords  {
       return;
     }
 
-
     // Make sure all of the required elements are preesent
     $this->checkElement($elements, 'join_path', 'Setting', 'join column');
     $this->checkElement($elements, 'chado_column', 'Setting', 'join column');
@@ -518,13 +630,6 @@ class ChadoRecords  {
     $field_name = $elements['field_name'];
     $property_key = $elements['property_key'];
 
-    // So that we don't have conflicts when multiple joins use the same
-    // tables we'll give the table an alias if the callee didn't give it one.
-    if ($chado_table == $table_alias) {
-      //$trail = $this->getJoinTrail($join_path);
-      //$table_alias = $trail;
-    }
-
     // Add the join column.
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['joins'][$join_path]['columns'][] = [
       'chado_column' => $chado_column,
@@ -533,12 +638,9 @@ class ChadoRecords  {
       'property_key' => $property_key
     ];
 
+    // We need to add a value to the 'values' arrah with an empty value as this will
+    // get filled in after a load.
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] = NULL;
-    $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['column_aliases'][$column_alias] = [
-      'chado_table' => $chado_table,
-      'table_alias' => $table_alias,
-      'chado_column' => $chado_column
-    ];
   }
 
   /**
@@ -1624,7 +1726,8 @@ class ChadoRecords  {
 
 
       $delete = $this->connection->delete('1:'. $chado_table);
-      foreach ($record['conditions'] as $chado_column => $cond_value) {
+      foreach ($record['conditions'] as $column_alias => $cond_value) {
+        $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
         $delete->condition($chado_column, $cond_value['value']);
       }
 
@@ -1712,8 +1815,9 @@ class ChadoRecords  {
       }
 
       // Add the select condition
-      foreach ($record['conditions'] as $chado_column => $value) {
+      foreach ($record['conditions'] as $column_alias => $value) {
         if (!empty($value['value'])) {
+          $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
           $select->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
         }
       }
@@ -1738,6 +1842,7 @@ class ChadoRecords  {
           }
         }
       }
+
     }
   }
 
