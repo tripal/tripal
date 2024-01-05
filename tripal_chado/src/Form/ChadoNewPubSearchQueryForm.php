@@ -602,7 +602,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
           $plugin->form_submit($form, $form_state, $criteria_column_array);
         }
         $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $criteria_column_array;
-        dpm($criteria_column_array);
 
         // Older code before 1/5/2024
         // $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $this->criteria_convert_to_array($form, $form_state);

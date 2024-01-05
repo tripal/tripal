@@ -83,7 +83,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
   public function test($form, &$form_state, $search_array) {
     $results = NULL;
     try {
-      $results = $this->tripal_pub_remote_search_PMID($search_array, 5, 1);
+      $results = $this->tripal_pub_remote_search_PMID($search_array, 5, 0);
     }
     catch (\Exception $ex) {
 
@@ -209,7 +209,6 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
         'pubs' => [],
       ];
     }
-  
     // now get the list of PMIDs from the initialized search
     $pmids_txt = $this->tripal_pub_PMID_fetch($query_key, $web_env, 'uilist', 'text', $start, $num_to_retrieve);
   
@@ -262,7 +261,6 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     }
   
     usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
-    // dpm($query_url);
     $rfh = fopen($query_url, "r");
     if (!$rfh) {
       \Drupal::messenger()->addMessage('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
@@ -276,7 +274,6 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       $query_xml .= fread($rfh, 255);
     }
     fclose($rfh);
-    // dpm($query_xml);
     $xml = new \XMLReader();
     $xml->xml($query_xml);
   
