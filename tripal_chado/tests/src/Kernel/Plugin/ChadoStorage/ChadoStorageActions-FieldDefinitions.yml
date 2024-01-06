@@ -280,7 +280,7 @@ testStorePKeyAction:
 testStorePKeyActionTableAlias:
   test_chado_alias:
     field_name: 'test_chado_alias'
-    base_table: 'db'
+    base_table: 'cv'
     properties:
       primary_key:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
