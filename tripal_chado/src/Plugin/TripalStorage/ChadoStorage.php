@@ -850,12 +850,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'property_key' => $context['property_key'],
     ];
     $this->records->addColumn($elements, FALSE, TRUE);
-
-    // If this is a find operation then we want to add a condition on the
-    // value.
-    if ($context['is_find'] and !empty($value)) {
-      $this->records->addCondition($elements);
-    }
   }
 
   /**
