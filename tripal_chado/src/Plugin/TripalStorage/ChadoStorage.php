@@ -178,7 +178,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-    //print_r($this->records->getRecordsArray());
     return TRUE;
   }
 
@@ -224,15 +223,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
       }
 
-      // Now taht we've done the updates, set the property values.
+      // Now that we've done the updates, set the property values.
       $this->setPropValues($values, $this->records);
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-
-    //dpm($this->records->getRecordsArray());
     return TRUE;
   }
 
@@ -272,7 +269,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
     $this->field_debugger->reportValues($values, 'The values after loading is complete.');
 
-    //print_r($this->records->getRecordsArray());
     return TRUE;
   }
 
@@ -421,17 +417,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $value = $records->getColumnValue($base_table, $table_alias, $my_delta, $column_alias);
             $values[$field_name][$delta][$key]['value']->setValue($value);
 
-            if ($field_name == 'gene_contact') {
-            //  dpm([$field_name, $delta, $key, '--', $base_table, $table_alias, $my_delta, $column_alias, $value]);
-            //  dpm($value_col_info);
-            //  dpm($values[$field_name][$delta][$key]['value']->getValue());
-            }
           }
         }
       }
     }
-    //dpm($this->records->getRecordsArray());
-
 
     // Now that we have all stored and loaded values set, let's do any
     // replacements.
@@ -570,7 +559,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : '';
             $table_alias_mapping = array_key_exists('table_alias_mapping', $prop_storage_settings) ? $prop_storage_settings['table_alias_mapping'] : [];
             $path_array = $this->parsePath($field_name, $base_table, $path, $table_alias_mapping, $as);
-            //dpm($path_array);
 
             // Add to the context.
             $context['path_string'] = $prop_storage_settings['path'];

@@ -460,7 +460,7 @@ class ChadoRecords  {
 
     // Initlaize the table. If the function returns FALSE
     // then the caller is trying to re-intalize the base table so jus quit.
-    if(!$this->initTable($elements)){
+    if (!$this->initTable($elements)){
       return;
     }
 
@@ -1485,13 +1485,19 @@ class ChadoRecords  {
 
       // Build the Insert.
       $insert = $this->connection->insert('1:' . $chado_table);
+
+      // Generate the list of fields to add to the insert.
       $values = [];
       foreach ($record['columns'] as $column_alias) {
         $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
         $values[$chado_column] = $record['values'][$column_alias];
       }
+
+      // Remove the primary key. It can't be set on an insert. Most likely it's
+      // zero.
       unset($values[$pkey]);
 
+      // Add the fiels to the insert.
       $insert->fields($values);
       $this->field_debugger->reportQuery($insert, "Insert Query for $chado_table ($delta)");
 
@@ -1607,7 +1613,7 @@ class ChadoRecords  {
 
         // We start by cloning the records array
         // (includes all tables, not just the current $base_table)
-        $new_record = new ChadoRecords($this->field_debugger, $this->connection);
+        $new_record = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
         $new_record->copyRecords($this);
 
         // Save the new record object. to be returned later.

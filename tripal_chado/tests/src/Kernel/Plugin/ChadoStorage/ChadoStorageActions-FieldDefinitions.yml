@@ -474,7 +474,7 @@ testStoreActionDeleteIfEmpty:
       type:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        path: merry.featureprop_id
+        path: merry.type_id
         table_alias_mapping:
           merry: featureprop
         # chado_table: 'featureprop' # deprecated
