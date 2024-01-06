@@ -40,15 +40,160 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
-class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
+class ChadoLinkerTableTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  // We will populate this variable at the start of each test
-  // with fields specific to that test.
-  protected $fields = [];
-
-  protected $yaml_file = __DIR__ . "/ChadoStorageLinkerFields-FieldDefinitions.yml";
+  protected $fields = [
+    'synonymfield' => [
+      'field_name' => 'synonymfield',
+      'base_table' => 'feature',
+      'properties' => [
+        'record_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_id',
+          'drupal_store' => TRUE,
+          'chado_table' => 'feature',
+          'chado_column' => 'feature_id'
+        ],
+        'linker_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_pkey',
+          'chado_table' => 'feature_synonym',
+          'chado_column' => 'feature_synonym_id',
+        ],
+        'link' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_link',
+          'left_table' => 'feature',
+          'left_table_id' => 'feature_id',
+          'right_table' => 'feature_synonym',
+          'right_table_id' => 'feature_id'
+        ],
+        'right_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'feature_synonym',
+          'chado_column' => 'synonym_id'
+        ],
+        // Other columns in feature_synonym. These are set by the widget.
+        'pub_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'feature_synonym',
+          'chado_column' => 'pub_id'
+        ],
+        'is_current' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'feature_synonym',
+          'chado_column' => 'is_current'
+        ],
+        'is_internal' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'feature_synonym',
+          'chado_column' => 'is_internal'
+        ],
+      ],
+    ],
+    'analysisfield' => [
+      'field_name' => 'analysisfield',
+      'base_table' => 'feature',
+      'properties' => [
+        'record_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_id',
+          'drupal_store' => TRUE,
+          'chado_table' => 'feature',
+          'chado_column' => 'feature_id'
+        ],
+        'linker_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_pkey',
+          'chado_table' => 'analysisfeature',
+          'chado_column' => 'analysisfeature_id',
+        ],
+        'link' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_link',
+          'left_table' => 'feature',
+          'left_table_id' => 'feature_id',
+          'right_table' => 'analysisfeature',
+          'right_table_id' => 'feature_id'
+        ],
+        'right_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'analysisfeature',
+          'chado_column' => 'analysis_id'
+        ],
+      ],
+    ],
+    'contactfield' => [
+      'field_name' => 'contactfield',
+      'base_table' => 'feature',
+      'properties' => [
+        'record_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_id',
+          'drupal_store' => TRUE,
+          'chado_table' => 'feature',
+          'chado_column' => 'feature_id'
+        ],
+        'linker_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_pkey',
+          'chado_table' => 'feature_contact',
+          'chado_column' => 'feature_contact_id',
+        ],
+        'link' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_link',
+          'left_table' => 'feature',
+          'left_table_id' => 'feature_id',
+          'right_table' => 'feature_contact',
+          'right_table_id' => 'feature_id'
+        ],
+        'right_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'feature_contact',
+          'chado_column' => 'contact_id'
+        ],
+      ],
+    ],
+    'testotherfeaturefield' => [
+      'field_name' => 'testotherfeaturefield',
+      'base_table' => 'feature',
+      'properties' => [
+        'record_id' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store_id',
+          'chado_table' => 'feature',
+          'chado_column' => 'feature_id'
+        ],
+        'feature_type' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'feature',
+          'chado_column' => 'type_id'
+        ],
+        'feature_organism' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'feature',
+          'chado_column' => 'organism_id'
+        ],
+        'feature_uname' => [
+          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
+          'action' => 'store',
+          'chado_table' => 'feature',
+          'chado_column' => 'uniquename'
+        ],
+      ],
+    ],
+  ];
 
   protected int $organism_id;
   protected int $cvterm_id;
@@ -73,9 +218,6 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
     $container->set('tripal.logger', $mock_logger);
 
     $this->setUpChadoStorageTestEnviro();
-
-    $this->setFieldsFromYaml($this->yaml_file, "testLinkerTables");
-    $this->cleanChadoStorageValues();
 
     // Create the organism record for use with the feature table.
     $infra_type_id = $this->getCvtermID('TAXRANK', '0000010');

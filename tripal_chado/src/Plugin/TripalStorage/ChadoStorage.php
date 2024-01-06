@@ -1040,7 +1040,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     return NULL;
   }
 
-
   /**
    * A helper function for the buildChadoRecords() function.
    *
