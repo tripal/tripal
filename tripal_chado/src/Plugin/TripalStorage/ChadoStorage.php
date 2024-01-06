@@ -546,7 +546,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $n_added = 0;
       $defined_aliases[$j_index] = [0 => 'ct'];
       do {
-      $n_added = 0;
+        $n_added = 0;
         foreach ($record['joins'] as $rtable => $rjoins) {
           foreach ($rjoins as $jinfo) {
             $lalias = $jinfo['on']['left_alias'];

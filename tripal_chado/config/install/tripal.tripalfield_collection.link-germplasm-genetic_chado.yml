@@ -7,9 +7,9 @@ fields:
 
     -   name: germplasm_feature
         content_type: germplasm
-        label: Sequence Feature
+        label: Feature
         type: chado_feature_type_default
-        description: One or more sequence features observed in this germplasm
+        description: One or more features observed in this germplasm
         cardinality: -1
         required: false
         storage_settings:
