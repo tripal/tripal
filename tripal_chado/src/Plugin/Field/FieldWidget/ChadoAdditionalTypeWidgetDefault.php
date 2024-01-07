@@ -49,6 +49,7 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
 
     // Find the term if one is present.
     $default_autoc = '';
+    $term_string = '';
     if ($type_id) {
       $query = $chado->select('1:cvterm', 'cvt');
       $query->leftJoin('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
@@ -59,6 +60,7 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
       $query->condition('cvt.cvterm_id', $type_id);
       $result = $query->execute()->fetchObject();
       $default_autoc = $result->name  . ' (' . $result->db_name . ':' . $result->accession . ')';
+      $term_string = $result->db_name . ':' . $result->accession;
     }
 
     // If this is a fixed value then get it.
@@ -70,7 +72,7 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
       // user submitted value.
       $idSpace = $field_settings['termIdSpace'];
       $accession = $field_settings['termAccession'];
-      $fixed_value_value = $idSpace . ':' . $accession;
+      $term_string = $idSpace . ':' . $accession;
 
       // Now we need the cvterm name.
       $query = $chado->select('1:cvterm', 'cvt');
@@ -110,7 +112,7 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
     ];
     $elements['value'] = [
       '#type' => 'value',
-      '#default_value' => $fixed_value_value,
+      '#default_value' => $term_string,
     ];
     $elements['term_name'] = [
       '#type' => 'value',
