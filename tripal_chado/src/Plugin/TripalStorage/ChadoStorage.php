@@ -318,20 +318,20 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         // the ancillary tables.
         foreach ($matches as $match) {
 
-          $tables = $this->records->getAncillaryTables($base_table);
-          foreach ($tables as $table_alias) {
-            $match->selectRecords($base_table, $table_alias);
-          }
-
           // Clone the value array for this match.
           $new_values = $this->cloneValues($values);
 
-          // Add any additional items to the values array that are needed.
-          $num_items = $match->getNumTableItems($base_table, $table_alias);
-          for ($i = 0; $i < $num_items - 1; $i++) {
-            $table_fields = $match->getTableFields($base_table, $table_alias);
-            foreach ($table_fields as $field_name) {
-              $this->addEmptyValuesItem($new_values, $field_name);
+          $tables = $this->records->getAncillaryTables($base_table);
+          foreach ($tables as $table_alias) {
+            $match->selectRecords($base_table, $table_alias);
+
+            // Add any additional items to the values array that are needed.
+            $num_items = $match->getNumTableItems($base_table, $table_alias);
+            for ($i = 0; $i < $num_items - 1; $i++) {
+              $table_fields = $match->getTableFields($base_table, $table_alias);
+              foreach ($table_fields as $field_name) {
+                $this->addEmptyValuesItem($new_values, $field_name);
+              }
             }
           }
 
@@ -345,7 +345,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-
     return $found_list;
   }
 
