@@ -126,7 +126,7 @@ fields:
         settings:
             termIdSpace: CO_010
             termAccession: "0000044"
-            fixed_value: CO_010:0000044
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -153,7 +153,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -288,7 +288,7 @@ fields:
         settings:
             termIdSpace: CO_010
             termAccession: "0000255"
-            fixed_value: CO_010:0000255
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -315,7 +315,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -450,7 +450,7 @@ fields:
         settings:
             termIdSpace: CO_010
             termAccession: 0000029
-            fixed_value: CO_010:0000029
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -477,7 +477,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -612,7 +612,7 @@ fields:
         settings:
             termIdSpace: CO_010
             termAccession: "0000162"
-            fixed_value: CO_010:0000162
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -639,7 +639,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
+            fixed_value: TRUE
         display:
           view:
             default:

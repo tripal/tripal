@@ -288,7 +288,7 @@ fields:
         settings:
             termIdSpace: SO
             termAccession: "0000771"
-            fixed_value: SO:0000771
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -342,7 +342,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -369,7 +369,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -583,7 +583,7 @@ fields:
         settings:
             termIdSpace: SO
             termAccession: "0001060"
-            fixed_value: SO:0001060
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -637,7 +637,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -664,7 +664,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -878,7 +878,7 @@ fields:
         settings:
             termIdSpace: SO
             termAccession: "0001645"
-            fixed_value: SO:0001645
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -932,7 +932,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -959,7 +959,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -1173,7 +1173,7 @@ fields:
         settings:
             termIdSpace: SO
             termAccession: "0001500"
-            fixed_value: SO:0001500
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -1227,7 +1227,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
+            fixed_value: TRUE
         display:
           view:
             default:
@@ -1254,7 +1254,7 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
+            fixed_value: TRUE
         display:
           view:
             default:
