@@ -129,8 +129,8 @@ field.field.tripal_entity.*.*:
           label: 'Flag to Enable field debugging'
           nullable: true
         fixed_value:
-          type: string
-          label: "A fixed value for the field that cannot be changed."
+          type: boolean
+          label: "Indicates if this field has a fixed value for one or more of it's property types."
           nullable: true
 
 ## For TripalEntityTypeCollection functionality
@@ -281,8 +281,8 @@ tripal.tripalfield_collection.*:
                      label: "Term Accession"
                      nullable: false
                    fixed_value:
-                     type: string
-                     label: "A fixed value for the field that cannot be changed."
+                     type: boolean
+                     label: "Indicates if this field has a fixed value for one or more of it's property types."
                      nullable: true
                display:
                  type: mapping
