@@ -70,14 +70,14 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
         'testStorePKeyAction',
         'test_field'
       ],
-// @todo: spf. Commenting out this test because it's trying
-// to set an alias on a base table. This will cause ChadoStorage to
-// throw an error.  But the error is not caught or checked for here so
-// the test fails.
-//      [
-//        'testStorePKeyActionTableAlias',
-//        'test_chado_alias'
-//      ]
+      // NOTE: We can test an alias on the pkey action here
+      // because the action is not on the base table for the field
+      // even though there is no path between the base table and the
+      // table the store_pkey is on.
+      [
+        'testStorePKeyActionTableAlias',
+        'test_chado_alias'
+      ]
     ];
   }
 

@@ -153,10 +153,11 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
     $this->cleanChadoStorageValues();
 
     // For loading only the store id/pkey/link items should be populated.
+    $project_id = 1;
     $load_values = [
       'project' => [
         [
-          'record_id' => 1,
+          'record_id' => $project_id,
         ]
       ],
       'right_linker' => [
@@ -178,50 +179,42 @@ class ChadoStorageActions_StoreLinkTest extends ChadoTestKernelBase {
     ];
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
 
+    // Lets put together an expected array here based on the load and insert values.
+    $expected_values = $insert_values;
+    $expected_values['project'][0]['record_id'] = $project_id;
+    $expected_values['right_linker'][0]['record_pkey'] = $right_linker_pkeys[0];
+    $expected_values['right_linker'][0]['fkey'] = $project_id;
+    $expected_values['right_linker'][1]['record_pkey'] = $right_linker_pkeys[1];
+    $expected_values['right_linker'][1]['fkey'] = $project_id;
+    $expected_values['left_linker'][0]['record_pkey'] = $left_linker_pkeys[0];
+    $expected_values['left_linker'][0]['fkey'] = $project_id;
+    $expected_values['left_linker'][1]['record_pkey'] = $left_linker_pkeys[1];
+    $expected_values['left_linker'][1]['fkey'] = $project_id;
+
     // Check that the store values in our fields have been loaded as they were inserted.
-    foreach ($insert_values as $field_name => $delta_records) {
+    foreach ($expected_values as $field_name => $delta_records) {
       if ($field_name == 'project') { continue; }
       foreach ($delta_records as $delta => $expected_values) {
-// @todo: spf.  I've commented out this test because I don't understand how it
-// was working previously but it's not now.  The test breaks when testing
-// if the fkey from a load matches what is expected. I've verified that
-// ChadoStorage is inserting all 4 records into the projectprop table, and
-// it properly returns them in the $values array.  This test looks to make
-// sure that what is returned from a loadValues after the insert is what is
-// expected. However, the value it uses as the "expected" comes from the
-// $insert_values array above and the `fkey` property has a null value in that
-// array.  The value returned form ChadoStorage does not have a null value,
-// it has the projectprop_id--which it should have. Since the null value and
-// the numeric value are not the same the test fails. But this seems like
-// a bug in the test. I can't see where the values in the $insert_values array
-// would have been set with correct values prior to this test. I removed
-// `fkey` from the test.
-        //foreach(['fkey', 'type', 'rank'] as $property) {
-        foreach(['type', 'rank'] as $property) {
+        foreach(['fkey', 'type', 'rank'] as $property) {
           $retrieved = $retrieved_values[$field_name][$delta][$property]['value']->getValue();
           $expected = $expected_values[$property];
 
-//          print_r([$field_name, $delta, $property, $expected_values, $expected, $retrieved]);
           $this->assertEquals($expected, $retrieved,
             "The value we retrieved for $field_name.$delta.$property did not match the one set with a store attribute during insert.");
         }
       }
     }
 
-// @todo: spf: skipping this test as well because it sets the `record_pkey` but
-// does not set the project_id so we have no way to update the project.
-return;
-
     // Test Case: Update values in Chado using ChadoStorage.
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
     // and all values of the other properties.
     $update_values = $insert_values;
+    $update_values['project'][0]['record_id'] = $project_id;
     $update_values['right_linker'][0]['record_pkey'] = $right_linker_pkeys[0];
     $update_values['right_linker'][1]['record_pkey'] = $right_linker_pkeys[1];
     $update_values['left_linker'][0]['record_pkey'] = $left_linker_pkeys[0];
     $update_values['left_linker'][1]['record_pkey'] = $left_linker_pkeys[1];
-    // $update_values['right_linker'][0]['fkey'] = $update_values['right_linker'][1]['fkey'] = $update_values['left_linker'][0]['fkey'] = $update_values['left_linker'][1]['fkey'] = 1;
 
     // Let's test this without any changes.
     $this->chadoStorageTestUpdateValues($update_values);
