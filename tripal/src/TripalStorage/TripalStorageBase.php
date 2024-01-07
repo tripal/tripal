@@ -241,6 +241,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
     foreach ($values[$field_name][0] as $key => $value) {
       $values[$field_name][$num_items][$key] = [];
       $values[$field_name][$num_items][$key]['value'] = clone $value['value'];
+      $values[$field_name][$num_items][$key]['value']->setValue(NULL);
     }
   }
 
