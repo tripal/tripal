@@ -108,8 +108,9 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
-      'chado_table' => $base_table,
-      'chado_column' => $base_pkey_col
+      'path' => $base_table . '.' . $base_pkey_col,
+      //'chado_table' => $base_table,
+      //'chado_column' => $base_pkey_col
     ]);
 
     // If the type table and the base table are not the same then we are
@@ -123,53 +124,55 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $link_term = $mapping->getColumnTermId($type_table, $type_fkey_col);
       $value_term = $mapping->getColumnTermId($type_table, 'value');
 
+      // (e.g., analysisprop.analysisprop_id)
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
-        'chado_table' => $type_table,
-        'chado_column' => $type_pkey_col,
+        'path' => $type_table  . '.' . $type_pkey_col,
+        //'chado_table' => $type_table,
+        //'chado_column' => $type_pkey_col,
       ]);
+      // (e.g., analysisprop.feature_id)
       $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', $link_term, [
         'action' => 'store_link',
-        'drupal_store' => TRUE,
-        'left_table' => $base_table,
-        'left_table_id' => $base_pkey_col,
-        'right_table' => $type_table,
-        'right_table_id' => $type_fkey_col,
+        'path' => $type_table . '.' . $type_fkey_col,
+        //'chado_table' => $type_table,
+        //'chado_column' => $type_fkey_col,
       ]);
+      // (e.g., analysisprop.value)
       $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
-        'chado_table' => $type_table,
-        'chado_column' => 'value',
+        'path' => $type_table . '.' . 'value',
+        //'chado_table' => $type_table,
+        //'chado_column' => 'value',
       ]);
     }
 
     // We need to store the numeric cvterm ID for this field.
+    // (e.g., feature.type_id or analysisprop.type_id)
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
       'action' => 'store',
-      'drupal_store' => TRUE,
-      'chado_table' => $type_table,
-      'chado_column' => $type_column,
+      'path' => $type_table . '.' . $type_column,
+      //'chado_table' => $type_table,
+      //'chado_column' => $type_column,
       'empty_value' => 0
     ]);
+
     // This field needs the term name, idspace and accession for proper
     // display of the type.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', $name_term, 128, [
       'action' => 'read_value',
-      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id',
-      'chado_column' => 'name',
+      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;name',
       'as' => 'term_name'
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'id_space', $idspace_term, 128, [
       'action' => 'read_value',
-      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
-      'chado_column' => 'name',
+      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
       'as' => 'idSpace'
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'accession', $accession_term, 128, [
       'action' => 'read_value',
-      'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id',
-      'chado_column' => 'accession',
+      'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession',
       'as' => 'accession'
     ]);
 

@@ -102,7 +102,7 @@ class TripalPublish {
    *
    * @var array $supported_actions
    */
-  protected $supported_actions = ['store_id', 'store', 'store_pkey', 'store_link', 'read_value', 'replace', 'function'];
+  protected $supported_actions = ['store_id', 'store', 'store_link', 'store_pkey', 'read_value', 'replace', 'function'];
 
   /**
    * Keep track of fields which are not supported in order to let the user know.
@@ -309,13 +309,15 @@ class TripalPublish {
    * @param array $seach_values
    */
   protected function addRequiredValues(&$search_values) {
+
     // Iterate through the property types that can uniquely identify an entity.
     foreach ($this->required_types as $field_name => $keys) {
       foreach ($keys as $key => $prop_type) {
         $not_supported = FALSE;
 
-        // This property may be part of a field which has already been marked as unsupported...
-        // If so then it won't be in the field_info and we should skip it.
+        // This property may be part of a field which has already been marked
+        // as unsupported. If so then it won't be in the field_info and we
+        // should skip it.
         if (!array_key_exists($field_name, $this->field_info)) {
           // Add it to the list of unsupported fields just in case
           // it wasn't added before...
@@ -717,36 +719,35 @@ class TripalPublish {
       $total++;
       $i++;
 
-      // No need to add items to those that are already published.
-      if (array_key_exists($entity_id, $existing)) {
-        continue;
+      // Add items to those that are not already published.
+      if (!array_key_exists($entity_id, $existing)) {
+        // Add to the list of entities to insert only those
+        // that don't already exist.  We shouldn't have any that
+        // exist because the querying to find matches should have
+        // excluded existing records that are already bublished, but
+        // just in case.
+        $sql .= "(:bundle_$i, :deleted_$i, :entity_id_$i, :revision_id_$i, :langcode_$i, :delta_$i, ";
+        $args[":bundle_$i"] = $this->bundle;
+        $args[":deleted_$i"] = 0;
+        $args[":entity_id_$i"] = $entity_id;
+        $args[":revision_id_$i"] = 1;
+        $args[":langcode_$i"] = 'und';
+        $args[":delta_$i"] = $delta;
+        foreach (array_keys($this->required_types[$field_name]) as $key) {
+          $placeholder = ':' . $field_name . '_'. $key . '_' . $i;
+          $sql .=  $placeholder . ', ';
+          $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+        }
+        $sql = rtrim($sql, ", ");
+        $sql .= "),\n";
       }
-
-      // Add to the list of entities to insert only those
-      // that don't already exist.  We shouldn't have any that
-      // exist because the querying to find matches should have
-      // excluded existing records that are already bublished, but
-      // just in case.
-      $sql .= "(:bundle_$i, :deleted_$i, :entity_id_$i, :revision_id_$i, :langcode_$i, :delta_$i, ";
-      $args[":bundle_$i"] = $this->bundle;
-      $args[":deleted_$i"] = 0;
-      $args[":entity_id_$i"] = $entity_id;
-      $args[":revision_id_$i"] = 1;
-      $args[":langcode_$i"] = 'und';
-      $args[":delta_$i"] = $delta;
-      foreach (array_keys($this->required_types[$field_name]) as $key) {
-        $placeholder = ':' . $field_name . '_'. $key . '_' . $i;
-        $sql .=  $placeholder . ', ';
-        $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
-      }
-      $sql = rtrim($sql, ", ");
-      $sql .= "),\n";
 
       // If we've reached the size of the batch then let's do the insert.
       if ($i == $batch_size or $total == $num_matches) {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
+
           $database->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
@@ -814,32 +815,8 @@ class TripalPublish {
     $this->addTokenValues($search_values);
     $this->addFixedTypeValues($search_values);
 
-    /** DEBUGGING
-    print "\nDEBUGGING Search Values:\n";
-    foreach ($search_values as $k1 => $lvl1) {
-      foreach ($lvl1 as $k2 => $lvl2) {
-        print "  - $k1 > $k2: " . implode(', ', array_keys($lvl2)) . "\n";
-      }
-    }
-    print "\n";
-    */
-
     $this->logger->notice("Step  1 of 6: Find matching records... ");
     $matches = $this->storage->findValues($search_values);
-
-    /** DEBUGGING
-    print "\nDEBUGGING Matches:\n";
-    foreach ($matches as $k1 => $lvl1) {
-      foreach ($lvl1 as $k2 => $lvl2) {
-        foreach ($lvl2 as $k3 => $lvl3) {
-          foreach ($lvl3 as $k4 => $lvl4) {
-            print "  - $k1 > $k2 > $k3 > $k4: " . $lvl4['value']->getValue() . "\n";
-          }
-        }
-      }
-    }
-    print "\n";
-    */
 
     $this->logger->notice("Step  2 of 6: Generate page titles...");
     $titles = $this->getEntityTitles($matches);
@@ -871,14 +848,6 @@ class TripalPublish {
     if (!empty($this->unsupported_fields)) {
       $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
     }
-
-    /** DEBUGGING
-    print "\nDEBUGGING Required Types:\n";
-    foreach ($this->required_types as $k1 => $lvl1) {
-      print "  - $k1: " . implode(', ', array_keys($lvl1)) . "\n";
-    }
-    print "\n";
-    */
 
     $total_items = 0;
     foreach ($this->field_info as $field_name => $field_info) {

@@ -41,7 +41,7 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
-  /**  
+  /**
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
@@ -74,25 +74,29 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
-      'chado_table' => 'analysis',
-      'chado_column' => 'analysis_id',
+      'path' => 'analysis.analysis_id',
+      //'chado_table' => 'analysis',
+      //'chado_column' => 'analysis_id',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'sourceuri', $src_uri_term, 100, [
       'action' => 'store',
-      'chado_table' => 'analysis',
-      'chado_column' => 'sourceuri',
+      'path' => 'analysis.sourceuri',
+      //'chado_table' => 'analysis',
+      //'chado_column' => 'sourceuri',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'sourcename', $src_name_term, 200, [
       'action' => 'store',
-      'chado_table' => 'analysis',
-      'chado_column' => 'sourcename',
+      'path' => 'analysis.sourcename',
+      //'chado_table' => 'analysis',
+      //'chado_column' => 'sourcename',
       'delete_if_empty' => TRUE,
       'empty_value' => '',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'sourceversion', $src_vers_term, 100, [
       'action' => 'store',
-      'chado_table' => 'analysis',
-      'chado_column' => 'sourceversion',
+      'path' => 'analysis.sourceversion',
+      //'chado_table' => 'analysis',
+      //'chado_column' => 'sourceversion',
     ]);
 
     return ($properties);

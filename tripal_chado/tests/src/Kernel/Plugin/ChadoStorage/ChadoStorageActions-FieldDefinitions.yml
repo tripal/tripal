@@ -26,13 +26,15 @@ testReadValueAction:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'project'
-        chado_column: 'project_id'
+        path: project.project_id
+        # chado_table: 'project' # deprecated
+        # chado_column: 'project_id' # deprecated
       name_read:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'read_value'
-        chado_table: 'project'
-        chado_column: 'name'
+        path: project.name
+        # chado_table: 'project' # deprecated
+        # chado_column: 'name' # deprecated
   # A field which focuses on storing the same fields as the read field above.
   # This is added to ensure there is no conflict between having two fields
   # accessing the same column with different action types.
@@ -43,13 +45,15 @@ testReadValueAction:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'project'
-        chado_column: 'project_id'
+        path: project.project_id
+        # chado_table: 'project' # deprecated
+        # chado_column: 'project_id' # deprecated
       name_store:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'store'
-        chado_table: 'project'
-        chado_column: 'name'
+        path: project.name
+        # chado_table: 'project' # deprecated
+        # chado_column: 'name' # deprecated
   # This is another read-focused field focused on the same as columns.
   # This is here to ensure there are no conflicts with two fields reading the same value.
   other_field_read:
@@ -59,13 +63,15 @@ testReadValueAction:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'project'
-        chado_column: 'project_id'
+        path: project.project_id
+        # chado_table: 'project' # deprecated
+        # chado_column: 'project_id' # deprecated
       name_read_again:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'read_value'
-        chado_table: 'project'
-        chado_column: 'name'
+        path: project.name
+        # chado_table: 'project' # deprecated
+        # chado_column: 'name' # deprecated
 # Ensure the read_value action works with an alias.
 testReadValueActionTableAlias:
   test_alias:
@@ -75,15 +81,21 @@ testReadValueActionTableAlias:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_pkey'
-        chado_table: 'project'
-        chado_table_alias: 'project_alias'
-        chado_column: 'project_id'
+        path: project_alias.project_id
+        table_alias_mapping:
+          project_alias: project
+        # chado_table: 'project' # deprecated
+        # chado_table_alias: 'project_alias' # deprecated
+        # chado_column: 'project_id' # deprecated
       name_read:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'read_value'
-        chado_table: 'project'
-        chado_table_alias: 'project_alias'
-        chado_column: 'name'
+        path: project_alias.name
+        table_alias_mapping:
+          project_alias: project
+        # chado_table: 'project' # deprecated
+        # chado_table_alias: 'project_alias' # deprecated
+        # chado_column: 'name' # deprecated
   test_noalias:
     field_name: 'test_noalias'
     base_table: 'feature'
@@ -91,13 +103,15 @@ testReadValueActionTableAlias:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_pkey'
-        chado_table: 'project'
-        chado_column: 'project_id'
+        path: project.project_id
+        # chado_table: 'project' # deprecated
+        # chado_column: 'project_id' # deprecated
       name_read:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'read_value'
-        chado_table: 'project'
-        chado_column: 'name'
+        path: project.name
+        # chado_table: 'project' # deprecated
+        # chado_column: 'name' # deprecated
 # Ensure we can read the value when a path is supplied (e.g. think old join action)
 testReadValueActionJoin:
   test_join:
@@ -107,14 +121,15 @@ testReadValueActionJoin:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'stock'
-        chado_column: 'stock_id'
+        path: stock.stock_id
+        # chado_table: 'stock' # deprecated
+        # chado_column: 'stock_id' # deprecated
       cvterm_read:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'read_value'
-        chado_table: 'cvterm'
-        chado_column: 'name'
-        path: 'stock.stock_id>stock_cvterm.stock_id;stock_cvterm.cvterm_id>cvterm.cvterm_id'
+        # chado_table: 'cvterm' # deprecated
+        # chado_column: 'name' # deprecated
+        path: stock.stock_id>stock_cvterm.stock_id;stock_cvterm.cvterm_id>cvterm.cvterm_id;name
 # Ensure joins accessing the same column stay separate.
 testReadValueActionJoinDouble:
   test_join1:
@@ -124,19 +139,21 @@ testReadValueActionJoinDouble:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'arraydesign'
-        chado_column: 'arraydesign_id'
+        path: arraydesign.arraydesign_id
+        # chado_table: 'arraydesign' # deprecated
+        # chado_column: 'arraydesign_id' # deprecated
       type_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        action: 'arraydesign_id'
-        chado_table: 'arraydesign'
-        chado_column: 'platformtype_id'
+        action: read_value
+        path: arraydesign.platformtype_id
+        # chado_table: 'arraydesign' # deprecated
+        # chado_column: 'platformtype_id' # deprecated
       accession_read:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'read_value'
-        chado_table: 'dbxref'
-        chado_column: 'accession'
-        path: 'arraydesign.platformtype_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id'
+        # chado_table: 'dbxref' # deprecated
+        # chado_column: 'accession' # deprecated
+        path: arraydesign.platformtype_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession
   test_join2:
     field_name: 'test_join2'
     base_table: 'arraydesign'
@@ -144,19 +161,21 @@ testReadValueActionJoinDouble:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'arraydesign'
-        chado_column: 'arraydesign_id'
+        path: arraydesign.arraydesign_id
+        # chado_table: 'arraydesign' # deprecated
+        # chado_column: 'arraydesign_id' # deprecated
       type_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        action: 'arraydesign_id'
-        chado_table: 'arraydesign'
-        chado_column: 'substratetype_id'
+        action: read_value
+        path: arraydesign.substratetype_id
+        # chado_table: 'arraydesign' # deprecated
+        # chado_column: 'substratetype_id' # deprecated
       accession_read:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'read_value'
-        chado_table: 'dbxref'
-        chado_column: 'accession'
-        path: 'arraydesign.substratetype_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id'
+        # chado_table: 'dbxref' # deprecated
+        # chado_column: 'accession' # deprecated
+        path: arraydesign.substratetype_id>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession
 # Ensure read_value works when there isn't a store action for the same column.
 testReadValueActionNoStore:
   test_read:
@@ -166,18 +185,21 @@ testReadValueActionNoStore:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'project'
-        chado_column: 'project_id'
+        path: project.project_id
+        # chado_table: 'project' # deprecated
+        # chado_column: 'project_id' # deprecated
       name_read:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'read_value'
-        chado_table: 'project'
-        chado_column: 'name'
+        path: project.name
+        # chado_table: 'project' # deprecated
+        # chado_column: 'name' # deprecated
       description_read:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'read_value'
-        chado_table: 'project'
-        chado_column: 'description'
+        path: project.description
+        # chado_table: 'project' # deprecated
+        # chado_column: 'description' # deprecated
 
 ## Focus: Ensure that we can create records by setting this to NULL. Also ensure
 ## that there are no assumptions that this only be used on our typical set of
@@ -192,13 +214,15 @@ testStoreIdAction:
       random_name:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'db'
-        chado_column: 'db_id'
+        path: db.db_id
+        # chado_table: 'db' # deprecated
+        # chado_column: 'db_id' # deprecated
       name:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'store'
-        chado_table: 'db'
-        chado_column: 'name'
+        path: db.name
+        # chado_table: 'db' # deprecated
+        # chado_column: 'name' # deprecated
 # This field should not work as the store_id is not associated with the base table of the field.
 testStoreIdActionNotBase:
   test_non_base_match:
@@ -208,13 +232,15 @@ testStoreIdActionNotBase:
       random_name:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'db'
-        chado_column: 'db_id'
+        path: db.db_id
+        # chado_table: 'db' # deprecated
+        # chado_column: 'db_id' # deprecated
       name:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'store'
-        chado_table: 'db'
-        chado_column: 'name'
+        path: db.name
+        # chado_table: 'db' # deprecated
+        # chado_column: 'name' # deprecated
 # Check that the chado table alias setting works on this action.
 testStoreIdActionTableAlias:
   test_chado_alias:
@@ -224,9 +250,12 @@ testStoreIdActionTableAlias:
       random_name:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'db'
-        chado_table_alias: 'fred'
-        chado_column: 'db_id'
+        path: fred.db_id
+        table_alias_mapping:
+          fred: db
+        # chado_table: 'db' # deprecated
+        # chado_table_alias: 'fred' # deprecated
+        # chado_column: 'db_id' # deprecated
 
 ## Focus: Ensure that we can create records by setting this to NULL.
 ## Chado Table: cvterm
@@ -238,13 +267,15 @@ testStorePKeyAction:
       primary_key:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_pkey'
-        chado_table: 'db'
-        chado_column: 'db_id'
+        path: db.db_id
+        # chado_table: 'db' # deprecated
+        # chado_column: 'db_id' # deprecated
       name:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'store'
-        chado_table: 'db'
-        chado_column: 'name'
+        path: db.name
+        # chado_table: 'db' # deprecated
+        # chado_column: 'name' # deprecated
 # Check that the chado table alias setting works on this action.
 testStorePKeyActionTableAlias:
   test_chado_alias:
@@ -254,20 +285,29 @@ testStorePKeyActionTableAlias:
       primary_key:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_pkey'
-        chado_table: 'db'
-        chado_table_alias: 'fred'
-        chado_column: 'db_id'
+        path: fred.db_id
+        table_alias_mapping:
+          fred: db
+        # chado_table: 'db' # deprecated
+        # chado_table_alias: 'fred' # deprecated
+        # chado_column: 'db_id' # deprecated
       name:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'store'
-        chado_table: 'db'
-        chado_table_alias: 'fred'
-        chado_column: 'name'
+        path: fred.name
+        table_alias_mapping:
+          fred: db
+        # chado_table: 'db' # deprecated
+        # chado_table_alias: 'fred' # deprecated
+        # chado_column: 'name' # deprecated
 
 ## Focus: Ensure that a property with the store action
 ## - can be inserted when an alias is used on a non-base table
 ## - can be loaded when an alias is used on a non-base table
 ## - can be updated when an alias is used on a non-base table
+## NOTE: The path specifically does not link the featureprop and feature tables
+## for this test. This is to ensure that a non-base table that is not linked,
+## can use an alias.
 ## Chado Table: featureprop
 testStoreActionAlias:
   test_store_alias:
@@ -277,27 +317,39 @@ testStoreActionAlias:
       primary_key:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_pkey'
-        chado_table: 'featureprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'featureprop_id'
+        path: pippin.featureprop_id
+        table_alias_mapping:
+          pippin: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'featureprop_id' # deprecated
       fkey:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'feature_id'
+        path: pippin.feature_id
+        table_alias_mapping:
+          pippin: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'feature_id' # deprecated
       type:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'type_id'
+        path: pippin.type_id
+        table_alias_mapping:
+          pippin: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'type_id' # deprecated
       rank:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'rank'
+        path: pippin.rank
+        table_alias_mapping:
+          pippin: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'rank' # deprecated
   test_store_other_alias:
     field_name: 'test_store_other_alias'
     base_table: 'feature'
@@ -305,31 +357,46 @@ testStoreActionAlias:
       primary_key:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_pkey'
-        chado_table: 'featureprop'
-        chado_table_alias: 'merry'
-        chado_column: 'featureprop_id'
+        path: merry.featureprop_id
+        table_alias_mapping:
+          merry: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'featureprop_id' # deprecated
       fkey:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'merry'
-        chado_column: 'feature_id'
+        path: merry.feature_id
+        table_alias_mapping:
+          merry: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'feature_id' # deprecated
       type:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'merry'
-        chado_column: 'type_id'
+        path: merry.type_id
+        table_alias_mapping:
+          merry: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'type_id' # deprecated
       rank:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'merry'
-        chado_column: 'rank'
+        path: merry.rank
+        table_alias_mapping:
+          merry: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'rank' # deprecated
 
 ## Focus: Ensure that a property with the store action
 ## - is deleted if it's an empty string and delete_if_empty is true
 ## - is kept and inserted as an empty string if delete_if_empty is false
+## NOTE: The path specifically does not link the featureprop and feature tables
+## for this test. This is to ensure that a non-base table that is not linked,
+## can use an alias.
 ## Chado Table: featureprop
 testStoreActionDeleteIfEmpty:
   test_store_alias:
@@ -339,34 +406,49 @@ testStoreActionDeleteIfEmpty:
       primary_key:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_pkey'
-        chado_table: 'featureprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'featureprop_id'
+        path: pippin.featureprop_id
+        table_alias_mapping:
+          pippin: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'featureprop_id' # deprecated
       fkey:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'feature_id'
+        path: pippin.feature_id
+        table_alias_mapping:
+          pippin: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'feature_id' # deprecated
       type:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'type_id'
+        path: pippin.type_id
+        table_alias_mapping:
+          pippin: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'type_id' # deprecated
       value:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'value'
+        path: pippin.value
+        table_alias_mapping:
+          pippin: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'value' # deprecated
         delete_if_empty: TRUE
       rank:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'rank'
+        path: pippin.rank
+        table_alias_mapping:
+          pippin: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'rank' # deprecated
   test_store_other_alias:
     field_name: 'test_store_other_alias'
     base_table: 'feature'
@@ -374,34 +456,49 @@ testStoreActionDeleteIfEmpty:
       primary_key:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_pkey'
-        chado_table: 'featureprop'
-        chado_table_alias: 'merry'
-        chado_column: 'featureprop_id'
+        path: merry.featureprop_id
+        table_alias_mapping:
+          merry: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'featureprop_id' # deprecated
       fkey:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'merry'
-        chado_column: 'feature_id'
+        path: merry.feature_id
+        table_alias_mapping:
+          merry: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'feature_id' # deprecated
       type:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'merry'
-        chado_column: 'type_id'
+        path: merry.type_id
+        table_alias_mapping:
+          merry: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'type_id' # deprecated
       value:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'merry'
-        chado_column: 'value'
+        path: merry.value
+        table_alias_mapping:
+          merry: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'value' # deprecated
         delete_if_empty: FALSE
       rank:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'featureprop'
-        chado_table_alias: 'merry'
-        chado_column: 'rank'
+        path: merry.rank
+        table_alias_mapping:
+          merry: featureprop
+        # chado_table: 'featureprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'rank' # deprecated
 
 ## Focus: Testing the basic functioning of the store_link action inccluding alias' where the base table
 ## is either on the left or right side of the relationship.
@@ -414,13 +511,15 @@ testStoreLinkAction:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        chado_table: 'project'
-        chado_column: 'project_id'
+        path: project.project_id
+        # chado_table: 'project' # deprecated
+        # chado_column: 'project_id' # deprecated
       name_store:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'store'
-        chado_table: 'project'
-        chado_column: 'name'
+        path: project.name
+        # chado_table: 'project' # deprecated
+        # chado_column: 'name' # deprecated
   right_linker:
     field_name: 'right_linker'
     base_table: 'project'
@@ -428,29 +527,41 @@ testStoreLinkAction:
       record_pkey:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_pkey'
-        chado_table: 'projectprop'
-        chado_table_alias: 'merry'
-        chado_column: 'projectprop_id'
+        path: project.project_id>merry.project_id;projectprop_id
+        table_alias_mapping:
+          merry: projectprop
+        # chado_table: 'projectprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'projectprop_id' # deprecated
       fkey:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_link'
-        right_table: 'project'
-        right_table_id: 'project_id'
-        left_table: 'projectprop'
-        left_table_alias: 'merry'
-        left_table_id: 'project_id'
+        path: project.project_id>merry.project_id
+        table_alias_mapping:
+          merry: projectprop
+        # right_table: 'project' # deprecated
+        # right_table_id: 'project_id' # deprecated
+        # left_table: 'projectprop' # deprecated
+        # left_table_alias: 'merry' # deprecated
+        # left_table_id: 'project_id' # deprecated
       type:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'projectprop'
-        chado_table_alias: 'merry'
-        chado_column: 'type_id'
+        path: project.project_id>merry.project_id;type_id
+        table_alias_mapping:
+          merry: projectprop
+        # chado_table: 'projectprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'type_id' # deprecated
       rank:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'projectprop'
-        chado_table_alias: 'merry'
-        chado_column: 'rank'
+        path: project.project_id>merry.project_id;rank
+        table_alias_mapping:
+          merry: projectprop
+        # chado_table: 'projectprop' # deprecated
+        # chado_table_alias: 'merry' # deprecated
+        # chado_column: 'rank' # deprecated
   left_linker:
     field_name: 'left_linker'
     base_table: 'project'
@@ -458,26 +569,38 @@ testStoreLinkAction:
       record_pkey:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_pkey'
-        chado_table: 'projectprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'projectprop_id'
+        path: project.project_id>pippin.project_id;projectprop_id
+        table_alias_mapping:
+          pippin: projectprop
+        # chado_table: 'projectprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'projectprop_id' # deprecated
       fkey:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_link'
-        left_table: 'project'
-        left_table_id: 'project_id'
-        right_table: 'projectprop'
-        right_table_alias: 'pippin'
-        right_table_id: 'project_id'
+        path: project.project_id>pippin.project_id
+        table_alias_mapping:
+          pippin: projectprop
+        # left_table: 'project' # deprecated
+        # left_table_id: 'project_id' # deprecated
+        # right_table: 'projectprop' # deprecated
+        # right_table_alias: 'pippin' # deprecated
+        # right_table_id: 'project_id' # deprecated
       type:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'projectprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'type_id'
+        path: project.project_id>pippin.project_id;type_id
+        table_alias_mapping:
+          pippin: projectprop
+        # chado_table: 'projectprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'type_id' # deprecated
       rank:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store'
-        chado_table: 'projectprop'
-        chado_table_alias: 'pippin'
-        chado_column: 'rank'
+        path: project.project_id>pippin.project_id;rank
+        table_alias_mapping:
+          pippin: projectprop
+        # chado_table: 'projectprop' # deprecated
+        # chado_table_alias: 'pippin' # deprecated
+        # chado_column: 'rank' # deprecated
