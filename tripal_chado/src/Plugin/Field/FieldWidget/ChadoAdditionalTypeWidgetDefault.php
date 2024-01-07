@@ -50,7 +50,7 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
     // Find the term if one is present.
     $default_autoc = '';
     $term_string = '';
-    if ($type_id) {
+    if ($type_id !== NULL) {
       $query = $chado->select('1:cvterm', 'cvt');
       $query->leftJoin('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
       $query->leftJoin('1:db', 'db', 'dbx.db_id = db.db_id');
@@ -64,7 +64,7 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
     }
 
     // If this is a fixed value then get it.
-    else if ($fixed_value === TRUE) {
+    else if ($fixed_value) {
 
       // If this field is indicated to be a fixed value
       // Then we want to grab the term information from
