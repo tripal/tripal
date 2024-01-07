@@ -152,7 +152,7 @@ class ChadoLinkerPropertyTypeDefault extends ChadoFieldItemBase {
   }
 
   /**
-   * We need to set the type_id property value to match the cvter,_id.
+   * We need to set the type_id property value to match the cvterm_id.
    *
    * To do this we'll override the tripalValuesTemplate() and give the
    * `type_id` property a default value.
