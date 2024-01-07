@@ -314,8 +314,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         // First we find all matching base records.
         $matches = $this->records->findRecords($base_table, $base_table);
 
-        // Now for each of each matching base record we need to select
-        // the anciallry tables.
+        // Now for each matching base record we need to select
+        // the ancillary tables.
         foreach ($matches as $match) {
 
           $tables = $this->records->getAncillaryTables($base_table);
@@ -323,8 +323,19 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $match->selectRecords($base_table, $table_alias);
           }
 
-          // Clone the value array for this match and set it's properties
+          // Clone the value array for this match.
           $new_values = $this->cloneValues($values);
+
+          // Add any additional items to the values array that are needed.
+          $num_items = $match->getNumTableItems($base_table, $table_alias);
+          for ($i = 0; $i < $num_items - 1; $i++) {
+            $table_fields = $match->getTableFields($base_table, $table_alias);
+            foreach ($table_fields as $field_name) {
+              $this->addEmptyValuesItem($new_values, $field_name);
+            }
+          }
+
+          // Now set the values.
           $this->setPropValues($new_values, $match);
           $found_list[] = $new_values;
         }
@@ -416,7 +427,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             // Set the value.
             $value = $records->getColumnValue($base_table, $table_alias, $my_delta, $column_alias);
             $values[$field_name][$delta][$key]['value']->setValue($value);
-
           }
         }
       }

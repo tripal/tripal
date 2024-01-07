@@ -207,7 +207,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   }
 
   /**
-   * A simple helper function to clone a values array.
+   * A helper function to clone a values array.
    *
    * @param array $values
    *   An array of property values.
@@ -215,13 +215,33 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   protected function cloneValues($values) {
     $copy = [];
     foreach ($values as $field_name => $deltas) {
+      $copy[$field_name] = [];
       foreach ($deltas as $delta => $keys) {
+        $copy[$field_name][$delta] = [];
         foreach ($keys as $key => $value) {
+          $copy[$field_name][$delta][$key] = [];
           $copy[$field_name][$delta][$key]['value'] = clone $value['value'];
         }
       }
     }
     return $copy;
+  }
+
+  /**
+   * A helper function to add a new item for a field by cloning delta 0.
+   *
+   * @param array $values
+   *   An array of property values.
+   * @param string $field_name
+   *   The name of the field to addd an item to.
+   */
+  protected function addEmptyValuesItem(&$values, $field_name) {
+    $num_items = count($values[$field_name]);
+    $values[$field_name][$num_items] = [];
+    foreach ($values[$field_name][0] as $key => $value) {
+      $values[$field_name][$num_items][$key] = [];
+      $values[$field_name][$num_items][$key]['value'] = clone $value['value'];
+    }
   }
 
   /**

@@ -857,6 +857,71 @@ class ChadoRecords  {
     return $this->records[$base_table]['tables'][$table_alias]['items'];
   }
 
+  /**
+   * Gets an array of records (one per field item)
+   *
+   * @param string $base_table
+   *   The name of the Chado table used as a base table.
+   * @param string $table_alias
+   *   The alias of the table.  For the base table, use the same table name as
+   *   base tables don't have aliases.
+   *
+   * @return mixed
+   *   The value of the field.
+   */
+  public function getNumTableItems(string $base_table, string $table_alias) {
+    return count($this->records[$base_table]['tables'][$table_alias]['items']);
+  }
+
+  /**
+   * Returns the list of fields that require values from the given table.
+   *
+   * @param string $base_table
+   *   The name of the Chado table used as a base table.
+   * @param string $table_alias
+   *   The alias of the table.  For the base table, use the same table name as
+   *   base tables don't have aliases.
+   */
+  public function getTableFields(string $base_table, string $table_alias) {
+
+    $fields = [];
+    $items = $this->getTableItems($base_table, $table_alias);
+    foreach ($items as $delta => $item) {
+      foreach ($item['field_columns'] as $chado_alias => $field_columns) {
+        foreach ($field_columns as $info) {
+          $field_name = $info['field_name'];
+          $fields[$field_name] = 1;
+        }
+      }
+    }
+    return array_keys($fields);
+  }
+
+  /**
+   * This function adds a new item to the table.
+   *
+   * This function gets called internally during a find operation when we
+   * need to add recrods beyond the original element used for searching.
+   * It simply copies the item for delta 0 and clears the values so they can
+   * get set.
+   *
+   * @param string $base_table
+   *   The name of the Chado table used as a base table.
+   * @param string $table_alias
+   *   The alias of the table.  For the base table, use the same table name as
+   *   base tables don't have aliases.
+   */
+  protected function addEmptyTableItem(string $base_table, string $table_alias) {
+    $items = $this->getTableItems($base_table, $table_alias);
+    $num_items = count($items);
+    $this->records[$base_table]['tables'][$table_alias]['items'][$num_items] = $items[0];
+
+    // Clear the values for this new item.
+    foreach (array_keys($items[0]['values']) as $column_alias) {
+      $this->records[$base_table]['tables'][$table_alias]['items'][$num_items]['values'][$column_alias] = NULL;
+    }
+  }
+
 
   /**
    * Retreives the Chado column for a given base table and table alis.
@@ -1848,17 +1913,25 @@ class ChadoRecords  {
       }
 
       // Update the values in the record.
-      $values = $results->fetchAssoc();
-      if (!empty($values)) {
+      $num_records = $delta;
+      while ($values = $results->fetchAssoc()) {
+        // If we have more records than we have items then we have a field
+        // with cardinatliy > 1 and we this select is part of a findValues()
+        // call.  For a loadValues() then the delta should already be set for
+        // all the property items.  We need to create a copy of the previous
+        // item so we can add the new values.
+        if ($num_records + 1 > count($this->getTableItems($base_table, $table_alias))) {
+          $this->addEmptyTableItem($base_table, $table_alias);
+        }
         foreach ($values as $column_alias => $value) {
-          $this->setColumnValue($base_table, $table_alias, $delta, $column_alias, $value);
+          $this->setColumnValue($base_table, $table_alias, $num_records, $column_alias, $value);
           // If this is the base table be sure to set the record ID.
           if ($base_table === $table_alias and array_key_exists($column_alias, $record['link_columns'])) {
             $this->setRecordID($base_table, $value);
           }
         }
+        $num_records++;
       }
-
     }
   }
 
