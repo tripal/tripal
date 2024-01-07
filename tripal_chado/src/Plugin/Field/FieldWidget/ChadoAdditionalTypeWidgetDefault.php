@@ -62,8 +62,17 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
     }
 
     // If this is a fixed value then get it.
-    else if ($fixed_value) {
-      list($idSpace, $accession) = explode(':', $fixed_value);
+    else if ($fixed_value === TRUE) {
+
+      // If this field is indicated to be a fixed value
+      // Then we want to grab the term information from
+      // the field settings and use that rather then a
+      // user submitted value.
+      $idSpace = $field_settings['termIdSpace'];
+      $accession = $field_settings['termAccession'];
+      $fixed_value_value = $idSpace . ':' . $accession;
+
+      // Now we need the cvterm name.
       $query = $chado->select('1:cvterm', 'cvt');
       if ($accession) {
         $query->fields('cvt', ['cvterm_id', 'name']);
@@ -101,7 +110,7 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
     ];
     $elements['value'] = [
       '#type' => 'value',
-      '#default_value' => $fixed_value,
+      '#default_value' => $fixed_value_value,
     ];
     $elements['term_name'] = [
       '#type' => 'value',
