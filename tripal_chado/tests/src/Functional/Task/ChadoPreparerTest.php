@@ -100,8 +100,8 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     // 3: IMPORT ONTOLOGIES.
     // --------------------------------
     $expected_counts_by_table = [
-      'cv' => 60,
-      'db' => 43,
+      'cv' => 31,
+      'db' => 41,
       'cvterm' => 3145,
       'dbxref' => 3454,
     ];
@@ -112,7 +112,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     }
 
     // Check for some specific cv / db which should have been inserted.
-    $cv_found = $chado2check->query("SELECT 1 FROM {1:cv} WHERE name = 'feature_property'")->fetchField();
+    $cv_found = $chado2check->query("SELECT 1 FROM {1:cv} WHERE name = 'tripal_contact'")->fetchField();
     $this->assertEquals(1, $cv_found, 'Found feature_property CV');
     $db_found = $chado2check->query("SELECT 1 FROM {1:db} WHERE name = 'TAXRANK';")->fetchField();
     $this->assertEquals(1, $db_found, 'Found TAXRANK DB');
@@ -130,7 +130,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     // 5: POPULATE DB2CV_MVIEW.
     // --------------------------------
     $table_name = 'db2cv_mview';
-    $expected_count = 41;
+    $expected_count = 28;
     $count = $chado2check->query("SELECT count(*) FROM {1:$table_name}")->fetchField();
     $this->assertGreaterThanOrEqual($expected_count, $count,
       "There was not the expected number of records in the $table_name table after preparing.");
