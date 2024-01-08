@@ -33,62 +33,58 @@ class ChadoDbxrefAutocompleteController extends ControllerBase {
     // Array to hold matching dbxref accessions.
     $response = [];
 
-    if ($request->query->get('q')) {
-      // Get typed in string input from the URL.
-      $string = trim($request->query->get('q'));
+    // Proceed to autocomplete when string is at least a character
+    // long and result count is set to a value greater than 0.
+    $string = trim($request->query->get('q'));
+    if (strlen($string) >= 1 && $count > 0) {
 
-      if (strlen($string) > 0 && $count > 0) {
-        // Proceed to autocomplete when string is at least a character
-        // long and result count is set to a value greater than 0.
+      // If there is a colon in the string, extract the left part as the
+      // DB name and the right part as the accession.
+      $db_name = '';
+      if (preg_match('/^([^:]*):(.*)$/', $string, $matches)) {
+        $db_name = strtolower($matches[1]);
+        $string = $matches[2];
+      }
 
-        // If there is a colon in the string, extract the left part as the
-        // DB name and the right part as the accession.
-        $db_name = '';
-        if (preg_match('/^([^:]*):(.*)$/', $string, $matches)) {
-          $db_name = strtolower($matches[1]);
-          $string = $matches[2];
-        }
+      // Transform string as a case-insensitive search keyword pattern.
+      $keyword = strtolower($string) . '%';
 
-        // Transform string as a case-insensitive search keyword pattern.
-        $keyword = strtolower($string) . '%';
+      // Query dbxref (joins: dbxref - accession and db - name) for names matching
+      // the keyword pattern and return each row in the format specified.
+      // Tables indicate schema sequence number #1 to use default schema.
+      $sql = "
+        SELECT xr.accession, db.name
+        FROM {1:dbxref} AS xr
+          LEFT JOIN {1:db} AS db USING(db_id)
+        WHERE LOWER(xr.accession) LIKE :keyword";
+      $args = [':keyword' => $keyword, ':limit' => $count];
 
-        // Query dbxref (joins: dbxref - accession and db - name) for names matching
-        // the keyword pattern and return each row in the format specified.
-        // Tables indicate schema sequence number #1 to use default schema.
-        $sql = "
-          SELECT xr.accession, db.name
-          FROM {1:dbxref} AS xr
-            LEFT JOIN {1:db} AS db USING(db_id)
-          WHERE LOWER(xr.accession) LIKE :keyword";
-        $args = [':keyword' => $keyword, ':limit' => $count];
+      // Limit terms to selected DB when this is specified.
+      if ($db_id) {
+        $sql .= " AND xr.db_id = :db_id";
+        $args[':db_id'] = $db_id;
+      }
 
-        // Limit terms to selected DB when this is specified.
-        if ($db_id) {
-          $sql .= " AND xr.db_id = :db_id";
-          $args[':db_id'] = $db_id;
-        }
+      // If user typed a DB: prefix, limit by that.
+      if ($db_name) {
+        $sql .= " AND LOWER(db.name) = :db_name";
+        $args[':db_name'] = $db_name;
+      }
 
-        // If user typed a DB: prefix, limit by that.
-        if ($db_name) {
-          $sql .= " AND LOWER(db.name) = :db_name";
-          $args[':db_name'] = $db_name;
-        }
+      $sql .= " ORDER BY xr.accession ASC LIMIT :limit";
 
-        $sql .= " ORDER BY xr.accession ASC LIMIT :limit";
+      // Prepare Chado database connection and execute sql query
+      $connection = \Drupal::service('tripal_chado.database');
+      $results = $connection->query($sql, $args);
 
-        // Prepare Chado database connection and execute sql query
-        $connection = \Drupal::service('tripal_chado.database');
-        $results = $connection->query($sql, $args);
-
-        // Compose response result.
-        if ($results) {
-          foreach ($results as $record) {
-            $term = $record->name . ':' . $record->accession;
-            $response[] = [
-              'value' => $term, // Value returned and value displayed by textfield.
-              'label' => $term  // Value shown in the list of options.
-            ];
-          }
+      // Compose response result.
+      if ($results) {
+        foreach ($results as $record) {
+          $term = $record->name . ':' . $record->accession;
+          $response[] = [
+            'value' => $term, // Value returned and value displayed by textfield.
+            'label' => $term  // Value shown in the list of options.
+          ];
         }
       }
     }

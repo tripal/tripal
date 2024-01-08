@@ -70,6 +70,10 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
         'testStorePKeyAction',
         'test_field'
       ],
+      // NOTE: We can test an alias on the pkey action here
+      // because the action is not on the base table for the field
+      // even though there is no path between the base table and the
+      // table the store_pkey is on.
       [
         'testStorePKeyActionTableAlias',
         'test_chado_alias'

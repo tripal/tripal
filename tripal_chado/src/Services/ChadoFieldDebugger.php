@@ -4,6 +4,8 @@ namespace Drupal\tripal_chado\Services;
 
 use \Drupal\tripal_chado\Database\ChadoConnection;
 use \Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal_chado\TripalStorage\ChadoRecords;
+use Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage;
 
 /**
  * Provides debugging functionality for Chado data loading in fields extending
@@ -101,7 +103,7 @@ class ChadoFieldDebugger {
    * @param string $message
    *   A short message describing where this method was called from.
    */
-  public function summarizeChadoStorage($chadostorage, $message) {
+  public function summarizeChadoStorage(ChadoStorage $chadostorage, $message) {
 
     if ($this->has_fields2debug === FALSE) {
       return;
@@ -140,21 +142,19 @@ class ChadoFieldDebugger {
   /**
    * This will summarize the results of ChadoStorage::buildChadoRecords().
    *
-   * @param array $base_record_ids
-   *   A simple array where the key is the chado table name and the value
-   *   is the known value of the primary key for the specified record.
    * @param array $records
-   *   This is a nested array describing the records which will need to be
+   *   This is an instance of the TripalStorage ChadoRecords class which contains
+       all the information of records to be inserted/modifiedin chado. 
    *   generated using the Drupal Query Builder in the ChadoStorage::*Values() methods.
    */
-  public function summarizeBuiltRecords(array $base_record_ids, array $records) {
+  public function summarizeBuiltRecords(ChadoRecords $records) {
 
     if ($this->has_fields2debug === FALSE) {
       return;
     }
 
-    dpm($records, 'The array describing the record queries to be generated');
-    dpm($base_record_ids, 'The known primary keys for our base records');
+    dpm($records->getRecords(), 'The array describing the record queries to be generated');
+    dpm($records->getBaseRecords(), 'The known primary keys for our base records');
   }
 
   /**
