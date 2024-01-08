@@ -169,8 +169,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
-      'chado_table' => $base_table,
-      'chado_column' => $base_pkey_col,
+      'path' => $base_table . '.' . $base_pkey_col,
     ]);
 
     // Base table links directly
@@ -178,8 +177,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
-        'chado_table' => $base_table,
-        'chado_column' => $linker_fkey_column,
+        'path' => $base_table . '.' . $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -190,26 +188,21 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
-        'chado_table' => $linker_table,
-        'chado_column' => $linker_pkey_col,
+        'path' => $linker_table . '.' . $linker_pkey_col,
       ]);
 
       // Define the link between the base table and the linker table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
         'action' => 'store_link',
         'drupal_store' => FALSE,
-        'left_table' => $base_table,
-        'left_table_id' => $base_pkey_col,
-        'right_table' => $linker_table,
-        'right_table_id' => $linker_left_col,
+        'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
       ]);
 
       // Define the link between the linker table and the object table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
-        'chado_table' => $linker_table,
-        'chado_column' => $linker_fkey_column,
+        'path' => $linker_table . '.' . $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -221,8 +214,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
         $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',
           'drupal_store' => FALSE,
-          'chado_table' => $linker_table,
-          'chado_column' => $column,
+          'path' => $linker_table . '.' . $column,
           'as' => 'linker_' . $column,
         ]);
       }
@@ -233,9 +225,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_name', $name_term, $name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_table' => $object_table,
-      'chado_column' => 'name',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
       'as' => 'feature_name',
     ]);
 
@@ -243,8 +233,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'feature_uniquename', $uniquename_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'uniquename',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';uniquename',
       'as' => 'feature_uniquename',
     ]);
 
@@ -252,8 +241,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'feature_seqlen', $seqlen_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'seqlen',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';seqlen',
       'as' => 'feature_seqlen',
     ]);
 
@@ -261,8 +249,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'feature_md5checksum', $md5checksum_term, $md5checksum_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'md5checksum',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';md5checksum',
       'as' => 'feature_md5checksum',
     ]);
 
@@ -270,8 +257,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'feature_is_analysis', $is_analysis_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'is_analysis',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';is_analysis',
       'as' => 'feature_is_analysis',
     ]);
 
@@ -279,8 +265,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'feature_is_obsolete', $is_obsolete_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'is_obsolete',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';is_obsolete',
       'as' => 'feature_is_obsolete',
     ]);
 
@@ -291,8 +276,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.type_id>cvterm.cvterm_id',
-      'chado_column' => 'name',
+        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
       'as' => 'feature_type',
     ]);
 
@@ -300,9 +284,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id',
-      'chado_table' => $object_table,
-      'chado_column' => 'genus',
+        . ';' . $object_table . '.taxon_id>organism.organism_id;genus',
       'as' => 'feature_genus',
     ]);
 
@@ -310,9 +292,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id',
-      'chado_table' => $object_table,
-      'chado_column' => 'species',
+        . ';' . $object_table . '.taxon_id>organism.organism_id;species',
       'as' => 'feature_species',
     ]);
 
@@ -320,8 +300,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
-      'chado_column' => 'name',
+        . ';' . $object_table . '.taxon_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name',
       'as' => 'feature_infraspecific_type',
     ]);
 
@@ -329,9 +308,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id',
-      'chado_table' => $object_table,
-      'chado_column' => 'infraspecific_name',
+        . ';' . $object_table . '.taxon_id>organism.organism_id;infraspecific_name',
       'as' => 'feature_infraspecific_name',
     ]);
 
@@ -339,9 +316,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id',
-      'chado_table' => $object_table,
-      'chado_column' => 'abbreviation',
+        . ';' . $object_table . '.taxon_id>organism.organism_id;abbreviation',
       'as' => 'feature_abbreviation',
     ]);
 
@@ -349,9 +324,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id',
-      'chado_table' => $object_table,
-      'chado_column' => 'common_name',
+        . ';' . $object_table . '.taxon_id>organism.organism_id;common_name',
       'as' => 'feature_common_name',
     ]);
 
@@ -359,8 +332,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id',
-      'chado_column' => 'accession',
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
       'as' => 'feature_database_accession',
     ]);
 
@@ -368,8 +340,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
-      'chado_column' => 'name',
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
       'as' => 'feature_database_name',
     ]);
   
