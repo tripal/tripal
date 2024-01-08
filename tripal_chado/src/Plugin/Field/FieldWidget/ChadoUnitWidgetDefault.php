@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Unit Widget Default"),
  *   description = @Translation("The default unit widget which allows curators to enter unit on the Gene Map content edit page."),
  *   field_types = {
- *     "chado_unit_default"
+ *     "chado_unit_type_default"
  *   }
  * )
  */

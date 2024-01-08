@@ -5,28 +5,40 @@ namespace Drupal\tripal\TripalStorage\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Defines a tripal storage item annotation object.
+ * Defines a custom plugin annotation for TripalStorage plugins.
  *
- * @see \Drupal\products\Plugin\ImporterManager
+ * Additional keys for tripal storage plugins can be defined in
+ * hook_tripalstorage_info_alter().
+ *
+ * @see Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager
+ * @see Drupal\tripal\TripalStorage\Interface\TripalStorageInterface
  *
  * @Annotation
  */
 class TripalStorage extends Plugin {
 
   /**
-   * The plugin ID.
+   * The tripal storage type ID.
    *
    * @var string
    */
   public $id;
 
   /**
-   * The label of the plugin.
+   * The human-readable name of the tripal storage type.
    *
    * @var \Drupal\Core\Annotation\Translation
    *
    * @ingroup plugin_translatable
    */
   public $label;
+
+  /**
+   * A short description of the tripal storage type.
+   *
+   * @var \Drupal\Core\Annotation\Translation
+   * @ingroup plugin_translatable
+   */
+  public $description;
 
 }

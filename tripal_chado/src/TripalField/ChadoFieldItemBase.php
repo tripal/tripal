@@ -14,6 +14,9 @@ use Drupal\Core\Ajax\ReplaceCommand;
  */
 abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
+  // delimiter between table name and column name in form select
+  protected static $table_column_delimiter = " \u{2192} ";  # right arrow
+
   /**
    * {@inheritdoc}
    */
@@ -59,7 +62,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       '#options' => $base_tables,
       '#default_value' => $default_base_table,
       '#required' => TRUE,
-      "#disabled" => $is_disabled
+      '#disabled' => $is_disabled,
+      '#element_validate' => [[static::class, 'storageSettingsFormValidateBaseTable']],
     ];
 
     // Optionally provide a column selector for the base table column if
@@ -94,8 +98,61 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         '#prefix' => '<div id="edit-base_column">',
         '#suffix' => '</div>',
       ];
+    }
+
+    // Optionally provide a table + column selector for fields using
+    // a linking table if the field annotations specify it.
+    if ($plugin_definition['object_table'] ?? FALSE) {
+
+      // Base tables presented here are only those that either have foreign
+      // keys to our object table, or else have foreign keys through a
+      // linker table to our object table. The TRUE parameter to
+      // getBaseTables() specifies to include linker tables.
+      $elements['storage_plugin_settings']['base_table']['#options']
+          = $this->getBaseTables($plugin_definition['object_table'], TRUE);
+
+      // Add an ajax callback so that when the base table is selected, the
+      // linking method select can be populated.
+      $elements['storage_plugin_settings']['base_table']['#ajax'] = [
+        'callback' =>  [$this, 'storageSettingsFormLinkingMethodAjaxCallback'],
+        'event' => 'change',
+        'progress' => [
+          'type' => 'throbber',
+          'message' => $this->t('Retrieving linking methods...'),
+        ],
+        'wrapper' => 'edit-linker_table',
+      ];
+
+      $linker_is_disabled = FALSE;
+      $linker_tables = [];
+      $default_linker_table_and_column = $storage_settings['linker_table_and_column'] ?? '';
+      if ($default_linker_table_and_column) {
+        $linker_is_disabled = TRUE;
+        $linker_tables = [$default_linker_table_and_column => $default_linker_table_and_column];
+      }
+      else {
+        $linker_tables = $this->getLinkerTables($plugin_definition['object_table'], $base_table, self::$table_column_delimiter);
+      }
+      $elements['storage_plugin_settings']['linker_table_and_column'] = [
+        '#type' => 'select',
+        '#title' => t('Linking Method'),
+        '#description' => t('Select the table that links the selected base table to the linked table. ' .
+          'If the base table includes the link as a column, then this will reference the base table. ' .
+          'When a linker table is used, the linking table name is typically a ' .
+          'combination of the two table names, but they might be in either order. ' .
+          'Generally this select will have only one option, unless a module has added additional custom linker tables. ' .
+          'For example to link "feature" to "contact", the linking method would be "feature_contact → contact_id".'),
+        '#options' => $linker_tables,
+        '#default_value' => $default_linker_table_and_column,
+        '#required' => TRUE,
+        '#disabled' => $linker_is_disabled or !$base_table,
+        '#prefix' => '<div id="edit-linker_table">',
+        '#suffix' => '</div>',
+        '#element_validate' => [[static::class, 'storageSettingsFormValidateLinkingMethod']],
+      ];
 
     }
+
     return $elements + parent::storageSettingsForm($form, $form_state, $has_data);
   }
 
@@ -112,6 +169,74 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-base_column', $form['settings']['storage_plugin_settings']['base_column']));
     return $response;
+  }
+
+  /**
+   * Ajax callback to update the linking method select. The select
+   * can't be populated until we know the base table.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  public function storageSettingsFormLinkingMethodAjaxCallback($form, &$form_state) {
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['settings']['storage_plugin_settings']['linker_table_and_column']));
+    return $response;
+  }
+
+  /**
+   * Form element validation handler for base table
+   *
+   * @param array $form
+   *   The form where the settings form is being included in.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form.
+   */
+  public static function storageSettingsFormValidateBaseTable(array $form, FormStateInterface $form_state) {
+    $settings = $form_state->getValue('settings');
+    if (!array_key_exists('storage_plugin_settings', $settings)) {
+      return;
+    }
+    $base_table = $settings['storage_plugin_settings']['base_table'];
+
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    if ($schema->tableExists($base_table)) {
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'base_table'], $base_table);
+    }
+    else {
+      $form_state->setErrorByName('settings][storage_plugin_settings][base_table',
+          'The selected base table does not exist in Chado.');
+    }
+  }
+
+  /**
+   * Form element validation handler for linking method (table + column)
+   *
+   * @param array $form
+   *   The form where the settings form is being included in.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form.
+   */
+  public static function storageSettingsFormValidateLinkingMethod(array $form, FormStateInterface $form_state) {
+    $settings = $form_state->getValue('settings');
+    if (!array_key_exists('storage_plugin_settings', $settings)) {
+      return;
+    }
+
+    // Convert the combined value from the linking method form select into table and column
+    $linker_table_and_column = $settings['storage_plugin_settings']['linker_table_and_column'];
+    $parts = explode(self::$table_column_delimiter, $linker_table_and_column);
+    if (count($parts) == 2) {
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_table'], $parts[0]);
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_fkey_column'], $parts[1]);
+    }
+    else {
+      $form_state->setErrorByName('settings][storage_plugin_settings][linker_table_and_column',
+          'The selected linking method is not valid.');
+    }
   }
 
   /**
@@ -141,27 +266,27 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // back to candidate base tables.
     $object_schema_def = $schema->getTableDef($linked_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-
     $all_tables = $schema->getTables(['type' => 'table']);
     foreach (array_keys($all_tables) as $table) {
-      if ($schema->foreignKeyConstraintExists($table, $object_pkey_col)) {
-        // "single-hop" logic, evaluate chado tables for a foreign
-        // key to our object table. If it has one, we will consider
-        // this a candidate for a base table.
-        $base_tables[$table] = $table;
-
-        if ($has_linker_table) {
-          // This logic is used for fields using a linker table,
-          // i.e. a "double-hop". Here we look in potential linker
-          // tables for two foreign keys, one to our object table, and
-          // a second to a different table. These different tables
-          // become the list of candidate base tables.
-          $table_schema_def = $schema->getTableDef($table, ['format' => 'Drupal']);
-          if (array_key_exists('foreign keys', $table_schema_def)) {
-            foreach ($table_schema_def['foreign keys'] as $foreign_key) {
-              if ($foreign_key['table'] != $linked_table) {
-                $base_tables[$foreign_key['table']] = $foreign_key['table'];
-              }
+      $table_schema_def = $schema->getTableDef($table, ['format' => 'Drupal']);
+      if (array_key_exists('foreign keys', $table_schema_def)) {
+        // For "single-hop" logic, we add this table if there is a
+        // foreign key to our linked_table.
+        $found = FALSE;
+        foreach ($table_schema_def['foreign keys'] as $foreign_key) {
+          if ($foreign_key['table'] == $linked_table) {
+            $base_tables[$table] = $table;
+            $found = TRUE;
+          }
+        }
+        // For "double-hop" logic, this may be a linker table,
+        // and it needs two foreign keys, one to our linked_table
+        // which we detected above, and a second one to another table.
+        // This linked-to table is also a candidate base table.
+        if ($has_linker_table and $found) {
+          foreach ($table_schema_def['foreign keys'] as $foreign_key) {
+            if ($foreign_key['table'] != $linked_table) {
+              $base_tables[$foreign_key['table']] = $foreign_key['table'];
             }
           }
         }
@@ -277,7 +402,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
               // and needs to also have a foreign key to the base table.
               if (($table_name == $base_table)
                   or ($schema->foreignKeyConstraintExists($table_name, $base_pkey_col))) {
-                $key = $table_name . $delimiter . array_values($foreign_key['columns'])[0];
+                $key = $table_name . $delimiter . array_keys($foreign_key['columns'])[0];
                 $select_list[$key] = $key;
               }
             }

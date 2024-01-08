@@ -29,6 +29,9 @@ class ChadoTermsInit{
     $vocabulary = $vmanager->loadCollection($name, 'chado_vocabulary');
     if (!$vocabulary) {
       $vocabulary = $vmanager->createCollection($name, 'chado_vocabulary');
+      if (!$vocabulary) {
+        throw new \Exception("Unable to create vocabulary with the name $name.");
+      }
     }
     return $vocabulary;
   }
@@ -46,6 +49,9 @@ class ChadoTermsInit{
     $idSpace = $idsmanager->loadCollection($name, 'chado_id_space');
     if (!$idSpace) {
       $idSpace = $idsmanager->createCollection($name, 'chado_id_space');
+      if (!$idSpace) {
+        throw new \Exception("Unable to create ID Space with the name $name.");
+      }
     }
     return $idSpace;
   }
@@ -53,10 +59,17 @@ class ChadoTermsInit{
   /**
    * Installs the module's default terms into Chado.
    *
+   * @param string $id
+   *   The id of the terms configuration you want to install.
    */
-  public function installTerms() {
+  public function installTerms(string $id = 'chado_content_terms') {
     $config_factory = \Drupal::service('config.factory');
-    $config = $config_factory->get('tripal.tripal_content_terms.chado_content_terms');
+
+    $config_key = 'tripal.tripal_content_terms.' . $id;
+    $config = $config_factory->get($config_key);
+    if (!$config) {
+      throw new \Exception("Unable to find configuration with the key $id.");
+    }
     $vocabs = $config->get('vocabularies');
     foreach ($vocabs as $vocab_info) {
 

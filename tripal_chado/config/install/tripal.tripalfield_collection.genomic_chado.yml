@@ -8,7 +8,7 @@ fields:
     -   name: gene_name
         content_type: gene
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -35,7 +35,7 @@ fields:
     -   name: gene_uniquename
         content_type: gene
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the gene within the organism.
         cardinality: 1
         required: true
@@ -61,7 +61,7 @@ fields:
     -   name: gene_sequence
         content_type: gene
         label: Sequence Residues
-        type: chado_sequence_default
+        type: chado_sequence_type_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -87,7 +87,7 @@ fields:
     -   name: gene_length
         content_type: gene
         label: Sequence Length
-        type: chado_sequence_length_default
+        type: chado_sequence_length_type_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -113,7 +113,7 @@ fields:
     -   name: gene_sequence_md5_checksum
         content_type: gene
         label: Sequence MD5 Checksum
-        type: chado_sequence_checksum_default
+        type: chado_sequence_checksum_type_default
         description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
         cardinality: 1
         required: false
@@ -139,7 +139,7 @@ fields:
     -   name: gene_organism
         content_type: gene
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -165,7 +165,7 @@ fields:
     -   name: gene_type
         content_type: gene
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -193,7 +193,7 @@ fields:
     -   name: gene_contact
         content_type: gene
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -220,7 +220,7 @@ fields:
     -   name: gene_is_analysis
         content_type: gene
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -247,7 +247,7 @@ fields:
     -   name: gene_is_obsolete
         content_type: gene
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -274,7 +274,7 @@ fields:
     -   name: gene_synonym
         content_type: gene
         label: Synonyms
-        type: chado_synonym_default
+        type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
         cardinality: -1
         required: false
@@ -326,12 +326,12 @@ fields:
               weight: 10
 
 
-## mRNA ##
+## mrna ##
 
     -   name: mrna_name
-        content_type: mRNA
+        content_type: mrna
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -356,10 +356,10 @@ fields:
               weight: 10
 
     -   name: mrna_uniquename
-        content_type: mRNA
+        content_type: mrna
         label: Unique Name
-        type: chado_text_type
-        description: A name that uniquely identifies the mRNA within the organism.
+        type: chado_text_type_default
+        description: A name that uniquely identifies the mrna within the organism.
         cardinality: 1
         required: true
         storage_settings:
@@ -382,9 +382,9 @@ fields:
               weight: 15
 
     -   name: mrna_sequence
-        content_type: mRNA
+        content_type: mrna
         label: Sequence Residues
-        type: chado_sequence_default
+        type: chado_sequence_type_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -408,9 +408,9 @@ fields:
               weight: 20
 
     -   name: mrna_sequence_length
-        content_type: mRNA
+        content_type: mrna
         label: Sequence Length
-        type: chado_sequence_length_default
+        type: chado_sequence_length_type_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -434,9 +434,9 @@ fields:
               weight: 25
 
     -   name: mrna_sequence_md5_checksum
-        content_type: mRNA
+        content_type: mrna
         label: Sequence MD5 Checksum
-        type: chado_sequence_checksum_default
+        type: chado_sequence_checksum_type_default
         description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
         cardinality: 1
         required: false
@@ -460,9 +460,9 @@ fields:
               weight: 30
 
     -   name: mrna_organism
-        content_type: mRNA
+        content_type: mrna
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -486,9 +486,9 @@ fields:
               weight: 10
 
     -   name: mrna_type
-        content_type: mRNA
+        content_type: mrna
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -514,9 +514,9 @@ fields:
               weight: 10
 
     -   name: mrna_contact
-        content_type: mRNA
+        content_type: mrna
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -541,9 +541,9 @@ fields:
               weight: 80
 
     -   name: mrna_is_analysis
-        content_type: mRNA
+        content_type: mrna
         label: Is Analysis
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this feature was predicted computationally using another feature.
         cardinality: 1
         required: false
@@ -568,9 +568,9 @@ fields:
               weight: 90
 
     -   name: mrna_is_obsolete
-        content_type: mRNA
+        content_type: mrna
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -595,9 +595,9 @@ fields:
               weight: 90
 
     -   name: mrna_synonym
-        content_type: mRNA
+        content_type: mrna
         label: Synonyms
-        type: chado_synonym_default
+        type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
         cardinality: -1
         required: false
@@ -626,7 +626,7 @@ fields:
     -   name: phylotree_name
         content_type: phylotree
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -653,7 +653,7 @@ fields:
     -   name: phylotree_dbxref_id
         content_type: phylotree
         label: Dbxref ID
-        type: chado_integer_type
+        type: chado_integer_type_default
         description: The primary key of the database reference (dbxref) to attach to this tree. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
         required: true
@@ -679,7 +679,7 @@ fields:
     -   name: phylotree_type
         content_type: phylotree
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: false
@@ -707,7 +707,7 @@ fields:
     -   name: phylotree_analysis
         content_type: phylotree
         label: Analysis
-        type: chado_analysis_default
+        type: chado_analysis_type_default
         description: The analysis from which the tree was generated.
         cardinality: 1
         required: false
@@ -733,7 +733,7 @@ fields:
     -   name: phylotree_comment
         content_type: phylotree
         label: Notes
-        type: chado_text_type
+        type: chado_text_type_default
         description: Comments, typically from users.
         cardinality: 1
         required: false
@@ -761,7 +761,7 @@ fields:
     -   name: physical_map_name
         content_type: physical_map
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -788,7 +788,7 @@ fields:
     -   name: physical_map_description
         content_type: physical_map
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -814,7 +814,7 @@ fields:
     -   name: physical_map_unit_type
         content_type: physical_map
         label: Unit Type
-        type: chado_unit_default
+        type: chado_unit_type_default
         description: A unit of measurement is a standardized quantity of a physical quality.
         cardinality: 1
         required: false
@@ -841,7 +841,7 @@ fields:
     -   name: physical_map_contact
         content_type: physical_map
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -870,7 +870,7 @@ fields:
     -   name: dna_library_name
         content_type: dna_library
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -897,7 +897,7 @@ fields:
     -   name: dna_library_uniquename
         content_type: dna_library
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the DNA library on this site.
         cardinality: 1
         required: true
@@ -923,7 +923,7 @@ fields:
     -   name: dna_library_type
         content_type: dna_library
         label: Library Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -951,7 +951,7 @@ fields:
     -   name: dna_library_organism
         content_type: dna_library
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -977,7 +977,7 @@ fields:
     -   name: dna_library_synonym
         content_type: dna_library
         label: Synonyms
-        type: chado_synonym_default
+        type: chado_synonym_type_default
         description: Alternate names, aliases or synonyms for this record.
         cardinality: -1
         required: false
@@ -1004,7 +1004,7 @@ fields:
     -   name: dna_library_contact
         content_type: dna_library
         label: Contact
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
@@ -1033,7 +1033,7 @@ fields:
     -   name: genome_assembly_name
         content_type: genome_assembly
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -1060,7 +1060,7 @@ fields:
     -   name: genome_assembly_description
         content_type: genome_assembly
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -1086,7 +1086,7 @@ fields:
     -   name: genome_assembly_software
         content_type: genome_assembly
         label: Program, Pipeline, Workflow or Method Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
         cardinality: 1
         required: true
@@ -1113,7 +1113,7 @@ fields:
     -   name: genome_assembly_program_version
         content_type: genome_assembly
         label: Program Version
-        type: chado_string_type
+        type: chado_string_type_default
         description: The version of the program, pipeline, workflow or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
         cardinality: 1
         required: true
@@ -1141,7 +1141,7 @@ fields:
     -   name: genome_assembly_source_name
         content_type: genome_assembly
         label: Data Source Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the source where data was obtained for this analysis.
         cardinality: 1
         required: false
@@ -1168,7 +1168,7 @@ fields:
     -   name: genome_assembly_source_version
         content_type: genome_assembly
         label: Data Source Version
-        type: chado_string_type
+        type: chado_string_type_default
         description: The version number of the data source (if applicable).
         cardinality: 1
         required: false
@@ -1195,7 +1195,7 @@ fields:
     -   name: genome_assembly_uri
         content_type: genome_assembly
         label: Data Source URI
-        type: chado_text_type
+        type: chado_text_type_default
         description: The URI (e.g. web URL) where the source data can be retrieved.
         cardinality: 1
         required: false
@@ -1221,7 +1221,7 @@ fields:
     -   name: genome_assembly_type
         content_type: genome_assembly
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1251,7 +1251,7 @@ fields:
     -   name: genome_annotation_name
         content_type: genome_annotation
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -1278,7 +1278,7 @@ fields:
     -   name: genome_annotation_description
         content_type: genome_annotation
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -1304,7 +1304,7 @@ fields:
     -   name: genome_annotation_software
         content_type: genome_annotation
         label: Program, Pipeline, Workflow or Method Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
         cardinality: 1
         required: true
@@ -1331,7 +1331,7 @@ fields:
     -   name: genome_annotation_prog_version
         content_type: genome_annotation
         label: Program Version
-        type: chado_string_type
+        type: chado_string_type_default
         description: The version of the program, pipeline, workflow or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
         cardinality: 1
         required: true
@@ -1358,7 +1358,7 @@ fields:
     -   name: genome_annotation_src_name
         content_type: genome_annotation
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the source where data was obtained for this analysis.
         cardinality: 1
         required: false
@@ -1385,7 +1385,7 @@ fields:
     -   name: genome_annotation_src_version
         content_type: genome_annotation
         label: Data Source Version
-        type: chado_string_type
+        type: chado_string_type_default
         description: The version number of the data source (if applicable).
         cardinality: 1
         required: false
@@ -1412,7 +1412,7 @@ fields:
     -   name: genome_annotation_uri
         content_type: genome_annotation
         label: Data Source URI
-        type: chado_text_type
+        type: chado_text_type_default
         description: The URI (e.g. web URL) where the source data can be retrieved.
         cardinality: 1
         required: false
@@ -1438,7 +1438,7 @@ fields:
     -   name: genome_annotation_type
         content_type: genome_annotation
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1468,7 +1468,7 @@ fields:
     -   name: genome_project_name
         content_type: genome_project
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: true
@@ -1495,7 +1495,7 @@ fields:
     -   name: genome_project_description
         content_type: genome_project
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -1521,7 +1521,7 @@ fields:
     -   name: genome_project_type
         content_type: genome_project
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true

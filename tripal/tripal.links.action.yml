@@ -10,6 +10,13 @@ entity.tripal_entity.add_page:
   appears_on:
     - entity.tripal_entity.collection
 
+# -- Publish content from Chado or other datastores link on Content Listing page.
+tripal.content_bio_data_publish_form:
+  route_name: tripal.content_bio_data_publish_form
+  title: 'Publish Tripal Content'
+  appears_on:
+    - entity.tripal_entity.collection
+
 # -- Remove orphaned content (i.e missing non-drupal record) link on Content Listing page.
 tripal.content_type_unpublish:
   route_name: tripal.content_type_unpublish

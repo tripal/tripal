@@ -16,7 +16,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Type Reference Widget"),
  *   description = @Translation("A chado type reference widget"),
  *   field_types = {
- *     "chado_additional_type_default"
+ *     "chado_additional_type_type_default"
  *   }
  * )
  */
@@ -61,18 +61,20 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
       $default_autoc = $result->name  . ' (' . $result->db_name . ':' . $result->accession . ')';
     }
 
-    // If this is a fixed value then get it.
+    // If this is a fixed value then set it.
     else if ($fixed_value) {
-      list($idSpace, $accession) = explode(':', $fixed_value);
-      $query = $chado->select('1:cvterm', 'cvt');
-      if ($accession) {
-        $query->fields('cvt', ['cvterm_id', 'name']);
-        $query->join('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
-        $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
-        $query->condition('db.name', $idSpace);
-        $query->condition('dbx.accession', $accession);
-        $cvterm = $query->execute()->fetchObject();
-        $default_autoc = $cvterm->name  . ' (' .$idSpace . ':' . $accession . ')';
+      if (is_string($fixed_value) and preg_match('/:/',  $fixed_value)) {
+        list($idSpace, $accession) = explode(':', $fixed_value);
+        $query = $chado->select('1:cvterm', 'cvt');
+        if ($accession) {
+          $query->fields('cvt', ['cvterm_id', 'name']);
+          $query->join('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
+          $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
+          $query->condition('db.name', $idSpace);
+          $query->condition('dbx.accession', $accession);
+          $cvterm = $query->execute()->fetchObject();
+          $default_autoc = $cvterm->name  . ' (' .$idSpace . ':' . $accession . ')';
+        }
       }
     }
 

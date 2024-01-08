@@ -1,0 +1,28 @@
+name: Push Recent Commits to Drupal.org
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 4.x
+
+jobs:
+  push_to_drupal:
+    runs-on: ubuntu-latest
+    name: "Push to Drupal.org"
+    steps:
+      - uses: actions/checkout@v4
+        name: "Check out all history for all tags + branches"
+        with:
+          fetch-depth: 0
+      - name: "Configure git to push to drupal.org"
+        run: |
+          git config user.name "Lacey Sanderson"
+          git config user.email "laceyannesanderson@gmail.com"
+          git config credential.helper 'store --file ~/.drupal-org-credentials'
+          git remote add drupal https://git.drupal.org/project/tripal.git
+      - name: "Authenticate and Push"
+        run: |
+          git fetch drupal
+          echo "https://laceysanderson:${{ secrets.DRUPALORG_TOKEN }}@git.drupalcode.org" > ~/.drupal-org-credentials
+          git push drupal
+         
