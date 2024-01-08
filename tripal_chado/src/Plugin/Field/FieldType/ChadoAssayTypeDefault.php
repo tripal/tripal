@@ -157,8 +157,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
-        'chado_table' => $base_table,
-        'chado_column' => $linker_fkey_column,
+        'path' => $base_table . '.' . $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -169,26 +168,21 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
-        'chado_table' => $linker_table,
-        'chado_column' => $linker_pkey_col,
+        'path' => $linker_table . '.' . $linker_pkey_col,
       ]);
 
       // Define the link between the base table and the linker table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
         'action' => 'store_link',
         'drupal_store' => FALSE,
-        'left_table' => $base_table,
-        'left_table_id' => $base_pkey_col,
-        'right_table' => $linker_table,
-        'right_table_id' => $linker_left_col,
+        'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
       ]);
 
       // Define the link between the linker table and the object table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
-        'chado_table' => $linker_table,
-        'chado_column' => $linker_fkey_column,
+        'path' => $linker_table . '.' . $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -200,8 +194,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
         $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',
           'drupal_store' => FALSE,
-          'chado_table' => $linker_table,
-          'chado_column' => $column,
+          'path' => $linker_table . '.' . $column,
           'as' => 'linker_' . $column,
         ]);
       }
@@ -222,24 +215,21 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . $object_pkey_col,
-      'chado_column' => 'description',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . $object_pkey_col . ';description',
       'as' => 'assay_description',
     ]);
 
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_arrayidentifier', $arrayidentifier_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'arrayidentifier',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';arrayidentifier',
       'as' => 'assay_arrayidentifier',
     ]);
 
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_arraybatchidentifier', $arraybatchidentifier_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'arraybatchidentifier',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';arraybatchidentifier',
       'as' => 'assay_arraybatchidentifier',
     ]);
 
@@ -248,8 +238,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.arraydesign_id>arraydesign.arraydesign_id',
-      'chado_column' => 'name',
+        . ';' . $object_table . '.arraydesign_id>arraydesign.arraydesign_id;name',
       'as' => 'assay_arraydesign',
     ]);
 
@@ -257,8 +246,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.protocol_id>protocol.protocol_id',
-      'chado_column' => 'name',
+        . ';' . $object_table . '.protocol_id>protocol.protocol_id; name',
       'as' => 'assay_protocol',
     ]);
 
@@ -266,8 +254,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.operator_id>contact.contact_id',
-      'chado_column' => 'name',
+        . ';' . $object_table . '.operator_id>contact.contact_id;name',
       'as' => 'assay_operator',
     ]);
 
@@ -275,8 +262,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id',
-      'chado_column' => 'accession',
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
       'as' => 'assay_database_accession',
     ]);
 
@@ -284,8 +270,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
-      'chado_column' => 'name',
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
       'as' => 'assay_database_name',
     ]);
 
@@ -293,8 +278,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id',
-      'chado_column' => 'accession',
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
       'as' => 'assay_database_accession',
     ]);
 
@@ -302,8 +286,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
-      'chado_column' => 'name',
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
       'as' => 'assay_database_name',
     ]);
 
