@@ -1209,7 +1209,7 @@ fields:
 ##          project_pub, protocol, pub_dbxref, pub_relationship, pub_relationship, pubauthor, pubprop, stock_cvterm,
 ##          stock_pub, stock_relationship_cvterm, stock_relationship_pub, stockprop_pub, study
 
-    -   name: publication_title
+    -   name: pub_title
         content_type: pub
         label: Title
         type: chado_text_type_default
@@ -1235,7 +1235,7 @@ fields:
               region: content
               weight: 10
 
-    -   name: publication_type
+    -   name: pub_type
         content_type: pub
         label: Publication Type
         type: chado_additional_type_type_default
@@ -1262,7 +1262,7 @@ fields:
               region: content
               weight: 12
 
-    -   name: publication_series_name
+    -   name: pub_series_name
         content_type: pub
         label: Series Name
         type: chado_string_type_default
@@ -1289,7 +1289,7 @@ fields:
               region: content
               weight: 14
 
-    -   name: publication_volume
+    -   name: pub_volume
         content_type: pub
         label: Volume
         type: chado_string_type_default
@@ -1316,7 +1316,7 @@ fields:
               region: content
               weight: 16
 
-    -   name: publication_volumetitle
+    -   name: pub_volumetitle
         content_type: pub
         label: Volume Title
         type: chado_text_type_default
@@ -1342,7 +1342,7 @@ fields:
               region: content
               weight: 18
 
-    -   name: publication_pyear
+    -   name: pub_pyear
         content_type: pub
         label: Publication Year
         type: chado_string_type_default
@@ -1370,7 +1370,7 @@ fields:
               region: content
               weight: 20
 
-    -   name: publication_issue
+    -   name: pub_issue
         content_type: pub
         label: Issue
         type: chado_string_type_default
@@ -1397,7 +1397,7 @@ fields:
               region: content
               weight: 22
 
-    -   name: publication_pages
+    -   name: pub_pages
         content_type: pub
         label: Page Numbers
         type: chado_string_type_default
@@ -1424,7 +1424,7 @@ fields:
               region: content
               weight: 24
 
-    -   name: publication_publisher
+    -   name: pub_publisher
         content_type: pub
         label: Publisher
         type: chado_string_type_default
@@ -1451,7 +1451,7 @@ fields:
               region: content
               weight: 26
 
-    -   name: publication_pubplace
+    -   name: pub_pubplace
         content_type: pub
         label: Publication Location
         type: chado_string_type_default
@@ -1480,7 +1480,7 @@ fields:
 
 # property fields, weight 30-44
 
-    -   name: publication_doi
+    -   name: pub_doi
         content_type: pub
         label: DOI
         type: chado_linker_property_type_default
@@ -1506,7 +1506,7 @@ fields:
               region: content
               weight: 30
 
-    -   name: publication_journal_abbreviation
+    -   name: pub_journal_abbreviation
         content_type: pub
         label: Journal Abbreviation
         type: chado_linker_property_type_default
@@ -1532,7 +1532,7 @@ fields:
               region: content
               weight: 31
 
-    -   name: publication_eissn
+    -   name: pub_eissn
         content_type: pub
         label: EISSN
         type: chado_linker_property_type_default
@@ -1558,7 +1558,7 @@ fields:
               region: content
               weight: 32
 
-    -   name: publication_publication_date
+    -   name: pub_publication_date
         content_type: pub
         label: Publication Date
         type: chado_linker_property_type_default
@@ -1584,7 +1584,7 @@ fields:
               region: content
               weight: 33
 
-    -   name: publication_citation
+    -   name: pub_citation
         content_type: pub
         label: Citation
         type: chado_linker_property_type_default
@@ -1610,7 +1610,7 @@ fields:
               region: content
               weight: 34
 
-    -   name: publication_issn
+    -   name: pub_issn
         content_type: pub
         label: ISSN
         type: chado_linker_property_type_default
@@ -1636,7 +1636,7 @@ fields:
               region: content
               weight: 35
 
-    -   name: publication_language_abbr
+    -   name: pub_language_abbr
         content_type: pub
         label: Language Abbr
         type: chado_linker_property_type_default
@@ -1662,7 +1662,7 @@ fields:
               region: content
               weight: 36
 
-    -   name: publication_publication_type
+    -   name: pub_publication_type
         content_type: pub
         label: Publication Type
         type: chado_linker_property_type_default
@@ -1688,7 +1688,7 @@ fields:
               region: content
               weight: 37
 
-    -   name: publication_publication_model
+    -   name: pub_publication_model
         content_type: pub
         label: Publication Model
         type: chado_linker_property_type_default
@@ -1714,7 +1714,7 @@ fields:
               region: content
               weight: 38
 
-    -   name: publication_authors
+    -   name: pub_authors
         content_type: pub
         label: Authors
         type: chado_linker_property_type_default
@@ -1740,7 +1740,7 @@ fields:
               region: content
               weight: 39
 
-    -   name: publication_language
+    -   name: pub_language
         content_type: pub
         label: Language
         type: chado_linker_property_type_default
@@ -1766,7 +1766,7 @@ fields:
               region: content
               weight: 40
 
-    -   name: publication_elocation
+    -   name: pub_elocation
         content_type: pub
         label: Elocation
         type: chado_linker_property_type_default
@@ -1792,7 +1792,7 @@ fields:
               region: content
               weight: 41
 
-    -   name: publication_journal_country
+    -   name: pub_journal_country
         content_type: pub
         label: Journal Country
         type: chado_linker_property_type_default
@@ -1818,7 +1818,7 @@ fields:
               region: content
               weight: 42
 
-    -   name: publication_abstract
+    -   name: pub_abstract
         content_type: pub
         label: Abstract
         type: chado_linker_property_type_default
@@ -1844,7 +1844,7 @@ fields:
               region: content
               weight: 43
 
-    -   name: publication_pii
+    -   name: pub_pii
         content_type: pub
         label: PII
         type: chado_linker_property_type_default
@@ -1870,7 +1870,7 @@ fields:
               region: content
               weight: 44
 
-    -   name: publication_miniref
+    -   name: pub_miniref
         content_type: pub
         label: Mini Local identifier
         type: chado_string_type_default
@@ -1897,7 +1897,7 @@ fields:
               region: content
               weight: 50
 
-    -   name: publication_uniquename
+    -   name: pub_uniquename
         content_type: pub
         label: Citation
         type: chado_text_type_default
@@ -1923,7 +1923,7 @@ fields:
               region: content
               weight: 52
 
-    -   name: publication_dbxref
+    -   name: pub_dbxref
         content_type: pub
         label: Database Reference Annotations
         type: chado_dbxref_type_default
@@ -1950,7 +1950,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: publication_is_obsolete
+    -   name: pub_is_obsolete
         content_type: pub
         label: Is Obsolete
         type: chado_boolean_type_default
