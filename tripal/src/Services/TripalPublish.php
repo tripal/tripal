@@ -474,9 +474,6 @@ class TripalPublish {
           $field = $this->field_info[$field_name]['instance'];
           $main_prop = $field->mainPropertyName();
           $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
-          if ($value === NULL) {
-            $value = '';
-          }
           $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
         }
       }
@@ -814,43 +811,14 @@ class TripalPublish {
    */
   public function publish($filters = []) {
 
-    /** DEBUGGING
-    print "\nDEBUGGING Required Types:\n";
-    foreach ($this->required_types as $k1 => $lvl1) {
-      print "  - $k1: " . implode(', ', array_keys($lvl1)) . "\n";
-    }
-    */
-
     // Build the search values array
     $search_values = [];
     $this->addRequiredValues($search_values);
     $this->addTokenValues($search_values);
     $this->addFixedTypeValues($search_values);
 
-    /** DEBUGGING
-    print "\nDEBUGGING Search Values:\n";
-    foreach ($search_values as $k1 => $lvl1) {
-      foreach ($lvl1 as $k2 => $lvl2) {
-        print "  - $k1.$k2: " . implode(', ', array_keys($lvl2)) . "\n";
-      }
-    }
-    */
-
     $this->logger->notice("Step  1 of 6: Find matching records... ");
     $matches = $this->storage->findValues($search_values);
-
-    /** DEBUGGING
-    print "\nDEBUGGING Matches:\n";
-    foreach ($matches as $k1 => $lvl1) {
-      foreach ($lvl1 as $k2 => $lvl2) {
-        foreach ($lvl2 as $k3 => $lvl3) {
-          foreach ($lvl3 as $k4 => $lvl4) {
-            print "  - $k1.$k2.$k3.$k4: " . $lvl4['value']->getValue() . "\n";
-          }
-        }
-      }
-    }
-    */
 
     $this->logger->notice("Step  2 of 6: Generate page titles...");
     $titles = $this->getEntityTitles($matches);
