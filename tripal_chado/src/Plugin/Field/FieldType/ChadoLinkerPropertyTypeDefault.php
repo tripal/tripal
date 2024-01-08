@@ -45,7 +45,7 @@ class ChadoLinkerPropertyTypeDefault extends ChadoFieldItemBase {
     // It indicates to the publishing step to include this field.
     // If not set, then the publishing step may not be able to find matches
     // for this field based on the fixed value.
-    $settings['fixed_value'] = TRUE;
+    $settings['fixed_value'] = FALSE;
     return $settings;
   }
 
