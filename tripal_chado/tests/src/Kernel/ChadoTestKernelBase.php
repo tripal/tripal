@@ -156,6 +156,7 @@ abstract class ChadoTestKernelBase extends KernelTestBase {
 
     foreach ($specific_config as $field) {
       if (array_key_exists('content_type', $field) AND $field['content_type'] === $content_type_id) {
+        // @debug print "\nAdding Field to Bundle: " . print_r($field,TRUE);
         $field_service->addBundleField($field);
       }
     }
