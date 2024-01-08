@@ -62,7 +62,7 @@ fields:
         label: Primary Database Reference
         type: chado_dbxref_type_default
         description: The ID where this record may be available in an external online database.
-        cardinality: -1
+        cardinality: 1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
