@@ -39,6 +39,19 @@ class ChadoLinkerPropertyTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function defaultFieldSettings() {
+    $settings = parent::defaultFieldSettings();
+    // If this field needs to set a fixed value, set this to TRUE.
+    // It indicates to the publishing step to include this field.
+    // If not set, then the publishing step may not be able to find matches
+    // for this field based on the fixed value.
+    $settings['fixed_value'] = FALSE;
+    return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
 
     // Create variables for easy access to settings.
@@ -80,50 +93,94 @@ class ChadoLinkerPropertyTypeDefault extends ChadoFieldItemBase {
     $term = $field_settings['termIdSpace'] . ': ' . $field_settings['termAccession'];
     $table_alias = $prop_table . '_' . preg_replace( '/[^a-z0-9]+/', '', strtolower( $term ) );
 
+
     // Create the property types.
     return [
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
-        'chado_table' => $base_table,
-        'chado_column' => $base_pkey_col
+        'path' => $base_table . '.' . $base_pkey_col,
+        //'chado_table' => $base_table,
+        //'chado_column' => $base_pkey_col
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
-        'chado_table' => $prop_table,
-        'chado_column' => $prop_pkey_col,
-        'chado_table_alias' => $table_alias,
+        'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_pkey_col,
+        'table_alias_mapping' => [$table_alias => $prop_table],
+        //'chado_table' => $prop_table,
+        //'chado_column' => $prop_pkey_col,
+        //'chado_table_alias' => $table_alias,
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  $link_term, [
         'action' => 'store_link',
-        'left_table' => $base_table,
-        'left_table_id' => $base_pkey_col,
-        'right_table' => $prop_table,
-        'right_table_alias' => $table_alias,
-        'right_table_id' => $prop_fk_col,
+        'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col,
+        'table_alias_mapping' => [$table_alias => $prop_table],
+        //'left_table' => $base_table,
+        //'left_table_id' => $base_pkey_col,
+        //'right_table' => $prop_table,
+        //'right_table_alias' => $table_alias,
+        //'right_table_id' => $prop_fk_col,
       ]),
       new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
-        'chado_table' => $prop_table,
-        'chado_table_alias' => $table_alias,
-        'chado_column' => 'value',
+        'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';value',
+        'table_alias_mapping' => [$table_alias => $prop_table],
+        //'chado_table' => $prop_table,
+        //'chado_table_alias' => $table_alias,
+        //'chado_column' => 'value',
         'delete_if_empty' => TRUE,
         'empty_value' => ''
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank', $rank_term,  [
         'action' => 'store',
-        'chado_table' => $prop_table,
-        'chado_table_alias' => $table_alias,
-        'chado_column' => 'rank'
+        'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';rank',
+        'table_alias_mapping' => [$table_alias => $prop_table],
+        //'chado_table' => $prop_table,
+        //'chado_table_alias' => $table_alias,
+        //'chado_column' => 'rank'
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
         'action' => 'store',
-        'chado_table' => $prop_table,
-        'chado_table_alias' => $table_alias,
-        'chado_column' => 'type_id'
+        'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';type_id',
+        'table_alias_mapping' => [$table_alias => $prop_table],
+        //'chado_table' => $prop_table,
+        //'chado_table_alias' => $table_alias,
+        //'chado_column' => 'type_id'
       ]),
     ];
+  }
+
+  /**
+   * We need to set the type_id property value to match the cvterm_id.
+   *
+   * To do this we'll override the tripalValuesTemplate() and give the
+   * `type_id` property a default value.
+   *
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\TripalFieldItemBase::tripalValuesTemplate()
+   */
+  public function tripalValuesTemplate($field_definition, $default_value = NULL) {
+    $prop_values = parent::tripalValuesTemplate($field_definition, $default_value);
+
+    $settings = $field_definition->getSettings();
+
+    $termIdSpace = $settings['termIdSpace'];
+    $termAccession = $settings['termAccession'];
+
+    /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idSpace_manager **/
+    /** @var \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase $idSpace **/
+    /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term **/
+    $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $idSpace = $idSpace_manager->loadCollection($termIdSpace);
+    $term = $idSpace->getTerm($termAccession);
+
+    foreach ($prop_values as $index => $prop_value) {
+      if ($prop_value->getKey() == 'type_id') {
+        $prop_values[$index]->setValue($term->getInternalId());
+      }
+    }
+    return $prop_values;
   }
 
   /**
