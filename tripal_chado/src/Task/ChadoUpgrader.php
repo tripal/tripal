@@ -1518,13 +1518,15 @@ class ChadoUpgrader extends ChadoTaskBase {
       }
 
       // Add comment.
-      $sql_query =
-        "COMMENT ON TABLE "
-        . $chado_schema_name
-        . ".$new_table_name IS "
-        . $this->connection->quote($new_table->comment)
-        . ';';
-      $this->upgradeQueries[$new_table_name][] = $sql_query;
+      if (property_exists($new_table, 'comment') AND !empty($new_table->comment)) {
+        $sql_query =
+          "COMMENT ON TABLE "
+          . $chado_schema_name
+          . ".$new_table_name IS "
+          . $this->connection->quote($new_table->comment)
+          . ';';
+        $this->upgradeQueries[$new_table_name][] = $sql_query;
+      }
     }
   }
 
