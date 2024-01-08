@@ -161,8 +161,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
-      'chado_table' => $base_table,
-      'chado_column' => $base_pkey_col,
+      'path' => $base_table . '.' . $base_pkey_col,
     ]);
 
     // Base table links directly
@@ -170,8 +169,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
-        'chado_table' => $base_table,
-        'chado_column' => $linker_fkey_column,
+        'path' => $base_table . '.' . $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -182,26 +180,21 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
-        'chado_table' => $linker_table,
-        'chado_column' => $linker_pkey_col,
+        'path' => $linker_table . '.' . $linker_pkey_col,
       ]);
 
       // Define the link between the base table and the linker table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
         'action' => 'store_link',
         'drupal_store' => FALSE,
-        'left_table' => $base_table,
-        'left_table_id' => $base_pkey_col,
-        'right_table' => $linker_table,
-        'right_table_id' => $linker_left_col,
+        'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
       ]);
 
       // Define the link between the linker table and the object table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
-        'chado_table' => $linker_table,
-        'chado_column' => $linker_fkey_column,
+        'path' => $linker_table . '.' . $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -213,8 +206,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
         $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
           'action' => 'store',
           'drupal_store' => FALSE,
-          'chado_table' => $linker_table,
-          'chado_column' => $column,
+          'path' => $linker_table . '.' . $column,
           'as' => 'linker_' . $column,
         ]);
       }
@@ -225,9 +217,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'pub_title', $title_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_table' => $object_table,
-      'chado_column' => 'title',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';title',
       'as' => 'pub_title',
     ]);
 
@@ -235,8 +225,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'pub_volumetitle', $volumetitle_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'volumetitle',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';volumetitle',
       'as' => 'pub_volumetitle',
     ]);
 
@@ -244,8 +233,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_volume', $volume_term, $volume_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'volume',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';volume',
       'as' => 'pub_volume',
     ]);
 
@@ -253,8 +241,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_series_name', $series_name_term, $series_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'series_name',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';series_name',
       'as' => 'pub_series_name',
     ]);
 
@@ -262,8 +249,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_issue', $issue_term, $issue_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'issue',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';issue',
       'as' => 'pub_issue',
     ]);
 
@@ -271,8 +257,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_pyear', $pyear_term, $pyear_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'pyear',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';pyear',
       'as' => 'pub_pyear',
     ]);
 
@@ -280,8 +265,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_pages', $pages_term, $pages_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'pages',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';pages',
       'as' => 'pub_pages',
     ]);
 
@@ -289,8 +273,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_miniref', $miniref_term, $miniref_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'miniref',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';miniref',
       'as' => 'pub_miniref',
     ]);
 
@@ -298,8 +281,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'pub_uniquename', $uniquename_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'uniquename',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';uniquename',
       'as' => 'pub_uniquename',
     ]);
 
@@ -308,8 +290,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id',
-      'chado_column' => 'name',
+        . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id;name',
       'as' => 'pub_type',
     ]);
 
@@ -317,8 +298,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'pub_is_obsolete', $is_obsolete_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'is_obsolete',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';is_obsolete',
       'as' => 'pub_is_obsolete',
     ]);
 
@@ -326,8 +306,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_publisher', $publisher_term, $publisher_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'publisher',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';publisher',
       'as' => 'pub_publisher',
     ]);
 
@@ -335,8 +314,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'pub_pubplace', $pubplace_term, $pubplace_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col,
-      'chado_column' => 'pubplace',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';pubplace',
       'as' => 'pub_pubplace',
     ]);
 
