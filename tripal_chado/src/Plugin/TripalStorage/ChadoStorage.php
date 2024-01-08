@@ -303,6 +303,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // the values in chado for a single record.
     $found_list = [];
 
+
     // Find all of property values for the base record. We need to
     // search for this first because the properties that have values
     // from linked tables need to know the record_id.
@@ -322,8 +323,21 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $new_values = $this->cloneValues($values);
 
           $tables = $this->records->getAncillaryTables($base_table);
+          $found_match = TRUE;
           foreach ($tables as $table_alias) {
-            $match->selectRecords($base_table, $table_alias);
+            $num_found = $match->selectRecords($base_table, $table_alias);
+
+            // In order for a set of records to be considered found it must
+            // match all criteria, which means all ancillary tables must
+            // return results.
+            // @todo: when we need more fancy querying where we can set
+            // "or" clauses then this will need to be adjust. For now, we
+            // only use findValues() for publishing and in this case all
+            // criteria must be met.
+            if ($num_found == 0) {
+              $found_match = FALSE;
+              continue;
+            }
 
             // Add any additional items to the values array that are needed.
             $num_items = $match->getNumTableItems($base_table, $table_alias);
@@ -336,8 +350,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           }
 
           // Now set the values.
-          $this->setPropValues($new_values, $match);
-          $found_list[] = $new_values;
+          if ($found_match) {
+            $this->setPropValues($new_values, $match);
+            $found_list[] = $new_values;
+          }
         }
       }
     }
@@ -345,7 +361,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-
     return $found_list;
   }
 
@@ -813,7 +828,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->records->addColumn($elements);
 
     // If this is a find operation then we want to add a condition.
-    if ($context['is_find'] and !empty($value)) {
+    if ($context['is_find'] and $value !== NULL) {
       $this->records->addCondition($elements);
     }
   }

@@ -1840,8 +1840,20 @@ class ChadoRecords  {
    *   base tables don't have aliases.
    *
    * @throws \Exception
+   *
+   * @return int
+   *   Returns the number of records for this table that were found.
    */
-  public function selectRecords(string $base_table, string $table_alias) {
+  public function selectRecords(string $base_table, string $table_alias) : int {
+
+    // Indicates the number of records that were found for this table.
+    // We need to return the number found because even if no records are found
+    // the `values` array of $this->records will still have the values that were
+    // provided to it. Since we use that same array for updates/inserts it
+    // makes sense for those values to be there.  So, we need something to
+    // indicate if we actually did find values on a `loadValues()` or
+    // `findValues()` call.
+    $num_found = 0;
 
     // Make sure all IDs are up to date.
     $this->setLinks($base_table);
@@ -1931,8 +1943,10 @@ class ChadoRecords  {
           }
         }
         $num_records++;
+        $num_found++;
       }
     }
+    return $num_found;
   }
 
   /**
