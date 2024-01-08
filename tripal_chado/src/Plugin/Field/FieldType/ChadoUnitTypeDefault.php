@@ -10,7 +10,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * Plugin implementation of Default Tripal field for unit of measurement.
  *
  * @FieldType(
- *   id = "chado_unit_default",
+ *   id = "chado_unit_type_default",
  *   label = @Translation("Chado Unit"),
  *   description = @Translation("Provide unit of measurement of content, for example, Genetic Map."),
  *   default_widget = "chado_unit_widget_default",
@@ -18,9 +18,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * )
  */
 
-class ChadoUnitDefault extends ChadoFieldItemBase {
+class ChadoUnitTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_unit_default";
+  public static $id = "chado_unit_type_default";
 
   /**
    * {@inheritdoc}
@@ -77,20 +77,22 @@ class ChadoUnitDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
-      'chado_table' => 'featuremap',
-      'chado_column' => 'featuremap_id',
+      'path' => 'featuremap.featuremap_id',
+      //'chado_table' => 'featuremap',
+      //'chado_column' => 'featuremap_id',
     ]);
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'unittype_id', $unittype_id_term, [
       'action' => 'store',
-      'chado_table' => 'featuremap',
-      'chado_column' => 'unittype_id',
+      'path' => 'featuremap.unittype_id',
+      //'chado_table' => 'featuremap',
+      //'chado_column' => 'unittype_id',
     ]);
 
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'cv_name', $cv_name_term, $cv_name_len, [
       'action' => 'read_value',
-      'path' => 'featuremap.unittype_id>cvterm.cvterm_id',
-      'chado_column' => 'name',
+      'path' => 'featuremap.unittype_id>cvterm.cvterm_id;name',
+      //'chado_column' => 'name',
       'as' => 'cv_name'
     ]);
 

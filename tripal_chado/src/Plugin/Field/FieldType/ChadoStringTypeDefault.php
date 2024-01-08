@@ -17,7 +17,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * Plugin implementation of string field type for Chado.
  *
  * @FieldType(
- *   id = "chado_string_type",
+ *   id = "chado_string_type_default",
  *   label = @Translation("Chado String Field Type"),
  *   description = @Translation("A string field."),
  *   default_widget = "chado_string_type_widget",
@@ -29,9 +29,9 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   cardinality = 1
  * )
  */
-class ChadoStringTypeItem extends ChadoFieldItemBase {
+class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_string_type";
+  public static $id = "chado_string_type_default";
 
   /**
    * {@inheritdoc}
@@ -116,13 +116,15 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
-        'chado_table' => $base_table,
-        'chado_column' => $base_pkey_col
+        'path' => $base_table . '.' . $base_pkey_col,
+        //'chado_table' => $base_table,
+        //'chado_column' => $base_pkey_col
       ]),
       new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, $max_length, [
         'action' => 'store',
-        'chado_table' => $base_table,
-        'chado_column' => $base_column,
+        'path' => $base_table . '.' . $base_column,
+        //'chado_table' => $base_table,
+        //'chado_column' => $base_column,
       ]),
     ];
   }

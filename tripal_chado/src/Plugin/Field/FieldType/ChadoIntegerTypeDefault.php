@@ -17,7 +17,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * Plugin implementation of the 'integer' field type for Chado.
  *
  * @FieldType(
- *   id = "chado_integer_type",
+ *   id = "chado_integer_type_default",
  *   label = @Translation("Chado Integer Field Type"),
  *   description = @Translation("An integer field."),
  *   default_widget = "chado_integer_type_widget",
@@ -32,9 +32,9 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   cardinality = 1
  * )
  */
-class ChadoIntegerTypeItem extends ChadoFieldItemBase {
+class ChadoIntegerTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_integer_type";
+  public static $id = "chado_integer_type_default";
 
   /**
    * {@inheritdoc}
@@ -77,13 +77,15 @@ class ChadoIntegerTypeItem extends ChadoFieldItemBase {
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
-        'chado_table' => $base_table,
-        'chado_column' => $base_pkey_col
+        'path' => $base_table . '.' . $base_pkey_col,
+        //'chado_table' => $base_table,
+        //'chado_column' => $base_pkey_col
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
-        'chado_table' => $base_table,
-        'chado_column' => $base_column,
+        'path' => $base_table . '.' . $base_column,
+        //'chado_table' => $base_table,
+        //'chado_column' => $base_column,
       ]),
     ];
   }

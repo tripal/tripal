@@ -18,16 +18,16 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * Plugin implementation of Tripal additional type field type.
  *
  * @FieldType(
- *   id = "chado_additional_type_default",
+ *   id = "chado_additional_type_type_default",
  *   label = @Translation("Chado Type Reference"),
  *   description = @Translation("A Chado type reference"),
  *   default_widget = "chado_additional_type_widget_default",
  *   default_formatter = "chado_additional_type_formatter_default"
  * )
  */
-class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
+class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_additional_type_default';
+  public static $id = 'chado_additional_type_type_default';
 
   // delimiter between table name and column name in form select
   public static $table_column_delimiter = " \u{2192} ";  # right arrow
@@ -45,11 +45,10 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
-    // If a fixed value is set, then the field will will always use the
-    // same value and the user will not be allowed the change it using the
-    // widget. This is necessary for content types that correspond to Chado
-    // tables with a type_id that should always match the content type (e.g.
-    // gene).
+    // If this field needs to set a fixed value, set this to TRUE.
+    // It indicates to the publishing step to include this field.
+    // If not set, then the publishing step may not be able to find matches
+    // for this field based on the fixed value.
     $settings['fixed_value'] = FALSE;
     return $settings;
   }
@@ -108,8 +107,9 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
-      'chado_table' => $base_table,
-      'chado_column' => $base_pkey_col
+      'path' => $base_table . '.' . $base_pkey_col,
+      //'chado_table' => $base_table,
+      //'chado_column' => $base_pkey_col
     ]);
 
     // If the type table and the base table are not the same then we are
@@ -123,52 +123,57 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
       $link_term = $mapping->getColumnTermId($type_table, $type_fkey_col);
       $value_term = $mapping->getColumnTermId($type_table, 'value');
 
+      // (e.g., analysisprop.analysisprop_id)
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
-        'chado_table' => $type_table,
-        'chado_column' => $type_pkey_col,
+        'path' => $type_table  . '.' . $type_pkey_col,
+        //'chado_table' => $type_table,
+        //'chado_column' => $type_pkey_col,
       ]);
+      // (e.g., analysisprop.feature_id)
       $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', $link_term, [
         'action' => 'store_link',
-        'chado_table' => $type_table,
-        'chado_column' => $type_fkey_col,
+        'path' => $type_table . '.' . $type_fkey_col,
+        //'chado_table' => $type_table,
+        //'chado_column' => $type_fkey_col,
       ]);
+      // (e.g., analysisprop.value)
       $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
-        'chado_table' => $type_table,
-        'chado_column' => 'value',
+        'path' => $type_table . '.' . 'value',
+        //'chado_table' => $type_table,
+        //'chado_column' => 'value',
       ]);
     }
 
     // We need to store the numeric cvterm ID for this field.
+    // (e.g., feature.type_id or analysisprop.type_id)
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
       'action' => 'store',
-      'chado_table' => $type_table,
-      'chado_column' => $type_column,
+      'path' => $type_table . '.' . $type_column,
+      //'chado_table' => $type_table,
+      //'chado_column' => $type_column,
       'empty_value' => 0
     ]);
+
     // This field needs the term name, idspace and accession for proper
     // display of the type.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', $name_term, 128, [
       'action' => 'read_value',
-      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id',
-      'chado_column' => 'name',
+      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;name',
       'as' => 'term_name'
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'id_space', $idspace_term, 128, [
       'action' => 'read_value',
-      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
-      'chado_column' => 'name',
+      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
       'as' => 'idSpace'
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'accession', $accession_term, 128, [
       'action' => 'read_value',
-      'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id',
-      'chado_column' => 'accession',
+      'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession',
       'as' => 'accession'
     ]);
-
     return $properties;
   }
 

@@ -8,7 +8,7 @@ fields:
     -   name: germplasm_name
         content_type: germplasm
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -35,7 +35,7 @@ fields:
     -   name: germplasm_unique_name
         content_type: germplasm
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the germplasm within this organism.
         cardinality: 1
         required: true
@@ -61,7 +61,7 @@ fields:
     -   name: germplasm_organism
         content_type: germplasm
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -87,7 +87,7 @@ fields:
     -   name: germplasm_description
         content_type: germplasm
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -113,7 +113,7 @@ fields:
     -   name: germplasm_type
         content_type: germplasm
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -141,7 +141,7 @@ fields:
     -   name: germplasm_is_obsolete
         content_type: germplasm
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -170,7 +170,7 @@ fields:
     -   name: breeding_cross_name
         content_type: breeding_cross
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -197,7 +197,7 @@ fields:
     -   name: breeding_cross_unique_name
         content_type: breeding_cross
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the breeding cross within this organism.
         cardinality: 1
         required: true
@@ -223,7 +223,7 @@ fields:
     -   name: breeding_cross_organism
         content_type: breeding_cross
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -249,7 +249,7 @@ fields:
     -   name: breeding_cross_description
         content_type: breeding_cross
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -275,7 +275,7 @@ fields:
     -   name: breeding_cross_type
         content_type: breeding_cross
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -303,7 +303,7 @@ fields:
     -   name: breeding_cross_is_obsolete
         content_type: breeding_cross
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -332,7 +332,7 @@ fields:
     -   name: germplasm_variety_name
         content_type: germplasm_variety
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -359,7 +359,7 @@ fields:
     -   name: germplasm_variety_unique_name
         content_type: germplasm_variety
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the germplasm variety within this organism.
         cardinality: 1
         required: true
@@ -385,7 +385,7 @@ fields:
     -   name: germplasm_variety_organism
         content_type: germplasm_variety
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -411,7 +411,7 @@ fields:
     -   name: germplasm_variety_description
         content_type: germplasm_variety
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -437,7 +437,7 @@ fields:
     -   name: germplasm_variety_type
         content_type: germplasm_variety
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -465,7 +465,7 @@ fields:
     -   name: germplasm_variety_is_obsolete
         content_type: germplasm_variety
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -494,7 +494,7 @@ fields:
     -   name: ril_name
         content_type: ril
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -521,7 +521,7 @@ fields:
     -   name: ril_unique_name
         content_type: ril
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the ril within this organism.
         cardinality: 1
         required: true
@@ -547,7 +547,7 @@ fields:
     -   name: ril_organism
         content_type: ril
         label: Organism
-        type: chado_organism_default
+        type: chado_organism_type_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -573,7 +573,7 @@ fields:
     -   name: ril_description
         content_type: ril
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -599,7 +599,7 @@ fields:
     -   name: ril_type
         content_type: ril
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -627,7 +627,7 @@ fields:
     -   name: ril_is_obsolete
         content_type: ril
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false

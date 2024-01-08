@@ -4,30 +4,29 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
 
 /**
  * Plugin implementation of Default Tripal field for sequence data.
  *
  * @FieldType(
- *   id = "chado_sequence_default",
- *   label = @Translation("Chado Sequence Residues"),
- *   description = @Translation("Manages sequence residues for content types storing data in the chado feature table."),
- *   default_widget = "chado_sequence_widget_default",
- *   default_formatter = "chado_sequence_formatter_default",
- *   cardinality = 1,
+ *   id = "chado_sequence_length_type_default",
+ *   label = @Translation("Chado Feature Sequence Length"),
+ *   description = @Translation("A chado feature sequence length"),
+ *   default_widget = "chado_sequence_length_widget_default",
+ *   default_formatter = "chado_sequence_length_formatter_default"
  * )
  */
-class ChadoSequenceDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_sequence_default";
+
+class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
+
+  public static $id = "chado_sequence_length_type_default";
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    return 'residues';
+    return 'seqlen';
   }
 
   /**
@@ -36,7 +35,8 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
   public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'data';
-    $settings['termAccession'] = '2044';
+    $settings['termAccession'] = '1249';
+    $settings['fixed_value'] = TRUE;
     return $settings;
   }
 
@@ -46,7 +46,6 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
     $settings['storage_plugin_settings']['base_table'] = 'feature';
-
     return $settings;
   }
 
@@ -63,38 +62,23 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $record_id_term = 'SIO:000729';
-    $residues_term = $mapping->getColumnTermId('feature', 'residues');
     $seqlen_term = $mapping->getColumnTermId('feature', 'seqlen');
-    $md5checksum_term = $mapping->getColumnTermId('feature', 'md5checksum');
 
     // Return the properties for this field.
     $properties = [];
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
-        'chado_table' => 'feature',
-        'chado_column' => 'feature_id'
+        'path' => 'feature.feature_id',
+        //'chado_table' => 'feature',
+        //'chado_column' => 'feature_id'
     ]);
-    $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'residues', $residues_term, [
-      'action' => 'store',
-      'chado_column' => 'residues',
-      'chado_table' => 'feature'
-    ]);
-
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
-      'action' => 'store',
-      'chado_column' => 'seqlen',
-      'chado_table' => 'feature'
+      'action' => 'read_value',
+      'path' => 'feature.seqlen',
+      //'chado_column' => 'seqlen',
+      //'chado_table' => 'feature'
     ]);
-    
-    // Hard-coded as the length of MD3Checksum supported by the chado feature.md5checksum column.
-    $md5checksum_len = 32;
-    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5checksum_len, [
-      'action' => 'store',
-      'chado_column' => 'md5checksum',
-      'chado_table' => 'feature'
-    ]);
-
     return $properties;
   }
 }

@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * Plugin implementation of Default Tripal field for sequence data.
  *
  * @FieldType(
- *   id = "chado_source_data_default",
+ *   id = "chado_source_data_type_default",
  *   label = @Translation("Chado Data Source"),
  *   description = @Translation("The source and version of data used for this analysis"),
  *   default_widget = "chado_source_data_widget_default",
@@ -19,9 +19,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *   cardinality = 1,
  * )
  */
-class ChadoSourceDataDefault extends ChadoFieldItemBase {
+class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_source_data_default";
+  public static $id = "chado_source_data_type_default";
 
   /**
    * {@inheritdoc}
@@ -41,7 +41,7 @@ class ChadoSourceDataDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
-  /**  
+  /**
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
@@ -74,25 +74,29 @@ class ChadoSourceDataDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
-      'chado_table' => 'analysis',
-      'chado_column' => 'analysis_id',
+      'path' => 'analysis.analysis_id',
+      //'chado_table' => 'analysis',
+      //'chado_column' => 'analysis_id',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'sourceuri', $src_uri_term, 100, [
       'action' => 'store',
-      'chado_table' => 'analysis',
-      'chado_column' => 'sourceuri',
+      'path' => 'analysis.sourceuri',
+      //'chado_table' => 'analysis',
+      //'chado_column' => 'sourceuri',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'sourcename', $src_name_term, 200, [
       'action' => 'store',
-      'chado_table' => 'analysis',
-      'chado_column' => 'sourcename',
+      'path' => 'analysis.sourcename',
+      //'chado_table' => 'analysis',
+      //'chado_column' => 'sourcename',
       'delete_if_empty' => TRUE,
       'empty_value' => '',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'sourceversion', $src_vers_term, 100, [
       'action' => 'store',
-      'chado_table' => 'analysis',
-      'chado_column' => 'sourceversion',
+      'path' => 'analysis.sourceversion',
+      //'chado_table' => 'analysis',
+      //'chado_column' => 'sourceversion',
     ]);
 
     return ($properties);

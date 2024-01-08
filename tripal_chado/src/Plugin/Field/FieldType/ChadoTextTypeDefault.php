@@ -3,36 +3,36 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
+use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 
 
 /**
- * Plugin implementation of the 'boolean' field type for Chado.
+ * Plugin implementation of the 'text' field type for Chado.
  *
  * @FieldType(
- *   id = "chado_boolean_type",
- *   label = @Translation("Chado Boolean Field Type"),
- *   description = @Translation("A boolean field."),
- *   default_widget = "chado_boolean_type_widget",
- *   default_formatter = "chado_boolean_type_formatter",
+ *   id = "chado_text_type_default",
+ *   label = @Translation("Chado Text Field Type"),
+ *   description = @Translation("A text field."),
+ *   default_widget = "chado_text_type_widget",
+ *   default_formatter = "chado_text_type_formatter",
  *   select_base_column = TRUE,
  *   valid_base_column_types = {
- *     "boolean",
+ *     "text",
  *   },
  *   cardinality = 1
  * )
  */
-class ChadoBooleanTypeItem extends ChadoFieldItemBase {
+class ChadoTextTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_boolean_type";
+  public static $id = "chado_text_type_default";
 
   /**
    * {@inheritdoc}
@@ -47,6 +47,7 @@ class ChadoBooleanTypeItem extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function tripalTypes($field_definition) {
+
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $settings['base_table'];
@@ -55,10 +56,10 @@ class ChadoBooleanTypeItem extends ChadoFieldItemBase {
     }
 
     // Get the base table columns needed for this field.
-    $base_column = $settings['base_column'];
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_column = $settings['base_column'];
     $base_pkey_col = $base_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.
@@ -71,13 +72,15 @@ class ChadoBooleanTypeItem extends ChadoFieldItemBase {
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
-        'chado_table' => $base_table,
-        'chado_column' => $base_pkey_col
+        'path' => $base_table . '.' . $base_pkey_col,
+        //'chado_table' => $base_table,
+        //'chado_column' => $base_pkey_col
       ]),
-      new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
+      new TextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
-        'chado_table' => $base_table,
-        'chado_column' => $base_column,
+        'path' => $base_table . '.' . $base_column,
+        //'chado_table' => $base_table,
+        //'chado_column' => $base_column,
       ]),
     ];
   }
