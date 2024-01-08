@@ -669,6 +669,29 @@ class TripalPublish {
   }
 
   /**
+   * Counts the total items to insert for a field.
+   *
+   * The matches array returned by the TripalStorage is orgnized by entity
+   * but fields can have a cardinality > 1.  This function counts the number
+   * of items for the given field.
+   *
+   * @param string $field_name
+   *   The name of the field
+   * @param array $matches
+   *   The array of matches for each entity.
+   *
+   * @return int
+   *   The number of items for the field
+   */
+  protected function countFieldMatches(string $field_name, array $matches) : int {
+    $total = 0;
+    foreach ($matches as $match) {
+      $total += count(array_keys($match[$field_name]));
+    }
+    return $total;
+  }
+
+  /**
    * Inserts records into the field tables for entities.
    *
    * @param string $field_name
@@ -688,7 +711,7 @@ class TripalPublish {
     $field_table = 'tripal_entity__' . $field_name;
 
     $batch_size = 1000;
-    $num_matches = count($matches);
+    $num_matches = $this->countFieldMatches($field_name, $matches);
     $num_batches = (int) ($num_matches / $batch_size) + 1;
 
     $this->setItemsHandled(0);
@@ -704,59 +727,59 @@ class TripalPublish {
     $init_sql = rtrim($init_sql, ", ");
     $init_sql .= ") VALUES\n";
 
-    $i = 0;
+    $j = 0;
     $total = 0;
     $batch_num = 1;
     $sql = '';
     $args = [];
+
+    // Iterate through the matches.
     foreach ($matches as $match) {
       $title = $titles[$total];
       $entity_id = $entities[$title];
 
-      // @todo: deal with fields that have multiple values.
-      // right now we just assume only one record per field.
-      $delta = 0;
-      $total++;
-      $i++;
+      $num_delta = count(array_keys($match[$field_name]));
+      for ($delta = 0; $delta < $num_delta; $delta++) {
+        $j++;
+        $total++;
 
-      // Add items to those that are not already published.
-      if (!array_key_exists($entity_id, $existing)) {
-        // Add to the list of entities to insert only those
-        // that don't already exist.  We shouldn't have any that
-        // exist because the querying to find matches should have
-        // excluded existing records that are already bublished, but
-        // just in case.
-        $sql .= "(:bundle_$i, :deleted_$i, :entity_id_$i, :revision_id_$i, :langcode_$i, :delta_$i, ";
-        $args[":bundle_$i"] = $this->bundle;
-        $args[":deleted_$i"] = 0;
-        $args[":entity_id_$i"] = $entity_id;
-        $args[":revision_id_$i"] = 1;
-        $args[":langcode_$i"] = 'und';
-        $args[":delta_$i"] = $delta;
+        // No need to add items to those that are already published.
+        if (array_key_exists($entity_id, $existing)) {
+          continue;
+        }
+
+        // Add items to those that are not already published.
+        $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
+        $args[":bundle_$j"] = $this->bundle;
+        $args[":deleted_$j"] = 0;
+        $args[":entity_id_$j"] = $entity_id;
+        $args[":revision_id_$j"] = 1;
+        $args[":langcode_$j"] = 'und';
+        $args[":delta_$j"] = $delta;
         foreach (array_keys($this->required_types[$field_name]) as $key) {
-          $placeholder = ':' . $field_name . '_'. $key . '_' . $i;
+          $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
           $sql .=  $placeholder . ', ';
           $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
         }
         $sql = rtrim($sql, ", ");
         $sql .= "),\n";
-      }
 
-      // If we've reached the size of the batch then let's do the insert.
-      if ($i == $batch_size or $total == $num_matches) {
-        if (count($args) > 0) {
-          $sql = rtrim($sql, ",\n");
-          $sql = $init_sql . $sql;
+        // If we've reached the size of the batch then let's do the insert.
+        if ($j == $batch_size or $total == $num_matches) {
+          if (count($args) > 0) {
+            $sql = rtrim($sql, ",\n");
+            $sql = $init_sql . $sql;
 
-          $database->query($sql, $args);
+            $database->query($sql, $args);
+          }
+          $this->setItemsHandled($batch_num);
+          $batch_num++;
+
+          // Now reset all of the variables for the next batch.
+          $sql = '';
+          $j = 0;
+          $args = [];
         }
-        $this->setItemsHandled($batch_num);
-        $batch_num++;
-
-        // Now reset all of the variables for the next batch.
-        $sql = '';
-        $i = 0;
-        $args = [];
       }
     }
   }
@@ -852,20 +875,13 @@ class TripalPublish {
     $total_items = 0;
     foreach ($this->field_info as $field_name => $field_info) {
 
-      // For now, skip multi valued fields.
-      // @todo we need to fix this so we can support multi-valued fields.
-      if ($field_info['definition']->getSetting('cardinality') > 1) {
-        $this->logger->notice("  Skipping the multi-valued field, $field_name. Support will be added in a future release.");
-        continue;
-      }
-
       $this->logger->notice("  Checking for published items for the field: $field_name...");
       $existing_field_items = $this->findFieldItems($field_name, $entities);
 
-      $num_new_items =  count($entities) - count($existing_field_items);
-      $this->logger->notice("  Publishing items " . number_format($num_new_items) . " for field: $field_name...");
+      $num_field_items =  $this->countFieldMatches($field_name, $matches);
+      $this->logger->notice("  Publishing items " . number_format($num_field_items) . " for field: $field_name...");
       $this->insertFieldItems($field_name, $matches, $titles, $entities, $existing_field_items);
-      $total_items += $num_new_items;
+      $total_items += $num_field_items;
     }
     $this->logger->notice("Published " .  number_format(count($new_matches)) . " new entities, and " . number_format($total_items) . " field values.");
     $this->logger->notice('Done');
