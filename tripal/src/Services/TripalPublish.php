@@ -475,7 +475,9 @@ class TripalPublish {
           $field = $this->field_info[$field_name]['instance'];
           $main_prop = $field->mainPropertyName();
           $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
-          $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
+          if ($value !== NULL) {
+            $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
+          }
         }
       }
       $titles[] = $entity_title;
