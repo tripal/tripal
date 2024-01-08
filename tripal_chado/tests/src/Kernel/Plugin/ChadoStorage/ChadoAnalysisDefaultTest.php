@@ -44,129 +44,11 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  /**
-   * Properties directly from the ChadoAnalysisDefault field type:
-   * @code
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
-      'action' => 'store_id',
-      'drupal_store' => TRUE,
-      'chado_table' => $base_table,
-      'chado_column' => $base_pkey_col,
-    ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'analysis_id', $analysis_id_term, [
-      'action' => 'store',
-      'chado_table' => $base_table,
-      'chado_column' => $base_fkey_col,
-    ]);
-    $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_name', $analysis_name_term, $analysis_name_length, [
-      'action' => 'read_value',
-      'path' => $base_table . '.' . $base_fkey_col . '>analysis.analysis_id',
-      'chado_column' => 'name',
-      'as' => 'analysis_name',
-    ]);
-   * @endcode
-   *
-   * These will be repeated in the testAnalysisFieldPhylotree and
-   * testAnalysisFieldQuantification properties array below for testing.
-   */
-  protected $fields = [
-    'testAnalysisFieldPhylotree' => [
-      'field_name' => 'testAnalysisFieldPhylotree',
-      'base_table' => 'phylotree',
-      'properties' => [
-        'record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-          'chado_table' => 'phylotree',
-          'chado_column' => 'phylotree_id'
-        ],
-        'analysis_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'phylotree',
-          'chado_column' => 'analysis_id'
-        ],
-        'analysis_name' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'read_value',
-          'path' => 'phylotree.analysis_id>analysis.analysis_id',
-          'chado_column' => 'name',
-          'as' => 'analysis_name',
-        ],
-      ],
-    ],
-    // Just adds in any properties needed to meet the unique constraints on the
-    // phylotree table.
-    'testotherphylotreefield' => [
-      'field_name' => 'testotherphylotreefield',
-      'base_table' => 'phylotree',
-      'properties' => [
-        'other_record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-          'chado_table' => 'phylotree',
-          'chado_column' => 'phylotree_id'
-        ],
-        // Foreign key to dbxref table.
-        'dbxref_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'phylotree',
-          'chado_column' => 'dbxref_id'
-        ],
-      ],
-    ],
-    'testAnalysisFieldQuantification' => [
-      'field_name' => 'testAnalysisFieldQuantification',
-      'base_table' => 'quantification',
-      'properties' => [
-        'record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-          'chado_table' => 'quantification',
-          'chado_column' => 'quantification_id'
-        ],
-        'analysis_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'quantification',
-          'chado_column' => 'analysis_id'
-        ],
-        'analysis_name' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'read_value',
-          'path' => 'quantification.analysis_id>analysis.analysis_id',
-          'chado_column' => 'name',
-          'as' => 'analysis_name',
-        ],
-      ],
-    ],
-    // Just adds in any properties needed to meet the unique constraints on the
-    // quantification table.
-    'testotherquantificationfield' => [
-      'field_name' => 'testotherquantificationfield',
-      'base_table' => 'quantification',
-      'properties' => [
-        'other_record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-          'chado_table' => 'quantification',
-          'chado_column' => 'quantification_id'
-        ],
-        // Foreign key to aquisition table.
-        'acquisition_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'quantification',
-          'chado_column' => 'acquisition_id'
-        ],
-      ],
-    ],
-  ];
+  // We will populate this variable at the start of each test
+  // with fields specific to that test.
+  protected $fields = [];
+
+  protected $yaml_file = __DIR__ . "/ChadoAnalysisDefault-FieldDefinitions.yml";
 
   protected array $analysis_id;
 
@@ -176,6 +58,9 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
   protected function setUp() :void {
     parent::setUp();
     $this->setUpChadoStorageTestEnviro();
+
+    $this->setFieldsFromYaml($this->yaml_file, "testAnalysis");
+    $this->cleanChadoStorageValues();
 
     // Create the analysis record for use with these fields.
     // This field does not create an analysis but rather just links to one.
