@@ -199,6 +199,33 @@ fields:
               region: content
               weight: 35
 
+    -   name: organism_dbxref
+        content_type: organism
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                linker_table: organism_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Analysis ##
 ## Chado Table: analysis
 ## Required Columns: program (varchar 255), programversion(varchar 255), timeexecuted (timestamp)
@@ -422,6 +449,33 @@ fields:
               region: content
               weight: 45
 
+    -   name: analysis_dbxref
+        content_type: analysis
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Project ##
 ## Chado Table: project
 ## Required Columns: name (varchar 255)
@@ -536,6 +590,33 @@ fields:
               region: content
               weight: 25
 
+    -   name: project_dbxref
+        content_type: project
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Study ##
 ## Chado Table: study
 ## Required Columns: name (varchar 255), contact_id (contact FK)
@@ -621,32 +702,6 @@ fields:
               region: content
               weight: 20
 
-    -   name: study_dbxref_id
-        content_type: study
-        label: Dbxref ID
-        type: chado_integer_type_default
-        description: The primary key of the database reference (dbxref) to attach to this study. This field is a placeholder until we develop a more user friendly database reference field.
-        cardinality: 1
-        required: true
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: study
-                base_column: dbxref_id
-        settings:
-            termIdSpace: data
-            termAccession: "2091"
-        display:
-          view:
-            default:
-              region: hidden
-              label: above
-              weight: 15
-          form:
-            default:
-              region: content
-              weight: 15
-
     -   name: study_pub_id
         content_type: study
         label: Publication ID
@@ -672,6 +727,32 @@ fields:
             default:
               region: content
               weight: 15
+
+    -   name: study_dbxref
+        content_type: study
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Contact ##
 ## Chado Table: contact
@@ -925,33 +1006,6 @@ fields:
               region: content
               weight: 10
 
-
-    -   name: protocol_dbxref_id
-        content_type: protocol
-        label: Dbxref ID
-        type: chado_integer_type_default
-        description: The primary key of the database reference (dbxref) to attach to this protocol. This field is a placeholder until we develop a more user friendly database reference field.
-        cardinality: 1
-        required: true
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: protocol
-                base_column: dbxref_id
-        settings:
-            termIdSpace: data
-            termAccession: "2091"
-        display:
-          view:
-            default:
-              region: hidden
-              label: above
-              weight: 15
-          form:
-            default:
-              region: content
-              weight: 15
-
     -   name: protocol_pub_id
         content_type: protocol
         label: Publication ID
@@ -978,8 +1032,34 @@ fields:
               region: content
               weight: 15
 
+    -   name: protocol_dbxref
+        content_type: protocol
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Publication ##
-## Chado Table: conpubtact
+## Chado Table: pub
 ## Required Columns: type_id (cvterm FK), uniquename (text)
 ## Optional columns: title (text), volumetitle (text), volume (varchar 255),
 ##         series_name (varchar 255), issue (varchar 255), pyear (varchar 255),
@@ -1091,3 +1171,30 @@ fields:
             default:
               region: content
               weight: 35
+
+    -   name: publication_dbxref
+        content_type: pub
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                linker_table: pub_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68

@@ -57,6 +57,59 @@ fields:
               region: content
               weight: 15
 
+    -   name: biosample_dbxref
+        content_type: biosample
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: biosample_dbxref_ann
+        content_type: biosample
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                linker_table: biomaterial_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Assay ##
 
     -   name: assay_unique_name
@@ -162,6 +215,32 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: assay_dbxref
+        content_type: assay
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Array Design ##
 
@@ -375,3 +454,29 @@ fields:
             default:
               region: content
               weight: 45
+
+    -   name: array_design_dbxref
+        content_type: array_design
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
