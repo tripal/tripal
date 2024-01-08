@@ -45,11 +45,10 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
-    // If a fixed value is set, then the field will will always use the
-    // same value and the user will not be allowed the change it using the
-    // widget. This is necessary for content types that correspond to Chado
-    // tables with a type_id that should always match the content type (e.g.
-    // gene).
+    // If this field needs to set a fixed value, set this to TRUE.
+    // It indicates to the publishing step to include this field.
+    // If not set, then the publishing step may not be able to find matches
+    // for this field based on the fixed value.
     $settings['fixed_value'] = FALSE;
     return $settings;
   }
@@ -175,7 +174,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;accession',
       'as' => 'accession'
     ]);
-
     return $properties;
   }
 

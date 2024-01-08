@@ -143,7 +143,8 @@ class ChadoFieldDebugger {
    * This will summarize the results of ChadoStorage::buildChadoRecords().
    *
    * @param array $records
-   *   This is a nested array describing the records which will need to be
+   *   This is an instance of the TripalStorage ChadoRecords class which contains
+       all the information of records to be inserted/modifiedin chado. 
    *   generated using the Drupal Query Builder in the ChadoStorage::*Values() methods.
    */
   public function summarizeBuiltRecords(ChadoRecords $records) {
