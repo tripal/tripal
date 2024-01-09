@@ -1098,7 +1098,7 @@ fields:
         type: chado_additional_type_type_default
         description: the type of publication.
         cardinality: 1
-        required: false 
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -1152,7 +1152,7 @@ fields:
         type: chado_text_type_default
         description: The volume title for this publication.
         cardinality: 1
-        required: false
+        required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
