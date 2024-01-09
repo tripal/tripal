@@ -1066,7 +1066,7 @@ fields:
 ##         pages (varchar 255), miniref (varchar 255), is_obsolete (bool),
 ##         publisher (varchar 255), pubplace (varchar 255)
 
-    -   name: pub_uniquename
+    -   name: publication_uniquename
         content_type: pub
         label: Citation
         type: chado_text_type_default
@@ -1092,13 +1092,13 @@ fields:
               region: content
               weight: 35
 
-    -   name: pub_type
+    -   name: publication_type
         content_type: pub
         label: Publication Type
         type: chado_additional_type_type_default
         description: the type of publication.
         cardinality: 1
-        required: true
+        required: false 
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -1119,7 +1119,7 @@ fields:
               region: content
               weight: 15
 
-    -   name: pub_title
+    -   name: publication_title
         content_type: pub
         label: Title
         type: chado_text_type_default
@@ -1146,7 +1146,7 @@ fields:
               weight: 35
 
 
-    -   name: pub_volumetitle
+    -   name: publication_volumetitle
         content_type: pub
         label: Volume Title
         type: chado_text_type_default
