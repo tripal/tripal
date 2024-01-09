@@ -53,9 +53,9 @@ class ChadoProtocolFormatterDefault extends ChadoFormatterBase {
         'hardware' => $item->get('protocol_hardwaredescription')->getString(),
         'software' => $item->get('protocol_softwaredescription')->getString(),
         'type' => $item->get('protocol_type')->getString(),
-        'pub_title' => $item->get('study_pub_title')->getString(),
-        'database_name' => $item->get('study_database_name')->getString(),
-        'database_accession' => $item->get('study_database_accession')->getString(),
+        'pub_title' => $item->get('protocol_pub_title')->getString(),
+        'database_name' => $item->get('protocol_database_name')->getString(),
+        'database_accession' => $item->get('protocol_database_accession')->getString(),
       ];
 
       // Substitute values in token string to generate displayed string.
