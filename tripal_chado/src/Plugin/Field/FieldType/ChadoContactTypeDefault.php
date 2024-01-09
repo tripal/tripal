@@ -223,7 +223,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id;name',
+        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
       'as' => 'contact_type',
     ]);
 

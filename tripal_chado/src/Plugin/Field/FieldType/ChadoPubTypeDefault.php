@@ -115,9 +115,6 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $pubplace_term = $mapping->getColumnTermId($object_table, 'pubplace');
     $pubplace_len = $object_schema_def['fields']['pubplace']['size'];
 
-    // Object columns that link to another table
-    $object_type_col = 'type_id';
-
     // Cvterm table, to retrieve the name for the publication type
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
     $type_term = $mapping->getColumnTermId('cvterm', 'name');
@@ -290,7 +287,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id;name',
+        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
       'as' => 'pub_type',
     ]);
 

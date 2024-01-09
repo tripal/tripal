@@ -106,9 +106,6 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     // Other columns specific to this object table
     $comment_term = $mapping->getColumnTermId($object_table, 'comment');
 
-    // Object columns that link to another table
-    $object_type_col = 'type_id';
-
     // Cvterm table, to retrieve the name for the organism type
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
     $infraspecific_type_term = $mapping->getColumnTermId('cvterm', 'name');
@@ -226,7 +223,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.' . $object_type_col . '>cvterm.cvterm_id;name',
+        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
       'as' => 'organism_infraspecific_type',
     ]);
 
