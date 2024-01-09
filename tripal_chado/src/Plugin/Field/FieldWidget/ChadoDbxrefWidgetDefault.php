@@ -174,7 +174,6 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
               ]);
             $dbxref_id = $insert->execute();
           }
-// @@@ do we need check here for else?
         }
         $values[$val_key]['dbxref_id'] = $dbxref_id;
       }

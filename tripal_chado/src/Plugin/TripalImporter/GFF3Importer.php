@@ -561,20 +561,20 @@ class GFF3Importer extends ChadoImporterBase {
     // Get the feature property CV object
     $this->feature_prop_cv = $chado->select('1:cv','cv')
     ->fields('cv')
-    ->condition('name', 'feature_property')
+    ->condition('name', 'local')
     ->execute()
     ->fetchObject();
 
     $num_found = $chado->select('1:cv','cv')
     ->fields('cv')
-    ->condition('name', 'feature_property')
+    ->condition('name', 'local')
     ->countQuery()
     ->execute()
     ->fetchField();
 
 
     if ($num_found == 0) {
-      throw new \Exception(t("Cannot find the 'feature_property' ontology'"));
+      throw new \Exception(t("Cannot find the 'local' ontology'"));
     }
 
     // Get the sequence CV object.

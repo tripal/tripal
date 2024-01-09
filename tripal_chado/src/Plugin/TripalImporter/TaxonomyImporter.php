@@ -174,15 +174,15 @@ class TaxonomyImporter extends ChadoImporterBase {
     // TRIPAL 4 - Could not find a genetic_code record even after importing TAXRANK - Ask Stephen
     $genetic_code_cvterm = chado_get_cvterm([
       'name' => 'genetic_code',
-      'cv_id' => ['name' => 'organism_property'],
+      'cv_id' => ['name' => 'local'],
     ], [], $this->chado_schema_main);
 
-    // If genetic code cvterm not found, try to create it in organism_property CV
+    // If genetic code cvterm not found, try to create it in local CV
     // This cvterm is used in code further down in code
     if(!isset($genetic_code_cvterm)) {
       chado_insert_cvterm([
         'name' => 'genetic_code',
-        'cv_name' => 'organism_property'
+        'cv_name' => 'local'
       ], [], $this->chado_schema_main);
     }
 
@@ -203,7 +203,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         AND DB.name = 'NCBITaxon') AS ncbitaxid
     , (SELECT OP.value from {1:organismprop} OP WHERE
         type_id = (SELECT cvterm_id FROM {1:cvterm} WHERE name = 'lineage'
-        AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = 'organism_property'))
+        AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = 'local'))
         AND OP.organism_id = O.organism_id) AS lineage
     ";
     // We have standardized Tripal 4 to use 1.3, we don't need to check if it's higher than 1.2
@@ -364,7 +364,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $rank_cvterm = chado_get_cvterm([
       'name' => 'rank',
       // 'cv_id' => ['name' => 'local'], // TRIPAL 3
-      'cv_id' => ['name' => 'organism_property'],
+      'cv_id' => ['name' => 'local'],
     ], [], $this->chado_schema_main);
     if (!isset($rank_cvterm)) {
       throw new \Exception("Could not find TAXRANK vocabulary and thus rank cvterm. Please load the vocabulary.");
@@ -789,7 +789,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $rank_cvterm = chado_get_cvterm([
       'name' => 'rank',
       // 'cv_id' => ['name' => 'local'], // TRIPAL 3
-      'cv_id' => ['name' => 'organism_property'],
+      'cv_id' => ['name' => 'local'],
     ], [], $this->chado_schema_main);
 
     // Get the details for this taxonomy.
@@ -1056,7 +1056,7 @@ class TaxonomyImporter extends ChadoImporterBase {
    *   The organism ID to which the property is added.
    * @param $term_name
    *   The name of the organism property term.  This term must be
-   *   present in the 'organism_property' cv.
+   *   present in the 'local' cv.
    * @param $rank
    *   The order for this property. The first instance of this term for
    *   this organism should be zero. Defaults to zero.
@@ -1071,7 +1071,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     ];
     $property = [
       'type_name' => $term_name,
-      'cv_name' => 'organism_property',
+      'cv_name' => 'local',
       'rank' => $rank,
     ];
     return chado_get_property($record, $property, $this->chado_schema_main);
@@ -1084,7 +1084,7 @@ class TaxonomyImporter extends ChadoImporterBase {
    *   The organism ID to which the property is added.
    * @param $term_name
    *   The name of the organism property term.  This term must be
-   *   present in the 'organism_property' cv.
+   *   present in the 'local' cv.
    * @param $value
    *   The value of the property.
    * @param $rank
@@ -1102,7 +1102,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     ];
     $property = [
       'type_name' => $term_name,
-      'cv_name' => 'organism_property',
+      'cv_name' => 'local',
       'value' => $value,
     ];
 
