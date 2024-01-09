@@ -221,7 +221,7 @@ fields:
         content_type: gene
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -232,7 +232,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -623,7 +623,7 @@ fields:
         content_type: mrna
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -634,7 +634,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -1055,7 +1055,7 @@ fields:
         content_type: physical_map
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -1066,7 +1066,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -1299,7 +1299,7 @@ fields:
         content_type: dna_library
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -1310,7 +1310,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -1597,7 +1597,7 @@ fields:
         content_type: genome_assembly
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -1608,7 +1608,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -1895,7 +1895,7 @@ fields:
         content_type: genome_annotation
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -1906,7 +1906,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -2059,7 +2059,7 @@ fields:
         content_type: genome_project
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -2070,7 +2070,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:

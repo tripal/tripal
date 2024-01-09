@@ -116,7 +116,7 @@ fields:
         content_type: genetic_map
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -127,7 +127,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -385,7 +385,7 @@ fields:
         content_type: QTL
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -396,7 +396,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -758,7 +758,7 @@ fields:
         content_type: sequence_variant
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -769,7 +769,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -1131,7 +1131,7 @@ fields:
         content_type: genetic_marker
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -1142,7 +1142,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -1504,7 +1504,7 @@ fields:
         content_type: phenotypic_marker
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -1515,7 +1515,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:

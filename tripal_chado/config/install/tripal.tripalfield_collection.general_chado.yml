@@ -203,7 +203,7 @@ fields:
         content_type: organism
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -214,7 +214,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -480,7 +480,7 @@ fields:
         content_type: analysis
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -491,7 +491,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -675,7 +675,7 @@ fields:
         content_type: project
         label: Publication
         type: chado_pub_type_default
-        description: The title of the published work.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: -1
         required: false
         storage_settings:
@@ -686,7 +686,7 @@ fields:
                 linker_fkey_column: pub_id
         settings:
             termIdSpace: TPUB
-            termAccession: "0000039"
+            termAccession: "0000002"
         display:
           view:
             default:
@@ -1143,9 +1143,9 @@ fields:
 
     -   name: protocol_pub
         content_type: protocol
-        label: Publication ID
+        label: Publication
         type: chado_pub_type_default
-        description: Biblographic reference for the publication.
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: 1
         required: true
         storage_settings:

@@ -39,7 +39,8 @@ class ChadoPubFormatterDefault extends ChadoFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $settings['token_string'] = '[title]';
+    // uniquename is generally the citation and has a not null constraint
+    $settings['token_string'] = '[uniquename]';
     return $settings;
   }
 
@@ -69,10 +70,8 @@ class ChadoPubFormatterDefault extends ChadoFormatterBase {
       ];
 
       // Change the non-user-friendly 'null' publication.
-      // Note that since title does not have a "not null" constraint,
-      // this also could happen for other publications.
-      if ($values['title'] == '') {
-        $values['title'] = 'Unknown';
+      if ($values['uniquename'] == 'null') {
+        $values['uniquename'] = 'Unknown';
       }
 
       // Substitute values in token string to generate displayed string.
