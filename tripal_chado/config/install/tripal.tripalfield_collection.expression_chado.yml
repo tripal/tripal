@@ -294,11 +294,11 @@ fields:
               region: content
               weight: 20
 
-    -   name: assay_protocol_id
+    -   name: assay_protocol
         content_type: assay
-        label: Protocol ID
-        type: chado_integer_type_default
-        description: The primary key of the protocol reference to attach to this assay. This field is a placeholder until we develop a more user friendly protocol reference field.
+        label: Protocol
+        type: chado_protocol_type_default
+        description: The protocol followed to generate this resource.
         cardinality: 1
         required: false
         storage_settings:
@@ -642,11 +642,11 @@ fields:
               region: content
               weight: 30
 
-    -   name: array_design_protocol_id
+    -   name: array_design_protocol
         content_type: array_design
-        label: Protocol ID
-        type: chado_integer_type_default
-        description: The primary key of the protocol reference to attach to this array_design. This field is a placeholder until we develop a more user friendly protocol reference field.
+        label: Protocol
+        type: chado_protocol_type_default
+        description: The protocol followed to generate this resource.
         cardinality: 1
         required: false
         storage_settings:

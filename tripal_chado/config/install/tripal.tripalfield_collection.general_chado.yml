@@ -1141,11 +1141,11 @@ fields:
               region: content
               weight: 10
 
-    -   name: protocol_pub_id
+    -   name: protocol_pub
         content_type: protocol
         label: Publication ID
-        type: chado_integer_type_default
-        description: The primary key of the publication to attach to this protocol. This field is a placeholder until we develop a more user friendly publication field.
+        type: chado_pub_type_default
+        description: Biblographic reference for the publication.
         cardinality: 1
         required: true
         storage_settings:
