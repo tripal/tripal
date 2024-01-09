@@ -48,7 +48,10 @@ class ChadoStudyFormatterDefault extends ChadoFormatterBase {
       $values = [
         'name' => $item->get('study_name')->getString(),
         'description' => $item->get('study_description')->getString(),
-        'type' => $item->get('study_type')->getString(),
+        'contact_name' => $item->get('study_contact_name')->getString(),
+        'pub_title' => $item->get('study_pub_title')->getString(),
+        'database_name' => $item->get('study_database_name')->getString(),
+        'database_accession' => $item->get('study_database_accession')->getString(),
       ];
 
       // Substitute values in token string to generate displayed string.

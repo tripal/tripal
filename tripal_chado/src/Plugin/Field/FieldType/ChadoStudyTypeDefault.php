@@ -213,7 +213,7 @@ class ChadoStudyTypeDefault extends ChadoFieldItemBase {
     ]);
 
     // The linked contact
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_contact', $contact_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_contact_name', $contact_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
