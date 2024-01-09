@@ -234,150 +234,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-<<<<<<< HEAD
-   * Queries for multiple records in Chado.
-   *
-   * @param array $records
-   * @param string $chado_table
-   * @param integer $delta
-   * @param array $record
-   *
-   * @throws \Exception
-   */
-  public function findChadoRecords($chado_table_alias, $delta, $record) {
-
-    $chado_table = $this->getChadoTableFromAlias($chado_table_alias);
-
-    // Select the fields in the chado table.
-    $select = $this->connection->select('1:' . $chado_table, 'ct');
-    $select->fields('ct', array_keys($record['fields']));
-
-    // Add in any joins.
-    if (array_key_exists('joins', $record)) {
-      $j_index = 0;
-      foreach ($record['joins'] as $rtable => $rjoins) {
-        foreach ($rjoins as $jinfo) {
-          $lalias = $jinfo['on']['left_alias'];
-          $ralias = $jinfo['on']['right_alias'];
-          $lcol = $jinfo['on']['left_col'];
-          $rcol = $jinfo['on']['right_col'];
-
-          $select->leftJoin('1:' . $rtable, $ralias, $lalias . '.' .  $lcol . '=' .  $ralias . '.' . $rcol);
-
-          foreach ($jinfo['columns'] as $column) {
-            $sel_col = $column[0];
-            $sel_col_as = $ralias . '_' . $column[1];
-            $field_name = $column[2];
-            $property_key = $column[3];
-            $this->join_column_alias[$field_name][$property_key][$column[1]] = $sel_col_as;
-            $select->addField($ralias, $sel_col, $sel_col_as);
-          }
-          $j_index++;
-        }
-      }
-    }
-
-    // Add the select condition
-    foreach ($record['conditions'] as $chado_column => $value) {
-      // If we don't have a primary key for the base table then skip the condition.
-      if (is_array($value['value']) and in_array('REPLACE_BASE_RECORD_ID', array_values($value['value']))) {
-        continue;
-      }
-      if (!empty($value)) {
-        $select->condition('ct.'.$chado_column, $value['value'], $value['operation']);
-      }
-    }
-
-    $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
-    // @debug print "Query in findChadoRecord(): " . strtr((string) $select, $select->arguments());
-
-    // Execute the query.
-    $results = $select->execute();
-    if (!$results) {
-      throw new \Exception($this->t('Failed to select record in the Chado "@table" table. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-    }
-    return $results;
-  }
-
-  /**
-   * Selects a single record from Chado.
-   *
-   * @param array $records
-   * @param string $chado_table_alias
-   * @param integer $delta
-   * @param array $record
-   *
-   * @throws \Exception
-   */
-  public function selectChadoRecord(&$records, $base_tables, $chado_table_alias, $delta, $record) {
-
-    if (!array_key_exists('conditions', $record)) {
-      throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to missing conditions. Record: @record',
-          ['@table' => $chado_table_alias, '@record' => print_r($record, TRUE)]));
-    }
-
-    // If we are selecting on the base table and we don't have a proper
-    // condition then throw an error.
-    if (!$this->hasValidConditions($record)) {
-      throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
-          ['@table' => $chado_table_alias, '@record' => print_r($record, TRUE)]));
-    }
-
-    $chado_table = $this->getChadoTableFromAlias($chado_table_alias);
-
-    // Select the fields in the chado table.
-    $select = $this->connection->select('1:'.$chado_table, 'ct');
-    if (array_key_exists('fields', $record)) {
-      $select->fields('ct', array_keys($record['fields']));
-    }
-
-    // Add in any joins.
-    if (array_key_exists('joins', $record)) {
-      $j_index = 0;
-      foreach ($record['joins'] as $rtable => $rjoins) {
-        foreach ($rjoins as $jinfo) {
-          $lalias = $jinfo['on']['left_alias'];
-          $ralias = $jinfo['on']['right_alias'];
-          $lcol = $jinfo['on']['left_col'];
-          $rcol = $jinfo['on']['right_col'];
-
-          $select->leftJoin('1:' . $rtable, $ralias, $lalias . '.' .  $lcol . '=' .  $ralias . '.' . $rcol);
-
-          foreach ($jinfo['columns'] as $column) {
-            $sel_col = $column[0];
-            $sel_col_as = $ralias . '_' . $column[1];
-            $field_name = $column[2];
-            $property_key = $column[3];
-            $this->join_column_alias[$field_name][$property_key][ $column[1] ] = $sel_col_as;
-            $select->addField($ralias, $sel_col, $sel_col_as);
-          }
-          $j_index++;
-        }
-      }
-    }
-
-    // Add the select condition
-    foreach ($record['conditions'] as $chado_column => $value) {
-      if (!empty($value['value'])) {
-        $select->condition('ct.'. $chado_column, $value['value'], $value['operation']);
-      }
-    }
-
-    $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
-
-    // Execute the query.
-    $results = $select->execute();
-    if (!$results) {
-      throw new \Exception($this->t('Failed to select record in the Chado "@table" table. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-    }
-    $records[$chado_table_alias][$delta]['fields'] = $results->fetchAssoc();
-  }
-
-  /**
-=======
->>>>>>> tv4g1-issue1550-dbxref-field
    * @{inheritdoc}
    */
   public function loadValues(&$values) : bool {
@@ -1027,25 +883,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   protected function parsePath(string $field_name, string $base_table, mixed $path, array $aliases = [], string $as = '', string $full_path = '') {
 
-<<<<<<< HEAD
-    // Get the left column and the right table join infor.
-    list($left, $right) = explode(">", array_shift($path_arr));
-    list($left_table, $left_col) = explode(".", $left);
-    list($right_table, $right_col) = explode(".", $right);
-
-    // If the parent_table is not specified then it will be the left table.
-    // The only time the parent table is not specified is when this function
-    // is first called.
-    $parent_table = !$parent_table ? $left_table : $parent_table;
-    $parent_column = !$parent_column ? $left_col : $parent_column;
-
-
-    // Make sure the parent table has a 'joins' array.
-    if (!array_key_exists($parent_table, $records) or
-        !array_key_exists($delta, $records[$parent_table]) or
-        !array_key_exists('joins', $records[$parent_table][$delta])) {
-      $records[$parent_table][$delta]['joins'] = [];
-=======
     // If the path is a string then split it.
     $path_arr = [];
     if (is_string($path)) {
@@ -1055,7 +892,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
     if (is_array($path)) {
       $path_arr = $path;
->>>>>>> tv4g1-issue1550-dbxref-field
     }
 
     // Get the current path in the list.
