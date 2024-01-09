@@ -26,7 +26,7 @@ class TripalPublish {
 
   /**
    * The interval when the job progress should be updated. Updating the job
-   * progress incurrs a database write which takes time and if it occurs to
+   * progress incurrs a database write which takes time and if it occurs too
    * frequently can slow down the loader.  This should be a value between
    * 0 and 100 to indicate a percent interval (e.g. 1 means update the
    * progress every time the num_handled increases by 1%).
@@ -492,7 +492,7 @@ class TripalPublish {
    *   The array of entity titles in the same order as the matches.
    *
    * @return array
-   *   An associative array of  of matched entities keyed by the
+   *   An associative array of matched entities keyed by the
    *   entity title with a value of the entity id.
    */
   protected function findEntities($matches, $titles) {
@@ -578,7 +578,7 @@ class TripalPublish {
       // Add to the list of entities to insert only those
       // that don't already exist.  We shouldn't have any that
       // exist because the querying to find matches should have
-      // excluded existing records that are already bublished, but
+      // excluded existing records that are already published, but
       // just in case.
       $sql .= "(:type_$i, :title_$i, :status_$i, :created_$i, :changed_$i),\n";
       $args[":type_$i"] = $this->bundle;
@@ -862,9 +862,9 @@ class TripalPublish {
     $this->logger->notice("Step  5 of 6: Find IDs of entities...");
     $entities = $this->findEntities($matches, $titles);
 
-    // Now we have to publish the field items. These represent storage back-end inforamtion
+    // Now we have to publish the field items. These represent storage back-end information
     // about the entity. If the entity was previously published we still may be adding new
-    // information about it (say if we are publishing genes from a noSQL back-end bu the
+    // information about it (say if we are publishing genes from a noSQL back-end but the
     // original entity was created when it was first published when using the Chado backend).
     $this->logger->notice("Step  6 of 6: Add field items to published entities...");
 
@@ -879,7 +879,7 @@ class TripalPublish {
       $existing_field_items = $this->findFieldItems($field_name, $entities);
 
       $num_field_items =  $this->countFieldMatches($field_name, $matches);
-      $this->logger->notice("  Publishing " . number_format($num_field_items) . " items or field: $field_name...");
+      $this->logger->notice("  Publishing " . number_format($num_field_items) . " items for field: $field_name...");
       $this->insertFieldItems($field_name, $matches, $titles, $entities, $existing_field_items);
       $total_items += $num_field_items;
     }
