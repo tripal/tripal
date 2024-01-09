@@ -303,7 +303,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // the values in chado for a single record.
     $found_list = [];
 
-
     // Find all of property values for the base record. We need to
     // search for this first because the properties that have values
     // from linked tables need to know the record_id.
@@ -322,9 +321,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Clone the value array for this match.
           $new_values = $this->cloneValues($values);
 
-          $tables = $this->records->getAncillaryTables($base_table);
+          // Iterate through tables that have conditions.  We don't want to
+          // query tables that only have a condition with a link to the base
+          // table because these records aren't providing any filters to limit
+          // the base records.
+          $tables = $this->records->getAncillaryTablesWithCond($base_table);
           $found_match = TRUE;
           foreach ($tables as $table_alias) {
+
             $num_found = $match->selectRecords($base_table, $table_alias);
 
             // In order for a set of records to be considered found it must
@@ -729,7 +733,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'table_alias' => $value_col_info['table_alias'],
       'column_alias' => $value_col_info['column_alias'],
       'delta' => $context['delta'],
-      'value' => $pkey_id ? $pkey_id : 0,
+      'value' => $pkey_id ? $pkey_id : NULL,
       'field_name' => $context['field_name'],
       'property_key' => $context['property_key'],
     ];
@@ -776,13 +780,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // Setting the value to NULL and indicating this field contains a link
       // to the base table will cause the value to be set automatically by
       // ChadoRecord once it's available.
-      'value' => $link_id ? $link_id : 0,
+      'value' => $link_id ? $link_id : NULL,
       'operation' => $context['operation'],
       'delta' => $context['delta'],
       'field_name' => $context['field_name'],
       'property_key' => $context['property_key'],
     ];
     $this->records->addColumn($elements, TRUE);
+
     $this->records->addCondition($elements);
   }
 

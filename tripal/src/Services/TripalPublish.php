@@ -879,7 +879,7 @@ class TripalPublish {
       $existing_field_items = $this->findFieldItems($field_name, $entities);
 
       $num_field_items =  $this->countFieldMatches($field_name, $matches);
-      $this->logger->notice("  Publishing items " . number_format($num_field_items) . " for field: $field_name...");
+      $this->logger->notice("  Publishing " . number_format($num_field_items) . " items or field: $field_name...");
       $this->insertFieldItems($field_name, $matches, $titles, $entities, $existing_field_items);
       $total_items += $num_field_items;
     }
