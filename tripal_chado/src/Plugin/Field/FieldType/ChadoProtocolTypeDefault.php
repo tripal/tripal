@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
 /**
  * Plugin implementation of default Tripal protocol field type.
@@ -100,8 +101,8 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
 
     // Columns from linked tables
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $type_term = $mapping->getColumnTermId('cvterm', 'name');
-    $type_len = $cvterm_schema_def['fields']['name']['size'];
+    $protocol_type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $protocol_type_len = $cvterm_schema_def['fields']['name']['size'];
     $pub_title_term = $mapping->getColumnTermId('pub', 'title');
     $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
     $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
