@@ -127,7 +127,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000552
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -476,7 +476,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000552
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -824,7 +824,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000552
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -1172,7 +1172,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000552
+            termAccession: "0000552"
         display:
           view:
             default:
@@ -1520,7 +1520,7 @@ fields:
                 linker_fkey_column: dbxref_id
         settings:
             termIdSpace: SBO
-            termAccession: 0000552
+            termAccession: "0000552"
         display:
           view:
             default:
