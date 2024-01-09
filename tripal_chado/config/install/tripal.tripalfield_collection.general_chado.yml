@@ -1630,11 +1630,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 34
+              weight: 35
           form:
             default:
               region: content
-              weight: 34
+              weight: 35
 
     -   name: pub_issn
         content_type: pub
@@ -1656,11 +1656,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 35
+              weight: 36
           form:
             default:
               region: content
-              weight: 35
+              weight: 36
 
     -   name: pub_language_abbr
         content_type: pub
@@ -1682,11 +1682,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 36
+              weight: 37
           form:
             default:
               region: content
-              weight: 36
+              weight: 37
 
     -   name: pub_publication_type
         content_type: pub
@@ -1708,11 +1708,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 37
+              weight: 38
           form:
             default:
               region: content
-              weight: 37
+              weight: 38
 
     -   name: pub_publication_model
         content_type: pub
@@ -1734,11 +1734,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 38
+              weight: 39
           form:
             default:
               region: content
-              weight: 38
+              weight: 39
 
     -   name: pub_authors
         content_type: pub
@@ -1760,11 +1760,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 39
+              weight: 40
           form:
             default:
               region: content
-              weight: 39
+              weight: 40
 
     -   name: pub_language
         content_type: pub
@@ -1786,11 +1786,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 40
+              weight: 41
           form:
             default:
               region: content
-              weight: 40
+              weight: 41
 
     -   name: pub_elocation
         content_type: pub
@@ -1812,11 +1812,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 41
+              weight: 42
           form:
             default:
               region: content
-              weight: 41
+              weight: 42
 
     -   name: pub_journal_country
         content_type: pub
@@ -1838,11 +1838,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 42
+              weight: 43
           form:
             default:
               region: content
-              weight: 42
+              weight: 43
 
     -   name: pub_abstract
         content_type: pub
@@ -1864,11 +1864,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 43
+              weight: 44
           form:
             default:
               region: content
-              weight: 43
+              weight: 44
 
     -   name: pub_pii
         content_type: pub
@@ -1890,11 +1890,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 44
+              weight: 45
           form:
             default:
               region: content
-              weight: 44
+              weight: 45
 
     -   name: pub_miniref
         content_type: pub
@@ -1925,7 +1925,7 @@ fields:
 
     -   name: pub_uniquename
         content_type: pub
-        label: Citation
+        label: Unique Local Identifier
         type: chado_text_type_default
         description: This publication is housed in Chado which requires a unique identifer (or name) be provided for every publication. This identifier need not be shown to end-users but it is required. Each site must decide on a format for this unique name.
         cardinality: 1
@@ -1936,18 +1936,18 @@ fields:
                 base_table: pub
                 base_column: uniquename
         settings:
-            termIdSpace: TPUB
-            termAccession: "0000003"
+            termIdSpace: data
+            termAccession: "0842"
         display:
           view:
             default:
               region: content
               label: above
-              weight: 52
+              weight: 34
           form:
             default:
               region: content
-              weight: 52
+              weight: 34
 
     -   name: pub_dbxref
         content_type: pub
