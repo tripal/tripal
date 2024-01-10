@@ -23,9 +23,10 @@ use Drupal\Core\Url;
  *    use_analysis = False,
  *    require_analysis = False,
  *    button_text = @Translation("Import Taxonomy file"),
- *    file_upload = False,
- *    file_remote = False,
- *    file_required = False,
+ *    file_upload = FALSE,
+ *    file_local = FALSE,
+ *    file_remote = FALSE,
+ *    file_required = FALSE,
  *  )
  */
 class TaxonomyImporter extends ChadoImporterBase {
@@ -59,7 +60,7 @@ class TaxonomyImporter extends ChadoImporterBase {
 
     $form['instructions'] = [
       '#type' => 'fieldset',
-      '#title' => 'instructions',
+      '#title' => 'INSTRUCTIONS',
       '#description' => t('This form is used to import species from the NCBI
         Taxonomy database into this site. Alternatively, it can import details
         about organisms from the NCBI Taxonomy database for organisms that
