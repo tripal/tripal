@@ -58,9 +58,9 @@ class ChadoFeatureFormatterDefault extends ChadoFormatterBase {
       $values = [
         'name' => $item->get('feature_name')->getString(),
         'uniquename' => $item->get('feature_uniquename')->getString(),
-        'type' => $item->get('type')->getString(),
-        'seqlen' => $item->get('seqlen')->getString(),
-        'md5checksum' => $item->get('md5checksum')->getString(),
+        'type' => $item->get('feature_type')->getString(),
+        'seqlen' => $item->get('feature_seqlen')->getString(),
+        'md5checksum' => $item->get('feature_md5checksum')->getString(),
         'is_analysis' => $item->get('feature_is_analysis')->getString(),
         'is_obsolete' => $item->get('feature_is_obsolete')->getString(),
         'database_name' => $item->get('feature_database_name')->getString(),
