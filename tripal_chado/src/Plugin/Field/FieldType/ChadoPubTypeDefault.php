@@ -132,12 +132,8 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
       $linker_pkey_col = $linker_schema_def['primary key'];
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-dpm($linker_table, "CP1 linker_table"); //@@@
-dpm($linker_left_col, "CP2 linker_left_col"); //@@@
       $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col);
-dpm($linker_left_term, "CP3 linker_left_term"); //@@@
       $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column);
-dpm($linker_fkey_term, "CP4 linker_fkey_term"); //@@@
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
