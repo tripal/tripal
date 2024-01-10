@@ -22,7 +22,7 @@ use Drupal\Core\Url;
  *    upload_title = @Translation("Taxonomy File"),
  *    use_analysis = False,
  *    require_analysis = False,
- *    button_text = @Translation("Import Taxonomy file"),
+ *    button_text = @Translation("Import Taxonomy"),
  *    file_upload = FALSE,
  *    file_local = FALSE,
  *    file_remote = FALSE,
