@@ -42,11 +42,7 @@ class ChadoStudyWidgetDefault extends ChadoWidgetBase {
     $query->orderBy('name', 'contact_name');
     $results = $query->execute();
     while ($study = $results->fetchObject()) {
-      $study_name = $study->name;
-      if ($study->contact_name) {
-        $study_name .= ' (' . $study->contact_name . ')';
-      }
-      $studys[$study->study_id] = $study_name;
+      $studys[$study->study_id] = $study->name;
     }
     natcasesort($studys);
 
