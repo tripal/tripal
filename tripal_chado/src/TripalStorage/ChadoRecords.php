@@ -815,6 +815,38 @@ class ChadoRecords  {
   }
 
   /**
+   * For the given base table, returns non base tables that have conditions set.
+   *
+   * Excludes tables whose only condition is the linker column to the base
+   * table.  This function is useful when finding values.  We don't want
+   * to iterate through tables that won't have any records to filter so
+   * we can use this function results to exclude those tables.
+   *
+   * @param string $base_table
+   *   The name of the Chado table used as a base table.
+   *
+   * @return array
+   *   The list of tables linked to the base table but does
+   *   not include the base table.
+   */
+  public function getAncillaryTablesWithCond(string $base_table) : array {
+    $ret_val = [];
+    $tables = $this->getAncillaryTables($base_table);
+    foreach ($tables as $table_alias) {
+      $items = $this->getTableItems($base_table, $table_alias);
+      $linker_cols = array_keys($items[0]['link_columns']);
+      foreach (array_keys($items[0]['conditions']) as $column_alias) {
+        if (in_array($column_alias, $linker_cols) and
+            $items[0]['link_columns'][$column_alias] == $base_table) {
+          continue;
+        }
+        $ret_val[] = $table_alias;
+
+      }
+    }
+    return $ret_val;
+  }
+  /**
    * Returns the list of tables currently handled by this object.
    *
    * @param string $base_table
@@ -1840,8 +1872,20 @@ class ChadoRecords  {
    *   base tables don't have aliases.
    *
    * @throws \Exception
+   *
+   * @return int
+   *   Returns the number of records for this table that were found.
    */
-  public function selectRecords(string $base_table, string $table_alias) {
+  public function selectRecords(string $base_table, string $table_alias) : int {
+
+    // Indicates the number of records that were found for this table.
+    // We need to return the number found because even if no records are found
+    // the `values` array of $this->records will still have the values that were
+    // provided to it. Since we use that same array for updates/inserts it
+    // makes sense for those values to be there.  So, we need something to
+    // indicate if we actually did find values on a `loadValues()` or
+    // `findValues()` call.
+    $num_found = 0;
 
     // Make sure all IDs are up to date.
     $this->setLinks($base_table);
@@ -1931,8 +1975,10 @@ class ChadoRecords  {
           }
         }
         $num_records++;
+        $num_found++;
       }
     }
+    return $num_found;
   }
 
   /**

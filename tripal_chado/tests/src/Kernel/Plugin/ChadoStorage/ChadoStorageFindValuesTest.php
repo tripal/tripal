@@ -78,7 +78,7 @@ class ChadoStorageFindValuesTest extends ChadoTestKernelBase {
     $values['gene_type'][0]['id_space'] = 'SO';
     $values['gene_type'][0]['accession'] = '0000704';
     // And indicate the type of property.
-    $values['field_multi_value_chado_property'][0]['type_id'] = 3151;
+    //$values['field_multi_value_chado_property'][0]['type_id'] = 3151;
 
     $field_names = array_keys($this->fields);
     // Count total number of properties expected for the fields in the
