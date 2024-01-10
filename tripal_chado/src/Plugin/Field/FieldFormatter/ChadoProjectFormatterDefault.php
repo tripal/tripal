@@ -44,7 +44,6 @@ class ChadoProjectFormatterDefault extends ChadoFormatterBase {
       $values = [
         'name' => $item->get('project_name')->getString(),
         'description' => $item->get('project_description')->getString(),
-        'type' => $item->get('project_type')->getString(),
       ];
 
       // Substitute values in token string to generate displayed string.
