@@ -533,7 +533,7 @@ fields:
           form:
             default:
               region: content
-              weight: 15
+              weight: 10
 
     -   name: array_design_description
         content_type: array_design
