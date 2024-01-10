@@ -58,8 +58,8 @@ content_types:
         help_text: Use the publication page for books, journal articles, or other citable work.
         category: General
         id: pub
-        title_format: "[publication_title]"
-        url_format: "pub/[TripalEntity__entity_id]"
+        title_format: "[pub_title]"
+        url_format: "publication/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_6
 
