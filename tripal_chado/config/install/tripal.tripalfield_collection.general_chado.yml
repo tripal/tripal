@@ -1818,6 +1818,32 @@ fields:
               region: content
               weight: 42
 
+    -   name: pub_url
+        content_type: pub
+        label: URL
+        type: chado_linker_property_type_default
+        description: 'A univeral resource locator (URL) reference where the publication can be found.  For publications found online, this would be the web address for the publication.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000052"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 42
+          form:
+            default:
+              region: content
+              weight: 42
+
     -   name: pub_journal_country
         content_type: pub
         label: Journal Country
