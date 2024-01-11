@@ -719,14 +719,14 @@ class ChadoManagerForm extends FormBase {
 
     $current_user = \Drupal::currentUser();
     $args = [$source_schema_name, $new_schema_name];
-    tripal_add_job(
-      t('Clone Chado schema'),
-      'tripal_chado',
-      'tripal_chado_clone_schema',
-      $args,
-      $current_user->id(),
-      10
-    );
+
+    \Drupal::service('tripal.job')->create([
+      'job_name' => t('Clone Chado schema'),
+      'modulename' => 'tripal_chado',
+      'callback' => 'tripal_chado_clone_schema',
+      'arguments' => $args,
+      'uid' => $current_user->id()
+    ]);
 
     // Go back.
     $this->goBackForm($form, $form_state);
@@ -810,14 +810,14 @@ class ChadoManagerForm extends FormBase {
 
     $current_user = \Drupal::currentUser();
     $args = [$schema_name, '1.3', $sql_file, $cleanup];
-    tripal_add_job(
-      t('Upgrade Chado schema'),
-      'tripal_chado',
-      'tripal_chado_upgrade_schema',
-      $args,
-      $current_user->id(),
-      10
-    );
+
+    \Drupal::service('tripal.job')->create([
+      'job_name' => t('Upgrade Chado schema'),
+      'modulename' => 'tripal_chado',
+      'callback' => 'tripal_chado_upgrade_schema',
+      'arguments' => $args,
+      'uid' => $current_user->id(),
+    ]);
 
     // Go back.
     $this->goBackForm($form, $form_state);

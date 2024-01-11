@@ -335,9 +335,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     // Add a job to run the importer.
     try {
       $args = [$this->import_id];
-      $includes = [];
-      $job_id = tripal_add_job($this->plugin_definition['button_text'], 'tripal',
-        'tripal_run_importer', $args, $uid, 10, $includes);
+      $job_id = \Drupal::service('tripal.job')->create([
+        'job_name' => $this->plugin_definition['button_text'],
+        'modulename' => 'tripal',
+        'callback' => 'tripal_run_importer',
+        'arguments' => $args,
+        'uid' => $uid
+      ]);
 
       return $job_id;
     }

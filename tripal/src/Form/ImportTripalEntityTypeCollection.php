@@ -77,7 +77,7 @@ final class ImportTripalEntityTypeCollection extends FormBase {
 
     // Now create the job.
     $job_submitted = \Drupal::service('tripal.job')->create([
-      'job_name' => "Import Tripal Entity Type Collection",
+      'job_name' => t('Import Tripal Entity Type Collection'),
       'modulename' => 'tripal',
       'uid' => $current_user->id(),
       'callback' => 'import_tripalentitytype_collection',
