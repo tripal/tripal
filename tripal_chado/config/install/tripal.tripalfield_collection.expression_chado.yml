@@ -8,7 +8,7 @@ fields:
     -   name: biosample_name
         content_type: biosample
         label: Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -34,7 +34,7 @@ fields:
     -   name: biosample_description
         content_type: biosample
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -57,12 +57,65 @@ fields:
               region: content
               weight: 15
 
+    -   name: biosample_dbxref
+        content_type: biosample
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: biosample_dbxref_ann
+        content_type: biosample
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                linker_table: biomaterial_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Assay ##
 
     -   name: assay_unique_name
         content_type: assay
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
         cardinality: 1
         required: false
@@ -88,7 +141,7 @@ fields:
     -   name: assay_batch_id
         content_type: assay
         label: Array Batch Identifier
-        type: chado_text_type
+        type: chado_text_type_default
         description: A unique identifier for an array batch.
         cardinality: 1
         required: false
@@ -114,7 +167,7 @@ fields:
     -   name: assay_name
         content_type: assay
         label: Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -140,7 +193,7 @@ fields:
     -   name: assay_description
         content_type: assay
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -163,12 +216,38 @@ fields:
               region: content
               weight: 25
 
+    -   name: assay_dbxref
+        content_type: assay
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Array Design ##
 
     -   name: array_design_manufacturer
         content_type: array_design
         label: Manufacturer
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: A manufacturer's contact details
         cardinality: 1
         required: true
@@ -195,7 +274,7 @@ fields:
     -   name: array_design_name
         content_type: array_design
         label: Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: The name of the item.
         cardinality: 1
         required: true
@@ -221,7 +300,7 @@ fields:
     -   name: array_design_version_num
         content_type: array_design
         label: Array Version
-        type: chado_text_type
+        type: chado_text_type_default
         description: A version number is an information content entity which is a sequence of characters borne by part of each of a class of manufactured products or its packaging and indicates its order within a set of other products having the same name.
         cardinality: 1
         required: false
@@ -247,7 +326,7 @@ fields:
     -   name: array_design_description
         content_type: array_design
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -273,7 +352,7 @@ fields:
     -   name: array_design_dimensions
         content_type: array_design
         label: Array Dimensions
-        type: chado_text_type
+        type: chado_text_type_default
         description: The dimensions of an array.
         cardinality: 1
         required: false
@@ -299,7 +378,7 @@ fields:
     -   name: array_design_element_dims
         content_type: array_design
         label: Element Dimensions
-        type: chado_text_type
+        type: chado_text_type_default
         description: The dimensions of an element.
         cardinality: 1
         required: false
@@ -325,7 +404,7 @@ fields:
     -   name: array_design_substrate_type
         content_type: array_design
         label: Substrate Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: Controlled terms for descriptors of types of array substrates.
         cardinality: 1
         required: false
@@ -352,7 +431,7 @@ fields:
     -   name: array_design_platform_type
         content_type: array_design
         label: Platform Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: The specific version (manufacturer, model, etc.) of a technology that is used to carry out a laboratory or computational experiment.
         cardinality: 1
         required: true
@@ -375,3 +454,29 @@ fields:
             default:
               region: content
               weight: 45
+
+    -   name: array_design_dbxref
+        content_type: array_design
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68

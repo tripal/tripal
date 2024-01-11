@@ -8,7 +8,7 @@ fields:
     -   name: germplasm_name
         content_type: germplasm
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -35,7 +35,7 @@ fields:
     -   name: germplasm_unique_name
         content_type: germplasm
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the germplasm within this organism.
         cardinality: 1
         required: true
@@ -58,10 +58,36 @@ fields:
               region: content
               weight: 15
 
+    -   name: germplasm_organism
+        content_type: germplasm
+        label: Organism
+        type: chado_organism_type_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: germplasm_description
         content_type: germplasm
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -87,7 +113,7 @@ fields:
     -   name: germplasm_type
         content_type: germplasm
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -112,10 +138,63 @@ fields:
               region: content
               weight: 10
 
+    -   name: germplasm_dbxref
+        content_type: germplasm
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: germplasm_dbxref_ann
+        content_type: germplasm
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
     -   name: germplasm_is_obsolete
         content_type: germplasm
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -144,7 +223,7 @@ fields:
     -   name: breeding_cross_name
         content_type: breeding_cross
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -171,7 +250,7 @@ fields:
     -   name: breeding_cross_unique_name
         content_type: breeding_cross
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the breeding cross within this organism.
         cardinality: 1
         required: true
@@ -194,10 +273,36 @@ fields:
               region: content
               weight: 15
 
+    -   name: breeding_cross_organism
+        content_type: breeding_cross
+        label: Organism
+        type: chado_organism_type_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: breeding_cross_description
         content_type: breeding_cross
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -223,7 +328,7 @@ fields:
     -   name: breeding_cross_type
         content_type: breeding_cross
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -248,10 +353,63 @@ fields:
               region: content
               weight: 10
 
+    -   name: breeding_cross_dbxref
+        content_type: breeding_cross
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: breeding_cross_dbxref_ann
+        content_type: breeding_cross
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
     -   name: breeding_cross_is_obsolete
         content_type: breeding_cross
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -280,7 +438,7 @@ fields:
     -   name: germplasm_variety_name
         content_type: germplasm_variety
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -307,7 +465,7 @@ fields:
     -   name: germplasm_variety_unique_name
         content_type: germplasm_variety
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A name that uniquely identifies the germplasm variety within this organism.
         cardinality: 1
         required: true
@@ -330,10 +488,36 @@ fields:
               region: content
               weight: 15
 
+    -   name: germplasm_variety_organism
+        content_type: germplasm_variety
+        label: Organism
+        type: chado_organism_type_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: germplasm_variety_description
         content_type: germplasm_variety
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -359,7 +543,7 @@ fields:
     -   name: germplasm_variety_type
         content_type: germplasm_variety
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -384,10 +568,63 @@ fields:
               region: content
               weight: 10
 
+    -   name: germplasm_variety_dbxref
+        content_type: germplasm_variety
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: germplasm_variety_dbxref_ann
+        content_type: germplasm_variety
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
     -   name: germplasm_variety_is_obsolete
         content_type: germplasm_variety
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
@@ -414,9 +651,9 @@ fields:
 ## Recombinant Inbred Line ##
 
     -   name: ril_name
-        content_type: RIL
+        content_type: ril
         label: Name
-        type: chado_string_type
+        type: chado_string_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -441,10 +678,10 @@ fields:
               weight: 10
 
     -   name: ril_unique_name
-        content_type: RIL
+        content_type: ril
         label: Unique Name
-        type: chado_text_type
-        description: A name that uniquely identifies the RIL within this organism.
+        type: chado_text_type_default
+        description: A name that uniquely identifies the ril within this organism.
         cardinality: 1
         required: true
         storage_settings:
@@ -466,10 +703,36 @@ fields:
               region: content
               weight: 15
 
+    -   name: ril_organism
+        content_type: ril
+        label: Organism
+        type: chado_organism_type_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: ril_description
-        content_type: RIL
+        content_type: ril
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -493,9 +756,9 @@ fields:
               weight: 20
 
     -   name: ril_type
-        content_type: RIL
+        content_type: ril
         label: Type
-        type: chado_additional_type_default
+        type: chado_additional_type_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -520,10 +783,63 @@ fields:
               region: content
               weight: 10
 
+    -   name: ril_dbxref
+        content_type: ril
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: ril_dbxref_ann
+        content_type: ril
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                linker_table: stock_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
     -   name: ril_is_obsolete
-        content_type: RIL
+        content_type: ril
         label: Is Obsolete
-        type: chado_boolean_type
+        type: chado_boolean_type_default
         description: Indicates if this record is obsolete.
         cardinality: 1
         required: false

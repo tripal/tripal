@@ -15,7 +15,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado Sequence Residues Display"),
  *   description = @Translation("Displays chado sequence residues from the feature table on the page."),
  *   field_types = {
- *     "chado_sequence_default"
+ *     "chado_sequence_type_default"
  *   }
  * )
  */

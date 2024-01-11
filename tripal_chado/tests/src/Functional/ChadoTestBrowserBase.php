@@ -183,7 +183,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
     // all.
     $this->createTripalField('organism', [
       'field_name' => 'organism_taxrank_0000005',
-      'field_type' => 'chado_string_type',
+      'field_type' => 'chado_string_type_default',
       'term' => $genus_term,
       'is_required' => TRUE,
       'cardinality' => 1,
@@ -195,7 +195,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
 
     $this->createTripalField('organism', [
       'field_name' => 'organism_taxrank_0000006',
-      'field_type' => 'chado_string_type',
+      'field_type' => 'chado_string_type_default',
       'term' => $species_term,
       'is_required' => TRUE,
       'cardinality' => 1,
@@ -207,7 +207,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
 
     $this->createTripalField('organism', [
       'field_name' => 'organism_taxrank_0000045',
-      'field_type' => 'chado_string_type',
+      'field_type' => 'chado_string_type_default',
       'term' => $infraspecies_term,
       'is_required' => FALSE,
       'cardinality' => 1,
@@ -219,7 +219,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
 
     $this->createTripalField('organism', [
       'field_name' => 'organism_schema_description',
-      'field_type' => 'chado_text_type',
+      'field_type' => 'chado_text_type_default',
       'term' => $description_term,
       'is_required' => FALSE,
       'cardinality' => 1,
@@ -231,7 +231,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
 
     $this->createTripalField('organism', [
       'field_name' => 'organism_local_abbreviation',
-      'field_type' => 'chado_string_type',
+      'field_type' => 'chado_string_type_default',
       'term' => $abbreviation_term,
       'is_required' => FALSE,
       'cardinality' => 1,
@@ -243,7 +243,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
 
     $this->createTripalField('organism', [
       'field_name' => 'organism_ncbitaxon_common_name',
-      'field_type' => 'chado_string_type',
+      'field_type' => 'chado_string_type_default',
       'term' => $common_name_term,
       'is_required' => FALSE,
       'cardinality' => 1,
