@@ -203,9 +203,14 @@ function chado_refresh_mview($mview_id) {
 
   $mviews = \Drupal::service('tripal_chado.materialized_views');
   $mview = $mviews->loadById($mview_id);
-  $args = ["$mview_id"];
-  tripal_add_job("Populate materialized view '" . $mview->getTableName() . "'", 'tripal_chado',
-    'chado_populate_mview', $args, $current_user->id());
+
+  \Drupal::service('tripal.job')->create([
+    'job_name' => t("Populate materialized view: '@table'", ['@table' => $mview->getTableName()]),
+    'modulename' => 'tripal_chado',
+    'callback' => 'chado_populate_mview',
+    'arguments' => [$mview_id],
+    'uid' => $current_user->id()
+  ]);
 }
 
 /**

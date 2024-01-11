@@ -168,6 +168,12 @@ class TripalEntityPublishForm extends FormBase {
     $current_user = \Drupal::currentUser();
     $job_args = [$bundle, $datastore, $values];
     $job_name = 'Publish pages of type: ' . $bundle;
-    tripal_add_job($job_name, 'tripal', 'tripal_publish', $job_args, $current_user->id());
+    \Drupal::service('tripal.job')->create([
+      'job_name' => $job_name,
+      'modulename' => 'tripal',
+      'callback' => 'tripal_publish',
+      'arguments' => $job_args,
+      'uid' => $current_user->id(),
+    ]);
   }
 }
