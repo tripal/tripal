@@ -344,13 +344,7 @@ vocabularies:
             -   id: 'local:Genome Project'
                 name: 'Genome Project'
                 description: 'A project for whole genome analysis that can include assembly and annotation.'
-
-    -   name: 'organism_property'
-        label: 'A local vocabulary that contains locally defined properties for organisms'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Organism Property
             -   id: 'local:rank'
                 name: 'rank'
                 description: 'A taxonmic rank'
@@ -358,6 +352,8 @@ vocabularies:
                 name: 'lineage'
             -   id: 'local:lineage'
                 name: 'lineage'
+            -   id: 'local:genetic_code'
+                name: 'genetic_code'
             -   id: 'local:genetic_code_name'
                 name: 'genetic_code_name'
             -   id: 'local:mitochondrial_genetic_code'
@@ -376,23 +372,11 @@ vocabularies:
                 name: 'equivalent_name'
             -   id: 'local:anamorph'
                 name: 'anamorph'
-
-    -   name: 'analysis_property'
-        label: 'A local vocabulary that contains locally defined properties for analyses'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Analysis Property
             -   id: 'local:Analysis Type'
                 name: 'Analysis Type'
                 description: 'The type of analysis that was performed.'
-
-    -   name: 'tripal_phylogeny'
-        label: 'Terms used by the Tripal phylotree module for phylogenetic and taxonomic trees'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Tripal Phylogeny
             -   id: 'local:phylo_leaf'
                 name: 'phylo_leaf'
                 description: 'A leaf node in a phylogenetic tree.'
@@ -405,50 +389,7 @@ vocabularies:
             -   id: 'local:taxonomy'
                 name: 'taxonomy'
                 description: 'Deprecated: A term used to indicate if a phylotree is a taxonomic tree'
-
-
-    -   name: 'feature_relationship'
-        label: 'A local vocabulary that contains types of relationships between features'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'feature_property'
-        label: 'A local vocabulary that contains properties for genomic features'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'contact_property'
-        label: 'A local vocabulary that contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'contact_type'
-        label: 'A local vocabulary that contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'tripal_contact'
-        label: 'A local vocabulary that contains a heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'contact_relationship'
-        label: 'A local vocabulary that contains types of relationships between contacts.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'featuremap_units'
-        label: 'A local vocabulary that contains map unit types for the unittype_id column of the featuremap table.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Featuremap Units
             -   id: 'local:cM'
                 name: 'cM'
                 description: 'Centimorgan units'
@@ -464,26 +405,14 @@ vocabularies:
             -   id: 'local:undefined'
                 name: 'undefined'
                 description: 'A catch-all for an undefined unit type'
-
-    -   name: 'featurepos_property'
-        label: 'A local vocabulary that contains terms map properties.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Feature Positions
             -   id: 'local:start'
                 name: 'start'
                 description: 'The start coordinate for a map feature.'
             -   id: 'local:stop'
                 name: 'stop'
                 description: 'The end coordinate for a map feature'
-
-    -   name: 'featuremap_property'
-        label: 'A local vocabulary that contains positional types for the feature positions.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Featuremap Property
             -   id: 'local:Map Dbxref'
                 name: 'Map Dbxref'
                 description: 'A unique identifer for the map in a remote database.  The format is a database abbreviation and a unique accession separated by a colon.  (e.g. Gramene:tsh1996a)'
@@ -508,26 +437,14 @@ vocabularies:
             -   id: 'local:Software'
                 name: 'Software'
                 description: 'The software used to construct the map.'
-
-    -   name: 'library_property'
-        label: 'A local vocabulary that contains properties for libraries.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Library Property
             -   id: 'local:library'
                 name: 'Library'
                 description: 'A group of physical entities organized into a collection'
             -   id: 'local:library_description'
                 name: 'Library Description'
                 description: 'Description of a library'
-
-    -   name: 'library_type'
-        label: 'A local vocabulary that contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Library Type
             -   id: 'local:cdna_library'
                 name: 'cdna_library'
                 description: 'cDNA library'
@@ -546,110 +463,32 @@ vocabularies:
             -   id: 'local:genomic_library'
                 name: 'genomic_library'
                 description: 'Genomic Library'
-
-    -   name: 'project_property'
-        label: 'A local vocabulary that contains properties for projects.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Project Property
             -   id: 'local:Project Description'
                 name: 'Project Description'
                 description: 'Description of a project'
             -   id: 'local:Project Type'
                 name: 'Project Type'
                 description: 'A type of project'
-
-    -   name: 'study_property'
-        label: 'A local vocabulary that contains properties for studies.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Study Property
             -   id: 'local:Study Type'
                 name: 'Study Type'
                 description: 'A type of study'
-
-    -   name: 'project_relationship'
-        label: 'A local vocabulary that contains Types of relationships between projects'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'tripal_pub'
-        label: 'A local vocabulary that contains a heirarchical set of terms for describing a publication. It is intended to be used as the default vocabularies in Tripal for publication types and contact properties.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'pub_type'
-        label: 'A local vocabulary that contains types of publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'pub_property'
-        label: 'A local vocabulary that contains properties for publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'pub_relationship'
-        label: 'A local vocabulary that contains types of relationships between publications.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'stock_relationship'
-        label: 'A local vocabulary that contains types of relationships between stocks.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'stock_property'
-        label: 'A local vocabulary that contains properties for stocks.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'stock_type'
-        label: 'A local vocabulary that contains a list of types for stocks.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-
-    -   name: 'tripal_analysis'
-        label: 'A local vocabulary that contains terms used for analyses.'
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Tripal Analysis
             -   id: 'local:analysis_date'
                 name: 'analysis_date'
                 description: 'The date that an analysis was performed.'
             -   id: 'local:analysis_short_name'
                 name: 'analysis_short_name'
                 description: 'A computer legible (no spaces or special characters) abbreviation for the analysis.'
-
-    -   name: 'nd_experiment_types'
-        label: "A local vocabulary that contains terms used for the Natural Diverisity module's experiment types."
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # ND Experiment Types
             -   id: 'local:Genotyping'
                 name: 'Genotyping'
                 description: 'An experiment where genotypes of individuals are identified.'
             -   id: 'local:Phenotyping'
                 name: 'Phenotyping'
                 description: 'An experiment where phenotypes of individuals are identified.'
-
-    -   name: 'nd_geolocation_property'
-        label: "A local vocabulary that contains terms used for the Natural Diverisity module's geolocation property."
-        url: 'cv/lookup/local'
-        idSpaces:
-            -   name: 'local'
-        terms:
+            # Geolocation Property
             -   id: 'local:Location'
                 name: 'Location'
                 description: 'The name of the location.'
@@ -665,6 +504,9 @@ vocabularies:
             -   id: 'SBO:0000358'
                 name: 'phenotype'
                 description: 'A biochemical network can generate phenotypes or affects biological processes. Such processes can take place at different levels and are independent of the biochemical network itself.'
+            -   id: 'SBO:0000552'
+                name: 'reference annotation'
+                description: 'Additional information that supplements existing data, usually in a document, by providing a link to more detailed information, which is held externally, or elsewhere.'
             -   id: 'SBO:0000554'
                 name: 'database cross reference'
                 description: 'An annotation which directs one to information contained within a database.'
@@ -818,28 +660,7 @@ vocabularies:
         idSpaces:
             -   name: 'RO'
                 description: 'Relationship Ontology (legacy)'
-                urlPrefix: "cv/lookup/RO/{accession}    "
-
-    -   name: 'cellular_component'
-        label: 'Gene Ontology Cellular Component Vocabulary'
-        url: 'http://geneontology.org/'
-        idSpaces:
-            -   name: 'GO'
-                description: "The Gene Ontology (GO) knowledgebase is the world’s largest source of information on the functions of genes"
-                urlPrefix: "http://amigo.geneontology.org/amigo/term/{db}:{accession}"
-
-    -   name: 'biological_process'
-        label: 'Gene Ontology Biological Process Vocabulary'
-        url: 'http://geneontology.org/'
-        idSpaces:
-            -   name: 'GO'
-
-    -   name: 'molecular_function'
-        label: 'Gene Ontology Molecular Function Vocabulary'
-        url: 'http://geneontology.org/'
-        idSpaces:
-            -   name: 'GO'
-
+                urlPrefix: "cv/lookup/RO/{accession}"
 
     -   name: 'sequence'
         label: 'The Sequence Ontology'
@@ -892,7 +713,7 @@ vocabularies:
         idSpaces:
             -   name: 'TCONTACT'
                 description: "Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified."
-                urlPrefix: "cv/lookup/TCONTACT/{accession}  "
+                urlPrefix: "cv/lookup/TCONTACT/{accession}"
 
     -   name: 'tripal_pub'
         label: 'Tripal Publication Ontology'
@@ -911,14 +732,6 @@ vocabularies:
                 name: 'Publication Type'
             -   id: 'TPUB:0000243'
                 name: 'Volume Title'
-
-    -   name: 'foaf'
-        label: 'Friend of a Friend. A dictionary of people-related terms that can be used in structured data).'
-        url: 'http://www.foaf-project.org/'
-        idSpaces:
-            -   name: 'foaf'
-                description: "Friend of a Friend"
-                urlPrefix: "http://xmlns.com/foaf/spec/#"
 
     -   name: 'hydra'
         label: 'A Vocabulary for Hypermedia-Driven Web APIs.'
@@ -946,15 +759,6 @@ vocabularies:
             -   id: 'hydra:PartialCollectionView'
                 name: 'PartialCollectionView'
                 description: 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the the next/previous properties to allow a client to retrieve all members of the collection.'
-
-    -   name: 'rdf'
-        label: 'Resource Description Framework'
-        url: 'http://www.w3.org/1999/02/22-rdf-syntax-ns'
-        idSpaces:
-            -   name: 'rdf'
-                description: "Resource Description Framework"
-                urlPrefix: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-
 
     -   name: 'schema'
         label: 'Schema.org. Schema.org is sponsored by Google, Microsoft, Yahoo and Yandex. The vocabularies are developed by an open community process.'

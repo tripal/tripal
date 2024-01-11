@@ -265,11 +265,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 90
+              weight: 98
           form:
             default:
               region: content
-              weight: 90
+              weight: 98
 
     -   name: gene_synonym
         content_type: gene
@@ -292,11 +292,64 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
+
+    -   name: gene_dbxref
+        content_type: gene
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: gene_dbxref_ann
+        content_type: gene
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
     -   name: gene_sequence_coordinates
         content_type: gene
@@ -615,11 +668,64 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
+
+    -   name: mrna_dbxref
+        content_type: mrna
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: mrna_dbxref_ann
+        content_type: mrna
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Phylogenetic Tree ##
 
@@ -649,32 +755,6 @@ fields:
             default:
               region: content
               weight: 10
-
-    -   name: phylotree_dbxref_id
-        content_type: phylotree
-        label: Dbxref ID
-        type: chado_integer_type_default
-        description: The primary key of the database reference (dbxref) to attach to this tree. This field is a placeholder until we develop a more user friendly database reference field.
-        cardinality: 1
-        required: true
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: phylotree
-                base_column: dbxref_id
-        settings:
-            termIdSpace: data
-            termAccession: "2091"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 15
-          form:
-            default:
-              region: content
-              weight: 15
 
     -   name: phylotree_type
         content_type: phylotree
@@ -755,6 +835,32 @@ fields:
             default:
               region: content
               weight: 30
+
+    -   name: phylotree_dbxref
+        content_type: phylotree
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: phylotree
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Physical Map ##
 
@@ -864,6 +970,33 @@ fields:
             default:
               region: content
               weight: 30
+
+    -   name: physical_map_dbxref_ann
+        content_type: physical_map
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: featuremap_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## DNA Library ##
 
@@ -1027,6 +1160,33 @@ fields:
             default:
               region: content
               weight: 50
+
+    -   name: dna_library_dbxref_ann
+        content_type: dna_library
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                linker_table: library_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Genome Assembly ##
 
@@ -1246,6 +1406,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genome_assembly_dbxref_ann
+        content_type: genome_assembly
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Genome Annotation ##
 
     -   name: genome_annotation_name
@@ -1463,6 +1650,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genome_annotation_dbxref_ann
+        content_type: genome_annotation
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Genome Project ##
 
     -   name: genome_project_name
@@ -1545,3 +1759,30 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: genome_project_dbxref_ann
+        content_type: genome_project
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68

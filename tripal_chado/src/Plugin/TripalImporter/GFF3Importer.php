@@ -317,7 +317,8 @@ class GFF3Importer extends ChadoImporterBase {
     $form['landmark_type'] = [
       '#title' => t('Default Landmark Type'),
       '#type' => 'textfield',
-      '#description' => t("Optional. Use this field to specify a Sequence Ontology type
+      '#required' => TRUE,
+      '#description' => t("Use this field to specify a Sequence Ontology type
        for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
@@ -561,20 +562,20 @@ class GFF3Importer extends ChadoImporterBase {
     // Get the feature property CV object
     $this->feature_prop_cv = $chado->select('1:cv','cv')
     ->fields('cv')
-    ->condition('name', 'feature_property')
+    ->condition('name', 'local')
     ->execute()
     ->fetchObject();
 
     $num_found = $chado->select('1:cv','cv')
     ->fields('cv')
-    ->condition('name', 'feature_property')
+    ->condition('name', 'local')
     ->countQuery()
     ->execute()
     ->fetchField();
 
 
     if ($num_found == 0) {
-      throw new \Exception(t("Cannot find the 'feature_property' ontology'"));
+      throw new \Exception(t("Cannot find the 'local' ontology'"));
     }
 
     // Get the sequence CV object.

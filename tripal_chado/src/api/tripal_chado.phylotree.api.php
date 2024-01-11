@@ -971,14 +971,14 @@ function chado_phylogeny_get_node_types_vocab($options, $schema_name = 'chado') 
     $values = [
       'name' => $name,
       'cv_id' => [
-        'name' => 'tripal_phylogeny',
+        'name' => 'local',
       ],
     ];
     $cvterm = chado_generate_var('cvterm', $values, [], $schema_name);
     if (!$cvterm) {
       \Drupal::service('tripal.logger')->error(
         "Could not find the leaf vocabulary term: '%name'. It should " .
-        "already be present as part of the tripal_phylogeny vocabulary.",
+        "already be present as part of the local vocabulary.",
         ['%name' => $name], $options['message_opts']);
       return FALSE;
     }
