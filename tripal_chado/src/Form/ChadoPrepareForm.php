@@ -33,20 +33,20 @@ class ChadoPrepareForm extends FormBase {
         It will also add some management tables to Drupal and add some default
         content types for biological and ancillary data."),
     ];
-        
+
     $form['advanced'] = [
       '#type' => 'details',
       '#title' => 'Advanced Options',
-    ];   
-    
-    
+    ];
+
+
     $chado_schemas = [];
     $chado = \Drupal::service('tripal_chado.database');
     foreach ($chado->getAvailableInstances() as $schema_name => $details) {
       $chado_schemas[$schema_name] = $schema_name;
     }
     $default_chado = $chado->getSchemaName();
-    
+
     $form['advanced']['schema_name'] = [
       '#type' => 'select',
       '#title' => 'Chado Schema Name',
@@ -73,8 +73,13 @@ class ChadoPrepareForm extends FormBase {
       $current_user = \Drupal::currentUser();
       $args = [$schema_name];
 
-      tripal_add_job('Prepare Chado', 'tripal_chado',
-        'tripal_chado_prepare_chado', $args, $current_user->id(), 10);
+      \Drupal::service('tripal.job')->create([
+        'job_name' => t('Prepare Chado'),
+        'modulename' => 'tripal_chado',
+        'callback' => 'tripal_chado_prepare_chado',
+        'arguments' => $args,
+        'uid' => $current_user->id()
+      ]);
     }
   }
 }

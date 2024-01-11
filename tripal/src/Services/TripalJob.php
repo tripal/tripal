@@ -2,6 +2,11 @@
 
 namespace Drupal\tripal\Services;
 
+use Drupal\Core\Url;
+use Drupal\Core\Link;
+use Exception;
+
+
 class TripalJob {
 
   /**
@@ -207,15 +212,15 @@ class TripalJob {
       throw new \Exception("Must provide a valid callback function. You provided " . $details['callback'] . ".");
     }
     if (!is_numeric($details['uid'])) {
-      throw new \Exception("Must provide a numeric \$uid argument to the tripal_add_job() function.");
+      throw new \Exception("Must provide a numeric \$uid argument to the TripalJob::create() function.");
     }
     $priority = $details['priority'];
     if (!$priority or !is_numeric($priority) or $priority < 1 or $priority > 10) {
-      throw new \Exception("Must provide a numeric \$priority argument between 1 and 10 to the tripal_add_job() function.");
+      throw new \Exception("Must provide a numeric \$priority argument between 1 and 10 to the TripalJob::create() function.");
     }
     $arguments = $details['arguments'];
     if (!is_array($arguments)) {
-      throw new \Exception("Must provide an array as the \$arguments argument to the tripal_add_job() function.");
+      throw new \Exception("Must provide an array as the \$arguments argument to the TripalJob::create() function.");
     }
 
     // convert the arguments into a string for storage in the database
@@ -238,7 +243,10 @@ class TripalJob {
         $job_id = $query->execute()->fetchField();
         if ($job_id) {
           $this->load($job_id);
-          return FALSE;
+          $this->messenger->addWarning(t("Job '%job_name' already exists in the "
+              . "queue and was not re-submitted.",
+              ['%job_name' => $details['job_name']]));
+          return $job_id;
         }
       }
 
@@ -260,7 +268,28 @@ class TripalJob {
       // Now load the job into this object.
       $this->load($job_id);
 
-      return TRUE;
+      // If no exceptions were thrown then we know the creation worked.  So
+      // let the user know!
+      $this->messenger->addStatus(t("Job '%job_name' submitted.",
+          ['%job_name' => $details['job_name']]));
+
+      // If this is the Tripal admin user then give a bit more information
+      // about how to run the job.
+      $user = \Drupal\user\Entity\User::load($details['uid']);
+      if ($user->hasPermission('administer tripal')) {
+        $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
+        $this->messenger->addStatus(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
+        $this->messenger->addStatus(t("You can execute the job queue manually on the ".
+            "command line using the following Drush command: " .
+            "<br>drush trp-run-jobs --job_id=%job_id --username=%uname --root=%base_path",
+            [
+              '%job_id' => $job_id,
+              '%base_path' => DRUPAL_ROOT,
+              '%uname' => $user->getAccountName()
+            ]));
+      }
+
+      return $job_id;
     }
     catch (\Exception $e) {
       throw new \Exception('Cannot create job: ' . $e->getMessage());
