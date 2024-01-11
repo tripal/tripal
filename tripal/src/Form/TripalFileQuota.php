@@ -105,7 +105,7 @@ class TripalFileQuota implements FormInterface{
         'user' => $user->getAccountName(),
         'custom_quota' => tripal_format_bytes($entry->custom_quota),
         'exp_date' => $entry->custom_expiration,
-        'actions' => render($actions_renderable),
+        'actions' => Drupal::service('renderer')->render($actions_renderable),
       ];
     }
 
