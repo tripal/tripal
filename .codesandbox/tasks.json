@@ -2,25 +2,15 @@
   // These tasks will run in order when initializing your CodeSandbox project.
   "setupTasks": [
     {
-      "command": "docker build --tag=tripaldocker:local --build-arg drupalversion=\"10.1.x-dev\" --file tripaldocker/Dockerfile-php8.2-pgsql13 ./",
-      "name": "Build the Docker Image"
+      "command": "service apache2 restart",
+      "name": "Restart Apache2"
     },
     {
-      "command": "docker run --publish=80:80 -tid --name=tripaldocker --volume=$(pwd):/var/www/drupal/web/modules/contrib/tripal tripaldocker:local",
-      "name": "Run the Container"
-    },
-    {
-      "command": "docker exec tripaldocker service postgresql restart",
+      "command": "service postgresql restart",
       "name": "Restart PostgreSQL"
     }
   ],
 
   // These tasks can be run from CodeSandbox. Running one will open a log in the app.
-  "tasks": {
-    "docker exec tripaldocker service postgresql restart": {
-      "name": "Restart PostgreSQL",
-      "command": "docker exec tripaldocker service postgresql restart",
-      "runAtStart": true
-    }
-  }
+  "tasks": {}
 }
