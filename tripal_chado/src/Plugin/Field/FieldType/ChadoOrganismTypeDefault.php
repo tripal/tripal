@@ -31,7 +31,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'species';
+    return 'organism_scientific_name';
   }
 
   /**
