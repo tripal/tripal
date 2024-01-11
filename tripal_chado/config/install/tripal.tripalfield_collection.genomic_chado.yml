@@ -922,7 +922,7 @@ fields:
         type: chado_dbxref_type_default
         description: The ID where this record may be available in an external online database.
         cardinality: 1
-        required: false
+        required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
