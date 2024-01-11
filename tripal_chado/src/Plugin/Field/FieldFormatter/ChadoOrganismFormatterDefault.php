@@ -48,24 +48,20 @@ class ChadoOrganismFormatterDefault extends ChadoFormatterBase {
     $list = [];
     $token_string = $this->getSetting('token_string');
 
-    // Implement the shortcut token "[scientific_name]". Rather than the overhead
-    // of the chado_get_organism_scientific_name() api call, replicate its behavior
-    // with an equivalent token string.
-    $token_string = preg_replace('/\[scientific_name\]/', $token_string,
-        '[genus] [species] [infratype_abbrev] [infraname]');
-
     foreach ($items as $delta => $item) {
       $values = [
         'genus' => $item->get('organism_genus')->getString(),
         'species' => $item->get('organism_species')->getString(),
         'infratype' => $item->get('organism_infraspecific_type')->getString(),
         'infraname' => $item->get('organism_infraspecific_name')->getString(),
+        'scientific_name' => $item->get('organism_scientific_name')->getString(),
         'abbreviation' => $item->get('organism_abbreviation')->getString(),
         'common_name' => $item->get('organism_common_name')->getString(),
         'comment' => $item->get('organism_comment')->getString(),
       ];
 
       // Special case handling of abbreviations for genus and infraspecific type
+      // These are not available to web services!
       $values['genus_abbrev'] = substr($values['genus'], 0, 1) . '.';
       $values['infratype_abbrev'] = chado_abbreviate_infraspecific_rank($values['infratype']);
 
