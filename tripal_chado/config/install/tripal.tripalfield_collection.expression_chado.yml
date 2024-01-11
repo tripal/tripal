@@ -5,7 +5,7 @@ fields:
 
 ## Biological Sample ##
 
-    -   name: biomaterial_name
+    -   name: biosample_name
         content_type: biosample
         label: Name
         type: chado_text_type_default
@@ -31,7 +31,7 @@ fields:
               region: content
               weight: 10
 
-    -   name: biomaterial_description
+    -   name: biosample_description
         content_type: biosample
         label: Description
         type: chado_text_type_default
@@ -57,7 +57,7 @@ fields:
               region: content
               weight: 15
 
-    -   name: biomaterial_biosourceprovider
+    -   name: biosample_biosourceprovider
         content_type: biosample
         label: Biosource Provider
         type: chado_contact_type_default
@@ -83,7 +83,7 @@ fields:
               region: content
               weight: 20
 
-    -   name: biomaterial_organism
+    -   name: biosample_organism
         content_type: biosample
         label: Organism
         type: chado_organism_type_default
@@ -109,7 +109,7 @@ fields:
               region: content
               weight: 25
 
-    -   name: biomaterial_dbxref
+    -   name: biosample_dbxref
         content_type: biosample
         label: Primary Database Reference
         type: chado_dbxref_type_default
@@ -135,7 +135,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: biomaterial_dbxref_ann
+    -   name: biosample_dbxref_ann
         content_type: biosample
         label: Database Reference Annotations
         type: chado_dbxref_type_default
