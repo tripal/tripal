@@ -8,6 +8,14 @@
  *   - Support multi-line SQL statements to ensure none are split
  *   - expected to be run on the command-line
  *   - does NOT require drush/drupal.
+ *
+ * Example usage:
+ *   cd parts-v1.3
+ *   php ../chunk_sql_file.php ../default_schema-1.3.sql default_schema-1.3.part
+ *
+ * The script will generate multiple lines of output showing you where
+ * it split. Check this output to make sure that it didn't split within
+ * the middle of a valid SQL statement.
  */
 
 // -- PARAMETERS --------------------------------------------------------------

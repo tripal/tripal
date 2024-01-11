@@ -1,4 +1,4 @@
-SET search_path = so,chado,pg_catalog;
+SET search_path=so,chado,pg_catalog;
 --- *** relation: four_bp_start_codon ***
 --- *** relation type: VIEW                      ***
 --- ***                                          ***
@@ -2216,7 +2216,7 @@ CREATE VIEW intron_combined_view AS
   r1.object_id          AS transcript_id
  FROM
  cvterm
-  INNER JOIN
+  INNER JOIN 
    feature                AS x1    ON (x1.type_id=cvterm.cvterm_id)
     INNER JOIN
      feature_relationship AS r1    ON (x1.feature_id=r1.subject_id)
@@ -2250,10 +2250,10 @@ CREATE VIEW intronloc_view AS
   strand,
   srcfeature_id
  FROM intron_combined_view;
-CREATE OR REPLACE FUNCTION store_feature
+CREATE OR REPLACE FUNCTION store_feature 
 (INT,INT,INT,INT,
  INT,INT,VARCHAR,VARCHAR,INT,BOOLEAN)
- RETURNS INT AS
+ RETURNS INT AS 
 'DECLARE
   v_srcfeature_id       ALIAS FOR $1;
   v_fmin                ALIAS FOR $2;
@@ -2320,7 +2320,7 @@ CREATE OR REPLACE FUNCTION store_feature
 
 CREATE OR REPLACE FUNCTION store_featureloc
 (INT,INT,INT,INT,INT,INT,INT)
- RETURNS INT AS
+ RETURNS INT AS 
 'DECLARE
   v_feature_id          ALIAS FOR $1;
   v_srcfeature_id       ALIAS FOR $2;
@@ -2374,7 +2374,7 @@ CREATE OR REPLACE FUNCTION store_featureloc
 
 CREATE OR REPLACE FUNCTION store_feature_synonym
 (INT,VARCHAR,INT,BOOLEAN,BOOLEAN,INT)
- RETURNS INT AS
+ RETURNS INT AS 
 'DECLARE
   v_feature_id          ALIAS FOR $1;
   v_syn                 ALIAS FOR $2;
@@ -2436,8 +2436,8 @@ CREATE OR REPLACE FUNCTION store_feature_synonym
 
 CREATE OR REPLACE FUNCTION subsequence(bigint,bigint,bigint,INT)
  RETURNS TEXT AS
- 'SELECT
-  CASE WHEN $4<0
+ 'SELECT 
+  CASE WHEN $4<0 
    THEN reverse_complement(substring(srcf.residues,CAST(($2+1) as int),CAST(($3-$2) as int)))
    ELSE substring(residues,CAST(($2+1) as int),CAST(($3-$2) as int))
   END AS residues
@@ -2448,8 +2448,8 @@ LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION subsequence_by_featureloc(bigint)
  RETURNS TEXT AS
- 'SELECT
-  CASE WHEN strand<0
+ 'SELECT 
+  CASE WHEN strand<0 
    THEN reverse_complement(substring(srcf.residues,CAST(fmin+1 as int),CAST((fmax-fmin) as int)))
    ELSE substring(srcf.residues,CAST(fmin+1 as int),CAST((fmax-fmin) as int))
   END AS residues
@@ -2461,8 +2461,8 @@ LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION subsequence_by_feature(bigint,INT,INT)
  RETURNS TEXT AS
- 'SELECT
-  CASE WHEN strand<0
+ 'SELECT 
+  CASE WHEN strand<0 
    THEN reverse_complement(substring(srcf.residues,CAST(fmin+1 as int),CAST((fmax-fmin) as int)))
    ELSE substring(srcf.residues,CAST(fmin+1 as int),CAST((fmax-fmin) as int))
   END AS residues
@@ -2492,11 +2492,11 @@ DECLARE v_rank       ALIAS FOR $3;
 DECLARE v_locgroup   ALIAS FOR $4;
 DECLARE subseq       TEXT;
 DECLARE seqrow       RECORD;
-BEGIN
+BEGIN 
   subseq = '''';
  FOR seqrow IN
    SELECT
-    CASE WHEN strand<0
+    CASE WHEN strand<0 
      THEN reverse_complement(substring(srcf.residues,CAST(fmin+1 as int),CAST((fmax-fmin) as int)))
      ELSE substring(srcf.residues,CAST(fmin+1 as int),CAST((fmax-fmin) as int))
     END AS residues
@@ -2540,11 +2540,11 @@ DECLARE v_rank       ALIAS FOR $3;
 DECLARE v_locgroup   ALIAS FOR $4;
 DECLARE subseq       TEXT;
 DECLARE seqrow       RECORD;
-BEGIN
+BEGIN 
   subseq = '''';
  FOR seqrow IN
    SELECT
-    CASE WHEN strand<0
+    CASE WHEN strand<0 
      THEN reverse_complement(substring(srcf.residues,CAST(fmin+1 as int),CAST((fmax-fmin) as int)))
      ELSE substring(srcf.residues,CAST(fmin+1 as int),CAST((fmax-fmin) as int))
     END AS residues
@@ -2571,7 +2571,7 @@ CREATE OR REPLACE FUNCTION subsequence_by_typed_subfeatures(bigint,bigint)
  'SELECT subsequence_by_typed_subfeatures($1,$2,0,0)'
 LANGUAGE 'sql';
 
-
+ 
 
 
 CREATE OR REPLACE FUNCTION feature_subalignments(bigint) RETURNS SETOF featureloc AS '
@@ -2914,7 +2914,7 @@ BEGIN
     END LOOP;
 
     RETURN 1;
-END;
+END;   
 ' LANGUAGE 'plpgsql';
 
 SET search_path = chado,pg_catalog;
@@ -2974,7 +2974,7 @@ DECLARE
     cterm soi_type%ROWTYPE;
 
 BEGIN
-
+    
     SELECT INTO ttype cvterm_id FROM cvterm WHERE name = ''isa'';
     --RAISE NOTICE ''got ttype %'',ttype;
     PERFORM _fill_cvtermpath4soinode(rootid, rootid, cvid, ttype, 0);
@@ -2982,7 +2982,7 @@ BEGIN
         PERFORM _fill_cvtermpath4soi(cterm.subject_id, cvid);
     END LOOP;
     RETURN 1;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -3061,7 +3061,7 @@ BEGIN
             AND tmp.cvterm_id = p.type_id AND t.cvterm_id = c.type_id AND tmp.status = 1;
         UPDATE tmproot SET status = 2 WHERE status = 1;
         EXECUTE cquery;
-        GET DIAGNOSTICS pcount = ROW_COUNT;
+        GET DIAGNOSTICS pcount = ROW_COUNT; 
     END LOOP;
     DELETE FROM tmproot;
 
@@ -3243,7 +3243,7 @@ BEGIN
         ON (f.feature_id = fl.feature_id) INNER join feature src ON (src.feature_id = fl.srcfeature_id)
         WHERE t.name = '' || quote_literal(gtype) || '' AND src.uniquename = '' || quote_literal(src)
         || '' AND f.is_analysis = '' || quote_literal(is_an) || '';'';
-
+ 
     IF (STRPOS(gtype, ''%'') > 0) THEN
         query := ''SELECT DISTINCT f.feature_id FROM feature f INNER join cvterm t ON (f.type_id = t.cvterm_id)
              INNER join featureloc fl
@@ -3271,11 +3271,11 @@ DECLARE
 
 BEGIN
 
-    query := ''SELECT DISTINCT f.feature_id
+    query := ''SELECT DISTINCT f.feature_id 
         FROM feature f, cvterm t WHERE t.cvterm_id = f.type_id AND t.name = '' || quote_literal(gtype) ||
         '' AND f.is_analysis = '' || quote_literal(is_an) || '';'';
     IF (STRPOS(gtype, ''%'') > 0) THEN
-        query := ''SELECT DISTINCT f.feature_id
+        query := ''SELECT DISTINCT f.feature_id 
             FROM feature f, cvterm t WHERE t.cvterm_id = f.type_id AND t.name like ''
             || quote_literal(gtype) || '' AND f.is_analysis = '' || quote_literal(is_an) || '';'';
     END IF;
@@ -3300,14 +3300,14 @@ DECLARE
 
 BEGIN
 
-    query := ''SELECT DISTINCT f.feature_id
+    query := ''SELECT DISTINCT f.feature_id 
         FROM feature f INNER join cvterm t ON (f.type_id = t.cvterm_id) INNER join featureloc fl
         ON (f.feature_id = fl.feature_id) INNER join feature src ON (src.feature_id = fl.srcfeature_id)
         WHERE t.name = '' || quote_literal(gtype) || '' AND src.uniquename = '' || quote_literal(src)
         || '' AND f.is_analysis = '' || quote_literal(is_an) || '';'';
-
+ 
     IF (STRPOS(gtype, ''%'') > 0) THEN
-        query := ''SELECT DISTINCT f.feature_id
+        query := ''SELECT DISTINCT f.feature_id 
             FROM feature f INNER join cvterm t ON (f.type_id = t.cvterm_id) INNER join featureloc fl
             ON (f.feature_id = fl.feature_id) INNER join feature src ON (src.feature_id = fl.srcfeature_id)
             WHERE t.name like '' || quote_literal(gtype) || '' AND src.uniquename = '' || quote_literal(src)
@@ -3334,13 +3334,13 @@ DECLARE
 
 BEGIN
 
-    query := ''SELECT DISTINCT f.feature_id
+    query := ''SELECT DISTINCT f.feature_id 
         FROM feature f INNER join cvterm t ON (f.type_id = t.cvterm_id)
         WHERE t.name = '' || quote_literal(gtype) || '' AND (f.uniquename = '' || quote_literal(name)
         || '' OR f.name = '' || quote_literal(name) || '') AND f.is_analysis = '' || quote_literal(is_an) || '';'';
-
+ 
     IF (STRPOS(name, ''%'') > 0) THEN
-        query := ''SELECT DISTINCT f.feature_id
+        query := ''SELECT DISTINCT f.feature_id 
             FROM feature f INNER join cvterm t ON (f.type_id = t.cvterm_id)
             WHERE t.name = '' || quote_literal(gtype) || '' AND (f.uniquename like '' || quote_literal(name)
             || '' OR f.name like '' || quote_literal(name) || '') AND f.is_analysis = '' || quote_literal(is_an) || '';'';
@@ -3366,12 +3366,12 @@ DECLARE
 
 BEGIN
 
-    query := ''SELECT DISTINCT fcvt.feature_id
+    query := ''SELECT DISTINCT fcvt.feature_id 
         FROM feature_cvterm fcvt, cv, cvterm t WHERE cv.cv_id = t.cv_id AND
         t.cvterm_id = fcvt.cvterm_id AND cv.name = '' || quote_literal(aspect) ||
         '' AND t.name = '' || quote_literal(term) || '';'';
     IF (STRPOS(term, ''%'') > 0) THEN
-        query := ''SELECT DISTINCT fcvt.feature_id
+        query := ''SELECT DISTINCT fcvt.feature_id 
             FROM feature_cvterm fcvt, cv, cvterm t WHERE cv.cv_id = t.cv_id AND
             t.cvterm_id = fcvt.cvterm_id AND cv.name = '' || quote_literal(aspect) ||
             '' AND t.name like '' || quote_literal(term) || '';'';
@@ -3397,13 +3397,13 @@ DECLARE
 
 BEGIN
 
-    subquery := ''SELECT t.cvterm_id FROM cv, cvterm t WHERE cv.cv_id = t.cv_id
+    subquery := ''SELECT t.cvterm_id FROM cv, cvterm t WHERE cv.cv_id = t.cv_id 
         AND cv.name = '' || quote_literal(aspect) || '' AND t.name = '' || quote_literal(term) || '';'';
     IF (STRPOS(term, ''%'') > 0) THEN
-        subquery := ''SELECT t.cvterm_id FROM cv, cvterm t WHERE cv.cv_id = t.cv_id
+        subquery := ''SELECT t.cvterm_id FROM cv, cvterm t WHERE cv.cv_id = t.cv_id 
             AND cv.name = '' || quote_literal(aspect) || '' AND t.name like '' || quote_literal(term) || '';'';
     END IF;
-    query := ''SELECT DISTINCT fcvt.feature_id
+    query := ''SELECT DISTINCT fcvt.feature_id 
         FROM feature_cvterm fcvt INNER JOIN (SELECT cvterm_id FROM get_it_sub_cvterm_ids('' || quote_literal(subquery) || '')) AS ont ON (fcvt.cvterm_id = ont.cvterm_id);'';
 
     FOR myrc IN SELECT * FROM get_feature_ids(query) LOOP
@@ -3426,11 +3426,11 @@ DECLARE
 
 BEGIN
 
-    query := ''SELECT DISTINCT fprop.feature_id
+    query := ''SELECT DISTINCT fprop.feature_id 
         FROM featureprop fprop, cvterm t WHERE t.cvterm_id = fprop.type_id AND t.name = '' ||
         quote_literal(p_type) || '' AND fprop.value = '' || quote_literal(p_val) || '';'';
     IF (STRPOS(p_val, ''%'') > 0) THEN
-        query := ''SELECT DISTINCT fprop.feature_id
+        query := ''SELECT DISTINCT fprop.feature_id 
             FROM featureprop fprop, cvterm t WHERE t.cvterm_id = fprop.type_id AND t.name = '' ||
             quote_literal(p_type) || '' AND fprop.value like '' || quote_literal(p_val) || '';'';
     END IF;
@@ -3454,10 +3454,10 @@ DECLARE
 
 BEGIN
 
-    query := ''SELECT DISTINCT fprop.feature_id
+    query := ''SELECT DISTINCT fprop.feature_id 
         FROM featureprop fprop WHERE fprop.value = '' || quote_literal(p_val) || '';'';
     IF (STRPOS(p_val, ''%'') > 0) THEN
-        query := ''SELECT DISTINCT fprop.feature_id
+        query := ''SELECT DISTINCT fprop.feature_id 
             FROM featureprop fprop WHERE fprop.value like '' || quote_literal(p_val) || '';'';
     END IF;
 
@@ -3470,7 +3470,7 @@ END;
 LANGUAGE 'plpgsql';
 
 
----4 args: ptype, ctype, count, operator (valid SQL number comparison operator), and is_analysis
+---4 args: ptype, ctype, count, operator (valid SQL number comparison operator), and is_analysis 
 ---get feature ids for any node with type = ptype whose child node type = ctype
 ---and child node feature count comparing (using operator) to ccount
 CREATE OR REPLACE FUNCTION get_feature_ids_by_child_count(cvterm.name%TYPE, cvterm.name%TYPE, INTEGER, varchar, char(1)) RETURNS SETOF feature_by_fx_type AS
@@ -3495,7 +3495,7 @@ BEGIN
         WHERE pt.name = '' || quote_literal(ptype) || '' AND ct.name = '' || quote_literal(ctype)
         || '' AND p.is_analysis = '' || quote_literal(is_an) || '' group by p.feature_id) as cq
         ON (cq.feature_id = f.feature_id) WHERE cq.c '' || operator || ccount || '';'';
-    ---RAISE NOTICE ''%'', query;
+    ---RAISE NOTICE ''%'', query; 
 
     FOR myrc IN SELECT * FROM get_feature_ids(query) LOOP
         RETURN NEXT myrc;
