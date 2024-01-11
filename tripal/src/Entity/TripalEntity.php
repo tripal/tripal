@@ -559,6 +559,21 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public static function postLoad(EntityStorageInterface $storage, array &$entities) {
     parent::postLoad($storage, $entities);
 
+
+    // IF we are doing a listing of content types there is no way in Drupal 10
+    // to specify which fields to load.  By deafult the SqlContentEntityStorage
+    // storage system we're using will always attach all fields.  But we can
+    // control what fields get attached to entities with this postLoad function.
+    // In the TripalEntityListBuilder::load() function we set the
+    // `tripal_load_listing` session variable to TRUE.  If it is TRUE then
+    // we skip this. @todo: in the future if we want to only attach
+    // specific fields we can get more fancy.
+    $session = \Drupal::request()->getSession();
+    $is_listing = $session->get('tripal_load_listing');
+    if ($is_listing === TRUE) {
+      return;
+    }
+
     $entity_type_id = $storage->getEntityTypeId();
     $field_manager = \Drupal::service('entity_field.manager');
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
