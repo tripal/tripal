@@ -240,7 +240,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
     $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_scientific_name', $scientific_name_term, $scientific_name_len, [
       'action' => 'replace',
-      'template' => '[genus] [species] [infraspecific_type] [infraspecific_name]',
+      'template' => '[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]',
     ]);
 
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_abbreviation', $abbreviation_term, $abbreviation_len, [
