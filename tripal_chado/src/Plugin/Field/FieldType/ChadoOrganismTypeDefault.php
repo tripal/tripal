@@ -158,7 +158,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
     // Base table links directly
     if ($base_table == $linker_table) {
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $linker_fkey_column,

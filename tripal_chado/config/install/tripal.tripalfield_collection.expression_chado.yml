@@ -68,7 +68,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: biomaterial
-                base_column: biosourceprovider_id
+                linker_table: biomaterial
+                linker_fkey_column: biosourceprovider_id
         settings:
             termIdSpace: NCIT
             termAccession: C48036
@@ -94,7 +95,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: biomaterial
-                base_column: taxon_id
+                linker_table: biomaterial
+                linker_fkey_column: taxon_id
         settings:
             termIdSpace: OBI
             termAccession: "0100026"
@@ -412,7 +414,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: assay
-                base_column: operator_id
+                linker_table: assay
+                linker_fkey_column: operator_id
         settings:
             termIdSpace: NCIT
             termAccession: C48036
