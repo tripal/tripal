@@ -112,7 +112,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Scientific name is built from several fields combined with space characters
-    $scientific_name_term = 'NCBItaxon:scientific_name';
+    $scientific_name_term = 'NCBITaxon:scientific_name';
     $scientific_name_len = $genus_len + $species_len + $infraspecific_type_len + $infraspecific_name_len + 3;
 
     // Linker table, when used, requires specifying the linker table and column.
