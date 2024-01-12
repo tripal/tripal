@@ -4,34 +4,34 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
 /**
- * Plugin implementation of default Tripal organism field type.
+ * Plugin implementation of default Tripal biomaterial field type.
  *
  * @FieldType(
- *   id = "chado_organism_type_default",
- *   object_table = "organism",
- *   label = @Translation("Chado Organism"),
- *   description = @Translation("A chado organism reference"),
- *   default_widget = "chado_organism_widget_default",
- *   default_formatter = "chado_organism_formatter_default",
+ *   id = "chado_biomaterial_type_default",
+ *   object_table = "biomaterial",
+ *   label = @Translation("Chado Biomaterial"),
+ *   description = @Translation("Add a Chado biomaterial to the content type."),
+ *   default_widget = "chado_biomaterial_widget_default",
+ *   default_formatter = "chado_biomaterial_formatter_default",
  * )
  */
-class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
+class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_organism_type_default';
+  public static $id = 'chado_biomaterial_type_default';
   // The following needs to match the object_table annotation above
-  protected static $object_table = 'organism';
-  protected static $object_id = 'organism_id';
+  protected static $object_table = 'biomaterial';
+  protected static $object_id = 'biomaterial_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'organism_scientific_name';
+    return 'biomaterial_name';
   }
 
   /**
@@ -52,9 +52,9 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Organism'
-    $field_settings['termIdSpace'] = 'OBI';
-    $field_settings['termAccession'] = '0100026';
+    // CV Term is 'Biologically Derived Material'
+    $field_settings['termIdSpace'] = 'NCIT';
+    $field_settings['termAccession'] = 'C70699';
     return $field_settings;
   }
 
@@ -91,37 +91,37 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
-    $genus_term = $mapping->getColumnTermId($object_table, 'genus');
-    $genus_len = $object_schema_def['fields']['genus']['size'];
-    $species_term = $mapping->getColumnTermId($object_table, 'species');
-    $species_len = $object_schema_def['fields']['species']['size'];
-    $infraspecific_name_term = $mapping->getColumnTermId($object_table, 'infraspecific_name');
-    $infraspecific_name_len = $object_schema_def['fields']['infraspecific_name']['size'];
-    $abbreviation_term = $mapping->getColumnTermId($object_table, 'abbreviation');
-    $abbreviation_len = $object_schema_def['fields']['abbreviation']['size'];
-    $common_name_term = $mapping->getColumnTermId($object_table, 'common_name');
-    $common_name_len = $object_schema_def['fields']['common_name']['size'];
-    $comment_term = $mapping->getColumnTermId($object_table, 'comment');
+    $name_term = $mapping->getColumnTermId($object_table, 'name');
+    $description_term = $mapping->getColumnTermId($object_table, 'description');
 
-    // Other columns specific to this object table
-    $comment_term = $mapping->getColumnTermId($object_table, 'comment');
-
-    // Cvterm table, to retrieve the name for the organism type
+    // Columns from linked tables
+    $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
+    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
+    $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
+    $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
+    $db_term = $mapping->getColumnTermId('db', 'name');
+    $db_len = $db_schema_def['fields']['name']['size'];
+    $contact_schema_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
+    $biosourceprovider_term = $mapping->getColumnTermId('contact', 'name');
+    $biosourceprovider_len = $contact_schema_def['fields']['name']['size'];
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
     $infraspecific_type_term = $mapping->getColumnTermId('cvterm', 'name');
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
+    $organism_schema_def = $schema->getTableDef('organism', ['format' => 'Drupal']);
+    $genus_term = $mapping->getColumnTermId('organism', 'genus');
+    $genus_len = $organism_schema_def['fields']['genus']['size'];
+    $species_term = $mapping->getColumnTermId('organism', 'species');
+    $species_len = $organism_schema_def['fields']['species']['size'];
+    $infraspecific_name_term = $mapping->getColumnTermId('organism', 'infraspecific_name');
+    $infraspecific_name_len = $organism_schema_def['fields']['infraspecific_name']['size'];
+    $abbreviation_term = $mapping->getColumnTermId('organism', 'abbreviation');
+    $abbreviation_len = $organism_schema_def['fields']['abbreviation']['size'];
+    $common_name_term = $mapping->getColumnTermId('organism', 'common_name');
+    $common_name_len = $organism_schema_def['fields']['common_name']['size'];
 
-    // Scientific name is built from several fields combined with space characters
-    $scientific_name_term = 'NCBITaxon:scientific_name';
-    $scientific_name_len = $genus_len + $species_len + $infraspecific_type_len + $infraspecific_name_len + 3;
-
-    // Linker table, when used, requires specifying the linker table and column.
-    // For single hop, in the yaml we support using the usual 'base_table'
-    // and 'base_column' settings.
+    // Linker table, when used
     $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? $object_pkey_col;
-
+    $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
@@ -158,7 +158,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
     // Base table links directly
     if ($base_table == $linker_table) {
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $linker_fkey_column,
@@ -205,63 +205,90 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     }
 
     // The object table, the destination table of the linker table
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_genus', $genus_term, $genus_len, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';genus',
-      'chado_table' => $object_table,
-      'chado_column' => 'genus',
-      'as' => 'organism_genus',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
+      'as' => 'biomaterial_name',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_species', $species_term, $species_len, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col. ';species',
-      'chado_table' => $object_table,
-      'chado_column' => 'species',
-      'as' => 'organism_species',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';description',
+      'as' => 'biomaterial_description',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_infraspecific_type', $infraspecific_type_term, $infraspecific_type_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_biosourceprovider', $biosourceprovider_term, $biosourceprovider_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
-      'as' => 'organism_infraspecific_type',
+        . ';' . $object_table . '.biosourceprovider_id>contact.contact_id;name',
+      'as' => 'biomaterial_biosourceprovider',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_infraspecific_name', $infraspecific_name_term, $infraspecific_name_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_genus', $genus_term, $genus_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';infraspecific_name',
-      'as' => 'organism_infraspecific_name',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.taxon_id>organism.organism_id;genus',
+      'as' => 'biomaterial_genus',
     ]);
 
-    $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_scientific_name', $scientific_name_term, $scientific_name_len, [
-      'action' => 'replace',
-      'template' => '[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]',
-    ]);
-
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_abbreviation', $abbreviation_term, $abbreviation_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_species', $species_term, $species_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';abbreviation',
-      'as' => 'organism_abbreviation',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.taxon_id>organism.organism_id;species',
+      'as' => 'biomaterial_species',
     ]);
 
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'organism_common_name', $common_name_term, $common_name_len, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_infraspecific_type', $infraspecific_type_term, $infraspecific_type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';common_name',
-      'as' => 'organism_common_name',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.taxon_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name',
+      'as' => 'biomaterial_infraspecific_type',
     ]);
 
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'organism_comment', $comment_term, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_infraspecific_name', $infraspecific_name_term, $infraspecific_name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';comment',
-      'as' => 'organism_comment',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.taxon_id>organism.organism_id;infraspecific_name',
+      'as' => 'biomaterial_infraspecific_name',
+    ]);
+
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_abbreviation', $abbreviation_term, $abbreviation_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.taxon_id>organism.organism_id;abbreviation',
+      'as' => 'biomaterial_abbreviation',
+    ]);
+
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'biomaterial_common_name', $common_name_term, $common_name_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.taxon_id>organism.organism_id;common_name',
+      'as' => 'biomaterial_common_name',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_database_accession', $dbxref_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
+      'as' => 'biomaterial_database_accession',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'biomaterial_database_name', $db_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
+      'as' => 'biomaterial_database_name',
     ]);
 
     return $properties;

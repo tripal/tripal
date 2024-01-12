@@ -1,6 +1,6 @@
 id: 'germplasm_chado'
 label: 'Germplasm Content Types (Chado)'
-description: 'Content types based on Chado focused on supporting germplasm chatacterization.'
+description: 'Content types based on Chado focused on supporting germplasm characterization.'
 content_types:
 
     -   label: Germplasm Accession

@@ -4,33 +4,34 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
 /**
- * Plugin implementation of default Tripal contact field type.
+ * Plugin implementation of default Tripal featuremap field type.
  *
  * @FieldType(
- *   id = "chado_contact_type_default",
- *   object_table = "contact",
- *   label = @Translation("Chado Contact"),
- *   description = @Translation("Add a Chado contact to the content type."),
- *   default_widget = "chado_contact_widget_default",
- *   default_formatter = "chado_contact_formatter_default",
+ *   id = "chado_featuremap_type_default",
+ *   object_table = "featuremap",
+ *   label = @Translation("Chado FeatureMap"),
+ *   description = @Translation("Add a Chado featuremap to the content type."),
+ *   default_widget = "chado_featuremap_widget_default",
+ *   default_formatter = "chado_featuremap_formatter_default",
  * )
  */
-class ChadoContactTypeDefault extends ChadoFieldItemBase {
+class ChadoFeatureMapTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_contact_type_default';
+  public static $id = 'chado_featuremap_type_default';
   // The following needs to match the object_table annotation above
-  protected static $object_table = 'contact';
-  protected static $object_id = 'contact_id';
+  protected static $object_table = 'featuremap';
+  protected static $object_id = 'featuremap_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'contact_name';
+    return 'featuremap_name';
   }
 
   /**
@@ -51,9 +52,9 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Communication Contact'
-    $field_settings['termIdSpace'] = 'NCIT';
-    $field_settings['termAccession'] = 'C47954';
+    // No default CV Term for this field
+    // Genetic Map is data:1278
+    // Physical Map is data:1280
     return $field_settings;
   }
 
@@ -94,13 +95,12 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');
     $name_len = $object_schema_def['fields']['name']['size'];
-    $description_term = $mapping->getColumnTermId($object_table, 'description');
-    $description_len = $object_schema_def['fields']['description']['size'];
+    $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
 
-    // Cvterm table, to retrieve the name for the contact type
+    // Cvterm table, to retrieve the name for the unit type
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $contact_type_term = $mapping->getColumnTermId('cvterm', 'name');
-    $contact_type_len = $cvterm_schema_def['fields']['name']['size'];
+    $featuremap_unittype_term = $mapping->getColumnTermId('cvterm', 'name');
+    $featuremap_unittype_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
     // For single hop, in the yaml we support using the usual 'base_table'
@@ -141,8 +141,6 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
-      //'chado_table' => $base_table,
-      //'chado_column' => $base_pkey_col,
     ]);
 
     // Base table links directly
@@ -162,26 +160,20 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $linker_table . '.' . $linker_pkey_col,
-        //'chado_table' => $linker_table,
-        //'chado_column' => $linker_pkey_col,
       ]);
 
       // Define the link between the base table and the linker table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
         'action' => 'store_link',
-        'drupal_store' => TRUE,
+        'drupal_store' => FALSE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
-        //'left_table' => $base_table,
-        //'left_table_id' => $base_pkey_col,
-        //'right_table' => $linker_table,
-        //'right_table_id' => $linker_left_col,
       ]);
 
       // Define the link between the linker table and the object table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
-        'path' => $linker_table . '.' . $linker_fkey_column,
+         'path' => $linker_table . '.' . $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -194,37 +186,35 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
           'action' => 'store',
           'drupal_store' => FALSE,
           'path' => $linker_table . '.' . $column,
-          //'chado_table' => $linker_table,
-          //'chado_column' => $column,
           'as' => 'linker_' . $column,
         ]);
       }
     }
 
     // The object table, the destination table of the linker table
-    // The contact name
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $name_term, $name_len, [
+    // The featuremap name
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'featuremap_name', $name_term, $name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
-      'as' => 'contact_name',
+      'as' => 'featuremap_name',
     ]);
 
-    // The contact description
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_description', $description_term, $description_len, [
+    // The featuremap description
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'featuremap_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';description',
-      'as' => 'contact_description',
+      'as' => 'featuremap_description',
     ]);
 
-    // The type of contact
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_type', $contact_type_term, $contact_type_len, [
+    // The map units
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'featuremap_unittype', $featuremap_unittype_term, $featuremap_unittype_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
-      'as' => 'contact_type',
+        . ';' . $object_table . '.unittype_id>cvterm.cvterm_id;name',
+      'as' => 'featuremap_unittype',
     ]);
 
     return $properties;

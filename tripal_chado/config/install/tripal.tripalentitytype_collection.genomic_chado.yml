@@ -1,6 +1,6 @@
 id: 'genomic_chado'
 label: 'Genomic Content Types (Chado)'
-description: 'Content types based on Chado focused on supporting genomic data such as genome assembelies and genes.'
+description: 'Content types based on Chado focused on supporting genomic data such as genome assemblies and genes.'
 content_types:
 
     -   label: Gene

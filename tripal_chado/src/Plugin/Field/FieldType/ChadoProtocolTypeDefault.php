@@ -4,33 +4,34 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
 /**
- * Plugin implementation of default Tripal contact field type.
+ * Plugin implementation of default Tripal protocol field type.
  *
  * @FieldType(
- *   id = "chado_contact_type_default",
- *   object_table = "contact",
- *   label = @Translation("Chado Contact"),
- *   description = @Translation("Add a Chado contact to the content type."),
- *   default_widget = "chado_contact_widget_default",
- *   default_formatter = "chado_contact_formatter_default",
+ *   id = "chado_protocol_type_default",
+ *   object_table = "protocol",
+ *   label = @Translation("Chado Protocol"),
+ *   description = @Translation("Add a Chado protocol to the content type."),
+ *   default_widget = "chado_protocol_widget_default",
+ *   default_formatter = "chado_protocol_formatter_default",
  * )
  */
-class ChadoContactTypeDefault extends ChadoFieldItemBase {
+class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_contact_type_default';
+  public static $id = 'chado_protocol_type_default';
   // The following needs to match the object_table annotation above
-  protected static $object_table = 'contact';
-  protected static $object_id = 'contact_id';
+  protected static $object_table = 'protocol';
+  protected static $object_id = 'protocol_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'contact_name';
+    return 'protocol_name';
   }
 
   /**
@@ -51,9 +52,9 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Communication Contact'
-    $field_settings['termIdSpace'] = 'NCIT';
-    $field_settings['termAccession'] = 'C47954';
+    // CV Term is 'protocol'
+    $field_settings['termIdSpace'] = 'sep';
+    $field_settings['termAccession'] = '00101	';
     return $field_settings;
   }
 
@@ -92,15 +93,23 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
 
     // Columns specific to the object table
-    $name_term = $mapping->getColumnTermId($object_table, 'name');
-    $name_len = $object_schema_def['fields']['name']['size'];
-    $description_term = $mapping->getColumnTermId($object_table, 'description');
-    $description_len = $object_schema_def['fields']['description']['size'];
+    $name_term = $mapping->getColumnTermId($object_table, 'name');  // text
+    $uri_term = $mapping->getColumnTermId($object_table, 'uri');  // text
+    $protocoldescription_term = $mapping->getColumnTermId($object_table, 'protocoldescription');  // text
+    $hardwaredescription_term = $mapping->getColumnTermId($object_table, 'hardwaredescription');  // text
+    $softwaredescription_term = $mapping->getColumnTermId($object_table, 'softwaredescription');  // text
 
-    // Cvterm table, to retrieve the name for the contact type
+    // Columns from linked tables
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $contact_type_term = $mapping->getColumnTermId('cvterm', 'name');
-    $contact_type_len = $cvterm_schema_def['fields']['name']['size'];
+    $protocol_type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $protocol_type_len = $cvterm_schema_def['fields']['name']['size'];
+    $pub_title_term = $mapping->getColumnTermId('pub', 'title');
+    $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
+    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
+    $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
+    $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
+    $db_term = $mapping->getColumnTermId('db', 'name');
+    $db_len = $db_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
     // For single hop, in the yaml we support using the usual 'base_table'
@@ -141,8 +150,6 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
-      //'chado_table' => $base_table,
-      //'chado_column' => $base_pkey_col,
     ]);
 
     // Base table links directly
@@ -155,26 +162,21 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
         'empty_value' => 0,
       ]);
     }
-    // An intermediate linker table is used
+    // An intermediate linker table is used (core tripal does not
+    // have any protocol linker tables, but a site may wish to add one)
     else {
       // Define the linker table that links the base table to the object table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $linker_table . '.' . $linker_pkey_col,
-        //'chado_table' => $linker_table,
-        //'chado_column' => $linker_pkey_col,
       ]);
 
       // Define the link between the base table and the linker table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
         'action' => 'store_link',
-        'drupal_store' => TRUE,
+        'drupal_store' => FALSE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
-        //'left_table' => $base_table,
-        //'left_table_id' => $base_pkey_col,
-        //'right_table' => $linker_table,
-        //'right_table_id' => $linker_left_col,
       ]);
 
       // Define the link between the linker table and the object table.
@@ -194,37 +196,84 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
           'action' => 'store',
           'drupal_store' => FALSE,
           'path' => $linker_table . '.' . $column,
-          //'chado_table' => $linker_table,
-          //'chado_column' => $column,
           'as' => 'linker_' . $column,
         ]);
       }
     }
 
     // The object table, the destination table of the linker table
-    // The contact name
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $name_term, $name_len, [
+    // The protocol name
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
-      'as' => 'contact_name',
+      'as' => 'protocol_name',
     ]);
 
-    // The contact description
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_description', $description_term, $description_len, [
-      'action' => 'read_value',
-      'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';description',
-      'as' => 'contact_description',
-    ]);
-
-    // The type of contact
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_type', $contact_type_term, $contact_type_len, [
+    // The type of protocol
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'protocol_type', $protocol_type_term, $protocol_type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
-      'as' => 'contact_type',
+      'as' => 'protocol_type',
+    ]);
+
+    // The linked publication title
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_pub_title', $pub_title_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.pub_id>pub.pub_id;title',
+      'as' => 'protocol_pub_title',
+    ]);
+
+    // The protocol uri
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_uri', $uri_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';uri',
+      'as' => 'protocol_uri',
+    ]);
+
+    // The protocol description
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_protocoldescription', $protocoldescription_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';protocoldescription',
+      'as' => 'protocol_protocoldescription',
+    ]);
+
+    // The protocol hardware description
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_hardwaredescription', $hardwaredescription_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';hardwaredescription',
+      'as' => 'protocol_hardwaredescription',
+    ]);
+
+    // The protocol software description
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_softwaredescription', $softwaredescription_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';softwaredescription',
+      'as' => 'protocol_softwaredescription',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_database_accession', $dbxref_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
+      'as' => 'protocol_database_accession',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'protocol_database_name', $db_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
+      'as' => 'protocol_database_name',
     ]);
 
     return $properties;
