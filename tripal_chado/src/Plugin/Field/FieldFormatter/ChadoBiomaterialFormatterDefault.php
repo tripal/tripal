@@ -6,37 +6,39 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of default Tripal organism formatter.
+ * Plugin implementation of default Tripal biomaterial formatter.
  *
  * @FieldFormatter(
- *   id = "chado_organism_formatter_default",
- *   label = @Translation("Chado organism formatter"),
- *   description = @Translation("A chado organism formatter"),
+ *   id = "chado_biomaterial_formatter_default",
+ *   label = @Translation("Chado biomaterial formatter"),
+ *   description = @Translation("A chado biomaterial formatter"),
  *   field_types = {
- *     "chado_organism_type_default"
+ *     "chado_biomaterial_type_default"
  *   },
  *   valid_tokens = {
+ *     "[name]",
+ *     "[description]",
+ *     "[biosourceprovider]",
+ *     "[database_name]",
+ *     "[database_accession]",
  *     "[genus]",
- *     "[genus_abbrev]",
  *     "[species]",
  *     "[infratype]",
  *     "[infratype_abbrev]",
  *     "[infraname]",
- *     "[scientific_name]",
  *     "[abbreviation]",
  *     "[common_name]",
- *     "[comment]",
  *   },
  * )
  */
-class ChadoOrganismFormatterDefault extends ChadoFormatterBase {
+class ChadoBiomaterialFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $settings['token_string'] = '<i>[genus] [species]</i> [infratype_abbrev] <i>[infraname]</i>';
+    $settings['token_string'] = '[name]';
     return $settings;
   }
 
@@ -50,19 +52,20 @@ class ChadoOrganismFormatterDefault extends ChadoFormatterBase {
 
     foreach ($items as $delta => $item) {
       $values = [
-        'genus' => $item->get('organism_genus')->getString(),
-        'species' => $item->get('organism_species')->getString(),
-        'infratype' => $item->get('organism_infraspecific_type')->getString(),
-        'infraname' => $item->get('organism_infraspecific_name')->getString(),
-        'scientific_name' => $item->get('organism_scientific_name')->getString(),
-        'abbreviation' => $item->get('organism_abbreviation')->getString(),
-        'common_name' => $item->get('organism_common_name')->getString(),
-        'comment' => $item->get('organism_comment')->getString(),
+        'name' => $item->get('biomaterial_name')->getString(),
+        'description' => $item->get('biomaterial_description')->getString(),
+        'biosourceprovider' => $item->get('biomaterial_biosourceprovider')->getString(),
+        'database_name' => $item->get('biomaterial_database_name')->getString(),
+        'database_accession' => $item->get('biomaterial_database_accession')->getString(),
+        'genus' => $item->get('biomaterial_genus')->getString(),
+        'species' => $item->get('biomaterial_species')->getString(),
+        'infratype' => $item->get('biomaterial_infraspecific_type')->getString(),
+        'infraname' => $item->get('biomaterial_infraspecific_name')->getString(),
+        'abbreviation' => $item->get('biomaterial_abbreviation')->getString(),
+        'common_name' => $item->get('biomaterial_common_name')->getString(),
       ];
 
-      // Special case handling of abbreviations for genus and infraspecific type
-      // These are not available to web services!
-      $values['genus_abbrev'] = substr($values['genus'], 0, 1) . '.';
+      // Special case handling for abbreviation of infraspecific type
       $values['infratype_abbrev'] = chado_abbreviate_infraspecific_rank($values['infratype']);
 
       // Substitute values in token string to generate displayed string.

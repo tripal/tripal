@@ -4,33 +4,34 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
 /**
- * Plugin implementation of default Tripal contact field type.
+ * Plugin implementation of default Tripal study field type.
  *
  * @FieldType(
- *   id = "chado_contact_type_default",
- *   object_table = "contact",
- *   label = @Translation("Chado Contact"),
- *   description = @Translation("Add a Chado contact to the content type."),
- *   default_widget = "chado_contact_widget_default",
- *   default_formatter = "chado_contact_formatter_default",
+ *   id = "chado_study_type_default",
+ *   object_table = "study",
+ *   label = @Translation("Chado Study"),
+ *   description = @Translation("Add a Chado study to the content type."),
+ *   default_widget = "chado_study_widget_default",
+ *   default_formatter = "chado_study_formatter_default",
  * )
  */
-class ChadoContactTypeDefault extends ChadoFieldItemBase {
+class ChadoStudyTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = 'chado_contact_type_default';
+  public static $id = 'chado_study_type_default';
   // The following needs to match the object_table annotation above
-  protected static $object_table = 'contact';
-  protected static $object_id = 'contact_id';
+  protected static $object_table = 'study';
+  protected static $object_id = 'study_id';
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'contact_name';
+    return 'study_name';
   }
 
   /**
@@ -51,9 +52,9 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Communication Contact'
-    $field_settings['termIdSpace'] = 'NCIT';
-    $field_settings['termAccession'] = 'C47954';
+    // CV Term is 'study'
+    $field_settings['termIdSpace'] = 'SIO';
+    $field_settings['termAccession'] = '001066';
     return $field_settings;
   }
 
@@ -93,14 +94,17 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
 
     // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');
-    $name_len = $object_schema_def['fields']['name']['size'];
     $description_term = $mapping->getColumnTermId($object_table, 'description');
-    $description_len = $object_schema_def['fields']['description']['size'];
 
-    // Cvterm table, to retrieve the name for the contact type
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $contact_type_term = $mapping->getColumnTermId('cvterm', 'name');
-    $contact_type_len = $cvterm_schema_def['fields']['name']['size'];
+    // Columns from linked tables
+    $contact_term = $mapping->getColumnTermId('contact', 'name');
+    $pub_title_term = $mapping->getColumnTermId('pub', 'title');
+    $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
+    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
+    $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
+    $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
+    $db_term = $mapping->getColumnTermId('db', 'name');
+    $db_len = $db_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
     // For single hop, in the yaml we support using the usual 'base_table'
@@ -141,8 +145,6 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
-      //'chado_table' => $base_table,
-      //'chado_column' => $base_pkey_col,
     ]);
 
     // Base table links directly
@@ -162,19 +164,13 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $linker_table . '.' . $linker_pkey_col,
-        //'chado_table' => $linker_table,
-        //'chado_column' => $linker_pkey_col,
       ]);
 
       // Define the link between the base table and the linker table.
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
         'action' => 'store_link',
-        'drupal_store' => TRUE,
+        'drupal_store' => FALSE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
-        //'left_table' => $base_table,
-        //'left_table_id' => $base_pkey_col,
-        //'right_table' => $linker_table,
-        //'right_table_id' => $linker_left_col,
       ]);
 
       // Define the link between the linker table and the object table.
@@ -194,37 +190,60 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
           'action' => 'store',
           'drupal_store' => FALSE,
           'path' => $linker_table . '.' . $column,
-          //'chado_table' => $linker_table,
-          //'chado_column' => $column,
           'as' => 'linker_' . $column,
         ]);
       }
     }
 
     // The object table, the destination table of the linker table
-    // The contact name
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $name_term, $name_len, [
+    // The study name
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_name', $name_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
-      'as' => 'contact_name',
+      'as' => 'study_name',
     ]);
 
-    // The contact description
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_description', $description_term, $description_len, [
+    // The study description
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';description',
-      'as' => 'contact_description',
+      'as' => 'study_description',
     ]);
 
-    // The type of contact
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_type', $contact_type_term, $contact_type_len, [
+    // The linked contact
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_contact_name', $contact_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
-      'as' => 'contact_type',
+        . ';' . $object_table . '.contact_id>contact.contact_id;name',
+      'as' => 'study_contact_name',
+    ]);
+
+    // The linked publication title
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_pub_title', $pub_title_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.pub_id>pub.pub_id;title',
+      'as' => 'study_pub_title',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_database_accession', $dbxref_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
+      'as' => 'study_database_accession',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'study_database_name', $db_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
+      'as' => 'study_database_name',
     ]);
 
     return $properties;
