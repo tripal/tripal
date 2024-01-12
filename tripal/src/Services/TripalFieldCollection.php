@@ -310,7 +310,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         }
       }
       else {
-        throw new \Exception("Unable to retrieve the configuration with an id of $config_id using the assumption that its in the file $config_item.");
+        throw new \Exception("Unable to retrieve the configuration with an id of $config_id using the assumption that it's in the file $config_item.");
       }
     }
   }
