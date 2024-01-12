@@ -33,7 +33,7 @@ CREATE TABLE contactprop (
     type_id bigint NOT NULL,
     value text,
     rank integer DEFAULT 0 NOT NULL,
-    CONSTRAINT contactprop_c1 UNIQUE (contact_id, type_id, rank),
+    CONSTRAINT contactprop_c1 UNIQUE (contact_id, type_id, rank),    
     FOREIGN KEY (contact_id) REFERENCES contact(contact_id) ON DELETE CASCADE,
     FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE
 );
@@ -41,8 +41,8 @@ CREATE TABLE contactprop (
 CREATE INDEX contactprop_idx1 ON contactprop USING btree (contact_id);
 CREATE INDEX contactprop_idx2 ON contactprop USING btree (type_id);
 
-COMMENT ON TABLE contactprop IS 'A contact can have any number of slot-value property
-tags attached to it. This is an alternative to hardcoding a list of columns in the
+COMMENT ON TABLE contactprop IS 'A contact can have any number of slot-value property 
+tags attached to it. This is an alternative to hardcoding a list of columns in the 
 relational schema, and is completely extensible.';
 
 
@@ -268,11 +268,11 @@ this is appended onto the species name. Follows standard NCBI taxonomy
 pattern.';
 
 COMMENT ON COLUMN organism.type_id IS 'A controlled vocabulary term that
-specifies the organism rank below species. It is used when an infraspecific
-name is provided.  Ideally, the rank should be a valid ICN name such as
+specifies the organism rank below species. It is used when an infraspecific 
+name is provided.  Ideally, the rank should be a valid ICN name such as 
 subspecies, varietas, subvarietas, forma and subforma';
 
-COMMENT ON COLUMN organism.infraspecific_name IS 'The scientific name for any taxon
+COMMENT ON COLUMN organism.infraspecific_name IS 'The scientific name for any taxon 
 below the rank of species.  The rank should be specified using the type_id field
 and the name is provided here.';
 
@@ -372,7 +372,7 @@ DEFERRED,
        rank int not null default 0,
        pub_id bigint not null,
        foreign key (pub_id) references pub (pub_id) on delete cascade INITIALLY DEFERRED,
-       constraint organism_cvterm_c1 unique(organism_id,cvterm_id,pub_id)
+       constraint organism_cvterm_c1 unique(organism_id,cvterm_id,pub_id) 
 );
 create index organism_cvterm_idx1 on organism_cvterm (organism_id);
 create index organism_cvterm_idx2 on organism_cvterm (cvterm_id);
@@ -435,15 +435,15 @@ CREATE TABLE organism_relationship (
     CONSTRAINT organism_relationship_c1 UNIQUE (subject_id, object_id, type_id, rank),
     FOREIGN KEY (object_id) REFERENCES organism(organism_id) ON DELETE CASCADE,
     FOREIGN KEY (subject_id) REFERENCES organism(organism_id) ON DELETE CASCADE,
-    FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE
+    FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE    
 );
 
 CREATE INDEX organism_relationship_idx1 ON organism_relationship USING btree (subject_id);
 CREATE INDEX organism_relationship_idx2 ON organism_relationship USING btree (object_id);
 CREATE INDEX organism_relationship_idx3 ON organism_relationship USING btree (type_id);
 
-COMMENT ON TABLE organism_relationship IS 'Specifies relationships between organisms
-that are not taxonomic. For example, in breeding, relationships such as
+COMMENT ON TABLE organism_relationship IS 'Specifies relationships between organisms 
+that are not taxonomic. For example, in breeding, relationships such as 
 "sterile_with", "incompatible_with", or "fertile_with" would be appropriate. Taxonomic
 relatinoships should be housed in the phylogeny tables.';
 
@@ -451,14 +451,14 @@ relatinoships should be housed in the phylogeny tables.';
 
 CREATE OR REPLACE FUNCTION get_organism_id(VARCHAR,VARCHAR) RETURNS BIGINT
  AS '
-  SELECT organism_id
+  SELECT organism_id 
   FROM organism
   WHERE genus=$1
     AND species=$2
  ' LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION get_organism_id(VARCHAR) RETURNS BIGINT
- AS '
+ AS ' 
 SELECT organism_id
   FROM organism
   WHERE genus=substring($1,1,position('' '' IN $1)-1)
@@ -473,8 +473,8 @@ SELECT organism_id
     AND species=substring($1,position('' '' IN $1)+1)
  ' LANGUAGE 'sql';
 
-CREATE OR REPLACE FUNCTION store_organism (VARCHAR,VARCHAR,VARCHAR)
-  RETURNS BIGINT AS
+CREATE OR REPLACE FUNCTION store_organism (VARCHAR,VARCHAR,VARCHAR) 
+  RETURNS BIGINT AS 
 'DECLARE
    v_genus            ALIAS FOR $1;
    v_species          ALIAS FOR $2;
@@ -500,7 +500,7 @@ CREATE OR REPLACE FUNCTION store_organism (VARCHAR,VARCHAR,VARCHAR)
     RETURN v_organism_id;
  END;
 ' LANGUAGE 'plpgsql';
-
+  
 -- $Id: sequence.sql,v 1.69 2009-05-14 02:44:23 scottcain Exp $
 -- ==========================================
 -- Chado sequence module
@@ -929,7 +929,7 @@ COMMENT ON COLUMN feature_relationship.value IS 'Additional notes or comments.';
 -- ================================================
 -- TABLE: feature_relationship_pub
 -- ================================================
-
+ 
 create table feature_relationship_pub (
 	feature_relationship_pub_id bigserial not null,
 	primary key (feature_relationship_pub_id),
@@ -944,7 +944,7 @@ create index feature_relationship_pub_idx2 on feature_relationship_pub (pub_id);
 
 COMMENT ON TABLE feature_relationship_pub IS 'Provenance. Attach optional evidence to a feature_relationship in the form of a publication.';
 
-
+ 
 -- ================================================
 -- TABLE: feature_relationshipprop
 -- ================================================

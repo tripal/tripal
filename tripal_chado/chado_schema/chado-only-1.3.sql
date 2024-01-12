@@ -11046,3 +11046,51 @@ ALTER TABLE ONLY treatment
 
 ALTER TABLE ONLY treatment
     ADD CONSTRAINT treatment_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+    
+---
+--- The following additions are part of the pull request on Chado:
+--- https://github.com/GMOD/Chado/pull/105 
+--- Once a new version of Chado is made these changes will be integrated
+--- but we need them now to prevent create_point errors when deleting features
+--- or cloning Chado.
+---
+
+CREATE OR REPLACE FUNCTION fill_cvtermpath(INTEGER) RETURNS INTEGER
+    LANGUAGE plpgsql
+    AS $_$
+DECLARE
+    cvid alias for $1;
+    root cvterm%ROWTYPE;
+BEGIN
+    DELETE FROM cvtermpath WHERE cv_id = cvid;
+    FOR root IN SELECT DISTINCT t.* from cvterm t LEFT JOIN cvterm_relationship r ON (t.cvterm_id = r.subject_id) INNER JOIN cvterm_relationship r2 ON (t.cvterm_id = r2.object_id) WHERE t.cv_id = cvid AND r.subject_id is null LOOP
+        PERFORM _fill_cvtermpath4root(root.cvterm_id, root.cv_id);
+    END LOOP;
+    RETURN 1;
+END;
+$_$;
+
+CREATE OR REPLACE FUNCTION fill_cvtermpath(cv.name%TYPE) RETURNS INTEGER
+    LANGUAGE plpgsql
+    AS $_$
+DECLARE
+    cvname alias for $1;
+    cv_id   int;
+    rtn     int;
+BEGIN
+    SELECT INTO cv_id cv.cv_id from cv WHERE cv.name = cvname;
+    SELECT INTO rtn fill_cvtermpath(cv_id);
+    RETURN rtn;
+END;
+$_$;
+
+-- create a range box
+-- (make this immutable so we can index it)
+CREATE OR REPLACE FUNCTION boxrange (bigint, bigint) RETURNS box AS
+ 'SELECT box (create_point(CAST(0 AS bigint), $1), create_point($2,500000000))'
+LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
+
+CREATE OR REPLACE FUNCTION boxrange (bigint, bigint, bigint) RETURNS box AS
+ 'SELECT box (create_point($1, $2), create_point($1,$3))'
+LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
+
