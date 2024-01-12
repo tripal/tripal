@@ -64,7 +64,7 @@ class ChadoMviewDeleteForm extends FormBase {
     if (strcmp($action, 'Delete') == 0) {
       $mviews = \Drupal::service('tripal_chado.materialized_views');
       $mview = $mviews->loadById($mview_id);
-      $success = $mview->destroy();
+      $success = $mview->delete();
       if($success == TRUE) {
         \Drupal::messenger()->addMessage(t("The materialized view was successfully deleted"));
       }

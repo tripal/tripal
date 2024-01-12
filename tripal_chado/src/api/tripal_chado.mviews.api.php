@@ -274,7 +274,7 @@ function chado_delete_mview($mview_id) {
     $logger->error('Cannot find a materialized view in this instance of Chado that matches the provided ID.');
     return False;
   }
-  return $mview->destroy();
+  return $mview->delete();
 }
 
 /**

@@ -272,5 +272,5 @@ function chado_delete_custom_table(int $table_id) : bool {
     return False;
   }
 
-  return $custom_table->destroy();
+  return $custom_table->delete();
 }
