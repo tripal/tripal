@@ -1,4 +1,4 @@
-SET search_path = so,chado,pg_catalog;
+SET search_path=so,chado,pg_catalog;
 --- *** oid product of recombination between a p ***
 --- *** ericentric inversion and a cytologically ***
 --- ***  wild-type chromosome.                   ***

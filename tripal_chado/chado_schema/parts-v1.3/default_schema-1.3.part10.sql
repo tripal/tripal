@@ -1,4 +1,4 @@
-SET search_path = so,chado,pg_catalog;
+SET search_path=so,chado,pg_catalog;
 --- *** U2 is a small nuclear RNA (snRNA) compon ***
 --- *** ent of the spliceosome (involved in pre- ***
 --- *** mRNA splicing). Complementary binding be ***

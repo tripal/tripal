@@ -1,4 +1,4 @@
-SET search_path = so,chado,pg_catalog;
+SET search_path=so,chado,pg_catalog;
 --- ***                                          ***
 --- *** A binding site that, in the polypeptide  ***
 --- *** molecule, interacts selectively and non- ***

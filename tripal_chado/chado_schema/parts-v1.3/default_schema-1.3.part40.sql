@@ -4,7 +4,7 @@ SET search_path = chado,pg_catalog;
 
 create table cell_line_relationship (
 	cell_line_relationship_id bigserial not null,
-	primary key (cell_line_relationship_id),
+	primary key (cell_line_relationship_id),	
         subject_id bigint not null,
 	foreign key (subject_id) references cell_line (cell_line_id) on delete cascade INITIALLY DEFERRED,
         object_id bigint not null,
@@ -31,7 +31,7 @@ create table cell_line_synonym (
 	foreign key (pub_id) references pub (pub_id) on delete cascade INITIALLY DEFERRED,
 	is_current boolean not null default 'false',
 	is_internal boolean not null default 'false',
-	constraint cell_line_synonym_c1 unique (synonym_id,cell_line_id,pub_id)
+	constraint cell_line_synonym_c1 unique (synonym_id,cell_line_id,pub_id)	
 );
 grant all on cell_line_synonym to PUBLIC;
 
@@ -209,15 +209,15 @@ CREATE OR REPLACE VIEW gff3atts (
     type,
     attribute
 ) AS
-SELECT feature_id,
-      'Ontology_term' AS type,
+SELECT feature_id, 
+      'Ontology_term' AS type, 
       CASE WHEN db.name like '%Gene Ontology%'    THEN 'GO:'|| dbx.accession
            WHEN db.name like 'Sequence Ontology%' THEN 'SO:'|| dbx.accession
            ELSE                            CAST(db.name||':'|| dbx.accession AS varchar)
-      END
+      END 
 FROM cvterm s, dbxref dbx, feature_cvterm fs, db
 WHERE fs.cvterm_id = s.cvterm_id and s.dbxref_id=dbx.dbxref_id and
-      db.db_id = dbx.db_id
+      db.db_id = dbx.db_id 
 UNION ALL
 SELECT feature_id, 'Dbxref' AS type, d.name || ':' || s.accession AS
 attribute
@@ -277,9 +277,9 @@ feature_id, ref, source, type, fstart, fend,
 score, strand, phase, seqlen, name, organism_id
 ) AS
 SELECT
-f.feature_id, sf.name,
+f.feature_id, sf.name, 
  COALESCE(gffdbx.accession,'.'::varchar(255)), cv.name,
-fl.fmin+1, fl.fmax,
+fl.fmin+1, fl.fmax, 
  COALESCE(CAST(af.significance AS text), '.'),
  CASE WHEN fl.strand=-1 THEN '-'
       WHEN fl.strand=1  THEN '+'
@@ -299,8 +299,8 @@ ON (f.feature_id=gffdbx.feature_id)
 LEFT JOIN cvterm cv ON (f.type_id = cv.cvterm_id)
 LEFT JOIN analysisfeature af ON (f.feature_id = af.feature_id);
 
--- FUNCTION gfffeatureatts (integer) is a function to get
--- data in the same format as the gffatts view so that
+-- FUNCTION gfffeatureatts (integer) is a function to get 
+-- data in the same format as the gffatts view so that 
 -- it can be easily converted to GFF attributes.
 
 CREATE FUNCTION  gfffeatureatts (bigint)
@@ -321,7 +321,7 @@ WHERE fs.feature_id= $1 AND fs.synonym_id = s.synonym_id
 UNION
 SELECT fp.feature_id,cv.name,fp.value
 FROM featureprop fp, cvterm cv
-WHERE fp.feature_id= $1 AND fp.type_id = cv.cvterm_id
+WHERE fp.feature_id= $1 AND fp.type_id = cv.cvterm_id 
 UNION
 SELECT feature_id, ''pub'' AS type, s.series_name || '':'' || s.title AS attribute
 FROM pub s, feature_pub fs
@@ -348,11 +348,11 @@ CREATE OR REPLACE FUNCTION gffattstring (bigint) RETURNS varchar AS
   name               varchar;
   uniquename         varchar;
   parent             varchar;
-  escape_loc         bigint;
+  escape_loc         bigint; 
 BEGIN
   --Get name from feature.name
   --Get ID from feature.uniquename
-
+                                                                                
   SELECT INTO feature_row * FROM feature WHERE feature_id = f_id;
   name  = feature_row.name;
   return_string = ''ID='' || feature_row.uniquename;
@@ -360,7 +360,7 @@ BEGIN
   THEN
     return_string = return_string ||'';'' || ''Name='' || name;
   END IF;
-
+                                                                                
   --Get Parent from feature_relationship
   SELECT INTO feature_row * FROM feature f, feature_relationship fr
     WHERE fr.subject_id = f_id AND fr.object_id = f.feature_id;
@@ -368,7 +368,7 @@ BEGIN
   THEN
     return_string = return_string||'';''||''Parent=''||feature_row.uniquename;
   END IF;
-
+                                                                                
   FOR atts_view IN SELECT * FROM gff3atts WHERE feature_id = f_id  LOOP
     escape_loc = position('';'' in atts_view.attribute);
     IF escape_loc > 0 THEN
@@ -378,7 +378,7 @@ BEGIN
                      || atts_view.type || ''=''
                      || atts_view.attribute;
   END LOOP;
-
+                                                                                
   RETURN return_string;
 END;
 '
@@ -386,7 +386,7 @@ LANGUAGE plpgsql;
 
 --creates a view that is suitable for creating a GFF3 string
 --CREATE OR REPLACE VIEW gff3view (
---REMOVED and RECREATED in sequence-gff-views.sql to avoid
+--REMOVED and RECREATED in sequence-gff-views.sql to avoid 
 --using the function above
 --------------------------------
 ---- all_feature_names ---------
@@ -427,21 +427,21 @@ LANGUAGE plpgsql;
 -- OR, even more complicated, you could use this command to create a materialized view
 -- for use with full text searching on PostgreSQL 8.4 or better:
 --
--- gmod_materialized_view_tool.pl --create_view --view_name all_feature_names --table_name public.all_feature_names --refresh_time daily --column_def "feature_id bigint,name varchar(255),organism_id bigint,searchable_name tsvector" --sql_query "SELECT feature_id, CAST(substring(uniquename FROM 0 FOR 255) AS varchar(255)) AS name, organism_id, to_tsvector('english', CAST(substring(uniquename FROM 0 FOR 255) AS varchar(255))) AS searchable_name FROM feature UNION SELECT feature_id, name, organism_id, to_tsvector('english', name) AS searchable_name FROM feature WHERE name IS NOT NULL UNION SELECT fs.feature_id, s.name, f.organism_id, to_tsvector('english', s.name) AS searchable_name FROM feature_synonym fs, synonym s, feature f WHERE fs.synonym_id = s.synonym_id AND fs.feature_id = f.feature_id UNION SELECT fp.feature_id, CAST(substring(fp.value FROM 0 FOR 255) AS varchar(255)) AS name, f.organism_id, to_tsvector('english',CAST(substring(fp.value FROM 0 FOR 255) AS varchar(255))) AS searchable_name FROM featureprop fp, feature f WHERE f.feature_id = fp.feature_id UNION SELECT fd.feature_id, d.accession, f.organism_id,to_tsvector('english',d.accession) AS searchable_name FROM feature_dbxref fd, dbxref d,feature f WHERE fd.dbxref_id = d.dbxref_id AND fd.feature_id = f.feature_id" --index_fields "feature_id,name" --special_index "CREATE INDEX searchable_all_feature_names_idx ON all_feature_names USING gin(searchable_name)" --yes
+-- gmod_materialized_view_tool.pl --create_view --view_name all_feature_names --table_name public.all_feature_names --refresh_time daily --column_def "feature_id bigint,name varchar(255),organism_id bigint,searchable_name tsvector" --sql_query "SELECT feature_id, CAST(substring(uniquename FROM 0 FOR 255) AS varchar(255)) AS name, organism_id, to_tsvector('english', CAST(substring(uniquename FROM 0 FOR 255) AS varchar(255))) AS searchable_name FROM feature UNION SELECT feature_id, name, organism_id, to_tsvector('english', name) AS searchable_name FROM feature WHERE name IS NOT NULL UNION SELECT fs.feature_id, s.name, f.organism_id, to_tsvector('english', s.name) AS searchable_name FROM feature_synonym fs, synonym s, feature f WHERE fs.synonym_id = s.synonym_id AND fs.feature_id = f.feature_id UNION SELECT fp.feature_id, CAST(substring(fp.value FROM 0 FOR 255) AS varchar(255)) AS name, f.organism_id, to_tsvector('english',CAST(substring(fp.value FROM 0 FOR 255) AS varchar(255))) AS searchable_name FROM featureprop fp, feature f WHERE f.feature_id = fp.feature_id UNION SELECT fd.feature_id, d.accession, f.organism_id,to_tsvector('english',d.accession) AS searchable_name FROM feature_dbxref fd, dbxref d,feature f WHERE fd.dbxref_id = d.dbxref_id AND fd.feature_id = f.feature_id" --index_fields "feature_id,name" --special_index "CREATE INDEX searchable_all_feature_names_idx ON all_feature_names USING gin(searchable_name)" --yes 
 --
 CREATE OR REPLACE VIEW all_feature_names (
   feature_id,
   name,
   organism_id
 ) AS
-SELECT feature_id,CAST(substring(uniquename from 0 for 255) as varchar(255)) as name,organism_id FROM feature
+SELECT feature_id,CAST(substring(uniquename from 0 for 255) as varchar(255)) as name,organism_id FROM feature  
 UNION
-SELECT feature_id, name, organism_id FROM feature where name is not null
+SELECT feature_id, name, organism_id FROM feature where name is not null 
 UNION
 SELECT fs.feature_id,s.name,f.organism_id FROM feature_synonym fs, synonym s, feature f
   WHERE fs.synonym_id = s.synonym_id AND fs.feature_id = f.feature_id
 UNION
-SELECT fp.feature_id, CAST(substring(fp.value from 0 for 255) as varchar(255)) as name,f.organism_id FROM featureprop fp, feature f
+SELECT fp.feature_id, CAST(substring(fp.value from 0 for 255) as varchar(255)) as name,f.organism_id FROM featureprop fp, feature f 
   WHERE f.feature_id = fp.feature_id
 UNION
 SELECT fd.feature_id, d.accession, f.organism_id FROM feature_dbxref fd, dbxref d,feature f
@@ -452,9 +452,9 @@ SELECT fd.feature_id, d.accession, f.organism_id FROM feature_dbxref fd, dbxref 
 --------------------------------
 -- dfeatureloc is meant as an alternate representation of
 -- the data in featureloc (see the descrption of featureloc
--- in sequence.sql).  In dfeatureloc, fmin and fmax are
+-- in sequence.sql).  In dfeatureloc, fmin and fmax are 
 -- replaced with nbeg and nend.  Whereas fmin and fmax
--- are absolute coordinates relative to the parent feature, nbeg
+-- are absolute coordinates relative to the parent feature, nbeg 
 -- and nend are the beginning and ending coordinates
 -- relative to the feature itself.  For example, nbeg would
 -- mark the 5' end of a gene and nend would mark the 3' end.
@@ -557,7 +557,7 @@ AS
 -- EXAMPLE QUERY:
 --   (features of same type that overlap)
 --   SELECT r.*
---   FROM feature AS x
+--   FROM feature AS x 
 --   INNER JOIN feature_meets AS r ON (x.feature_id=r.subject_id)
 --   INNER JOIN feature AS y ON (y.feature_id=r.object_id)
 --   WHERE x.type_id=y.type_id
@@ -784,7 +784,7 @@ FROM
 
 
 -- this probably needs some work, depending on how cross-database we
--- want to be.  In Postgres, at least, there are much better ways to
+-- want to be.  In Postgres, at least, there are much better ways to 
 -- represent geo information.
 
 -- ================================================
@@ -823,15 +823,15 @@ COMMENT ON COLUMN nd_geolocation.altitude IS 'The altitude (elevation) of the lo
 CREATE TABLE nd_experiment (
     nd_experiment_id bigserial PRIMARY KEY NOT NULL,
     nd_geolocation_id bigint NOT NULL references nd_geolocation (nd_geolocation_id) on delete cascade INITIALLY DEFERRED,
-    type_id bigint NOT NULL references cvterm (cvterm_id) on delete cascade INITIALLY DEFERRED
+    type_id bigint NOT NULL references cvterm (cvterm_id) on delete cascade INITIALLY DEFERRED 
 );
 CREATE INDEX nd_experiment_idx1 ON nd_experiment (nd_geolocation_id);
 CREATE INDEX nd_experiment_idx2 ON nd_experiment (type_id);
 
-COMMENT ON TABLE nd_experiment IS 'This is the core table for the natural diversity module,
-representing each individual assay that is undertaken (this is usually *not* an
-entire experiment). Each nd_experiment should give rise to a single genotype or
-phenotype and be described via 1 (or more) protocols. Collections of assays that
+COMMENT ON TABLE nd_experiment IS 'This is the core table for the natural diversity module, 
+representing each individual assay that is undertaken (this is usually *not* an 
+entire experiment). Each nd_experiment should give rise to a single genotype or 
+phenotype and be described via 1 (or more) protocols. Collections of assays that 
 relate to each other should be linked to the same record in the project table.';
 
 -- ================================================
@@ -849,7 +849,7 @@ CREATE TABLE nd_experiment_project (
 CREATE INDEX nd_experiment_project_idx1 ON nd_experiment_project (project_id);
 CREATE INDEX nd_experiment_project_idx2 ON nd_experiment_project (nd_experiment_id);
 
-COMMENT ON TABLE nd_experiment_project IS 'Used to group together related nd_experiment records. All nd_experiments
+COMMENT ON TABLE nd_experiment_project IS 'Used to group together related nd_experiment records. All nd_experiments 
 should be linked to at least one project.';
 
 -- ================================================
