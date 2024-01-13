@@ -23,7 +23,7 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *   default_formatter = "chado_property_formatter_default"
  * )
  */
-class ChadoLinkerPropertyTypeDefault extends ChadoFieldItemBase {
+class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_property_type_default";
 
