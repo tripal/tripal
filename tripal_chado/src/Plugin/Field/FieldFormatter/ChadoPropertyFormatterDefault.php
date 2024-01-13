@@ -14,11 +14,11 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  * Plugin implementation of default Tripal linker property formatter.
  *
  * @FieldFormatter(
- *   id = "chado_linker_property_formatter_default",
+ *   id = "chado_property_formatter_default",
  *   label = @Translation("Chado Property"),
  *   description = @Translation("Add a property or attribute to the content type."),
  *   field_types = {
- *     "chado_linker_property_type_default"
+ *     "chado_property_type_default"
  *   }
  * )
  */

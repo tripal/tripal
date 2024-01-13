@@ -11,11 +11,11 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  * Plugin implementation of default Tripal linker property widget.
  *
  * @FieldWidget(
- *   id = "chado_linker_property_widget_default",
+ *   id = "chado_property_widget_default",
  *   label = @Translation("Chado Property"),
  *   description = @Translation("Add a property or attribute to the content type."),
  *   field_types = {
- *     "chado_linker_property_type_default"
+ *     "chado_property_type_default"
  *   }
  * )
  */
