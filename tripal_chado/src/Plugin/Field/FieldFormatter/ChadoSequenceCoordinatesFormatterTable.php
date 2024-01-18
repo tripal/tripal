@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  * @FieldFormatter(
  *   id = "chado_sequence_coordinates_formatter_table",
  *   label = @Translation("Chado sequence coordinates table formatter"),
- *   description = @Translation("The sequence coordinates widget allows curators to manually enter feature sequence coordinates information on the content edit page."),
+ *   description = @Translation("The table sequence coordinates formatter allows curators to view sequence coordinates (min, max, strand and phase) of the feature in a tabular format."),
  *   field_types = {
  *     "chado_sequence_coordinates_default"
  *   }
@@ -20,7 +20,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 class ChadoSequenceCoordinatesFormatterTable extends ChadoFormatterBase {
 
   public static $default_settings = [
-    'caption' => 'This @content_type has the following sequence coordinates:',
     'expand_strand' => TRUE,
   ];
 
@@ -29,48 +28,38 @@ class ChadoSequenceCoordinatesFormatterTable extends ChadoFormatterBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
-    $reference_term = 'data:3002';
 
-    // Get the settings and set defaults.
-    $settings = $display['settings'];
     foreach ($this::$default_settings as $key => $value) {
       if (!isset($settings[$key])) {
         $settings[$key] = $value;
       }
     }
 
-    // Replace tokens in the caption.
-    $settings['caption'] = t($settings['caption'],
-      ['@content_type' => $entity->rdfs__type['und'][0]['value']]);
-
     // For each location, add it to the table.
-    $header = ['Name', 'Location', 'Strand', 'Phase'];
+    $header = ['Name', 'Loc.Min', 'Loc.Max','Phase','Strand'];
 
+    $elements = [];
     $locations = [];
 
     foreach ($items as $item) {
 
-      if (!empty($item['value'])) {
-        $fmin_term = $item->get('fmin')->getString();
-        $fmax_term = $item->get('fmax')->getString();
-        $strand_term = $item->get('strand')->getString();
-        $phase_term = $item->get('phase')->getString();
+      $ft_uniqname_val = $item->get('uniquename')->getString();
+      $fmin_val = $item->get('fmin')->getString();
+      $fmax_val = $item->get('fmax')->getString();
 
-        $strand_val = $item['value'][$strand_term];
-        if ($settings['expand_strand']) {
-          $strand_symb = match( $strand_val ) {
-            -1 => '-',
-            1 => '+',
-            default => '<span style="color:#B3B3B3">unknown</span>',
-          };
-        }
-      }
+      $strand_val = $item->get('strand')->getString();
+      $strand_symb = match( $strand_val ) {
+        -1 => '-',
+        1 => '+',
+        default => 'unknown',
+      };
 
-      $locations[] = [
-        $item['value'][$reference_term],
-        $item['value'][$fmin_term] . '..' . $fmax = $item['value'][$fmax_term],
-        $strand_symb, $item['value'][$phase_term],
-      ];
+      $phase_val = $item->get('phase')->getString();
+      $locations[] = [ $ft_uniqname_val,
+                        $fmin_val,
+                        $fmax_val,
+                        $phase_val,
+                        $strand_symb ];
     }
 
     if ( !$locations ) {
@@ -86,7 +75,6 @@ class ChadoSequenceCoordinatesFormatterTable extends ChadoFormatterBase {
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $content,
-      '#caption' => $settings['caption'],        
     ];
 
     return $elements;

@@ -361,8 +361,8 @@ fields:
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table: featureloc
-                linker_table: feature
+                base_table: feature
+                linker_table: featureloc
                 linker_fkey_column: feature_id
         settings:
             termIdSpace: data

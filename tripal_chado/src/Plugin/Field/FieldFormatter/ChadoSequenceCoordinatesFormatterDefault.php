@@ -25,40 +25,40 @@ class ChadoSequenceCoordinatesFormatterDefault extends ChadoFormatterBase
   public function viewElements(FieldItemListInterface $items, $langcode)
   {
     $elements = [];
-    $reference_term = 'data:3002';
-
     $locations = [];
     
     foreach ($items as $item) {
 
-      if (!empty($item['value'])) {
-        $loc_rec = '';
-        $feature_ref_val = $item['value'][$reference_term];
+      $loc_rec = '';
+      $ft_uniqname_val = $item->get('uniquename')->getString();
 
-        $fmin_val = $item->get('fmin')->getString();
-        if (!empty($fmin_val)) {
-        $loc_rec .= $item['value'][$feature_ref_val] . ':' .$fmin_val . "..";
-        }
-        $fmax_val = $item->get('fmax')->getString();
-        if (!empty($fmax_val)) {
-            $loc_rec .= $item['value'][$fmax_val].'; ';
-        }
-        $phase_val = $item->get('phase')->getString();
-        if (!empty($phase_val)) {
-            $loc_rec .= $item['value'][$phase_val].'; ';
-        }
-        $strand_term = $item->get('strand')->getString();
-        if (!empty($strand_val)) {
-            $strand_symb = match( $item['value'][$strand_term] ) {
-                -1 => '-',
-                1 => '+',
-                default => '',
-            };
-            $loc_rec .= $strand_symb;
-        }
-        $locations[] = $loc_rec;
+      $fmin_val = $item->get('fmin')->getString();
+      if (!empty($fmin_val)) {
+        $loc_rec .= $ft_uniqname_val . ':' .$fmin_val . "..";
       }
+      $fmax_val = $item->get('fmax')->getString();
+      if (!empty($fmax_val)) {
+          $loc_rec .= $fmax_val.'; ';
+      }
+
+      $strand_val = $item->get('strand')->getString();
+      if (!empty($strand_val)) {
+          $strand_symb = match ( $strand_val ) {
+              -1 => '-',
+              1 => '+',
+              default => '',
+          };
+          $loc_rec .= $strand_symb;
+      }
+      $phase_val = $item->get('phase')->getString();
+      if (!empty($phase_val)) {
+          $loc_rec .= $phase_val.'; ';
+      }
+
+      $locations[] = $loc_rec;
+
     }
+
     if ( !$locations ) {
         $content = 'This feature is not located on any sequence.';
     }

@@ -12,6 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
  *   id = "chado_sequence_coordinates_default",
  *   label = @Translation("Chado Sequence Coordinates"),
  *   description = @Translation("Locations on reference sequences where the feature is located"),
+ *   default_widget = "chado_sequence_coordinates_widget_default",
  *   default_formatter = "chado_sequence_coordinates_formatter_default",
  *   cardinality = 1,
  * )
@@ -72,7 +73,7 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     $mapping = $storage->load( 'core_mapping' );
 
     $record_id_term = $mapping->getColumnTermId( 'feature', 'feature_id' );
-    $ftloc_id_term = $mapping->getColumnTermId('featureloc', 'featureloc_id');
+    $ft_uniqname_term = $mapping->getColumnTermId( 'feature', 'uniquename' );
 
     $fmin_term = $mapping->getColumnTermId('featureloc', 'fmin');
     $fmax_term = $mapping->getColumnTermId('featureloc', 'fmax');
@@ -85,36 +86,41 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
-      'chado_table' => 'feature',
-      'chado_column' => 'feature_id',
+      'path' => 'feature.feature_id',
     ]);
     
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'featureloc_id', $record_id_term, [
-      'action' => 'store_id',
+      'action' => 'store_pkey',
       'drupal_store' => TRUE,
-      'chado_table' => 'featureloc',
-      'chado_column' => 'featureloc_id',
+      'path' => 'featureloc.featureloc_id',
     ]);
     
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fkey', $record_id_term, [
+      'action' => 'store_link',
+      'drupal_store' => TRUE,
+      'path' => 'feature.feature_id>featureloc.feature_id',
+    ]);
+
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'uniquename', $ft_uniqname_term, [
+      'action' => 'store',
+      'path' => 'feature.uniquename',
+    ]);
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fmin', $fmin_term, [
         'action' => 'store',
-        'path' => 'feature.feature_id>featureloc.feature_id',
-        'chado_column' => 'fmin',
+        'path' => 'feature.feature_id>featureloc.feature_id;fmin',
     ]);
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fmax', $fmax_term, [
       'action' => 'store',
-      'path' => 'feature.feature_id>featureloc.feature_id',
-      'chado_column' => 'fmax',
+      'path' => 'feature.feature_id>featureloc.feature_id;fmax',
     ]);
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'strand', $strand_term, [
       'action' => 'store',
-      'path' => 'feature.feature_id>featureloc.feature_id',
-      'chado_column' => 'strand',
+      'path' => 'feature.feature_id>featureloc.feature_id;strand',
     ]);
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'phase', $phase_term, [
       'action' => 'store',
-      'path' => 'feature.feature_id>featureloc.feature_id',
-      'chado_column' => 'phase',
+      'path' => 'feature.feature_id>featureloc.feature_id;phase',
     ]);
       
     return($properties);    
