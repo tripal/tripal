@@ -1,4 +1,4 @@
-SET search_path = so,chado,pg_catalog;
+SET search_path=so,chado,pg_catalog;
 --- *** relation: catmat_right_handed_four ***
 --- *** relation type: VIEW                      ***
 --- ***                                          ***

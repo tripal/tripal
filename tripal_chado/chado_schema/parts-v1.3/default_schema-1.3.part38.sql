@@ -20,7 +20,7 @@ create table expression (
        uniquename text not null,
        md5checksum character(32),
        description text,
-       constraint expression_c1 unique (uniquename)
+       constraint expression_c1 unique (uniquename)       
 );
 
 COMMENT ON TABLE expression IS 'The expression table is essentially a bridge table.';
@@ -113,7 +113,7 @@ create table expression_pub (
        foreign key (expression_id) references expression (expression_id) on delete cascade INITIALLY DEFERRED,
        pub_id bigint not null,
        foreign key (pub_id) references pub (pub_id) on delete cascade INITIALLY DEFERRED,
-       constraint expression_pub_c1 unique (expression_id,pub_id)
+       constraint expression_pub_c1 unique (expression_id,pub_id)       
 );
 create index expression_pub_idx1 on expression_pub (expression_id);
 create index expression_pub_idx2 on expression_pub (pub_id);
@@ -132,7 +132,7 @@ create table feature_expression (
        foreign key (feature_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
        pub_id bigint not null,
        foreign key (pub_id) references pub (pub_id) on delete cascade INITIALLY DEFERRED,
-       constraint feature_expression_c1 unique (expression_id,feature_id,pub_id)
+       constraint feature_expression_c1 unique (expression_id,feature_id,pub_id)       
 );
 create index feature_expression_idx1 on feature_expression (expression_id);
 create index feature_expression_idx2 on feature_expression (feature_id);
@@ -614,7 +614,7 @@ create table stockprop_pub (
      constraint stockprop_pub_c1 unique (stockprop_id,pub_id)
 );
 create index stockprop_pub_idx1 on stockprop_pub (stockprop_id);
-create index stockprop_pub_idx2 on stockprop_pub (pub_id);
+create index stockprop_pub_idx2 on stockprop_pub (pub_id); 
 
 COMMENT ON TABLE stockprop_pub IS 'Provenance. Any stockprop assignment can optionally be supported by a publication.';
 
@@ -794,7 +794,7 @@ a genotype. Features with genotypes can be linked to stocks thru feature_genotyp
 -- ================================================
 
 create table stockcollection (
-	stockcollection_id bigserial not null,
+	stockcollection_id bigserial not null, 
         primary key (stockcollection_id),
 	type_id bigint not null,
         foreign key (type_id) references cvterm (cvterm_id) on delete cascade,
@@ -901,10 +901,10 @@ CREATE TABLE stockcollection_db (
 CREATE INDEX stockcollection_db_idx1 ON stockcollection_db USING btree (stockcollection_id);
 CREATE INDEX stockcollection_db_idx2 ON stockcollection_db USING btree (db_id);
 
-COMMENT ON TABLE stockcollection_db IS 'Stock collections may be respresented
-by an external online database. This table associates a stock collection with
-a database where its member stocks can be found. Individual stock that are part
-of this collction should have entries in the stock_dbxref table with the same
+COMMENT ON TABLE stockcollection_db IS 'Stock collections may be respresented 
+by an external online database. This table associates a stock collection with 
+a database where its member stocks can be found. Individual stock that are part 
+of this collction should have entries in the stock_dbxref table with the same 
 db_id record';
 
 
@@ -922,7 +922,7 @@ CREATE TABLE stock_feature (
   FOREIGN KEY (feature_id) REFERENCES feature (feature_id) ON DELETE CASCADE INITIALLY DEFERRED,
   FOREIGN KEY (stock_id) REFERENCES stock (stock_id) ON DELETE CASCADE INITIALLY DEFERRED,
   FOREIGN KEY (type_id) REFERENCES cvterm (cvterm_id) ON DELETE CASCADE INITIALLY DEFERRED,
-  CONSTRAINT stock_feature_c1 UNIQUE (feature_id, stock_id, type_id, rank)
+  CONSTRAINT stock_feature_c1 UNIQUE (feature_id, stock_id, type_id, rank)  
 );
 create index stock_feature_idx1 on stock_feature (stock_feature_id);
 create index stock_feature_idx2 on stock_feature (feature_id);
@@ -945,7 +945,7 @@ CREATE TABLE stock_featuremap (
   FOREIGN KEY (featuremap_id) REFERENCES featuremap (featuremap_id) ON DELETE CASCADE INITIALLY DEFERRED,
   FOREIGN KEY (stock_id) REFERENCES stock (stock_id)  ON DELETE CASCADE INITIALLY DEFERRED,
   FOREIGN KEY (type_id) REFERENCES cvterm (cvterm_id) ON DELETE CASCADE INITIALLY DEFERRED,
-  CONSTRAINT stock_featuremap_c1 UNIQUE (featuremap_id, stock_id, type_id)
+  CONSTRAINT stock_featuremap_c1 UNIQUE (featuremap_id, stock_id, type_id)  
 );
 
 create index stock_featuremap_idx1 on stock_featuremap (featuremap_id);

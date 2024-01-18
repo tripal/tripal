@@ -564,7 +564,7 @@ function tripal_rebuild() {
   $fileStorage = new FileStorage($dir);
   $config = $fileStorage->read('config/install/views.view.tripal_jobs');
 
-  // Next load the storage system for views entieis and check if the view
+  // Next load the storage system for views entities and check if the view
   // already exists. If it does then don't reload it.
   $storage = \Drupal::entityTypeManager()->getStorage('view');
   $view = $storage->load('tripal_jobs');

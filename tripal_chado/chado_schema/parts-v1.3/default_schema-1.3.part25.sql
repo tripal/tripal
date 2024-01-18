@@ -1,4 +1,4 @@
-SET search_path = so,chado,pg_catalog;
+SET search_path=so,chado,pg_catalog;
 --- *** relation: n6_hydroxynorvalylcarbamoyladenosine ***
 --- *** relation type: VIEW                      ***
 --- ***                                          ***

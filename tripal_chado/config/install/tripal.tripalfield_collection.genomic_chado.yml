@@ -46,7 +46,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -216,6 +216,60 @@ fields:
             default:
               region: content
               weight: 80
+
+    -   name: gene_pub
+        content_type: gene
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 82
+          form:
+            default:
+              region: content
+              weight: 82
+
+    -   name: gene_project
+        content_type: gene
+        label: Project
+        type: chado_project_type_default
+        description: The project which this gene is a part of
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: project_feature
+                linker_fkey_column: project_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47885
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 84
+          form:
+            default:
+              region: content
+              weight: 84
 
     -   name: gene_is_analysis
         content_type: gene
@@ -422,7 +476,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -592,6 +646,60 @@ fields:
             default:
               region: content
               weight: 80
+
+    -   name: mrna_pub
+        content_type: mrna
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 82
+          form:
+            default:
+              region: content
+              weight: 82
+
+    -   name: mrna_project
+        content_type: mrna
+        label: Project
+        type: chado_project_type_default
+        description: The project which this mRNA is a part of
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: project_feature
+                linker_fkey_column: project_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47885
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 84
+          form:
+            default:
+              region: content
+              weight: 84
 
     -   name: mrna_is_analysis
         content_type: mrna
@@ -842,7 +950,7 @@ fields:
         type: chado_dbxref_type_default
         description: The ID where this record may be available in an external online database.
         cardinality: 1
-        required: false
+        required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -971,6 +1079,33 @@ fields:
               region: content
               weight: 30
 
+    -   name: physical_map_pub
+        content_type: physical_map
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: featuremap_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
     -   name: physical_map_dbxref_ann
         content_type: physical_map
         label: Database Reference Annotations
@@ -1041,7 +1176,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -1188,6 +1323,59 @@ fields:
               region: content
               weight: 68
 
+    -   name: dna_library_pub
+        content_type: dna_library
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                linker_table: library_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
+    -   name: library_is_obsolete
+        content_type: dna_library
+        label: Is Obsolete
+        type: chado_integer_type_default
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
 ## Genome Assembly ##
 
     -   name: genome_assembly_name
@@ -1285,7 +1473,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: IAO
-            termAccession: 0000129
+            termAccession: "0000129"
         display:
           view:
             default:
@@ -1340,7 +1528,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: IAO
-            termAccession: 0000129
+            termAccession: "0000129"
         display:
           view:
             default:
@@ -1432,6 +1620,60 @@ fields:
             default:
               region: content
               weight: 68
+
+    -   name: genome_assembly_pub
+        content_type: genome_assembly
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 82
+          form:
+            default:
+              region: content
+              weight: 82
+
+    -   name: genome_assembly_project
+        content_type: genome_assembly
+        label: Project
+        type: chado_project_type_default
+        description: The project which this genome assembly is a part of
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: project_analysis
+                linker_fkey_column: project_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47885
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 84
+          form:
+            default:
+              region: content
+              weight: 84
 
 ## Genome Annotation ##
 
@@ -1530,7 +1772,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: IAO
-            termAccession: 0000129
+            termAccession: "0000129"
         display:
           view:
             default:
@@ -1584,7 +1826,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: IAO
-            termAccession: 0000129
+            termAccession: "0000129"
         display:
           view:
             default:
@@ -1676,6 +1918,60 @@ fields:
             default:
               region: content
               weight: 68
+
+    -   name: genome_annotation_pub
+        content_type: genome_annotation
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 82
+          form:
+            default:
+              region: content
+              weight: 82
+
+    -   name: genome_annotation_project
+        content_type: genome_annotation
+        label: Project
+        type: chado_project_type_default
+        description: The project which this genome annotation is a part of
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: project_analysis
+                linker_fkey_column: project_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47885
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 84
+          form:
+            default:
+              region: content
+              weight: 84
 
 ## Genome Project ##
 
@@ -1786,3 +2082,30 @@ fields:
             default:
               region: content
               weight: 68
+
+    -   name: genome_project_pub
+        content_type: genome_project
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
