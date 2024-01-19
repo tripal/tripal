@@ -117,7 +117,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
+  private function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
     // convert the terms list provided by the caller into a string with words
     // separated by a '+' symbol.
     $num_criteria = $search_array['num_criteria'];
@@ -218,7 +218,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     foreach ($pmids as $pmid) {
       // now retrieve the individual record
       $pub_xml = $this->tripal_pub_PMID_fetch($query_key, $web_env, 'null', 'xml', 0, 1, ['id' => $pmid]);
-      $pub = $this->tripal_pub_PMID_parse_pubxml($pub_xml);
+      $pub = $this->parse($pub_xml);
       $pubs[] = $pub;
     }
     return [
@@ -242,7 +242,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_search_init($search_str, $retmax) {
+  private function tripal_pub_PMID_search_init($search_str, $retmax) {
   
     // do a search for a single result so that we can establish a history, and get
     // the number of records. Once we have the number of records we can retrieve
@@ -333,7 +333,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
+  private function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
                                  $retmod = 'null', $start = 0, $limit = 10, $args = []) {
   
     // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
@@ -404,7 +404,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_pubxml($pub_xml) {
+  function parse($pub_xml) {
     $pub = [];
   
     if (!$pub_xml) {
