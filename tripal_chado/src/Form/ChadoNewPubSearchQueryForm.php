@@ -151,7 +151,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
                   '#markup' => $pubs_row['Title'],
                 ];
                 $row["authors"] = [
-                  '#markup' => $pubs_row['Authors'],
+                  '#markup' => $pubs_row['Authors'] ?? '',
                 ];              
                 $form['test_results_table'][$index - 1] = $row;                           
               }
