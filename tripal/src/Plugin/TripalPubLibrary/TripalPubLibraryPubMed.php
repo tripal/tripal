@@ -444,7 +444,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
             $this->tripal_pub_PMID_parse_medline_journal_info($xml, $pub);
             break;
           case 'BookDocument':
-            tripal_pub_PMID_parse_book_document($xml, $pub);
+            $this->tripal_pub_PMID_parse_book_document($xml, $pub);
             break;            
           case 'ChemicalList':
             // TODO: handle this
