@@ -93,6 +93,10 @@ class ChadoCustomTableManager {
    */
   public function findByName(string $table_name, string $chado_schema = NULL) {
 
+    // Retrieve the default name of the Chado schema if it's not provided.
+    if ($chado_schema === NULL) {
+      $chado_schema = chado_get_schema_name('chado');
+    }
     $public = \Drupal::database();
     $query = $public->select('tripal_custom_tables','tct');
     $query->fields('tct', ['table_id']);
@@ -115,6 +119,10 @@ class ChadoCustomTableManager {
   public function getTables(string $chado_schema = NULL) {
     $tables = [];
 
+    // Retrieve the default name of the Chado schema if it's not provided.
+    if ($chado_schema === NULL) {
+      $chado_schema = chado_get_schema_name('chado');
+    }
     $public = \Drupal::database();
     $query = $public->select('tripal_custom_tables','tct');
     $query->fields('tct', ['table_id', 'table_name']);
