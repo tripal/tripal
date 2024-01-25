@@ -47,7 +47,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       ],
     ];
 
-    $results = $plugin->tripal_pub_remote_search_PMID($search_array, 1, 1);
+    $results = $plugin->remoteSearchPMID($search_array, 1, 1);
     $this->assertNotEquals($results, NULL, 'This should have returned one pubmed record');
     
     $this->assertGreaterThan(0, $results['total_records'], 'There should be more than 0 records found for this query');

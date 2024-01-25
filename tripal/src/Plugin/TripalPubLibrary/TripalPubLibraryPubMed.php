@@ -83,7 +83,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
   public function test($form, &$form_state, $search_array) {
     $results = NULL;
     try {
-      $results = $this->tripal_pub_remote_search_PMID($search_array, 5, 0);
+      $results = $this->remoteSearchPMID($search_array, 5, 0);
     }
     catch (\Exception $ex) {
 
@@ -117,7 +117,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  private function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
+  public function remoteSearchPMID($search_array, $num_to_retrieve, $page) {
     // convert the terms list provided by the caller into a string with words
     // separated by a '+' symbol.
     $num_criteria = $search_array['num_criteria'];
@@ -193,7 +193,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     }
   
     // now initialize the query
-    $results = $this->tripal_pub_PMID_search_init($search_str, $num_to_retrieve);
+    $results = $this->pmidSearchInit($search_str, $num_to_retrieve);
     $total_records = $results['Count'];
     $query_key = $results['QueryKey'];
     $web_env = $results['WebEnv'];
@@ -210,14 +210,14 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       ];
     }
     // now get the list of PMIDs from the initialized search
-    $pmids_txt = $this->tripal_pub_PMID_fetch($query_key, $web_env, 'uilist', 'text', $start, $num_to_retrieve);
+    $pmids_txt = $this->pmidFetch($query_key, $web_env, 'uilist', 'text', $start, $num_to_retrieve);
   
     // iterate through each PMID and get the publication record. This requires a new search and new fetch
     $pmids = explode("\n", trim($pmids_txt));
     $pubs = [];
     foreach ($pmids as $pmid) {
       // now retrieve the individual record
-      $pub_xml = $this->tripal_pub_PMID_fetch($query_key, $web_env, 'null', 'xml', 0, 1, ['id' => $pmid]);
+      $pub_xml = $this->pmidFetch($query_key, $web_env, 'null', 'xml', 0, 1, ['id' => $pmid]);
       $pub = $this->parse($pub_xml);
       $pubs[] = $pub;
     }
@@ -242,7 +242,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  private function tripal_pub_PMID_search_init($search_str, $retmax) {
+  private function pmidSearchInit($search_str, $retmax) {
   
     // do a search for a single result so that we can establish a history, and get
     // the number of records. Once we have the number of records we can retrieve
@@ -333,7 +333,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  private function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
+  private function pmidFetch($query_key, $web_env, $rettype = 'null',
                                  $retmod = 'null', $start = 0, $limit = 10, $args = []) {
   
     // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
@@ -404,7 +404,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function parse($pub_xml) {
+  private function parse($pub_xml) {
     $pub = [];
   
     if (!$pub_xml) {
@@ -438,13 +438,13 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
           case 'Article':
             $pub_model = $xml->getAttribute('PubModel');
             $pub['Publication Model'] = $pub_model;
-            $this->tripal_pub_PMID_parse_article($xml, $pub);
+            $this->pmidParseArticle($xml, $pub);
             break;
           case 'MedlineJournalInfo':
-            $this->tripal_pub_PMID_parse_medline_journal_info($xml, $pub);
+            $this->pmidParseMedlineJournalInfo($xml, $pub);
             break;
           case 'BookDocument':
-            $this->tripal_pub_PMID_parse_book_document($xml, $pub);
+            $this->pmidParseBookDocument($xml, $pub);
             break;            
           case 'ChemicalList':
             // TODO: handle this
@@ -511,7 +511,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_book_document($xml, &$pub) {
+  private function pmidParseBookDocument($xml, &$pub) {
 
     while ($xml->read()) {
       // get this element name
@@ -538,10 +538,10 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
             $pub['Title'] = $pub['Title'] ? ($pub['Title'] . '. ' . $title) : $title;
             break;
           case 'Abstract':
-            $this->tripal_pub_PMID_parse_abstract($xml, $pub);
+            $this->pmidParseAbstract($xml, $pub);
             break;
           case 'Pagination':
-            $this->tripal_pub_PMID_parse_pagination($xml, $pub);
+            $this->pmidParsePagination($xml, $pub);
             break;
           case 'ELocationID':
             $type = $xml->getAttribute('EIdType');
@@ -563,20 +563,20 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
             break;
           case 'AuthorList':
             $complete = $xml->getAttribute('CompleteYN');
-            $this->tripal_pub_PMID_parse_authorlist($xml, $pub);
+            $this->pmidParseAuthorlist($xml, $pub);
             break;
           case 'Language':
             $xml->read();
             $lang_abbr = $xml->value;
             // there may be multiple languages so we store these in an array
-            $pub['Language'][] = $this->tripal_pub_remote_search_get_language($lang_abbr);
+            $pub['Language'][] = $this->remoteSearchGetLanguage($lang_abbr);
             $pub['Language Abbr'][] = $lang_abbr;
             break;
           case 'PublicationTypeList':
-            $this->tripal_pub_PMID_parse_publication_type_list($xml, $pub);
+            $this->pmidParsePublicationTypeList($xml, $pub);
             break;
           case 'PublicationType':
-            $this->tripal_pub_PMID_parse_publication_type($xml, $pub);
+            $this->pmidParsePublicationType($xml, $pub);
             break;
           case 'VernacularTitle':
             $xml->read();
@@ -587,7 +587,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
             $pub['Publisher'] = $xml->value;
             break;
           case 'PubDate':
-            $date = $this->tripal_pub_PMID_parse_date($xml, 'PubDate');
+            $date = $this->pmidParseDate($xml, 'PubDate');
             $year = $date['year'];
             $month = array_key_exists('month', $date) ? $date['month'] : '';
             $day = array_key_exists('day', $date) ? $date['day'] : '';
@@ -628,7 +628,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_publication_type_list($xml, &$pub) {
+  private function pmidParsePublicationTypeList($xml, &$pub) {
 
     while ($xml->read()) {
       $element = $xml->name;
@@ -640,7 +640,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       if ($xml->nodeType == \XMLReader::ELEMENT) {
         switch ($element) {
           case 'PublicationType':
-            $this->tripal_pub_PMID_parse_publication_type($xml, $pub);
+            $this->pmidParsePublicationType($xml, $pub);
             break;
           default:
             break;
@@ -661,7 +661,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_medline_journal_info($xml, &$pub) {
+  private function pmidParseMedlineJournalInfo($xml, &$pub) {
     while ($xml->read()) {
       // get this element name
       $element = $xml->name;
@@ -704,7 +704,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_article($xml, &$pub) {
+  private function pmidParseArticle($xml, &$pub) {
   
     while ($xml->read()) {
       // get this element name
@@ -717,16 +717,16 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       if ($xml->nodeType == \XMLReader::ELEMENT) {
         switch ($element) {
           case 'Journal':
-            $this->tripal_pub_PMID_parse_journal($xml, $pub);
+            $this->pmidParseJournal($xml, $pub);
             break;
           case 'ArticleTitle':
             $pub['Title'] = $xml->readString();
             break;
           case 'Abstract':
-            $this->tripal_pub_PMID_parse_abstract($xml, $pub);
+            $this->pmidParseAbstract($xml, $pub);
             break;
           case 'Pagination':
-            $this->tripal_pub_PMID_parse_pagination($xml, $pub);
+            $this->pmidParsePagination($xml, $pub);
             break;
           case 'ELocationID':
             $type = $xml->getAttribute('EIdType');
@@ -748,7 +748,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
             break;
           case 'AuthorList':
             $complete = $xml->getAttribute('CompleteYN');
-            $this->tripal_pub_PMID_parse_authorlist($xml, $pub);
+            $this->pmidParseAuthorlist($xml, $pub);
             break;
           case 'InvestigatorList':
             // TODO: perhaps handle this one day.  The investigator list is to list the names of people who
@@ -758,7 +758,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
             $xml->read();
             $lang_abbr = $xml->value;
             // there may be multiple languages so we store these in an array
-            $pub['Language'][] = $this->tripal_pub_remote_search_get_language($lang_abbr);
+            $pub['Language'][] = $this->remoteSearchGetLanguage($lang_abbr);
             $pub['Language Abbr'][] = $lang_abbr;
             break;
           case 'DataBankList':
@@ -768,7 +768,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
             // TODO: handle this case
             break;
           case 'PublicationTypeList':
-            $this->tripal_pub_PMID_parse_publication_type_list($xml, $pub);
+            $this->pmidParsePublicationTypeList($xml, $pub);
             break;
           case 'VernacularTitle':
             $xml->read();
@@ -803,7 +803,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
+  private function pmidParsePublicationType($xml, &$pub) {
     $chado = \Drupal::service('tripal_chado.database');
     $xml->read();
     $value = $xml->value;
@@ -846,7 +846,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_abstract($xml, &$pub) {
+  private function pmidParseAbstract($xml, &$pub) {
     $abstract = '';
   
     while ($xml->read()) {
@@ -896,7 +896,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_pagination($xml, &$pub) {
+  private function pmidParsePagination($xml, &$pub) {
     while ($xml->read()) {
       $element = $xml->name;
   
@@ -930,7 +930,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_journal($xml, &$pub) {
+  private function pmidParseJournal($xml, &$pub) {
   
     while ($xml->read()) {
       $element = $xml->name;
@@ -955,7 +955,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
           case 'JournalIssue':
             // valid values of cited_medium are 'Internet' and 'Print'
             $cited_medium = $xml->getAttribute('CitedMedium');
-            $this->tripal_pub_PMID_parse_journal_issue($xml, $pub);
+            $this->pmidParseJournalIssue($xml, $pub);
             break;
           case 'Title':
             $xml->read();
@@ -983,7 +983,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_journal_issue($xml, &$pub) {
+  private function pmidParseJournalIssue($xml, &$pub) {
   
     while ($xml->read()) {
       $element = $xml->name;
@@ -1003,7 +1003,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
             $pub['Issue'] = $xml->value;
             break;
           case 'PubDate':
-            $date = $this->tripal_pub_PMID_parse_date($xml, 'PubDate');
+            $date = $this->pmidParseDate($xml, 'PubDate');
             $year = $date['year'];
             $month = array_key_exists('month', $date) ? $date['month'] : '';
             $day = array_key_exists('day', $date) ? $date['day'] : '';
@@ -1044,7 +1044,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_date($xml, $element_name) {
+  private function pmidParseDate($xml, $element_name) {
     $date = [];
   
     while ($xml->read()) {
@@ -1095,7 +1095,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
+  private function pmidParseAuthorlist($xml, &$pub) {
     $num_authors = 0;
   
     while ($xml->read()) {
@@ -1179,7 +1179,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  function tripal_pub_remote_search_get_language($lang_abbr) {
+  private function remoteSearchGetLanguage($lang_abbr) {
     $languages = [
       'afr' => 'Afrikaans',
       'alb' => 'Albanian',
