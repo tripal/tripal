@@ -36,7 +36,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       'loader_name' => 'ok',
       'disabled' => 0,
       'do_contact' => 0,
-      'pub_import_id' => 25,
+      //'pub_import_id' => 25,
       'criteria' => [
         1 =>   [
           'search_terms' => 'Populus trichocarpa',
@@ -50,6 +50,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     $results = $plugin->remoteSearchPMID($search_array, 1, 1);
     $this->assertNotEquals($results, NULL, 'This should have returned one pubmed record');
     
+
     $this->assertGreaterThan(0, $results['total_records'], 'There should be more than 0 records found for this query');
 
     $pubs_count = count($results['pubs']);
@@ -57,5 +58,28 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
 
     $this->assertNotEquals($results['pubs'][0]['Title'], NULL, 'There should be a title but a title was not found');
 
+    // Test for a BOOK type
+    $search_array = [
+      'remote_db' => 'pubmed',
+      'num_criteria' => 1,
+      'loader_name' => 'ok2',
+      'disabled' => 0,
+      'do_contact' => 0,
+      // 'pub_import_id' => 25,
+      'criteria' => [
+        1 =>   [
+          'search_terms' => 'PMID:30000852',
+          'scope' => 'id',
+          'is_phrase' => 0,
+          'operation' => '', 
+        ]
+      ],
+    ];
+
+    $results = $plugin->remoteSearchPMID($search_array, 1, 1);
+    // print_r($results);
+    $this->assertNotEquals($results, NULL, 'This should have returned one pubmed record');
+    $this->assertEquals($results['pubs'][0]['Publication Dbxref'], 'PMID:30000852', 'This should have returned the PMID');
+    $this->assertEquals($results['pubs'][0]['Publisher'], 'National Institute of Child Health and Human Development', 'This should have returned the Title');
   }
 }

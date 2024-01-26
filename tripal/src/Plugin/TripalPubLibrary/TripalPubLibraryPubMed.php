@@ -199,8 +199,8 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     $web_env = $results['WebEnv'];
   
     // initialize the pager
-    $start = $page * $num_to_retrieve;
-  
+    $start = ($page - 1) * $num_to_retrieve;
+ 
     // if we have no records then return an empty array
     if ($total_records == 0) {
       return [
