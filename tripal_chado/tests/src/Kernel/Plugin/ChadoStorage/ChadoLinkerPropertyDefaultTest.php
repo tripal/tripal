@@ -13,7 +13,7 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
 /**
  * Tests that ChadoStorage can handle property fields as we expect.
  * The array of fields/properties used for these tests are designed
- * to match those in the ChadoLinkerPropertyDefault field with values filled
+ * to match those in the ChadoPropertyDefault field with values filled
  * based on a gene content type.
  *
  * Note: testotherfeaturefield is added to ensure we meet the unique constraint
@@ -37,7 +37,7 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
-class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
+class ChadoPropertyDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
@@ -45,7 +45,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
   // with fields specific to that test.
   protected $fields = [];
 
-  protected $yaml_file = __DIR__ . "/ChadoLinkerPropertyDefault-FieldDefinitions.yml";
+  protected $yaml_file = __DIR__ . "/ChadoPropertyDefault-FieldDefinitions.yml";
 
   protected int $organism_id;
 

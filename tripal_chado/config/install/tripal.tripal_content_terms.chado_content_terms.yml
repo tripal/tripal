@@ -634,6 +634,8 @@ vocabularies:
         terms:
             -   id: 'NCBITaxon:common_name'
                 name: 'common name'
+            -   id: 'NCBITaxon:scientific_name'
+                name: 'scientific name'
 
 
     -   name: 'rdfs'

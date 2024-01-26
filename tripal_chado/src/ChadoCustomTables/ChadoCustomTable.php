@@ -372,7 +372,7 @@ class ChadoCustomTable {
    * @return bool
    *   True if successful. False otherwise.
    */
-  public function destroy() {
+  public function delete() {
     $logger = \Drupal::service('tripal.logger');
     if (!$this->table_id) {
       $logger->error('Cannot destroy the custom table. Please, first run the init() function.');

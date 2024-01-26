@@ -253,7 +253,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   protected function replaceTokens($string, $bundle) {
 
-    // Intiailze the Tripal token parser service.
+    // Initialize the Tripal token parser service.
     /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
     $token_parser = \Drupal::service('tripal.token_parser');
     $token_parser->initParser($bundle, $this);
@@ -656,7 +656,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     list($values, $tripal_storages) = TripalEntity::getValuesArray($this);
 
     // Iterate through the different Tripal Storage objects and run the
-    // validateVales() function for the values that belong to it.
+    // validateValues() function for the values that belong to it.
     foreach ($values as $tsid => $tsid_values) {
       $problems = $tripal_storages[$tsid]->validateValues($tsid_values);
       foreach ($problems as $violation) {

@@ -1,4 +1,4 @@
-SET search_path = so,chado,pg_catalog;
+SET search_path=so,chado,pg_catalog;
 --- *** g platforms, and is assembled into conti ***
 --- *** gs. Genome sequence of this quality may  ***
 --- *** harbour regions of poor quality and can  ***

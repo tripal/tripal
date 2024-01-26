@@ -64,7 +64,7 @@ class ChadoCustomTablesDeleteForm extends FormBase {
     if (strcmp($action, 'Delete') == 0) {
       $custom_tables = \Drupal::service('tripal_chado.custom_tables');
       $custom_table = $custom_tables->loadById($table_id);
-      $success = $custom_table->destroy();
+      $success = $custom_table->delete();
       if($success == TRUE) {
         \Drupal::messenger()->addMessage(t("Custom table successfully deleted"));
       }

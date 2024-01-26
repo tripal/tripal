@@ -1,4 +1,4 @@
-SET search_path = so,chado,pg_catalog;
+SET search_path=so,chado,pg_catalog;
 --- *** eptor gene in germline configuration inc ***
 --- *** luding at least one J-gene and one C-gen ***
 --- *** e.                                       ***
