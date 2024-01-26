@@ -76,7 +76,7 @@ function tripal_pub_importers_list() {
       "A publication importer is used to create a set of search criteria that can be used
      to query a remote database, find publications that match the specified criteria
      and then import those publications into the Chado database. An example use case would
-     be to peridocially add new publications to this Tripal site that have appeared in PubMed
+     be to periodically add new publications to this Tripal site that have appeared in PubMed
      in the last 30 days.  You can import publications in one of two ways:
      <ol>
       <li>Create a new importer by clicking the 'New Importer' link above, and after saving it should appear in the list below.  Click the
