@@ -1,0 +1,23 @@
+name: PHPUnit
+on:
+  push:
+    branches:
+      - 4.x
+      - tv4g0-issue1673-remove-drupal-9
+jobs:
+  running-tests:
+    name: "Drupal 10.1: PHP 8.3"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Run Automated testing
+        uses: tripal/test-tripal-action@v1.2
+        with:
+          directory-name: 'tripal'
+          modules: 'tripal tripal_biodb tripal_chado'
+          php-version: '8.3'
+          pgsql-version: '13'
+          drupal-version: '10.1.x-dev'
+          build-image: true
+          dockerfile: "UseTripalDockerBackupClause"
