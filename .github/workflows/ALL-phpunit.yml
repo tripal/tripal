@@ -20,6 +20,14 @@ jobs:
         drupal-version:
           - "10.0.x-dev"
           - "10.1.x-dev"
+          - "10.2.x-dev"
+        exclude:
+          - php-version: "8.3"
+            pgsql-version: "13"
+            drupal-version: "10.0.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "13"
+            drupal-version: "10.1.x-dev"
 
     steps:
       # Check out the repo

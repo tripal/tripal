@@ -3,10 +3,9 @@ on:
   push:
     branches:
       - 4.x
-      - tv4g0-issue1673-remove-drupal-9
 jobs:
   running-tests:
-    name: "Drupal 10.0: PHP 8.3"
+    name: "Drupal 10.2: PHP 8.1"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -16,8 +15,8 @@ jobs:
         with:
           directory-name: 'tripal'
           modules: 'tripal tripal_biodb tripal_chado'
-          php-version: '8.3'
+          php-version: '8.1'
           pgsql-version: '13'
-          drupal-version: '10.0.x-dev'
+          drupal-version: '10.2.x-dev'
           build-image: true
           dockerfile: "UseTripalDockerBackupClause"
