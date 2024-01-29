@@ -175,16 +175,20 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
  */
 function tripal_run_importer_run($loader, $logger) {
 
-  // begin the transaction
-  $public = \Drupal::database();
-  $transaction = $public->startTransaction();
+  // Instead of rolling back the drupal database (which contains logs that we want access to),
+  // we want to roll back any changes that were made to chado specifically.
+  //$public = \Drupal::database();
+  //$transaction = $public->startTransaction();
+  $chado = \Drupal::service('tripal_chado.database');
+  //$chado->setSchemaName('chado');
+  $transaction_chado = $chado->startTransaction();
   try {
     $loader->run();
     $logger->notice("Done.");
   }
   catch (\Exception $e) {
     // Rollback and re-throw the error.
-    $transaction->rollback();
+    $transaction_chado->rollback();
     throw $e;
   }
 }
@@ -200,15 +204,19 @@ function tripal_run_importer_run($loader, $logger) {
  * @ingroup tripal_importer_api
  */
 function tripal_run_importer_post_run($loader, $logger) {
-  // the transaction
-  $public = \Drupal::database();
-  $transaction = $public->startTransaction();
+  // Instead of rolling back the drupal database (which contains logs that we want access to),
+  // we want to roll back any changes that were made to chado specifically.
+  //$public = \Drupal::database();
+  //$transaction = $public->startTransaction();
+  $chado = \Drupal::service('tripal_chado.database');
+  //$chado->setSchemaName('chado');
+  $transaction_chado = $chado->startTransaction();
   try {
     $loader->postRun();
   }
   catch (\Exception $e) {
     // Rollback and re-throw the error.
-    $transaction->rollback();
+    $transaction_chado->rollback();
     throw $e;
   }
 }
