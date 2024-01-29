@@ -103,7 +103,7 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'uniquename', $ft_uniqname_term, [
       'action' => 'store',
-      'path' => 'feature.uniquename',
+      'path' => 'feature.feature_id>featureloc.feature_id;featureloc.srcfeature_id>feature.feature_id;uniquename',
     ]);
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fmin', $fmin_term, [
