@@ -45,7 +45,7 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
 
   protected $importer;
 
-	/**
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
