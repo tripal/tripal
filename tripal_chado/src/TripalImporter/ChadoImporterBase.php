@@ -109,6 +109,29 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
   }
 
   /**
+   * Creates a database transaction in the specific schema(s) this importer will
+   * be importing data into.
+   *
+   * @return array
+   *   An array of Drupal DatabaseTransaction objects. These are usually
+   *   obtained by calling the startTransaction() method on the database
+   *   connection object.
+   */
+  public function startTransactions() {
+    $transactions = [];
+
+    // By default the Chado importer returns a single transaction
+    // focused on the chado schema set in the current importer job.
+    // If you are importing into multiple chado schema you will want to
+    // override this and add one transaction object for each schema
+    // you are importing into.
+    $chado = $this->getChadoConnection();
+    $transactions[] = $chado->startTransaction();
+
+    return $transactions;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function form($form, &$form_state) {
