@@ -54,8 +54,8 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
-		// Open connection to Chado
-		$this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    // Open connection to Chado
+    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
     // Ensure we can access file_managed related functionality from Drupal.
     // ... users need access to system.action config?
