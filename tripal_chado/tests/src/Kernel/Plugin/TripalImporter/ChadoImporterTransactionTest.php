@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 
 use Drupal\Core\Url;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\Tests\user\Traits\UserCreationTrait;
 
 /**
  * Tests the Chado Importer base class transaction functionality.
@@ -12,6 +13,8 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group ChadoImporter
  */
 class ChadoImporterTransactionTest extends ChadoTestKernelBase {
+
+  use UserCreationTrait;
 
 	protected $defaultTheme = 'stark';
 
@@ -62,6 +65,11 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     // ... Finally the file module + tables itself.
     $this->installEntitySchema('file');
     $this->installSchema('file', ['file_usage']);
+    $this->installSchema('tripal_chado', ['tripal_custom_tables']);
+    // Ensure we have our tripal import tables.
+    $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
+    // Create and log-in a user.
+    $this->setUpCurrentUser();
 
     $expected_args = ['run_args' => [], 'files' => []];
     $plugin_defn = $this->plugin_definition;
@@ -71,6 +79,9 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
       '\Drupal\tripal_chado\TripalImporter\ChadoImporterBase',
       [$configuration, $plugin_id, $plugin_defn, $this->connection]
     );
+    $import_id = $this->importer->createImportJob(['schema_name' => $this->connection->getSchemaName()]);
+    $this->assertIsNumeric($import_id, "We were unable to create a tripal import record during setup.");
+
   }
 
   public function testTransactionRollback() {
@@ -79,7 +90,7 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     // 2. Throw an exception
     // This mimics the situation where an importer run encounters an
     // exception partway through a transaction
-    $this->importer        
+    $this->importer
       ->method('run')
       ->willReturnCallback(function (): bool {
         $connection = \Drupal::service('tripal_chado.database');
@@ -109,6 +120,11 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     $organism_count_query = $this->connection->select('1:organism', 'o')
       ->countQuery()->execute()->fetchField();
     $this->assertEquals($organism_count_query, 0, 'The chado.organism table is not empty despite triggering a database rollback.');
+    // Also ensure the Drupal database was not rolled back
+    // by confirming the tripal import record is still there.
+    $tripal_import_count_query = $this->connection->select('tripal_import', 'o')
+      ->countQuery()->execute()->fetchField();
+    $this->assertEquals($tripal_import_count_query, 1, 'The drupal tripal_import table doesn\'t contain the record even though a rollback on chado should not effect Drupal.');
   }
 
   public function testTransactionCommit() {
@@ -116,7 +132,7 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     // 1. Insert a record into the chado.organism table
     // This mimics the situation where a database transaction
     // should occur to completion
-    $this->importer        
+    $this->importer
       ->method('run')
       ->willReturnCallback(function (): bool {
         $connection = \Drupal::service('tripal_chado.database');
