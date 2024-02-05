@@ -144,7 +144,7 @@ class ChadoFieldDebugger {
    *
    * @param array $records
    *   This is an instance of the TripalStorage ChadoRecords class which contains
-       all the information of records to be inserted/modifiedin chado. 
+   *   all the information of records to be inserted/modifiedin chado.
    *   generated using the Drupal Query Builder in the ChadoStorage::*Values() methods.
    */
   public function summarizeBuiltRecords(ChadoRecords $records) {
@@ -153,8 +153,8 @@ class ChadoFieldDebugger {
       return;
     }
 
-    dpm($records->getRecords(), 'The array describing the record queries to be generated');
-    dpm($records->getBaseRecords(), 'The known primary keys for our base records');
+    dpm($records->getRecordsArray(), 'The array describing the record queries to be generated');
+    dpm($records->getBaseTables(), 'The known primary keys for our base records');
   }
 
   /**
