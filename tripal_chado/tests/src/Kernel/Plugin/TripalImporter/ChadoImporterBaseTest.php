@@ -96,7 +96,5 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
           "We expected $expected_importer_name annotation to include this key but it did not.");
       }
     }
-
-    print_r($plugin_definitions);
 	}
 }
