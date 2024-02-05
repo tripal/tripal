@@ -595,7 +595,7 @@ class TaxonomyImporter extends ChadoImporterBase {
           if (isset($xml->TranslationStack)) {
             $matched = (string) $xml->TranslationStack->TermSet->Term;
             $matched = preg_replace('/\[All Names\]/', '', $matched);
-            if ($matched == $sci_name) {
+            if (strcasecmp($matched, $sci_name) == 0) {
               $taxid = (string) $xml->IdList->Id;
             }
             else {
