@@ -112,7 +112,7 @@ class ChadoCustomTableManager {
 
     // Retrieve the default name of the Chado schema if it's not provided.
     if ($chado_schema === NULL) {
-      $chado_schema = chado_get_schema_name('chado');
+      $chado_schema = $this->chado_connection->schema()->getDefault();
     }
     $query = $this->connection->select('tripal_custom_tables','tct');
     $query->fields('tct', ['table_id']);
@@ -137,7 +137,7 @@ class ChadoCustomTableManager {
 
     // Retrieve the default name of the Chado schema if it's not provided.
     if ($chado_schema === NULL) {
-      $chado_schema = chado_get_schema_name('chado');
+      $chado_schema = $this->chado_connection->schema()->getDefault();
     }
     $query = $this->connection->select('tripal_custom_tables','tct');
     $query->fields('tct', ['table_id', 'table_name']);
