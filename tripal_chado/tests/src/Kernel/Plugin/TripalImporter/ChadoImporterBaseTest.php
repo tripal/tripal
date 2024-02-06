@@ -52,7 +52,7 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
     FileCacheFactory::setPrefix('prefix');
   }
 
-	/**
+  /**
    * Tests focusing on the Tripal Importer plugin system.
    *
    * @group tripal_importer
@@ -65,17 +65,17 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
     $expected_annotation = ['id', 'label','description','file_types', 'upload_description', 'upload_title', 'use_analysis', 'require_analysis', 'use_button', 'submit_disabled', 'button_text', 'file_upload', 'file_local', 'file_remote', 'file_required'];
 
     // Test the Tripal Importer Plugin Manager.
-		// --Ensure we can instantiate the plugin manager.
-		$type = \Drupal::service('tripal.importer');
-		// Note: If the plugin manager is not found you will get a ServiceNotFoundException.
-		$this->assertIsObject($type, 'An importer plugin service object was not returned.');
+    // --Ensure we can instantiate the plugin manager.
+    $type = \Drupal::service('tripal.importer');
+    // Note: If the plugin manager is not found you will get a ServiceNotFoundException.
+    $this->assertIsObject($type, 'An importer plugin service object was not returned.');
 
-		// --Use the plugin manager to get a list of available implementations.
-		$plugin_definitions = $type->getDefinitions();
-		$this->assertIsArray(
-			$plugin_definitions,
-			'Implementations of the tripal importer plugin should be returned in an array.'
-		);
+    // --Use the plugin manager to get a list of available implementations.
+    $plugin_definitions = $type->getDefinitions();
+    $this->assertIsArray(
+      $plugin_definitions,
+      'Implementations of the tripal importer plugin should be returned in an array.'
+    );
     $this->assertGreaterThanOrEqual($expected_count, count($plugin_definitions),
       "We expected to at least have the core chado importers listed.");
 
@@ -96,5 +96,5 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
           "We expected $expected_importer_name annotation to include this key but it did not.");
       }
     }
-	}
+  }
 }
