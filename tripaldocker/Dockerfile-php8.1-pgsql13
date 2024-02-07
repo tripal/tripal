@@ -210,7 +210,7 @@ RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
   && mv /app/tripaldocker/default_files/xdebug/xdebug_toggle.sh /usr/bin/xdebug_toggle.sh \
   && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal/web/sites/default/settings.php
 
-## Make global commands.
+## Make global commands. Symlink for drupal9 is for backward compatibility.
 RUN ln -s /var/www/drupal/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
   && ln -s /var/www/drupal/vendor/drush/drush/drush /usr/local/bin/ \
   && ln -s /var/www/drupal /var/www/drupal9
