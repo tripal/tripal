@@ -1,6 +1,6 @@
 FROM php:8.3-apache-bullseye
 
-ARG drupalversion='10.2.x-dev'
+ARG drupalversion='~10.2.0'
 ARG modules='devel devel_php'
 ARG chadoschema='chado'
 ARG installchado=TRUE
@@ -178,7 +178,7 @@ RUN cd /var/www/drupal \
   --account-name=drupaladmin \
   --account-pass=some_admin_password \
   --site-mail="drupaladmin@localhost" \
-  --site-name="Tripal 4.x-dev on Drupal 10.2.0" \
+  --site-name="Tripal 4.x-dev on Drupal ${drupalversion}" \
   && service apache2 stop \
   && service postgresql stop
 
@@ -213,6 +213,7 @@ RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
 ## Make global commands.
 RUN ln -s /var/www/drupal/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
   && ln -s /var/www/drupal/vendor/drush/drush/drush /usr/local/bin/ \
+  && ln -s /var/www/drupal /var/www/drupal9
 
 ## Set the working directory to DRUPAL_ROOT
 WORKDIR /var/www/drupal/web
