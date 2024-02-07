@@ -213,6 +213,7 @@ RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
 ## Make global commands.
 RUN ln -s /var/www/drupal/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
   && ln -s /var/www/drupal/vendor/drush/drush/drush /usr/local/bin/ \
+  && ln -s /var/www/drupal /var/www/drupal9
 
 ## Set the working directory to DRUPAL_ROOT
 WORKDIR /var/www/drupal/web
