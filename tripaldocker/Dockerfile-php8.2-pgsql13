@@ -178,7 +178,7 @@ RUN cd /var/www/drupal \
   --account-name=drupaladmin \
   --account-pass=some_admin_password \
   --site-mail="drupaladmin@localhost" \
-  --site-name="Tripal 4.x-dev on Drupal 10.1.0" \
+  --site-name="Tripal 4.x-dev on Drupal ${drupalversion}" \
   && service apache2 stop \
   && service postgresql stop
 
