@@ -1920,6 +1920,7 @@ class GFF3Importer extends ChadoImporterBase {
         ['%findex' => $findex, '%file' -> $this->gff_cache_file]));
     }
     $feature = fgets($this->gff_cache_file);
+    $feature = rtrim($feature, "\n");
     $feature = unserialize($feature);
     return $feature;
   }

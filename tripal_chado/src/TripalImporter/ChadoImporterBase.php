@@ -103,7 +103,7 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
     if ($chado->getSchemaName() != $schema_name) {
       $chado->setSchemaName($schema_name);
     }
-    $chado->useTripalDbxSchemaFor(get_class());
+    $chado->useTripalDbxSchemaFor(self::class);
 
     return $chado;
   }
