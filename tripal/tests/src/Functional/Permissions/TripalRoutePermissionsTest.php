@@ -19,7 +19,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
   // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['tripal', 'tripal_chado', 'file', 'field_ui'];
+  protected static $modules = ['tripal', 'file', 'field_ui'];
 
   /**
    * Test all the base Tripal admin paths.
@@ -35,20 +35,14 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
       'Tripal' => 'admin/tripal',
       'Registration' => 'admin/tripal/register',
       'Jobs' => 'admin/tripal/tripal_jobs',
-      'Data Loaders' => 'admin/tripal/loaders',
       'Data Collections' => 'admin/tripal/data-collections',
       'Tripal Managed Files' => 'admin/tripal/files',
       'Tripal Content Terms' => 'admin/tripal/config/terms',
-      'Data Storage' => 'admin/tripal/storage',
-      // Under Drupal ~10.2, if there are no extensions present, and there aren't, then
-      // we won't be able to access the 'admin/tripal/extension' menu, even as admin.
-      // To test, we would have to create an extension first.
-      // 'Extensions' => 'admin/tripal/extension',
     ];
 
     $userAuthenticatedOnly = $this->drupalCreateUser();
-    // Drupal 10.2 tightens permissions, we need additional permissions to access loaders and files
-    $userTripalAdmin = $this->drupalCreateUser(['administer tripal', 'allow tripal import', 'admin tripal files']);
+    // Drupal 10.2 tightens permissions, second permission is needed to access files path
+    $userTripalAdmin = $this->drupalCreateUser(['administer tripal', 'admin tripal files']);
 
     // First check all the URLs with no user logged in.
     // This checks the anonymous user cannot access these pages.
