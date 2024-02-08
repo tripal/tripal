@@ -18,7 +18,7 @@ class TripalChadoRoutePermissionsTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['tripal', 'tripal_chado', 'file', 'field_ui'];
+  protected static $modules = ['tripal', 'tripal_chado'];
 
   /**
    * Test all the base Tripal Chado admin paths.
