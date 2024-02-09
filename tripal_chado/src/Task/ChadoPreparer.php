@@ -136,7 +136,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $this->chado_schema_main = $schema_name;
     $chado = \Drupal::service('tripal_chado.database');
     $chado->setSchemaName($schema_name);
-    $chado->useTripalDbxSchemaFor(get_class());
+    $chado->useTripalDbxSchemaFor(self::class);
 
     try
     {
