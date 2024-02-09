@@ -11,6 +11,7 @@ services:
     arguments: ['@database', '@tripal_chado.database']
   tripal_chado.materialized_views:
     class: Drupal\tripal_chado\Services\ChadoMviewsManager
+    arguments: ['@database', '@tripal_chado.database']
   tripal_chado.terms_init:
     class: Drupal\tripal_chado\Services\ChadoTermsInit
   tripal_chado.cloner:
