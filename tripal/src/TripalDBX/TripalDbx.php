@@ -99,7 +99,8 @@ class TripalDbx {
       // Get Drupal connection details.
       $drupal_database = \Drupal::database();
       $connection_options = $drupal_database->getConnectionOptions();
-      if (array_key_exists('driver', $connection_options) AND ($connection_options['driver'] != 'pgsql')) {
+      // Drupal <= 10.1 driver will be 'pgsql', Drupal 10.2 it will be 'Drupal\pgsql\Driver\Database\pgsql'
+      if (array_key_exists('driver', $connection_options) AND (!preg_match('/pgsql$/', $connection_options['driver']))) {
         // Not using PostgreSQL. There might be something wrong!
         // @todo we may want to evaluate this further as it does tie our Drupal
         // database to being in pgsql. It doesn't support the case where Drupal

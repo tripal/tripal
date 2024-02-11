@@ -182,6 +182,44 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   }
 
   /**
+   * Creates a database transaction in the specific schema(s) this importer will
+   * be importing data into.
+   *
+   * @return array
+   *   An array of Drupal DatabaseTransaction objects. These are usually
+   *   obtained by calling the startTransaction() method on the database
+   *   connection object.
+   */
+  public function startTransactions() {
+    $transactions = [];
+
+    // By default the Tripal importer returns a single transaction
+    // focused on the Drupal schema. This is not usually what we want
+    // as when a transaction is rolled back on the Drupal schema during import
+    // we lose the Tripal job status updates and logs.
+    $public = \Drupal::database();
+    $transactions[] = $public->startTransaction();
+
+    return $transactions;
+  }
+
+  /**
+   * Clean-up anything related to this import in case of error.
+   *
+   * Called when an exception is caught during run() or postRun().
+   * NOTE: This is called after the transaction on the current database
+   * is rolled back. If you want to rollback all changes in multiple Drupal-managed
+   * connections then add each one via startTransaction(). This should only be
+   * needed to perform partial clean-up or when importing into non Drupal-managed
+   * connections.
+   *
+   * @param string $stage
+   *   A string indicating where this method was called from.
+   *   Expected to be one of 'run' or 'postRun'.
+   */
+  public function rollbackTransaction(string $stage) { }
+
+  /**
    * Creates a new importer record.
    *
    * @param array $run_args

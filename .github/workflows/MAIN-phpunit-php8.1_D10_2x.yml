@@ -5,7 +5,7 @@ on:
       - 4.x
 jobs:
   running-tests:
-    name: "Drupal 10.1: PHP 8.2"
+    name: "Drupal 10.2: PHP 8.1"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -15,8 +15,8 @@ jobs:
         with:
           directory-name: 'tripal'
           modules: 'tripal tripal_biodb tripal_chado'
-          php-version: '8.2'
+          php-version: '8.1'
           pgsql-version: '13'
-          drupal-version: '10.1.x-dev'
+          drupal-version: '10.2.x-dev'
           build-image: true
           dockerfile: "UseTripalDockerBackupClause"
