@@ -3,6 +3,8 @@
 namespace Drupal\tripal_chado\Services;
 
 use Drupal\Core\Database\Database;
+use Drupal\Core\Database\Connection;
+use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoCustomTables\ChadoMview;
 
 class ChadoMviewsManager extends ChadoCustomTableManager {
@@ -10,9 +12,15 @@ class ChadoMviewsManager extends ChadoCustomTableManager {
 
   /**
    * Instantiates a new ChadoCustomTableManager object.
+   * 
+   * @param \Drupal\Core\Database\Connection
+   *  The database connection object.
+   * @param Drupal\tripal_chado\Database\ChadoConnection
+   *   The chado connection used to query chado.
    */
-  public function __construct() {
-    parent::__construct();
+  public function __construct(Connection $connection, ChadoConnection $chado_connection) {
+    $this->connection = $connection;
+    $this->chado_connection = $chado_connection;
   }
 
   /**
