@@ -87,12 +87,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
                         $priority = 10, $includes = [], $ignore_duplicate = FALSE) {
 
-  $user = \Drupal\user\Entity\User::load($uid);
-  $messenger = \Drupal::messenger();
-
   try {
-    $job = new TripalJob();
-    $is_created = $job->create([
+    $job_id = \Drupal::service('tripal.job')->create([
       'job_name' => $job_name,
       'modulename' => $modulename,
       'callback' => $callback,
@@ -102,37 +98,13 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
       'includes' => $includes,
       'ignore_duplicate' => $ignore_duplicate,
     ]);
-
-    if ($is_created) {
-      // If no exceptions were thrown then we know the creation worked.  So
-      // let the user know!
-      $messenger->addStatus(t("Job '%job_name' submitted.", ['%job_name' => $job_name]));
-
-      // If this is the Tripal admin user then give a bit more information
-      // about how to run the job.
-      if ($user->hasPermission('administer tripal')) {
-        $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
-        $messenger->addStatus(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
-        $messenger->addStatus(t("You can execute the job queue manually on the ".
-          "command line using the following Drush command: " .
-          "<br>drush trp-run-jobs --job_id=%job_id --username=%uname --root=%base_path",
-          [
-            '%job_id' => $job->getJobID(),
-            '%base_path' => DRUPAL_ROOT,
-            '%uname' => $user->getAccountName()
-          ]));
-      }
-    }
-    else {
-      $messenger->addWarning(t("Job '%job_name' already exists in the queue and was not re-submitted.", ['%job_name' => $job_name]));
-    }
-    return $job->getJobID();
   }
   catch (Exception $e) {
     $logger = \Drupal::service('tripal.logger');
     $logger->error($e->getMessage(), [], ['drupal_set_messsage' => 'TRUE']);
     return FALSE;
   }
+  return $job_id;
 }
 
 

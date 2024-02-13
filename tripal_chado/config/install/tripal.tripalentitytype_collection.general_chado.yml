@@ -15,7 +15,7 @@ content_types:
 
     -   label:  Analysis
         term: operation:2945
-        help_text: Use the analysis page to for an individual analysis, workflow or pipeline that was performed using statistical or computational means.
+        help_text: Use the analysis page for an individual analysis, workflow or pipeline that was performed using statistical or computational means.
         category: General
         id: analysis
         title_format: "[analysis_name]"
@@ -58,7 +58,7 @@ content_types:
         help_text: Use the publication page for books, journal articles, or other citable work.
         category: General
         id: pub
-        title_format: "[publication_title]"
+        title_format: "[pub_title]"
         url_format: "pub/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_6

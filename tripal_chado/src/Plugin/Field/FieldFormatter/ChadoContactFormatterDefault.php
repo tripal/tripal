@@ -15,7 +15,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   label = @Translation("Chado contact formatter"),
  *   description = @Translation("A chado contact formatter"),
  *   field_types = {
- *     "chado_contact_default"
+ *     "chado_contact_type_default"
  *   },
  *   valid_tokens = {
  *     "[name]",

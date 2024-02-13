@@ -26,7 +26,7 @@ class TripalPublish {
 
   /**
    * The interval when the job progress should be updated. Updating the job
-   * progress incurrs a database write which takes time and if it occurs to
+   * progress incurrs a database write which takes time and if it occurs too
    * frequently can slow down the loader.  This should be a value between
    * 0 and 100 to indicate a percent interval (e.g. 1 means update the
    * progress every time the num_handled increases by 1%).
@@ -100,11 +100,9 @@ class TripalPublish {
    * Supported actions during publishing.
    * Any field containing properties that are not in this list, will not be published!
    *
-   * DO NOT YET SUPPORT store_pkey and store_link.
-   *
    * @var array $supported_actions
    */
-  protected $supported_actions = ['store_id', 'store', 'read_value', 'replace', 'function'];
+  protected $supported_actions = ['store_id', 'store', 'store_link', 'store_pkey', 'read_value', 'replace', 'function'];
 
   /**
    * Keep track of fields which are not supported in order to let the user know.
@@ -317,8 +315,9 @@ class TripalPublish {
       foreach ($keys as $key => $prop_type) {
         $not_supported = FALSE;
 
-        // This property may be part of a field which has already been marked as unsupported...
-        // If so then it won't be in the field_info and we should skip it.
+        // This property may be part of a field which has already been marked
+        // as unsupported. If so then it won't be in the field_info and we
+        // should skip it.
         if (!array_key_exists($field_name, $this->field_info)) {
           // Add it to the list of unsupported fields just in case
           // it wasn't added before...
@@ -493,7 +492,7 @@ class TripalPublish {
    *   The array of entity titles in the same order as the matches.
    *
    * @return array
-   *   An associative array of  of matched entities keyed by the
+   *   An associative array of matched entities keyed by the
    *   entity title with a value of the entity id.
    */
   protected function findEntities($matches, $titles) {
@@ -579,7 +578,7 @@ class TripalPublish {
       // Add to the list of entities to insert only those
       // that don't already exist.  We shouldn't have any that
       // exist because the querying to find matches should have
-      // excluded existing records that are already bublished, but
+      // excluded existing records that are already published, but
       // just in case.
       $sql .= "(:type_$i, :title_$i, :status_$i, :created_$i, :changed_$i),\n";
       $args[":type_$i"] = $this->bundle;
@@ -670,6 +669,29 @@ class TripalPublish {
   }
 
   /**
+   * Counts the total items to insert for a field.
+   *
+   * The matches array returned by the TripalStorage is orgnized by entity
+   * but fields can have a cardinality > 1.  This function counts the number
+   * of items for the given field.
+   *
+   * @param string $field_name
+   *   The name of the field
+   * @param array $matches
+   *   The array of matches for each entity.
+   *
+   * @return int
+   *   The number of items for the field
+   */
+  protected function countFieldMatches(string $field_name, array $matches) : int {
+    $total = 0;
+    foreach ($matches as $match) {
+      $total += count(array_keys($match[$field_name]));
+    }
+    return $total;
+  }
+
+  /**
    * Inserts records into the field tables for entities.
    *
    * @param string $field_name
@@ -689,7 +711,7 @@ class TripalPublish {
     $field_table = 'tripal_entity__' . $field_name;
 
     $batch_size = 1000;
-    $num_matches = count($matches);
+    $num_matches = $this->countFieldMatches($field_name, $matches);
     $num_batches = (int) ($num_matches / $batch_size) + 1;
 
     $this->setItemsHandled(0);
@@ -705,60 +727,59 @@ class TripalPublish {
     $init_sql = rtrim($init_sql, ", ");
     $init_sql .= ") VALUES\n";
 
-    $i = 0;
+    $j = 0;
     $total = 0;
     $batch_num = 1;
     $sql = '';
     $args = [];
+
+    // Iterate through the matches.
     foreach ($matches as $match) {
       $title = $titles[$total];
       $entity_id = $entities[$title];
 
-      // @todo: deal with fields that have multiple values.
-      // right now we just assume only one record per field.
-      $delta = 0;
-      $total++;
-      $i++;
+      $num_delta = count(array_keys($match[$field_name]));
+      for ($delta = 0; $delta < $num_delta; $delta++) {
+        $j++;
+        $total++;
 
-      // No need to add items to those that are already published.
-      if (array_key_exists($entity_id, $existing)) {
-        continue;
-      }
-
-      // Add to the list of entities to insert only those
-      // that don't already exist.  We shouldn't have any that
-      // exist because the querying to find matches should have
-      // excluded existing records that are already bublished, but
-      // just in case.
-      $sql .= "(:bundle_$i, :deleted_$i, :entity_id_$i, :revision_id_$i, :langcode_$i, :delta_$i, ";
-      $args[":bundle_$i"] = $this->bundle;
-      $args[":deleted_$i"] = 0;
-      $args[":entity_id_$i"] = $entity_id;
-      $args[":revision_id_$i"] = 1;
-      $args[":langcode_$i"] = 'und';
-      $args[":delta_$i"] = $delta;
-      foreach (array_keys($this->required_types[$field_name]) as $key) {
-        $placeholder = ':' . $field_name . '_'. $key . '_' . $i;
-        $sql .=  $placeholder . ', ';
-        $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
-      }
-      $sql = rtrim($sql, ", ");
-      $sql .= "),\n";
-
-      // If we've reached the size of the batch then let's do the insert.
-      if ($i == $batch_size or $total == $num_matches) {
-        if (count($args) > 0) {
-          $sql = rtrim($sql, ",\n");
-          $sql = $init_sql . $sql;
-          $database->query($sql, $args);
+        // No need to add items to those that are already published.
+        if (array_key_exists($entity_id, $existing)) {
+          continue;
         }
-        $this->setItemsHandled($batch_num);
-        $batch_num++;
 
-        // Now reset all of the variables for the next batch.
-        $sql = '';
-        $i = 0;
-        $args = [];
+        // Add items to those that are not already published.
+        $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
+        $args[":bundle_$j"] = $this->bundle;
+        $args[":deleted_$j"] = 0;
+        $args[":entity_id_$j"] = $entity_id;
+        $args[":revision_id_$j"] = 1;
+        $args[":langcode_$j"] = 'und';
+        $args[":delta_$j"] = $delta;
+        foreach (array_keys($this->required_types[$field_name]) as $key) {
+          $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
+          $sql .=  $placeholder . ', ';
+          $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+        }
+        $sql = rtrim($sql, ", ");
+        $sql .= "),\n";
+
+        // If we've reached the size of the batch then let's do the insert.
+        if ($j == $batch_size or $total == $num_matches) {
+          if (count($args) > 0) {
+            $sql = rtrim($sql, ",\n");
+            $sql = $init_sql . $sql;
+
+            $database->query($sql, $args);
+          }
+          $this->setItemsHandled($batch_num);
+          $batch_num++;
+
+          // Now reset all of the variables for the next batch.
+          $sql = '';
+          $j = 0;
+          $args = [];
+        }
       }
     }
   }
@@ -841,9 +862,9 @@ class TripalPublish {
     $this->logger->notice("Step  5 of 6: Find IDs of entities...");
     $entities = $this->findEntities($matches, $titles);
 
-    // Now we have to publish the field items. These represent storage back-end inforamtion
+    // Now we have to publish the field items. These represent storage back-end information
     // about the entity. If the entity was previously published we still may be adding new
-    // information about it (say if we are publishing genes from a noSQL back-end bu the
+    // information about it (say if we are publishing genes from a noSQL back-end but the
     // original entity was created when it was first published when using the Chado backend).
     $this->logger->notice("Step  6 of 6: Add field items to published entities...");
 
@@ -854,20 +875,13 @@ class TripalPublish {
     $total_items = 0;
     foreach ($this->field_info as $field_name => $field_info) {
 
-      // For now, skip multi valued fields.
-      // @todo we need to fix this so we can support multi-valued fields.
-      if ($field_info['definition']->getSetting('cardinality') > 1) {
-        $this->logger->notice("  Skipping the multi-valued field, $field_name. Support will be added in a future release.");
-        continue;
-      }
-
       $this->logger->notice("  Checking for published items for the field: $field_name...");
       $existing_field_items = $this->findFieldItems($field_name, $entities);
 
-      $num_new_items =  count($entities) - count($existing_field_items);
-      $this->logger->notice("  Publishing items " . number_format($num_new_items) . " for field: $field_name...");
+      $num_field_items =  $this->countFieldMatches($field_name, $matches);
+      $this->logger->notice("  Publishing " . number_format($num_field_items) . " items for field: $field_name...");
       $this->insertFieldItems($field_name, $matches, $titles, $entities, $existing_field_items);
-      $total_items += $num_new_items;
+      $total_items += $num_field_items;
     }
     $this->logger->notice("Published " .  number_format(count($new_matches)) . " new entities, and " . number_format($total_items) . " field values.");
     $this->logger->notice('Done');

@@ -1,13 +1,13 @@
 FROM php:8.1-apache-bullseye
 
-ARG drupalversion='10.0.x-dev'
+ARG drupalversion='~10.1.0'
 ARG modules='devel devel_php'
 ARG chadoschema='chado'
 ARG installchado=TRUE
 
 # Label docker image
 LABEL drupal.version=${drupalversion}
-LABEL drupal.stability="development"
+LABEL drupal.stability="production"
 LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
 LABEL os.version="bullseye"
@@ -178,7 +178,7 @@ RUN cd /var/www/drupal \
   --account-name=drupaladmin \
   --account-pass=some_admin_password \
   --site-mail="drupaladmin@localhost" \
-  --site-name="Tripal 4 on Drupal 10 DEVELOPMENT" \
+  --site-name="Tripal 4.x-dev on Drupal ${drupalversion}" \
   && service apache2 stop \
   && service postgresql stop
 
@@ -210,7 +210,7 @@ RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
   && mv /app/tripaldocker/default_files/xdebug/xdebug_toggle.sh /usr/bin/xdebug_toggle.sh \
   && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal/web/sites/default/settings.php
 
-## Make global commands.
+## Make global commands. Symlink for drupal9 is for backward compatibility.
 RUN ln -s /var/www/drupal/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
   && ln -s /var/www/drupal/vendor/drush/drush/drush /usr/local/bin/ \
   && ln -s /var/www/drupal /var/www/drupal9

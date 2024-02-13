@@ -266,12 +266,17 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
     // Make sure the term exists.
     $idSpace = $this->idSpaceManager->loadCollection($field_def['settings']['termIdSpace']);
     if (!$idSpace) {
-      $this->logger->error('The term Id Space is not known. Check the "termIdSpace" element.');
+      $this->logger->error(t('The term Id Space "@idspace" is not known. Check the "termIdSpace" element.',
+                             ['@idspace' => $field_def['settings']['termIdSpace']]));
       return FALSE;
     }
     $term = $idSpace->getTerm($field_def['settings']['termAccession']);
     if (!$term) {
-      $this->logger->error('The term accession is not known in the Term Id Space. Check the "termIdSpace" and "termAccession" elements.');
+      $this->logger->error('The term accession. "@id:@accession", is not known in the Term Id Space for field, "@field". Check the "termIdSpace" and "termAccession" elements.',
+          ['@id' => $field_def['settings']['termIdSpace'],
+           '@accession' => $field_def['settings']['termAccession'],
+           '@field' => $field_def['name']
+          ]);
       return FALSE;
     }
 
@@ -305,7 +310,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         }
       }
       else {
-        throw new \Exception("Unable to retrieve the configuration with an id of $config_id using the assumption that its in the file $config_item.");
+        throw new \Exception("Unable to retrieve the configuration with an id of $config_id using the assumption that it's in the file $config_item.");
       }
     }
   }

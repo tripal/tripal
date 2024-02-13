@@ -101,20 +101,22 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
 
         // Iterate through each of the content types in the config.
         $content_types = $config->get('content_types');
-        foreach ($content_types as $content_type) {
+        if ($content_types) {
+          foreach ($content_types as $content_type) {
 
-          // Replace the term ID with a term object
-          list($termIdSpace, $termAccession) = explode(':', $content_type['term']);
-          $idspace = $this->idSpaceManager->loadCollection($termIdSpace);
-          $term =  $idspace->getTerm($termAccession);
-          $content_type['term'] = $term;
+            // Replace the term ID with a term object
+            list($termIdSpace, $termAccession) = explode(':', $content_type['term']);
+            $idspace = $this->idSpaceManager->loadCollection($termIdSpace);
+            $term =  $idspace->getTerm($termAccession);
+            $content_type['term'] = $term;
 
-          // Add the content type
-          $content_type = $this->createContentType($content_type);
+            // Add the content type
+            $content_type = $this->createContentType($content_type);
+          }
         }
       }
       else {
-        throw new \Exception("Unable to retrieve the configuration with an id of $config_id using the assumption that its in the file $config_item.");
+        throw new \Exception("Unable to retrieve the configuration with an id of $config_id using the assumption that it's in the file $config_item.");
       }
     }
   }

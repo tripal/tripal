@@ -66,8 +66,13 @@ class ChadoMviewPopulateForm extends FormBase {
       $mview = $mviews->loadById($mview_id);
       $current_user = \Drupal::currentUser();
       $args = [$mview_id];
-      tripal_add_job("Populate materialized view '$mview->getTableName()'", 'tripal_chado',
-          'chado_populate_mview', $args, $current_user->id());
+      \Drupal::service('tripal.job')->create([
+        'job_name' => t("Populate materialized view: '@table'", ['@table' => $mview->getTableName()]),
+        'modulename' => 'tripal_chado',
+        'callback' => 'chado_populate_mview',
+        'arguments' => $args,
+        'uid' => $current_user->id()
+      ]);
     }
     else {
       \Drupal::messenger()->addMessage(t("No action performed."));

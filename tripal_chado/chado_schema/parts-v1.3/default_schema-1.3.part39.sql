@@ -112,7 +112,7 @@ create table project_analysis (
 create index project_analysis_idx1 on project_analysis (project_id);
 create index project_analysis_idx2 on project_analysis (analysis_id);
 
-COMMENT ON TABLE project_analysis IS 'Links an analysis to a project that may contain multiple analyses.
+COMMENT ON TABLE project_analysis IS 'Links an analysis to a project that may contain multiple analyses. 
 The rank column can be used to specify a simple ordering in which analyses were executed.';
 
 
@@ -915,10 +915,10 @@ COMMENT ON TABLE studyfactorvalue IS NULL;
 
 --
 -- studyprop and studyprop_feature added for Kara Dolinski's group
---
+-- 
 -- Here is her description of it:
---Both of the tables are used for our YFGdb project
---(http://yfgdb.princeton.edu/), which uses chado.
+--Both of the tables are used for our YFGdb project 
+--(http://yfgdb.princeton.edu/), which uses chado. 
 --
 --Here is how we use those tables, using the following example:
 --
@@ -927,17 +927,17 @@ COMMENT ON TABLE studyfactorvalue IS NULL;
 --The above data set is represented as a row in the STUDY table.  We have
 --lots of attributes that we want to store about each STUDY (status, etc)
 --and in the official schema, the only prop table we could use was the
---STUDYDESIGN_PROP table.  This forced us to go through the STUDYDESIGN
---table when we often have no real data to store in that table (small
---percent of our collection use MAGE-ML unfortunately, and even fewer
---provide all the data in the MAGE model, of which STUDYDESIGN is a vestige).
---So, we created a STUDYPROP table.  I'd think this table would be
---generally useful to people storing various types of data sets via the
+--STUDYDESIGN_PROP table.  This forced us to go through the STUDYDESIGN 
+--table when we often have no real data to store in that table (small 
+--percent of our collection use MAGE-ML unfortunately, and even fewer 
+--provide all the data in the MAGE model, of which STUDYDESIGN is a vestige). 
+--So, we created a STUDYPROP table.  I'd think this table would be 
+--generally useful to people storing various types of data sets via the 
 --STUDY table.
 --
 --The other new table is STUDYPROP_FEATURE.  This basically allows us to
 --group features together per study.  For example, we can store microarray
---clustering results by saying that the STUDYPROP type is 'cluster'  (via
+--clustering results by saying that the STUDYPROP type is 'cluster'  (via 
 --type_id -> CVTERM of course), the value is 'cluster id 123', and then
 --that cluster would be associated with all the features that are in that
 --cluster via STUDYPROP_FEATURE.  Adding type_id to STUDYPROP_FEATURE is
@@ -950,7 +950,7 @@ create table studyprop (
     study_id bigint not null,
         foreign key (study_id) references study (study_id) on delete cascade,
     type_id bigint not null,
-        foreign key (type_id) references cvterm (cvterm_id) on delete cascade,
+        foreign key (type_id) references cvterm (cvterm_id) on delete cascade,  
     value text null,
     rank int not null default 0,
     unique (study_id,type_id,rank)
@@ -972,7 +972,7 @@ CREATE TABLE studyprop_feature (
     foreign key (type_id) references cvterm (cvterm_id) on delete cascade,
     unique (studyprop_id, feature_id)
     );
-
+ 
 
 create index studyprop_feature_idx1 on studyprop_feature (studyprop_id);
 create index studyprop_feature_idx2 on studyprop_feature (feature_id);

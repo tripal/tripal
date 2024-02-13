@@ -8,7 +8,7 @@ fields:
     -   name: biosample_name
         content_type: biosample
         label: Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -34,7 +34,7 @@ fields:
     -   name: biosample_description
         content_type: biosample
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -57,12 +57,119 @@ fields:
               region: content
               weight: 15
 
+    -   name: biosample_biosourceprovider
+        content_type: biosample
+        label: Biosource Provider
+        type: chado_contact_type_default
+        description: An entity (e.g. individual or organization) through whom a person can gain access to information, favors, influential people, and the like.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                linker_table: biomaterial
+                linker_fkey_column: biosourceprovider_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C48036
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: biosample_organism
+        content_type: biosample
+        label: Organism
+        type: chado_organism_type_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                linker_table: biomaterial
+                linker_fkey_column: taxon_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: biosample_dbxref
+        content_type: biosample
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: biosample_dbxref_ann
+        content_type: biosample
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                linker_table: biomaterial_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Assay ##
 
     -   name: assay_unique_name
         content_type: assay
         label: Unique Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
         cardinality: 1
         required: false
@@ -73,7 +180,7 @@ fields:
                 base_column: arrayidentifier
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -88,7 +195,7 @@ fields:
     -   name: assay_batch_id
         content_type: assay
         label: Array Batch Identifier
-        type: chado_text_type
+        type: chado_text_type_default
         description: A unique identifier for an array batch.
         cardinality: 1
         required: false
@@ -114,7 +221,7 @@ fields:
     -   name: assay_name
         content_type: assay
         label: Name
-        type: chado_text_type
+        type: chado_text_type_default
         description: The name of the item.
         cardinality: 1
         required: false
@@ -131,16 +238,16 @@ fields:
             default:
               region: content
               label: above
-              weight: 20
+              weight: 10
           form:
             default:
               region: content
-              weight: 20
+              weight: 10
 
     -   name: assay_description
         content_type: assay
         label: Description
-        type: chado_text_type
+        type: chado_text_type_default
         description: A description of the item.
         cardinality: 1
         required: false
@@ -157,18 +264,310 @@ fields:
             default:
               region: content
               label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: assay_array_design
+        content_type: assay
+        label: Array Design
+        type: chado_array_design_type_default
+        description: An instrument design which describes the design of the array.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: arraydesign_id
+        settings:
+            termIdSpace: EFO
+            termAccession: "0000269"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: assay_protocol
+        content_type: assay
+        label: Protocol
+        type: chado_protocol_type_default
+        description: The protocol followed to generate this resource.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: protocol_id
+        settings:
+            termIdSpace: data
+            termAccession: "1047"
+        display:
+          view:
+            default:
+              region: hidden
+              label: above
               weight: 25
           form:
             default:
               region: content
               weight: 25
 
+    -   name: assay_study
+        content_type: assay
+        label: Study
+        type: chado_study_type_default
+        description: A study is a process that realizes the steps of a study design.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                linker_table: study_assay
+                linker_fkey_column: study_id
+        settings:
+            termIdSpace: SIO
+            termAccession: "001066"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
+# placeholder for assaydate
+
+    -   name: assay_arrayidentifier
+        content_type: assay
+        label: Array Identifier
+        type: chado_text_type_default
+        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: arrayidentifier
+        settings:
+            termIdSpace: data
+            termAccession: "0842"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
+    -   name: assay_arraybatchidentifier
+        content_type: assay
+        label: Array Batch Identifier
+        type: chado_text_type_default
+        description: A unique identifier for an array batch.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: arraybatchidentifier
+        settings:
+            termIdSpace: local
+            termAccession: array_batch_identifier
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 40
+          form:
+            default:
+              region: content
+              weight: 40
+
+    -   name: assay_operator
+        content_type: assay
+        label: Operator
+        type: chado_contact_type_default
+        description: A person that operates some apparatus or machine
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                linker_table: assay
+                linker_fkey_column: operator_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C48036
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 45
+          form:
+            default:
+              region: content
+              weight: 45
+
+    -   name: assay_biomaterial
+        content_type: assay
+        label: Biosample
+        type: chado_biomaterial_type_default
+        description: A biological sample used in this assay
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                linker_table: assay_biomaterial
+                linker_fkey_column: biomaterial_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C70699
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 55
+          form:
+            default:
+              region: content
+              weight: 55
+
+    -   name: assay_project
+        content_type: assay
+        label: Project
+        type: chado_project_type_default
+        description: The project which this assay is a part of
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                linker_table: assay_project
+                linker_fkey_column: project_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47885
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 60
+          form:
+            default:
+              region: content
+              weight: 60
+
+    -   name: assay_dbxref
+        content_type: assay
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Array Design ##
+
+    -   name: array_design_name
+        content_type: array_design
+        label: Name
+        type: chado_text_type_default
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: name
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: array_design_description
+        content_type: array_design
+        label: Description
+        type: chado_text_type_default
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
 
     -   name: array_design_manufacturer
         content_type: array_design
         label: Manufacturer
-        type: chado_contact_default
+        type: chado_contact_type_default
         description: A manufacturer's contact details
         cardinality: 1
         required: true
@@ -186,42 +585,96 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 20
           form:
             default:
               region: content
-              weight: 10
+              weight: 20
 
-    -   name: array_design_name
+    -   name: array_design_platform_type
         content_type: array_design
-        label: Name
-        type: chado_text_type
-        description: The name of the item.
+        label: Platform Type
+        type: chado_additional_type_type_default
+        description: The specific version (manufacturer, model, etc.) of a technology that is used to carry out a laboratory or computational experiment.
         cardinality: 1
         required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: arraydesign
-                base_column: name
+                type_table: arraydesign
+                type_column: platformtype_id
         settings:
-            termIdSpace: schema
-            termAccession: name
+            termIdSpace: EFO
+            termAccession: "0000269"
         display:
           view:
             default:
               region: content
               label: above
-              weight: 15
+              weight: 25
           form:
             default:
               region: content
-              weight: 15
+              weight: 25
+
+    -   name: array_design_substrate_type
+        content_type: array_design
+        label: Substrate Type
+        type: chado_additional_type_type_default
+        description: Controlled terms for descriptors of types of array substrates.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                type_table: arraydesign
+                type_column: substratetype_id
+        settings:
+            termIdSpace: EFO
+            termAccession: "0000269"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
+    -   name: array_design_protocol
+        content_type: array_design
+        label: Protocol
+        type: chado_protocol_type_default
+        description: The protocol followed to generate this resource.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: protocol_id
+        settings:
+            termIdSpace: data
+            termAccession: "1047"
+        display:
+          view:
+            default:
+              region: hidden
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
 
     -   name: array_design_version_num
         content_type: array_design
         label: Array Version
-        type: chado_text_type
+        type: chado_text_type_default
         description: A version number is an information content entity which is a sequence of characters borne by part of each of a class of manufactured products or its packaging and indicates its order within a set of other products having the same name.
         cardinality: 1
         required: false
@@ -232,48 +685,22 @@ fields:
                 base_column: version
         settings:
             termIdSpace: IAO
-            termAccession: 0000129
+            termAccession: "0000129"
         display:
           view:
             default:
               region: content
               label: above
-              weight: 20
+              weight: 45
           form:
             default:
               region: content
-              weight: 20
-
-    -   name: array_design_description
-        content_type: array_design
-        label: Description
-        type: chado_text_type
-        description: A description of the item.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: arraydesign
-                base_column: description
-        settings:
-            termIdSpace: schema
-            termAccession: description
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 25
-          form:
-            default:
-              region: content
-              weight: 25
+              weight: 45
 
     -   name: array_design_dimensions
         content_type: array_design
         label: Array Dimensions
-        type: chado_text_type
+        type: chado_text_type_default
         description: The dimensions of an array.
         cardinality: 1
         required: false
@@ -290,16 +717,16 @@ fields:
             default:
               region: content
               label: above
-              weight: 30
+              weight: 50
           form:
             default:
               region: content
-              weight: 30
+              weight: 50
 
     -   name: array_design_element_dims
         content_type: array_design
         label: Element Dimensions
-        type: chado_text_type
+        type: chado_text_type_default
         description: The dimensions of an element.
         cardinality: 1
         required: false
@@ -316,62 +743,216 @@ fields:
             default:
               region: content
               label: above
-              weight: 35
+              weight: 51
           form:
             default:
               region: content
-              weight: 35
+              weight: 51
 
-    -   name: array_design_substrate_type
+    -   name: array_design_num_of_elements
         content_type: array_design
-        label: Substrate Type
-        type: chado_additional_type_default
-        description: Controlled terms for descriptors of types of array substrates.
+        label: Num Of Elements
+        type: chado_integer_type_default
+        description: The number of elements.
         cardinality: 1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: arraydesign
-                type_table: arraydesign
-                type_column: substratetype_id
+                base_column: num_of_elements
         settings:
-            termIdSpace: EFO
-            termAccession: 0000269
+            termIdSpace: local
+            termAccession: num_of_elements
         display:
           view:
             default:
               region: content
               label: above
-              weight: 40
+              weight: 52
           form:
             default:
               region: content
-              weight: 40
+              weight: 52
 
-    -   name: array_design_platform_type
+    -   name: array_design_num_array_columns
         content_type: array_design
-        label: Platform Type
-        type: chado_additional_type_default
-        description: The specific version (manufacturer, model, etc.) of a technology that is used to carry out a laboratory or computational experiment.
+        label: Num Array Columns
+        type: chado_integer_type_default
+        description: The number of columns in an array.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: arraydesign
-                type_table: arraydesign
-                type_column: platformtype_id
+                base_column: num_array_columns
         settings:
-            termIdSpace: EFO
-            termAccession: 0000269
+            termIdSpace: local
+            termAccession: num_array_columns
         display:
           view:
             default:
               region: content
               label: above
-              weight: 45
+              weight: 53
           form:
             default:
               region: content
-              weight: 45
+              weight: 53
+
+    -   name: array_design_num_array_rows
+        content_type: array_design
+        label: Num Array Rows
+        type: chado_integer_type_default
+        description: The number of rows in an array.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: num_array_rows
+        settings:
+            termIdSpace: local
+            termAccession: num_array_rows
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 54
+          form:
+            default:
+              region: content
+              weight: 54
+
+    -   name: array_design_num_grid_columns
+        content_type: array_design
+        label: Num Grid Columns
+        type: chado_integer_type_default
+        description: The number of columns in a grid.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: num_grid_columns
+        settings:
+            termIdSpace: local
+            termAccession: num_grid_columns
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 55
+          form:
+            default:
+              region: content
+              weight: 55
+
+    -   name: array_design_num_grid_rows
+        content_type: array_design
+        label: Num Grid Rows
+        type: chado_integer_type_default
+        description: The number of rows in a grid.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: num_grid_rows
+        settings:
+            termIdSpace: local
+            termAccession: num_grid_rows
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 56
+          form:
+            default:
+              region: content
+              weight: 56
+
+    -   name: array_design_num_sub_columns
+        content_type: array_design
+        label: Num Sub Columns
+        type: chado_integer_type_default
+        description: The number of sub columns.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: num_sub_columns
+        settings:
+            termIdSpace: local
+            termAccession: num_sub_columns
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 57
+          form:
+            default:
+              region: content
+              weight: 57
+
+    -   name: array_design_num_sub_rows
+        content_type: array_design
+        label: Num Sub Rows
+        type: chado_integer_type_default
+        description: The number of sub rows.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: num_sub_rows
+        settings:
+            termIdSpace: local
+            termAccession: num_sub_rows
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 58
+          form:
+            default:
+              region: content
+              weight: 58
+
+    -   name: array_design_dbxref
+        content_type: array_design
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68

@@ -13,7 +13,7 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
 /**
  * Tests that ChadoStorage can handle property fields as we expect.
  * The array of fields/properties used for these tests are designed
- * to match those in the ChadoLinkerPropertyDefault field with values filled
+ * to match those in the ChadoPropertyDefault field with values filled
  * based on a gene content type.
  *
  * Note: testotherfeaturefield is added to ensure we meet the unique constraint
@@ -37,197 +37,15 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
-class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
+class ChadoPropertyDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 
-  protected $fields = [
-    'testpropertyfieldA' => [
-      'field_name' => 'testpropertyfieldA',
-      'base_table' => 'feature',
-      'properties' => [
-        // Keeps track of the feature record our hypothetical field cares about.
-        'record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-          'chado_table' => 'feature',
-          'chado_column' => 'feature_id'
-        ],
-        // Store the primary key for the prop table.
-        'prop_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_pkey',
-          'chado_table' => 'featureprop',
-          'chado_table_alias' => 'featureprop_A',
-          'chado_column' => 'featureprop_id',
-        ],
-        // Generate `JOIN {featureprop} ON feature.feature_id = featureprop.feature_id`
-        // Will also store the feature.feature_id so no need for drupal_store => TRUE.
-        'linker_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_link',
-          'left_table' => 'feature',
-          'left_table_id' => 'feature_id',
-          'right_table' => 'featureprop',
-          'right_table_alias' => 'featureprop_A',
-          'right_table_id' => 'feature_id'
-        ],
-        // Now we are going to store all the core columns of the featureprop table to
-        // ensure we can meet the unique and not null requirements of the table.
-        'type_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'featureprop',
-          'chado_table_alias' => 'featureprop_A',
-          'chado_column' => 'type_id'
-        ],
-        'value' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'featureprop',
-          'chado_table_alias' => 'featureprop_A',
-          'chado_column' => 'value',
-          'delete_if_empty' => TRUE,
-          'empty_value' => ''
-        ],
-        'rank' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'featureprop',
-          'chado_table_alias' => 'featureprop_A',
-          'chado_column' => 'rank'
-        ],
-      ],
-    ],
-    'testpropertyfieldB' => [
-      'field_name' => 'testpropertyfieldB',
-      'base_table' => 'feature',
-      'properties' => [
-        'record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-          'chado_table' => 'feature',
-          'chado_column' => 'feature_id'
-        ],
-        'prop_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_pkey',
-          'chado_table' => 'featureprop',
-          'chado_table_alias' => 'featureprop_B',
-          'chado_column' => 'featureprop_id',
-        ],
-        'linker_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_link',
-          'left_table' => 'feature',
-          'left_table_id' => 'feature_id',
-          'right_table' => 'featureprop',
-          'right_table_alias' => 'featureprop_B',
-          'right_table_id' => 'feature_id'
-        ],
-        'type_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'featureprop',
-          'chado_table_alias' => 'featureprop_B',
-          'chado_column' => 'type_id'
-        ],
-        'value' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'featureprop',
-          'chado_table_alias' => 'featureprop_B',
-          'chado_column' => 'value',
-          'delete_if_empty' => TRUE,
-          'empty_value' => ''
-        ],
-        'rank' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'featureprop',
-          'chado_table_alias' => 'featureprop_B',
-          'chado_column' => 'rank'
-        ],
-      ],
-    ],
-    'testotherfeaturefield' => [
-      'field_name' => 'testotherfeaturefield',
-      'base_table' => 'feature',
-      'properties' => [
-        'record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'chado_table' => 'feature',
-          'chado_column' => 'feature_id'
-        ],
-        'feature_type' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'feature',
-          'chado_column' => 'type_id'
-        ],
-        'feature_organism' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'feature',
-          'chado_column' => 'organism_id'
-        ],
-        'feature_uname' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'feature',
-          'chado_column' => 'uniquename'
-        ],
-      ],
-    ],
-    'testBackwardsCompatiblePropertyField' => [
-      'field_name' => 'testpropertyfieldABackwardsCompatible',
-      'base_table' => 'feature',
-      'properties' => [
-        'record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-          'chado_table' => 'feature',
-          'chado_column' => 'feature_id'
-        ],
-        'prop_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_pkey',
-          'chado_table' => 'featureprop',
-          'chado_column' => 'featureprop_id',
-        ],
-        'linker_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_link',
-          'chado_table' => 'featureprop',
-          'chado_column' => 'feature_id'
-        ],
-        'type_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'featureprop',
-          'chado_column' => 'type_id'
-        ],
-        'value' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'featureprop',
-          'chado_column' => 'value',
-          'delete_if_empty' => TRUE,
-          'empty_value' => ''
-        ],
-        'rank' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'featureprop',
-          'chado_column' => 'rank'
-        ],
-      ],
-    ],
-  ];
+  // We will populate this variable at the start of each test
+  // with fields specific to that test.
+  protected $fields = [];
+
+  protected $yaml_file = __DIR__ . "/ChadoPropertyDefault-FieldDefinitions.yml";
 
   protected int $organism_id;
 
@@ -251,6 +69,9 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
 
     $this->setUpChadoStorageTestEnviro();
 
+    $this->setFieldsFromYaml($this->yaml_file, "testPropertyField");
+    $this->cleanChadoStorageValues();
+
     // Create the organism record for use with the feature table.
     $infrtype_id = $this->getCvtermID('TAXRANK', '0000010');
     $query = $this->chado_connection->insert('1:organism');
@@ -271,7 +92,6 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
    */
   public function provideSinglePropFieldNames() {
     return [
-      ['testBackwardsCompatiblePropertyField'],
       ['testpropertyfieldA']
     ];
   }
@@ -334,13 +154,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     ob_start();
     $this->chadoStorageTestInsertValues($insert_values);
     $printed_output = ob_get_clean();
-    if ($prop_field_name == 'testBackwardsCompatiblePropertyField') {
-      $this->assertStringContainsString('backwards compatible mode', $printed_output,
-        "We expect this field to be in backwards compatible mode and should have been informed during insert.");
-    }
-    else {
-      $this->assertEmpty($printed_output, "There should not be any messages logged.");
-    }
+    $this->assertEmpty($printed_output, "There should not be any messages logged.");
+
     // @debug $this->debugChadoStorageTestTraitArrays();
 
     // Check that the base feature record was created in the database as expected.
@@ -428,13 +243,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     ob_start();
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
     $printed_output = ob_get_clean();
-    if ($prop_field_name == 'testBackwardsCompatiblePropertyField') {
-      $this->assertStringContainsString('backwards compatible mode', $printed_output,
-        "We expect this field to be in backwards compatible mode and should have been informed during load.");
-    }
-    else {
-      $this->assertEmpty($printed_output, "There should not be any messages logged.");
-    }
+    $this->assertEmpty($printed_output, "There should not be any messages logged.");
+
 
     // Now test that the additional values have been loaded.
     // @debug $this->debugChadoStorageTestTraitArrays();
@@ -479,13 +289,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     ob_start();
     $this->chadoStorageTestUpdateValues($update_values);
     $printed_output = ob_get_clean();
-    if ($prop_field_name == 'testBackwardsCompatiblePropertyField') {
-      $this->assertStringContainsString('backwards compatible mode', $printed_output,
-        "We expect this field to be in backwards compatible mode and should have been informed during update.");
-    }
-    else {
-      $this->assertEmpty($printed_output, "There should not be any messages logged.");
-    }
+    $this->assertEmpty($printed_output, "There should not be any messages logged.");
 
     // Now we check chado to see if these values were changed...
     // Still the expected number of records in the featureprop table?

@@ -33,4 +33,18 @@ class TripalIntegerTypeWidget extends TripalWidgetBase {
     ];
     return $element;
   }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+
+    // Handle any empty values. We can't pass an empty string when an integer is expected.
+    foreach ($values as $val_key => $value) {
+      if ($value['value'] == '') {
+        unset($values[$val_key]);
+      }
+    }
+    return $values;
+  }
 }

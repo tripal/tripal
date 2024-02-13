@@ -1,6 +1,6 @@
 id: 'genomic_chado'
 label: 'Genomic Content Types (Chado)'
-description: 'Content types based on Chado focused on supporting genomic data such as genome assembelies and genes.'
+description: 'Content types based on Chado focused on supporting genomic data such as genome assemblies and genes.'
 content_types:
 
     -   label: Gene
@@ -15,7 +15,7 @@ content_types:
 
     -   label: mRNA
         term: SO:0000234
-        help_text: Use the mRNA page for a messenger RNA whic is the intermediate molecule between DNA and protein. It includes UTR and coding sequences. It does not contain introns.
+        help_text: Use the mRNA page for a messenger RNA which is the intermediate molecule between DNA and protein. It includes UTR and coding sequences. It does not contain introns.
         category: Genomic
         id: mrna
         title_format: "[mrna_name]"

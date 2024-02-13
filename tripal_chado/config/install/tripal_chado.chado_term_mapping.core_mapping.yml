@@ -775,6 +775,9 @@ tables:
             -   name: 'url'
                 term_id: 'schema:url'
                 term_name: 'url'
+            -   name: 'urlprefix'
+                term_id: 'schema:ItemPage'
+                term_name: 'ItemPage'
 
     -   name: 'db2cv_mview'
         columns:
@@ -2615,6 +2618,9 @@ tables:
 
     -   name: 'stock_pub'
         columns:
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
             -   name: 'pub_id'
                 term_id: 'schema:publication'
                 term_name: 'publication'

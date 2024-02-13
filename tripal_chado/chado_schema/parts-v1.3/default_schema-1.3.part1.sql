@@ -72,8 +72,8 @@ CREATE VIEW db_dbxref_count AS
   SELECT db.name,count(*) AS num_dbxrefs FROM db INNER JOIN dbxref USING (db_id) GROUP BY db.name;
 COMMENT ON VIEW db_dbxref_count IS 'per-db dbxref counts';
 
-CREATE OR REPLACE FUNCTION store_db (VARCHAR)
-  RETURNS BIGINT AS
+CREATE OR REPLACE FUNCTION store_db (VARCHAR) 
+  RETURNS BIGINT AS 
 'DECLARE
    v_name             ALIAS FOR $1;
 
@@ -92,9 +92,9 @@ CREATE OR REPLACE FUNCTION store_db (VARCHAR)
     RETURN v_db_id;
  END;
 ' LANGUAGE 'plpgsql';
-
-CREATE OR REPLACE FUNCTION store_dbxref (VARCHAR,VARCHAR)
-  RETURNS BIGINT AS
+  
+CREATE OR REPLACE FUNCTION store_dbxref (VARCHAR,VARCHAR) 
+  RETURNS BIGINT AS 
 'DECLARE
    v_dbname                ALIAS FOR $1;
    v_accession             ALIAS FOR $2;
@@ -118,7 +118,7 @@ CREATE OR REPLACE FUNCTION store_dbxref (VARCHAR,VARCHAR)
     RETURN v_dbxref_id;
  END;
 ' LANGUAGE 'plpgsql';
-
+  
 -- $Id: cv.sql,v 1.37 2007-02-28 15:08:48 briano Exp $
 -- ==========================================
 -- Chado cv module
@@ -359,17 +359,17 @@ it is a dbxref for provenance information for the definition.';
 -- ================================================
 -- TABLE: cvtermprop
 -- ================================================
-create table cvtermprop (
-    cvtermprop_id bigserial not null,
-    primary key (cvtermprop_id),
-    cvterm_id bigint not null,
-    foreign key (cvterm_id) references cvterm (cvterm_id) on delete cascade,
-    type_id bigint not null,
-    foreign key (type_id) references cvterm (cvterm_id) on delete cascade,
-    value text not null default '',
+create table cvtermprop ( 
+    cvtermprop_id bigserial not null, 
+    primary key (cvtermprop_id), 
+    cvterm_id bigint not null, 
+    foreign key (cvterm_id) references cvterm (cvterm_id) on delete cascade, 
+    type_id bigint not null, 
+    foreign key (type_id) references cvterm (cvterm_id) on delete cascade, 
+    value text not null default '', 
     rank int not null default 0,
 
-    unique(cvterm_id, type_id, value, rank)
+    unique(cvterm_id, type_id, value, rank) 
 );
 create index cvtermprop_idx1 on cvtermprop (cvterm_id);
 create index cvtermprop_idx2 on cvtermprop (type_id);
@@ -483,11 +483,11 @@ completely extensible. There is a unique constraint, dbprop_c1, for
 the combination of db_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank.';
 
 CREATE OR REPLACE VIEW cv_root AS
- SELECT
+ SELECT 
   cv_id,
   cvterm_id AS root_cvterm_id
  FROM cvterm
- WHERE
+ WHERE 
   cvterm_id NOT IN ( SELECT subject_id FROM cvterm_relationship)    AND
   is_obsolete=0;
 
@@ -497,11 +497,11 @@ relation). Most cvs will have a single root, some may have >1. All
 will have at least 1';
 
 CREATE OR REPLACE VIEW cv_leaf AS
- SELECT
+ SELECT 
   cv_id,
   cvterm_id
  FROM cvterm
- WHERE
+ WHERE 
   cvterm_id NOT IN ( SELECT object_id FROM cvterm_relationship);
 
 COMMENT ON VIEW cv_leaf IS 'the leaves of a cv are the set of terms
@@ -520,7 +520,7 @@ CREATE OR REPLACE VIEW common_ancestor_cvterm AS
  FROM
   cvtermpath AS p1,
   cvtermpath AS p2
- WHERE
+ WHERE 
   p1.object_id = p2.object_id;
 
 COMMENT ON VIEW common_ancestor_cvterm IS 'The common ancestor of any
@@ -540,7 +540,7 @@ CREATE OR REPLACE VIEW common_descendant_cvterm AS
  FROM
   cvtermpath AS p1,
   cvtermpath AS p2
- WHERE
+ WHERE 
   p1.subject_id = p2.subject_id;
 
 COMMENT ON VIEW common_descendant_cvterm IS 'The common descendant of
@@ -549,8 +549,8 @@ can have multiple common descendants. Use total_pathdistance to get
 the least common ancestor';
 
 CREATE OR REPLACE VIEW stats_paths_to_root AS
- SELECT
-  subject_id                            AS cvterm_id,
+ SELECT 
+  subject_id                            AS cvterm_id, 
   count(DISTINCT cvtermpath_id)         AS total_paths,
   avg(pathdistance)                     AS avg_distance,
   min(pathdistance)                     AS min_distance,
@@ -576,11 +576,11 @@ CREATE VIEW cv_link_count AS
         relation.name AS relation_name,
         relation_cv.name AS relation_cv_name,
         count(*) AS num_links
- FROM cv
-  INNER JOIN cvterm ON (cvterm.cv_id=cv.cv_id)
+ FROM cv 
+  INNER JOIN cvterm ON (cvterm.cv_id=cv.cv_id) 
   INNER JOIN cvterm_relationship ON (cvterm.cvterm_id=subject_id)
   INNER JOIN cvterm AS relation ON (type_id=relation.cvterm_id)
-  INNER JOIN cv AS relation_cv ON (relation.cv_id=relation_cv.cv_id)
+  INNER JOIN cv AS relation_cv ON (relation.cv_id=relation_cv.cv_id) 
  GROUP BY cv.name,relation.name,relation_cv.name;
 
 COMMENT ON VIEW cv_link_count IS 'per-cv summary of number of
@@ -593,11 +593,11 @@ CREATE VIEW cv_path_count AS
         relation.name AS relation_name,
         relation_cv.name AS relation_cv_name,
         count(*) AS num_paths
- FROM cv
-  INNER JOIN cvterm ON (cvterm.cv_id=cv.cv_id)
+ FROM cv 
+  INNER JOIN cvterm ON (cvterm.cv_id=cv.cv_id) 
   INNER JOIN cvtermpath ON (cvterm.cvterm_id=subject_id)
   INNER JOIN cvterm AS relation ON (type_id=relation.cvterm_id)
-  INNER JOIN cv AS relation_cv ON (relation.cv_id=relation_cv.cv_id)
+  INNER JOIN cv AS relation_cv ON (relation.cv_id=relation_cv.cv_id) 
  GROUP BY cv.name,relation.name,relation_cv.name;
 
 COMMENT ON VIEW cv_path_count IS 'per-cv summary of number of
@@ -620,7 +620,7 @@ BEGIN
         END LOOP;
     END LOOP;
     RETURN;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -645,7 +645,7 @@ BEGIN
         END LOOP;
     END IF;
     RETURN;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -665,7 +665,7 @@ BEGIN
         END LOOP;
     END LOOP;
     RETURN;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -686,7 +686,7 @@ BEGIN
         END LOOP;
     END LOOP;
     RETURN;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -705,7 +705,7 @@ BEGIN
         END LOOP;
     END LOOP;
     RETURN;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -731,7 +731,7 @@ BEGIN
         END LOOP;
     END IF;
     RETURN;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -751,7 +751,7 @@ BEGIN
         END LOOP;
     END LOOP;
     RETURN;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 --- example: select * from fill_cvtermpath(7); where 7 is cv_id for an ontology
@@ -821,7 +821,7 @@ BEGIN
         PERFORM _fill_cvtermpath4root(root.cvterm_id, root.cv_id);
     END LOOP;
     RETURN 1;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -836,7 +836,7 @@ BEGIN
     SELECT INTO cv_id cv.cv_id from cv WHERE cv.name = cvname;
     SELECT INTO rtn fill_cvtermpath(cv_id);
     RETURN rtn;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -947,7 +947,7 @@ BEGIN
     END IF;
     DROP TABLE tmpcvtermpath;
     RETURN 0;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -967,7 +967,7 @@ BEGIN
         END IF;
     END LOOP;
     RETURN;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -991,7 +991,7 @@ BEGIN
     END LOOP;
     DROP TABLE tmpcvtermpath;
     RETURN 0;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 
@@ -1007,7 +1007,7 @@ BEGIN
     SELECT INTO rtn  get_cycle_cvterm_id(cv_id);
 
     RETURN rtn;
-END;
+END;   
 '
 LANGUAGE 'plpgsql';
 -- $Id: contact.sql,v 1.5 2007-02-25 17:00:17 briano Exp $
