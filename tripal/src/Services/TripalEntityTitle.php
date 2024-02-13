@@ -61,6 +61,13 @@ class TripalEntityTitle {
    */
   protected $supported_actions = ['store_id', 'store', 'read_value', 'replace', 'function'];
 
+  /**
+   * Keep track of fields which are not supported in order to let the user know.
+   *
+   * @var array $unsupported_fields
+   */
+  protected $unsupported_fields;
+
 
 
   /**
