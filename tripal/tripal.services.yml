@@ -36,7 +36,9 @@ services:
     arguments: ['@tripal.collection_plugin_manager.idspace',
                 '@tripal.collection_plugin_manager.vocabulary',
                 '@tripal.logger']
+  tripal.entity_title:
+    class: Drupal\tripal\Services\TripalEntityTitle
   tripal.publish:
     class: Drupal\tripal\Services\TripalPublish
-  tripal.tripal_entity_lookup:
+  tripal.entity_lookup:
     class: Drupal\tripal\Services\TripalEntityLookup

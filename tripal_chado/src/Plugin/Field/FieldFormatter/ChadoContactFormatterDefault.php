@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
@@ -58,6 +60,17 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
       foreach ($values as $key => $value) {
         $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
       }
+
+      // Create a link to the corresponding entity.
+      $record_id = $item->get('contact_id')->getString();
+      $storage = 'chado_storage';
+      $bundle = 'contact'; //@@@ how to look up???
+      $lookup_service = \Drupal::service('tripal.entity_lookup');
+      $url = $lookup_service->getEntityURL($storage, $bundle, $record_id);
+      if ($url) {
+        $displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($url))->toString();
+      }
+
       $list[$delta] = [
         '#markup' => $displayed_string,
       ];

@@ -90,7 +90,7 @@ class TripalPublish {
   protected $storage = NULL;
 
   /**
-   *  A list of property types that are required to uniquely identify an entity.
+   * A list of property types that are required to uniquely identify an entity.
    *
    * @var array $required_types
    */
