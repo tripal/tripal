@@ -38,6 +38,36 @@ class TripalEntityLookup {
 
 
   /**
+   * Retrieve a Tripal bundle id based on its CV term
+   *
+   * @param string $bundleIdSpace
+   *   The CV Term namespace e.g. "NCIT"
+   * @param string $bundleAccession
+   *   The CV term accession e.g. "C47954"
+   *
+   * @return string
+   *   The bundle id, or null if no match found.
+   */
+  public function getBundleFromCvTerm($bundleIdSpace, $bundleAccession) {
+    $bundle_id = NULL;
+    $bundle_service = \Drupal::service('entity_type.bundle.info');
+    $bundle_list = $bundle_service->getBundleInfo('tripal_entity');
+// TEMPORARY FOR TESTING use local:contact see issue #1783
+$termIdSpace = 'local'; $termAccession = 'contact'; //@@@
+    foreach ($bundle_list as $id => $properties) {
+      // Get the bundle's CV term
+      $bundle_info = \Drupal::entityTypeManager()->getStorage('tripal_entity_type')->load($id);
+      $bundleIdSpace = $bundle_info->getTermIdSpace();
+      $bundleAccession = $bundle_info->getTermAccession();
+      if (($termIdSpace == $bundleIdSpace) and ($termAccession == $bundleAccession)) {
+        $bundle_id = $id;
+        break;
+      }
+    }
+    return $bundle_id;
+  }
+
+  /**
    * Retrieve a url for an entity corresponding to a record in a table.
    *
    * @param string $datastore
@@ -76,7 +106,7 @@ class TripalEntityLookup {
    */
   public function getEntityId($datastore, $bundle, $record_id) {
     $id = NULL;
-    $title_service = \Drupal::service('tripal.entity_title');
+    $title_service = \Drupal::service('tripal.tripal_entity.title');
     $titles = $title_service->getEntityTitles($datastore, $bundle, $record_id);
 
     // This check just prevents errors if a developer forgets to pass record_id

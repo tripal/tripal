@@ -64,11 +64,17 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
       // Create a link to the corresponding entity.
       $record_id = $item->get('contact_id')->getString();
       $storage = 'chado_storage';
-      $bundle = 'contact'; //@@@ how to look up???
-      $lookup_service = \Drupal::service('tripal.entity_lookup');
-      $url = $lookup_service->getEntityURL($storage, $bundle, $record_id);
-      if ($url) {
-        $displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($url))->toString();
+      $item_settings = $item->getDataDefinition()->getSettings();
+      $termIdSpace = $item_settings['termIdSpace'];
+      $termAccession = $item_settings['termAccession'];
+
+      $lookup_service = \Drupal::service('tripal.tripal_entity.lookup');
+      $bundle = $lookup_service->getBundleFromCvTerm($termIdSpace, $termAccession);
+      if ($bundle) {
+        $url = $lookup_service->getEntityURL($storage, $bundle, $record_id);
+        if ($url) {
+          $displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($url))->toString();
+        }
       }
 
       $list[$delta] = [
