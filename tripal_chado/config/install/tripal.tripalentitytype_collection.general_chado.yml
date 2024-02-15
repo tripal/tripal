@@ -43,9 +43,9 @@ content_types:
         synonyms:
             - bio_data_4
 
-    -   label: Contact
-        term: local:contact
-        help_text: Use the contage page a person or institution that can be linked as a responsible party for data or results.
+    -   label: Communication Contact
+        term: NCIT:C47954
+        help_text: A channel for communication between groups.
         category: General
         id: contact
         title_format: "[contact_name]"
