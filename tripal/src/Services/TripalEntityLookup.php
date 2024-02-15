@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal\Services;
 
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 use \Drupal\tripal\Services\TripalEntityTitle;
 
 
@@ -38,29 +40,58 @@ class TripalEntityLookup {
 
 
   /**
+   * Used by fields to get a ready-to-use url to link to an entity.
+   *
+   * @param string $datastore
+   *   The id of the TripalStorage plugin, e.g. "chado_storage"
+   * @param string $termIdSpace
+   *   The bundle's CV Term namespace e.g. "NCIT"
+   * @param string $termAccession
+   *   The bundle's CV term accession e.g. "C47954"
+   * @param integer $record_id
+   *   The primary key value for the requested record
+   * @param string $displayed_string
+   *   The text that will be displayed as a url link
+   *
+   * @return string
+   *   The rendered url, or if no match was found, the original $displayed_string.
+   */
+  public function getFieldUrl($datastore, $termIdSpace, $termAccession, $record_id, $displayed_string) {
+    $bundle = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
+    if ($bundle) {
+      $uri = $this->getEntityURI($datastore, $bundle, $record_id);
+      if ($uri) {
+        $displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($uri))->toString();
+      }
+    }
+    return $displayed_string;
+  }
+
+  /**
    * Retrieve a Tripal bundle id based on its CV term
    *
-   * @param string $bundleIdSpace
-   *   The CV Term namespace e.g. "NCIT"
-   * @param string $bundleAccession
-   *   The CV term accession e.g. "C47954"
+   * @param string $termIdSpace
+   *   The bundle's CV Term namespace e.g. "NCIT"
+   * @param string $termAccession
+   *   The bundle's CV term accession e.g. "C47954"
    *
    * @return string
    *   The bundle id, or null if no match found.
    */
-  public function getBundleFromCvTerm($bundleIdSpace, $bundleAccession) {
+  public function getBundleFromCvTerm($termIdSpace, $termAccession) {
     $bundle_id = NULL;
     $bundle_manager = \Drupal::service('entity_type.bundle.info');
     $bundle_list = $bundle_manager->getBundleInfo('tripal_entity');
-// TEMPORARY FOR TESTING use local:contact see issue #1783
+// TEMPORARY will be removed once issue #1783 is resolved @@@
 if ($termAccession == 'C47954') {
-  $termIdSpace = 'local'; $termAccession = 'contact'; //@@@
+  $termIdSpace = 'local'; $termAccession = 'contact';
 }
     foreach ($bundle_list as $id => $properties) {
-      // Get the bundle's CV term
+      // Get each bundle's CV term
       $bundle_info = \Drupal::entityTypeManager()->getStorage('tripal_entity_type')->load($id);
       $bundleIdSpace = $bundle_info->getTermIdSpace();
       $bundleAccession = $bundle_info->getTermAccession();
+      // If this is the desired bundle, the values will match
       if (($termIdSpace == $bundleIdSpace) and ($termAccession == $bundleAccession)) {
         $bundle_id = $id;
         break;
@@ -70,7 +101,7 @@ if ($termAccession == 'C47954') {
   }
 
   /**
-   * Retrieve a url for an entity corresponding to a record in a table.
+   * Retrieve a uri for an entity corresponding to a record in a table.
    *
    * @param string $datastore
    *   The id of the TripalStorage plugin, e.g. "chado_storage"
@@ -80,18 +111,17 @@ if ($termAccession == 'C47954') {
    *   The primary key value for the requested record
    *
    * @return string
-   *   The local url for the requested entity.
-   *   Will be null if zero or if multiple hits.
+   *   The local uri string for the requested entity.
+   *   Will be null if either zero or multiple hits.
    */
-  public function getEntityURL($datastore, $bundle, $record_id) {
-    $url = NULL;
-    if ($datastore and $bundle) {
-      $id = $this->getEntityId($datastore, $bundle, $record_id);
-      if ($id) {
-        $url = "internal:/bio_data/$id";
-      }
+  public function getEntityURI($datastore, $bundle, $record_id) {
+    $uri = NULL;
+    $id = $this->getEntityId($datastore, $bundle, $record_id);
+    if ($id) {
+      $uri = "internal:/bio_data/$id";
     }
-    return $url;
+
+    return $uri;
   }
 
   /**
