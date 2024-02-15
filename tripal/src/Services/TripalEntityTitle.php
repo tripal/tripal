@@ -71,34 +71,41 @@ class TripalEntityTitle {
 
 
   /**
-   * Retrieves a list of titles for the entities.
+   * Retrieves a list of titles for the records in the specified bundle,
+   * or a single title if record_id is specified.
    *
    * @param string $datastore
    *   The id of the TripalStorage plugin, e.g. "chado_storage".
    * @param string $bundle
    *   The id of the bundle or entity type, e.g. "contact".
    * @param integer $record_id
-   *   Used to limit to one specific record. If null, all titles for
-   *   the bundle are returned. This is used for publishing.
+   *   Used to limit to one specific record. If null, all matches for
+   *   the bundle are returned, which is used for publishing.
    *
    * @return array
    *   A list of titles for the bundle.
    */
   public function getEntityTitles($datastore, $bundle, $record_id = NULL) {
+    $matches = $this->findMatches($datastore, $bundle, $record_id);
+    $titles = $this->getTitlesFromMatches($matches);
+    return $titles;
+  }
 
-    $this->datastore = $datastore;
-    $this->bundle = $bundle;
-
-    // Get the bundle object so we can get settings such as the title format.
-    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
-    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
-    $entity_type_manager = \Drupal::entityTypeManager();
-    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
-    if (!$entity_type) {
-      $error_msg = 'Could not find the entity type with an id of: "%bundle".';
-      throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
-    }
-    $this->entity_type = $entity_type;
+  /**
+   * Retrieves a list of matching records for the specified bundle.
+   *
+   * @param string $datastore
+   *   The id of the TripalStorage plugin, e.g. "chado_storage".
+   * @param string $bundle
+   *   The id of the bundle or entity type, e.g. "contact".
+   * @param integer $record_id
+   *   Used to limit to one specific record. If null, all matches for
+   *   the bundle are returned, which is used for publishing.
+   *
+   * @return array
+   *   A list of matched records for the specified bundle.
+   */
+  protected function findMatches($datastore, $bundle, $record_id=NULL) {
 
     // Get the storage plugin.
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
@@ -109,8 +116,19 @@ class TripalEntityTitle {
       throw new \Exception(t($error_msg, ['%datastore' => $datastore]));
     }
 
+    // Get the bundle object so we can get the title format setting.
+    // It will also be used later by replaceTokens().
+    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+    $entity_type_manager = \Drupal::entityTypeManager();
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+    $this->entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+    if (!$this->entity_type) {
+      $error_msg = 'Could not find the entity type with an id of: "%bundle".';
+      throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
+    }
+
     // Populates the $field_info variable with field information
-    $this->setFieldInfo();
+    $this->setFieldInfo($datastore, $bundle);
 
     // Get the required field properties that will uniquely identify an entity.
     $this->required_types = $this->storage->getStoredTypes();
@@ -120,7 +138,7 @@ class TripalEntityTitle {
     $this->addTokenValues($search_values);
     $this->addFixedTypeValues($search_values);
 
-    // If limiting to a single record, add the id to the search values
+    // If limiting to a single record, add this record_id to the search values
     if ($record_id) {
       foreach ($search_values as $field_name => $deltas) {
         foreach ($deltas as $delta => $keys) {
@@ -138,6 +156,20 @@ class TripalEntityTitle {
     // Performs the actual query to retrieve information.
     $matches = $this->storage->findValues($search_values);
 
+    return $matches;
+  }
+
+  /**
+   * Retrieves a list of titles for the entities that should be published.
+   *
+   * @param array $matches
+   *   The array of matches for each entity.
+   *
+   * @return array
+   *   A list of titles in order of the entities provided by the $matches array.
+   */
+  public function getTitlesFromMatches($matches) {
+
     // Construct a title for each returned record.
     $title_format = $this->entity_type->getTitleFormat();
     $titles = $this->replaceTokens($title_format, $matches);
@@ -148,17 +180,19 @@ class TripalEntityTitle {
   /**
    * Populates the $field_info variable with field information
    *
+   * @param string $datastore
+   *   The id of the TripalStorage plugin.
    * @param string $bundle
    *   The id of the bundle or entity type.
    */
-  protected function setFieldInfo() {
+  protected function setFieldInfo($datastore, $bundle) {
 
     // Get the field manager, field definitions for the bundle type, and
     // the field type manager.
     /** @var \Drupal\Core\Entity\EntityFieldManager $field_manager **/
     /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
     $field_manager = \Drupal::service('entity_field.manager');
-    $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $this->bundle);
+    $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $bundle);
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
 
     // Iterate over the field definitions for the bundle and collect the
@@ -169,7 +203,7 @@ class TripalEntityTitle {
 
       if (!empty($field_definition->getTargetBundle())) {
         $storage_definition = $field_definition->getFieldStorageDefinition();
-        if ($storage_definition->getSetting('storage_plugin_id') == $this->datastore) {
+        if ($storage_definition->getSetting('storage_plugin_id') == $datastore) {
           $configuration = [
             'field_definition' => $field_definition,
             'name' => $field_name,
