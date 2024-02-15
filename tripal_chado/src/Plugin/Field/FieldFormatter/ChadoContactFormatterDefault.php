@@ -2,8 +2,6 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Link;
-use Drupal\Core\Url;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
@@ -42,6 +40,7 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
     $elements = [];
     $list = [];
     $token_string = $this->getSetting('token_string');
+    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     foreach ($items as $delta => $item) {
       $values = [
@@ -61,21 +60,15 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
         $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
       }
 
-      // Create a link to the corresponding entity.
-      $record_id = $item->get('contact_id')->getString();
-      $storage = 'chado_storage';
+      // Create a clickable link to the corresponding entity.
       $item_settings = $item->getDataDefinition()->getSettings();
-      $termIdSpace = $item_settings['termIdSpace'];
-      $termAccession = $item_settings['termAccession'];
-
-      $lookup_service = \Drupal::service('tripal.tripal_entity.lookup');
-      $bundle = $lookup_service->getBundleFromCvTerm($termIdSpace, $termAccession);
-      if ($bundle) {
-        $url = $lookup_service->getEntityURL($storage, $bundle, $record_id);
-        if ($url) {
-          $displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($url))->toString();
-        }
-      }
+      $displayed_string = $lookup_manager->getFieldUrl(
+        $item_settings['storage_plugin_id'],
+        $item_settings['termIdSpace'],
+        $item_settings['termAccession'],
+        $item->get('contact_id')->getString(),
+        $displayed_string
+      );
 
       $list[$delta] = [
         '#markup' => $displayed_string,
