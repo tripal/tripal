@@ -4,6 +4,7 @@ ARG drupalversion='~10.2.0'
 ARG modules='devel devel_php'
 ARG chadoschema='chado'
 ARG installchado=TRUE
+ARG phpuploadsize=8M
 
 # Label docker image
 LABEL drupal.version=${drupalversion}
@@ -123,6 +124,8 @@ RUN { \
   } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
 RUN echo 'memory_limit = 1028M' >> /usr/local/etc/php/conf.d/docker-php-memlimit.ini
+
+RUN sed -i 's/upload_max_filesize = 2M/upload_max_filesize = '"$phpuploadsize/"'' /usr/local/etc/php/php.ini
 
 WORKDIR /var/www/html
 
