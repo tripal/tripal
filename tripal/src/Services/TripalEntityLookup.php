@@ -50,10 +50,12 @@ class TripalEntityLookup {
    */
   public function getBundleFromCvTerm($bundleIdSpace, $bundleAccession) {
     $bundle_id = NULL;
-    $bundle_service = \Drupal::service('entity_type.bundle.info');
-    $bundle_list = $bundle_service->getBundleInfo('tripal_entity');
+    $bundle_manager = \Drupal::service('entity_type.bundle.info');
+    $bundle_list = $bundle_manager->getBundleInfo('tripal_entity');
 // TEMPORARY FOR TESTING use local:contact see issue #1783
-$termIdSpace = 'local'; $termAccession = 'contact'; //@@@
+if ($termAccession == 'C47954') {
+  $termIdSpace = 'local'; $termAccession = 'contact'; //@@@
+}
     foreach ($bundle_list as $id => $properties) {
       // Get the bundle's CV term
       $bundle_info = \Drupal::entityTypeManager()->getStorage('tripal_entity_type')->load($id);
@@ -82,10 +84,12 @@ $termIdSpace = 'local'; $termAccession = 'contact'; //@@@
    *   Will be null if zero or if multiple hits.
    */
   public function getEntityURL($datastore, $bundle, $record_id) {
-    $id = $this->getEntityId($datastore, $bundle, $record_id);
     $url = NULL;
-    if ($id) {
-      $url = "internal:/bio_data/$id";
+    if ($datastore and $bundle) {
+      $id = $this->getEntityId($datastore, $bundle, $record_id);
+      if ($id) {
+        $url = "internal:/bio_data/$id";
+      }
     }
     return $url;
   }
@@ -106,13 +110,14 @@ $termIdSpace = 'local'; $termAccession = 'contact'; //@@@
    */
   public function getEntityId($datastore, $bundle, $record_id) {
     $id = NULL;
-    $title_service = \Drupal::service('tripal.tripal_entity.title');
-    $titles = $title_service->getEntityTitles($datastore, $bundle, $record_id);
+    $title_manager = \Drupal::service('tripal.tripal_entity.title');
+    $titles = $title_manager->getEntityTitles($datastore, $bundle, $record_id);
 
-    // This check just prevents errors if a developer forgets to pass record_id
+    // This check just prevents errors if record_id happens to be null
     if (count($titles) == 1) {
 
-      // Query the tripal_entity table for a matching title of the same type (i.e. bundle).
+      // Query the tripal_entity table for a matching title of the same
+      // type (i.e. same bundle).
       $conn = \Drupal::service('database');
       $query = $conn->select('tripal_entity', 'e');
       $query->addField('e', 'id');

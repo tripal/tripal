@@ -84,7 +84,7 @@ class TripalEntityTitle {
    * @return array
    *   A list of titles for the bundle.
    */
-  public function getEntityTitles($datastore, $bundle, $record_id = null) {
+  public function getEntityTitles($datastore, $bundle, $record_id = NULL) {
 
     $this->datastore = $datastore;
     $this->bundle = $bundle;
@@ -186,7 +186,7 @@ class TripalEntityTitle {
             'prop_types' => [],
             'instance' => $instance,
           ];
-          // Order the property types by key for eacy lookup.
+          // Order the property types by key for easy lookup.
           foreach ($prop_types as $prop_type) {
             $field_info['prop_types'][$prop_type->getKey()] = $prop_type;
           }
