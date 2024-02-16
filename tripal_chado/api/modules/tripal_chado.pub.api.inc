@@ -1005,6 +1005,9 @@ function chado_pub_create_citation($pub) {
       elseif (array_key_exists('Series Abbreviation', $pub)) {
         $citation .= $pub['Series Abbreviation'] . '. ';
       }
+      elseif (array_key_exists('Publisher', $pub)) {
+        $citation .= $pub['Publisher'] . '. ';
+      }
       if (array_key_exists('Publication Date', $pub)) {
         $citation .= $pub['Publication Date'];
       }
