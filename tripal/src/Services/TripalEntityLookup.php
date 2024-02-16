@@ -82,10 +82,6 @@ class TripalEntityLookup {
     $bundle_id = NULL;
     $bundle_manager = \Drupal::service('entity_type.bundle.info');
     $bundle_list = $bundle_manager->getBundleInfo('tripal_entity');
-// TEMPORARY will be removed once issue #1783 is resolved @@@
-if ($termAccession == 'C47954') {
-  $termIdSpace = 'local'; $termAccession = 'contact';
-}
     foreach ($bundle_list as $id => $properties) {
       // Get each bundle's CV term
       $bundle_info = \Drupal::entityTypeManager()->getStorage('tripal_entity_type')->load($id);
