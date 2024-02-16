@@ -45,7 +45,7 @@ content_types:
 
     -   label: Contact
         term: NCIT:C47954
-        help_text: A channel for communication between groups.
+        help_text: Use the contact page for a person or institution that can be linked as a responsible party for data or results.
         category: General
         id: contact
         title_format: "[contact_name]"
