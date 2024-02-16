@@ -43,7 +43,7 @@ content_types:
         synonyms:
             - bio_data_4
 
-    -   label: Communication Contact
+    -   label: Contact
         term: NCIT:C47954
         help_text: A channel for communication between groups.
         category: General
