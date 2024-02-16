@@ -350,8 +350,8 @@ tables:
                 term_id: 'sep:00195'
                 term_name: 'biological sample'
             -   name: 'biosourceprovider_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
             -   name: 'dbxref_id'
                 term_id: 'data:2091'
                 term_name: 'Accession'
@@ -581,8 +581,8 @@ tables:
     -   name: 'contact'
         columns:
             -   name: 'contact_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
             -   name: 'description'
                 term_id: 'schema:description'
                 term_name: 'description'
@@ -596,8 +596,8 @@ tables:
     -   name: 'contactprop'
         columns:
             -   name: 'contact_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
             -   name: 'rank'
                 term_id: 'OBCS:0000117'
                 term_name: 'rank order'
@@ -1033,8 +1033,8 @@ tables:
     -   name: 'feature_contact'
         columns:
             -   name: 'contact_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
             -   name: 'feature_id'
                 term_id: 'SO:0000110'
                 term_name: 'sequence_feature'
@@ -1180,8 +1180,8 @@ tables:
     -   name: 'featuremap_contact'
         columns:
             -   name: 'contact_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
             -   name: 'featuremap_id'
                 term_id: 'data:1274'
                 term_name: 'Map'
@@ -1441,8 +1441,8 @@ tables:
     -   name: 'library_contact'
         columns:
             -   name: 'contact_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
             -   name: 'library_id'
                 term_id: 'local:library'
                 term_name: 'Library'
@@ -1620,8 +1620,8 @@ tables:
     -   name: 'nd_experiment_contact'
         columns:
             -   name: 'contact_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
 
     -   name: 'nd_experiment_dbxref'
         columns:
@@ -2178,8 +2178,8 @@ tables:
     -   name: 'project_contact'
         columns:
             -   name: 'contact_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
             -   name: 'project_id'
                 term_id: 'NCIT:C47885'
                 term_name: 'Project'
@@ -2349,8 +2349,8 @@ tables:
     -   name: 'pubauthor_contact'
         columns:
             -   name: 'contact_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
 
     -   name: 'pub_dbxref'
         columns:
@@ -2466,8 +2466,8 @@ tables:
     -   name: 'stockcollection'
         columns:
             -   name: 'contact_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
             -   name: 'name'
                 term_id: 'schema:name'
                 term_name: 'name'
@@ -2661,8 +2661,8 @@ tables:
     -   name: 'study'
         columns:
             -   name: 'contact_id'
-                term_id: 'local:contact'
-                term_name: 'contact'
+                term_id: 'NCIT:C47954'
+                term_name: 'Communication Contact'
             -   name: 'dbxref_id'
                 term_id: 'data:2091'
                 term_name: 'Accession'
