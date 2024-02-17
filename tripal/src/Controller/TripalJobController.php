@@ -100,13 +100,6 @@ class TripalJobController extends ControllerBase{
   private function buildArrayTable($array, $name = '') {
     $markup = '';
 
-    // If the table only has one key then simplify this down for display
-    $keys = array_keys($array);
-    if (count($keys) == 1) {
-      $key = $keys[0];
-      return $this->buildArrayTable($array[$key], $key);
-    }
-
     $table = [
       '#type' => 'table',
       '#header' => [
