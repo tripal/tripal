@@ -1,6 +1,6 @@
-FROM php:8.1-apache-bullseye
+FROM php:8.3-apache-bullseye
 
-ARG drupalversion='~10.1.0'
+ARG drupalversion='~10.2.0'
 ARG modules='devel devel_php'
 ARG chadoschema='chado'
 ARG installchado=TRUE
@@ -12,7 +12,7 @@ LABEL drupal.stability="production"
 LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
 LABEL os.version="bullseye"
-LABEL php.version="8.1"
+LABEL php.version="8.3"
 LABEL postgresql.version="13"
 
 COPY . /app
@@ -61,7 +61,7 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/13/main/postgresql.conf \
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 ## Xdebug
-RUN pecl install xdebug-3.2.1 \
+RUN pecl install xdebug-3.3.1 \
     && docker-php-ext-enable xdebug \
     && cat /app/tripaldocker/default_files/xdebug/xdebug-coverage.ini >> /usr/local/etc/php/php.ini \
     && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
@@ -224,4 +224,3 @@ WORKDIR /var/www/drupal/web
 EXPOSE 80 5432 9003
 
 ENTRYPOINT ["init.sh"]
-

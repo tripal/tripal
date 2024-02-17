@@ -1509,7 +1509,7 @@ fields:
     -   name: pub_doi
         content_type: pub
         label: DOI
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'Digital Object Identifier.'
         cardinality: 1
         required: false
@@ -1535,7 +1535,7 @@ fields:
     -   name: pub_journal_abbreviation
         content_type: pub
         label: Journal Abbreviation
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'The journal title ISO Abbreviation.'
         cardinality: 1
         required: false
@@ -1561,7 +1561,7 @@ fields:
     -   name: pub_eissn
         content_type: pub
         label: EISSN
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'International Standard Serial Number (ISSN) is an eight-character value that uniquely identifies a periodicals in print or other media. There are two sub categories of ISSN: print, p-ISSN and electronic e-ISSN.'
         cardinality: 1
         required: false
@@ -1587,7 +1587,7 @@ fields:
     -   name: pub_publication_date
         content_type: pub
         label: Publication Date
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'The date the work was published. This should be in the format: YYYY Mon Day, where YYYY is a 4 digit year, Mon is a 3-letter English abbreviation for the month followed by the day. The month and day are optional.'
         cardinality: 1
         required: false
@@ -1613,7 +1613,7 @@ fields:
     -   name: pub_citation
         content_type: pub
         label: Citation
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'All publications must have a unique citation. Please enter the full citation for this publication. For PubMed style citations list the last name of the author followed by initials. Each author should be separated by a comma. Next comes the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation. Below is an example:<br>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. Does the selection of medicinal plants by Brazilian local populations suffer taxonomic influence? J Ethnopharmacol. 2013 Apr 19; 146(3):842-52.'
         cardinality: 1
         required: false
@@ -1639,7 +1639,7 @@ fields:
     -   name: pub_issn
         content_type: pub
         label: ISSN
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'International Standard Serial Number (ISSN) is an eight-character value that uniquely identifies a periodicals in print or other media. There are two sub categories of ISSN: print, p-ISSN and electronic e-ISSN.'
         cardinality: 1
         required: false
@@ -1665,7 +1665,7 @@ fields:
     -   name: pub_language_abbr
         content_type: pub
         label: Language Abbr
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'An abbreviation for a language (e.g. 3 letters)'
         cardinality: 1
         required: false
@@ -1691,7 +1691,7 @@ fields:
     -   name: pub_publication_type
         content_type: pub
         label: Publication Type
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 
         cardinality: 1
         required: false
@@ -1717,7 +1717,7 @@ fields:
     -   name: pub_publication_model
         content_type: pub
         label: Publication Model
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'This term is used to identify the medium/media in which the item is published. There are four possible values which are the same as used by: print, print-electronic, electronic, electronic-print. Further explanation: "print", the journal is published in print format only; "print-electronic", the journal is published in both print and electronic format; "electronic", the journal is published in electronic format only; "electronic-print", the journal is published first in electronic format followed by print.'
         cardinality: 1
         required: false
@@ -1743,7 +1743,7 @@ fields:
     -   name: pub_authors
         content_type: pub
         label: Authors
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'The list of authors of the publication. For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.'
         cardinality: 1
         required: false
@@ -1769,7 +1769,7 @@ fields:
     -   name: pub_language
         content_type: pub
         label: Language
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'The full name of the languge of the publication (e.g. English).'
         cardinality: 1
         required: false
@@ -1795,7 +1795,7 @@ fields:
     -   name: pub_elocation
         content_type: pub
         label: Elocation
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'Provides an electronic location for the items. This includes Digital Object Identifiers (DOI) or Publisher Item Identifiers (PII).'
         cardinality: 1
         required: false
@@ -1821,7 +1821,7 @@ fields:
     -   name: pub_url
         content_type: pub
         label: URL
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'A univeral resource locator (URL) reference where the publication can be found.  For publications found online, this would be the web address for the publication.'
         cardinality: 1
         required: false
@@ -1847,7 +1847,7 @@ fields:
     -   name: pub_journal_country
         content_type: pub
         label: Journal Country
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'The country where the journal was published.'
         cardinality: 1
         required: false
@@ -1873,7 +1873,7 @@ fields:
     -   name: pub_abstract
         content_type: pub
         label: Abstract
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'The fully printed abstract for the publication.'
         cardinality: 1
         required: false
@@ -1899,7 +1899,7 @@ fields:
     -   name: pub_pii
         content_type: pub
         label: PII
-        type: chado_linker_property_type_default
+        type: chado_property_type_default
         description: 'Publisher Item Identifier.'
         cardinality: 1
         required: false
