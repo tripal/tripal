@@ -88,88 +88,6 @@ class TripalJobController extends ControllerBase{
   }
 
   /**
-   * Helper function to build an HTML table from an array
-   *
-   * @param array $array
-   *   The array elements to format.
-   * @param string $name
-   *   The name of the element to which the table belongs.
-   * @return string
-   *   The rendered HTML markup for the table.
-   */
-  private function buildArrayTable($array, $name = '') {
-    $markup = '';
-
-    // If the table only has one key then simplify this down for display
-    $keys = array_keys($array);
-    if (count($keys) == 1) {
-      $key = $keys[0];
-      return $this->buildArrayTable($array[$key], $key);
-    }
-
-    $table = [
-      '#type' => 'table',
-      '#header' => [
-        ['data' => 'Key'],
-        ['data' => 'Value'],
-      ],
-      '#rows' => [],
-    ];
-    if ($name) {
-      $table['#caption'] = $this->t('Values for the "@name" element:', ['@name' => $name]);
-    }
-
-    // If the argument is an associative array then create a sub table.
-    if(array_keys($array) !== range(0, count($array) - 1)) {
-      foreach ($array as $key => $value) {
-        if (is_array($value)) {
-          $value = $this->buildArrayTable($value, $key);
-        }
-        $table['#rows'][] = [
-          'data' => [
-            ['data' => $key],
-            ['data' => $value],
-          ],
-        ];
-      }
-      $markup = \Drupal::service('renderer')->render($table);
-    }
-    // Otherwise it's just a normal array.
-    else{
-      foreach ($array as $key => $value) {
-        if (is_array($value)) {
-          $value = $this->buildArrayTable($value, $key);
-        }
-        $table['#rows'][] = [
-          'data' => [
-            ['data' => $key],
-            ['data' => $value],
-          ],
-        ];
-      }
-      $markup = \Drupal::service('renderer')->render($table);
-    }
-
-    return $markup;
-  }
-
-  /**
-   * Generates a renderagble array containing the job arguments.
-   *
-   * @param array $arguments
-   */
-  private function buildArgList($arguments) {
-
-    $arglist[] = [
-      '#type' => 'item',
-      '#markup' => $this->buildArrayTable($arguments),
-      '#prefix' => '<div class="tripal-job-arg-array-val">',
-      '#suffix' => '</div>'
-    ];
-    return $arglist;
-  }
-
-  /**
    * Provides a view of all details for a single job
    *
    * @param $id
@@ -203,7 +121,30 @@ class TripalJobController extends ControllerBase{
     }
 
     // Generate the list of arguments for display.
-    $arglist = $this->buildArgList($arguments);
+    $arglist = [];
+    foreach ($arguments as $key => $value) {
+      if (is_array($value)) {
+        $temp = [];
+        foreach ($value as $vk => $vv) {
+          $temp[] = [
+            '#type' => 'item',
+            '#title' => $vk,
+            '#markup' => is_array($vv) ? print_r($vv) : $vv,
+            '#prefix' => '<div class="tripal-job-arg-array-val">',
+            '#suffix' => '</div>'
+          ];
+        }
+        $value = render($temp);
+      }
+      if (is_numeric($key)) {
+        $key = 'Arg #' . $key;
+      }
+      $arglist[] =  [
+        '#type' => 'item',
+        '#title' => $key,
+        '#markup' =>  $value
+      ];
+    }
 
     // Set the title of the page.
     $request = \Drupal::request();
