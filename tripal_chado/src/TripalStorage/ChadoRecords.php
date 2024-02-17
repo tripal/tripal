@@ -116,15 +116,28 @@ class ChadoRecords  {
 
     // Make sure all of the required elements are preesent
     $this->checkElement($elements, 'base_table', 'Initializing', 'table');
+    $this->checkElement($elements, 'root_table', 'Initializing', 'table');
+    $this->checkElement($elements, 'root_alias', 'Initializing', 'table');
     $this->checkElement($elements, 'chado_table', 'Initializing', 'table');
     $this->checkElement($elements, 'table_alias', 'Initializing', 'table');
     $this->checkElement($elements, 'delta', 'Initializing', 'table');
 
     // Get the items needed to initalize a table.
     $base_table = $elements['base_table'];
+    $root_table = $elements['root_table'];
+    $root_alias = $elements['root_alias'];
     $chado_table = $elements['chado_table'];
     $table_alias = $elements['table_alias'];
     $delta = $elements['delta'];
+
+    if ($base_table == $root_table) {
+      if ($base_table != $root_alias) {
+        throw new \Exception(t('ChadoRecords::initTable(). The base table cannot have an alias. '
+          . 'Check all fields the contribute properties and make sure none of them use an alias '
+          . 'for the root table in the "path" element. @elements',
+          ['@elements' => print_r($elements, TRUE)]));
+      }
+    }
 
     // We do not want to initalize the base table more than once. When a
     // field has a cardinality > 0 then it can pass a delta value > 0. That
