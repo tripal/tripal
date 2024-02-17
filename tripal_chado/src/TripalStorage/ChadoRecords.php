@@ -126,16 +126,6 @@ class ChadoRecords  {
     $table_alias = $elements['table_alias'];
     $delta = $elements['delta'];
 
-    if ($base_table == $chado_table) {
-      if ($base_table != $table_alias) {
-        throw new \Exception(t('ChadoRecords::initTable(). Invalid attempt to '
-            . 'initalize a table as the base table cannot have an alias. '
-            . 'The element tries to set a table alias, which is not supported: '
-            . '@elements',
-            ['@elements' => print_r($elements, TRUE)]));
-      }
-    }
-
     // We do not want to initalize the base table more than once. When a
     // field has a cardinality > 0 then it can pass a delta value > 0. That
     // delta value is for the item not for the base table.  There can only
@@ -456,7 +446,7 @@ class ChadoRecords  {
    * @throws \Exception
    *   If the any required fields are missing an error is thrown.
    */
-  public function addJoin(array $elements) {
+  public function addJoin(array &$elements) {
 
     // Initlaize the table. If the function returns FALSE
     // then the caller is trying to re-intalize the base table so jus quit.
@@ -509,6 +499,10 @@ class ChadoRecords  {
     if (!array_key_exists('columns', $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['joins'][$join_path])) {
       $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['joins'][$join_path]['columns'] = [];
     }
+
+    // Set the elements array
+    $elements['left_alias'] = $left_alias;
+    $elements['right_alias'] = $right_alias;
   }
 
   /**
@@ -1594,7 +1588,7 @@ class ChadoRecords  {
       // zero.
       unset($values[$pkey]);
 
-      // Add the fiels to the insert.
+      // Add the fields to the insert.
       $insert->fields($values);
       $this->field_debugger->reportQuery($insert, "Insert Query for $chado_table ($delta)");
 

@@ -589,10 +589,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $table_alias_mapping = array_key_exists('table_alias_mapping', $prop_storage_settings) ? $prop_storage_settings['table_alias_mapping'] : [];
             $path_array = $this->parsePath($field_name, $base_table, $path, $table_alias_mapping, $as);
 
-            // Add to the context.
-            $context['path_string'] = $prop_storage_settings['path'];
-            $context['path_array'] = $path_array;
-
             // We only add joins when the action is 'read_value' because
             // they guarantee a single value (meaning a 1:1 join). For
             // other joins there may be a many to one so we don't want to add
@@ -600,6 +596,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             if ($action == 'read_value' and array_key_exists('join', $path_array)) {
               $this->handleJoins($path_array, $context);
             }
+
+            // Add to the context.
+            $context['path_string'] = $prop_storage_settings['path'];
+            $context['path_array'] = $path_array;
           }
 
           // Now for each action type, set the conditions and fields for
@@ -1080,7 +1080,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param array $context
    *   The field/property context provided by the buildChadoRecords() function.
    */
-  protected function handleJoins(array $path_array, array $context) {
+  protected function handleJoins(array &$path_array, array $context) {
 
     $elements = [
       'base_table' => $context['base_table'],
@@ -1097,10 +1097,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'join_path' => $path_array['join']['path'],
     ];
     $this->records->addJoin($elements);
+    $path_array['join']['table_alias'] = $elements['right_alias'];
 
     // If there is another join then handle that.
     if (array_key_exists('join', $path_array['join'])) {
-      $this->handleJoins($path_array['join'], $context);
+      $join_path = $path_array['join'];
+      $this->handleJoins($join_path, $context);
+      $path_array['join'] = $join_path;
     }
 
     // If we've reached the end of the joins we need to add the join columns.
