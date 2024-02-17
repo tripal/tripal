@@ -3,8 +3,11 @@
 namespace Drupal\tripal\Services;
 
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait; //@@@ ???
+
 
 class TripalEntityTitle {
+use DependencySerializationTrait; //@@@ ???
 
   /**
    * The id of the entity type (bundle)
@@ -133,20 +136,34 @@ class TripalEntityTitle {
     // Get the required field properties that will uniquely identify an entity.
     $this->required_types = $this->storage->getStoredTypes();
 
-    // Build the search values array
-    $this->addRequiredValues($search_values);
-    $this->addTokenValues($search_values);
-    $this->addFixedTypeValues($search_values);
+    // Build the search values array. This takes time, so use cached version if possible.
+    // https://api.drupal.org/api/drupal/core%21core.api.php/group/cache/10
+    $cache_id = 'tripalentitytitle:' . $bundle;
+//dpm($cache_id, "CPC01 cache_id="); //@@@
+    if ($cache = \Drupal::cache()->get($cache_id)) {
+      $search_values = $cache->data;
+//dpm($search_values, "CPC02 retrieved cached search_values="); //@@@
+    }
+    else {
+      $search_values = [];
+      $this->addRequiredValues($search_values);
+      $this->addTokenValues($search_values);
+      $this->addFixedTypeValues($search_values);
+//dpm($search_values, "CPC03 build new search_values="); //@@@
 
-    // If limiting to a single record, add this record_id to the search values
-    if ($record_id) {
-      foreach ($search_values as $field_name => $deltas) {
-        foreach ($deltas as $delta => $keys) {
-          foreach ($keys as $key => $info) {
-            if ($key == 'record_id') {
-              /** @var Drupal\tripal\TripalStorage\StoragePropertyValue $property_value **/
-              $property_value = $search_values[$field_name][$delta][$key]['value'];
-              $property_value->setValue($record_id);
+//dpm('', "CPC04 cache the search_values"); //@@@
+//        \Drupal::cache()->set($cache_id, $search_values);
+
+      // If limiting to a single record, add this record_id to the search values
+      if ($record_id) {
+        foreach ($search_values as $field_name => $deltas) {
+          foreach ($deltas as $delta => $keys) {
+            foreach ($keys as $key => $info) {
+              if ($key == 'record_id') {
+                /** @var Drupal\tripal\TripalStorage\StoragePropertyValue $property_value **/
+                $property_value = $search_values[$field_name][$delta][$key]['value'];
+                $property_value->setValue($record_id);
+              }
             }
           }
         }

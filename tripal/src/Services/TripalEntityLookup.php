@@ -2,8 +2,7 @@
 
 namespace Drupal\tripal\Services;
 
-use Drupal\Core\Link;
-use Drupal\Core\Url;
+use Drupal\field\Entity\FieldStorageConfig;
 use \Drupal\tripal\Services\TripalEntityTitle;
 
 
@@ -59,12 +58,100 @@ class TripalEntityLookup {
   public function getFieldUrl($datastore, $termIdSpace, $termAccession, $record_id, $displayed_string) {
     $bundle = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
     if ($bundle) {
-      $uri = $this->getEntityURI($datastore, $bundle, $record_id);
-      if ($uri) {
-        $displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($uri))->toString();
+      $base_table = $this->getTableFromCvTerm($termIdSpace, $termAccession);
+      if ($base_table) {
+        $uri = $this->getEntityURI($datastore, $base_table, $record_id);
+        if ($uri) {
+          // Url::fromUri($uri) takes 0.75 seconds!
+          //$displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($uri))->toString();
+          // we can just bypass that and save tons of time -- @to-do is that okay?
+          $displayed_string = '<a href="' . $uri . '">' . $displayed_string . '</a>';
+        }
       }
     }
     return $displayed_string;
+  }
+
+  /**
+   * Retrieve the base chado table for a given bundle given the bundle's CV term
+   *
+   * @param string $termIdSpace
+   *   The bundle's CV Term namespace e.g. "NCIT"
+   * @param string $termAccession
+   *   The bundle's CV term accession e.g. "C47954"
+   *
+   * @return string
+   *   The chado table name, or null if no match found.
+   */
+  public function getTableFromCvTerm($termIdSpace, $termAccession) {
+    $chado_table = NULL;
+    $entity_type = 'tripal_entity';
+    $bundle = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
+    if ($bundle) {
+      $entityFieldManager = \Drupal::service('entity_field.manager');
+      $fields = $entityFieldManager->getFieldDefinitions($entity_type, $bundle);
+      $field_list = array_keys($fields);
+      $type_name = NULL;
+      $base_table = NULL;
+      foreach ($field_list as $field_name) {
+        // Skip drupal fields. Look for the first tripal field that has a base_column
+        // set. Fields from linker tables do not have a base_column.
+        if (preg_match('/^'.$bundle.'/', $field_name)) {
+          $field_storage = FieldStorageConfig::loadByName('tripal_entity', $field_name);
+          if ($field_storage) {
+            $storage_plugin_settings = $field_storage->getSettings()['storage_plugin_settings'];
+            $base_table = $storage_plugin_settings['base_table'];
+            $base_column = $storage_plugin_settings['base_column'] ?? '';
+            if ($base_table and $base_column) {
+              $chado_table = $base_table;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return $chado_table;
+  }
+
+  /**
+   * Returns a list of columns with a not null constraint in the
+   * indicated chado table. The primary key is excluded.
+   * It takes significant time to retrieve $chado_schema, so we cache the results.
+   *
+   * @param string $chado_table
+   *   The name of the chado table.
+   * @param string $chado_schema
+   *   The chado schema name.
+   * @param string $chado_version
+   *   The chado version.
+   *
+   * @return array
+   *   The chado table name, or null if no match found.
+   */
+  // @@@ to-do how to get the chado schema version here?
+  public function getNotNullColumns($chado_table, $chado_schema = 'chado', $chado_version = '1.3') {
+    $cache_id = 'tripalentitylookup:' . $chado_schema . '.' . $chado_table;
+    if ($cache = \Drupal::cache()->get($cache_id)) {
+      $cache_values = $cache->data;
+    }
+    else {
+$t1 = microtime(true); //@@@
+      $cache_values = [];
+      $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($chado_version, $chado_schema);
+      $table_schema = $chado_schema->getTableSchema($chado_table);
+      $cache_values['primary_keys'] = $table_schema['primary key'];
+      $not_null_columns = [];
+      foreach ($table_schema['fields'] as $column => $config) {
+        if (!in_array($column, $cache_values['primary_keys'])) {
+          if (array_key_exists('not null', $config) and $config['not null']) {
+            $cache_values['not_null_columns'][] = $column;
+          }
+        }
+      }
+      \Drupal::cache()->set($cache_id, $cache_values);
+$t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for uncached lookup="); //@@@
+    }
+    return $cache_values['not_null_columns'];
   }
 
   /**
@@ -101,8 +188,8 @@ class TripalEntityLookup {
    *
    * @param string $datastore
    *   The id of the TripalStorage plugin, e.g. "chado_storage"
-   * @param string $bundle
-   *   The id of the entity type (bundle)
+   * @param string $base_table
+   *   The name of the chado table
    * @param integer $record_id
    *   The primary key value for the requested record
    *
@@ -110,9 +197,9 @@ class TripalEntityLookup {
    *   The local uri string for the requested entity.
    *   Will be null if either zero or multiple hits.
    */
-  public function getEntityURI($datastore, $bundle, $record_id) {
+  public function getEntityURI($datastore, $base_table, $record_id) {
     $uri = NULL;
-    $id = $this->getEntityId($datastore, $bundle, $record_id);
+    $id = $this->getEntityId($datastore, $base_table, $record_id);
     if ($id) {
       $uri = "internal:/bio_data/$id";
     }
@@ -125,8 +212,8 @@ class TripalEntityLookup {
    *
    * @param string $datastore
    *   The id of the TripalStorage plugin, e.g. "chado_storage"
-   * @param string $bundle
-   *   The id of the entity type (bundle)
+   * @param string $base_table
+   *   The name of the chado table
    * @param integer $record_id
    *   The primary key value for the requested record
    *
@@ -134,46 +221,28 @@ class TripalEntityLookup {
    *   The id for the requested entity in the tripal_entity table.
    *   Will be null if zero or if multiple hits.
    */
-  public function getEntityId($datastore, $bundle, $record_id) {
+  public function getEntityId($datastore, $base_table, $record_id) {
     $id = NULL;
-    $title_manager = \Drupal::service('tripal.tripal_entity.title');
-    $titles = $title_manager->getEntityTitles($datastore, $bundle, $record_id);
+    $not_null_columns = $this->getNotNullColumns($base_table);  // @@@ to do chado schema and version???
+    $entity_table_name = 'tripal_entity__' . $base_table . '_' . $not_null_columns[0];
+    $entity_column_name = $base_table . '_' . $not_null_columns[0] . '_record_id';
 
-    // This check just prevents errors if record_id happens to be null
-    if (count($titles) == 1) {
+    // Query the appropriate field table for this record_id
+    $conn = \Drupal::service('database');
+    $query = $conn->select($entity_table_name, 'e');
+    $query->addField('e', 'entity_id');
+    $query->condition('e.' . $entity_column_name, $record_id, '=');
 
-      // Query the tripal_entity table for a matching title of the same
-      // type (i.e. same bundle).
-      $conn = \Drupal::service('database');
-      $query = $conn->select('tripal_entity', 'e');
-      $query->addField('e', 'id');
-      $query->condition('e.type', $bundle, '=');
-      $query->condition('e.title', $titles[0], '=');
-
-      // Because there is no unique constraint, we will have to watch
-      // for multiple hits. If this happens, we return null.
-      $num_hits = $query->countQuery()->execute()->fetchField();
-      if ($num_hits == 1) {
-        $id = $query->execute()->fetchField();
-      }
+    // There should only be one hit, but this is here to check for
+    // multiple hits just in case. If this happens, we return null.
+    $num_hits = $query->countQuery()->execute()->fetchField();
+    if ($num_hits == 1) {
+      $id = $query->execute()->fetchField();
+    }
+    else {
+      dpm("Temporary warning that there were $num_hits hits to record_id $record_id in table $entity_table_name column $entity_column_name"); //@@@
     }
     return $id;
-  }
-
-  /**
-   * Replace tokens in the supplied title with the supplied values.
-   * Typically the title will have fewer tokens than are supplied in the values.
-   *
-   * @param string title
-   *   The entity title containing token strings, e.g. '[genus] [species] ([common_name])'
-   * @param array values
-   *   Key value pairs for substitution, e.g. ['name' => 'Gene One']
-   */
-  private function replaceTokens($title, $values) {
-    foreach ($values as $key => $value) {
-      $title = preg_replace('/\[$key\]/', $value, $title);
-    }
-    return trim($title);
   }
 
 }
