@@ -604,3 +604,40 @@ testStoreLinkAction:
         # chado_table: 'projectprop' # deprecated
         # chado_table_alias: 'pippin' # deprecated
         # chado_column: 'rank' # deprecated
+testReadValueActionJoinLoop:
+  featurelocfield:
+    field_name: featurelocfield
+    base_table: feature
+    properties:
+      record_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_id
+        path: feature.feature_id
+      featureloc_id:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_pkey
+        path: featureloc.featureloc_id
+      fkey:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: store_link
+        path: feature.feature_id>featureloc.feature_id
+      uniquename:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType
+        action: read_value
+        path: feature.feature_id>featureloc.feature_id;featureloc.srcfeature_id>feature.feature_id;uniquename
+      fmin:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: read_value
+        path: feature.feature_id>featureloc.feature_id;fmin
+      fmax:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: read_value
+        path: feature.feature_id>featureloc.feature_id;fmax
+      strand:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: read_value
+        path: feature.feature_id>featureloc.feature_id;strand
+      phase:
+        propertyType class: Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType
+        action: read_value
+        path: feature.feature_id>featureloc.feature_id;phase
