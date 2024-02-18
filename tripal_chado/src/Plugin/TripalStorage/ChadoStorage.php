@@ -432,7 +432,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             // becuase this is the table that will have the value.
             $my_delta = $delta;
             if($action == 'read_value' and array_key_exists('join', $path_array)) {
-              $root_table = $value_col_info['root_table'];
               $root_alias = $value_col_info['root_alias'];
               $table_alias = $root_alias;
             }
@@ -1134,6 +1133,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $elements = [
         'base_table' => $context['base_table'],
         'root_table' => $context['root_table'],
+        'root_alias' => $context['root_alias'],
         'chado_table' => $path_array['root_table'],
         'table_alias' => $path_array['root_alias'],
         'delta' => $context['delta'],
