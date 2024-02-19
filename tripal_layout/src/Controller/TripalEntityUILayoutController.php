@@ -250,6 +250,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     $entity_type_manager = \Drupal::service('entity_type.manager');
     $config_entity_storage = $entity_type_manager->getStorage('entity_view_display');
     $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
+    dpm($display);
 
     // First reset the display.
     $this->clearFieldGroups($display);

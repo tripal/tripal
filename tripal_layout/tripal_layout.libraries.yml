@@ -2,4 +2,4 @@ tripal-layout:
   version: 1.x
   css:
     component:
-      css/tripal.layout.css: {}
+      css/tripal_layout.default_view.css: {}

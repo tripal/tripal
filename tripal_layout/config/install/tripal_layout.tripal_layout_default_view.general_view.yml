@@ -1,6 +1,6 @@
 id: 'general_view'
 label: 'General Content Types'
-description: 'Layouts for general content types based on Chado and added via the Tripal Chado module.'
+description: 'Layouts for general content types (analysis, organism, etc.) based on Chado and added via the Tripal Chado module.'
 layouts:
   - tripal_entity_type: "organism" 
     hidden:
@@ -21,7 +21,7 @@ layouts:
           show_empty: false
           open: false
           children: 
-            - "type:chado_property_type_default"
+            - organism_properties_table
         organism_cross_refs_details:
           label: "Cross References"
           weight: 20
@@ -38,7 +38,7 @@ layouts:
             - "organism_pub"
       field_group_table:
         organism_details_table:
-          label: "Summary table"
+          label: "Details Table"
           weight: 0  
           show_empty: false
           children:
@@ -49,6 +49,12 @@ layouts:
             - "organism_abbreviation"
             - "organism_common_name"
             - "organism_comment"    
+        organism_properties_table:
+          label: "Properties Table"
+          weight: 0  
+          show_empty: false            
+          children:
+            - "type:chado_property_type_default"
   - tripal_entity_type: "analysis" 
     hidden:
       - uid
@@ -62,6 +68,13 @@ layouts:
           open: true
           children: 
             - "analysis_details_table"
+        analysis_properties_details:
+          label: "Properties"
+          weight: 10
+          show_empty: false
+          open: false
+          children: 
+            - analysis_properties_table
         analysis_cross_ref_details:
           label: "Cross References"
           weight: 20
@@ -109,6 +122,12 @@ layouts:
             - "analysis_source"
             - "analysis_source_uri"
             - "analysis_source_version"
+        analysis_properties_table:
+          label: "Properties Table"
+          weight: 0  
+          show_empty: false            
+          children:
+            - "type:chado_property_type_default"
             
             
             
