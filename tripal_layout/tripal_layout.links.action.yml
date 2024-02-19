@@ -4,3 +4,9 @@ tripal_layout.content_type_field_layout:
   title: 'Apply Tripal Layout'
   appears_on:
     - entity.entity_view_display.tripal_entity.default
+    
+tripal_layout.content_type_field_layout.reset:
+  route_name: 'tripal_layout.content_type_field_layout_reset'
+  title: 'Reset Layout' 
+  appears_on:
+    - entity.entity_view_display.tripal_entity.default

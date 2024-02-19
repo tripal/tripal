@@ -1,0 +1,52 @@
+id: 'general_view'
+label: 'General Content Types'
+description: 'Layouts for general content types based on Chado and added via the Tripal Chado module.'
+layouts:
+  - tripal_entity_type: "organism" 
+    hidden:
+      - uid
+      - title     
+    field_groups:
+      details:
+        organism_summary:
+          label: "Organism Summary"
+          weight: 0
+          show_empty: false
+          open: true
+          children: 
+            - "organism_summary_table"
+        organism_properties:
+          label: "Properties"
+          weight: 10
+          show_empty: false
+          open: false
+          children: 
+            - "type:chado_property_type_default"
+        organism_cross_refs:
+          label: "Cross References"
+          weight: 20
+          show_empty: false
+          open: false
+          children: 
+            - "organism_dbxref"
+        organism_pubs:
+          label: "Publications"
+          weight: 30
+          show_empty: false
+          open: false
+          children: 
+            - "organism_pub"
+      field_group_table:
+        organism_summary_table:
+          label: "Summary table"
+          weight: 0  
+          show_empty: false
+          children:
+            - "organism_genus"
+            - "organism_species"
+            - "organism_infraspecific_type"
+            - "organism_infraspecific_name"
+            - "organism_abbreviation"
+            - "organism_common_name"
+            - "organism_comment"
+    

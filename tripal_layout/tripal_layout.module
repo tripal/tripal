@@ -11,3 +11,10 @@
 function tripal_layout_page_attachments(array &$attachments) {
   $attachments['#attached']['library'][] = 'tripal_layout/tripal-layout';
 }
+
+/**
+ * Implements hook_rebuild().
+ */
+function tripal_layout_rebuild() {
+  tripal_load_configuration('tripal_layout', 'tripal_layout_default_view');
+}
