@@ -45,16 +45,12 @@ class ChadoDeletePubSearchQueryForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // $form_state_values = $form_state->getValues();
-    // dpm($form_state_values);
     $public = \Drupal::database();
     $user_input = $form_state->getUserInput();
-    dpm($user_input);
     // $trigger = $form_state->getTriggeringElement()['#name'];
-    // dpm($trigger);
 
     $pub_import_id = $user_input['pub_import_id'];
 
-    // dpm($pub_import_id);
     $public->delete('tripal_pub_import')
     ->condition('pub_import_id', $pub_import_id, '=')
     ->execute();
