@@ -34,6 +34,19 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = [];
 
+    // In Drupal 10.2, the field settings and storage settings each become subforms
+    // within the same page. In this case the form_state actually is a
+    // sub form state instead of the full form state.
+    // There is an ongoing discussion around this which could result in the
+    // passed form state going back to a full form state. In order to prevent
+    // future breakage because of a core update we'll just check which type of
+    // FormStateInterface we've been passed and act accordingly.
+    // @See https://www.drupal.org/node/2798261
+    $complete_form_state = $form_state;
+    if ($form_state instanceof \Drupal\Core\Form\SubformStateInterface) {
+      $complete_form_state = $form_state->getCompleteFormState();
+    }
+
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $tables = $schema->getTables(['type' => 'table', 'status' => 'base']);
@@ -41,7 +54,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $is_disabled = FALSE;
     $storage_settings = $this->getSetting('storage_plugin_settings');
     $default_base_table = $storage_settings['base_table'] ?? '';
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+    $base_table = $complete_form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
     if ($default_base_table) {
       $is_disabled = TRUE;
     }
@@ -71,7 +84,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $plugin_definition = $this->getPluginDefinition();
     if ($plugin_definition['select_base_column'] ?? FALSE) {
       $default_base_column = $storage_settings['base_column'] ?? '';
-      $base_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_column']);
+      $base_column = $complete_form_state->getValue(['settings', 'storage_plugin_settings', 'base_column']);
 
       // Add an ajax callback so that when the base table is selected, the
       // base column select can be populated.
