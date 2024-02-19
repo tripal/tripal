@@ -175,7 +175,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
     if (isset($input)) {
       foreach ($input as $key => $value) {
         if (!is_array($input[$key])) {
-          // dpm($key . ' and ' . $value);
           $form_element[$key]['#default_value'] = $value;
         }
         else {
@@ -509,12 +508,10 @@ class ChadoNewPubSearchQueryForm extends FormBase {
     if (isset($user_input['mode'])) {
       $form_mode = $user_input['mode'];
     }
-    // dpm($user_input);
     $trigger = $form_state->getTriggeringElement()['#name'];
     
     if ($trigger == 'op') {
       $op = $user_input['op'];
-      // dpm($op);
       if ($op == 'Save Search Query') {
         $_SESSION['tripal_pub_import']['perform_test'] = 0;
         // tripal_pub_import table columns are: pub_import_id, name, criteria, disabled, do_contact
