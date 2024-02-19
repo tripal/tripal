@@ -31,25 +31,56 @@ class TripalEntityUILayoutController extends ControllerBase {
    * @param unknown $parent
    * @param EntityViewDisplay $display
    */
-  protected function setChild($name, $parent, EntityViewDisplay $display) {
+  protected function setChild($child, $parent, EntityViewDisplay $display) {
+
+    $field_groups = $display->getThirdPartySettings('field_group');
+
+    // We need to know if this a field or a field group
+    $is_field = FALSE;
+    $is_field_group = FALSE;
+    $components = $display->getComponents();
+    $hidden = $display->get('hidden');
+
+    if (in_array($child, array_keys($components))) {
+      $is_field = TRUE;
+    }
+    else if (in_array($child, $hidden)) {
+      $is_field = TRUE;
+    }
+    else if (in_array($child, array_keys($field_groups))) {
+      $is_field_group = TRUE;
+    }
+
+    // If this isn't a field or a field group it is something we
+    // don't know how to handle.
+    if (!$is_field and !$is_field_group) {
+      return;
+    }
 
     // First remove the component from where it may already be a child.
     $field_groups = $display->getThirdPartySettings('field_group');
     foreach ($field_groups as $group_name => $group_details) {
       if (is_array($group_details['children'])) {
-        if (in_array($name, $group_details['children'])) {
-          unset($group_details['children'][$name]);
+        if (in_array($child, $group_details['children'])) {
+          unset($group_details['children'][$child]);
           $display->setThirdPartySetting('field_group', $group_name, $group_details);
         }
       }
     }
 
-    // Now add it where it needs to go as a child.
-    $parent_group = $display->getThirdPartySetting('field_group', $parent);
-    if (!in_array($child, $parent_group['children'])) {
-      $parent_group['children'][] = $name;
+    // If this is a field group then be sure to set it's parent.
+    if ($is_field_group) {
+      $child_group_details = $field_groups[$child];
+      $child_group_details['parent_name'] = $parent;
+      $display->setThirdPartySetting('field_group', $child, $child_group_details);
     }
-    $display->setThirdPartySetting('field_group', $parent, $parent_group);
+
+    // Now add it the child to the parent.
+    $parent_group_details = $field_groups[$parent];
+    if (!in_array($child, $parent_group_details['children'])) {
+      $parent_group_details['children'][] = $child;
+      $display->setThirdPartySetting('field_group', $parent, $parent_group_details);
+    }
   }
 
 
@@ -94,9 +125,6 @@ class TripalEntityUILayoutController extends ControllerBase {
         ]
       ];
       $display->setThirdPartySetting('field_group', $name, $table_group);
-      if ($parent_name !== "") {
-        $this->setChild($name, $parent_name, $display);
-      }
     }
   }
 
@@ -155,9 +183,6 @@ class TripalEntityUILayoutController extends ControllerBase {
         ],
       ];
       $display->setThirdPartySetting('field_group', $name, $details_group);
-      if ($parent_name !== "") {
-        $this->setChild($name, $parent_name, $display);
-      }
     }
   }
 
@@ -201,23 +226,12 @@ class TripalEntityUILayoutController extends ControllerBase {
       $layouts = $config->get('layouts');
       foreach ($layouts as $layout) {
         if ($layout['tripal_entity_type'] == $bundle) {
-          $bundle_layouts[$config_item] = [$layout];
+          $bundle_layouts[$config_item] = $layout;
         }
       }
     }
 
-    if (count($layouts) == 0) {
-      \Drupal::messenger()->addWarning(t('No default layouts could be found for this content type.'));
-      return $this->redirect('entity.tripal_entity.field_ui_fields',
-          ['tripal_entity_type' => $bundle_name]);
-
-    }
-    if (count($layouts) > 1) {
-      \Drupal::messenger()->addWarning(t('There are multiple layouts for the same content type. '
-          . 'Selecting the first. @layouts'), ['@layouts' => print_r($layouts, TRUE)]);
-    }
-
-    return $layouts[0];
+    return $bundle_layouts;
   }
 
 
@@ -266,13 +280,25 @@ class TripalEntityUILayoutController extends ControllerBase {
     $entity_type_manager = \Drupal::service('entity_type.manager');
     $config_entity_storage = $entity_type_manager->getStorage('entity_view_display');
     $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
+    dpm($display);
 
     // First reset the display.
     $this->clearFieldGroups($display);
     $this->unhideAll($display);
 
     // Get the layout for this bundle.
-    $layout = $this->getLayout($bundle);
+    $bundle_layouts = $this->getLayout($bundle);
+    if (count($bundle_layouts) == 0) {
+      \Drupal::messenger()->addWarning(t('No default layouts could be found for this content type.'));
+      return $this->redirect('entity.entity_view_display.tripal_entity.default',
+          ['tripal_entity_type' => $bundle]);
+
+    }
+    if (count($bundle_layouts) > 1) {
+      \Drupal::messenger()->addWarning(t('There are multiple layouts for the same content type. '
+          . 'Selecting the first. @layouts'), ['@layouts' => print_r($bundle_layouts, TRUE)]);
+    }
+    $layout =  array_values($bundle_layouts)[0];
 
     // If there are field group definitinos then create those.
     if (array_key_exists('field_groups', $layout)) {
@@ -296,6 +322,14 @@ class TripalEntityUILayoutController extends ControllerBase {
         foreach ($field_groups as $group_name => $settings) {
           $children = $settings['children'];
           foreach ($children as $child) {
+            // Prevent the case where the setup accidently sets the parent
+            // as a child of itself.
+            if ($child == $group_name) {
+              \Drupal::messenger()->addWarning(t('Please check the layout configuration.'
+                  . 'It is trying to set a element to be a child of itself: @group_name == @child',
+                  ['@group_name' => $group_name, '@child' => $child]));
+              continue;
+            }
             $this->setChild($child, $group_name, $display);
           }
         }
