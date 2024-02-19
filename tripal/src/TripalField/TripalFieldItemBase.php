@@ -170,7 +170,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $vocabulary = NULL;
     $debug = $field->getSetting('debug');
 
-    // IF this field is not a TripalField then we wnat to add a small
+    // IF this field is not a TripalField then we want to add a small
     // tag to the field so that we know in the validate we need to add
     // a setting for the cv term for this field.
     if (!is_subclass_of($field, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
