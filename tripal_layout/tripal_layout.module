@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for tripal_layout module.
+ */
+
+/**
+ * Implements hook_page_attachments().
+ */
+function tripal_layout_page_attachments(array &$attachments) {
+  $attachments['#attached']['library'][] = 'tripal_layout/tripal-layout';
+}

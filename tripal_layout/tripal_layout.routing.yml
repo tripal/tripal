@@ -1,0 +1,12 @@
+# Adds a +Check for new fields link on the 'Tripal Content Types' page.
+tripal_layout.content_type_field_layout:
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/layout'
+  defaults:
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::applyLayout'
+    _title: 'Check for new fields'
+  options:
+    parameters:
+      tripal_entity_type:
+        type: entity:tripal_entity_type
+  requirements:
+    _permission: 'administer tripal'
