@@ -255,6 +255,13 @@ class TripalEntityUILayoutController extends ControllerBase {
     $this->clearFieldGroups($display);
     $this->unhideAll($display);
 
+    // Set the component label's back to above.
+    $components = $display->getComponents();
+    foreach ($components as $component_name => $options) {
+      $options['label'] = 'above';
+      $display->setComponent($component_name, $options);
+    }
+
     // Save all of the changes to the display.
     $display->save();
 
@@ -280,7 +287,6 @@ class TripalEntityUILayoutController extends ControllerBase {
     $entity_type_manager = \Drupal::service('entity_type.manager');
     $config_entity_storage = $entity_type_manager->getStorage('entity_view_display');
     $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
-    dpm($display);
 
     // First reset the display.
     $this->clearFieldGroups($display);
@@ -339,6 +345,13 @@ class TripalEntityUILayoutController extends ControllerBase {
     // Now hide any fields that should be hidden.
     foreach ($layout['hidden'] as $field_name) {
       $this->hideComponent($field_name, $display);
+    }
+
+    // Hide the labels of all fields.
+    $components = $display->getComponents();
+    foreach ($components as $component_name => $options) {
+      $options['label'] = 'hidden';
+      $display->setComponent($component_name, $options);
     }
 
     // Save all of the changes to the display.
