@@ -77,6 +77,23 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       '#required' => TRUE,
       '#disabled' => $is_disabled,
       '#element_validate' => [[static::class, 'storageSettingsFormValidateBaseTable']],
+      '#ajax' => [
+        'callback' =>  [static::class, 'storageSettingsFormBaseTableAjaxCallback'],
+        'event' => 'change',
+        'progress' => [
+          'type' => 'throbber',
+          'message' => $this->t('Retrieving setting options dependant on the base table...'),
+        ],
+        'wrapper' => 'base-table-dependant-elements',
+      ]
+    ];
+
+    // Provide a container for ajax to update for any additional base_table
+    // depandant settings. We provide a wrapper like this since you can only
+    // attach a single ajax event to a form element.
+    $elements['storage_plugin_settings']['base_table_dependant'] = [
+      '#prefix' => '<div id="base-table-dependant-elements">',
+      '#suffix' => '</div>',
     ];
 
     // Optionally provide a column selector for the base table column if
@@ -86,21 +103,9 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $default_base_column = $storage_settings['base_column'] ?? '';
       $base_column = $complete_form_state->getValue(['settings', 'storage_plugin_settings', 'base_column']);
 
-      // Add an ajax callback so that when the base table is selected, the
-      // base column select can be populated.
-      $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-        'callback' =>  [$this, 'storageSettingsFormBaseTableAjaxCallback'],
-        'event' => 'change',
-        'progress' => [
-          'type' => 'throbber',
-          'message' => $this->t('Retrieving table columns...'),
-        ],
-        'wrapper' => 'edit-base_column',
-      ];
-
       $column_types = $plugin_definition['valid_base_column_types'] ?? [];
       $base_columns = $this->getTableColumns($base_table, $column_types);
-      $elements['storage_plugin_settings']['base_column'] = [
+      $elements['storage_plugin_settings']['base_table_dependant']['base_column'] = [
         '#type' => 'select',
         '#title' => t('Table Column'),
         '#description' => t('Select the column in the base table that contains the field data'),
@@ -108,8 +113,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         '#default_value' => $default_base_column,
         '#required' => TRUE,
         '#disabled' => $has_data or !$base_table,
-        '#prefix' => '<div id="edit-base_column">',
-        '#suffix' => '</div>',
       ];
     }
 
@@ -124,18 +127,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $elements['storage_plugin_settings']['base_table']['#options']
           = $this->getBaseTables($plugin_definition['object_table'], TRUE);
 
-      // Add an ajax callback so that when the base table is selected, the
-      // linking method select can be populated.
-      $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-        'callback' =>  [$this, 'storageSettingsFormLinkingMethodAjaxCallback'],
-        'event' => 'change',
-        'progress' => [
-          'type' => 'throbber',
-          'message' => $this->t('Retrieving linking methods...'),
-        ],
-        'wrapper' => 'edit-linker_table',
-      ];
-
       $linker_is_disabled = FALSE;
       $linker_tables = [];
       $default_linker_table_and_column = $storage_settings['linker_table_and_column'] ?? '';
@@ -146,7 +137,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       else {
         $linker_tables = $this->getLinkerTables($plugin_definition['object_table'], $base_table, self::$table_column_delimiter);
       }
-      $elements['storage_plugin_settings']['linker_table_and_column'] = [
+      $elements['storage_plugin_settings']['base_table_dependant']['linker_table_and_column'] = [
         '#type' => 'select',
         '#title' => t('Linking Method'),
         '#description' => t('Select the table that links the selected base table to the linked table. ' .
@@ -159,43 +150,37 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         '#default_value' => $default_linker_table_and_column,
         '#required' => TRUE,
         '#disabled' => $linker_is_disabled or !$base_table,
-        '#prefix' => '<div id="edit-linker_table">',
-        '#suffix' => '</div>',
         '#element_validate' => [[static::class, 'storageSettingsFormValidateLinkingMethod']],
       ];
-
     }
 
     return $elements + parent::storageSettingsForm($form, $form_state, $has_data);
   }
 
   /**
-   * Ajax callback to update the base column select. The select
-   * can't be populated until we know the base table.
+   * Ajax callback to update any settings that are dependant on the base table
+   * being selected.
    *
    * @param array $form
    *   The form array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
-  public function storageSettingsFormBaseTableAjaxCallback($form, &$form_state) {
-    $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-base_column', $form['settings']['storage_plugin_settings']['base_column']));
-    return $response;
-  }
+  public static function storageSettingsFormBaseTableAjaxCallback(array $form, FormStateInterface $form_state) {
 
-  /**
-   * Ajax callback to update the linking method select. The select
-   * can't be populated until we know the base table.
-   *
-   * @param array $form
-   *   The form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state object.
-   */
-  public function storageSettingsFormLinkingMethodAjaxCallback($form, &$form_state) {
+    // In Drupal 10.2, the field settings and storage settings each become subforms
+    // within the same page. We check for the key here in order to still support
+    // pre-subform versions of this form.
+    if (array_key_exists('field_storage', $form)) {
+      // NOTE: AJAX always has the full form, even when subforms are involved ;-p
+      // In this case, there are actually keys for the field settings (settings)
+      // and field storage (field_storage) forms and then nested below this is
+      // a key (subform) containing the actual array of the subform.
+      $field_storage_form = $form['field_storage']['subform'];
+    }
+
     $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['settings']['storage_plugin_settings']['linker_table_and_column']));
+    $response->addCommand(new ReplaceCommand('#base-table-dependant-elements', $field_storage_form['settings']['storage_plugin_settings']['base_table_dependant']));
     return $response;
   }
 
