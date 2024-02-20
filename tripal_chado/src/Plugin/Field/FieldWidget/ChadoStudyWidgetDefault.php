@@ -29,7 +29,7 @@ class ChadoStudyWidgetDefault extends ChadoWidgetBase {
     $field_definition = $items[$delta]->getFieldDefinition();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? 'study_id';
+      ?? $storage_settings['base_table_dependant']['base_column'] ?? 'study_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
 
     // Get the list of studies. Include contacts because that has a not null constraint.

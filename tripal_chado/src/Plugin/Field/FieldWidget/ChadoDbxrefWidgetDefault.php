@@ -43,7 +43,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $field_definition = $items[$delta]->getFieldDefinition();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? 'biomaterial_id';
+      ?? $storage_settings['base_table_dependant']['base_column'] ?? 'biomaterial_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
 
     // Retrieve a value we need to get from the form state after an ajax callback

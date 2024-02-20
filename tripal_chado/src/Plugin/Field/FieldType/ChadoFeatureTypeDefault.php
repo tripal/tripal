@@ -136,7 +136,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     // and 'base_column' settings.
     $linker_table = $storage_settings['linker_table'] ?? $base_table;
     $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? $object_pkey_col;
+      ?? $storage_settings['base_table_dependant']['base_column'] ?? $object_pkey_col;
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {

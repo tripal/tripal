@@ -100,7 +100,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // the field annotations specify it.
     $plugin_definition = $this->getPluginDefinition();
     if ($plugin_definition['select_base_column'] ?? FALSE) {
-      $default_base_column = $storage_settings['base_column'] ?? '';
+      $default_base_column = $storage_settings['base_table_dependant']['base_column'] ?? '';
       $base_column = $complete_form_state->getValue(['settings', 'storage_plugin_settings', 'base_column']);
 
       $column_types = $plugin_definition['valid_base_column_types'] ?? [];
