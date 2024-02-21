@@ -34,15 +34,15 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = [];
 
-    // In Drupal 10.2, the field settings and storage settings each become subforms
-    // within the same page. In this case the form_state actually is a
-    // sub form state instead of the full form state.
+    // Starting with Drupal 10.2, the field settings and storage settings each
+    // become subforms within the same page. In this case the form_state actually
+    // is a sub form state instead of the full form state.
     // There is an ongoing discussion around this which could result in the
     // passed form state going back to a full form state. In order to prevent
     // future breakage because of a core update we'll just check which type of
     // FormStateInterface we've been passed and act accordingly.
     // @See https://www.drupal.org/node/2798261
-    $complete_form_state = $form_state;
+    $complete_form_state = NULL;
     if ($form_state instanceof \Drupal\Core\Form\SubformStateInterface) {
       $complete_form_state = $form_state->getCompleteFormState();
     }
@@ -54,7 +54,13 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $is_disabled = FALSE;
     $storage_settings = $this->getSetting('storage_plugin_settings');
     $default_base_table = $storage_settings['base_table'] ?? '';
-    $base_table = $complete_form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+
+    if ($complete_form_state) {
+      $base_table = $complete_form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table']);
+    }
+    else {
+      $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+    }
     if ($default_base_table) {
       $is_disabled = TRUE;
     }
@@ -89,7 +95,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     ];
 
     // Provide a container for ajax to update for any additional base_table
-    // depandant settings. We provide a wrapper like this since you can only
+    // dependant settings. We provide a wrapper like this since you can only
     // attach a single ajax event to a form element.
     $elements['storage_plugin_settings']['base_table_dependant'] = [
       '#prefix' => '<div id="base-table-dependant-elements">',
@@ -101,7 +107,12 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $plugin_definition = $this->getPluginDefinition();
     if ($plugin_definition['select_base_column'] ?? FALSE) {
       $default_base_column = $storage_settings['base_table_dependant']['base_column'] ?? '';
-      $base_column = $complete_form_state->getValue(['settings', 'storage_plugin_settings', 'base_column']);
+      if ($complete_form_state) {
+        $base_column = $complete_form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_column']);
+      }
+      else {
+        $base_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_column']);
+      }
 
       $column_types = $plugin_definition['valid_base_column_types'] ?? [];
       $base_columns = $this->getTableColumns($base_table, $column_types);
@@ -177,6 +188,9 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       // and field storage (field_storage) forms and then nested below this is
       // a key (subform) containing the actual array of the subform.
       $field_storage_form = $form['field_storage']['subform'];
+    }
+    else {
+      $field_storage_form = $form;
     }
 
     $response = new AjaxResponse();
@@ -353,7 +367,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * a base table and a linked table. These can either be
    * a column in the base table, or a connection through
    * a linking table that connects the base table to the
-   *  linked table.
+   * linked table.
    * In some cases there may be more than one way to link
    * the two tables, so the list generated here can be
    * presented to the site administrator to select the
