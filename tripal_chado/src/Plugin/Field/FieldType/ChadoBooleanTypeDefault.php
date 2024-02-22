@@ -55,7 +55,7 @@ class ChadoBooleanTypeDefault extends ChadoFieldItemBase {
     }
 
     // Get the base table columns needed for this field.
-    $base_column = $settings['base_column'];
+    $base_column = $settings['base_table_dependant']['base_column'] ?? $settings['base_column'];
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);

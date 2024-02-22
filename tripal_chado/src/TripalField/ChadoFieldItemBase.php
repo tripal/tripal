@@ -88,7 +88,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         'event' => 'change',
         'progress' => [
           'type' => 'throbber',
-          'message' => $this->t('Retrieving setting options dependant on the base table...'),
+          'message' => $this->t('Retrieving setting options that depend on the base table...'),
         ],
         'wrapper' => 'base-table-dependant-elements',
       ]
@@ -140,7 +140,9 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
       $linker_is_disabled = FALSE;
       $linker_tables = [];
-      $default_linker_table_and_column = $storage_settings['linker_table_and_column'] ?? '';
+      $default_linker_table_and_column = $storage_settings['base_table_dependant']['linker_table_and_column']
+        ?? $storage_settings['linker_table_and_column']
+        ?? '';
       if ($default_linker_table_and_column) {
         $linker_is_disabled = TRUE;
         $linker_tables = [$default_linker_table_and_column => $default_linker_table_and_column];
@@ -194,7 +196,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     }
 
     $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#base-table-dependant-elements', $field_storage_form['settings']['storage_plugin_settings']['base_table_dependant']));
+    $response->addCommand(new ReplaceCommand('#base-table-dependant-elements',
+                          $field_storage_form['settings']['storage_plugin_settings']['base_table_dependant']));
     return $response;
   }
 
@@ -233,13 +236,19 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidateLinkingMethod(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
+    // Try Drupal 10.2 version first
+    $settings = $form_state->getValue(['field_storage', 'subform', 'settings']);
+    // Drupal <=10.1
+    if (!$settings) {
+      $settings = $form_state->getValue('settings');
+    }
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }
 
     // Convert the combined value from the linking method form select into table and column
-    $linker_table_and_column = $settings['storage_plugin_settings']['linker_table_and_column'];
+    $linker_table_and_column = $settings['storage_plugin_settings']['base_table_dependant']['linker_table_and_column']
+        ?? $settings['storage_plugin_settings']['linker_table_and_column'];
     $parts = explode(self::$table_column_delimiter, $linker_table_and_column);
     if (count($parts) == 2) {
       $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_table'], $parts[0]);

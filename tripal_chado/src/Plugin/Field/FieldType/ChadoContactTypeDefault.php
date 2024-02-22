@@ -65,7 +65,6 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     // Create a variable for easy access to settings.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
-
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table) {
@@ -106,8 +105,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     // For single hop, in the yaml we support using the usual 'base_table'
     // and 'base_column' settings.
     $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_table_dependant']['base_column'] ?? $object_pkey_col;
+    $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {

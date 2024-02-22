@@ -3,15 +3,15 @@
 namespace Drupal\tripal\TripalField;
 
 use Drupal\Core\Field\FieldItemBase;
-use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\tripal\TripalStorage\IntStoragePropertyType;
-use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
-use Drupal\tripal\TripalStorage\TextStoragePropertyType;
-use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\DataDefinition;
+use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
+use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
+use Drupal\tripal\TripalStorage\IntStoragePropertyType;
+use Drupal\tripal\TripalStorage\TextStoragePropertyType;
+use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
+use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use \RuntimeException;
 
 /**
@@ -176,14 +176,23 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     ];
 
     $default_vocabulary_term = '';
-    $vocabulary_term = $form_state->getValue(['settings', 'field_term_fs', 'vocabulary_term']);
+
+    // For Drupal ~10.2 our values are now in the subform
+    if (array_key_exists('field_storage', $form)) {
+      $vocabulary_term = $form_state->getValue(['field_storage', 'subform', 'settings', 'field_term_fs', 'vocabulary_term']);
+    }
+    else {
+      $vocabulary_term = $form_state->getValue(['settings', 'field_term_fs', 'vocabulary_term']);
+    }
+
     if ($vocabulary_term) {
       $default_vocabulary_term = $vocabulary_term;
     }
-    else {
-      $vocabulary_term = $form_state->getUserInput(['settings', 'field_term_fs', 'vocabulary_term']);
-      $default_vocabulary_term = $vocabulary_term;
-    }
+// @to-do figure out why this was here - possible security implications using getUserInput()
+//    else {
+//      $vocabulary_term = $form_state->getUserInput(['settings', 'field_term_fs', 'vocabulary_term']);
+//      $default_vocabulary_term = $vocabulary_term;
+//    }
 
     if (!$termIdSpace or !$termAccession) {
       if (!$default_vocabulary_term) {
@@ -214,7 +223,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
                 ['@term' => $termIdSpace . ':' . $termAccession]));
             $is_open = TRUE;
           }
-          $default_vocabulary_term = !$default_vocabulary_term ? $term->getName()  . ' (' . $term->getIdSpace() . ':' . $term->getAccession() . ')' : '';
+          $default_vocabulary_term = !$default_vocabulary_term ? ($term->getName() . ' (' . $term->getIdSpace() . ':' . $term->getAccession() . ')') : '';
         }
       }
     }
@@ -268,12 +277,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if (preg_match('/(.+?)\((.+?):(.+?)\)/', $term_str, $matches)) {
       $idSpace_name = $matches[2];
       $accession = $matches[3];
-      $form_state->setValue(['settings','termIdSpace'], $idSpace_name);
-      $form_state->setValue(['settings','termAccession'], $accession);
+      $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
+      $form_state->setValue(['settings', 'termAccession'], $accession);
     }
     else {
       $form_state->setErrorByName('field_term_fs][vocabulary_term',
-          'Please provide a valid term. It must have the ID space and accession in parenthesis.');
+          'Please provide a valid term. It must have the ID space and accession in parentheses.');
     }
   }
 
@@ -543,8 +552,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public function tripalValuesTemplate($field_definition, $default_value = NULL) {
 
-    // If we have a parent, they the field is attached ot an entity. If it's just
-    // an instance withouta parent then the entity_id should stay null.
+    // If we have a parent, then the field is attached to an entity. If it's just
+    // an instance without a parent then the entity_id should stay null.
     $entity_id = NULL;
     $entity_type_id = 'tripal_entity';
     if ($this->getParent()) {
