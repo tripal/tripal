@@ -44,8 +44,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public static function defaultStorageSettings() {
     $settings = [
-      'termIdSpace' => '',
-      'termAccession' => '',
+// @@@ somehow these values override the defaultFieldSettings values in Drupal 10.2. Why were they here, anyway, they shouldn't be?
+//      'termIdSpace' => '',
+//      'termAccession' => '',
       'storage_plugin_id' => '',
       'storage_plugin_settings' => [],
     ];
@@ -277,8 +278,16 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if (preg_match('/(.+?)\((.+?):(.+?)\)/', $term_str, $matches)) {
       $idSpace_name = $matches[2];
       $accession = $matches[3];
-      $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
-      $form_state->setValue(['settings', 'termAccession'], $accession);
+      // Test if Drupal version ~10.2 by presence of subform
+      $drupal_version_10_2 = $form_state->getValue(['field_storage', 'subform']);
+      if ($drupal_version_10_2) {
+        $form_state->setValue(['field_storage', 'subform', 'settings', 'termIdSpace'], $idSpace_name);
+        $form_state->setValue(['field_storage', 'subform', 'settings', 'termAccession'], $accession);
+      }
+      else {
+        $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
+        $form_state->setValue(['settings', 'termAccession'], $accession);
+      }
     }
     else {
       $form_state->setErrorByName('field_term_fs][vocabulary_term',

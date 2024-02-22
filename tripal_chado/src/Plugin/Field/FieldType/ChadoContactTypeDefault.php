@@ -102,10 +102,18 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     $contact_type_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
-    // For single hop, in the yaml we support using the usual 'base_table'
-    // and 'base_column' settings.
-    $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
+    $combined_setting = $storage_settings['base_table_dependant']['linker_table_and_column'] ?? '';
+    if ($combined_setting) {
+      $parts = self::parse_linker_table_and_column($combined_setting);
+      $linker_table = $parts[0];
+      $linker_fkey_column = $parts[1];
+    }
+    else {
+      // For single hop, in the yaml we support using the usual 'base_table'
+      // and 'base_column' settings.
+      $linker_table = $storage_settings['linker_table'] ?? $base_table;
+      $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
+    }
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {

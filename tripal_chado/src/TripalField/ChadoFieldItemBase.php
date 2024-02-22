@@ -88,7 +88,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         'event' => 'change',
         'progress' => [
           'type' => 'throbber',
-          'message' => $this->t('Retrieving setting options that depend on the base table...'),
+          'message' => $this->t('Retrieving options that depend on the base table...'),
         ],
         'wrapper' => 'base-table-dependant-elements',
       ]
@@ -249,14 +249,33 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // Convert the combined value from the linking method form select into table and column
     $linker_table_and_column = $settings['storage_plugin_settings']['base_table_dependant']['linker_table_and_column']
         ?? $settings['storage_plugin_settings']['linker_table_and_column'];
-    $parts = explode(self::$table_column_delimiter, $linker_table_and_column);
-    if (count($parts) == 2) {
+    $parts = self::parse_linker_table_and_column($linker_table_and_column);
+    if ($parts) {
       $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_table'], $parts[0]);
       $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_fkey_column'], $parts[1]);
     }
     else {
       $form_state->setErrorByName('settings][storage_plugin_settings][linker_table_and_column',
           'The selected linking method is not valid.');
+    }
+  }
+
+  /**
+   * Parse a combined linker table + column string into its two pars
+   *
+   * @param string $linker_table_and_column
+   *   Table and column delimited by self::table_column_delimiter, a right arrow by default
+   *
+   * @return array
+   *   Will contain 2 elements if valid, empty array if not.
+   */
+  public static function parse_linker_table_and_column($linker_table_and_column) {
+    $parts = explode(self::$table_column_delimiter, $linker_table_and_column);
+    if (count($parts) == 2) {
+      return $parts;
+    }
+    else {
+      return [];
     }
   }
 
