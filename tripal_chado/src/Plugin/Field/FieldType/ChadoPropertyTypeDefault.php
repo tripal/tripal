@@ -58,11 +58,11 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $settings['base_table'];
-    $prop_table = $settings['prop_table'];
+    $prop_table = $settings['prop_table'] ?? '';
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
-    if (!$base_table) {
+    if (!$base_table or !$prop_table) {
       return;
     }
 
@@ -90,7 +90,8 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // type set for the field. As such, we grab that here and use it in our
     // table alias.
     $field_settings = $field_definition->getSettings();
-    $term = $field_settings['termIdSpace'] . ': ' . $field_settings['termAccession'];
+    // @to-do - Ugly hack - why are these settings sometimes missing now?
+    $term = ($field_settings['termIdSpace'] ?? '0') . ':' . ($field_settings['termAccession'] ?? '0');
     $table_alias = $prop_table . '_' . preg_replace( '/[^a-z0-9]+/', '', strtolower( $term ) );
 
 
