@@ -132,7 +132,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
               $form['test_results_count_info'] = [
                 '#markup' => '<h1>Test results</h1><div>Found ' . $results['total_records'] . 
-                  ' publications. Showing the first 5 publications.</div>',
+                  ' publications.' . ($results['total_records']>5?' Showing the first 5 publications.':'') . '</div>',
                 '#weight' => 998
               ];
               
