@@ -1116,7 +1116,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
               $authors .= $author['Collective'] . ', ';
             }
             else {
-              $authors .= $author['Surname'] . ' ' . $author['First Initials'] . ', ';
+              $authors .= ($author['Surname']??'') . ' ' . ($author['First Initials']??'') . ', ';
             }
           }
           $authors = substr($authors, 0, -2);
