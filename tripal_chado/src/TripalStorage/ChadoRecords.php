@@ -116,23 +116,26 @@ class ChadoRecords  {
 
     // Make sure all of the required elements are preesent
     $this->checkElement($elements, 'base_table', 'Initializing', 'table');
+    $this->checkElement($elements, 'root_table', 'Initializing', 'table');
+    $this->checkElement($elements, 'root_alias', 'Initializing', 'table');
     $this->checkElement($elements, 'chado_table', 'Initializing', 'table');
     $this->checkElement($elements, 'table_alias', 'Initializing', 'table');
     $this->checkElement($elements, 'delta', 'Initializing', 'table');
 
     // Get the items needed to initalize a table.
     $base_table = $elements['base_table'];
+    $root_table = $elements['root_table'];
+    $root_alias = $elements['root_alias'];
     $chado_table = $elements['chado_table'];
     $table_alias = $elements['table_alias'];
     $delta = $elements['delta'];
 
-    if ($base_table == $chado_table) {
-      if ($base_table != $table_alias) {
-        throw new \Exception(t('ChadoRecords::initTable(). Invalid attempt to '
-            . 'initalize a table as the base table cannot have an alias. '
-            . 'The element tries to set a table alias, which is not supported: '
-            . '@elements',
-            ['@elements' => print_r($elements, TRUE)]));
+    if ($base_table == $root_table) {
+      if ($base_table != $root_alias) {
+        throw new \Exception(t('ChadoRecords::initTable(). The base table cannot have an alias. '
+          . 'Check all fields the contribute properties and make sure none of them use an alias '
+          . 'for the root table in the "path" element. @elements',
+          ['@elements' => print_r($elements, TRUE)]));
       }
     }
 
@@ -456,7 +459,7 @@ class ChadoRecords  {
    * @throws \Exception
    *   If the any required fields are missing an error is thrown.
    */
-  public function addJoin(array $elements) {
+  public function addJoin(array &$elements) {
 
     // Initlaize the table. If the function returns FALSE
     // then the caller is trying to re-intalize the base table so jus quit.
@@ -509,6 +512,10 @@ class ChadoRecords  {
     if (!array_key_exists('columns', $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['joins'][$join_path])) {
       $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['joins'][$join_path]['columns'] = [];
     }
+
+    // Set the elements array
+    $elements['left_alias'] = $left_alias;
+    $elements['right_alias'] = $right_alias;
   }
 
   /**
@@ -1594,7 +1601,7 @@ class ChadoRecords  {
       // zero.
       unset($values[$pkey]);
 
-      // Add the fiels to the insert.
+      // Add the fields to the insert.
       $insert->fields($values);
       $this->field_debugger->reportQuery($insert, "Insert Query for $chado_table ($delta)");
 
