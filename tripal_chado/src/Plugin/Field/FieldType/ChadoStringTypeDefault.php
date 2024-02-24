@@ -19,7 +19,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * @FieldType(
  *   id = "chado_string_type_default",
  *   label = @Translation("Chado String Field Type"),
- *   description = @Translation("A string field."),
+ *   description = @Translation("A text field with a maximum length."),
  *   default_widget = "chado_string_type_widget",
  *   default_formatter = "chado_string_type_formatter",
  *   select_base_column = TRUE,
