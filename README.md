@@ -44,16 +44,6 @@ This project uses Code Climate to determine the quality of our codebase and the 
 
 ## Current Timeline
 
-### Required for Tripal 4.alpha2 Release
-
-- Publishing of the pages
-- Finish implementing Chado Storage for fields ([#1350](https://github.com/tripal/tripal/issues/1350), [#1351](https://github.com/tripal/tripal/issues/1351))
-- Drush generator/updator for fields
-- Update existing core fields
-- Finish Chado Vocabs/ID Spaces/Terms ([#1354](https://github.com/tripal/tripal/issues/1354))
-- Legacy API
-- Move data type specific functionality into extension modules ([#1357](https://github.com/tripal/tripal/issues/1357))
-
 ### Required for Tripal 4.alpha3 Release
 
 - Display suite / page work

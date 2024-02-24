@@ -1,0 +1,7 @@
+# -- Configuration for Tripal Content Types link.
+entity.tripal_layout_default_view.layouts:
+  title: 'Tripal Default Layouts'
+  parent: tripal.config
+  description: 'Manage configurations for Tripal content types layouts which specify the details for how content types are displayed by default.'
+  route_name: entity.tripal_layout_default_view.layouts
+  weight: 20
