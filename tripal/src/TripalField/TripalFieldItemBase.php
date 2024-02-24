@@ -44,9 +44,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public static function defaultStorageSettings() {
     $settings = [
-// @@@to-do somehow these values override the defaultFieldSettings values in Drupal 10.2. Why were they here, anyway, they shouldn't be?
-//      'termIdSpace' => '',
-//      'termAccession' => '',
+      'termIdSpace' => '',
+      'termAccession' => '',
       'storage_plugin_id' => '',
       'storage_plugin_settings' => [],
     ];

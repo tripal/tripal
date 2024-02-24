@@ -90,8 +90,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // type set for the field. As such, we grab that here and use it in our
     // table alias.
     $field_settings = $field_definition->getSettings();
-    // @to-do - Ugly hack - why are these settings sometimes missing now?
-    $term = ($field_settings['termIdSpace'] ?? '0') . ':' . ($field_settings['termAccession'] ?? '0');
+    $term = $field_settings['termIdSpace'] . ':' . $field_settings['termAccession'];
     $table_alias = $prop_table . '_' . preg_replace( '/[^a-z0-9]+/', '', strtolower( $term ) );
 
 
