@@ -524,6 +524,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         // This will run plugin specific form submit operations that can alter the criteria database column
         // which stores the specific plugin importer settings (basically all the form data)
         $plugin_id = $user_input['plugin_id'];
+        $plugin = NULL;
         if ($plugin_id) {
           // Instantiate the selected plugin
           // Pub Library Manager is found in tripal module: 
@@ -549,7 +550,8 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
         // If form_mode is not edit, then it is a new importer
         if ($form_mode != "edit") {
-          $public->insert('tripal_pub_import')->fields($db_fields)->execute();
+          // $public->insert('tripal_pub_import')->fields($db_fields)->execute();
+          $plugin->addSearchQuery($db_fields);
           $messenger->addMessage("Importer successfully added!");
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
@@ -557,10 +559,11 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
         // If form_mode is 'edit', this is an update to the database
         else {
-          $public->update('tripal_pub_import')
-            ->fields($db_fields)
-            ->condition('pub_import_id', $user_input['pub_import_id'])
-            ->execute();
+          // $public->update('tripal_pub_import')
+          //   ->fields($db_fields)
+          //   ->condition('pub_import_id', $user_input['pub_import_id'])
+          //   ->execute();
+          $plugin->updateSearchQuery($user_input['pub_import_id'], $db_fields);
           $messenger->addMessage("Importer successfully edited!");
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
