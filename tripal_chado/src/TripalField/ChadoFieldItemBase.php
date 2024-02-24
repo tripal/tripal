@@ -2,11 +2,11 @@
 
 namespace Drupal\tripal_chado\TripalField;
 
-use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\tripal\TripalField\TripalFieldItemBase;
+use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 
 
 /**
@@ -34,8 +34,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = [];
 
-    // Starting with Drupal 10.2, the field settings and storage settings each
-    // become subforms within the same page. In this case the form_state actually
+    // Starting with Drupal 10.2, the field storage settings form is a subform
+    // within the field settings form. In this case the form_state actually
     // is a sub form state instead of the full form state.
     // There is an ongoing discussion around this which could result in the
     // passed form state going back to a full form state. In order to prevent
@@ -103,7 +103,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     ];
 
     // Optionally provide a column selector for the base table column if
-    // the field annotations specify it.
+    // the field annotations specify it. In yaml files we don't need to
+    // include the 'base_table_dependant' key.
     $plugin_definition = $this->getPluginDefinition();
     if ($plugin_definition['select_base_column'] ?? FALSE) {
       $default_base_column = $storage_settings['base_table_dependant']['base_column'] ?? '';
@@ -236,12 +237,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidateLinkingMethod(array $form, FormStateInterface $form_state) {
-    // Try Drupal 10.2 version first
-    $settings = $form_state->getValue(['field_storage', 'subform', 'settings']);
-    // If not, we have Drupal <=10.1
-    if (!$settings) {
-      $settings = $form_state->getValue('settings');
-    }
+    $settings = self::getFormStateSettings($form_state);
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }

@@ -43,6 +43,9 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     $storage_settings['storage_plugin_settings']['linker_table'] = '';
     $storage_settings['storage_plugin_settings']['linker_fkey_column'] = '';
     $storage_settings['storage_plugin_settings']['object_table'] = self::$object_table;
+    // @@@To-do these next 2 lines make the field work, but need to investigate..
+    $storage_settings['termIdSpace'] = 'NCIT';
+    $storage_settings['termAccession'] = 'C47954';
     return $storage_settings;
   }
 

@@ -205,14 +205,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
-    // In Drupal ~10.2 settings are in the subform
-    $field_storage = $form_state->getValue('field_storage');
-    if ($field_storage) {
-      $settings = $field_storage['subform']['settings'];
-    }
-    else {
-      $settings = $form_state->getValue('settings');
-    }
+    $settings = self::getFormStateSettings($form_state);
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }
@@ -222,7 +215,8 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     if ($schema->tableExists($prop_table)) {
-      if ($field_storage) {
+      $drupal_10_2 = $form_state->getValue(['field_storage']);
+      if ($drupal_10_2) {
         $form_state->setValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
       }
       else {

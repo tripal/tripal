@@ -548,6 +548,29 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   }
 
   /**
+   * Returns the settings from the form state
+   *
+   * Under Drupal ~10.2 the settings array is located in a subform.
+   * This function will figure out where it is, and return it.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form.
+   *
+   * @return array
+   *   The settings array
+   */
+  public static function getFormStateSettings(FormStateInterface $form_state) {
+    $settings = [];
+    // First test Drupal ~10.2 location
+    $settings = $form_state->getValue(['field_storage', 'subform', 'settings']);
+    // Otherwise if Drupal <= 10.1
+    if (!$settings) {
+      $settings = $form_state->getValue('settings');
+    }
+    return $settings;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function tripalValuesTemplate($field_definition, $default_value = NULL) {
