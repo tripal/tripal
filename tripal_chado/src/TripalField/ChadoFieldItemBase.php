@@ -238,7 +238,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public static function storageSettingsFormValidateLinkingMethod(array $form, FormStateInterface $form_state) {
     // Try Drupal 10.2 version first
     $settings = $form_state->getValue(['field_storage', 'subform', 'settings']);
-    // Drupal <=10.1
+    // If not, we have Drupal <=10.1
     if (!$settings) {
       $settings = $form_state->getValue('settings');
     }
@@ -261,7 +261,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
-   * Parse a combined linker table + column string into its two pars
+   * Parse a combined linker table + column string into its two parts
    *
    * @param string $linker_table_and_column
    *   Table and column delimited by self::table_column_delimiter, a right arrow by default

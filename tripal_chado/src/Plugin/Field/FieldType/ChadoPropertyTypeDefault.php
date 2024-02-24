@@ -58,11 +58,11 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $settings['base_table'];
-    $prop_table = $settings['prop_table'] ?? '';
+    $prop_table = $settings['prop_table'];
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
-    if (!$base_table or !$prop_table) {
+    if (!$base_table) {
       return;
     }
 
@@ -206,7 +206,14 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
+    // In Drupal ~10.2 settings are in the subform
+    $field_storage = $form_state->getValue('field_storage');
+    if ($field_storage) {
+      $settings = $field_storage['subform']['settings'];
+    }
+    else {
+      $settings = $form_state->getValue('settings');
+    }
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }
@@ -216,7 +223,12 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     if ($schema->tableExists($prop_table)) {
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
+      if ($field_storage) {
+        $form_state->setValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
+      }
+      else {
+        $form_state->setValue(['settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
+      }
     }
     else {
       $form_state->setErrorByName('storage_plugin_settings][base_table',

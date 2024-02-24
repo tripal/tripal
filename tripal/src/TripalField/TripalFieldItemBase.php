@@ -44,7 +44,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public static function defaultStorageSettings() {
     $settings = [
-// @@@ somehow these values override the defaultFieldSettings values in Drupal 10.2. Why were they here, anyway, they shouldn't be?
+// @@@to-do somehow these values override the defaultFieldSettings values in Drupal 10.2. Why were they here, anyway, they shouldn't be?
 //      'termIdSpace' => '',
 //      'termAccession' => '',
       'storage_plugin_id' => '',
@@ -189,7 +189,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if ($vocabulary_term) {
       $default_vocabulary_term = $vocabulary_term;
     }
-// @to-do figure out why this was here - possible security implications using getUserInput()
+// @@@to-do figure out why this was here - possible security implications using getUserInput()
 //    else {
 //      $vocabulary_term = $form_state->getUserInput(['settings', 'field_term_fs', 'vocabulary_term']);
 //      $default_vocabulary_term = $vocabulary_term;
@@ -247,7 +247,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       $this->buildVocabularyTermTable($elements, $term, $idSpace, $vocabulary);
       $element_title = "Change the Term";
     }
-
     $elements['field_term_fs']["vocabulary_term"] = [
       "#type" => "textfield",
       "#title" => $this->t($element_title),
@@ -279,16 +278,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if (preg_match('/(.+?)\((.+?):(.+?)\)/', $term_str, $matches)) {
       $idSpace_name = $matches[2];
       $accession = $matches[3];
-      // Test if Drupal version ~10.2 by presence of subform
-      $drupal_version_10_2 = $form_state->getValue(['field_storage', 'subform']);
-      if ($drupal_version_10_2) {
-        $form_state->setValue(['field_storage', 'subform', 'settings', 'termIdSpace'], $idSpace_name);
-        $form_state->setValue(['field_storage', 'subform', 'settings', 'termAccession'], $accession);
-      }
-      else {
-        $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
-        $form_state->setValue(['settings', 'termAccession'], $accession);
-      }
+      $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
+      $form_state->setValue(['settings', 'termAccession'], $accession);
     }
     else {
       $form_state->setErrorByName('field_term_fs][vocabulary_term',
