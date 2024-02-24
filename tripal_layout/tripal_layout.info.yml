@@ -1,4 +1,4 @@
-name: 'tripal_layout'
+name: 'Tripal Layout'
 type: module
 description: 'Auto generates layouts for Tripal entity types'
 core_version_requirement: ^9.4 || ^10
