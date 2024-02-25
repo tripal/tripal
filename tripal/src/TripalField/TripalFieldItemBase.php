@@ -43,9 +43,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
+    // We copy over the field settings for the CV term to the storage
+    // settings from whatever child class is calling this function.
+    $child_class = static::class;
     $settings = [
-      'termIdSpace' => '',
-      'termAccession' => '',
+      'termIdSpace' => ($child_class::defaultFieldSettings()['termIdSpace'] ?? ''),
+      'termAccession' => ($child_class::defaultFieldSettings()['termAccession'] ?? ''),
       'storage_plugin_id' => '',
       'storage_plugin_settings' => [],
     ];
