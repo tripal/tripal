@@ -402,7 +402,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       "#disabled" => TRUE
     ];
 
-    // Make a fieldset for each property settings.
+    // Make a fieldset for each property setting.
     if (array_key_exists('property_settings', $settings)) {
       $property_settings = $settings['property_settings'];
       $property_elements = [];
@@ -447,14 +447,29 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $headers = ['Storage Property', 'Value'];
     $rows = [];
     foreach ($settings as $setting_name => $setting_value) {
-      $rows[] = [
-        [
-          'data' => $setting_name,
-          'header' => TRUE,
-          'width' => '20%',
-        ],
-        $setting_value,
-      ];
+      if (is_array($setting_value)) {
+        // This handles any base_table_dependant settings
+        foreach ($setting_value as $subsetting_name => $subsetting_value) {
+          $rows[] = [
+            [
+              'data' => $subsetting_name,
+              'header' => TRUE,
+              'width' => '20%',
+            ],
+            $subsetting_value,
+          ];
+        }
+      }
+      else {
+        $rows[] = [
+          [
+            'data' => $setting_name,
+            'header' => TRUE,
+            'width' => '20%',
+          ],
+          $setting_value,
+        ];
+      }
     }
     $elements['settings_fs'] = [
       '#type' => 'details',
