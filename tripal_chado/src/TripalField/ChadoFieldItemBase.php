@@ -257,15 +257,46 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
+   * Retrieve linker table and column from storage settings, used in a field's tripalTypes() function.
+   *
+   * @param array $storage_settings
+   *   Storage settings for a field
+   * @param string $default_table
+   *   This will be the base table for the field
+   * @param string $default_column
+   *   This will be the object pkey column for the field
+   *
+   * @return array
+   *   Returns linker_table and linker_fkey_column
+   */
+  public static function get_linker_table_and_column($storage_settings, $default_table, $default_column) {
+    // The combined setting comes from the field settings form, e.g. "project → contact"
+    $combined_setting = $storage_settings['base_table_dependant']['linker_table_and_column'] ?? '';
+    if ($combined_setting) {
+      $parts = self::parse_linker_table_and_column($combined_setting);
+      $linker_table = $parts[0];
+      $linker_fkey_column = $parts[1];
+    }
+    else {
+      // For single hop, in the yaml we support using the usual 'base_table'
+      // and 'base_column' settings, these are passed in as the defaults.
+      $linker_table = $storage_settings['linker_table'] ?? $default_table;
+      $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $default_column;
+    }
+    return [$linker_table, $linker_fkey_column];
+  }
+
+  /**
    * Parse a combined linker table + column string into its two parts
    *
    * @param string $linker_table_and_column
-   *   Table and column delimited by self::table_column_delimiter, a right arrow by default
+   *   Table and column delimited by self::table_column_delimiter, a right
+   *    arrow by default, e.g."project → contact"
    *
    * @return array
    *   Will contain 2 elements if valid, empty array if not.
    */
-  public static function parse_linker_table_and_column($linker_table_and_column) {
+  protected static function parse_linker_table_and_column($linker_table_and_column) {
     $parts = explode(self::$table_column_delimiter, $linker_table_and_column);
     if (count($parts) == 2) {
       return $parts;
