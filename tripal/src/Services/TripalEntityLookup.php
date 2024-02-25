@@ -199,7 +199,7 @@ $t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for uncached lookup="); //@@
    */
   public function getEntityURI($datastore, $base_table, $record_id) {
     $uri = NULL;
-    $id = $this->getEntityId($datastore, $base_table, $record_id);
+    $id = $this->getEntityIdFromRecordId($datastore, $base_table, $record_id);
     if ($id) {
       $uri = "internal:/bio_data/$id";
     }
@@ -221,7 +221,7 @@ $t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for uncached lookup="); //@@
    *   The id for the requested entity in the tripal_entity table.
    *   Will be null if zero or if multiple hits.
    */
-  public function getEntityId($datastore, $base_table, $record_id) {
+  public function getEntityIdFromRecordId($datastore, $base_table, $record_id) {
     $id = NULL;
     $not_null_columns = $this->getNotNullColumns($base_table);  // @@@ to do chado schema and version???
     $entity_table_name = 'tripal_entity__' . $base_table . '_' . $not_null_columns[0];
