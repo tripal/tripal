@@ -124,9 +124,9 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     $common_name_term = $mapping->getColumnTermId('organism', 'common_name');
     $common_name_len = $organism_schema_def['fields']['common_name']['size'];
 
-    // Linker table, when used
-    $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
+    // Linker table, when used, requires specifying the linker table and column.
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
+
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);

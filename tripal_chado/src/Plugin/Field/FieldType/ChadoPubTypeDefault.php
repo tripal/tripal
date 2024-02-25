@@ -121,11 +121,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $type_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
-    // For single hop, in the yaml we support using the usual 'base_table'
-    // and 'base_column' settings.
-    $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_table_dependant']['base_column'] ?? $object_pkey_col;
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
