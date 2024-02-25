@@ -191,16 +191,15 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if ($vocabulary_term) {
       $default_vocabulary_term = $vocabulary_term;
     }
-// @@@to-do figure out why this was here - possible security implications using getUserInput()
-//    else {
-//      $vocabulary_term = $form_state->getUserInput(['settings', 'field_term_fs', 'vocabulary_term']);
-//      $default_vocabulary_term = $vocabulary_term;
-//    }
+    $first_pass = $form_state->getUserInput(['settings', 'field_term_fs', 'vocabulary_term'])?FALSE:TRUE;
 
     if (!$termIdSpace or !$termAccession) {
       if (!$default_vocabulary_term) {
-        \Drupal::messenger()->addWarning(t("The field is missing an assigned controlled vocabulary term. Please set one",
-            ['@idSpace' => $termIdSpace]));
+        // Only display this message once
+        if ($first_pass) {
+          \Drupal::messenger()->addWarning(t("The field is missing an assigned controlled vocabulary term. Please set one",
+              ['@idSpace' => $termIdSpace]));
+        }
       }
       $is_open = TRUE;
     }
