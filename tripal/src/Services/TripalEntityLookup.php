@@ -55,11 +55,11 @@ class TripalEntityLookup {
    *   The rendered url, or if no match was found, the original $displayed_string.
    */
   public function getFieldUrl($displayed_string, $record_id, $item_settings) {
-    $bundle = $this->getBundleFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
-    if ($bundle) {
+    $bundle_id = $this->getBundleFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
+    if ($bundle_id) {
       $base_table = $this->getTableFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
       if ($base_table) {
-        $uri = $this->getEntityURI($item_settings['storage_plugin_id'], $base_table, $record_id);
+        $uri = $this->getEntityURI($item_settings['storage_plugin_id'], $base_table, $record_id, $bundle_id);
         if ($uri) {
           // Url::fromUri($uri) takes 0.75 seconds!
           //$displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($uri))->toString();
@@ -127,18 +127,21 @@ class TripalEntityLookup {
    * @return array
    *   The chado table name, or null if no match found.
    */
-  // @@@ to-do how to get the chado schema version here?
   public function getNotNullColumns($chado_table, $chado_schema = NULL, $chado_version = NULL) {
+$t1 = microtime(true); //@@@
     // Retrieve the default name of the chado schema if it's not provided.
     if ($chado_schema === NULL) {
       $chado_schema = chado_get_schema_name('chado');
     }
+    if ($chado_version === NULL) {
+      $chado_version = chado_get_version(FALSE, FALSE, $chado_schema);
+    }
     $cache_id = 'tripalentitylookup:' . $chado_schema . '.' . $chado_table;
     if ($cache = \Drupal::cache()->get($cache_id)) {
       $cache_values = $cache->data;
+$t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for cached lookup="); //@@@
     }
     else {
-$t1 = microtime(true); //@@@
       $cache_values = [];
       $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($chado_version, $chado_schema);
       $table_schema = $chado_schema->getTableSchema($chado_table);
@@ -152,7 +155,7 @@ $t1 = microtime(true); //@@@
         }
       }
       \Drupal::cache()->set($cache_id, $cache_values);
-$t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for uncached lookup="); //@@@
+$t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for UNcached lookup="); //@@@
     }
     return $cache_values['not_null_columns'];
   }
@@ -194,7 +197,9 @@ $t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for uncached lookup="); //@@
    * @param string $base_table
    *   The name of the chado table
    * @param integer $record_id
-   *   The primary key value for the requested record
+   *   The primary key value for the requested record in the $base_table
+   * @param string $bundle_id
+   *   The name of the drupal bundle, e.g. for base table 'arraydesign' it is 'array_design'
    * @param string $chado_schema
    *   The chado schema name, usually 'chado'. Pass NULL for the default chado schema.
    * @param string $chado_version
@@ -204,9 +209,9 @@ $t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for uncached lookup="); //@@
    *   The local uri string for the requested entity.
    *   Will be null if either zero or multiple hits.
    */
-  public function getEntityURI($datastore, $base_table, $record_id) {
+  public function getEntityURI($datastore, $base_table, $record_id, $bundle_id) {
     $uri = NULL;
-    $id = $this->getEntityIdFromRecordId($datastore, $base_table, $record_id);
+    $id = $this->getEntityIdFromRecordId($datastore, $base_table, $record_id, $bundle_id);
     if ($id) {
       $uri = "internal:/bio_data/$id";
     }
@@ -222,7 +227,9 @@ $t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for uncached lookup="); //@@
    * @param string $base_table
    *   The name of the chado table
    * @param integer $record_id
-   *   The primary key value for the requested record
+   *   The primary key value for the requested record in the $base_table
+   * @param string $bundle_id
+   *   The name of the drupal bundle, e.g. for base table 'arraydesign' it is 'array_design'
    * @param string $chado_schema
    *   The chado schema name, usually 'chado'. Pass NULL for the default chado schema.
    * @param string $chado_version
@@ -232,11 +239,18 @@ $t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for uncached lookup="); //@@
    *   The id for the requested entity in the tripal_entity table.
    *   Will be null if zero or if multiple hits.
    */
-  public function getEntityIdFromRecordId($datastore, $base_table, $record_id, $chado_schema = NULL, $chado_version = NULL) {
+  public function getEntityIdFromRecordId($datastore, $base_table, $record_id, $bundle_id, $chado_schema = NULL, $chado_version = NULL) {
     $id = NULL;
     $not_null_columns = $this->getNotNullColumns($base_table, $chado_schema, $chado_version);
-    $entity_table_name = 'tripal_entity__' . $base_table . '_' . $not_null_columns[0];
-    $entity_column_name = $base_table . '_' . $not_null_columns[0] . '_record_id';
+    if (!$not_null_columns) {
+      dpm("Temporary warning that there are no not-null columns for table \"$base_table\"");
+      return NULL;
+    }
+    // @@@to-do this is a temporary hack for the Manufacturer on the Array Design content type
+    $not_null_columns[0] = preg_replace('/_id$/', '', $not_null_columns[0]);
+
+    $entity_table_name = 'tripal_entity__' . $bundle_id . '_' . $not_null_columns[0];
+    $entity_column_name = $bundle_id . '_' . $not_null_columns[0] . '_record_id';
 
     // Query the appropriate field table for this record_id
     $conn = \Drupal::service('database');
