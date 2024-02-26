@@ -83,9 +83,10 @@ class ChadoPubFormatterDefault extends ChadoFormatterBase {
 
       // Create a clickable link to the corresponding entity.
       $item_settings = $item->getDataDefinition()->getSettings();
+      $id = $item_settings['storage_plugin_settings']['linker_fkey_column'] ?? 'pub_id';
       $displayed_string = $lookup_manager->getFieldUrl(
         $displayed_string,
-        $item->get('pub_id')->getString(),
+        $item->get($id)->getString(),
         $item_settings
       );
 
