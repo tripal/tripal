@@ -128,7 +128,11 @@ class TripalEntityLookup {
    *   The chado table name, or null if no match found.
    */
   // @@@ to-do how to get the chado schema version here?
-  public function getNotNullColumns($chado_table, $chado_schema = 'chado', $chado_version = '1.3') {
+  public function getNotNullColumns($chado_table, $chado_schema = NULL, $chado_version = NULL) {
+    // Retrieve the default name of the chado schema if it's not provided.
+    if ($chado_schema === NULL) {
+      $chado_schema = chado_get_schema_name('chado');
+    }
     $cache_id = 'tripalentitylookup:' . $chado_schema . '.' . $chado_table;
     if ($cache = \Drupal::cache()->get($cache_id)) {
       $cache_values = $cache->data;
@@ -191,6 +195,10 @@ $t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for uncached lookup="); //@@
    *   The name of the chado table
    * @param integer $record_id
    *   The primary key value for the requested record
+   * @param string $chado_schema
+   *   The chado schema name, usually 'chado'. Pass NULL for the default chado schema.
+   * @param string $chado_version
+   *   The chado version, usually '1.3'. Pass NULL for the default version of the given schema.
    *
    * @return string
    *   The local uri string for the requested entity.
@@ -215,14 +223,18 @@ $t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for uncached lookup="); //@@
    *   The name of the chado table
    * @param integer $record_id
    *   The primary key value for the requested record
+   * @param string $chado_schema
+   *   The chado schema name, usually 'chado'. Pass NULL for the default chado schema.
+   * @param string $chado_version
+   *   The chado version, usually '1.3'. Pass NULL for the default version of the given schema.
    *
    * @return integer
    *   The id for the requested entity in the tripal_entity table.
    *   Will be null if zero or if multiple hits.
    */
-  public function getEntityIdFromRecordId($datastore, $base_table, $record_id) {
+  public function getEntityIdFromRecordId($datastore, $base_table, $record_id, $chado_schema = NULL, $chado_version = NULL) {
     $id = NULL;
-    $not_null_columns = $this->getNotNullColumns($base_table);  // @@@ to do chado schema and version???
+    $not_null_columns = $this->getNotNullColumns($base_table, $chado_schema, $chado_version);
     $entity_table_name = 'tripal_entity__' . $base_table . '_' . $not_null_columns[0];
     $entity_column_name = $base_table . '_' . $not_null_columns[0] . '_record_id';
 
