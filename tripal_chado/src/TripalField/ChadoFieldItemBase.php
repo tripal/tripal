@@ -55,14 +55,17 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $storage_settings = $this->getSetting('storage_plugin_settings');
     $default_base_table = $storage_settings['base_table'] ?? '';
 
-    if ($complete_form_state) {
-      $base_table = $complete_form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table']);
-    }
-    else {
-      $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-    }
     if ($default_base_table) {
       $is_disabled = TRUE;
+      $base_table = $default_base_table;
+    }
+    else {
+      if ($complete_form_state) {
+        $base_table = $complete_form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table']);
+      }
+      else {
+        $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+      }
     }
 
     // Find base tables.
