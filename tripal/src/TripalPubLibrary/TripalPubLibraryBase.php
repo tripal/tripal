@@ -41,14 +41,14 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
 
   public function addSearchQuery(array $query) {
     $public = \Drupal::database();
-    $public->insert('tripal_pub_import')->fields($query)->execute();
+    $public->insert('tripal_pub_library_query')->fields($query)->execute();
   }
 
   public function updateSearchQuery(int $query_id, array $query) {
     $public = \Drupal::database();
-    $public->update('tripal_pub_import')
+    $public->update('tripal_pub_library_query')
     ->fields($query)
-    ->condition('pub_import_id', $query_id)
+    ->condition('pub_library_query_id', $query_id)
     ->execute();
   }
 

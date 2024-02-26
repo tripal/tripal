@@ -886,7 +886,7 @@ function tripal_tripal_pub_library_query_schema() {
         'default' => 0
       ],
     ],
-    'primary key' => ['pub_import_id'],
+    'primary key' => ['pub_library_query_id'],
     'indexes' => [
       'name' => ['name']
     ],
