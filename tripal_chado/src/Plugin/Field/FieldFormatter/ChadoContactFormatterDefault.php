@@ -64,11 +64,9 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
 $t1 = microtime(true); //@@@
       $item_settings = $item->getDataDefinition()->getSettings();
       $displayed_string = $lookup_manager->getFieldUrl(
-        $item_settings['storage_plugin_id'],
-        $item_settings['termIdSpace'],
-        $item_settings['termAccession'],
+        $displayed_string,
         $item->get('contact_id')->getString(),
-        $displayed_string
+        $item_settings
       );
 $t2 = microtime(true); dpm($t2-$t1, "TOTAL Elapsed time to lookup entity link="); //@@@
 

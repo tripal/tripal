@@ -41,26 +41,25 @@ class TripalEntityLookup {
   /**
    * Used by fields to get a ready-to-use url to link to an entity.
    *
-   * @param string $datastore
-   *   The id of the TripalStorage plugin, e.g. "chado_storage"
-   * @param string $termIdSpace
-   *   The bundle's CV Term namespace e.g. "NCIT"
-   * @param string $termAccession
-   *   The bundle's CV term accession e.g. "C47954"
-   * @param integer $record_id
-   *   The primary key value for the requested record
    * @param string $displayed_string
    *   The text that will be displayed as a url link
+   * @param integer $record_id
+   *   The primary key value for the requested record
+   * @param array $item_settings
+   *   Contains the following key-value pairs:
+   *   'storage_plugin_id' => The id of the TripalStorage plugin, e.g. "chado_storage"
+   *   'termIdSpace' => The bundle's CV term namespace e.g. "NCIT"
+   *   'termAccession' => The bundle's CV term accession e.g. "C47954"
    *
    * @return string
    *   The rendered url, or if no match was found, the original $displayed_string.
    */
-  public function getFieldUrl($datastore, $termIdSpace, $termAccession, $record_id, $displayed_string) {
-    $bundle = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
+  public function getFieldUrl($displayed_string, $record_id, $item_settings) {
+    $bundle = $this->getBundleFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
     if ($bundle) {
-      $base_table = $this->getTableFromCvTerm($termIdSpace, $termAccession);
+      $base_table = $this->getTableFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
       if ($base_table) {
-        $uri = $this->getEntityURI($datastore, $base_table, $record_id);
+        $uri = $this->getEntityURI($item_settings['storage_plugin_id'], $base_table, $record_id);
         if ($uri) {
           // Url::fromUri($uri) takes 0.75 seconds!
           //$displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($uri))->toString();
