@@ -225,7 +225,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
                 ['@term' => $termIdSpace . ':' . $termAccession]));
             $is_open = TRUE;
           }
-          // @to-do - logic might be wrong here and would reset default_vocabulary_term?
           $default_vocabulary_term = !$default_vocabulary_term ? ($term->getName() . ' (' . $term->getIdSpace() . ':' . $term->getAccession() . ')') : $default_vocabulary_term;
         }
       }
