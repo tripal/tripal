@@ -73,7 +73,7 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     $mapping = $storage->load( 'core_mapping' );
 
     $record_id_term = $mapping->getColumnTermId( 'feature', 'feature_id' );
-    $ft_uniqname_term = $mapping->getColumnTermId( 'feature', 'uniquename' );
+    $ft_uniqname_term = $mapping->getColumnTermId( 'feature', 'name' );
 
     $fmin_term = $mapping->getColumnTermId('featureloc', 'fmin');
     $fmax_term = $mapping->getColumnTermId('featureloc', 'fmax');
@@ -103,7 +103,11 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'uniquename', $ft_uniqname_term, [
       'action' => 'store',
+<<<<<<< Updated upstream
       'path' => 'feature.feature_id>featureloc.feature_id;featureloc.srcfeature_id>feature.feature_id;uniquename',
+=======
+      'path' => 'feature.name',
+>>>>>>> Stashed changes
     ]);
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fmin', $fmin_term, [

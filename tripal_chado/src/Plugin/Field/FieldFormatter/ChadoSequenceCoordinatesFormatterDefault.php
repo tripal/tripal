@@ -38,21 +38,21 @@ class ChadoSequenceCoordinatesFormatterDefault extends ChadoFormatterBase
       }
       $fmax_val = $item->get('fmax')->getString();
       if (!empty($fmax_val)) {
-          $loc_rec .= $fmax_val.'; ';
+          $loc_rec .= $fmax_val;
       }
 
       $strand_val = $item->get('strand')->getString();
       if (!empty($strand_val)) {
           $strand_symb = match ( $strand_val ) {
-              -1 => '-',
-              1 => '+',
-              default => '',
+              '-1' => '-',
+              '1' => '+',
+              default => 'unknown',
           };
           $loc_rec .= $strand_symb;
       }
       $phase_val = $item->get('phase')->getString();
       if (!empty($phase_val)) {
-          $loc_rec .= $phase_val.'; ';
+          $loc_rec .= $phase_val;
       }
 
       $locations[] = $loc_rec;
