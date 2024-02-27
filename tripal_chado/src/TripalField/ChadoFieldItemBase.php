@@ -54,7 +54,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $base_table_disabled = FALSE;
     $is_ajax = \Drupal::request()->isXmlHttpRequest();
     $storage_settings = $this->getSetting('storage_plugin_settings');
-dpm($storage_settings, "Base settings"); //@@@
     $default_base_table = $storage_settings['base_table'] ?? '';
 
     if ($default_base_table) {
@@ -112,7 +111,8 @@ dpm($storage_settings, "Base settings"); //@@@
     // include the 'base_table_dependant' key.
     $plugin_definition = $this->getPluginDefinition();
     if ($plugin_definition['select_base_column'] ?? FALSE) {
-      $default_base_column = $storage_settings['base_table_dependant']['base_column'] ?? '';
+      $default_base_column = $storage_settings['base_table_dependant']['base_column']
+          ?? $storage_settings['base_column'] ?? '';
       if ($complete_form_state) {
         $base_column = $complete_form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_column']);
       }

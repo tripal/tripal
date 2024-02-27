@@ -225,33 +225,35 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
+    $is_ajax = \Drupal::request()->isXmlHttpRequest();
+
     if ($form_state instanceof \Drupal\Core\Form\SubformStateInterface) {
       $complete_form_state = $form_state->getCompleteFormState();
       $state_settings = $complete_form_state->getValue(['field_storage', 'subform', 'settings']);
-$x = $complete_form_state->getValues(); dpm($x, "CP1 all values"); //@@@
     }
     else {
       $state_settings = $form_state->getValue('settings');
-$x = $complete_form_state->getValues(); dpm($x, "CP2 all values"); //@@@
     }
     $storage_settings = $this->getSetting('storage_plugin_settings');
-dpm($storage_settings, "CP2a storage settings"); //@@@
+
     $default_base_table = $storage_settings['base_table'] ?? '';
     $default_type_table = $storage_settings['type_table'] ?? '';
     $default_type_column = $storage_settings['type_column'] ?? '';
-
     $base_table = $state_settings['storage_plugin_settings']['base_table'] ?? $default_base_table;
     $type_table = $state_settings['storage_plugin_settings']['type_table'] ?? $default_type_table;
     $type_column = $state_settings['storage_plugin_settings']['type_column'] ?? $default_type_column;
 
-dpm("CP3 $base_table  $type_table:$type_column"); //@@@
     // In the form, table and column will be selected together as a single unit
     $type_select = '';
     if ($type_table and $type_column) {
       $type_select = $type_table . self::$table_column_delimiter . $type_column;
     }
-dpm($type_select, "CP4 type select"); //@@@
-$options = $this->getTypeFkeys($base_table, $type_select); dpm($options, "Options"); //@@@
+    else {
+      $type_select = $storage_settings['base_table_dependant']['type_fkey'] ?? '';
+    }
+
+    // Do not disable selector quite yet if this is just an ajax callback
+    $type_select_disabled = ($type_select and !$is_ajax);
 
     // Element to select combined table and column for the additional type.
     $elements['storage_plugin_settings']['base_table_dependant']['type_fkey'] = [
@@ -263,7 +265,7 @@ $options = $this->getTypeFkeys($base_table, $type_select); dpm($options, "Option
       '#options' => $this->getTypeFkeys($base_table, $type_select),
       '#default_value' => $type_select,
       '#required' => TRUE,
-      '#disabled' => !$base_table,
+      '#disabled' => $type_select_disabled or !$base_table,
       '#prefix' => '<div id="edit-type_fkey">',
       '#suffix' => '</div>',
       '#element_validate' => [[static::class, 'storageSettingsFormValidate']],
@@ -324,7 +326,7 @@ $options = $this->getTypeFkeys($base_table, $type_select); dpm($options, "Option
 
     // If already selected, only need to provide this one value.
     if ($selected_value) {
-      $type_fkeys[''] = $selected_value;
+      $type_fkeys[$selected_value] = $selected_value;
     }
     // On the initial presentation of the form, the base table
     // is not yet know. We will return here again from the ajax
