@@ -941,8 +941,8 @@ abstract class TripalDbxConnection extends PgConnection {
       }
       // In updates we have to replace the schema-prefixed table name in
       // the escapeTables() method. That results in there being the following
-      // case in here: where our chado is in testchado,
-      // we may see {testchado.chadotable} at this point in the code.
+      // case in here: where our chado is in a schema named 'teapot',
+      // we may see {teapot.chadotable} at this point in the code.
       // Here we want to remove the surrounding curly brackets.
       $match_pattern = '#\{'
         . '(' . TripalDbx::SCHEMA_NAME_REGEXP . ')'
@@ -953,8 +953,8 @@ abstract class TripalDbxConnection extends PgConnection {
         $sql = preg_replace_callback(
           $match_pattern,
           function ($matches) {
-            // For example, if given {testchado.chadotable}
-            // then return "testchado"."chadotable".
+            // For example, if given {teapot.chadotable}
+            // then return "teapot"."chadotable".
             return
               $this->identifierQuotes[0]
               . $matches[1]
