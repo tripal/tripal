@@ -49,8 +49,8 @@ class ChadoSequenceCoordinatesFormatterTable extends ChadoFormatterBase {
 
       $strand_val = $item->get('strand')->getString();
       $strand_symb = match( $strand_val ) {
-        -1 => '-',
-        1 => '+',
+        '-1' => '-',
+        '1' => '+',
         default => 'unknown',
       };
 
