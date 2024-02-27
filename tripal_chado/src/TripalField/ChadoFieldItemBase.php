@@ -127,7 +127,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         '#options' => $base_columns,
         '#default_value' => $default_base_column,
         '#required' => TRUE,
-        '#disabled' => $is_disabled or $has_data or !$base_table,
+        '#disabled' => $default_base_column or $has_data or !$base_table,
       ];
     }
 
