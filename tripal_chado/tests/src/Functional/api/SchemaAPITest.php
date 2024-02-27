@@ -46,15 +46,10 @@ class SchemaAPITest extends ChadoTestKernelBase {
   public function testChadoTableColumnExists() {
     $connection = \Drupal\Core\Database\Database::getConnection();
 
-    // Check that chado exists.
-    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
-    $exists = $connection->query($check_schema, [':schema' => $this->testSchemaName])
-      ->fetchField();
-    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
-      Please ensure chado is installed in the schema named "testchado".');
-
     // Initialize ChadoSchema class to test new api.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, 'testchado');
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $this->testSchemaName);
+    $this->assertIsObject($chado_schema,
+      "We were not able to initialize the ChadoSchema object using " . $this->testSchemaName);
 
     // 1. Check that the table does not exist.
     $table_name = 'testChadoTableExists_' . uniqid();
@@ -174,13 +169,6 @@ class SchemaAPITest extends ChadoTestKernelBase {
   public function testChadoSchemaMetdata() {
     $connection = \Drupal\Core\Database\Database::getConnection();
 
-    // Check that chado exists.
-    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
-    $exists = $connection->query($check_schema, [':schema' => $this->testSchemaName])
-      ->fetchField();
-    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
-      Please ensure chado is installed in the schema named "testchado".');
-
     // First check the default schema.
     $schema_name = chado_get_schema_name(uniqid());
     $this->assertEquals('public', $schema_name,
@@ -278,14 +266,6 @@ class SchemaAPITest extends ChadoTestKernelBase {
    * @group chado-schema
    */
   public function testGetSchemaDetails() {
-    $connection = \Drupal\Core\Database\Database::getConnection();
-
-    // Check that chado exists.
-    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
-    $exists = $connection->query($check_schema, [':schema' => $this->testSchemaName])
-      ->fetchField();
-    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
-      Please ensure chado is installed in the schema named "testchado".');
 
     $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(1.3, $this->testSchemaName);
     $schema_details = $chado_schema->getSchemaDetails();
@@ -320,14 +300,6 @@ class SchemaAPITest extends ChadoTestKernelBase {
    * @group chado-schema
    */
   public function testGetTableNames($version, $known_tables) {
-    $connection = \Drupal\Core\Database\Database::getConnection();
-
-    // Check that chado exists.
-    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
-    $exists = $connection->query($check_schema, [':schema' => $this->testSchemaName])
-      ->fetchField();
-    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
-      Please ensure chado is installed in the schema named "testchado".');
 
     // Check: Known tables for a given version are returned.
     $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this->testSchemaName);
@@ -352,14 +324,6 @@ class SchemaAPITest extends ChadoTestKernelBase {
    * @group chado-schema
    */
   public function testGetTableSchema() {
-    $connection = \Drupal\Core\Database\Database::getConnection();
-
-    // Check that chado exists.
-    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
-    $exists = $connection->query($check_schema, [':schema' => $this->testSchemaName])
-      ->fetchField();
-    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
-      Please ensure chado is installed in the schema named "testchado".');
 
     // Check all Chado 1.3 tables.
     $version = 1.3;
@@ -504,14 +468,6 @@ class SchemaAPITest extends ChadoTestKernelBase {
    * @group chado-schema
    */
   public function testGetBaseTables($version, $known_tables) {
-    $connection = \Drupal\Core\Database\Database::getConnection();
-
-    // Check that chado exists.
-    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
-    $exists = $connection->query($check_schema, [':schema' => $this->testSchemaName])
-      ->fetchField();
-    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
-      Please ensure chado is installed in the schema named "testchado".');
 
     // Check: Known base tables for a given version are returned.
     $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this->testSchemaName);
