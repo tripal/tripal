@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado;
+namespace Drupal\Tests\tripal_chado\Functional\api;
 
-use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Core\Database\Database;
 use Drupal\tripal_chado\api\ChadoSchema;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 
 /**
  * Tests the current Chado Database is compliant with the schema definition
@@ -14,7 +14,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
  * @group Tripal Chado
  * @group Tripal Database
  */
-class ChadoComplianceTest extends ChadoTestKernelBase {
+class ChadoComplianceTest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
 
@@ -34,7 +34,7 @@ class ChadoComplianceTest extends ChadoTestKernelBase {
     parent::setUp();
 
     // Open connection to Chado
-    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    $this->connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
   }
 
   /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Functional\api;
 
 use Drupal\Core\Url;
 use Drupal\Core\Database\Database;
