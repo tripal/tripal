@@ -51,12 +51,13 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $schema = $chado->schema();
     $tables = $schema->getTables(['type' => 'table', 'status' => 'base']);
 
-    $is_disabled = FALSE;
+    $base_table_disabled = FALSE;
+    $is_ajax = \Drupal::request()->isXmlHttpRequest();
     $storage_settings = $this->getSetting('storage_plugin_settings');
     $default_base_table = $storage_settings['base_table'] ?? '';
 
     if ($default_base_table) {
-      $is_disabled = TRUE;
+      $base_table_disabled = TRUE;
       $base_table = $default_base_table;
     }
     else {
@@ -84,7 +85,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       '#options' => $base_tables,
       '#default_value' => $default_base_table,
       '#required' => TRUE,
-      '#disabled' => $is_disabled,
+      '#disabled' => $base_table_disabled,
       '#element_validate' => [[static::class, 'storageSettingsFormValidateBaseTable']],
       '#ajax' => [
         'callback' =>  [static::class, 'storageSettingsFormBaseTableAjaxCallback'],
@@ -117,6 +118,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       else {
         $base_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_column']);
       }
+      // Do not disable selector quite yet if this is just an ajax callback
+      $table_column_disabled = ($default_base_column and !$is_ajax);
 
       $column_types = $plugin_definition['valid_base_column_types'] ?? [];
       $base_columns = $this->getTableColumns($base_table, $column_types);
@@ -127,7 +130,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         '#options' => $base_columns,
         '#default_value' => $default_base_column,
         '#required' => TRUE,
-        '#disabled' => $default_base_column or $has_data or !$base_table,
+        '#disabled' => $table_column_disabled or $has_data or !$base_table,
       ];
     }
 
