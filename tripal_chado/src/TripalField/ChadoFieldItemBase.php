@@ -127,7 +127,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         '#options' => $base_columns,
         '#default_value' => $default_base_column,
         '#required' => TRUE,
-        '#disabled' => $has_data or !$base_table,
+        '#disabled' => $is_disabled or $has_data or !$base_table,
       ];
     }
 
@@ -166,7 +166,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         '#options' => $linker_tables,
         '#default_value' => $default_linker_table_and_column,
         '#required' => TRUE,
-        '#disabled' => $linker_is_disabled or !$base_table,
+        '#disabled' => $linker_is_disabled or $has_data or !$base_table,
         '#element_validate' => [[static::class, 'storageSettingsFormValidateLinkingMethod']],
       ];
     }
