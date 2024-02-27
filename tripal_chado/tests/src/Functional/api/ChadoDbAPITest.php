@@ -3,9 +3,9 @@
 namespace Drupal\Tests\tripal_chado;
 
 use Drupal\Core\Url;
-use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Database\Database;
 use Drupal\tripal_chado\api\ChadoSchema;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.db.api.php functions.
@@ -14,7 +14,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
  * @group Tripal Chado
  * @group Tripal API
  */
-class ChadoDbAPITest extends BrowserTestBase {
+class ChadoDbAPITest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
 
@@ -28,7 +28,23 @@ class ChadoDbAPITest extends BrowserTestBase {
    * Schema to do testing out of.
    * @var string
    */
-  protected static $schemaName = 'testchado';
+  protected $schema_name;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() :void {
+
+    parent::setUp();
+
+    $chado = $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
+    $this->assertIsObject($chado, "Chado test schema was not set-up properly.");
+
+    $schema_name = $chado->getSchemaName();
+    $this->assertNotEmpty($schema_name, "We were not able to retrieve the schema name.");
+
+    $this->schema_name = $schema_name;
+  }
 
   /**
    * Tests chado.db associated functions.
@@ -38,8 +54,6 @@ class ChadoDbAPITest extends BrowserTestBase {
    */
   public function testDB() {
 
-		$this->markTestIncomplete('This test is causing errors in the new environment.');
-
 		// INSERT.
 		// chado_insert_db().
 		$dbval = [
@@ -47,7 +61,7 @@ class ChadoDbAPITest extends BrowserTestBase {
 			'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
 			'url' => 'https://www.lipsum.com/feed',
 		];
-		$return = chado_insert_db($dbval, [], 'testchado');
+		$return = chado_insert_db($dbval, [], $this->schema_name);
 		$this->assertNotFalse($return, 'chado_insert_db failed unexpectedly.');
 		$this->assertIsObject($return, 'Should be an updated DB object.');
 		$this->assertTrue(property_exists($return, 'db_id'),
@@ -57,7 +71,7 @@ class ChadoDbAPITest extends BrowserTestBase {
 		// test the update part of chado_insert_db().
 		$dbval2 = $dbval;
 		$dbval2['url'] .= '/updated';
-		$returnagain = chado_insert_db($dbval2, [], 'testchado');
+		$returnagain = chado_insert_db($dbval2, [], $this->schema_name);
 		$this->assertNotFalse($returnagain, 'chado_insert_db failed unexpectedly.');
 		$this->assertIsObject($returnagain, 'Should be an updated DB object.');
 		$this->assertTrue(property_exists($returnagain, 'db_id'),
@@ -74,13 +88,13 @@ class ChadoDbAPITest extends BrowserTestBase {
 		$selectval = [
 			'name' => $dbval['name'],
 		];
-		$return2 = chado_get_db($selectval, [], 'testchado');
+		$return2 = chado_get_db($selectval, [], $this->schema_name);
 		$this->assertNotFalse($return2, 'chado_select_db failed unexpectedly.');
 		$this->assertIsObject($return2, 'Should be a DB object.');
 		$this->assertEquals($dbval['name'], $return2->name,
 			"The returned object should be the one we asked for.");
 		// chado_get_db_select_options().
-		$returned_options = chado_get_db_select_options('testchado');
+		$returned_options = chado_get_db_select_options($this->schema_name);
 		$this->assertNotFalse($returned_options, 'chado_get_db_select_options failed unexpectedly.');
 		$this->assertIsArray($returned_options, 'Should be an array.');
 		$this->assertNotEmpty($returned_options, "There should be at least one option.");;
@@ -97,8 +111,6 @@ class ChadoDbAPITest extends BrowserTestBase {
    */
   public function testDbxref() {
 
-		$this->markTestIncomplete('This test is causing errors in the new environment.');
-
 		// INSERT.
 		// chado_insert_dbxref().
 		$dbval = [
@@ -106,12 +118,12 @@ class ChadoDbAPITest extends BrowserTestBase {
 			'url' => 'https://www.lipsum.com/feed',
 			'urlprefix' => 'https://www.lipsum.com/{accession}/feed',
 		];
-		$db = chado_insert_db($dbval, [], 'testchado');
+		$db = chado_insert_db($dbval, [], $this->schema_name);
 		$dbxrefval = [
 			'db_id' => $db->db_id,
 			'accession' => 'dbxref-test'.uniqid(),
 		];
-		$return = chado_insert_dbxref($dbxrefval, [], 'testchado');
+		$return = chado_insert_dbxref($dbxrefval, [], $this->schema_name);
 		$this->assertNotFalse($return, 'chado_insert_dbxref failed unexpectedly.');
 		$this->assertIsObject($return, 'Should be an updated Dbxref object.');
 		$this->assertTrue(property_exists($return, 'dbxref_id'),
@@ -119,7 +131,7 @@ class ChadoDbAPITest extends BrowserTestBase {
 		$this->assertEquals($dbxrefval['accession'], $return->accession,
 			"The returned object should be the one we asked for.");
 		// check it is returned if it already exists.
-		$returnagain = chado_insert_dbxref($dbxrefval, [], 'testchado');
+		$returnagain = chado_insert_dbxref($dbxrefval, [], $this->schema_name);
 		$this->assertNotFalse($returnagain, 'chado_insert_dbxref failed unexpectedly.');
 		$this->assertIsObject($returnagain, 'Should be an updated Dbxref object.');
 		$this->assertTrue(property_exists($returnagain, 'dbxref_id'),
@@ -131,21 +143,21 @@ class ChadoDbAPITest extends BrowserTestBase {
 
 		// chado_associate_dbxref().
 		$org = ['genus' => 'Tripalus', 'species' => 'databasica'.uniqid()];
-		$orgr = chado_insert_record('organism', $org, [], 'testchado');
+		$orgr = chado_insert_record('organism', $org, [], $this->schema_name);
 		$dbxrefval['accession'] = 'dbxreforg-test'.uniqid();
 		$return = chado_associate_dbxref(
 			'organism',
 			$orgr['organism_id'],
 			$dbxrefval,
 			[],
-			'testchado'
+			$this->schema_name
 		);
 		$this->assertNotFalse($return, 'chado_associate_dbxref failed unexpectedly.');
 		$this->assertIsObject($return, 'Should be the linking record.');
 
 		// SELECT.
 		// chado_get_dbxref().
-		$return = chado_get_dbxref($dbxrefval, [], 'testchado');
+		$return = chado_get_dbxref($dbxrefval, [], $this->schema_name);
 		$this->assertNotFalse($return, 'chado_get_dbxref failed unexpectedly.');
 		$this->assertIsObject($return, 'Should be an updated Dbxref object.');
 		$this->assertTrue(property_exists($return, 'dbxref_id'),
@@ -155,7 +167,7 @@ class ChadoDbAPITest extends BrowserTestBase {
 
 		// chado_get_dbxref_url().
 		$expected_url = 'https://www.lipsum.com/' . $dbxrefval['accession'] . '/feed';
-		$returned_url = chado_get_dbxref_url($return, [], 'testchado');
+		$returned_url = chado_get_dbxref_url($return, [], $this->schema_name);
 		$this->assertEquals($expected_url, $returned_url,
 			"We did not get what we expected in terms of url.");
 	}
