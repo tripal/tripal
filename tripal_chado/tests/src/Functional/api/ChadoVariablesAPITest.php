@@ -43,14 +43,6 @@ class ChadoVariablesAPITest extends ChadoTestKernelBase {
    * @group chado-query
    */
   public function testChadoGenerateVariables() {
-    $connection = \Drupal\Core\Database\Database::getConnection();
-
-    // Check that chado exists.
-    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
-    $exists = $connection->query($check_schema, [':schema' => $this->testSchemaName])
-      ->fetchField();
-    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
-      Please ensure chado is installed in the schema named "testchado".');
 
     // TEST DATA.
     // We need something to pull the data for.
@@ -62,7 +54,7 @@ class ChadoVariablesAPITest extends ChadoTestKernelBase {
       'common_name' => 'Wild Tripal',
       'abbreviation' => 'T. ferox',
     ];
-    $dbq = chado_insert_record('organism', $org, [], 'testchado');
+    $dbq = chado_insert_record('organism', $org, [], $this->testSchemaName);
     $organism_id = $dbq['organism_id'];
     $this->assertNotEquals(FALSE, $dbq, 'chado_insert_record() unable to insert.');
     $values = [
@@ -72,7 +64,7 @@ class ChadoVariablesAPITest extends ChadoTestKernelBase {
       'name' => 'FakeGene1',
       'residues' => str_repeat('ATGC', 100),
     ];
-    $dbq = chado_insert_record('feature', $values, [], 'testchado');
+    $dbq = chado_insert_record('feature', $values, [], $this->testSchemaName);
     $this->assertNotEquals(FALSE, $dbq, 'chado_insert_record() unable to insert.');
     for ($i=1; $i<=5; $i++) {
       $prop = [
@@ -81,7 +73,7 @@ class ChadoVariablesAPITest extends ChadoTestKernelBase {
         'feature_id' => $dbq['feature_id'],
         'rank' => $i,
       ];
-      $dbq = chado_insert_record('featureprop', $prop, [], 'testchado');
+      $dbq = chado_insert_record('featureprop', $prop, [], $this->testSchemaName);
     }
 
     // GENERATE.
@@ -89,7 +81,7 @@ class ChadoVariablesAPITest extends ChadoTestKernelBase {
       'feature',
       ['uniquename' => $values['uniquename']],
       ['include_fk' => ['type_id' => 1]],
-      'testchado'
+      $this->testSchemaName
     );
     $this->assertNotFalse($var,
       "chado_generate_var() failed.");
@@ -105,7 +97,7 @@ class ChadoVariablesAPITest extends ChadoTestKernelBase {
     // Above we chose not to expand the organism_id so check it did not.
     $this->assertEquals($organism_id, $var->organism_id,
       "The organism_id should not be expanded: " . print_r($var->organism_id, TRUE));
-    $expanded = chado_expand_var($var, 'foreign_key', 'feature.organism_id => organism', [], 'testchado');
+    $expanded = chado_expand_var($var, 'foreign_key', 'feature.organism_id => organism', [], $this->testSchemaName);
     $this->assertNotFalse($var,
       "chado_expand_var() failed for foreign key.");
     $this->assertNotEmpty($var,
@@ -118,7 +110,7 @@ class ChadoVariablesAPITest extends ChadoTestKernelBase {
       "The object returned should have the organism_id expanded to specify the genus.");
 
     // -- TABLE.
-    $expanded = chado_expand_var($var, 'table', 'featureprop', [], 'testchado');
+    $expanded = chado_expand_var($var, 'table', 'featureprop', [], $this->testSchemaName);
     $this->assertTrue(property_exists($var, 'featureprop'),
       "The feature properties should be present once expanded.");
 
@@ -126,7 +118,7 @@ class ChadoVariablesAPITest extends ChadoTestKernelBase {
     // By default the residues field is not expanded...
     $this->assertFalse(property_exists($var, 'residues'),
       "The residues should be missing by default.");
-    $expanded = chado_expand_var($var, 'field', 'feature.residues', [], 'testchado');
+    $expanded = chado_expand_var($var, 'field', 'feature.residues', [], $this->testSchemaName);
     $this->assertTrue(property_exists($var, 'residues'),
       "The residues should be present once expanded.");
   }
