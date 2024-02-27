@@ -54,6 +54,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $base_table_disabled = FALSE;
     $is_ajax = \Drupal::request()->isXmlHttpRequest();
     $storage_settings = $this->getSetting('storage_plugin_settings');
+dpm($storage_settings, "Base settings"); //@@@
     $default_base_table = $storage_settings['base_table'] ?? '';
 
     if ($default_base_table) {
@@ -148,8 +149,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $linker_is_disabled = FALSE;
       $linker_tables = [];
       $default_linker_table_and_column = $storage_settings['base_table_dependant']['linker_table_and_column']
-        ?? $storage_settings['linker_table_and_column']
-        ?? '';
+          ?? $storage_settings['linker_table_and_column']
+          ?? '';
       if ($default_linker_table_and_column) {
         $linker_is_disabled = TRUE;
         $linker_tables = [$default_linker_table_and_column => $default_linker_table_and_column];
@@ -251,8 +252,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // Convert the combined value from the linking method form select into table and column
     $linker_table_and_column = $settings['storage_plugin_settings']['base_table_dependant']['linker_table_and_column']
         ?? $settings['storage_plugin_settings']['linker_table_and_column'];
-    $parts = self::parse_linker_table_and_column($linker_table_and_column);
-    if ($parts) {
+    $parts = self::parse_combined_table_and_column($linker_table_and_column);
+    if (count($parts) == 2 and $parts[0] and $parts[1]) {
       $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_table'], $parts[0]);
       $form_state->setValue(['settings', 'storage_plugin_settings', 'linker_fkey_column'], $parts[1]);
     }
@@ -279,7 +280,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // The combined setting comes from the field settings form, e.g. "project → contact"
     $combined_setting = $storage_settings['base_table_dependant']['linker_table_and_column'] ?? '';
     if ($combined_setting) {
-      $parts = self::parse_linker_table_and_column($combined_setting);
+      $parts = self::parse_combined_table_and_column($combined_setting);
       $linker_table = $parts[0];
       $linker_fkey_column = $parts[1];
     }
@@ -293,17 +294,17 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
-   * Parse a combined linker table + column string into its two parts
+   * Parse a combined table + column string into its two parts
    *
-   * @param string $linker_table_and_column
+   * @param string $table_and_column
    *   Table and column delimited by self::table_column_delimiter, a right
    *    arrow by default, e.g."project → contact"
    *
    * @return array
    *   Will contain 2 elements if valid, empty array if not.
    */
-  protected static function parse_linker_table_and_column($linker_table_and_column) {
-    $parts = explode(self::$table_column_delimiter, $linker_table_and_column);
+  protected static function parse_combined_table_and_column($table_and_column) {
+    $parts = explode(self::$table_column_delimiter, $table_and_column);
     if (count($parts) == 2) {
       return $parts;
     }

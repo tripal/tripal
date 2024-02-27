@@ -225,34 +225,42 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-    $type_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_table']);
-    $type_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_column']);
+    if ($form_state instanceof \Drupal\Core\Form\SubformStateInterface) {
+      $complete_form_state = $form_state->getCompleteFormState();
+      $state_settings = $complete_form_state->getValue(['field_storage', 'subform', 'settings']);
+$x = $complete_form_state->getValues(); dpm($x, "CP1 all values"); //@@@
+    }
+    else {
+      $state_settings = $form_state->getValue('settings');
+$x = $complete_form_state->getValues(); dpm($x, "CP2 all values"); //@@@
+    }
+    $storage_settings = $this->getSetting('storage_plugin_settings');
+dpm($storage_settings, "CP2a storage settings"); //@@@
+    $default_base_table = $storage_settings['base_table'] ?? '';
+    $default_type_table = $storage_settings['type_table'] ?? '';
+    $default_type_column = $storage_settings['type_column'] ?? '';
+
+    $base_table = $state_settings['storage_plugin_settings']['base_table'] ?? $default_base_table;
+    $type_table = $state_settings['storage_plugin_settings']['type_table'] ?? $default_type_table;
+    $type_column = $state_settings['storage_plugin_settings']['type_column'] ?? $default_type_column;
+
+dpm("CP3 $base_table  $type_table:$type_column"); //@@@
     // In the form, table and column will be selected together as a single unit
     $type_select = '';
     if ($type_table and $type_column) {
       $type_select = $type_table . self::$table_column_delimiter . $type_column;
     }
-
-    // Add an ajax callback to the base table select (from the parent form) so that
-    // when it is selected, the type table select can be populated with candidate tables.
-    $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-      'callback' =>  [$this, 'storageSettingsFormTypeFKeyAjaxCallback'],
-      'event' => 'change',
-      'progress' => [
-        'type' => 'throbber',
-        'message' => $this->t('Retrieving type table names...'),
-      ],
-    ];
+dpm($type_select, "CP4 type select"); //@@@
+$options = $this->getTypeFkeys($base_table, $type_select); dpm($options, "Options"); //@@@
 
     // Element to select combined table and column for the additional type.
-    $elements['storage_plugin_settings']['type_fkey'] = [
+    $elements['storage_plugin_settings']['base_table_dependant']['type_fkey'] = [
       '#type' => 'select',
       '#title' => t('Type Table and Column'),
       '#description' => t('Select the table and column that specifies the type for this field. ' .
         'This can be either from the base table, or from a different table with a foreign ' .
         'key to the base table.'),
-      '#options' => $this->getTypeFkeys($base_table),
+      '#options' => $this->getTypeFkeys($base_table, $type_select),
       '#default_value' => $type_select,
       '#required' => TRUE,
       '#disabled' => !$base_table,
@@ -273,14 +281,15 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
+    $settings = self::getFormStateSettings($form_state);
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }
 
     // The type table and column are selected as a single value. Separate
     // them, and validate and store each separately.
-    $type_fkey = $settings['storage_plugin_settings']['type_fkey'];
+    $type_fkey = $settings['storage_plugin_settings']['base_table_dependant']['type_fkey']
+        ?? $settings['storage_plugin_settings']['type_fkey'];
     $parts = explode(self::$table_column_delimiter, $type_fkey);
     if (count($parts) != 2 or !$parts[0] or !$parts[1]) {
       $form_state->setErrorByName('storage_plugin_settings][type_fkey',
@@ -303,14 +312,24 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    *
    * @param string $base_table
    *   The Chado base table being used for this field.
+   *
+   * @param string $selected_value
+   *   The already-selected value, or an empty string.
+   *
+   * @return array
+   *   Array ready to use in a form select field.
    */
-  protected function getTypeFKeys($base_table) {
+  protected function getTypeFKeys($base_table, $selected_value) {
     $type_fkeys = [];
 
+    // If already selected, only need to provide this one value.
+    if ($selected_value) {
+      $type_fkeys[''] = $selected_value;
+    }
     // On the initial presentation of the form, the base table
     // is not yet know. We will return here again from the ajax
     // callback once that has been selected.
-    if (!$base_table) {
+    else if (!$base_table) {
       $type_fkeys[''] = '-- Select base table first --';
     }
     else {
@@ -348,21 +367,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       }
     }
     return $type_fkeys;
-  }
-
-  /**
-   * Ajax callback to update the type table+column select. This is needed
-   * because the select can't be populated until we know the base table.
-   *
-   * @param array $form
-   *   The form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state object.
-   */
-  public function storageSettingsFormTypeFKeyAjaxCallback($form, &$form_state) {
-    $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-type_fkey', $form['settings']['storage_plugin_settings']['type_fkey']));
-    return $response;
   }
 
 }
