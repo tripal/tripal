@@ -9,37 +9,7 @@ use \Drupal\tripal\Services\TripalEntityTitle;
 class TripalEntityLookup {
 
   /**
-   * The id of the entity type (bundle)
-   *
-   * @var string $bundle
-   */
-  protected $bundle = '';
-
-  /**
-   * The id of the TripalStorage plugin.
-   *
-   * @var string $datastore.
-   */
-  protected $datastore = '';
-
-  /**
-   * Stores the bundle (entity type) object.
-   *
-   * @var \Drupal\tripal\Entity\TripalEntityType $entity_type
-   **/
-  protected $entity_type = NULL;
-
-  /**
-   * The TripalStorage object.
-   *
-   * @var \Drupal\tripal\TripalStorage\TripalStorageBase $storage
-   **/
-  protected $storage = NULL;
-
-
-
-  /**
-   * Used by fields to get a ready-to-use url to link to an entity.
+   * Our top-level function, used by fields to get a ready-to-use url to link to an entity.
    *
    * @param string $displayed_string
    *   The text that will be displayed as a url link
@@ -59,7 +29,7 @@ class TripalEntityLookup {
     if ($bundle_id) {
       $base_table = $this->getTableFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
       if ($base_table) {
-        $uri = $this->getEntityURI($item_settings['storage_plugin_id'], $base_table, $record_id, $bundle_id);
+        $uri = $this->getEntityURI($base_table, $record_id, $bundle_id);
         if ($uri) {
           // Url::fromUri($uri) takes 0.75 seconds!
           //$displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($uri))->toString();
@@ -113,54 +83,6 @@ class TripalEntityLookup {
   }
 
   /**
-   * Returns a list of columns with a not null constraint in the
-   * indicated chado table. The primary key is excluded.
-   * It takes significant time to retrieve $chado_schema, so we cache the results.
-   *
-   * @param string $chado_table
-   *   The name of the chado table.
-   * @param string $chado_schema
-   *   The chado schema name.
-   * @param string $chado_version
-   *   The chado version.
-   *
-   * @return array
-   *   The chado table name, or null if no match found.
-   */
-  public function getNotNullColumns($chado_table, $chado_schema = NULL, $chado_version = NULL) {
-$t1 = microtime(true); //@@@
-    // Retrieve the default name of the chado schema if it's not provided.
-    if ($chado_schema === NULL) {
-      $chado_schema = chado_get_schema_name('chado');
-    }
-    if ($chado_version === NULL) {
-      $chado_version = chado_get_version(FALSE, FALSE, $chado_schema);
-    }
-    $cache_id = 'tripalentitylookup:' . $chado_schema . '.' . $chado_table;
-    if ($cache = \Drupal::cache()->get($cache_id)) {
-      $cache_values = $cache->data;
-$t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for cached lookup="); //@@@
-    }
-    else {
-      $cache_values = [];
-      $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($chado_version, $chado_schema);
-      $table_schema = $chado_schema->getTableSchema($chado_table);
-      $cache_values['primary_keys'] = $table_schema['primary key'];
-      $not_null_columns = [];
-      foreach ($table_schema['fields'] as $column => $config) {
-        if (!in_array($column, $cache_values['primary_keys'])) {
-          if (array_key_exists('not null', $config) and $config['not null']) {
-            $cache_values['not_null_columns'][] = $column;
-          }
-        }
-      }
-      \Drupal::cache()->set($cache_id, $cache_values);
-$t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for UNcached lookup="); //@@@
-    }
-    return $cache_values['not_null_columns'];
-  }
-
-  /**
    * Retrieve a Tripal bundle id based on its CV term
    *
    * @param string $termIdSpace
@@ -192,26 +114,22 @@ $t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for UNcached lookup="); //@@
   /**
    * Retrieve a uri for an entity corresponding to a record in a table.
    *
-   * @param string $datastore
-   *   The id of the TripalStorage plugin, e.g. "chado_storage"
    * @param string $base_table
    *   The name of the chado table
    * @param integer $record_id
    *   The primary key value for the requested record in the $base_table
    * @param string $bundle_id
    *   The name of the drupal bundle, e.g. for base table 'arraydesign' it is 'array_design'
-   * @param string $chado_schema
-   *   The chado schema name, usually 'chado'. Pass NULL for the default chado schema.
-   * @param string $chado_version
-   *   The chado version, usually '1.3'. Pass NULL for the default version of the given schema.
+   * @param string $entity_type
+   *   The type of entity, only 'tripal_entity' is supported.
    *
    * @return string
    *   The local uri string for the requested entity.
-   *   Will be null if either zero or multiple hits.
+   *   Will be null if not found, can happen if the entity has not been published.
    */
-  public function getEntityURI($datastore, $base_table, $record_id, $bundle_id) {
+  public function getEntityURI($base_table, $record_id, $bundle_id, $entity_type = 'tripal_entity') {
     $uri = NULL;
-    $id = $this->getEntityIdFromRecordId($datastore, $base_table, $record_id, $bundle_id);
+    $id = $this->getEntityIdFromRecordId($base_table, $record_id, $bundle_id);
     if ($id) {
       $uri = "internal:/bio_data/$id";
     }
@@ -222,52 +140,108 @@ $t2 = microtime(true); dpm($t2 - $t1, "Elapsed time for UNcached lookup="); //@@
   /**
    * Retrieve the pkey for an entity corresponding to a record in a table.
    *
-   * @param string $datastore
-   *   The id of the TripalStorage plugin, e.g. "chado_storage"
    * @param string $base_table
    *   The name of the chado table
    * @param integer $record_id
    *   The primary key value for the requested record in the $base_table
    * @param string $bundle_id
    *   The name of the drupal bundle, e.g. for base table 'arraydesign' it is 'array_design'
-   * @param string $chado_schema
-   *   The chado schema name, usually 'chado'. Pass NULL for the default chado schema.
-   * @param string $chado_version
-   *   The chado version, usually '1.3'. Pass NULL for the default version of the given schema.
+   * @param string $entity_type
+   *   The type of entity, only 'tripal_entity' is supported.
    *
    * @return integer
    *   The id for the requested entity in the tripal_entity table.
    *   Will be null if zero or if multiple hits.
    */
-  public function getEntityIdFromRecordId($datastore, $base_table, $record_id, $bundle_id, $chado_schema = NULL, $chado_version = NULL) {
+  public function getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type = 'tripal_entity') {
     $id = NULL;
-    $not_null_columns = $this->getNotNullColumns($base_table, $chado_schema, $chado_version);
-    if (!$not_null_columns) {
-      dpm("Temporary warning that there are no not-null columns for table \"$base_table\"");
+    $required_fields = $this->getRequiredFields($bundle_id, $entity_type);
+    if (!$required_fields) {
+      dpm("Temporary warning that there are no required fields for bundle \"$bundle_id\""); //@@@
       return NULL;
     }
-    // @@@to-do this is a temporary hack for the Manufacturer on the Array Design content type
-    $not_null_columns[0] = preg_replace('/_id$/', '', $not_null_columns[0]);
 
-    $entity_table_name = 'tripal_entity__' . $bundle_id . '_' . $not_null_columns[0];
-    $entity_column_name = $bundle_id . '_' . $not_null_columns[0] . '_record_id';
+    // We only need to evaluate for one required field, just pick the first one.
+    $required_field = array_key_first($required_fields);
+    $required_base_table = $required_fields[$required_field];
 
-    // Query the appropriate field table for this record_id
-    $conn = \Drupal::service('database');
-    $query = $conn->select($entity_table_name, 'e');
-    $query->addField('e', 'entity_id');
-    $query->condition('e.' . $entity_column_name, $record_id, '=');
+    // Make sure base table matches (it should in all cases)
+    if ($base_table != $required_base_table) {
+      throw new \Exception("base table for bundle $bundle_id field $required_field is $required_base_table, this does not match passed table $base_table");
+    }
 
-    // There should only be one hit, but this is here to check for
-    // multiple hits just in case. If this happens, we return null.
-    $num_hits = $query->countQuery()->execute()->fetchField();
-    if ($num_hits == 1) {
-      $id = $query->execute()->fetchField();
+    // This will be the drupal field table and column to query
+    $entity_table_name = 'tripal_entity__' . $required_field;
+    $entity_column_name = $required_field . '_record_id';
+
+    try {
+      // Query the appropriate drupal field table for this record_id
+      $conn = \Drupal::service('database');
+      $query = $conn->select($entity_table_name, 'e');
+      $query->addField('e', 'entity_id');
+      $query->condition('e.' . $entity_column_name, $record_id, '=');
+
+      // There should only be zero or one hit, but this exception is here
+      // just in case. For zero hits, we return null.
+      $num_hits = $query->countQuery()->execute()->fetchField();
+      if ($num_hits > 1) {
+        throw new \Exception("TripalEntityLookup: Too many hits ($num_hits) for table $entity_table_name column $entity_column_name record $record_id");
+      }
+      elseif ($num_hits == 1) {
+        $id = $query->execute()->fetchField();
+      }
+      else {
+        dpm("Temporary warning that there were no hits to record_id $record_id in table $entity_table_name column $entity_column_name"); //@@@
+      }
+    }
+    catch (\Exception $e) {
+      dpm("Temporary warning that db query was invalid: ".$e->getMessage()); //@@@
+      return NULL;
+      // throw new \Exception('Invalid database query: ' . $e->getMessage());
+    }
+
+    return $id;
+  }
+
+  /**
+   * Retrieve a list of required fields in a given bundle
+   *
+   * @param string $bundle_id
+   *   The name of the drupal bundle, e.g. 'analysis'
+   * @param string $entity_type
+   *   The type of entity, only 'tripal_entity' is supported.
+   *
+   * @return array
+   *   A list of required fields.
+   *   Key is field name, value is chado base table.
+   */
+  private function getRequiredFields($bundle_id, $entity_type) {
+    $field_list = [];
+    $cache_id = 'tripal_required_fields';
+    if ($cache = \Drupal::cache()->get($cache_id) and FALSE) {
+      $field_list = $cache->data;
     }
     else {
-      dpm("Temporary warning that there were $num_hits hits to record_id $record_id in table $entity_table_name column $entity_column_name"); //@@@
+      // Look up every bundle so we only have to cache once. Takes about 1/10 second.
+      $entityFieldManager = \Drupal::service('entity_field.manager');
+      $bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo($entity_type);
+      foreach ($bundles as $bundle_name => $bundle_info) {
+        $fields = $entityFieldManager->getFieldDefinitions($entity_type, $bundle_name);
+        foreach ($fields as $field_name => $field_info) {
+          $storage_settings = $field_info->getSetting('storage_plugin_settings');
+          $base_table = $storage_settings['base_table'] ?? '';
+          $base_column = $storage_settings['base_table_dependant']['base_column']
+              ?? $storage_settings['base_column'] ?? '';
+          $is_required = $field_info->isRequired();
+          if ($is_required and $base_table and $base_column) {
+            $field_list[$bundle_name][$field_name] = $base_table;
+          }
+        }
+      }
+      // Set cached values to expire in 1 hour
+      \Drupal::cache()->set($cache_id, $field_list, \Drupal::time()->getRequestTime() + (3600));
     }
-    return $id;
+    return $field_list[$bundle_id];
   }
 
 }
