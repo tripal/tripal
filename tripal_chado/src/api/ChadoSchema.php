@@ -113,15 +113,18 @@ class ChadoSchema {
     if ($schema_name === NULL) {
       $this->schema_name = 'chado';
     }
-    elseif (preg_match('/^[a-z][a-z0-9]+$/', $schema_name) === 0) {
-      // Schema name must be a single word containing only lower case letters
-      // or numbers and cannot begin with a number.
-      $this->logger->error(
-        "Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
-      return FALSE;
-    }
     else {
-      $this->schema_name = $schema_name;
+      $tripalDbxApi = \Drupal::service('tripal.dbx');
+      if ($tripalDbxApi->isInvalidSchemaName($schema_name, TRUE)) {
+        // Schema name must be a single word containing only lower case letters
+        // or numbers and cannot begin with a number.
+        $this->logger->error(
+          "Schema name must be a single alphanumeric word beginning with a letter and all lowercase.");
+        return FALSE;
+      }
+      else {
+        $this->schema_name = $schema_name;
+      }
     }
 
     // Check functions require the chado schema be local and installed...

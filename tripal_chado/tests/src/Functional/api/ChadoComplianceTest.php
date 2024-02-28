@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado;
+namespace Drupal\Tests\tripal_chado\Functional\api;
 
-use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Database\Database;
 use Drupal\tripal_chado\api\ChadoSchema;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 
 /**
  * Tests the current Chado Database is compliant with the schema definition
@@ -14,9 +14,11 @@ use Drupal\tripal_chado\api\ChadoSchema;
  * @group Tripal Chado
  * @group Tripal Database
  */
-class ChadoComplianceTest extends BrowserTestBase {
+class ChadoComplianceTest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
+
+  protected $connection;
 
   /**
    * Modules to enable.
@@ -24,6 +26,16 @@ class ChadoComplianceTest extends BrowserTestBase {
    * @var array
    */
   protected static $modules = ['tripal', 'tripal_chado'];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    // Open connection to Chado
+    $this->connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+  }
 
   /**
    * Tests Compliance for a given table.
@@ -102,7 +114,7 @@ class ChadoComplianceTest extends BrowserTestBase {
     foreach ($tables as $table_name) {
 
       // Create the ChadoSchema class to aid in testing.
-      $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($schema_version, 'testchado');
+      $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($schema_version, $this->testSchemaName);
       $version = $chado_schema->getVersion();
       $schema_name = $chado_schema->getSchemaName();
 
