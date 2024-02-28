@@ -34,6 +34,7 @@ class TripalEntityLookup {
           // Url::fromUri($uri) takes 0.75 seconds!
           //$displayed_string = Link::fromTextAndUrl($displayed_string, Url::fromUri($uri))->toString();
           // we can just bypass that and save tons of time -- @to-do is that okay?
+          // The disadvantage is that the URL is not updated from e.g. /bio_data/1 to /analysis/1
           $displayed_string = '<a href="' . $uri . '">' . $displayed_string . '</a>';
         }
       }
@@ -218,7 +219,7 @@ class TripalEntityLookup {
   private function getRequiredFields($bundle_id, $entity_type) {
     $field_list = [];
     $cache_id = 'tripal_required_fields';
-    if ($cache = \Drupal::cache()->get($cache_id) and FALSE) {
+    if ($cache = \Drupal::cache()->get($cache_id)) {
       $field_list = $cache->data;
     }
     else {
