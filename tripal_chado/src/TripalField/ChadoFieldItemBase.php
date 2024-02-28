@@ -148,11 +148,18 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
       $linker_is_disabled = FALSE;
       $linker_tables = [];
+      $default_linker_table = $storage_settings['base_table_dependant']['linker_table']
+          ?? $storage_settings['linker_table'] ?? '';
+      $default_linker_column = $storage_settings['base_table_dependant']['linker_fkey_column']
+          ?? $storage_settings['linker_fkey_column'] ?? '';
       $default_linker_table_and_column = $storage_settings['base_table_dependant']['linker_table_and_column']
-          ?? $storage_settings['linker_table_and_column']
-          ?? '';
+          ?? $storage_settings['linker_table_and_column'] ?? '';
+      if (!$default_linker_table_and_column and $default_linker_table and $default_linker_column) {
+        $default_linker_table_and_column = $default_linker_table . self::$table_column_delimiter  . $default_linker_column;
+      }
       if ($default_linker_table_and_column) {
         $linker_is_disabled = TRUE;
+        // We don't need to retrieve the entire list any more.
         $linker_tables = [$default_linker_table_and_column => $default_linker_table_and_column];
       }
       else {
