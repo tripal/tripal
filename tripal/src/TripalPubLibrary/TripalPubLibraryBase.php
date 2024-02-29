@@ -58,6 +58,9 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
 
   public function deleteSearchQuery(int $query_id) {
     $public = \Drupal::database();
+    $public->delete('tripal_pub_library_query')
+    ->condition('pub_library_query_id', $query_id, '=')
+    ->execute();
   }
 
   public function getSearchQueries() {

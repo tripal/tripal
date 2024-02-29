@@ -51,9 +51,10 @@ class ChadoDeletePubSearchQueryForm extends FormBase {
 
     $pub_library_query_id = $user_input['pub_library_query_id'];
 
-    $public->delete('tripal_pub_library_query')
-    ->condition('pub_library_query_id', $pub_library_query_id, '=')
-    ->execute();
+    $pub_library_manager = \Drupal::service('tripal.pub_library');
+    $plugin_id = 'tripal_pub_library_pubmed'; // has to be a valid library but it doesn't matter for the deleteSearchQuery
+    $plugin = $pub_library_manager->createInstance($plugin_id, []);
+    $plugin->deleteSearchQuery($pub_library_query_id);
 
     $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
     $form_state->setRedirectUrl($url);
