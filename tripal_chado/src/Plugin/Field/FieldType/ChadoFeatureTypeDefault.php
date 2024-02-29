@@ -280,7 +280,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;genus',
+        . ';' . $object_table . '.organism_id>organism.organism_id;genus',
       'as' => 'feature_genus',
     ]);
 
@@ -288,7 +288,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;species',
+        . ';' . $object_table . '.organism_id>organism.organism_id;species',
       'as' => 'feature_species',
     ]);
 
@@ -296,7 +296,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name',
+        . ';' . $object_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name',
       'as' => 'feature_infraspecific_type',
     ]);
 
@@ -304,7 +304,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;infraspecific_name',
+        . ';' . $object_table . '.organism_id>organism.organism_id;infraspecific_name',
       'as' => 'feature_infraspecific_name',
     ]);
 
@@ -312,7 +312,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;abbreviation',
+        . ';' . $object_table . '.organism_id>organism.organism_id;abbreviation',
       'as' => 'feature_abbreviation',
     ]);
 
@@ -320,7 +320,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;common_name',
+        . ';' . $object_table . '.organism_id>organism.organism_id;common_name',
       'as' => 'feature_common_name',
     ]);
 
