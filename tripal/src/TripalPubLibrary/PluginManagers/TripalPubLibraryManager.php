@@ -42,4 +42,42 @@ class TripalPubLibraryManager extends DefaultPluginManager {
     $this->setCacheBackend($cache_backend, "tripal_pub_library_plugins");
   }
 
+
+  public function getSearchQuery(int $query_id) {
+    $public = \Drupal::database();
+    $row = $public->select('tripal_pub_library_query', 'tpi')
+        ->fields('tpi')
+        ->condition('pub_library_query_id', $query_id, '=')
+        ->execute()
+        ->fetchObject();
+    return $row;
+  }
+
+  public function getSearchQueries() {
+    $public = \Drupal::database();
+    $pub_library_main_query = $public->select('tripal_pub_library_query','tpi');
+    $results = $pub_library_main_query->fields('tpi')->orderBy('pub_library_query_id', 'ASC')->execute()->fetchAll();
+    return $results;
+  }
+
+  public function addSearchQuery(array $query) {
+    $public = \Drupal::database();
+    $public->insert('tripal_pub_library_query')->fields($query)->execute();
+  }
+
+  public function updateSearchQuery(int $query_id, array $query) {
+    $public = \Drupal::database();
+    $public->update('tripal_pub_library_query')
+    ->fields($query)
+    ->condition('pub_library_query_id', $query_id)
+    ->execute();
+  }
+
+  public function deleteSearchQuery(int $query_id) {
+    $public = \Drupal::database();
+    $public->delete('tripal_pub_library_query')
+    ->condition('pub_library_query_id', $query_id, '=')
+    ->execute();
+  }
+
 }
