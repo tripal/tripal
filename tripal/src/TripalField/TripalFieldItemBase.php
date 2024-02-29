@@ -13,6 +13,7 @@ use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\TypedData\DataDefinition;
 use \RuntimeException;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Defines the Tripal field item base class.
@@ -573,4 +574,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     return $prop_values;
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_name, array $field_definition) : array{
+
+    return [];
+  }
 }

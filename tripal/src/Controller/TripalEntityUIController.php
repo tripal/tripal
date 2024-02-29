@@ -83,17 +83,27 @@ class TripalEntityUIController extends ControllerBase {
    * @todo update all code.
    */
   public function tripalCheckForFields($tripal_entity_type) {
+    $new_fields = [];
 
     $bundle_name = $tripal_entity_type->id();
     $term = $tripal_entity_type->getTerm();
 
-    //$added = tripal_create_bundle_fields($bundle, $term);
-    //if (count($added) == 0) {
-      //$this->messenger->addMessage('No new fields were added');
-    //}
-    //foreach ($added as $field_name) {
-      //$this->messenger->addMessage('Added field: ' . $field_name);
-    //}
+    // Get all of the fields and call the `discover()` method for each one.
+    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
+    $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
+    $all_field_defs = $field_type_manager->getDefinitions();
+    foreach ($all_field_defs as $field_name => $field_def) {
+      $field_class = $field_def['class'];
+      if (is_subclass_of($field_class, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
+        $new = $field_class::discover($tripal_entity_type, $field_name, $field_def);
+        foreach ($new as $new_field) {
+          $new_fields[] = $new_field;
+        }
+      }
+    }
+
+    dpm($new_fields);
+
 
     \Drupal::messenger()->addWarning(t('This functionality is not implemented yet.'));
 

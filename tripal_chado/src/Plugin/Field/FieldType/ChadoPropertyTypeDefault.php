@@ -10,6 +10,7 @@ use Drupal\core\Field\FieldStorageDefinitionInterface;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\tripal\Entity\TripalEntityType;
 
 
 /**
@@ -221,5 +222,25 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
       $form_state->setErrorByName('storage_plugin_settings][base_table',
           'The selected base table does not have an associated property table.');
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_name, array $field_definition) : array{
+    //dpm($bundle);
+    //dpm($field_definition);
+    $storage_settings = ChadoFieldItemBase::defaultStorageSettings();
+    $field_settings = ChadoFieldItemBase::defaultFieldSettings();
+    dpm($storage_settings);
+    dpm($field_settings);
+
+    $chado = \Drupal::service('tripal_chado.database');
+
+
+
+
+    return [1];
   }
 }

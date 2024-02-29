@@ -3,6 +3,8 @@
 namespace Drupal\tripal\TripalField\Interfaces;
 
 use Drupal\Core\Field\FieldItemInterface;
+use Drupal\tripal\Entity\TripalEntityType;
+
 
 interface TripalFieldItemInterface extends FieldItemInterface {
 
@@ -120,4 +122,32 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    *   The entity.
    */
   public function tripalClear($field_item, $field_name, $prop_types, $prop_values, $entity);
+
+
+  /**
+   * Finds new instances of this field for a given content type.
+   *
+   * Fields are added to Tripal using the tripal.tripalfield_collection.*
+   * configuration file during installation of a module.  In some cases,
+   * however, not all possible instances of a field can be added to a content
+   * type at installation of the module.  This function can be called to disover
+   * if new instances of a field are appropraite for a given content type.  An
+   * example of this is the `chado_property_type_default` field.  This function
+   * should examine its storage backend and return a list of new fields
+   * instnaces that could be added to the content type (i.e., bundle).
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $bundle
+   *   The entity type object for which new field instances should be found.
+   *
+   * @param string $field_name
+   *   The name of the field.
+   *
+   * @param array $field_definitino
+   *   The field definition array.
+   *
+   * @return array
+   *   An associative array that follows the same structure as expected by `
+   *   tripal.tripalfield_collection.* configuration.
+   */
+  public static function discover(TripalEntityType $bundle, string $field_name, array $field_definition) : array;
 }
