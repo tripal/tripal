@@ -1,0 +1,43 @@
+# Adds a +Check for new fields link on the 'Tripal Content Types' page.
+tripal_layout.content_type_field_layout:
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/layout'
+  defaults:
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::applyLayout'
+    _title: 'Apply Default Layout'
+  options:
+    parameters:
+      tripal_entity_type:
+        type: entity:tripal_entity_type
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_layout.content_type_field_layout_reset:
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/layout/reset'
+  defaults:
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::resetLayout'
+    _title: 'Reset Layout'
+  options:
+    parameters:
+      tripal_entity_type:
+        type: entity:tripal_entity_type
+  requirements:
+    _permission: 'administer tripal'
+    
+##
+# Tripal Layout Default View entity.
+##
+
+entity.tripal_layout_default_view.layouts:
+  path: '/admin/tripal/config/tripal_layout_default_view'
+  defaults:
+    _entity_list: 'tripal_layout_default_view'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.tripal_layout_default_view.delete_form:
+  path: '/admin/tripal/config/tripal_layout_default_view/{tripal_layout_default_view}/delete'
+  defaults:
+    _entity_form: 'tripal_layout_default_view.delete'
+    _title: 'Delete Configuration'
+  requirements:
+    _permission: 'administer tripal'

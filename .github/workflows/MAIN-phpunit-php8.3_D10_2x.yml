@@ -11,7 +11,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
       - name: Run Automated testing
-        uses: tripal/test-tripal-action@v1.2
+        uses: tripal/test-tripal-action@v1.4
         with:
           directory-name: 'tripal'
           modules: 'tripal tripal_biodb tripal_chado'

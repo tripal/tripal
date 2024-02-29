@@ -1,0 +1,76 @@
+tripal_layout.tripal_layout_default_view.*:
+  type: config_entity
+  mapping:
+    id:
+      type: string
+      label: "ID"
+      nullable: false
+    label:
+      type: string
+      label: "Label"
+      nullable: false
+    description:
+      type: string
+      label: "Description"
+      nullable: false
+    layouts:
+      type: sequence
+      label: "Layouts"
+      sequence:
+        type: mapping
+        mapping:
+          tripal_entity_type:
+            type: string
+            label: "The name of the tripal entity type (e.g. the bundle name)"
+            nullable: false
+          hidden:
+            type: sequence
+            label: "The names of fields or field groups that should be hidden. Use the format 'type:<field type>' to hide all fields of a given type (e.g., 'type:chado_property_type_default')" 
+          field_groups:
+            type: sequence
+            label: "The set of field groups for this layout"
+            sequence:
+              type: mapping
+              mapping:
+                details:
+                  type: sequence
+                  label: "The set of field groups of the type: 'details'." 
+                  sequence:
+                    type: mapping
+                    mapping:
+                      label:
+                        type: string
+                        label: "The label of this details group"
+                      weight:
+                        type: integer
+                        label: "The weight to give this field group.  Field groups will be displayed in order of their weights."
+                      show_empty:
+                        type: boolean
+                        label: "Set to true if this field group should be shown even if all of it's children are empty"
+                      open:
+                        type: boolean
+                        label: "Set to true if this details group should be open by default. False if closed"
+                      children:
+                        type: sequence
+                        label: "The names of fields or field groups that are children of this field group. Use the format 'type:<field type>' to include all fields of a given type (e.g., 'type:chado_property_type_default')"                      
+                field_group_table:
+                  type: sequence
+                  label: "The set of field groups of the type: 'field_group_table'."
+                  sequence:
+                    type: mapping
+                    mapping:
+                      label:
+                        type: string
+                        label: "The label of this details group"
+                      weight:
+                        type: integer
+                        label: "The weight to give this field group.  Field groups will be displayed in order of their weights."
+                      show_empty:
+                        type: boolean
+                        label: "Set to true if this field group should be shown even if all of it's children are empty"
+                      children:
+                        type: sequence
+                        label: "The names of fields or field groups that are children of this field group. Use the format 'type:<field type>' to include all fields of a given type (e.g., 'type:chado_property_type_default')"                    
+                
+          
+          

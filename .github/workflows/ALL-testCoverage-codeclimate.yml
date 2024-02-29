@@ -23,7 +23,7 @@ jobs:
         run: |
           docker build --tag=tripaldocker:localdocker \
             --build-arg drupalversion="10.1.x-dev" \
-            --build-arg chadoschema='testchado' ./ \
+            --build-arg chadoschema='teacup' ./ \
             --file tripaldocker/Dockerfile-php8.1-pgsql13
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
