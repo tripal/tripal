@@ -136,6 +136,13 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
+          // Special case, we don't support channel_id because there may be none defined
+          // in the channel table, and if not we cannot have a default value in the widget,
+          // and the widget can't pass a null. For now just ignore it.
+          // @todo Do we need a mechanism to be able to pass null to chado storage?
+          if ($column == 'channel_id') {
+            continue;
+          }
           $term = $mapping->getColumnTermId($linker_table, $column);
           if ($term) {
             $extra_linker_columns[$column] = $term;

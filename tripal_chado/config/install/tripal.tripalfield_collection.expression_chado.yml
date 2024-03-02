@@ -435,7 +435,7 @@ fields:
         label: Biosample
         type: chado_biomaterial_type_default
         description: A biological sample used in this assay
-        cardinality: 1
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
