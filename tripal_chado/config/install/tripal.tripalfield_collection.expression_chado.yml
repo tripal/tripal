@@ -166,11 +166,11 @@ fields:
 
 ## Assay ##
 
-    -   name: assay_unique_name
+    -   name: assay_array_identifier
         content_type: assay
         label: Unique Name
         type: chado_text_type_default
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A unique alternate identifier for the array.
         cardinality: 1
         required: false
         storage_settings:
@@ -350,32 +350,6 @@ fields:
               weight: 30
 
 # placeholder for assaydate
-
-    -   name: assay_arrayidentifier
-        content_type: assay
-        label: Array Identifier
-        type: chado_text_type_default
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: assay
-                base_column: arrayidentifier
-        settings:
-            termIdSpace: data
-            termAccession: "0842"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 35
-          form:
-            default:
-              region: content
-              weight: 35
 
     -   name: assay_operator
         content_type: assay
