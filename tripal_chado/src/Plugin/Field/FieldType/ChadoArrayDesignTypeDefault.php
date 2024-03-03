@@ -12,6 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_array_design_type_default",
+ *   category = "tripal_chado",
  *   object_table = "arraydesign",
  *   label = @Translation("Chado Array Design"),
  *   description = @Translation("Add a Chado Array Design to the content type."),
@@ -300,7 +301,7 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'array_design_database_accession', $dbxref_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col 
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
       'as' => 'array_design_database_accession',
     ]);

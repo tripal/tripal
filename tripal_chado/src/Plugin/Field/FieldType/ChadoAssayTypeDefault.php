@@ -11,6 +11,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_assay_type_default",
+ *   category = "tripal_chado",
  *   object_table = "assay",
  *   label = @Translation("Chado Assay"),
  *   description = @Translation("Add a Chado assay to the content type."),

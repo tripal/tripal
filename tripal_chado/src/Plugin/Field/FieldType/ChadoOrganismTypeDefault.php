@@ -12,6 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_organism_type_default",
+ *   category = "tripal_chado",
  *   object_table = "organism",
  *   label = @Translation("Chado Organism"),
  *   description = @Translation("A chado organism reference"),

@@ -19,6 +19,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *
  * @FieldType(
  *   id = "chado_boolean_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Boolean Field Type"),
  *   description = @Translation("A boolean field."),
  *   default_widget = "chado_boolean_type_widget",

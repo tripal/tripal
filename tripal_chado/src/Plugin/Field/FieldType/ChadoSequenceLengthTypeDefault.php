@@ -10,6 +10,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_sequence_length_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Feature Sequence Length"),
  *   description = @Translation("A chado feature sequence length"),
  *   default_widget = "chado_sequence_length_widget_default",

@@ -11,6 +11,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_contact_type_default",
+ *   category = "tripal_chado",
  *   object_table = "contact",
  *   label = @Translation("Chado Contact"),
  *   description = @Translation("Add a Chado contact to the content type."),

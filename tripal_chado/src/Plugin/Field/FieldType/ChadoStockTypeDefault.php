@@ -13,6 +13,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_stock_type_default",
+ *   category = "tripal_chado",
  *   object_table = "stock",
  *   label = @Translation("Chado Stock"),
  *   description = @Translation("Add a Chado stock to the content type."),

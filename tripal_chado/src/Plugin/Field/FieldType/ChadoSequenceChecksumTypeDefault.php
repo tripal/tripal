@@ -11,6 +11,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_sequence_checksum_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Feature Sequence Checksum"),
  *   description = @Translation("A chado feature sequence md5 checksum"),
  *   default_widget = "chado_sequence_checksum_widget_default",

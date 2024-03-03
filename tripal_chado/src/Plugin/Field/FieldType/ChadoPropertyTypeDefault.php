@@ -17,6 +17,7 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *
  * @FieldType(
  *   id = "chado_property_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Property"),
  *   description = @Translation("Add a property or attribute to the content type."),
  *   default_widget = "chado_property_widget_default",

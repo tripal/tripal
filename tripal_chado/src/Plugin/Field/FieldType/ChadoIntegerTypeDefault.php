@@ -18,6 +18,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *
  * @FieldType(
  *   id = "chado_integer_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Integer Field Type"),
  *   description = @Translation("An integer field."),
  *   default_widget = "chado_integer_type_widget",

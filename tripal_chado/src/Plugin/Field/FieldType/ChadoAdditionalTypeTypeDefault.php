@@ -19,6 +19,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *
  * @FieldType(
  *   id = "chado_additional_type_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Type Reference"),
  *   description = @Translation("A Chado type reference"),
  *   default_widget = "chado_additional_type_widget_default",

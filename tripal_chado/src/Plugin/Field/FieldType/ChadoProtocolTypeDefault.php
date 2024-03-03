@@ -12,6 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_protocol_type_default",
+ *   category = "tripal_chado",
  *   object_table = "protocol",
  *   label = @Translation("Chado Protocol"),
  *   description = @Translation("Add a Chado protocol to the content type."),

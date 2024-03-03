@@ -13,6 +13,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_feature_type_default",
+ *   category = "tripal_chado",
  *   object_table = "feature",
  *   label = @Translation("Chado Feature"),
  *   description = @Translation("Add a Chado feature to the content type."),
@@ -343,7 +344,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
         . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
       'as' => 'feature_database_name',
     ]);
-  
+
     return $properties;
   }
 

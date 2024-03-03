@@ -7,7 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
-
+use Drupal\Core\Form\SubformStateInterface;
 
 /**
  * Defines the Tripal field item base class.
@@ -34,9 +34,10 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = [];
 
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-    $tables = $schema->getTables(['type' => 'table', 'status' => 'base']);
+    // If we only have a subform form state then let's get the full one.
+    if ($form_state instanceof SubformStateInterface) {
+       $form_state = $form_state->getCompleteFormState();
+    }
 
     $is_disabled = FALSE;
     $storage_settings = $this->getSetting('storage_plugin_settings');
@@ -46,10 +47,11 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $is_disabled = TRUE;
     }
 
-    // Find base tables.
+    // Find compatible tables.
+    $tables = $this->getCompatibleTables();
     $base_tables = [];
     $base_tables[NULL] = '-- Select --';
-    foreach (array_keys($tables) as $table) {
+    foreach ($tables as $table) {
       $base_tables[$table] = $table;
     }
 
@@ -420,6 +422,28 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       }
     }
     return $select_list;
+  }
+
+  /**
+   * Provides the list of Chado tables that this field is compatible with.
+   *
+   * By default this function returns all of the Chado base tables. This
+   * function is only needed if the no_ui annotation setting is FALSE.  In
+   * other words, if the user is allowed to add the field to a content type
+   * via the Drupal GUI, then this function should be implemented in the field
+   * to limit which tables the user can select.
+   *
+   * @return array
+   *   An array of Chado table names.
+   */
+  public function getCompatibleTables() {
+
+    /** @var \Drupal\tripal\TripalDBX\TripalDbxSchema $schema **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $tables = $schema->getTables(['type' => 'table', 'status' => 'base']);
+
+    return array_keys($tables);
   }
 
 }

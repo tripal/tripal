@@ -10,6 +10,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_sequence_coordinates_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Sequence Coordinates"),
  *   description = @Translation("Locations on reference sequences where the feature is located"),
  *   default_widget = "chado_sequence_coordinates_widget_default",
@@ -38,7 +39,7 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
-  /**  
+  /**
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
@@ -88,13 +89,13 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
       'drupal_store' => TRUE,
       'path' => 'feature.feature_id',
     ]);
-    
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'featureloc_id', $record_id_term, [
       'action' => 'store_pkey',
       'drupal_store' => TRUE,
       'path' => 'featureloc.featureloc_id',
     ]);
-    
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fkey', $record_id_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
@@ -122,8 +123,8 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'path' => 'feature.feature_id>featureloc.feature_id;phase',
     ]);
-      
-    return($properties);    
+
+    return($properties);
   }
 
 }

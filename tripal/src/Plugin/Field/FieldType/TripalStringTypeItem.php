@@ -13,6 +13,7 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *
  * @FieldType(
  *   id = "tripal_string_type",
+ *   category = "tripal",
  *   label = @Translation("Tripal String Field Type"),
  *   description = @Translation("A string field."),
  *   default_widget = "default_tripal_string_type_widget",

@@ -12,6 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_source_data_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Data Source"),
  *   description = @Translation("The source and version of data used for this analysis"),
  *   default_widget = "chado_source_data_widget_default",

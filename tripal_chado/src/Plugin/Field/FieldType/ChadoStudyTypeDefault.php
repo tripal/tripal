@@ -12,6 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_study_type_default",
+ *   category = "tripal_chado",
  *   object_table = "study",
  *   label = @Translation("Chado Study"),
  *   description = @Translation("Add a Chado study to the content type."),

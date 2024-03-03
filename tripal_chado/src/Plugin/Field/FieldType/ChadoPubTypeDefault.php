@@ -13,6 +13,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_pub_type_default",
+ *   category = "tripal_chado",
  *   object_table = "pub",
  *   label = @Translation("Chado Publication"),
  *   description = @Translation("Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record."),

@@ -12,6 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_biomaterial_type_default",
+ *   category = "tripal_chado",
  *   object_table = "biomaterial",
  *   label = @Translation("Chado Biomaterial"),
  *   description = @Translation("Add a Chado biomaterial to the content type."),

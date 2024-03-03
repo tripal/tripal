@@ -17,6 +17,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *
  * @FieldType(
  *   id = "chado_synonym_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Synonym"),
  *   description = @Translation("A chado syonym"),
  *   default_widget = "chado_synonym_widget_default",

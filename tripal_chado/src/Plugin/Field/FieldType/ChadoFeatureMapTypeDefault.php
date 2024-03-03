@@ -12,6 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_featuremap_type_default",
+ *   category = "tripal_chado",
  *   object_table = "featuremap",
  *   label = @Translation("Chado FeatureMap"),
  *   description = @Translation("Add a Chado featuremap to the content type."),

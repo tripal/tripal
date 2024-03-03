@@ -12,6 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_dbxref_type_default",
+ *   category = "tripal_chado",
  *   object_table = "dbxref",
  *   label = @Translation("Chado Database Cross Reference"),
  *   description = @Translation("Add a Chado dbxref to the content type."),
