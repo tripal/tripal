@@ -8,6 +8,7 @@ use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\SubformStateInterface;
+use Drupal\tripal\Entity\TripalEntityType;
 
 
 /**
@@ -62,7 +63,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
     $chado_base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
     if ($chado_base_table) {
-      dpm($chado_base_table);
       $base_tables[$chado_base_table] = $chado_base_table;
       $default_base_table = $chado_base_table;
       $is_disabled = TRUE;
@@ -445,4 +445,18 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     return $select_list;
   }
 
+  /**
+   * Indicates if the field is compabible with the content type.
+   *
+   * This function should be implemented by all Chado-base fields and
+   * indicate if the field is compatible with the content type.   By
+   * default, it returns TRUE.
+   *
+   * @param TripalEntityType $entity_type
+   *
+   * @return bool
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    return TRUE;
+  }
 }

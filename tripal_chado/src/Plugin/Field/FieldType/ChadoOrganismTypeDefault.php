@@ -6,6 +6,7 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal organism field type.
@@ -266,6 +267,27 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     ]);
 
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+
+    // Get the base table for the content type.
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+
+    // If the base table has a foreign key to the organism table then this
+    // content type is compatible.
+    if (in_array('organism', $base_table_def['foreign keys'])) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
 }

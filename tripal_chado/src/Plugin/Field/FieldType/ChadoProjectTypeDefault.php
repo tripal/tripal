@@ -6,6 +6,7 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal project field type.
@@ -205,6 +206,28 @@ class ChadoProjectTypeDefault extends ChadoFieldItemBase {
     ]);
 
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+
+    // Is there a corresponding linker table?
+    $object_table = self::$object_table;
+    $linker = 'project_' . $object_table;
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    if ($schema->tableExists($linker)) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
 }
