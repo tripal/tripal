@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Form\SubformStateInterface;
 
 
 /**
@@ -34,9 +35,15 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = [];
 
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-    $tables = $schema->getTables(['type' => 'table', 'status' => 'base']);
+
+    // We need the entire form state, not just the subform elements.
+    if ($form_state instanceof SubformStateInterface) {
+      $form_state = $form_state->getCompleteFormState();
+    }
+
+    // Get the content type and see if it has any settings.
+    $storage = $form_state->getStorage();
+    $bundle = $storage['bundle'];
 
     $is_disabled = FALSE;
     $storage_settings = $this->getSetting('storage_plugin_settings');
@@ -46,11 +53,27 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $is_disabled = TRUE;
     }
 
-    // Find base tables.
+    // Get the bundle object so we can get settings such as the title format.
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
     $base_tables = [];
     $base_tables[NULL] = '-- Select --';
-    foreach (array_keys($tables) as $table) {
-      $base_tables[$table] = $table;
+    $entity_type_manager = \Drupal::entityTypeManager();
+    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+    $chado_base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    if ($chado_base_table) {
+      dpm($chado_base_table);
+      $base_tables[$chado_base_table] = $chado_base_table;
+      $default_base_table = $chado_base_table;
+      $is_disabled = TRUE;
+    }
+    else {
+      $chado = \Drupal::service('tripal_chado.database');
+      $schema = $chado->schema();
+      $tables = $schema->getTables(['type' => 'table', 'status' => 'base']);
+      foreach (array_keys($tables) as $table) {
+        $base_tables[$table] = $table;
+      }
     }
 
     $elements['storage_plugin_settings']['base_table'] = [
@@ -104,24 +127,24 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // a linking table if the field annotations specify it.
     if ($plugin_definition['object_table'] ?? FALSE) {
 
-      // Base tables presented here are only those that either have foreign
-      // keys to our object table, or else have foreign keys through a
-      // linker table to our object table. The TRUE parameter to
-      // getBaseTables() specifies to include linker tables.
-      $elements['storage_plugin_settings']['base_table']['#options']
-          = $this->getBaseTables($plugin_definition['object_table'], TRUE);
+//       // Base tables presented here are only those that either have foreign
+//       // keys to our object table, or else have foreign keys through a
+//       // linker table to our object table. The TRUE parameter to
+//       // getBaseTables() specifies to include linker tables.
+//       $elements['storage_plugin_settings']['base_table']['#options']
+//           = $this->getBaseTables($plugin_definition['object_table'], TRUE);
 
-      // Add an ajax callback so that when the base table is selected, the
-      // linking method select can be populated.
-      $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-        'callback' =>  [$this, 'storageSettingsFormLinkingMethodAjaxCallback'],
-        'event' => 'change',
-        'progress' => [
-          'type' => 'throbber',
-          'message' => $this->t('Retrieving linking methods...'),
-        ],
-        'wrapper' => 'edit-linker_table',
-      ];
+//       // Add an ajax callback so that when the base table is selected, the
+//       // linking method select can be populated.
+//       $elements['storage_plugin_settings']['base_table']['#ajax'] = [
+//         'callback' =>  [$this, 'storageSettingsFormLinkingMethodAjaxCallback'],
+//         'event' => 'change',
+//         'progress' => [
+//           'type' => 'throbber',
+//           'message' => $this->t('Retrieving linking methods...'),
+//         ],
+//         'wrapper' => 'edit-linker_table',
+//       ];
 
       $linker_is_disabled = FALSE;
       $linker_tables = [];

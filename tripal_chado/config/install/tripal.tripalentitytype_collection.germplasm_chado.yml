@@ -12,6 +12,8 @@ content_types:
         url_format: "germplasm/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_21
+        settings:
+            chado_base_table: stock
 
     -   label: Breeding Cross
         term: CO_010:0000255
@@ -22,6 +24,8 @@ content_types:
         url_format: "breeding_cross/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_22
+        settings:
+            chado_base_table: stock
 
     -   label: Germplasm Variety
         term: CO_010:0000029
@@ -32,6 +36,8 @@ content_types:
         url_format: "germplasm_variety/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_23
+        settings:
+            chado_base_table: stock
 
     -   label: Recombinant Inbred Line
         term: CO_010:0000162
@@ -42,3 +48,5 @@ content_types:
         url_format: "RIL/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_24
+        settings:
+            chado_base_table: stock
