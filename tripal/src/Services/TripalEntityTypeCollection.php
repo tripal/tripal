@@ -118,8 +118,8 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
 
             // Now add any third party settings.
             $settings = [];
-            if (array_key_exists('settings', $content_type)) {
-              $settings = $content_type['settings'];
+            if (property_exists($content_type, 'settings')) {
+              $settings = $content_type->get('settings');
             }
             if (!empty($settings)){
               foreach ($settings as $key => $value) {
