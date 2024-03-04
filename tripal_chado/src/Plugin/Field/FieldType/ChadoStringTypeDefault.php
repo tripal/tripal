@@ -23,7 +23,6 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   description = @Translation("A string field."),
  *   default_widget = "chado_string_type_widget",
  *   default_formatter = "chado_string_type_formatter",
- *   select_base_column = TRUE,
  *   valid_base_column_types = {
  *     "character varying",
  *   },
@@ -33,6 +32,10 @@ use Drupal\Core\Ajax\ReplaceCommand;
 class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_string_type_default";
+
+  // This is a flag to the ChadoFieldItemBase parent
+  // class to provide a column selector in the form
+  protected static $select_base_column = TRUE;
 
   /**
    * {@inheritdoc}
