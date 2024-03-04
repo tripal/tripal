@@ -17,8 +17,8 @@ class ChadoManageCommands extends DrushCommands {
    *   The name of the schema to install chado in.
    * @options chado-version
    *   The version of chado to install. Currently only 1.3 is supported.
-   * @usage drush trp-install-chado --schema-name='testchado' --version=1.3
-   *   Installs chado 1.3 in a schema named "testchado".
+   * @usage drush trp-install-chado --schema-name='teapot' --version=1.3
+   *   Installs chado 1.3 in a schema named "teapot".
    */
   public function installChado($options = ['schema-name' => 'chado', 'chado-version' => 1.3]) {
 
@@ -50,8 +50,8 @@ class ChadoManageCommands extends DrushCommands {
    * @aliases trp-drop-chado
    * @options schema-name
    *   The name of the schema to drop.
-   * @usage drush trp-drop-chado --schema-name='testchado'
-   *   Removes the chado schema named "testchado".
+   * @usage drush trp-drop-chado --schema-name='teapot'
+   *   Removes the chado schema named "teapot".
    */
   public function dropChado($options = ['schema-name' => 'chado']) {
 
@@ -116,28 +116,6 @@ class ChadoManageCommands extends DrushCommands {
    */
   public function setupTests() {
 
-    $chado_version = 1.3;
-    $schema_name = 'testchado';
-
-    $this->output()->writeln('Installing chado version ' . $chado_version . ' in a schema named "' . $schema_name. '"');
-
-    $installer = \Drupal::service('tripal_chado.installer');
-    $installer->setParameters([
-      'output_schemas' => [  $schema_name  ],
-      'version' => $chado_version ,
-    ]);
-    if ($installer->performTask()) {
-      $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully installed.'));
-      $this->output()->writeln(dt('<info>[Success]</info> The Chado Test environement was successfully set up.'));
-    }
-    else {
-      throw new \Exception(dt(
-        'Unable to install chado {version} in {schema}',
-        [
-          'schema' => $schema_name,
-          'version' => $chado_version ,
-        ]
-      ));
-    }
+    $this->output()->writeln('There is no longer any need to prepare the chado test environment.');
   }
 }
