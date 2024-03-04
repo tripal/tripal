@@ -12,7 +12,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
  * @FieldType(
  *   id = "chado_assay_type_default",
  *   category = "tripal_chado",
- *   object_table = "assay",
  *   label = @Translation("Chado Assay"),
  *   description = @Translation("Add a Chado assay to the content type."),
  *   default_widget = "chado_assay_widget_default",
@@ -22,7 +21,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 class ChadoAssayTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_assay_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'assay';
   protected static $object_id = 'assay_id';
 

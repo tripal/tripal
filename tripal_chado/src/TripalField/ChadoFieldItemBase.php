@@ -36,6 +36,9 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = [];
 
+    // A child class, i.e. a field, can define an object table.
+    // When this is defined, it also means it supports a linker table.
+    $object_table = static::$object_table ?? FALSE;
 
     // We need the entire form state, not just the subform elements.
     if ($form_state instanceof SubformStateInterface) {
@@ -124,27 +127,26 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     }
 
     // Optionally provide a table + column selector for fields using
-    // a linking table if the field annotations specify it.
-    if ($plugin_definition['object_table'] ?? FALSE) {
+    // a linking table if the field specifies this by supplying an object table.
+    if ($object_table) {
+       // Base tables presented here are only those that either have foreign
+       // keys to our object table, or else have foreign keys through a
+       // linker table to our object table. The TRUE parameter to
+       // getBaseTables() specifies to include linker tables.
+       $elements['storage_plugin_settings']['base_table']['#options']
+           = $this->getBaseTables($object_table, TRUE);
 
-//       // Base tables presented here are only those that either have foreign
-//       // keys to our object table, or else have foreign keys through a
-//       // linker table to our object table. The TRUE parameter to
-//       // getBaseTables() specifies to include linker tables.
-//       $elements['storage_plugin_settings']['base_table']['#options']
-//           = $this->getBaseTables($plugin_definition['object_table'], TRUE);
-
-//       // Add an ajax callback so that when the base table is selected, the
-//       // linking method select can be populated.
-//       $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-//         'callback' =>  [$this, 'storageSettingsFormLinkingMethodAjaxCallback'],
-//         'event' => 'change',
-//         'progress' => [
-//           'type' => 'throbber',
-//           'message' => $this->t('Retrieving linking methods...'),
-//         ],
-//         'wrapper' => 'edit-linker_table',
-//       ];
+       // Add an ajax callback so that when the base table is selected, the
+       // linking method select can be populated.
+       $elements['storage_plugin_settings']['base_table']['#ajax'] = [
+         'callback' =>  [$this, 'storageSettingsFormLinkingMethodAjaxCallback'],
+         'event' => 'change',
+         'progress' => [
+           'type' => 'throbber',
+           'message' => $this->t('Retrieving linking methods...'),
+         ],
+         'wrapper' => 'edit-linker_table',
+       ];
 
       $linker_is_disabled = FALSE;
       $linker_tables = [];

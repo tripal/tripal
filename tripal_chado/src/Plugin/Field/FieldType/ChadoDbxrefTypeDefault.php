@@ -13,7 +13,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @FieldType(
  *   id = "chado_dbxref_type_default",
  *   category = "tripal_chado",
- *   object_table = "dbxref",
  *   label = @Translation("Chado Database Cross Reference"),
  *   description = @Translation("Add a Chado dbxref to the content type."),
  *   default_widget = "chado_dbxref_widget_default",
@@ -23,7 +22,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoDbxrefTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_dbxref_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'dbxref';
   protected static $object_id = 'dbxref_id';
 

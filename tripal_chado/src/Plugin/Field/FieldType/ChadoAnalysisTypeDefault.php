@@ -13,7 +13,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @FieldType(
  *   id = "chado_analysis_type_default",
  *   category = "tripal_chado",
- *   object_table = "analysis",
  *   label = @Translation("Chado Analysis"),
  *   description = @Translation("Application of analytical methods to existing data of a specific type"),
  *   default_widget = "chado_analysis_widget_default",
@@ -23,7 +22,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_analysis_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'analysis';
   protected static $object_id = 'analysis_id';
 

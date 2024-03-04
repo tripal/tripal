@@ -13,7 +13,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @FieldType(
  *   id = "chado_study_type_default",
  *   category = "tripal_chado",
- *   object_table = "study",
  *   label = @Translation("Chado Study"),
  *   description = @Translation("Add a Chado study to the content type."),
  *   default_widget = "chado_study_widget_default",
@@ -23,7 +22,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoStudyTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_study_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'study';
   protected static $object_id = 'study_id';
 

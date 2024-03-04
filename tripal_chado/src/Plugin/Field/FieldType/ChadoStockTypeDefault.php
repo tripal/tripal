@@ -14,7 +14,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
  * @FieldType(
  *   id = "chado_stock_type_default",
  *   category = "tripal_chado",
- *   object_table = "stock",
  *   label = @Translation("Chado Stock"),
  *   description = @Translation("Add a Chado stock to the content type."),
  *   default_widget = "chado_stock_widget_default",
@@ -24,7 +23,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 class ChadoStockTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_stock_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'stock';
   protected static $object_id = 'stock_id';
 

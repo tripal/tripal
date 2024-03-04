@@ -13,7 +13,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @FieldType(
  *   id = "chado_array_design_type_default",
  *   category = "tripal_chado",
- *   object_table = "arraydesign",
  *   label = @Translation("Chado Array Design"),
  *   description = @Translation("Add a Chado Array Design to the content type."),
  *   default_widget = "chado_array_design_widget_default",
@@ -23,7 +22,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_array_design_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'arraydesign';
   protected static $object_id = 'arraydesign_id';
 

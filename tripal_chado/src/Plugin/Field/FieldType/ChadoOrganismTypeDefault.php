@@ -14,7 +14,6 @@ use Drupal\tripal\Entity\TripalEntityType;
  * @FieldType(
  *   id = "chado_organism_type_default",
  *   category = "tripal_chado",
- *   object_table = "organism",
  *   label = @Translation("Chado Organism"),
  *   description = @Translation("A chado organism reference"),
  *   default_widget = "chado_organism_widget_default",
@@ -24,7 +23,6 @@ use Drupal\tripal\Entity\TripalEntityType;
 class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_organism_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'organism';
   protected static $object_id = 'organism_id';
 

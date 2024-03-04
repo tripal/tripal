@@ -14,7 +14,6 @@ use Drupal\tripal\Entity\TripalEntityType;
  * @FieldType(
  *   id = "chado_project_type_default",
  *   category = "tripal_chado",
- *   object_table = "project",
  *   label = @Translation("Chado Project"),
  *   description = @Translation("Add a Chado project to the content type."),
  *   default_widget = "chado_project_widget_default",
@@ -24,7 +23,6 @@ use Drupal\tripal\Entity\TripalEntityType;
 class ChadoProjectTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_project_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'project';
   protected static $object_id = 'project_id';
 

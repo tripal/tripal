@@ -12,7 +12,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @FieldType(
  *   id = "chado_contact_type_default",
  *   category = "tripal_chado",
- *   object_table = "contact",
  *   label = @Translation("Chado Contact"),
  *   description = @Translation("Add a Chado contact to the content type."),
  *   default_widget = "chado_contact_widget_default",
@@ -22,7 +21,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoContactTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_contact_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'contact';
   protected static $object_id = 'contact_id';
 

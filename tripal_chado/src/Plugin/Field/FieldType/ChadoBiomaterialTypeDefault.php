@@ -13,7 +13,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @FieldType(
  *   id = "chado_biomaterial_type_default",
  *   category = "tripal_chado",
- *   object_table = "biomaterial",
  *   label = @Translation("Chado Biomaterial"),
  *   description = @Translation("Add a Chado biomaterial to the content type."),
  *   default_widget = "chado_biomaterial_widget_default",
@@ -23,7 +22,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_biomaterial_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'biomaterial';
   protected static $object_id = 'biomaterial_id';
 

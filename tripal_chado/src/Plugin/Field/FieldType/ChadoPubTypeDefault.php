@@ -14,7 +14,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @FieldType(
  *   id = "chado_pub_type_default",
  *   category = "tripal_chado",
- *   object_table = "pub",
  *   label = @Translation("Chado Publication"),
  *   description = @Translation("Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record."),
  *   default_widget = "chado_pub_widget_default",
@@ -24,7 +23,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoPubTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_pub_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'pub';
   protected static $object_id = 'pub_id';
 

@@ -13,7 +13,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  * @FieldType(
  *   id = "chado_protocol_type_default",
  *   category = "tripal_chado",
- *   object_table = "protocol",
  *   label = @Translation("Chado Protocol"),
  *   description = @Translation("Add a Chado protocol to the content type."),
  *   default_widget = "chado_protocol_widget_default",
@@ -23,7 +22,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_protocol_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'protocol';
   protected static $object_id = 'protocol_id';
 
