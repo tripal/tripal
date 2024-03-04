@@ -16,6 +16,15 @@ use Drupal\tripal\Entity\TripalEntityType;
  */
 abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
+  // A child class can use these static variables to indicate
+  // that it needs a base table column selector in the form.
+  protected static $select_base_column = FALSE;
+  protected static $valid_base_column_types = [];
+
+  // A child class can use this static variable to indicate
+  // that it needs a linker table selector in the form, to this table.
+  protected static $object_table = NULL;
+
   // delimiter between table name and column name in form select
   protected static $table_column_delimiter = " \u{2192} ";  # right arrow
 
@@ -36,41 +45,62 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = [];
 
-    // A child class, i.e. a field, can define an object table.
-    // When this is defined, it also means it supports a linker table.
-    $object_table = static::$object_table ?? FALSE;
-
-    // We need the entire form state, not just the subform elements.
+    // Starting with Drupal 10.2, the field storage settings form is a subform
+    // within the field settings form. In this case the form_state actually
+    // is a sub form state instead of the full form state.
+    // There is an ongoing discussion around this which could result in the
+    // passed form state going back to a full form state. In order to prevent
+    // future breakage because of a core update we'll just check which type of
+    // FormStateInterface we've been passed and act accordingly.
+    // @See https://www.drupal.org/node/2798261
     if ($form_state instanceof SubformStateInterface) {
       $form_state = $form_state->getCompleteFormState();
     }
 
-    // Get the content type and see if it has any settings.
-    $storage = $form_state->getStorage();
-    $bundle = $storage['bundle'];
-
-    $is_disabled = FALSE;
-    $storage_settings = $this->getSetting('storage_plugin_settings');
-    $default_base_table = $storage_settings['base_table'] ?? '';
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-    if ($default_base_table) {
-      $is_disabled = TRUE;
-    }
-
-    // Get the bundle object so we can get settings such as the title format.
-    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+    // For most fields, we can specify the base table through the third party setting
+    // 'chado_base_table', and then we don't need to select it when manually adding the
+    // field to a content type.
+    $form_state_storage = $form_state->getStorage();
+    $bundle = $form_state_storage['bundle'];
     /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
-    $base_tables = [];
-    $base_tables[NULL] = '-- Select --';
     $entity_type_manager = \Drupal::entityTypeManager();
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
     $chado_base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    if ($chado_base_table) {
-      $base_tables[$chado_base_table] = $chado_base_table;
-      $default_base_table = $chado_base_table;
-      $is_disabled = TRUE;
+dpm($chado_base_table, "chado_base_table"); //@@@
+
+    // If this is an existing field, retrieve its storage settings.
+    $storage_settings = $this->getSetting('storage_plugin_settings');
+dpm($storage_settings, "storage_settings"); //@@@
+    $storage_settings_base_table = $storage_settings['base_table'] ?? '';
+
+    $base_table_disabled = FALSE;
+    if ($storage_settings_base_table) {
+      // Base table has been saved in the field storage settings
+      $base_table = $storage_settings_base_table;
+      $base_table_disabled = TRUE;
+    }
+    elseif ($chado_base_table) {
+      // Base table has been set in third party settings
+      $base_table = $chado_base_table;
+      $base_table_disabled = TRUE;
     }
     else {
+      // Base table has been selected in the subform or form depending on Drupal
+      // version, and we are in an Ajax callback.
+      $base_table = $form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table'])
+          ?? $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+dpm($base_table, "base table from form state, default=$storage_settings_base_table");
+    }
+
+    // If we have a base table defined, the select list is just this one
+    // table. Otherwise we need to generate a list of possible base tables,
+    $base_tables = [];
+    if ($base_table_disabled) {
+      $base_tables[$base_table] = $base_table;
+    }
+    else {
+      $base_tables[NULL] = '-- Select --';
       $chado = \Drupal::service('tripal_chado.database');
       $schema = $chado->schema();
       $tables = $schema->getTables(['type' => 'table', 'status' => 'base']);
@@ -86,99 +116,150 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         'For example. If this property is meant to store a feature property then the base ' .
         'table should be "feature".'),
       '#options' => $base_tables,
-      '#default_value' => $default_base_table,
+      '#default_value' => $base_table,
       '#required' => TRUE,
-      '#disabled' => $is_disabled,
+      '#disabled' => $base_table_disabled,
       '#element_validate' => [[static::class, 'storageSettingsFormValidateBaseTable']],
     ];
 
     // Optionally provide a column selector for the base table column if
-    // the field annotations specify it.
-    $plugin_definition = $this->getPluginDefinition();
-    if ($plugin_definition['select_base_column'] ?? FALSE) {
-      $default_base_column = $storage_settings['base_column'] ?? '';
-      $base_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_column']);
-
-      // Add an ajax callback so that when the base table is selected, the
-      // base column select can be populated.
-      $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-        'callback' =>  [$this, 'storageSettingsFormBaseTableAjaxCallback'],
-        'event' => 'change',
-        'progress' => [
-          'type' => 'throbber',
-          'message' => $this->t('Retrieving table columns...'),
-        ],
-        'wrapper' => 'edit-base_column',
-      ];
-
-      $column_types = $plugin_definition['valid_base_column_types'] ?? [];
-      $base_columns = $this->getTableColumns($base_table, $column_types);
-      $elements['storage_plugin_settings']['base_column'] = [
-        '#type' => 'select',
-        '#title' => t('Table Column'),
-        '#description' => t('Select the column in the base table that contains the field data'),
-        '#options' => $base_columns,
-        '#default_value' => $default_base_column,
-        '#required' => TRUE,
-        '#disabled' => $has_data or !$base_table,
-        '#prefix' => '<div id="edit-base_column">',
-        '#suffix' => '</div>',
-      ];
+    // the field specifies this by setting this flag.
+    if (static::$select_base_column) {
+      $this->storageSettingsFormBaseColumnSelect($base_table, $has_data, $elements, $form_state);
     }
 
     // Optionally provide a table + column selector for fields using
     // a linking table if the field specifies this by supplying an object table.
-    if ($object_table) {
-       // Base tables presented here are only those that either have foreign
-       // keys to our object table, or else have foreign keys through a
-       // linker table to our object table. The TRUE parameter to
-       // getBaseTables() specifies to include linker tables.
-       $elements['storage_plugin_settings']['base_table']['#options']
-           = $this->getBaseTables($object_table, TRUE);
-
-       // Add an ajax callback so that when the base table is selected, the
-       // linking method select can be populated.
-       $elements['storage_plugin_settings']['base_table']['#ajax'] = [
-         'callback' =>  [$this, 'storageSettingsFormLinkingMethodAjaxCallback'],
-         'event' => 'change',
-         'progress' => [
-           'type' => 'throbber',
-           'message' => $this->t('Retrieving linking methods...'),
-         ],
-         'wrapper' => 'edit-linker_table',
-       ];
-
-      $linker_is_disabled = FALSE;
-      $linker_tables = [];
-      $default_linker_table_and_column = $storage_settings['linker_table_and_column'] ?? '';
-      if ($default_linker_table_and_column) {
-        $linker_is_disabled = TRUE;
-        $linker_tables = [$default_linker_table_and_column => $default_linker_table_and_column];
-      }
-      else {
-        $linker_tables = $this->getLinkerTables($plugin_definition['object_table'], $base_table, self::$table_column_delimiter);
-      }
-      $elements['storage_plugin_settings']['linker_table_and_column'] = [
-        '#type' => 'select',
-        '#title' => t('Linking Method'),
-        '#description' => t('Select the table that links the selected base table to the linked table. ' .
-          'If the base table includes the link as a column, then this will reference the base table. ' .
-          'When a linker table is used, the linking table name is typically a ' .
-          'combination of the two table names, but they might be in either order. ' .
-          'Generally this select will have only one option, unless a module has added additional custom linker tables. ' .
-          'For example to link "feature" to "contact", the linking method would be "feature_contact → contact_id".'),
-        '#options' => $linker_tables,
-        '#default_value' => $default_linker_table_and_column,
-        '#required' => TRUE,
-        '#disabled' => $linker_is_disabled or !$base_table,
-        '#prefix' => '<div id="edit-linker_table">',
-        '#suffix' => '</div>',
-        '#element_validate' => [[static::class, 'storageSettingsFormValidateLinkingMethod']],
-      ];
-
+    if (static::$object_table) {
+      $this->storageSettingsFormLinkerMethodSelect($base_table, $has_data, $elements, $form_state);
     }
 
     return $elements + parent::storageSettingsForm($form, $form_state, $has_data);
+  }
+
+  /**
+   * Helper function for storage settings form to provide a base column select element.
+   *
+   * @param string $base_table
+   *   Base table for the field.
+   * @param boolean $has_data
+   *   Field is disabled if this is true.
+   * @param array &$elements
+   *   Reference to the render array for the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   * @return array
+   *   The updated render array for the form.
+   */
+  private function storageSettingsFormBaseColumnSelect(string $base_table, $has_data, array &$elements, FormStateInterface $form_state) {
+
+    $storage_settings = $this->getSetting('storage_plugin_settings');
+    $default_base_column = $storage_settings['base_column'] ?? '';
+
+    // Add an ajax callback so that when the base table is selected, the
+    // base column select can be populated.
+    $elements['storage_plugin_settings']['base_table']['#ajax'] = [
+      'callback' =>  [$this, 'storageSettingsFormBaseTableAjaxCallback'],
+      'event' => 'change',
+      'progress' => [
+        'type' => 'throbber',
+        'message' => $this->t('Retrieving table columns...'),
+      ],
+      'wrapper' => 'edit-base_column',
+    ];
+
+    $base_columns = $this->getTableColumns($base_table, static::$valid_base_column_types);
+    $elements['storage_plugin_settings']['base_column'] = [
+      '#type' => 'select',
+      '#title' => t('Table Column'),
+      '#description' => t('Select the column in the base table that contains the field data'),
+      '#options' => $base_columns,
+      '#default_value' => $default_base_column,
+      '#required' => TRUE,
+      '#disabled' => $has_data or !$base_table or (count($base_columns) <= 1),
+      '#prefix' => '<div id="edit-base_column">',
+      '#suffix' => '</div>',
+    ];
+  }
+
+  /**
+   * Helper function for storage settings form to provide a linking method element.
+   *
+   * @param string $base_table
+   *   Base table for the field.
+   * @param boolean $has_data
+   *   Field is disabled if this is true.
+   * @param array &$elements
+   *   Reference to the render array for the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   * @return array
+   *   The updated render array for the form.
+   */
+  private function storageSettingsFormLinkerMethodSelect(string $base_table, $has_data, array &$elements, FormStateInterface $form_state) {
+
+    $storage_settings = $this->getSetting('storage_plugin_settings');
+    // Three variables here because the form select returns a single combined value.
+    $default_linker_table =  $storage_settings['linker_table'] ?? '';
+    $default_linker_column =  $storage_settings['linker_fkey_column'] ?? '';
+    $default_linker_table_and_column =  $storage_settings['linker_table_and_column'] ?? '';
+    if (!$default_linker_table_and_column and $default_linker_table and $default_linker_column) {
+      $default_linker_table_and_column = $default_linker_table . self::$table_column_delimiter  . $default_linker_column;
+    }
+
+    // Base tables presented in this case are only those that either have
+    // foreign keys to our object table, or else have foreign keys through
+    // a linker table to our object table. The TRUE parameter to
+    // getBaseTables() specifies to include linker tables.
+    $elements['storage_plugin_settings']['base_table']['#options']
+       = $this->getBaseTables(static::$object_table, TRUE);
+
+    // Add an ajax callback so that when the base table is selected, the
+    // linking method select can be populated.
+    $elements['storage_plugin_settings']['base_table']['#ajax'] = [
+      'callback' =>  [$this, 'storageSettingsFormLinkingMethodAjaxCallback'],
+      'event' => 'change',
+      'progress' => [
+        'type' => 'throbber',
+        'message' => $this->t('Retrieving linking methods...'),
+      ],
+      'wrapper' => 'edit-linker_table',
+    ];
+
+    $linker_method_disabled = FALSE;
+    $linker_tables = [];
+
+    if ($default_linker_table_and_column) {
+      $linker_method_disabled = TRUE;
+      // We don't need to retrieve the entire list for this case.
+      $linker_tables = [$default_linker_table_and_column => $default_linker_table_and_column];
+    }
+    else {
+      $linker_tables = $this->getLinkerTables(static::$object_table, $base_table, static::$table_column_delimiter);
+      // If there is only a single option, the field can be disabled.
+      if (count($linker_tables) <= 1) {
+        $linker_method_disabled = TRUE;
+      }
+    }
+    $elements['storage_plugin_settings']['linker_table_and_column'] = [
+      '#type' => 'select',
+      '#title' => t('Linking Method'),
+      '#description' => t('Select the table that links the selected base table to the linked table. ' .
+        'If the base table includes the link as a column, then this will reference the base table. ' .
+        'When a linker table is used, the linking table name is typically a ' .
+        'combination of the two table names, but they might be in either order. ' .
+        'Generally this select will have only one option, unless a module has added additional custom linker tables. ' .
+        'For example to link "feature" to "contact", the linking method would be "feature_contact → contact_id".'),
+      '#options' => $linker_tables,
+      '#default_value' => $default_linker_table_and_column,
+      '#required' => TRUE,
+      '#disabled' => $linker_method_disabled or !$base_table,
+      '#prefix' => '<div id="edit-linker_table">',
+      '#suffix' => '</div>',
+      '#element_validate' => [[static::class, 'storageSettingsFormValidateLinkingMethod']],
+    ];
   }
 
   /**
@@ -321,7 +402,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // Alphabetize the list presented to the user.
     ksort($base_tables);
 
-    // This should not happen, but provide an indication if it does.
+    // This is unlikely to happen, but provide an indication if it does.
     if (count($base_tables) == 0) {
       $base_tables = [NULL => '-- No base tables available --'];
     }
@@ -376,19 +457,17 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
  /**
-   * Return a list of candidate linking connections given
-   * a base table and a linked table. These can either be
-   * a column in the base table, or a connection through
-   * a linking table that connects the base table to the
-   *  linked table.
-   * In some cases there may be more than one way to link
-   * the two tables, so the list generated here can be
-   * presented to the site administrator to select the
-   * desired linking method.
+   * Return a list of candidate linking connections given a base table
+   * and a linked table. These can either be a column in the base table,
+   * or a connection through a linking table that connects the base
+   * table to the linked table.
+   * In some cases there may be more than one way to link the two
+   * tables, so the list generated here can be presented to the site
+   * administrator to select the desired linking method.
    *
    * @param string $base_table
    *   The Chado table being used for the current entity (subject).
-   * @param string $linked_table
+   * @param string $object_table
    *   The Chado table being linked to (object).
    * @param string $delimiter
    *   The displayed delimiter between the table and column in the
@@ -399,7 +478,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   ready to use in a form select. The list elements will be
    *   in the format table.column
    */
-  protected function getLinkerTables($linked_table, $base_table, $delimiter = " \u{2192} ") {
+  protected function getLinkerTables($object_table, $base_table, $delimiter = " \u{2192} ") {
     $select_list = [];
 
     // The base table is needed to generate the list. We will return
@@ -413,7 +492,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
       $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
       $base_pkey_col = $base_schema_def['primary key'];
-      $object_schema_def = $schema->getTableDef($linked_table, ['format' => 'Drupal']);
+      $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
       $object_pkey_col = $object_schema_def['primary key'];
 
       $all_tables = $schema->getTables(['type' => 'table']);
@@ -421,7 +500,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         $table_schema_def = $schema->getTableDef($table_name, ['format' => 'Drupal']);
         if (array_key_exists('foreign keys', $table_schema_def)) {
           foreach ($table_schema_def['foreign keys'] as $foreign_key) {
-            if ($foreign_key['table'] == $linked_table) {
+            if ($foreign_key['table'] == $object_table) {
               // If the current table is the base table, we have a direct
               // reference to the object table, otherwise it is a linker table,
               // and needs to also have a foreign key to the base table.
@@ -448,11 +527,61 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
+   * Retrieve linker table and column from storage settings, used in a field's tripalTypes() function.
+   *
+   * @param array $storage_settings
+   *   Storage settings for a field
+   * @param string $default_table
+   *   This will be the base table for the field
+   * @param string $default_column
+   *   This will be the object pkey column for the field
+   *
+   * @return array
+   *   Returns linker_table and linker_fkey_column
+   */
+  public static function get_linker_table_and_column($storage_settings, $default_table, $default_column) {
+    // The combined setting comes from the field settings form, e.g. "project → contact"
+    $combined_setting = $storage_settings['linker_table_and_column'] ?? '';
+    if ($combined_setting) {
+      $parts = self::parse_combined_table_and_column($combined_setting);
+      $linker_table = $parts[0];
+      $linker_fkey_column = $parts[1];
+    }
+    else {
+      // For single hop, in the yaml we can support using the usual 'base_table'
+      // and 'base_column' settings, these are passed in as the defaults.
+      $linker_table = $storage_settings['linker_table'] ?? $default_table;
+      $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $default_column;
+    }
+    return [$linker_table, $linker_fkey_column];
+  }
+
+  /**
+   * Parse a combined table + column string into its two parts
+   *
+   * @param string $table_and_column
+   *   Table and column delimited by self::table_column_delimiter, a right
+   *    arrow by default, e.g."project → contact"
+   *
+   * @return array
+   *   Will contain 2 elements if valid, empty array if not.
+   */
+  protected static function parse_combined_table_and_column($table_and_column) {
+    $parts = explode(self::$table_column_delimiter, $table_and_column);
+    if (count($parts) == 2) {
+      return $parts;
+    }
+    else {
+      return [];
+    }
+  }
+
+  /**
    * Indicates if the field is compabible with the content type.
    *
    * This function should be implemented by all Chado-base fields and
-   * indicate if the field is compatible with the content type.   By
-   * default, it returns TRUE.
+   * indicate if the field is compatible with the specified content
+   * type. By default, it returns TRUE.
    *
    * @param TripalEntityType $entity_type
    *
