@@ -211,21 +211,17 @@ class ChadoProjectTypeDefault extends ChadoFieldItemBase {
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = FALSE;
 
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-
-    // Is there a corresponding linker table?
-    $object_table = self::$object_table;
-    $linker = 'project_' . $object_table;
-
-    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-    if ($schema->tableExists($linker)) {
-      return TRUE;
+    if ($base_table) {
+      $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+      if (count($linker_tables) > 0) {
+        $compatible = TRUE;
+      }
     }
-    return FALSE;
+    return $compatible;
   }
 
 }

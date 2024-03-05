@@ -268,20 +268,17 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = FALSE;
 
     // Get the base table for the content type.
-    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-
-    // If the base table has a foreign key to the organism table then this
-    // content type is compatible.
-    if (in_array('organism', $base_table_def['foreign keys'])) {
-      return TRUE;
+    if ($base_table) {
+      $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+      if (count($linker_tables) > 0) {
+        $compatible = TRUE;
+      }
     }
-    return FALSE;
+    return $compatible;
   }
 
 }
