@@ -67,11 +67,9 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
     $chado_base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-dpm($chado_base_table, "chado_base_table"); //@@@
 
     // If this is an existing field, retrieve its storage settings.
     $storage_settings = $this->getSetting('storage_plugin_settings');
-dpm($storage_settings, "storage_settings"); //@@@
     $storage_settings_base_table = $storage_settings['base_table'] ?? '';
 
     $base_table_disabled = FALSE;
@@ -177,7 +175,7 @@ dpm($base_table, "base table from form state, default=$storage_settings_base_tab
       '#options' => $base_columns,
       '#default_value' => $default_base_column,
       '#required' => TRUE,
-      '#disabled' => $has_data or !$base_table or (count($base_columns) <= 1),
+      '#disabled' => $has_data or !$base_table,
       '#prefix' => '<div id="edit-base_column">',
       '#suffix' => '</div>',
     ];
@@ -238,10 +236,6 @@ dpm($base_table, "base table from form state, default=$storage_settings_base_tab
     }
     else {
       $linker_tables = $this->getLinkerTables(static::$object_table, $base_table, static::$table_column_delimiter);
-      // If there is only a single option, the field can be disabled.
-      if (count($linker_tables) <= 1) {
-        $linker_method_disabled = TRUE;
-      }
     }
     $elements['storage_plugin_settings']['linker_table_and_column'] = [
       '#type' => 'select',
@@ -301,7 +295,7 @@ dpm($base_table, "base table from form state, default=$storage_settings_base_tab
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidateBaseTable(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
+    $settings = self::getFormStateSettings($form_state);
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }
@@ -327,7 +321,7 @@ dpm($base_table, "base table from form state, default=$storage_settings_base_tab
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidateLinkingMethod(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
+    $settings = self::getFormStateSettings($form_state);
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }
