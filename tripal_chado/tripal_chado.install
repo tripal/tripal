@@ -330,7 +330,7 @@ function tripal_chado_tripal_custom_tables_schema() {
 }
 
 /**
- * Adds third party settings for Chado base tables to tripal content types.
+ * Adds third party settings for Tripal content types to Chado base tables.
  */
 function tripal_chado_update_10401() {
   $settings = [
@@ -343,9 +343,9 @@ function tripal_chado_update_10401() {
     'pub' => 'pub',
     'protocol' => 'protocol',
     // Expression content types.
-    'biosample' => 'biosample',
+    'biosample' => 'biomaterial',
     'assay' => 'assay',
-    'array_design' => 'array_design',
+    'array_design' => 'arraydesign',
     // Genetic expression types.
     'genetic_map' => 'featuremap',
     'QTL' => 'feature',
