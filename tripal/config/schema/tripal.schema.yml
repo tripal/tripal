@@ -194,7 +194,7 @@ tripal.tripalentitytype_collection.*:
                     type: string
                     label: "Synonym name"
                settings:
-                 type: sequence
+                 type: mapping
                  label: "Third party settings"
                  nullable: true
 
