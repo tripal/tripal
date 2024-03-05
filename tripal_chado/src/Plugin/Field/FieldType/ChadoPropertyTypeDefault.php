@@ -216,7 +216,13 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     if ($schema->tableExists($prop_table)) {
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
+      $drupal_10_2 = $form_state->getValue(['field_storage']);
+      if ($drupal_10_2) {
+        $form_state->setValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
+      }
+      else {
+        $form_state->setValue(['settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
+      }
     }
     else {
       $form_state->setErrorByName('storage_plugin_settings][base_table',
