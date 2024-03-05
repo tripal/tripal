@@ -91,7 +91,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // type set for the field. As such, we grab that here and use it in our
     // table alias.
     $field_settings = $field_definition->getSettings();
-    $term = $field_settings['termIdSpace'] . ': ' . $field_settings['termAccession'];
+    $term = $field_settings['termIdSpace'] . ':' . $field_settings['termAccession'];
     $table_alias = $prop_table . '_' . preg_replace( '/[^a-z0-9]+/', '', strtolower( $term ) );
 
 
@@ -206,7 +206,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
+    $settings = self::getFormStateSettings($form_state);
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }

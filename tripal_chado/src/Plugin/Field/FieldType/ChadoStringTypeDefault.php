@@ -20,7 +20,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   id = "chado_string_type_default",
  *   category = "tripal_chado",
  *   label = @Translation("Chado String Field Type"),
- *   description = @Translation("A string field."),
+ *   description = @Translation("A text field with a maximum length."),
  *   default_widget = "chado_string_type_widget",
  *   default_formatter = "chado_string_type_formatter",
  *   valid_base_column_types = {

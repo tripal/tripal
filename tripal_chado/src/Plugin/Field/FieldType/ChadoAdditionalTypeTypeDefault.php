@@ -274,7 +274,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
+    $settings = self::getFormStateSettings($form_state);
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }

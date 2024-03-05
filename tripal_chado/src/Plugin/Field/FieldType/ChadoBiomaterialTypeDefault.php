@@ -118,9 +118,9 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
     $common_name_term = $mapping->getColumnTermId('organism', 'common_name');
     $common_name_len = $organism_schema_def['fields']['common_name']['size'];
 
-    // Linker table, when used
-    $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
+    // Linker table, when used, requires specifying the linker table and column.
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
+
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
@@ -135,6 +135,13 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
+          // Special case, we don't support channel_id because there may be none defined
+          // in the channel table, and if not we cannot have a default value in the widget,
+          // and the widget can't pass a null. For now just ignore it.
+          // @todo Do we need a mechanism to be able to pass null to chado storage?
+          if ($column == 'channel_id') {
+            continue;
+          }
           $term = $mapping->getColumnTermId($linker_table, $column);
           if ($term) {
             $extra_linker_columns[$column] = $term;

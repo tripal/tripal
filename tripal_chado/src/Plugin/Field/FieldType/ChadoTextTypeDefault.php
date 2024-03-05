@@ -21,7 +21,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   id = "chado_text_type_default",
  *   category = "tripal_chado",
  *   label = @Translation("Chado Text Field Type"),
- *   description = @Translation("A text field."),
+ *   description = @Translation("A text field with no length limit."),
  *   default_widget = "chado_text_type_widget",
  *   default_formatter = "chado_text_type_formatter",
  *   valid_base_column_types = {

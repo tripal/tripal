@@ -88,7 +88,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       // version, and we are in an Ajax callback.
       $base_table = $form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table'])
           ?? $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-dpm($base_table, "base table from form state, default=$storage_settings_base_table");
     }
 
     // If we have a base table defined, the select list is just this one
