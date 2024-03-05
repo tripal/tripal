@@ -37,4 +37,4 @@ content_types:
         synonyms:
             - bio_data_27
         settings:
-            chado_base_table: array_design
+            chado_base_table: arraydesign
