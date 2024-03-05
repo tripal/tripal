@@ -234,7 +234,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $linker_tables = [$default_linker_table_and_column => $default_linker_table_and_column];
     }
     else {
-      $linker_tables = $this->getLinkerTables(static::$object_table, $base_table, static::$table_column_delimiter);
+      $linker_tables = $this->getLinkerTableSelectOptions(static::$object_table, $base_table, static::$table_column_delimiter);
     }
     $elements['storage_plugin_settings']['linker_table_and_column'] = [
       '#type' => 'select',
@@ -471,7 +471,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   ready to use in a form select. The list elements will be
    *   in the format table.column
    */
-  protected function getLinkerTables($object_table, $base_table, $delimiter = " \u{2192} ") {
+  protected function getLinkerTableSelectOptions($object_table, $base_table, $delimiter = " \u{2192} ") {
     $select_list = [];
 
     // The base table is needed to generate the list. We will return
@@ -480,43 +480,68 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $select_list[NULL] = '-- Select base table first --';
     }
     else {
-      $chado = \Drupal::service('tripal_chado.database');
-      $schema = $chado->schema();
+      $linker_tables = $this->getLinkerTables($object_table, $base_table);
+      if (count($linker_tables) == 0) {
+        $select_list = [NULL => '-- No link is possible --'];
+      }
+      // If at least one found, convert to options for a form select
+      else {
+        foreach ($linker_tables as $link) {
+          $key = $link[0] . $delimiter . $link[1];
+          $select_list[$key] = $key;
+        }
+        // If more than one item was found, prefix the list with a Select message
+        if (count($linker_tables) > 1) {
+          ksort($select_list);
+          $select_list = [NULL => '-- Select --'] + $select_list;
+        }
+      }
+    }
+    return $select_list;
+  }
 
-      $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-      $base_pkey_col = $base_schema_def['primary key'];
-      $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
-      $object_pkey_col = $object_schema_def['primary key'];
+ /**
+   * Return a list of candidate linking connections given a base table
+   * and a linked table. These can either be a column in the base table,
+   * or a connection through a linking table that connects the base
+   * table to the linked table.
+   *
+   * @param string $base_table
+   *   The Chado table being used for the current entity (subject).
+   * @param string $object_table
+   *   The Chado table being linked to (object).
+   *
+   * @return array
+   *   The list of tables and columns.
+   */
+  protected function getLinkerTables($object_table, $base_table) {
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
 
-      $all_tables = $schema->getTables(['type' => 'table']);
-      foreach (array_keys($all_tables) as $table_name) {
-        $table_schema_def = $schema->getTableDef($table_name, ['format' => 'Drupal']);
-        if (array_key_exists('foreign keys', $table_schema_def)) {
-          foreach ($table_schema_def['foreign keys'] as $foreign_key) {
-            if ($foreign_key['table'] == $object_table) {
-              // If the current table is the base table, we have a direct
-              // reference to the object table, otherwise it is a linker table,
-              // and needs to also have a foreign key to the base table.
-              if (($table_name == $base_table)
-                  or ($schema->foreignKeyConstraintExists($table_name, $base_pkey_col))) {
-                $key = $table_name . $delimiter . array_keys($foreign_key['columns'])[0];
-                $select_list[$key] = $key;
-              }
+    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = $base_schema_def['primary key'];
+    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_pkey_col = $object_schema_def['primary key'];
+
+    $all_tables = $schema->getTables(['type' => 'table']);
+    $linker_tables = [];
+    foreach (array_keys($all_tables) as $table_name) {
+      $table_schema_def = $schema->getTableDef($table_name, ['format' => 'Drupal']);
+      if (array_key_exists('foreign keys', $table_schema_def)) {
+        foreach ($table_schema_def['foreign keys'] as $foreign_key) {
+          if ($foreign_key['table'] == $object_table) {
+            // If the current table is the base table, we have a direct
+            // reference to the object table, otherwise it is a linker table,
+            // and needs to also have a foreign key to the base table.
+            if (($table_name == $base_table)
+                or ($schema->foreignKeyConstraintExists($table_name, $base_pkey_col))) {
+              $linker_tables[] = [$table_name, array_keys($foreign_key['columns'])[0]];
             }
           }
         }
       }
-
-      if (count($select_list) == 0) {
-        $select_list = [NULL => '-- No link is possible --'];
-      }
-      // If more than one item was found, prefix the list with a Select message
-      elseif (count($select_list) > 1) {
-        ksort($select_list);
-        $select_list = [NULL => '-- Select --'] + $select_list;
-      }
     }
-    return $select_list;
+    return $linker_tables;
   }
 
   /**
