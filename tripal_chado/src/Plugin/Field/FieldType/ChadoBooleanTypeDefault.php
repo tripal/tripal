@@ -24,9 +24,6 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   description = @Translation("A boolean field."),
  *   default_widget = "chado_boolean_type_widget",
  *   default_formatter = "chado_boolean_type_formatter",
- *   valid_base_column_types = {
- *     "boolean",
- *   },
  *   cardinality = 1
  * )
  */
@@ -37,6 +34,9 @@ class ChadoBooleanTypeDefault extends ChadoFieldItemBase {
   // This is a flag to the ChadoFieldItemBase parent
   // class to provide a column selector in the form
   protected static $select_base_column = TRUE;
+
+  // Valid column types to pass to the ChadoFieldItemBase parent class.
+  protected static $valid_base_column_types = ['boolean'];
 
   /**
    * {@inheritdoc}
