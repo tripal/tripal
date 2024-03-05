@@ -13,7 +13,7 @@ content_types:
         synonyms:
             - bio_data_25
         settings:
-            chado_base_table: biosample
+            chado_base_table: biomaterial
 
     -   label: Assay
         term: OBI:0000070
