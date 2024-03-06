@@ -33,7 +33,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       // to display debugging information. All you need to do as a developer is
       // set this variable to TRUE in your field and debuggin information will be
       // displayed on the screen and in the drupal logs when you create, edit,
-      // and load content that has you field attached.
+      // and load content that has your field attached.
       'debug' => FALSE,
     ];
     return $settings + parent::defaultFieldSettings();
