@@ -100,7 +100,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     ];
     $db_fields = [
       'name' => 'Test query',
-      'criteria' => $search_array['criteria'],
+      'criteria' => serialize($search_array['criteria']),
       'disabled' => 0,
       'do_contact' => 0,
     ];
