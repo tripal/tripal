@@ -81,5 +81,26 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     $this->assertNotEquals($results, NULL, 'This should have returned one pubmed record');
     $this->assertEquals($results['pubs'][0]['Publication Dbxref'], 'PMID:30000852', 'This should have returned the PMID');
     $this->assertEquals($results['pubs'][0]['Publisher'], 'National Institute of Child Health and Human Development', 'This should have returned the Title');
+
+    $search_array = [
+      'remote_db' => 'pubmed',
+      'num_criteria' => 1,
+      'loader_name' => 'ok',
+      'disabled' => 0,
+      'do_contact' => 0,
+      //'pub_import_id' => 25,
+      'criteria' => [
+        1 =>   [
+          'search_terms' => 'Populus trichocarpa',
+          'scope' => 'abstract',
+          'is_phrase' => 0,
+          'operation' => '', 
+        ]
+      ],
+    ];
+    $pub_library_manager->addSearchQuery($search_array);
+    $results = chado_query('SELECT count(*) as c1 FROM public.tripal_pub_library_query');
+    $row = $results->fetchObject();
+    $this->assertEquals($row->c1, 1, 'This should be equal to 1 as the result but it did not return 1');
   }
 }
