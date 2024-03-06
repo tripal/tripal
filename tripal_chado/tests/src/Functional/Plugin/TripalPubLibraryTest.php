@@ -109,7 +109,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     ];
     // Add search query
     $pub_library_manager->addSearchQuery($db_fields);
-    $results = chado_query('SELECT count(*) as c1 FROM public.tripal_pub_library_query', [], $schema_name);
+    $results = chado_query('SELECT count(*) as c1 FROM public.tripal_pub_library_query', [], [], $schema_name);
     $row = $results->fetchObject();
     $this->assertEquals($row->c1, 1, 'This should be equal to 1 as the result but it did not return 1');
   }
