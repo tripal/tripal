@@ -89,4 +89,22 @@ class ChadoTextTypeDefault extends ChadoFieldItemBase {
     ];
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = FALSE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    if ($base_table) {
+      $table_columns = $this->getTableColumns($base_table, self::$valid_base_column_types);
+      if (count($table_columns) > 0) {
+        $compatible = TRUE;
+      }
+    }
+    return $compatible;
+  }
+
 }
