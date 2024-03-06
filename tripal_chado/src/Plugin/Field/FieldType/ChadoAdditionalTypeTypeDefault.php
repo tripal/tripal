@@ -30,9 +30,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_additional_type_type_default';
 
-  // delimiter between table name and column name in form select
-  public static $table_column_delimiter = " \u{2192} ";  # right arrow
-
   /**
    * {@inheritdoc}
    */
@@ -364,6 +361,38 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-type_fkey', $form['settings']['storage_plugin_settings']['type_fkey']));
     return $response;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = FALSE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+
+    // If the base table has a 'type_id' column, then it is compatible.
+    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    if (isset($base_table_def['fields']['type_id'])) {
+      $compatible = TRUE;
+    }
+
+    $prop_def = $schema->getTableDef($base_table . 'prop', ['format' => 'Drupal']);
+    // If the property table exists, and has a foreign key to the base table,
+    // then this content type is compatible.
+    if ($prop_def) {
+      if (in_array($base_table, $prop_def['foreign keys'])) {
+        $compatible = TRUE;
+      }
+    }
+
+    return $compatible;
   }
 
 }

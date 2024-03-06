@@ -229,4 +229,30 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
           'The selected base table does not have an associated property table.');
     }
   }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = FALSE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+
+    // If the property table exists, and has a foreign key to the base table,
+    // then this content type is compatible.
+    $prop_def = $schema->getTableDef($base_table . 'prop', ['format' => 'Drupal']);
+    if ($prop_def) {
+      if (in_array($base_table, $prop_def['foreign keys'])) {
+        $compatible = TRUE;
+      }
+    }
+    return $compatible;
+  }
+
 }
