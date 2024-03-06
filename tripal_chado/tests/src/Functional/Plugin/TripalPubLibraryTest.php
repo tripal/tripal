@@ -100,10 +100,11 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     ];
     $db_fields = [
       'name' => 'Test query',
-      'criteria' => serialize($search_array['criteria']),
+      'criteria' => serialize($search_array),
       'disabled' => 0,
       'do_contact' => 0,
     ];
+    // Add search query
     $pub_library_manager->addSearchQuery($db_fields);
     $results = chado_query('SELECT count(*) as c1 FROM public.tripal_pub_library_query');
     $row = $results->fetchObject();
