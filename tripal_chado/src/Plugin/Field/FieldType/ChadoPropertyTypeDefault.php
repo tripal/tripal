@@ -249,7 +249,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // then this content type is compatible.
     $prop_def = $schema->getTableDef($base_table . 'prop', ['format' => 'Drupal']);
     if ($prop_def) {
-      if (in_array($base_table, $prop_def['foreign keys'])) {
+      if (array_key_exists($base_table, $prop_def['foreign keys'])) {
         $compatible = TRUE;
       }
     }

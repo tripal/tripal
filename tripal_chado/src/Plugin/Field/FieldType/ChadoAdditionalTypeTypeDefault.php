@@ -224,6 +224,10 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
+    // Convert Drupal 10.2 subform to entire form
+    if ($form_state instanceof SubformStateInterface) {
+      $form_state = $form_state->getCompleteFormState();
+    }
     $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
     $type_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_table']);
     $type_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_column']);
@@ -388,7 +392,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // If the property table exists, and has a foreign key to the base table,
     // then this content type is compatible.
     if ($prop_def) {
-      if (in_array($base_table, $prop_def['foreign keys'])) {
+      if (array_key_exists($base_table, $prop_def['foreign keys'])) {
         $compatible = TRUE;
       }
     }

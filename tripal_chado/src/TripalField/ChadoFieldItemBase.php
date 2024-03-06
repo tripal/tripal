@@ -90,6 +90,15 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
           ?? $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
     }
 
+    // If we have a base table defined, we can check to see if this field
+    // is compatible with the current content type
+    $isCompatible = $this->isCompatible($entity_type);
+    if (!$isCompatible) {
+// @to implement an appropriate message
+dpm("This field is NOT compatible with this content type"); //@@@
+    }
+else { dpm("This field IS compatible"); } //@@@
+
     // If we have a base table defined, the select list is just this one
     // table. Otherwise we need to generate a list of possible base tables,
     $base_tables = [];
