@@ -224,20 +224,24 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    // Convert Drupal 10.2 subform to entire form
-    if ($form_state instanceof SubformStateInterface) {
-      $form_state = $form_state->getCompleteFormState();
-    }
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-    $type_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_table']);
-    $type_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_column']);
+
+    // Retrieve the base table from the default value set by the parent class.
+    $base_table = $elements['storage_plugin_settings']['base_table']['#default_value'];
+
+    // If this is an existing field, retrieve its storage settings.
+    $storage_settings = $this->getSetting('storage_plugin_settings');
+
+    $type_table = $storage_settings['type_table'] ?? '';
+    $type_column = $storage_settings['type_column'] ?? '';
+    $type_fkey = $storage_settings['type_fkey'] ?? '';
+
     // In the form, table and column will be selected together as a single unit
-    $type_select = '';
+    $type_select = $type_fkey;
     if ($type_table and $type_column) {
       $type_select = $type_table . self::$table_column_delimiter . $type_column;
     }
 
-    // Add an ajax callback to the base table select (from the parent form) so that
+    // Change the ajax callback on the base table select (from the parent form) so that
     // when it is selected, the type table select can be populated with candidate tables.
     $elements['storage_plugin_settings']['base_table']['#ajax'] = [
       'callback' =>  [$this, 'storageSettingsFormTypeFKeyAjaxCallback'],

@@ -210,7 +210,7 @@ else { dpm("This field IS compatible"); } //@@@
     // Three variables here because the form select returns a single combined value.
     $default_linker_table =  $storage_settings['linker_table'] ?? '';
     $default_linker_column =  $storage_settings['linker_fkey_column'] ?? '';
-    $default_linker_table_and_column =  $storage_settings['linker_table_and_column'] ?? '';
+    $default_linker_table_and_column = $storage_settings['linker_table_and_column'] ?? '';
     if (!$default_linker_table_and_column and $default_linker_table and $default_linker_column) {
       $default_linker_table_and_column = $default_linker_table . self::$table_column_delimiter  . $default_linker_column;
     }
