@@ -12,6 +12,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
 
     // Installs up the chado with the test chado data
     $chado = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+    $public = \Drupal::service('database');
 
     // Keep track of the schema name in case we need it
     $schema_name = $chado->getSchemaName();
@@ -102,15 +103,19 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       ],
     ];
     $db_fields = [
-      'name' => 'Test query',
+      'name' => 'test-query',
       'criteria' => serialize($search_array),
       'disabled' => 0,
       'do_contact' => 0,
     ];
     // Add search query
     $pub_library_manager->addSearchQuery($db_fields);
-    $results = chado_query('SELECT count(*) as c1 FROM public.tripal_pub_library_query', [], [], $schema_name);
-    $row = $results->fetchObject();
-    $this->assertEquals($row->c1, 1, 'This should be equal to 1 as the result but it did not return 1');
+    $query = $public->select('tripal_pub_library_query', 'tplq');
+    $query = $query->condition('name', 'test-query', '=');
+    $query = $query->fields('tplq');
+    $results = $query->execute();
+    $this->assertNotEquals($results, NULL, 'Tripal Pub Library Query tables contains no query by test-query, this is an error');
+    $row = $results->fetchAssoc();
+    $this->assertEquals($row['name'], 'test-query', 'The Tripal Pub Library Query name is not test-query, this is an error');
   }
 }
