@@ -161,15 +161,19 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     $pub_library_manager->updateSearchQuery($query_id, $db_fields);
     $row = $pub_library_manager->getSearchQuery($query_id); // returns object
     $this->assertEquals($row->name, 'test-query-updated',
-      'The Tripal Pub Library Query name is not test-query-updated, this is an error - updateSearchQuery test error');
+       'The Tripal Pub Library Query name is not test-query-updated, this is an error - updateSearchQuery test error');
 
-    // --- Delete search query test
+    // // --- Delete search query test
     $pub_library_manager->deleteSearchQuery($query_id);
     $query = $public->select('tripal_pub_library_query', 'tplq');
     $query = $query->condition('name', 'test-query-updated', '=');
     $query = $query->fields('tplq');
     $results = $query->execute();
-    $this->assertEquals($results, NULL, 'Tripal Pub Library Query tables contains test-query-updated, deleteSearchQuery test error');
+    $row_count = 0;
+    foreach ($results as $row) {
+      $row_count++;
+    }
+    $this->assertEquals($row_count, 0, 'Tripal Pub Library Query tables contains test-query-updated, deleteSearchQuery test error');
 
   }
 }
