@@ -9,6 +9,7 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\tripal\Entity\TripalEntityType;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 
 /**
@@ -94,10 +95,18 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // is compatible with the current content type
     $isCompatible = $this->isCompatible($entity_type);
     if (!$isCompatible) {
-// @to implement an appropriate message
-dpm("This field is NOT compatible with this content type"); //@@@
+      $plugin_definition = $this->getPluginDefinition();
+      \Drupal::messenger()->addError($this->t('The selected field, "@field", is not '
+          . 'compatible with the "@ctype" content type because Tripal does not know how to link '
+          . 'it to the "@base" table of Chado. Only fields with links to "@base" can be '
+          . 'added to this content type.',
+          ['@field' => $plugin_definition['label'],
+           '@ctype' => $entity_type->getLabel(),
+           '@base' => $base_table]));
+      $response = new RedirectResponse("/admin/structure/bio_data/manage/" . $bundle . "/fields/add-field");
+      $response->send();
+      return;
     }
-else { dpm("This field IS compatible"); } //@@@
 
     // If we have a base table defined, the select list is just this one
     // table. Otherwise we need to generate a list of possible base tables,
