@@ -129,7 +129,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     $results = $pub_library_manager->getSearchQueries(); // returns results
     $this->assertNotEquals($results, NULL, 
       'Tripal Pub Library Query tables contains no query by test-query, this is an error - issue with getSearchQueries');
-    $row = $results->fetchAssoc();
+    $row = $results[0];
     $this->assertEquals($row['name'], 'test-query', 
       'The Tripal Pub Library Query name is not test-query, this is an error - issue with getSearchQueries');
 
