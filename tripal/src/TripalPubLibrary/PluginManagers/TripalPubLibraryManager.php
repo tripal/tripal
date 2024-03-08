@@ -42,7 +42,19 @@ class TripalPubLibraryManager extends DefaultPluginManager {
     $this->setCacheBackend($cache_backend, "tripal_pub_library_plugins");
   }
 
-
+  /**
+   * Retrieve a Tripal Pub Library Query record
+   *
+   * This method will look for a pub library query from the 'tripal_pub_library_query'
+   * table in the public schema of the database.
+   *
+   * @param $query_id
+   *   Unique ID of the query (primary key)
+   * @return object
+   *   A row object with the pub query data from the database
+   *
+   * @ingroup pub_loader
+   */
   public function getSearchQuery(int $query_id) {
     $public = \Drupal::database();
     $row = $public->select('tripal_pub_library_query', 'tpi')
@@ -53,6 +65,18 @@ class TripalPubLibraryManager extends DefaultPluginManager {
     return $row;
   }
 
+
+  /**
+   * Retrieve all Tripal Pub Library Query records
+   *
+   * This method will look for all pub library queries from the 'tripal_pub_library_query'
+   * table in the public schema of the database. It will return these records as an array.
+   *
+   * @return array
+   *   An array containing all pub library queries as row objects
+   *
+   * @ingroup pub_loader
+   */
   public function getSearchQueries() {
     $public = \Drupal::database();
     $pub_library_main_query = $public->select('tripal_pub_library_query','tpi');
@@ -60,11 +84,35 @@ class TripalPubLibraryManager extends DefaultPluginManager {
     return $results;
   }
 
+  /**
+   * Add a new Tripal Pub Library Query 
+   *
+   * This method will add a new pub library query to the 'tripal_pub_library_query'
+   * table in the public schema of the database. 
+   *
+   * @param $query
+   *  The query data in the form of an array
+   * 
+   * @ingroup pub_loader
+   */  
   public function addSearchQuery(array $query) {
     $public = \Drupal::database();
     $public->insert('tripal_pub_library_query')->fields($query)->execute();
   }
 
+   /**
+   * Update a Tripal Pub Library Query record
+   *
+   * This method will update a pub library query from the tripal_pub_library_query
+   * table in the public schema of the database if it matches the query_id parameter.
+   *
+   * @param $query_id
+   *  The query_id which matches the existing query_id of the table
+   * @param $query
+   *  An array containing the updated query data
+   *
+   * @ingroup pub_loader
+   */ 
   public function updateSearchQuery(int $query_id, array $query) {
     $public = \Drupal::database();
     $public->update('tripal_pub_library_query')
@@ -73,6 +121,18 @@ class TripalPubLibraryManager extends DefaultPluginManager {
     ->execute();
   }
 
+
+  /**
+   * Delete a Tripal Pub Library Query record
+   *
+   * This method will delete a pub library query from the tripal_pub_library_query
+   * table in the public schema of the database if it matches the query_id parameter.
+   *
+   * @param $query_id
+   *  The query_id which matches the existing query_id of the table
+   *
+   * @ingroup pub_loader
+   */ 
   public function deleteSearchQuery(int $query_id) {
     $public = \Drupal::database();
     $public->delete('tripal_pub_library_query')
