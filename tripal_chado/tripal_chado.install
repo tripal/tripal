@@ -254,6 +254,12 @@ function tripal_chado_tripal_mviews_schema() {
         'size' => 'normal',
         'not null' => TRUE
       ),
+      'locked' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'default' => 0,
+        'description' => 'Set to true if this materialized view is not for end-users or site admins to manage.'
+      ),
       'last_update' => array(
         'type' => 'int',
         'not null' => FALSE,
@@ -301,7 +307,7 @@ function tripal_chado_tripal_custom_tables_schema() {
         'type' => 'text',
         'not null' => TRUE
       ),
-      'hidden' => array(
+      'locked' => array(
         'type' => 'int',
         'size' => 'tiny',
         'default' => 0,
@@ -327,4 +333,45 @@ function tripal_chado_tripal_custom_tables_schema() {
       ),
     ),
   ];
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Changes the "hidden" column" to "locked" in the tripal_custom_tables table.
+ */
+function tripal_chado_update_10000() {
+  // Check if the column already exists.
+  $schema = Database::getConnection()->schema();
+  $table_name = 'tripal_custom_tables';
+  if ($schema->fieldExists($table_name, 'hidden')) {
+    // Rename the column from 'hidden' to 'locked'.
+    $schema->changeField($table_name, 'hidden', 'locked', array(
+      'description' => 'Indicates if the custom table is locked',
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => FALSE,
+      'default' => 0,
+    ));
+  }
+}
+
+/**
+ * Implements hook_update_N().
+ * 
+ * Adds a 'locked' column to the tripal_mviews table.
+ */
+function tripal_chado_update_10001() {
+  $schema = Database::getConnection()->schema();
+  $tableExists = $schema->tableExists('tripal_mviews');
+  
+  if ($tableExists && !$schema->fieldExists('tripal_mviews', 'locked')) {
+    $schema->addField('tripal_mviews', 'locked', [
+      'description' => 'Indicates if the materialized view is locked',
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => FALSE,
+      'default' => 0,
+    ]);
+  }
 }

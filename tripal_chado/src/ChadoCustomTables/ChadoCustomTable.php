@@ -132,41 +132,41 @@ class ChadoCustomTable {
   }
 
   /**
-   * Toggles the custom table's hidden stuats.
+   * Toggles the custom table's locked (formerly hidden) status.
    *
-   * Tables that are hidden are meant to be managed internally by the
+   * Tables that are locked are meant to be managed internally by the
    * Tripal module that created it and should not be changed or deleted by
    * the end-user.
    *
-   * @param bool $hide
-   *   Set to True to hide the table. Set to False to show the table to the
-   *   end-user.
+   * @param bool $lock
+   *   Set to True to lock the table. Set to False to allow the table to be
+   *   edited by the end-user.
    */
-  public function setHidden($hide = False) {
+  public function setLocked($lock = False) {
     $public = \Drupal::database();
     $update = $public->update('tripal_custom_tables');
-    $update->fields(['hidden' => $hide == TRUE ? 1 : 0]);
+    $update->fields(['locked' => $lock == TRUE ? 1 : 0]);
     $update->condition('table_name', $this->table_name);
     $update->condition('chado', $this->chado_schema);
     $update->execute();
   }
 
   /**
-   * Indicates if the custom table is hidden from the end-user.
+   * Indicates if the custom table is locked (formerly hidden) from the end-user.
    *
-   * Tables that are hidden are meant to be managed internally by the
+   * Tables that are locked are meant to be managed internally by the
    * Tripal module that created it and should not be changed or deleted by
    * the end-user.
    */
-  public function isHidden() {
+  public function isLocked() {
     $public = \Drupal::database();
     $query = $public->select('tripal_custom_tables','tct');
-    $query->fields('tct', ['hidden']);
+    $query->fields('tct', ['locked']);
     $query->condition('ct.table_name', $this->table_name);
     $query->condition('ct.chado', $this->chado_schema);
-    $hidden = $query->execute()->fetchField();
+    $locked = $query->execute()->fetchField();
 
-    if ($hidden == 1) {
+    if ($locked == 1) {
       return True;
     }
     return False;
