@@ -1010,9 +1010,9 @@ function tripal_uninstall_cloner() {
 }
 
 /**
- * Adds the tripal_pub_library_query table TEMPORARY
+ * Adds the tripal_pub_library_query table
  */
-function tripal_update_8403() {
+function tripal_update_10401() {
   $db = \Drupal::database();
   $transaction = $db->startTransaction();
   try {

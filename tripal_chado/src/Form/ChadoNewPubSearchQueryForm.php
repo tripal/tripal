@@ -31,11 +31,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       $public = \Drupal::database();
 
       // This is the edit version of the form, we need to lookup the current pub_import_id
-      // $publication = $public->select('tripal_pub_library_query', 'tpi')
-      //   ->fields('tpi')
-      //   ->condition('pub_library_query_id', $pub_import_id, '=')
-      //   ->execute()
-      //   ->fetchObject();
       $pub_library_manager = \Drupal::service('tripal.pub_library');
       $publication = $pub_library_manager->getSearchQuery($pub_import_id);
       $criteria = unserialize($publication->criteria);
@@ -553,7 +548,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
         // If form_mode is not edit, then it is a new importer
         if ($form_mode != "edit") {
-          // $public->insert('tripal_pub_library_query')->fields($db_fields)->execute();
           $pub_library_manager->addSearchQuery($db_fields);
           $messenger->addMessage("Importer successfully added!");
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
@@ -562,10 +556,6 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
         // If form_mode is 'edit', this is an update to the database
         else {
-          // $public->update('tripal_pub_library_query')
-          //   ->fields($db_fields)
-          //   ->condition('pub_import_id', $user_input['pub_import_id'])
-          //   ->execute();
           $pub_library_manager->updateSearchQuery($user_input['pub_import_id'], $db_fields);
           $messenger->addMessage("Importer successfully edited!");
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
