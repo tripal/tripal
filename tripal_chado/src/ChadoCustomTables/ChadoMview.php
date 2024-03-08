@@ -172,7 +172,7 @@ class ChadoMview extends ChadoCustomTable {
    */
   public function setLocked($lock = False) {
     $public = \Drupal::database();
-    $update = $public->update('tripal_custom_tables');
+    $update = $public->update('tripal_mviews');
     $update->fields(['locked' => $lock == TRUE ? 1 : 0]);
     $update->condition('mview_id', $this->mview_id);
     $update->execute();
