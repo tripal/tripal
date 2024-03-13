@@ -151,7 +151,7 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 ## Use composer to install Drupal.
 WORKDIR /var/www
 ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit"
-ARG composerpackages="drupal/devel drupal/devel_php"
+ARG composerpackages="drupal/devel drupal/devel_php drupal/field_group drupal/field_group_table"
 RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal \
   && cd drupal \
   && composer config --no-plugins allow-plugins.composer/installers true \
