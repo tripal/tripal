@@ -1,8 +1,8 @@
 ## This script is used to recreate the fill_chado_test_prepare.sql file used
 ## to simulate a chado prepare task being applied to the test schema more efficiently.
 ##
-## Example Usage with TripalDocker named t4d8
-## docker exec -it t4d8 bash modules/contrib/tripal/tripal_chado/tests/fixtures/regenerate_scripts/regenerate_fill_test_prepare.sh
+## Example Usage with TripalDocker named t4
+## docker exec -it t4 bash modules/contrib/tripal/tripal_chado/tests/fixtures/regenerate_scripts/regenerate_fill_test_prepare.sh
 ##
 ## NOTE: This script uses an already prepared chado database to create the file.
 ## As such, make sure to use the UI to create a new Chado 1.3 schema named "preparedchado"

@@ -363,7 +363,7 @@ COPY apache.conf /etc/httpd/conf.d/apache.conf
 # COPY init.sh /usr/bin/init.sh
 # RUN chmod +x /usr/bin/init.sh
 
-RUN git clone https://github.com/tripal/t4d8.git sites/all/modules/contrib/tripal
+RUN git clone https://github.com/tripal/tripal.git sites/all/modules/contrib/tripal
 
 # Enable tripal 4 module
 RUN /etc/init.d/postgresql start \
