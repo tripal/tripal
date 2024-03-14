@@ -5,13 +5,12 @@ namespace Drupal\tripal\TripalPubLibrary\PluginManagers;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\ReplaceCommand;
-
+use Drupal\Core\Database\Connection;
 /**
  * Provides a tripal importer plugin manager.
  */
 class TripalPubLibraryManager extends DefaultPluginManager {
+  protected $connection;
 
   /**
    * Constructs a new publication parser manager.
@@ -30,6 +29,7 @@ class TripalPubLibraryManager extends DefaultPluginManager {
       \Traversable $namespaces
       ,CacheBackendInterface $cache_backend
       ,ModuleHandlerInterface $module_handler
+      ,Connection $conn
   ) {
     parent::__construct(
         "Plugin/TripalPubLibrary"
@@ -40,6 +40,7 @@ class TripalPubLibraryManager extends DefaultPluginManager {
     );
     $this->alterInfo("tripal_pub_library_info");
     $this->setCacheBackend($cache_backend, "tripal_pub_library_plugins");
+    $this->connection = $conn;
   }
 
   /**
@@ -56,7 +57,7 @@ class TripalPubLibraryManager extends DefaultPluginManager {
    * @ingroup pub_loader
    */
   public function getSearchQuery(int $query_id) {
-    $public = \Drupal::database();
+    $public = $this->connection;
     $row = $public->select('tripal_pub_library_query', 'tpi')
         ->fields('tpi')
         ->condition('pub_library_query_id', $query_id, '=')
@@ -78,7 +79,7 @@ class TripalPubLibraryManager extends DefaultPluginManager {
    * @ingroup pub_loader
    */
   public function getSearchQueries() {
-    $public = \Drupal::database();
+    $public = $this->connection;
     $pub_library_main_query = $public->select('tripal_pub_library_query','tpi');
     $results = $pub_library_main_query->fields('tpi')->orderBy('pub_library_query_id', 'ASC')->execute()->fetchAll();
     return $results;
@@ -96,7 +97,7 @@ class TripalPubLibraryManager extends DefaultPluginManager {
    * @ingroup pub_loader
    */  
   public function addSearchQuery(array $query) {
-    $public = \Drupal::database();
+    $public = $this->connection;
     $public->insert('tripal_pub_library_query')->fields($query)->execute();
   }
 
@@ -114,7 +115,7 @@ class TripalPubLibraryManager extends DefaultPluginManager {
    * @ingroup pub_loader
    */ 
   public function updateSearchQuery(int $query_id, array $query) {
-    $public = \Drupal::database();
+    $public = $this->connection;
     $public->update('tripal_pub_library_query')
     ->fields($query)
     ->condition('pub_library_query_id', $query_id)
@@ -134,7 +135,7 @@ class TripalPubLibraryManager extends DefaultPluginManager {
    * @ingroup pub_loader
    */ 
   public function deleteSearchQuery(int $query_id) {
-    $public = \Drupal::database();
+    $public = $this->connection;
     $public->delete('tripal_pub_library_query')
     ->condition('pub_library_query_id', $query_id, '=')
     ->execute();
