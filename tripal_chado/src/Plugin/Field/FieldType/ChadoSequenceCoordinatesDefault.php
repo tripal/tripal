@@ -38,7 +38,7 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
-  /**  
+  /**
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
@@ -70,10 +70,10 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
 
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load( 'core_mapping' );
+    $mapping = $storage->load('core_mapping');
 
-    $record_id_term = $mapping->getColumnTermId( 'feature', 'feature_id' );
-    $ft_uniqname_term = $mapping->getColumnTermId( 'feature', 'name' );
+    $record_id_term = $mapping->getColumnTermId('feature', 'feature_id');
+    $ft_uniqname_term = $mapping->getColumnTermId('feature', 'name');
 
     $fmin_term = $mapping->getColumnTermId('featureloc', 'fmin');
     $fmax_term = $mapping->getColumnTermId('featureloc', 'fmax');
@@ -88,13 +88,13 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
       'drupal_store' => TRUE,
       'path' => 'feature.feature_id',
     ]);
-    
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'featureloc_id', $record_id_term, [
       'action' => 'store_pkey',
       'drupal_store' => TRUE,
       'path' => 'featureloc.featureloc_id',
     ]);
-    
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fkey', $record_id_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
@@ -107,8 +107,8 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     ]);
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fmin', $fmin_term, [
-        'action' => 'read_value',
-        'path' => 'feature.feature_id>featureloc.feature_id;fmin',
+      'action' => 'read_value',
+      'path' => 'feature.feature_id>featureloc.feature_id;fmin',
     ]);
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fmax', $fmax_term, [
       'action' => 'read_value',
@@ -122,8 +122,8 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'path' => 'feature.feature_id>featureloc.feature_id;phase',
     ]);
-      
-    return($properties);    
+
+    return($properties);
   }
 
 }

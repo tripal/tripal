@@ -48,23 +48,23 @@ class ChadoSequenceCoordinatesFormatterTable extends ChadoFormatterBase {
       $fmax_val = $item->get('fmax')->getString();
 
       $strand_val = $item->get('strand')->getString();
-      $strand_symb = match( $strand_val ) {
+      $strand_symb = match($strand_val) {
         '-1' => '-',
         '1' => '+',
         default => 'unknown',
       };
 
       $phase_val = $item->get('phase')->getString();
-      $locations[] = [ $ft_uniqname_val,
-                        $fmin_val,
-                        $fmax_val,
-                        $phase_val,
-                        $strand_symb ];
+      $locations[] = [$ft_uniqname_val,
+                      $fmin_val,
+                      $fmax_val,
+                      $phase_val,
+                      $strand_symb];
     }
 
-    if ( !$locations ) {
+    if (!$locations) {
       $content = 'This feature is not located on any sequence.';
-    } 
+    }
     else {
       $content = $locations;
     }
