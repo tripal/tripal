@@ -114,4 +114,34 @@ class ChadoTermMapping extends ConfigEntityBase implements ChadoTermMappingInter
     }
     return '';
   }
+
+  /**
+   * Refresh a mapping from its yaml file.
+   * Intended for update hooks to call when a yaml file is updated.
+   *
+   * @param string $config_path
+   *   The yaml file path that follows the format:
+   *     path / module . storage_id . mapping_id
+   *   Examples:
+   *     config/install/tripal.tripal_content_terms.chado_content_terms
+   *     config/install/tripal_chado.chado_term_mapping.core_mapping
+   */
+  public static function refreshMapping($config_path) {
+    $parts = preg_split('/[\/\.]/', $config_path);
+    $mapping_id = array_pop($parts);
+    $storage_id = array_pop($parts);
+    $module = array_pop($parts);
+
+    $storage = \Drupal::entityTypeManager()->getStorage($storage_id);
+    $path = \Drupal::service('extension.list.module')->getPath($module);
+    $fileStorage = new FileStorage($path);
+
+    $config = $fileStorage->read($config_path);
+    $mapping = $storage->load($mapping_id);
+    if ($mapping) {
+      $storage->delete([$mapping]);
+    }
+    $mapping = $storage->create($config);
+    $mapping->save();
+  }
 }
