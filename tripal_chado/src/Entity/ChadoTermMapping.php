@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Config\FileStorage;
 use Drupal\tripal_chado\Entity\ChadoTermMappingInterface;
 
 /**
@@ -126,9 +127,9 @@ class ChadoTermMapping extends ConfigEntityBase implements ChadoTermMappingInter
    *     config/install/tripal.tripal_content_terms.chado_content_terms
    *     config/install/tripal_chado.chado_term_mapping.core_mapping
    */
-  public static function refreshMapping($config_path) {
+  public function refreshMapping($config_path) {
     $parts = preg_split('/[\/\.]/', $config_path);
-    $mapping_id = array_pop($parts);
+    $mapping_id = array_pop($parts); // same as $this->id
     $storage_id = array_pop($parts);
     $module = array_pop($parts);
 

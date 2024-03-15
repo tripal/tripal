@@ -5,6 +5,7 @@
  */
 
 use \Drupal\Core\Database\Database;
+use \Drupal\tripal_chado\Entity\ChadoTermMapping;
 
 /**
  * Implements hook_install().
@@ -332,12 +333,19 @@ function tripal_chado_tripal_custom_tables_schema() {
 /**
  * Updates missing mapping of CV terms to some chado table columns
  */
-function tripal_chado_update_8400() {
+function tripal_chado_update_8401() {
   try {
     $messenger = \Drupal::messenger();
-    refreshMapping('config/install/tripal.tripal_content_terms.chado_content_terms');
-    refreshMapping('config/install/tripal_chado.chado_term_mapping.core_mapping');
-    $messenger->addMessage('Reloaded the terms and mappings');
+
+    $storage = \Drupal::entityTypeManager()->getStorage('tripal_content_terms');
+    $mapping = $storage->load('chado_content_terms');
+    $mapping->refreshMapping('config/install/tripal.tripal_content_terms.chado_content_terms');
+    $messenger->addMessage('Reloaded Chado content terms');
+
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+    $mapping->refreshMapping('config/install/tripal_chado.chado_term_mapping.core_mapping');
+    $messenger->addMessage('Reloaded Chado term mapping');
   }
   catch (\PDOException $e) {
     throw new DrupalUpdateException('Could not reload terms and mappings: ' . $e->getMessage());
