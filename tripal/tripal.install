@@ -183,7 +183,7 @@ function tripal_schema() {
   $schema['tripal_terms_vocabs'] = tripal_tripal_terms_vocabs_schema();
 
   // Adds a table for definitions of publication importers.
-  $schema['tripal_pub_import'] = tripal_tripal_pub_import_schema();
+  $schema['tripal_pub_library_query'] = tripal_tripal_pub_library_query_schema();
 
   return $schema;
 }
@@ -855,10 +855,10 @@ function tripal_tripal_vocabulary_collection_schema() {
   return $schema;
 }
 
-function tripal_tripal_pub_import_schema() {
+function tripal_tripal_pub_library_query_schema() {
   $schema = [
     'fields' => [
-      'pub_import_id' => [
+      'pub_library_query_id' => [
         'type' => 'serial',
         'not null' => TRUE
       ],
@@ -886,7 +886,7 @@ function tripal_tripal_pub_import_schema() {
         'default' => 0
       ],
     ],
-    'primary key' => ['pub_import_id'],
+    'primary key' => ['pub_library_query_id'],
     'indexes' => [
       'name' => ['name']
     ],
@@ -1010,21 +1010,21 @@ function tripal_uninstall_cloner() {
 }
 
 /**
- * Adds the tripal_pub_import table TEMPORARY
+ * Adds the tripal_pub_library_query table
  */
-function tripal_update_8403() {
+function tripal_update_10401() {
   $db = \Drupal::database();
   $transaction = $db->startTransaction();
   try {
-    if (!$db->schema()->tableExists('tripal_pub_import')) {
+    if (!$db->schema()->tableExists('tripal_pub_library_query')) {
       $schema = [];
-      $schema['tripal_pub_import'] = tripal_tripal_pub_import_schema();
-      $db->schema()->createTable('tripal_pub_import', $schema['tripal_pub_import']);
+      $schema['tripal_pub_library_query'] = tripal_tripal_pub_library_query_schema();
+      $db->schema()->createTable('tripal_pub_library_query', $schema['tripal_pub_library_query']);
     }
   }
   catch (\PDOException $e) {
     $transaction->rollback();
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not add the tripal_pub_import table:' . $error);
+    throw new DrupalUpdateException('Could not add the tripal_pub_library_query table:' . $error);
   }
 }
