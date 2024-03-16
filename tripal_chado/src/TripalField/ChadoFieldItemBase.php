@@ -284,7 +284,13 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    */
   public function storageSettingsFormBaseTableAjaxCallback($form, &$form_state) {
     $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-base_column', $form['settings']['storage_plugin_settings']['base_column']));
+    $drupal_10_2 = $form_state->getValue(['field_storage']);
+    if ($drupal_10_2) {
+      $response->addCommand(new ReplaceCommand('#edit-base_column', $form['field_storage']['subform']['settings']['storage_plugin_settings']['base_column']));
+    }
+    else {
+      $response->addCommand(new ReplaceCommand('#edit-base_column', $form['settings']['storage_plugin_settings']['base_column']));
+    }
     return $response;
   }
 
@@ -299,7 +305,13 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    */
   public function storageSettingsFormLinkingMethodAjaxCallback($form, &$form_state) {
     $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['settings']['storage_plugin_settings']['linker_table_and_column']));
+    $drupal_10_2 = $form_state->getValue(['field_storage']);
+    if ($drupal_10_2) {
+      $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['field_storage']['subform']['settings']['storage_plugin_settings']['linker_table_and_column']));
+    }
+    else {
+      $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['settings']['storage_plugin_settings']['linker_table_and_column']));
+    }
     return $response;
   }
 
