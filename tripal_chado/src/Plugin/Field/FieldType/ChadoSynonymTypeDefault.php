@@ -113,8 +113,8 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
 
     $base_table = $storage_settings['base_table'];
-    $linker_table = $storage_settings['linker_table'] ?? '';
-    $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? '';
+    $linker_table = $storage_settings['linker_table'];
+    $linker_fkey_column = $storage_settings['linker_fkey_column'];
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
