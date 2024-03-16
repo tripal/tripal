@@ -33,8 +33,6 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
     $field_settings = $field_definition->getSettings();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
-    $linker_table = $storage_settings['linker_table'];
-    $linker_fkey_column = $storage_settings['linker_fkey_column'];
 
     $schema = $chado->schema();
     $synonym_table_def = $schema->getTableDef('synonym', ['format' => 'Drupal']);
