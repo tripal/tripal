@@ -167,7 +167,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @return array
    *   The updated render array for the form.
    */
-  private function storageSettingsFormBaseColumnSelect(string $base_table, $has_data, array &$elements, FormStateInterface $form_state) {
+  private function storageSettingsFormBaseColumnSelect($base_table, $has_data, array &$elements, FormStateInterface $form_state) {
 
     $storage_settings = $this->getSetting('storage_plugin_settings');
     $default_base_column = $storage_settings['base_column'] ?? '';
@@ -213,7 +213,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @return array
    *   The updated render array for the form.
    */
-  private function storageSettingsFormLinkerMethodSelect(string $base_table, $has_data, array &$elements, FormStateInterface $form_state) {
+  private function storageSettingsFormLinkerMethodSelect($base_table, $has_data, array &$elements, FormStateInterface $form_state) {
 
     $storage_settings = $this->getSetting('storage_plugin_settings');
     // Three variables here because the form select returns a single combined value.
