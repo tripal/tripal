@@ -217,26 +217,22 @@ function tripal_chado_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $f
   // field then we need to add a submit hook to set the base table in the
   // content type's 3rd party settings.  The field settings form doesn't allow
   // us to set a submit callback, so we have to add it using hook_form_alter.
-  if ($form_id == 'field_config_edit_form') {
+  // Under Drupal ≤10.1 we want 'field_storage_config_edit_form', the storage form
+  // Under Drupal ≥10.2 we want 'field_config_edit_form', storage is a subform within this form
+  if (($form_id == 'field_storage_config_edit_form') or ($form_id == 'field_config_edit_form')) {
 
-    /** @var \Drupal\Core\Entity\EntityBase $entity_type  **/
-    $entity_type = $form['#entity'];
-    if ($entity_type->getEntityTypeId() == 'tripal_entity') {
-
-
-      // If we have a `base_table` setting in the `storge_plugin_settings` then
-      // this is a Chado field and we should add the callback on submit so
-      // we can set the 3rd party settings on the content type.
-      if (array_key_exists('settings', $form['field_storage']['subform'])) {
-        if (array_key_exists('storage_plugin_settings', $form['field_storage']['subform']['settings'])) {
-          if (array_key_exists('base_table', $form['field_storage']['subform']['settings']['storage_plugin_settings'])) {
-            $form['actions']['submit']['#submit'][] = [
-              'Drupal\tripal_chado\TripalField\ChadoFieldItemBase',
-              'storageSettingsFormSubmitBaseTable'
-            ];
-          }
-        }
-      }
+    // If we have `storge_plugin_settings` specifying a `base_table`, then
+    // this is a Chado field and we should add the callback on submit so
+    // we can set the 3rd party settings on the content type. The location
+    // within the form varies depending on Drupal version, for 10.2 it is
+    // in the subform.
+    $base_table = $form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table'])
+        ?? $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+    if ($base_table) {
+      $form['actions']['submit']['#submit'][] = [
+        'Drupal\tripal_chado\TripalField\ChadoFieldItemBase',
+        'storageSettingsFormSubmitBaseTable'
+      ];
     }
   }
 }
