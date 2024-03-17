@@ -381,30 +381,24 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    if ($base_table) {
 
-      /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-      $chado = \Drupal::service('tripal_chado.database');
-      $schema = $chado->schema();
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
 
-      // If the base table has a 'type_id' column, then it is compatible.
-      $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-      if (isset($base_table_def['fields']['type_id'])) {
+    // If the base table has a 'type_id' column, then it is compatible.
+    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    if (isset($base_table_def['fields']['type_id'])) {
+      $compatible = TRUE;
+    }
+
+    $prop_def = $schema->getTableDef($base_table . 'prop', ['format' => 'Drupal']);
+    // If the property table exists, and has a foreign key to the base table,
+    // then this content type is compatible.
+    if ($prop_def) {
+      if (array_key_exists($base_table, $prop_def['foreign keys'])) {
         $compatible = TRUE;
       }
-
-      $prop_def = $schema->getTableDef($base_table . 'prop', ['format' => 'Drupal']);
-      // If the property table exists, and has a foreign key to the base table,
-      // then this content type is compatible.
-      if ($prop_def) {
-        if (array_key_exists($base_table, $prop_def['foreign keys'])) {
-          $compatible = TRUE;
-        }
-      }
-    }
-    else {
-      // If base table is not defined, assume compatible
-      $compatible = TRUE;
     }
 
     return $compatible;

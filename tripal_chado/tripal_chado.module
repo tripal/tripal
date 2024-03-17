@@ -206,3 +206,38 @@ function tripal_chado_rebuild() {
   tripal_chado_rebuild_views();
   tripal_chado_rebuild_chado_term_mappings();
 }
+
+/**
+ * Implements hook_form_alter
+ */
+function tripal_chado_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+
+
+  // If this is the field_config_edit_form and if we are adding a Chado
+  // field then we need to add a submit hook to set the base table in the
+  // content type's 3rd party settings.  The field settings form doesn't allow
+  // us to set a submit callback so we have to add it using the his
+  // hook_form_alter.
+  if ($form_id == 'field_config_edit_form') {
+
+    /** @var \Drupal\Core\Entity\EntityBase $entity_type  **/
+    $entity_type = $form['#entity'];
+    if ($entity_type->getEntityTypeId() == 'tripal_entity') {
+
+
+      // If we have a `base_table` setting in the `storge_plugin_settings` then
+      // this is a Chado field and we should add the callback on submit so
+      // we can set the 3rd party settings on the content type.
+      if (array_key_exists('settings', $form['field_storage']['subform'])) {
+        if (array_key_exists('storage_plugin_settings', $form['field_storage']['subform']['settings'])) {
+          if (array_key_exists('base_table', $form['field_storage']['subform']['settings']['storage_plugin_settings'])) {
+            $form['actions']['submit']['#submit'][] = [
+              'Drupal\tripal_chado\TripalField\ChadoFieldItemBase',
+              'storageSettingsFormSubmitBaseTable'
+            ];
+          }
+        }
+      }
+    }
+  }
+}

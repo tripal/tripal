@@ -272,11 +272,9 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    if ($base_table) {
-      $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
-      if (count($linker_tables) < 1) {
-        $compatible = FALSE;
-      }
+    $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+    if (count($linker_tables) < 1) {
+      $compatible = FALSE;
     }
     return $compatible;
   }

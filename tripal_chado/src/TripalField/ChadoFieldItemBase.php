@@ -67,45 +67,50 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $entity_type_manager = \Drupal::entityTypeManager();
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
-    $chado_base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $entity_type_chado_base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
 
-    // If this is an existing field, retrieve its storage settings.
-    $storage_settings = $this->getSetting('storage_plugin_settings');
-    $storage_settings_base_table = $storage_settings['base_table'] ?? '';
-
+    // The base table should be selectable by default.
     $base_table_disabled = FALSE;
-    if ($storage_settings_base_table) {
-      // Base table has been saved in the field storage settings
-      $base_table = $storage_settings_base_table;
-      $base_table_disabled = TRUE;
-    }
-    elseif ($chado_base_table) {
-      // Base table has been set in third party settings
-      $base_table = $chado_base_table;
-      $base_table_disabled = TRUE;
-    }
-    else {
-      // Base table has been selected in the subform or form depending on Drupal
-      // version, and we are in an Ajax callback.
-      $base_table = $form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table'])
-          ?? $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-    }
+    $default_base_table = '';
 
-    // If we have a base table defined, we can check to see if this field
-    // is compatible with the current content type
-    $isCompatible = $this->isCompatible($entity_type);
-    if (!$isCompatible) {
-      $plugin_definition = $this->getPluginDefinition();
-      \Drupal::messenger()->addError($this->t('The selected field, "@field", is not '
-          . 'compatible with the "@ctype" content type because Tripal does not know how to link '
-          . 'it to the "@base" table of Chado. Only fields with links to "@base" can be '
-          . 'added to this content type.',
-          ['@field' => $plugin_definition['label'],
-           '@ctype' => $entity_type->getLabel(),
-           '@base' => $base_table]));
-      $response = new RedirectResponse("/admin/structure/bio_data/manage/" . $bundle . "/fields/add-field");
-      $response->send();
-      return;
+    // If we have a base table defined for the entity type, then we need to see
+    // if this field is compatible with the current content type.
+    if ($entity_type_chado_base_table) {
+      if (!$this->isCompatible($entity_type)) {
+        $plugin_definition = $this->getPluginDefinition();
+        \Drupal::messenger()->addError($this->t('The selected field, "@field", is not '
+            . 'compatible with the "@ctype" content type because Tripal does not know how to link '
+            . 'it to the "@base" table of Chado. Only fields with links to "@base" can be '
+            . 'added to this content type.',
+            ['@field' => $plugin_definition['label'],
+              '@ctype' => $entity_type->getLabel(),
+              '@base' => $entity_type_chado_base_table]));
+            $response = new RedirectResponse("/admin/structure/bio_data/manage/" . $bundle . "/fields/add-field");
+            $response->send();
+            return;
+      }
+      // The content type forces the base table so we'll disable the select
+      // box for the base table.
+      $base_table_disabled = TRUE;
+      $default_base_table = $entity_type_chado_base_table;
+    }
+    // If no base table has been set in the content type, then let's see
+    // if the field has one hardcoded in it's settings.
+    else {
+      $storage_settings = $this->getSetting('storage_plugin_settings');
+      $storage_settings_base_table = $storage_settings['base_table'] ?? '';
+      // If the base table has been saved in the field storage settings
+      if ($storage_settings_base_table) {
+        $base_table = $storage_settings_base_table;
+        $base_table_disabled = TRUE;
+        $default_base_table = $storage_settings_base_table;
+      }
+      else {
+        // Base table has been selected in the subform or form depending on Drupal
+        // version, and we are in an Ajax callback.
+        $base_table = $form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table'])
+        ?? $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+      }
     }
 
     // If we have a base table defined, the select list is just this one
@@ -131,7 +136,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         'For example. If this property is meant to store a feature property then the base ' .
         'table should be "feature".'),
       '#options' => $base_tables,
-      '#default_value' => $base_table,
+      '#default_value' => $default_base_table,
       '#required' => TRUE,
       '#disabled' => $base_table_disabled,
       '#element_validate' => [[static::class, 'storageSettingsFormValidateBaseTable']],
@@ -148,7 +153,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     if (static::$object_table) {
       $this->storageSettingsFormLinkerMethodSelect($base_table, $has_data, $elements, $form_state);
     }
-
     return $elements + parent::storageSettingsForm($form, $form_state, $has_data);
   }
 
@@ -338,6 +342,50 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     else {
       $form_state->setErrorByName('settings][storage_plugin_settings][base_table',
           'The selected base table does not exist in Chado.');
+    }
+  }
+
+  /**
+   * A callback function after the field is saved.
+   *
+   * This function is added to the submit actions for the form via the
+   * tripal_chado_form_alter() hook.  It ensures that if the base table
+   * for the entity type is not set that this Chado field will set it. This
+   * ensures that all future additions of Chado fields will have to check
+   * if they are compatible with the base table.
+   *
+   * @param array $form
+   * @param FormStateInterface $form_state
+   */
+  public static function storageSettingsFormSubmitBaseTable(array $form, FormStateInterface $form_state) {
+
+    $settings = self::getFormStateSettings($form_state);
+    if (!array_key_exists('storage_plugin_settings', $settings)) {
+      return;
+    }
+
+    // For most fields, we can specify the base table through the third party setting
+    // 'chado_base_table', and then we don't need to select it when manually adding the
+    // field to a content type.
+    $form_state_storage = $form_state->getStorage();
+    $bundle = $form_state_storage['bundle'];
+    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+    $entity_type_manager = \Drupal::entityTypeManager();
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+    $entity_type_chado_base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    dpm($entity_type_chado_base_table);
+
+    // If the entity type is missing the base table then use the one from
+    // this field and set it. This should only happen the first time a Chado
+    // field is added to the content type.  Once the base table is set for
+    // the entity type then all fields added in the future must use this
+    // base table.
+    if (!$entity_type_chado_base_table) {
+      $base_table = $settings['storage_plugin_settings']['base_table'];
+      dpm($base_table);
+      $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $base_table);
+      $entity_type->save();
     }
   }
 

@@ -109,13 +109,13 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
-    $compatible = TRUE;
+    $compatible = FALSE;
 
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
     // This is a "specialty" field for a single content type
     // If base table is not defined, assume compatible
-    if (!$base_table or ($base_table == 'analysis')) {
+    if ($base_table == 'analysis') {
       $compatible = TRUE;
     }
     return $compatible;
