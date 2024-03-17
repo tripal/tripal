@@ -216,8 +216,7 @@ function tripal_chado_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $f
   // If this is the field_config_edit_form and if we are adding a Chado
   // field then we need to add a submit hook to set the base table in the
   // content type's 3rd party settings.  The field settings form doesn't allow
-  // us to set a submit callback so we have to add it using the his
-  // hook_form_alter.
+  // us to set a submit callback, so we have to add it using hook_form_alter.
   if ($form_id == 'field_config_edit_form') {
 
     /** @var \Drupal\Core\Entity\EntityBase $entity_type  **/
