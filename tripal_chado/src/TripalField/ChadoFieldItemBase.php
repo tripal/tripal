@@ -92,6 +92,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       // The content type forces the base table so we'll disable the select
       // box for the base table.
       $base_table_disabled = TRUE;
+      $base_table = $entity_type_chado_base_table;
       $default_base_table = $entity_type_chado_base_table;
     }
     // If no base table has been set in the content type, then let's see
