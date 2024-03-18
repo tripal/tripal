@@ -139,7 +139,6 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
 
     // This is a "specialty" field for a single content type
-    // If base table is not defined, assume compatible
     if ($base_table == 'feature') {
       $compatible = TRUE;
     }
