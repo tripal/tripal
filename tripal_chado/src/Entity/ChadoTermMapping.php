@@ -127,17 +127,19 @@ class ChadoTermMapping extends ConfigEntityBase implements ChadoTermMappingInter
    *     config/install/tripal.tripal_content_terms.chado_content_terms
    *     config/install/tripal_chado.chado_term_mapping.core_mapping
    */
-  public function refreshMapping($config_path) {
+  public static function refreshMapping($config_path) {
     $parts = preg_split('/[\/\.]/', $config_path);
-    $mapping_id = array_pop($parts); // same as $this->id
+    $mapping_id = array_pop($parts);
     $storage_id = array_pop($parts);
-    $module = array_pop($parts);
+    $module = 'tripal_chado';
 
     $storage = \Drupal::entityTypeManager()->getStorage($storage_id);
     $path = \Drupal::service('extension.list.module')->getPath($module);
     $fileStorage = new FileStorage($path);
-
     $config = $fileStorage->read($config_path);
+    if (!is_array($config)) {
+      throw new \Exception("refreshMapping configuration path not found: $config_path");
+    }
     $mapping = $storage->load($mapping_id);
     if ($mapping) {
       $storage->delete([$mapping]);
