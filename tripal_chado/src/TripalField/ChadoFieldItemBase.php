@@ -724,7 +724,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param string $machine_name
    *   The field identifier, including the 'field_' prefix.
    */
-  public function removeIncompatibleField(string $bundle, string $machine_name) {
+  protected function removeIncompatibleField(string $bundle, string $machine_name) {
     $entityFieldManager = \Drupal::service('entity_field.manager');
     $fields = $entityFieldManager->getFieldDefinitions('tripal_entity', $bundle);
     if (isset($fields[$machine_name])) {
