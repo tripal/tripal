@@ -83,11 +83,16 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
             . 'it to the "@base" table of Chado. Only fields with links to "@base" can be '
             . 'added to this content type.',
             ['@field' => $plugin_definition['label'],
-              '@ctype' => $entity_type->getLabel(),
-              '@base' => $entity_type_chado_base_table]));
-            $response = new RedirectResponse("/admin/structure/bio_data/manage/" . $bundle . "/fields/add-field");
-            $response->send();
-            return;
+             '@ctype' => $entity_type->getLabel(),
+             '@base' => $entity_type_chado_base_table]));
+
+        // For Drupal ≤10.1, cleanup the partially created field by removing it.
+        $machine_name = 'field_' . $form_state_storage['field_config']->getLabel();
+        $this->removeIncompatibleField($bundle, $machine_name);
+
+        $response = new RedirectResponse("/admin/structure/bio_data/manage/" . $bundle . "/fields/add-field");
+        $response->send();
+        return;
       }
       // The content type forces the base table so we'll disable the select
       // box for the base table.
@@ -110,7 +115,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
         // Base table has been selected in the subform or form depending on Drupal
         // version, and we are in an Ajax callback.
         $base_table = $form_state->getValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'base_table'])
-        ?? $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+          ?? $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
       }
     }
 
@@ -708,4 +713,23 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public function isCompatible(TripalEntityType $entity_type) : bool {
     return TRUE;
   }
+
+  /**
+   * Needed for Drupal ≤10.1 when an incompatible field was added
+   * to a content type, this will clean up the partially added field.
+   *
+   * @param string $bundle
+   *   The bundle name.
+   *
+   * @param string $machine_name
+   *   The field identifier, including the 'field_' prefix.
+   */
+  public function removeIncompatibleField(string $bundle, string $machine_name) {
+    $entityFieldManager = \Drupal::service('entity_field.manager');
+    $fields = $entityFieldManager->getFieldDefinitions('tripal_entity', $bundle);
+    if (isset($fields[$machine_name])) {
+      $fields[$machine_name]->delete();
+    }
+  }
+
 }
