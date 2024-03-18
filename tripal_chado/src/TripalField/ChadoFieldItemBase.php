@@ -375,7 +375,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
     $entity_type_chado_base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    dpm($entity_type_chado_base_table);
 
     // If the entity type is missing the base table then use the one from
     // this field and set it. This should only happen the first time a Chado
