@@ -87,7 +87,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
              '@base' => $entity_type_chado_base_table]));
 
         // For Drupal ≤10.1, cleanup the partially created field by removing it.
-        $machine_name = 'field_' . $form_state_storage['field_config']->getLabel();
+        $machine_name = $form_state_storage['field_config']->getName();
         $this->removeIncompatibleField($bundle, $machine_name);
 
         $response = new RedirectResponse("/admin/structure/bio_data/manage/" . $bundle . "/fields/add-field");
