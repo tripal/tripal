@@ -383,7 +383,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // base table.
     if (!$entity_type_chado_base_table) {
       $base_table = $settings['storage_plugin_settings']['base_table'];
-      dpm($base_table);
       $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $base_table);
       $entity_type->save();
     }
