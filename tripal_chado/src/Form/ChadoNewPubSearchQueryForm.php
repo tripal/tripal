@@ -31,11 +31,8 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       $public = \Drupal::database();
 
       // This is the edit version of the form, we need to lookup the current pub_import_id
-      $publication = $public->select('tripal_pub_import', 'tpi')
-        ->fields('tpi')
-        ->condition('pub_import_id', $pub_import_id, '=')
-        ->execute()
-        ->fetchObject();
+      $pub_library_manager = \Drupal::service('tripal.pub_library');
+      $publication = $pub_library_manager->getSearchQuery($pub_import_id);
       $criteria = unserialize($publication->criteria);
 
 
@@ -514,16 +511,18 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       $op = $user_input['op'];
       if ($op == 'Save Search Query') {
         $_SESSION['tripal_pub_import']['perform_test'] = 0;
-        // tripal_pub_import table columns are: pub_import_id, name, criteria, disabled, do_contact
+        // tripal_pub_library_query table columns are: pub_library_query_id, name, criteria, disabled, do_contact
 
         // Translate the submitted data into a variable which can be serialized into a criteria column
-        // of the tripal_pub_import table
+        // of the tripal_pub_library_query table
         $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
 
         // Load the plugin and initialize an instance to perform it's unique form_submit function
         // This will run plugin specific form submit operations that can alter the criteria database column
         // which stores the specific plugin importer settings (basically all the form data)
         $plugin_id = $user_input['plugin_id'];
+        $pub_library_manager = NULL;
+        $plugin = NULL;
         if ($plugin_id) {
           // Instantiate the selected plugin
           // Pub Library Manager is found in tripal module: 
@@ -549,7 +548,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
         // If form_mode is not edit, then it is a new importer
         if ($form_mode != "edit") {
-          $public->insert('tripal_pub_import')->fields($db_fields)->execute();
+          $pub_library_manager->addSearchQuery($db_fields);
           $messenger->addMessage("Importer successfully added!");
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
@@ -557,10 +556,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
         // If form_mode is 'edit', this is an update to the database
         else {
-          $public->update('tripal_pub_import')
-            ->fields($db_fields)
-            ->condition('pub_import_id', $user_input['pub_import_id'])
-            ->execute();
+          $pub_library_manager->updateSearchQuery($user_input['pub_import_id'], $db_fields);
           $messenger->addMessage("Importer successfully edited!");
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
@@ -580,7 +576,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         $_SESSION['tripal_pub_import']['perform_test'] = 1;
 
         // Translate the submitted data into a variable which can be serialized into a criteria column
-        // of the tripal_pub_import table
+        // of the tripal_pub_library_query table
         $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
 
         // Load the plugin and initialize an instance to perform it's unique form_submit function
@@ -613,7 +609,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
   /**
    * This function accepts the form state and converts the data into a criteria array
-   * This criteria array is serialized and saved in the tripal_pub_import table as a row if Save Importer is clicked
+   * This criteria array is serialized and saved in the tripal_pub_library_query table as a row if Save Importer is clicked
    * This array will be given to the plugin test function to perform a test if Test Importer is clicked
    */
   public function criteria_convert_to_array($form, FormStateInterface $form_state) {

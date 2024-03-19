@@ -13,6 +13,7 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *
  * @FieldType(
  *   id = "tripal_boolean_type",
+ *   category = "tripal",
  *   label = @Translation("Tripal Boolean Field Type"),
  *   description = @Translation("A boolean field."),
  *   default_widget = "default_tripal_boolean_type_widget",

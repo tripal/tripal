@@ -193,6 +193,10 @@ tripal.tripalentitytype_collection.*:
                  sequence:
                     type: string
                     label: "Synonym name"
+               settings:
+                 type: mapping
+                 label: "Third party settings"
+                 nullable: true
 
 ## For TripalFieldCollection functionality
 ## focused on using YML files to describe TripalFields

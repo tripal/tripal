@@ -12,6 +12,8 @@ content_types:
         url_format: "gene/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_8
+        settings:
+            chado_base_table: feature
 
     -   label: mRNA
         term: SO:0000234
@@ -22,6 +24,8 @@ content_types:
         url_format: "mRNA/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_9
+        settings:
+            chado_base_table: feature
 
     -   label: Phylogenetic Tree
         term: data:0872
@@ -32,6 +36,8 @@ content_types:
         url_format: "phylotree/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_10
+        settings:
+            chado_base_table: phylotree
 
     -   label: Physical Map
         term: data:1280
@@ -42,6 +48,8 @@ content_types:
         url_format: "physical_map/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_11
+        settings:
+            chado_base_table: featuremap
 
     -   label: DNA Library
         term: NCIT:C16223
@@ -52,6 +60,8 @@ content_types:
         url_format: "dna_library/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_12
+        settings:
+            chado_base_table: library
 
     -   label: Genome Assembly
         term: operation:0525
@@ -62,6 +72,8 @@ content_types:
         url_format: "genome_assembly/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_13
+        settings:
+            chado_base_table: analysis
 
     -   label: Genome Annotation
         term: operation:0362
@@ -72,6 +84,8 @@ content_types:
         url_format: "genome_annotation/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_14
+        settings:
+            chado_base_table: analysis
 
     -   label: Genome Project
         term: local:Genome Project
@@ -82,3 +96,5 @@ content_types:
         url_format: "genome_project/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_15
+        settings:
+            chado_base_table: project

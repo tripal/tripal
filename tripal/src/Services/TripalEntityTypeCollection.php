@@ -87,16 +87,19 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
   public function install(array $collection_ids) {
     $yaml_prefix = 'tripal.tripalentitytype_collection.';
 
+    /** @var \Drupal\Core\Config\ConfigFactory $config_factory **/
     $config_factory = \Drupal::service('config.factory');
 
     // Iterate through the configurations and create the content types.
     foreach ($collection_ids as $config_id) {
 
+      /** @var \Drupal\Core\Config\ImmutableConfig $config **/
       $config_item = $yaml_prefix . $config_id;
       $config = $config_factory->get($config_item);
 
       if (is_object($config)) {
         $label = $config->get('label');
+
         $this->logger->notice("Creating Tripal Content Types from: " . $label);
 
         // Iterate through each of the content types in the config.
@@ -110,8 +113,20 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
             $term =  $idspace->getTerm($termAccession);
             $content_type['term'] = $term;
 
-            // Add the content type
+            // Add the content type.
             $content_type = $this->createContentType($content_type);
+
+            // Now add any third party settings.
+            $settings = [];
+            if (property_exists($content_type, 'settings')) {
+              $settings = $content_type->get('settings');
+            }
+            if (!empty($settings)){
+              foreach ($settings as $key => $value) {
+                $content_type->setThirdPartySetting('tripal', $key, $value);
+              }
+              $content_type->save();
+            }
           }
         }
       }
