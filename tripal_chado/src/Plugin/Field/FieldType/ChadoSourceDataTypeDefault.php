@@ -6,12 +6,14 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of Default Tripal field for sequence data.
  *
  * @FieldType(
  *   id = "chado_source_data_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Data Source"),
  *   description = @Translation("The source and version of data used for this analysis"),
  *   default_widget = "chado_source_data_widget_default",
@@ -101,4 +103,21 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
 
     return ($properties);
   }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = FALSE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    // This is a "specialty" field for a single content type
+    if ($base_table == 'analysis') {
+      $compatible = TRUE;
+    }
+    return $compatible;
+  }
+
 }

@@ -33,7 +33,7 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
     $field_settings = $field_definition->getSettings();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
-    $type_table = $storage_settings['type_table'];
+    $type_table = $storage_settings['type_table'] ?? '';
     $fixed_value = $field_settings['fixed_value'];
 
     // Get the default values.

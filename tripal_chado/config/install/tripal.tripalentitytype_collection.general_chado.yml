@@ -12,6 +12,8 @@ content_types:
         url_format: "organism/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_1
+        settings:
+            chado_base_table: organism
 
     -   label:  Analysis
         term: operation:2945
@@ -22,6 +24,8 @@ content_types:
         url_format: "analysis/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_2
+        settings:
+            chado_base_table: analysis
 
     -   label: Project
         term: NCIT:C47885
@@ -32,6 +36,8 @@ content_types:
         url_format: "project/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_3
+        settings:
+            chado_base_table: project
 
     -   label: Study
         term: SIO:001066
@@ -42,6 +48,8 @@ content_types:
         url_format: "study/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_4
+        settings:
+            chado_base_table: study
 
     -   label: Contact
         term: NCIT:C47954
@@ -52,6 +60,8 @@ content_types:
         url_format: "contact/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_5
+        settings:
+            chado_base_table: contact
 
     -   label: Publication
         term: TPUB:0000002
@@ -62,6 +72,8 @@ content_types:
         url_format: "pub/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_6
+        settings:
+            chado_base_table: pub
 
     -   label: Protocol
         term: sep:00101
@@ -72,3 +84,5 @@ content_types:
         url_format: "protocol/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_7
+        settings:
+            chado_base_table: protocol

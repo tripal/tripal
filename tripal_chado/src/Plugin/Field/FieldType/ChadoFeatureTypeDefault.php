@@ -7,13 +7,14 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal feature field type.
  *
  * @FieldType(
  *   id = "chado_feature_type_default",
- *   object_table = "feature",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Feature"),
  *   description = @Translation("Add a Chado feature to the content type."),
  *   default_widget = "chado_feature_widget_default",
@@ -23,7 +24,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_feature_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'feature';
   protected static $object_id = 'feature_id';
 
@@ -132,11 +132,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $common_name_len = $organism_schema_def['fields']['common_name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
-    // For single hop, in the yaml we support using the usual 'base_table'
-    // and 'base_column' settings.
-    $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? $object_pkey_col;
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
@@ -284,7 +280,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;genus',
+        . ';' . $object_table . '.organism_id>organism.organism_id;genus',
       'as' => 'feature_genus',
     ]);
 
@@ -292,7 +288,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;species',
+        . ';' . $object_table . '.organism_id>organism.organism_id;species',
       'as' => 'feature_species',
     ]);
 
@@ -300,7 +296,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name',
+        . ';' . $object_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id;name',
       'as' => 'feature_infraspecific_type',
     ]);
 
@@ -308,7 +304,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;infraspecific_name',
+        . ';' . $object_table . '.organism_id>organism.organism_id;infraspecific_name',
       'as' => 'feature_infraspecific_name',
     ]);
 
@@ -316,7 +312,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;abbreviation',
+        . ';' . $object_table . '.organism_id>organism.organism_id;abbreviation',
       'as' => 'feature_abbreviation',
     ]);
 
@@ -324,7 +320,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.taxon_id>organism.organism_id;common_name',
+        . ';' . $object_table . '.organism_id>organism.organism_id;common_name',
       'as' => 'feature_common_name',
     ]);
 
@@ -343,8 +339,24 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
         . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id;name',
       'as' => 'feature_database_name',
     ]);
-  
+
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+    if (count($linker_tables) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
   }
 
 }
