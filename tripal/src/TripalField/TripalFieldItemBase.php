@@ -303,8 +303,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       // we know what the cvterm is.
       if ($form['#is_tripal_field'] == FALSE) {
         $field = $form_state->getFormObject()->getEntity();
-      $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
-      $form_state->setValue(['settings', 'termAccession'], $accession);
+        $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
+        $form_state->setValue(['settings', 'termAccession'], $accession);
+      }
     }
     else {
       $form_state->setErrorByName('field_term_fs][vocabulary_term',
