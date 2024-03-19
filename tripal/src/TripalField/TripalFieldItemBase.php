@@ -296,8 +296,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if (preg_match('/(.+?)\((.+?):(.+?)\)/', $term_str, $matches)) {
       $idSpace_name = $matches[2];
       $accession = $matches[3];
-      $form_state->setValue(['settings','termIdSpace'], $idSpace_name);
-      $form_state->setValue(['settings','termAccession'], $accession);
+      $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
+      $form_state->setValue(['settings', 'termAccession'], $accession);
 
       // If this isn't a Tripal field then add a third party setting so
       // we know what the cvterm is.

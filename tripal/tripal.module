@@ -605,7 +605,7 @@ function import_tripalentitytype_collection(array $options, \Drupal\tripal\Servi
  *
  * Adds the form elements to the field settings form for setting controlled
  * vocabulary.  The function only does this for fields that are not
- * Tripal fields but which are attached to a tripel content type.
+ * Tripal fields but which are attached to a tripal content type.
  */
 function tripal_form_field_config_edit_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
 
