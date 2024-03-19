@@ -2789,6 +2789,9 @@ tables:
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
+            -   name: 'synonym_sgml'
+                term_id: 'local:synonym_sgml'
+                term_name: 'synonym_sgml'
 
     -   name: 'tableinfo'
         columns:
