@@ -2258,6 +2258,9 @@ tables:
             -   name: 'project_id'
                 term_id: 'NCIT:C47885'
                 term_name: 'Project'
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
 
     -   name: 'protocol'
         columns:
