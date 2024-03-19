@@ -76,14 +76,19 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     dpm('TripalPubLibraryPubmed formValidations called');
   }
 
+
+  // @TODO To be completed - will need to likely call other classes to push data into chado
+  public function run(array $criteria) {
+
+  }
+
   /**
-   * This function gets called dynamically from the ChadoNewPubSearchQueryForm Test Importer function
-   * Return an array with keys total_records, search_str, pubs(array)
+   * More documentation can be found in TripalPubLibraryInterface
    */
-  public function test($form, &$form_state, $search_array) {
+  public function peek(array $query, int $limit, int $page) {
     $results = NULL;
     try {
-      $results = $this->remoteSearchPMID($search_array, 5, 0);
+      $results = $this->remoteSearchPMID($query, $limit, $page);
     }
     catch (\Exception $ex) {
 
@@ -91,10 +96,11 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     return $results;
   }
 
-  // @TODO To be completed - will need to likely call other classes to push data into chado
-  public function run(array $criteria) {
+  // @TODO To be completed
+  public function retrieve(array $query) {
 
   }
+
 
   /** THIS IS FROM 7.x-3.x/tripal_chado/includes/loaders/tripal_chado.pub_importer_PMID.inc */
   /** UPGRADED FOR TRIPAL 4 USE */
@@ -404,7 +410,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  private function parse($pub_xml) {
+  public function parse($pub_xml) {
     $pub = [];
   
     if (!$pub_xml) {

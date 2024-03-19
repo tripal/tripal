@@ -63,4 +63,27 @@ interface TripalPubLibraryInterface extends PluginInspectionInterface {
    */
   public function run(array $criteria);
 
+  // TODO - convert above run function which uses array to use a query_id
+  // public function run(int $query_id);
+
+  public function retrieve(array $query);
+
+  public function parse(string $results);
+
+  /**
+   * PEEK is required by TripalPubLibraryInterface via TripalPubLibraryBase 
+   * The peek function is called dynamically by the ChadoNewPubSearchQueryForm when 
+   * test search query button is clicked.
+   * 
+   * @param array $query
+   * The criteria used by the parser to retreive and parse results.
+   * 
+   * @param int $limit
+   * The criteria used by the parser to retreive and parse results.
+   * 
+   * @return array
+   * Return an array with keys total_records, search_str, pubs(array)
+   */
+  public function peek(array $query, int $limit, int $page);
+
 }
