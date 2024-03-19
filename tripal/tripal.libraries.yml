@@ -56,3 +56,11 @@ vars:
   version: 1.x
   js:
     js/tripal.vars.js: {}
+    
+tripal-field-ui:
+  version: 1.x
+  css:
+    theme:
+      css/tripal.field_ui.css: {}
+  dependencies:
+    - field_ui/drupal.field_ui.manage_fields

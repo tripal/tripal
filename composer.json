@@ -5,7 +5,7 @@
   "keywords": ["tripal","drupal", "biological-data", "species", "model-organism"],
   "homepage": "https://tripal.info",
   "support": {
-    "issues": "https://github.com/tripal/t4d8/issues"
+    "issues": "https://github.com/tripal/tripal/issues"
   },
   "license": "GPL-2.0-or-later",
   "minimum-stability": "dev",

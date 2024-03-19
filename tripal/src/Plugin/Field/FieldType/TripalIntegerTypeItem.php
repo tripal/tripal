@@ -13,6 +13,7 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *
  * @FieldType(
  *   id = "tripal_integer_type",
+ *   category = "tripal",
  *   label = @Translation("Tripal Integer Field Type"),
  *   description = @Translation("An integer field."),
  *   default_widget = "default_tripal_integer_type_widget",

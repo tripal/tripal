@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
@@ -17,6 +18,7 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *
  * @FieldType(
  *   id = "chado_property_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Property"),
  *   description = @Translation("Add a property or attribute to the content type."),
  *   default_widget = "chado_property_widget_default",
@@ -90,7 +92,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // type set for the field. As such, we grab that here and use it in our
     // table alias.
     $field_settings = $field_definition->getSettings();
-    $term = $field_settings['termIdSpace'] . ': ' . $field_settings['termAccession'];
+    $term = $field_settings['termIdSpace'] . ':' . $field_settings['termAccession'];
     $table_alias = $prop_table . '_' . preg_replace( '/[^a-z0-9]+/', '', strtolower( $term ) );
 
 
@@ -205,7 +207,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
+    $settings = self::getFormStateSettings($form_state);
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }
@@ -215,11 +217,43 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     if ($schema->tableExists($prop_table)) {
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
+      $drupal_10_2 = $form_state->getValue(['field_storage']);
+      if ($drupal_10_2) {
+        $form_state->setValue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
+      }
+      else {
+        $form_state->setValue(['settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
+      }
     }
     else {
       $form_state->setErrorByName('storage_plugin_settings][base_table',
           'The selected base table does not have an associated property table.');
     }
   }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = FALSE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+
+    // If the property table exists, and has a foreign key to the base table,
+    // then this content type is compatible.
+    $prop_def = $schema->getTableDef($base_table . 'prop', ['format' => 'Drupal']);
+    if ($prop_def) {
+      if (array_key_exists($base_table, $prop_def['foreign keys'])) {
+        $compatible = TRUE;
+      }
+    }
+    return $compatible;
+  }
+
 }

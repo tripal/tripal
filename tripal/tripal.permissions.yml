@@ -63,7 +63,7 @@ publish tripal content:
 
 ##
 # These should all be per content type.
-# @todo See Issue #270 (https://github.com/tripal/t4d8/issues/270)
+# @todo See Issue #1355 (https://github.com/tripal/tripal/issues/1355)
 ##
 add tripal content entities:
   title: 'Create new Tripal Content'

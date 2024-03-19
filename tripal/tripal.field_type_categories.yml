@@ -1,0 +1,6 @@
+tripal:
+  label: Tripal Fields
+  description: Generic Tripal fields
+  weight: -100
+  libraries:
+    - tripal/tripal-field-ui
