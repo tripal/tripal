@@ -1715,6 +1715,18 @@ tables:
             -   name: 'nd_geolocation_id'
                 term_id: 'NCIT:C25341'
                 term_name: 'Location'
+            -   name: 'latitude'
+                term_id: 'SIO:000319'
+                term_name: 'latitude'
+            -   name: 'longitude'
+                term_id: 'SIO:000318'
+                term_name: 'longitude'
+            -   name: 'geodetic_datum'
+                term_id: 'GEO:000000788'
+                term_name: 'geodetic datum'
+            -   name: 'altitude'
+                term_id: 'SIO:000438'
+                term_name: 'altitude'
 
     -   name: 'nd_geolocationprop'
         columns:

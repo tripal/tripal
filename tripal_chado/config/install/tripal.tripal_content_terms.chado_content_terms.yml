@@ -166,6 +166,18 @@ vocabularies:
                 name: 'data acquisition'
                 description: 'A technique that samples real world physical conditions and conversion of the resulting samples into digital numeric values that can be manipulated by a computer.'
 
+    -   name: 'GEO'
+        label: 'Geographical Entity Ontology'
+        url: 'https://github.com/mcwdsi/geographical-entity-ontology/wiki'
+        idSpaces:
+            -   name: 'GEO'
+                description: 'An ontology of geographical entities'
+                urlPrefix: 'http://purl.obolibrary.org/obo/{$db}_{accession}'
+        terms:
+            -   id: 'GEO:000000788'
+                name: 'geodetic datum'
+                description: 'A coordinate system, and a set of reference points, used to locate places on the Earth (or similar objects).'
+
     -   name: 'OBCS'
         label: 'Ontology of Biological and Clinical Statistics'
         url: 'https://github.com/obcs/obcs'
