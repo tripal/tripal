@@ -177,12 +177,19 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     // tag to the field so that we know in the validate we need to add
     // a setting for the cv term for this field.
     if (!is_subclass_of($field, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
-      $form['#is_tripal_field'] = FALSE;
+      $elements['is_tripal_field'] = [
+        '#type' => 'hidden',
+        '#value' => 0,
+      ];
+
       $termIdSpace = $field->getThirdPartySetting('tripal', 'termIdSpace');
       $termAccession = $field->getThirdPartySetting('tripal', 'termAccession');
     }
     else {
-      $form['#is_tripal_field'] = TRUE;
+      $elements['is_tripal_field'] = [
+        '#type' => 'hidden',
+        '#value' => 1,
+      ];
       $termIdSpace = $field->getSetting('termIdSpace');
       $termAccession = $field->getSetting('termAccession');
     }
@@ -301,7 +308,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
 
       // If this isn't a Tripal field then add a third party setting so
       // we know what the cvterm is.
-      if ($form['#is_tripal_field'] == FALSE) {
+      if ($settings['is_tripal_field'] == 0) {
         $field = $form_state->getFormObject()->getEntity();
         $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
         $form_state->setValue(['settings', 'termAccession'], $accession);
