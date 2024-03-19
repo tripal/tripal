@@ -847,7 +847,7 @@ tables:
             -   name: 'eimage_type'
                 term_id: 'IAO:0000098'
                 term_name: 'data format specification'
-            -   name: 'eimage_uri'
+            -   name: 'image_uri'
                 term_id: 'data:1047'
                 term_name: 'URI'
 
