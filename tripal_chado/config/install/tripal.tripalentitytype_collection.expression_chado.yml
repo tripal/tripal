@@ -12,6 +12,8 @@ content_types:
         url_format: "biosample/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_25
+        settings:
+            chado_base_table: biomaterial
 
     -   label: Assay
         term: OBI:0000070
@@ -22,6 +24,8 @@ content_types:
         url_format: "assay/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_26
+        settings:
+            chado_base_table: assay
 
     -   label: Array Design
         term: EFO:0000269
@@ -32,3 +36,5 @@ content_types:
         url_format: "array_design/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_27
+        settings:
+            chado_base_table: arraydesign

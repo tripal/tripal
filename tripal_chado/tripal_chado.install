@@ -332,9 +332,60 @@ function tripal_chado_tripal_custom_tables_schema() {
 }
 
 /**
+ * Adds third party settings for Tripal content types to Chado base tables.
+ */
+function tripal_chado_update_10401() {
+  $settings = [
+    // Generic content types.
+    'organism' => 'organism',
+    'analysis' => 'analysis',
+    'project' => 'project',
+    'study' => 'study',
+    'contact' => 'contact',
+    'pub' => 'pub',
+    'protocol' => 'protocol',
+    // Expression content types.
+    'biosample' => 'biomaterial',
+    'assay' => 'assay',
+    'array_design' => 'arraydesign',
+    // Genetic expression types.
+    'genetic_map' => 'featuremap',
+    'QTL' => 'feature',
+    'sequence_variant' => 'feature',
+    'genetic_marker' => 'feature',
+    'phenotypic_marker' => 'feature',
+    // Germplams types.
+    'germplasm' => 'stock',
+    'breeding_cross' => 'stock',
+    'germplasm_variety' => 'stock',
+    'ril' => 'stock',
+    // Genomic types.
+    'gene' => 'feature',
+    'mrna' => 'feature',
+    'phylotree' => 'phylotree',
+    'physical_map' => 'featuremap',
+    'dna_library' => 'library',
+    'genome_assembly' => 'analysis',
+    'genome_annotation' => 'analysis',
+    'genome_project' => 'project'
+  ];
+
+  /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+  /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+  $entity_type_manager = \Drupal::entityTypeManager();
+  foreach ($settings as $bundle => $chado_base_table) {
+    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+    if ($entity_type) {
+      $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $chado_base_table);
+      $entity_type->save();
+    }
+  }
+}
+
+/**
  * Updates missing mapping of CV terms to some chado table columns
  */
-function tripal_chado_update_10400() {
+function tripal_chado_update_10402() {
   try {
     $messenger = \Drupal::messenger();
 

@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
@@ -18,20 +19,24 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *
  * @FieldType(
  *   id = "chado_string_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado String Field Type"),
- *   description = @Translation("A string field."),
+ *   description = @Translation("A text field with a maximum length."),
  *   default_widget = "chado_string_type_widget",
  *   default_formatter = "chado_string_type_formatter",
- *   select_base_column = TRUE,
- *   valid_base_column_types = {
- *     "character varying",
- *   },
  *   cardinality = 1
  * )
  */
 class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_string_type_default";
+
+  // This is a flag to the ChadoFieldItemBase parent
+  // class to provide a column selector in the form
+  protected static $select_base_column = TRUE;
+
+  // Valid column types to pass to the ChadoFieldItemBase parent class.
+  protected static $valid_base_column_types = ['character varying'];
 
   /**
    * {@inheritdoc}
@@ -146,6 +151,22 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
     ];
 
     return $elements;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $table_columns = $this->getTableColumns($base_table, self::$valid_base_column_types);
+    if (count($table_columns) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
   }
 
 }

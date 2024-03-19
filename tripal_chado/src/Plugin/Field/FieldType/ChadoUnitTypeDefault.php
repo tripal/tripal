@@ -5,12 +5,14 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of Default Tripal field for unit of measurement.
  *
  * @FieldType(
  *   id = "chado_unit_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Unit"),
  *   description = @Translation("Provide unit of measurement of content, for example, Genetic Map."),
  *   default_widget = "chado_unit_widget_default",
@@ -97,6 +99,22 @@ class ChadoUnitTypeDefault extends ChadoFieldItemBase {
     ]);
 
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = FALSE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    // This is a "specialty" field for a single content type
+    if ($base_table == 'featuremap') {
+      $compatible = TRUE;
+    }
+    return $compatible;
   }
 
 }

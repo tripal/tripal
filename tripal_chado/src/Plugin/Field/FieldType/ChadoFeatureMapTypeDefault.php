@@ -6,13 +6,14 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal featuremap field type.
  *
  * @FieldType(
  *   id = "chado_featuremap_type_default",
- *   object_table = "featuremap",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado FeatureMap"),
  *   description = @Translation("Add a Chado featuremap to the content type."),
  *   default_widget = "chado_featuremap_widget_default",
@@ -22,7 +23,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoFeatureMapTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_featuremap_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'featuremap';
   protected static $object_id = 'featuremap_id';
 
@@ -103,11 +103,7 @@ class ChadoFeatureMapTypeDefault extends ChadoFieldItemBase {
     $featuremap_unittype_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
-    // For single hop, in the yaml we support using the usual 'base_table'
-    // and 'base_column' settings.
-    $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? $object_pkey_col;
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
@@ -218,6 +214,22 @@ class ChadoFeatureMapTypeDefault extends ChadoFieldItemBase {
     ]);
 
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+    if (count($linker_tables) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
   }
 
 }
