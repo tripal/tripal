@@ -841,6 +841,15 @@ tables:
             -   name: 'eimage_id'
                 term_id: 'data:2968'
                 term_name: 'Image'
+            -   name: 'eimage_data'
+                term_id: 'IAO:0000101'
+                term_name: 'image'
+            -   name: 'eimage_type'
+                term_id: 'IAO:0000098'
+                term_name: 'data format specification'
+            -   name: 'uri'
+                term_id: 'data:1047'
+                term_name: 'URI'
 
     -   name: 'element'
         columns:
