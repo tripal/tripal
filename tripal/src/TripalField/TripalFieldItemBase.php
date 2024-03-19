@@ -306,12 +306,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
       $form_state->setValue(['settings', 'termAccession'], $accession);
 
-      // If this isn't a Tripal field then add a third party setting so
+      // If this isn't a Tripal field, then add a third party setting so
       // we know what the cvterm is.
       if ($settings['is_tripal_field'] == 0) {
         $field = $form_state->getFormObject()->getEntity();
-        $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
-        $form_state->setValue(['settings', 'termAccession'], $accession);
+        $field->setThirdPartySetting('tripal', 'termIdSpace', $idSpace_name);
+        $field->setThirdPartySetting('tripal', 'termAccession', $accession);
       }
     }
     else {
