@@ -40,7 +40,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-${postgresqlversion} postgresql-client-${postgresqlversion} postgresql-contrib-${postgresqlversion}
 
 ## Run the rest of the commands as the ``postgres`` user
-## created by the ``postgres-13`` package when it was installed.
+## created by the ``postgres-${postgresqlversion}`` package when it was installed.
 USER postgres
 
 ## Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
