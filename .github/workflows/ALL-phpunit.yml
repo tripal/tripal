@@ -39,8 +39,9 @@ jobs:
         run: |
           docker build --tag=tripaldocker:localdocker \
             --build-arg drupalversion="${{ matrix.drupal-version }}" \
+            --build-arg postgresqlversion="${{ matrix.pgsql-version }}" \
             --build-arg chadoschema='teacup' ./ \
-            --file tripaldocker/Dockerfile-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version}}
+            --file tripaldocker/Dockerfile-php${{ matrix.php-version }}
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |
