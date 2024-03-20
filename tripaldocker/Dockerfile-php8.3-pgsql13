@@ -1,6 +1,7 @@
 FROM php:8.3-apache-bullseye
 
 ARG drupalversion='~10.2.0'
+ARG postgresqlversion='13'
 ARG modules='devel devel_php field_group field_group_table'
 ARG chadoschema='chado'
 ARG installchado=TRUE
@@ -13,7 +14,7 @@ LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
 LABEL os.version="bullseye"
 LABEL php.version="8.3"
-LABEL postgresql.version="13"
+LABEL postgresql.version="${postgresqlversion}"
 
 COPY . /app
 
@@ -26,9 +27,17 @@ RUN chmod -R +x /app && apt-get update 1> ~/aptget.update.log \
 ## See https://stackoverflow.com/questions/51033689/how-to-fix-error-on-postgres-install-ubuntu
 RUN mkdir -p /usr/share/man/man1 && mkdir -p /usr/share/man/man7
 
-## Install PostgreSQL 13
+## Add the PostgreSQL Package Source for versions > 13
+RUN if [ "$postgresqlversion" != "13" ] ; then \
+  apt-get install -y curl apt-transport-https gpg --yes -qq 1>> ~/aptget.extras.log \
+  && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg \
+  && echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/postgresql.list \
+  && apt-get update 1>> ~/aptget.update.log ; \
+  fi
+
+## Install PostgreSQL version ${postgresqlversion}
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-13 postgresql-client-13 postgresql-contrib-13
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-${postgresqlversion} postgresql-client-${postgresqlversion} postgresql-contrib-${postgresqlversion}
 
 ## Run the rest of the commands as the ``postgres`` user
 ## created by the ``postgres-13`` package when it was installed.
@@ -51,11 +60,11 @@ USER root
 
 ## Adjust PostgreSQL configuration so that remote connections to the
 ## database are possible.
-RUN mv /app/tripaldocker/default_files/postgresql/pg_hba.conf /etc/postgresql/13/main/pg_hba.conf
+RUN mv /app/tripaldocker/default_files/postgresql/pg_hba.conf /etc/postgresql/${postgresqlversion}/main/pg_hba.conf
 
-## And add ``listen_addresses`` to ``/etc/postgresql/13/main/postgresql.conf``
-RUN echo "listen_addresses='*'" >> /etc/postgresql/13/main/postgresql.conf \
-  && echo "max_locks_per_transaction = 1024" >> /etc/postgresql/13/main/postgresql.conf
+## And add ``listen_addresses`` to ``/etc/postgresql/${postgresqlversion}/main/postgresql.conf``
+RUN echo "listen_addresses='*'" >> /etc/postgresql/${postgresqlversion}/main/postgresql.conf \
+  && echo "max_locks_per_transaction = 1024" >> /etc/postgresql/${postgresqlversion}/main/postgresql.conf
 
 ########## PHP EXTENSIONS #####################################################
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
