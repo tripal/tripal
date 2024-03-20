@@ -127,6 +127,18 @@ tables:
             -   name: 'feature_id'
                 term_id: 'SO:0000110'
                 term_name: 'sequence_feature'
+            -   name: 'rawscore'
+                term_id: 'local:rawscore'
+                term_name: 'rawscore'
+            -   name: 'normscore'
+                term_id: 'local:normscore'
+                term_name: 'normscore'
+            -   name: 'significance'
+                term_id: 'local:significance'
+                term_name: 'significance'
+            -   name: 'identity'
+                term_id: 'local:identity'
+                term_name: 'identity'
 
     -   name: 'analysisfeatureprop'
         columns:
