@@ -51,7 +51,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       ],
     ];
 
-    $results = $plugin->peek($search_array, 1, 1);
+    $results = $plugin->retrieve($search_array, 1, 1);
     $this->assertNotEquals($results, NULL, 'This should have returned one pubmed record');
     
 
@@ -80,7 +80,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       ],
     ];
 
-    $results = $plugin->peek($search_array, 1, 1);
+    $results = $plugin->retrieve($search_array, 1, 1);
     // print_r($results);
     $this->assertNotEquals($results, NULL, 'This should have returned one pubmed record');
     $this->assertEquals($results['pubs'][0]['Publication Dbxref'], 'PMID:30000852', 'This should have returned the PMID');

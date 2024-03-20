@@ -114,8 +114,8 @@ class ChadoNewPubSearchQueryForm extends FormBase {
             // The selected plugin defines a test specific to itself.
             $criteria_column_array = $_SESSION['tripal_pub_import']['perform_test_criteria_array'];
 
-            // Perform a peek aka test lookup (retrieve 5 items, page 0)
-            $results = $plugin->peek($criteria_column_array, 5, 0);
+            // Perform a retrieve aka test lookup (retrieve 5 items, page 0)
+            $results = $plugin->retrieve($criteria_column_array, 5, 0);
 
             // On successful results, it should return array with keys total_records, search_str, pubs(array)
             $headers = ['', 'Publication', 'Authors'];
