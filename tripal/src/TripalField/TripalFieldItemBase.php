@@ -66,7 +66,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @param \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase $idSpace
    * @param \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase $vocabulary
    */
-  protected function buildVocabularyTermTable(array &$elements,
+  public static function buildVocabularyTermTable(array &$elements,
       \Drupal\tripal\TripalVocabTerms\TripalTerm $term,
       \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase $idSpace,
       \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase $vocabulary) {
@@ -140,8 +140,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     ];
     $elements['field_term_fs']['table_label'] = [
       '#type' => 'item',
-      '#title' => $this->t('The Current Term'),
-      '#description' => $this->t("Terms belong to a vocabulary (e.g. Sequence "  .
+      '#title' => t('The Current Term'),
+      '#description' => t("Terms belong to a vocabulary (e.g. Sequence "  .
           "Ontology) and are identified with a unique accession which is often  " .
           "numeric but may not be (e.g. gene accession is 0000704 in the Sequence " .
           "Ontology). Term IDs are prefixed with an ID Space (e.g. SO). The " .
@@ -152,24 +152,47 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       '#type' => 'table',
       '#header'=> $headers,
       '#rows' => $rows,
-      '#empty' => $this->t('There is no term associated with this field.'),
+      '#empty' => t('There is no term associated with this field.'),
       '#sticky' => False
     ];
   }
 
   /**
-   * {@inheritdoc}
+   * Provides the form for setting a cv term on a field.
+   *
+   * @param $field
+   * @param array $form
+   * @param FormStateInterface $form_state
    */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+  public static function buildFieldTermForm($field, $form, FormStateInterface $form_state) {
     $elements = [];
 
     $is_open = FALSE;
     $term = NULL;
     $idSpace = NULL;
     $vocabulary = NULL;
-    $termIdSpace = $this->getSetting('termIdSpace');
-    $termAccession = $this->getSetting('termAccession');
-    $debug = $this->getSetting('debug');
+    $debug = $field->getSetting('debug');
+
+    // IF this field is not a TripalField then we want to add a small
+    // tag to the field so that we know in the validate we need to add
+    // a setting for the cv term for this field.
+    if (!is_subclass_of($field, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
+      $elements['is_tripal_field'] = [
+        '#type' => 'hidden',
+        '#value' => 0,
+      ];
+
+      $termIdSpace = $field->getThirdPartySetting('tripal', 'termIdSpace');
+      $termAccession = $field->getThirdPartySetting('tripal', 'termAccession');
+    }
+    else {
+      $elements['is_tripal_field'] = [
+        '#type' => 'hidden',
+        '#value' => 1,
+      ];
+      $termIdSpace = $field->getSetting('termIdSpace');
+      $termAccession = $field->getSetting('termAccession');
+    }
 
     $elements['debug'] = [
       '#type' => 'checkbox',
@@ -225,8 +248,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
 
     $elements['field_term_fs'] = [
       '#type' => 'details',
-      '#title' => $this->t("Controlled Vocabulary Term"),
-      '#description' => $this->t("All fields attached to a Tripal-based content " .
+      '#title' => t("Controlled Vocabulary Term"),
+      '#description' => t("All fields attached to a Tripal-based content " .
           "type must be associated with a controlled vocabulary term. " .
           "Use caution when changing the term. It should accurately represent " .
           "the type of data stored in this field.  Using terms that are developed ".
@@ -237,24 +260,31 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
 
     $element_title = "Set the Term";
     if ($term and $idSpace and $vocabulary) {
-      $this->buildVocabularyTermTable($elements, $term, $idSpace, $vocabulary);
+      TripalFieldItemBase::buildVocabularyTermTable($elements, $term, $idSpace, $vocabulary);
       $element_title = "Change the Term";
     }
 
     $elements['field_term_fs']["vocabulary_term"] = [
       "#type" => "textfield",
-      "#title" => $this->t($element_title),
+      "#title" => t($element_title),
       "#required" => TRUE,
-      "#description" => $this->t("Enter a vocabulary term name. A set of matching " .
-        "candidates will be provided to choose from. You may find the multiple matching terms " .
-        "from different vocabularies. The full accession for each term is provided " .
-        "to help choose. Only the top 10 best matches are shown at a time."),
+      "#description" => t("Enter a vocabulary term name. A set of matching " .
+          "candidates will be provided to choose from. You may find the multiple matching terms " .
+          "from different vocabularies. The full accession for each term is provided " .
+          "to help choose. Only the top 10 best matches are shown at a time."),
       '#default_value' => $default_vocabulary_term,
       '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
       '#autocomplete_route_parameters' => array('count' => 10),
       '#element_validate' => [[static::class, 'fieldSettingsFormValidate']],
     ];
+    return $elements;
+  }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+    $elements = TripalFieldItemBase::buildFieldTermForm($this, $form, $form_state);
     return $elements + parent::fieldSettingsForm($form, $form_state);
   }
 
@@ -275,6 +305,14 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       $accession = $matches[3];
       $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
       $form_state->setValue(['settings', 'termAccession'], $accession);
+
+      // If this isn't a Tripal field, then add a third party setting so
+      // we know what the cvterm is.
+      if ($settings['is_tripal_field'] == 0) {
+        $field = $form_state->getFormObject()->getEntity();
+        $field->setThirdPartySetting('tripal', 'termIdSpace', $idSpace_name);
+        $field->setThirdPartySetting('tripal', 'termAccession', $accession);
+      }
     }
     else {
       $form_state->setErrorByName('field_term_fs][vocabulary_term',

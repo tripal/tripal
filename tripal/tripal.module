@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
+use Drupal\tripal\TripalField\TripalFieldItemBase;
 
 require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
@@ -597,4 +598,21 @@ function import_tripalentitytype_collection(array $options, \Drupal\tripal\Servi
   $fields = \Drupal::service('tripal.tripalfield_collection');
   $fields->install($chosen_collection_ids);
 
+}
+
+/**
+ * Implements hook_form_alter for the field_config_edit_form.
+ *
+ * Adds the form elements to the field settings form for setting controlled
+ * vocabulary.  The function only does this for fields that are not
+ * Tripal fields but which are attached to a tripal content type.
+ */
+function tripal_form_field_config_edit_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+
+  /** @var \Drupal\field\Entity\FieldConfig $field **/
+  $field = $form_state->getFormObject()->getEntity();
+  if ($field->getTargetEntityTypeId() == 'tripal_entity') {
+    $elements = TripalFieldItemBase::buildFieldTermForm($field, $form, $form_state);
+    $form['settings'] = $form['settings'] + $elements;
+  }
 }
