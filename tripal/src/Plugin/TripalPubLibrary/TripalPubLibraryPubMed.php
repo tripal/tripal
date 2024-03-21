@@ -77,8 +77,10 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
   }
 
 
-  // @TODO To be completed - will need to likely call other classes to push data into chado
-  public function run(array $criteria) {
+  /**
+   * More documentation can be found in TripalPubLibraryInterface
+   */
+  public function run(int $query_id) {
 
   }
 

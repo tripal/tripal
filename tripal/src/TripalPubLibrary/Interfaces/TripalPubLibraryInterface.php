@@ -55,16 +55,14 @@ interface TripalPubLibraryInterface extends PluginInspectionInterface {
   /**
    * Performs the import.
    *
-   * @param array $criteria
-   *   The criteria used by the parser to retreive and parse results.
+   * @param int $query_id
+   * The query_id used to lookup the database and run a full import of 
+   * publications from a particular publication repository.
    *
    * @return array
    *   The uniform publication information array.
    */
-  public function run(array $criteria);
-
-  // TODO - convert above run function which uses array to use a query_id
-  // public function run(int $query_id);
+  public function run(int $query_id);
 
   /**
    * Retrieve is required by TripalPubLibraryInterface via TripalPubLibraryBase 
@@ -86,7 +84,17 @@ interface TripalPubLibraryInterface extends PluginInspectionInterface {
    */
   public function retrieve(array $query, int $limit, int $page);
 
-
-  public function parse(string $results);
+  /**
+   * Generally, this function will receive the raw data from calling the retrieve function 
+   * and formats it into an array / object that PHP can utilize.
+   * 
+   * @param string $raw
+   * Raw data input example xml data which may be received
+   * 
+   * @return array/object $results
+   * These results are the process/structured array/object created by extracting 
+   * from the raw data input 
+   */
+  public function parse(string $raw);
 
 }
