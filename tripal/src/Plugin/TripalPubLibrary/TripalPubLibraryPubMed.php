@@ -81,7 +81,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    * More documentation can be found in TripalPubLibraryInterface
    */
   public function run(int $query_id) {
-
+    // @TODO - This will need to retrieve the publications AND save to CHADO
   }
 
   /**
