@@ -2,14 +2,11 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-<<<<<<< HEAD
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-=======
-use Drupal\tripal\Entity\TripalEntityType;
->>>>>>> 4.x
 
 /**
  * Plugin implementation of Default Tripal field for sequence data.
@@ -84,16 +81,12 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
 
     $fmin_term = $mapping->getColumnTermId('featureloc', 'fmin');
     $is_fmin_partial_term = $mapping->getColumnTermId('featureloc', 'is_fmin_partial');
-$is_fmin_partial_term = 'local:is_fmin_partial';  // @todo fix these four missing terms!
     $fmax_term = $mapping->getColumnTermId('featureloc', 'fmax');
     $is_fmax_partial_term = $mapping->getColumnTermId('featureloc', 'is_fmax_partial');
-$is_fmax_partial_term = 'local:is_fmax_partial';
     $strand_term = $mapping->getColumnTermId('featureloc', 'strand');
     $phase_term = $mapping->getColumnTermId('featureloc', 'phase');
     $residue_info_term = $mapping->getColumnTermId('featureloc', 'residue_info');
-$residue_info_term = 'local:residue_info';
     $locgroup_term = $mapping->getColumnTermId('featureloc', 'locgroup');
-$locgroup_term = 'local:locgroup';
     $rank_term = $mapping->getColumnTermId('featureloc', 'rank');
 
     // Get property terms using Chado table columns they map to. Return the properties for this field.
@@ -142,7 +135,6 @@ $locgroup_term = 'local:locgroup';
       'action' => 'read_value',
       'path' => 'feature.feature_id>featureloc.feature_id;phase',
     ]);
-<<<<<<< HEAD
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'residue_info', $residue_info_term, [
       'action' => 'read_value',
       'path' => 'feature.feature_id>featureloc.feature_id;residue_info',
