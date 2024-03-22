@@ -23,7 +23,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   /**
    * Provides a list of the field types we are testing with this class.
    */
-  protected static $field_types = [
+  protected static array $field_types = [
     'chado_integer_type_default',
     'chado_boolean_type_default',
     'chado_string_type_default',
@@ -43,8 +43,9 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   protected function setUp() : void {
     parent::setUp();
 
-    // Installs up the chado with the test chado data
-    $connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+    // Installs up the chado with all the items added via the prepare.
+    // NOTE: This done not prepare Drupal so none of the TripalTerms we need are available.
+    $this->connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
     // Create the Organism Content Type
     $this->createTripalContentType([
@@ -69,21 +70,55 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     ]);
     $this->drupalLogin($admin_user);
 
+    // Create the Tripal Terms we need.
+    // -- SIO:000729
+    $this->createTripalTerm([
+      'vocab_name' => 'SIO',
+      'id_space_name' => 'SIO',
+      'term' => [
+        'name' => 'record identifier',
+        'definition' => 'A record identifier is an identifier for a database entry.',
+        'accession' =>'000729',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+
+  }
+
+  /**
+   * Data Provider: proivides a list of the basic fields to test.
+   */
+  public function provideFieldsToTest() {
+    $sets = [];
+
+    foreach (self::$field_types as $machine_name) {
+      $sets[] = [$machine_name];
+    }
+
+    return $sets;
   }
 
   /**
    * Tests adding a basic field type via the combined add field form.
+   * @dataProvider provideFieldsToTest
    *
    * This specifically refers to the form used in Drupal 10.2+ and thus
    * will only be run on systems of the right Drupal version.
+   *
+   * NOTE: Debugging pages use the following
+   * - to get the full HTML: print $this->getSession()->getPage()->getContent();
+   * - to get the plain text without markup: print $this->getTextContent();
    */
-  public function testCreateViaCombinedAddFieldForm() {
+  public function testCreateViaCombinedAddFieldForm($field_type_name) {
     $manage_fields_path = 'admin/structure/bio_data/manage/' . $this->type . '/fields';
     $add_field_path = '/admin/structure/bio_data/manage/' . $this->type . '/fields/add-field';
 
-
-    // @todo set this via a phpunit dataprovider and the $field_types
-    $field_type_name = 'chado_integer_type_default';
+    // Details of the field to create.
+    $unique_suffix = uniqid();
+    $details = [
+      'name' => 'basic_field_' . $unique_suffix,
+      'label' => 'Test Basic Field ' . $unique_suffix,
+    ];
 
     // Go to the manage fields admin page for the organism content type.
     $html = $this->drupalGet($manage_fields_path);
@@ -95,25 +130,49 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     $html = $this->drupalGet($add_field_path);
     $this->assertSession()->pageTextContains('Add field');
 
+    // Step 1a: Field Name + Category
     // Submit the form with the following input.
+    // We have no AJAX in these tests so we have to submit the form after selecting
+    // the category in order to see the list of field types in that category.
+
     // Each key here indicates the form element to apply the value to.
     // It can be either the id, name, label, or value of the form element.
-    $unique_suffix = uniqid();
     $input = [
       // Machine name is a hidden input where the input name=field_name
-      'field_name' => 'test_basic_field_' . $unique_suffix,
+      'field_name' => $details['name'],
       // Field label is an input where the name=label
-      'label' => 'Test Basic Field ' . $unique_suffix,
+      'label' => $details['label'],
       // The category of field we want to create.
       // This is a collection of radio inputs in the form where all of them have the
       // name=new_storage_type and the value indicates the storage type you want to select.
       // To indicate a Chado Field we select the one where the category machine name=tripal_chado.
       'new_storage_type' => 'tripal_chado',
-      // The actual field type we want to create.
-      // This is another collection of radio inputs where the field machine name
-      // is the id of the input element... BUT IT ONLY APPEARS VIA AJAX
-      // $field_type_name => TRUE,
     ];
     $this->submitForm($input, 'Continue');
+
+    // Confirm that after submission, there
+    // -- there is an error message telling us to select a field type...
+    //    even though we couldn't before because this is the test environment.
+    $this->assertSession()->statusMessageContains('select a field type');
+    // -- is a form element with out field type.
+    //    the id of the input element is the machine name of the field.
+    $form_element = $this->getSession()->getPage()->findById($field_type_name);
+    $this->assertNotNull($form_element,
+      "We were not able to find a form element with an id of $field_type_name after choosing the category.");
+
+    // Step 1b: Field Type
+    // Submit the form indicating the actual field type we want to create.
+    // This is another collection of radio inputs where the field machine name
+    // is the id of the input element.
+    $input = [
+      $field_type_name => $field_type_name,
+    ];
+    $this->submitForm($input, 'Continue');
+
+    // @todo check the chado storage setting fields + fill out
+    // @todo set the cvterm.
+    // @todo submit the form to create the field
+    // @todo use $this->assertFieldExistsOnOverview() to confirm the field exists now.
+    // @debug print $this->getSession()->getPage()->getContent();
   }
 }
