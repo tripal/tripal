@@ -13,8 +13,9 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *
  * @FieldType(
  *   id = "tripal_text_type",
+ *   category = "tripal",
  *   label = @Translation("Tripal Text Field Type"),
- *   description = @Translation("A text field."),
+ *   description = @Translation("A text field with no length limit."),
  *   default_widget = "default_tripal_text_type_widget",
  *   default_formatter = "default_tripal_text_type_formatter"
  * )

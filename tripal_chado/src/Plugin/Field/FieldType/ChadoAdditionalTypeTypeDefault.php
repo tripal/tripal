@@ -6,6 +6,7 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -19,6 +20,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *
  * @FieldType(
  *   id = "chado_additional_type_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Type Reference"),
  *   description = @Translation("A Chado type reference"),
  *   default_widget = "chado_additional_type_widget_default",
@@ -28,9 +30,6 @@ use Drupal\Core\Ajax\ReplaceCommand;
 class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_additional_type_type_default';
-
-  // delimiter between table name and column name in form select
-  public static $table_column_delimiter = " \u{2192} ";  # right arrow
 
   /**
    * {@inheritdoc}
@@ -225,16 +224,24 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
-    $type_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_table']);
-    $type_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_column']);
+
+    // Retrieve the base table from the default value set by the parent class.
+    $base_table = $elements['storage_plugin_settings']['base_table']['#default_value'];
+
+    // If this is an existing field, retrieve its storage settings.
+    $storage_settings = $this->getSetting('storage_plugin_settings');
+
+    $type_table = $storage_settings['type_table'] ?? '';
+    $type_column = $storage_settings['type_column'] ?? '';
+    $type_fkey = $storage_settings['type_fkey'] ?? '';
+
     // In the form, table and column will be selected together as a single unit
-    $type_select = '';
+    $type_select = $type_fkey;
     if ($type_table and $type_column) {
       $type_select = $type_table . self::$table_column_delimiter . $type_column;
     }
 
-    // Add an ajax callback to the base table select (from the parent form) so that
+    // Change the ajax callback on the base table select (from the parent form) so that
     // when it is selected, the type table select can be populated with candidate tables.
     $elements['storage_plugin_settings']['base_table']['#ajax'] = [
       'callback' =>  [$this, 'storageSettingsFormTypeFKeyAjaxCallback'],
@@ -273,7 +280,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
+    $settings = self::getFormStateSettings($form_state);
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }
@@ -363,6 +370,38 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-type_fkey', $form['settings']['storage_plugin_settings']['type_fkey']));
     return $response;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = FALSE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+
+    // If the base table has a 'type_id' column, then it is compatible.
+    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    if (isset($base_table_def['fields']['type_id'])) {
+      $compatible = TRUE;
+    }
+
+    $prop_def = $schema->getTableDef($base_table . 'prop', ['format' => 'Drupal']);
+    // If the property table exists, and has a foreign key to the base table,
+    // then this content type is compatible.
+    if ($prop_def) {
+      if (array_key_exists($base_table, $prop_def['foreign keys'])) {
+        $compatible = TRUE;
+      }
+    }
+
+    return $compatible;
   }
 
 }
