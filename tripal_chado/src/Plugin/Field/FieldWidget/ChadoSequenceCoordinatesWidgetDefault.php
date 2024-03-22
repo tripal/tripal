@@ -26,43 +26,43 @@ class ChadoSequenceCoordinatesWidgetDefault extends ChadoWidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
     $item_vals = $items[$delta]->getValue();
-dpm($item_vals, "CPW1 item_vals"); //@@@
     $elements = [];
     $elements['featureloc_id'] = [
       '#type' => 'value',
       '#default_value' => $item_vals['featureloc_id'] ?? 0,
     ];
-//                                       Table "chado.featureloc"
-//     Column      |   Type   | Collation | Nullable |                      Default                      
-//-----------------+----------+-----------+----------+---------------------------------------------------
-// featureloc_id   | bigint   |           | not null | nextval('featureloc_featureloc_id_seq'::regclass)
-// feature_id      | bigint   |           | not null | 
-// srcfeature_id   | bigint   |           |          | 
-// fmin            | bigint   |           |          | 
-// is_fmin_partial | boolean  |           | not null | false
-// fmax            | bigint   |           |          | 
-// is_fmax_partial | boolean  |           | not null | false
-// strand          | smallint |           |          | 
-// phase           | integer  |           |          | 
-// residue_info    | text     |           |          | 
-// locgroup        | integer  |           | not null | 0
-// rank            | integer  |           | not null | 0
 
-//    $elements['fmin'] = [
-//      '#type' => 'value',
-//      '#default_value' => $item_vals['fmin'] ?? 0,
-//    ];
+    $elements['fmin'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['fmin'] ?? 0,
+    ];
+    $elements['is_fmin_partial'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['is_fmin_partial'] ?? FALSE,
+    ];
     $elements['fmax'] = [
       '#type' => 'value',
       '#default_value' => $item_vals['fmax'] ?? 0,
     ];
-//    $elements['strand'] = [
-//      '#type' => 'value',
-//      '#default_value' => $item_vals['strand'] ?? 0,
-//    ];
+    $elements['is_fmax_partial'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['is_fmax_partial'] ?? FALSE,
+    ];
+    $elements['strand'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['strand'] ?? 0,
+    ];
     $elements['phase'] = [
       '#type' => 'value',
       '#default_value' => $item_vals['phase'] ?? 0,
+    ];
+    $elements['residue_info'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['residue_info'] ?? '',
+    ];
+    $elements['locgroup'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['locgroup'] ?? 0,
     ];
 dpm($elements, "CPW2 elements"); //@@@
     return $elements;
