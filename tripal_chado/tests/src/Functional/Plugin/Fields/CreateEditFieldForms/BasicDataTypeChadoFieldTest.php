@@ -110,6 +110,14 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
    * - to get the plain text without markup: print $this->getTextContent();
    */
   public function testCreateViaCombinedAddFieldForm($field_type_name) {
+
+    // ONLY do this test if we are in Drupal 10.2+ since we are assuming
+    // that the field storage + settings form are combined into a single page.
+    if (version_compare(\Drupal::VERSION, 10.2) < 0) {
+      $this->markTestSkipped('Test only applies to Drupal 10.2+');
+    }
+
+    // Pages to access.
     $manage_fields_path = 'admin/structure/bio_data/manage/' . $this->type . '/fields';
     $add_field_path = '/admin/structure/bio_data/manage/' . $this->type . '/fields/add-field';
 
