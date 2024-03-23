@@ -43,7 +43,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }}"
-          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
       - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build & push Full matrix of Docker images WITH NO CHADO
         with:
@@ -53,8 +53,8 @@ jobs:
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }}"
-          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+          buildArgs: "drupalversion=${{ matrix.drupal-version }},installchado=FALSE,postgresqlversion=${{ matrix.pgsql-version }}"
+          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
       - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build & push Docker image Drupal focused Docker images.
         if: ${{ matrix.php-version == '8.1' && matrix.pgsql-version == '13' }}
@@ -66,7 +66,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }}"
-          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
       - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build latest using 10.2.x-dev, PHP 8.3, PgSQL 13
         if: ${{ matrix.drupal-version == '10.2.x-dev' && matrix.php-version == '8.3' && matrix.pgsql-version == '13' }}
