@@ -16,10 +16,7 @@ jobs:
           - "8.2"
           - "8.3"
         pgsql-version:
-          - "12"
           - "13"
-          - "14"
-          - "15"
           - "16"
         drupal-version:
           - "10.0.x-dev"
@@ -32,7 +29,12 @@ jobs:
           - php-version: "8.3"
             pgsql-version: "13"
             drupal-version: "10.1.x-dev"
-
+          - php-version: "8.3"
+            pgsql-version: "16"
+            drupal-version: "10.0.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "16"
+            drupal-version: "10.1.x-dev"
     steps:
       # Check out the repo
       - name: Checkout Repository
