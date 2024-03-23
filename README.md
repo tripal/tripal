@@ -14,9 +14,9 @@
 
 ## Compatibility
 
-![Target Drupal Version 10.0.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-10.0.x-informational)
+![Target Drupal Version 10.2.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-10.2.x-informational)
 
-![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success)
+Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) + ![PostgreSQL 16](https://img.shields.io/badge/PostreSQL-16-success)
 
 | Drupal      | 10.0.x          | 10.1.x          | 10.2.x          |
 |-------------|-----------------|-----------------|-----------------|
@@ -47,8 +47,8 @@ This project uses Code Climate to determine the quality of our codebase and the 
 ### Required for Tripal 4.alpha3 Release
 
 - Display suite / page work
-- Importers: Publications, Taxonomy, Newick
-- Search (ElasticSearch rather then Views)
+- Importers: Publications
+- Search (ElasticSearch + Views)
 
 ## How to get involved!
 
@@ -64,7 +64,7 @@ This upgrade to Drupal 10 is a community effort. As such, we NEED YOUR HELP!
 
 ## Documentation
 
-[Documentation for Tripal 4 has begun on ReadtheDocs](https://tripaldoc.readthedocs.io/en/latest/dev_guide.html). **Please keep in mind the URL for this documentation will change once Tripal 4 is released.**
+[Documentation for Tripal 4 has begun on ReadtheDocs](https://tripaldoc.readthedocs.io/en/latest/dev_guide.html).
 
   - [Installation](https://tripaldoc.readthedocs.io/en/latest/install.html)
   - [Automated Testing](https://tripaldoc.readthedocs.io/en/latest/dev_guide/testing.html)
@@ -73,6 +73,6 @@ This upgrade to Drupal 10 is a community effort. As such, we NEED YOUR HELP!
 
 ## Tripal Docker
 
-Tripal Docker is currently focused on Development and Unit Testing. There will be a production focused Tripal Docker soon and if you're interested in helping or providing tips -please join us on our Slack channel!
+Tripal Docker is currently focused on Development and Automated Testing. There will be a production focused Tripal Docker soon and if you're interested in helping or providing tips -please join us on our Slack channel!
 
 For more information about how to use our fully functional development docker, see [our documentation on ReadtheDocs!](https://tripaldoc.readthedocs.io/en/latest/install/docker.html)
