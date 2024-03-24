@@ -33,7 +33,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   /**
    * The machine name of the Tripal Content Type used by tests in this class.
    */
-  protected $type = 'organism';
+  protected $type = 'gene';
 
   protected $connection;
 
@@ -49,18 +49,14 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
 
     // Create the Organism Content Type
     $content_type = $this->createTripalContentType([
-      'label' => 'Organism',
-      'termIdSpace' => 'OBI',
-      'termAccession' => '0100026',
-      'category' => 'General',
+      'label' => 'Gene',
+      'termIdSpace' => 'SO',
+      'termAccession' => '0000704',
+      'category' => 'Genomic',
       'id' => $this->type,
-      'help_text' => 'A material entity that is an individual living system, ' .
-        'such as animal, plant, bacteria or virus, that is capable of replicating ' .
-        'or reproducing, growth and maintenance in the right environment. An ' .
-        'organism may be unicellular or made up, like humans, of many billions ' .
-        'of cells divided into specialized tissues and organs.',
+      'help_text' => 'Use the gene page for a region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.',
     ]);
-    $content_type->setThirdPartySetting('tripal', 'chado_base_table', 'organism');
+    $content_type->setThirdPartySetting('tripal', 'chado_base_table', 'feature');
     $content_type->save();
 
     // Create test user.
@@ -95,24 +91,22 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
 
     $sets[] = [
       'chado_integer_type_default',
-      ['organism_id', 'type_id'],
+      ['feature_id','dbxref_id','organism_id','seqlen','type_id'],
     ];
 
-    /** Can't test on organism.
     $sets[] = [
       'chado_boolean_type_default',
-      [],
+      ['is_analysis', 'is_obsolete'],
     ];
-    */
 
     $sets[] = [
       'chado_string_type_default',
-      ['abbreviation','genus','species','common_name','infraspecific_name'],
+      ['name'],
     ];
 
     $sets[] = [
       'chado_text_type_default',
-      ['comment']
+      ['uniquename','residues'],
     ];
 
     return $sets;
@@ -203,7 +197,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     // -- Confirm the select list for base table is disabled and set properly.
     $base_table_select = 'field_storage[subform][settings][storage_plugin_settings][base_table]';
     $this->assertSession()->fieldDisabled($base_table_select);
-    $this->assertSession()->fieldValueEquals($base_table_select, 'organism');
+    $this->assertSession()->fieldValueEquals($base_table_select, 'feature');
     // -- Confirm the select list base column exists + has the appropriate options.
     $base_col_select = 'field_storage[subform][settings][storage_plugin_settings][base_column]';
     $this->assertSession()->fieldEnabled($base_col_select);
