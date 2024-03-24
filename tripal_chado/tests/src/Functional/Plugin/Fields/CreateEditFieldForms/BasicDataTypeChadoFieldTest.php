@@ -48,7 +48,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     $this->connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
     // Create the Organism Content Type
-    $this->createTripalContentType([
+    $content_type = $this->createTripalContentType([
       'label' => 'Organism',
       'termIdSpace' => 'OBI',
       'termAccession' => '0100026',
@@ -60,6 +60,8 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
         'organism may be unicellular or made up, like humans, of many billions ' .
         'of cells divided into specialized tissues and organs.',
     ]);
+    $content_type->setThirdPartySetting('tripal', 'chado_base_table', 'organism');
+    $content_type->save();
 
     // Create test user.
     $admin_user = $this->drupalCreateUser([
@@ -91,9 +93,27 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   public function provideFieldsToTest() {
     $sets = [];
 
-    foreach (self::$field_types as $machine_name) {
-      $sets[] = [$machine_name];
-    }
+    $sets[] = [
+      'chado_integer_type_default',
+      ['organism_id', 'type_id'],
+    ];
+
+    /** Can't test on organism.
+    $sets[] = [
+      'chado_boolean_type_default',
+      [],
+    ];
+    */
+
+    $sets[] = [
+      'chado_string_type_default',
+      ['abbreviation','genus','species','common_name','infraspecific_name'],
+    ];
+
+    $sets[] = [
+      'chado_text_type_default',
+      ['comment']
+    ];
 
     return $sets;
   }
@@ -109,7 +129,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
    * - to get the full HTML: print $this->getSession()->getPage()->getContent();
    * - to get the plain text without markup: print $this->getTextContent();
    */
-  public function testCreateViaCombinedAddFieldForm($field_type_name) {
+  public function testCreateViaCombinedAddFieldForm($field_type_name, $valid_options) {
 
     // ONLY do this test if we are in Drupal 10.2+ since we are assuming
     // that the field storage + settings form are combined into a single page.
@@ -176,6 +196,20 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       $field_type_name => $field_type_name,
     ];
     $this->submitForm($input, 'Continue');
+
+    // Step 2: Fill in the Storage settings
+    // -- Confirm the field label is set from the previous step
+    $this->assertSession()->fieldValueEquals('label', $details['label']);
+    // -- Confirm the select list for base table is disabled and set properly.
+    $base_table_select = 'field_storage[subform][settings][storage_plugin_settings][base_table]';
+    $this->assertSession()->fieldDisabled($base_table_select);
+    $this->assertSession()->fieldValueEquals($base_table_select, 'organism');
+    // -- Confirm the select list base column exists + has the appropriate options.
+    $base_col_select = 'field_storage[subform][settings][storage_plugin_settings][base_column]';
+    $this->assertSession()->fieldEnabled($base_col_select);
+    foreach ($valid_options as $option) {
+      $this->assertSession()->optionExists($base_col_select, $option);
+    }
 
     // @todo check the chado storage setting fields + fill out
     // @todo set the cvterm.
