@@ -31,7 +31,7 @@ jobs:
             drupal-version: "10.1.x-dev"
     name: Docker Build (drupal${{ matrix.drupal-version }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Check out code
       - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build & push Full matrix of Docker images

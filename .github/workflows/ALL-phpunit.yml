@@ -38,7 +38,7 @@ jobs:
     steps:
       # Check out the repo
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # Here we fully build a docker using the current checked out code
       # to ensure we have not broken the install/build process.
       - name: Build Docker Image
