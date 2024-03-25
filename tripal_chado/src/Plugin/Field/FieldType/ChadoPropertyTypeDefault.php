@@ -282,15 +282,15 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     }
 
     // Search for all unique types in the prop table.
-    $query = $chado->select('1:cvterm', 'CVT');
-    $query->leftJoin('1:dbxref', 'DBX', 'DBX.dbxref_id = CVT.dbxref_id');
-    $query->leftJoin('1:db', 'DB', 'DB.db_id = DBX.db_id');
-    $query->leftJoin('1:cv', 'CV', 'CV.cv_id = CVT.cv_id');
-    $query->leftJoin('1:' . $prop_table, 'PT', 'PT.type_id = CVT.cvterm_id');
-    $query->addField('CVT', 'cvterm_id');
-    $query->addField('DBX', 'accession');
-    $query->addField('DB', 'name', 'db_name');
-    $query->addField('CV', 'name', 'cv_name');
+    $query = $chado->select('1:cvterm', 'cvt');
+    $query->leftJoin('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
+    $query->leftJoin('1:db', 'db', 'db.db_id = dbx.db_id');
+    $query->leftJoin('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+    $query->leftJoin('1:' . $prop_table, 'pt', 'pt.type_id = cvt.cvterm_id');
+    $query->addField('cvt', 'cvterm_id');
+    $query->addField('dbx', 'accession');
+    $query->addField('db', 'name', 'db_name');
+    $query->addField('cv', 'name', 'cv_name');
     $results = $query->distinct()->execute()->fetchAll();
     dpm($results);
 
