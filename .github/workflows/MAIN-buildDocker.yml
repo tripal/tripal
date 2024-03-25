@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - 4.x
-      - tv4g0-issue1820-psql-docker-version-settable
+      - tv4g9-1829-bumpActionVersion
 
 jobs:
   push_to_registry:
