@@ -17,6 +17,7 @@ jobs:
           - "8.2"
           - "8.3"
         pgsql-version:
+          - "13"
           - "16"
         drupal-version:
           - "10.0.x-dev"
@@ -29,10 +30,17 @@ jobs:
           - php-version: "8.3"
             pgsql-version: "13"
             drupal-version: "10.1.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "16"
+            drupal-version: "10.0.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "16"
+            drupal-version: "10.1.x-dev"
     name: Docker Build (drupal${{ matrix.drupal-version }})
     steps:
       - uses: actions/checkout@v4
         name: Check out code
+      ## Build images tagged drupal{VER}-php{VER}-pgsqlVER
       - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build & push Full matrix of Docker images
         with:
@@ -44,6 +52,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }}"
           labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+      ## Build images tagged drupal{VER}-php{VER}-pgsqlVER-noChado without chado installed!
       - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build & push Full matrix of Docker images WITH NO CHADO
         with:
@@ -55,9 +64,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupal-version }},installchado=FALSE,postgresqlversion=${{ matrix.pgsql-version }}"
           labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+      ## Build Images tagged drupal{VER} focused on php 8.2 + postgresql 16
       - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build & push Docker image Drupal focused Docker images.
-        if: ${{ matrix.php-version == '8.1' && matrix.pgsql-version == '13' }}
+        if: ${{ matrix.php-version == '8.2' && matrix.pgsql-version == '16' }}
         with:
           image: tripalproject/tripaldocker
           tags: drupal${{ matrix.drupal-version }}
@@ -67,9 +77,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }}"
           labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+      ## Build the image tagged as latest which is the highest version combo that we feel is well supported.
       - uses: mr-smithers-excellent/docker-build-push@v6
-        name: Build latest using 10.2.x-dev, PHP 8.3, PgSQL 13
-        if: ${{ matrix.drupal-version == '10.2.x-dev' && matrix.php-version == '8.3' && matrix.pgsql-version == '13' }}
+        name: Build latest using 10.2.x-dev, PHP 8.3, PgSQL 16
+        if: ${{ matrix.drupal-version == '10.2.x-dev' && matrix.php-version == '8.3' && matrix.pgsql-version == '16' }}
         with:
           image: tripalproject/tripaldocker
           tags: latest
