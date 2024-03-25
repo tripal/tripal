@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 4.x
+      - tv4g9-1829-bumpActionVersion
 jobs:
   running-tests:
     name: "Drupal 10.0: PHP 8.2"
@@ -11,7 +12,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
       - name: Run Automated testing
-        uses: tripal/test-tripal-action@v1.4
+        uses: tripal/test-tripal-action@v1.5
         with:
           directory-name: 'tripal'
           modules: 'tripal tripal_biodb tripal_chado'
