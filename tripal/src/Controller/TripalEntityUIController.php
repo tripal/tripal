@@ -95,7 +95,7 @@ class TripalEntityUIController extends ControllerBase {
     foreach ($all_field_defs as $field_name => $field_def) {
       $field_class = $field_def['class'];
       if (is_subclass_of($field_class, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
-        $new = $field_class::discover($tripal_entity_type, $field_name, $field_def);
+        $new = $field_class::discover($tripal_entity_type, $field_name, $all_field_defs);
         foreach ($new as $new_field) {
           $new_fields[] = $new_field;
         }

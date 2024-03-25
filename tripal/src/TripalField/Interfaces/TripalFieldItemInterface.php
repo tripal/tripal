@@ -142,12 +142,12 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * @param string $field_name
    *   The name of the field.
    *
-   * @param array $field_definitino
+   * @param array $field_definitions
    *   The field definition array.
    *
    * @return array
    *   An associative array that follows the same structure as expected by `
    *   tripal.tripalfield_collection.* configuration.
    */
-  public static function discover(TripalEntityType $bundle, string $field_name, array $field_definition) : array;
+  public static function discover(TripalEntityType $bundle, string $field_name, array $field_definitions) : array;
 }

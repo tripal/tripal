@@ -260,20 +260,41 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_name, array $field_definition) : array{
-    //dpm($bundle);
-    //dpm($field_definition);
-    $storage_settings = ChadoFieldItemBase::defaultStorageSettings();
-    $field_settings = ChadoFieldItemBase::defaultFieldSettings();
-    dpm($storage_settings);
-    dpm($field_settings);
+  public static function discover(TripalEntityType $bundle, string $field_name, array $field_definitions) : array{
+    $field_list = [];
 
+    // If we don't have a Chado base table then don't continue;
+    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
+    if (!$base_table) {
+      return $field_list;
+    }
+
+    // Get a Chado connection.
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
     $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
 
+    // As a sanity check, make sure the prop table exists.
+    $prop_table = $base_table . 'prop';
+    $prop_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
+    if (!$prop_def) {
+      return $field_list;
+    }
 
+    // Search for all unique types in the prop table.
+    $query = $chado->select('1:cvterm', 'CVT');
+    $query->leftJoin('1:dbxref', 'DBX', 'DBX.dbxref_id = CVT.dbxref_id');
+    $query->leftJoin('1:db', 'DB', 'DB.db_id = DBX.db_id');
+    $query->leftJoin('1:cv', 'CV', 'CV.cv_id = CVT.cv_id');
+    $query->leftJoin('1:' . $prop_table, 'PT', 'PT.type_id = CVT.cvterm_id');
+    $query->addField('CVT', 'cvterm_id');
+    $query->addField('DBX', 'accession');
+    $query->addField('DB', 'name', 'db_name');
+    $query->addField('CV', 'name', 'cv_name');
+    $results = $query->distinct()->execute()->fetchAll();
+    dpm($results);
 
-
-    return [1];
+    return $field_list;
   }
 
 }
