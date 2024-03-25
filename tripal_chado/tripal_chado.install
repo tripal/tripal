@@ -5,6 +5,8 @@
  */
 
 use \Drupal\Core\Database\Database;
+use \Drupal\Core\Utility\UpdateException;
+use \Drupal\tripal_chado\Entity\ChadoTermMapping;
 
 /**
  * Implements hook_install().
@@ -377,5 +379,25 @@ function tripal_chado_update_10401() {
       $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $chado_base_table);
       $entity_type->save();
     }
+  }
+}
+
+/**
+ * Updates missing mapping of CV terms to some chado table columns
+ */
+function tripal_chado_update_10402() {
+  try {
+    $messenger = \Drupal::messenger();
+
+    $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
+    ChadoTermMapping::refreshMapping($id);
+    $messenger->addMessage('Reloaded Chado content terms');
+
+    $id = 'config/install/tripal_chado.chado_term_mapping.core_mapping';
+    ChadoTermMapping::refreshMapping($id);
+    $messenger->addMessage('Reloaded Chado term mapping');
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not reload Chado terms and mappings: ' . $e->getMessage());
   }
 }
