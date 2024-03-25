@@ -65,13 +65,17 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
     ];
 
     $public = \Drupal::database();
-    $pub_importers_query = $public->select('tripal_pub_import','tpi');
+    $pub_importers_query = $public->select('tripal_pub_library_query','tpi');
     $pub_importers_count = $pub_importers_query->countQuery()->execute()->fetchField();
-    if ($pub_importers_count > 0) {
-      // Lookup all records
-      $pub_importers = $pub_importers_query->fields('tpi')->orderBy('pub_import_id', 'ASC')->execute()->fetchAll();
-      foreach ($pub_importers as $pub_importer) {
-        $criteria_column_array = unserialize($pub_importer->criteria);
+
+    $pub_library_manager = \Drupal::service('tripal.pub_library');
+    $pub_queries = $pub_library_manager->getSearchQueries();
+    $pub_queries_count = count($pub_queries);
+
+    if ($pub_queries_count > 0) {
+
+      foreach ($pub_queries as $pub_query) {
+        $criteria_column_array = unserialize($pub_query->criteria);
 
         $search_string = "";
         foreach ($criteria_column_array['criteria'] as $criteria_row) {
@@ -101,13 +105,13 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
           '#markup' => 
             Link::fromTextAndUrl(
               'Edit/Test', 
-              Url::fromUri('internal:/admin/tripal/loaders/publications/edit_publication_search_query/' . $pub_importer->pub_import_id)
+              Url::fromUri('internal:/admin/tripal/loaders/publications/edit_publication_search_query/' . $pub_query->pub_library_query_id)
             )
             ->toString() . 
             '<br /><a href="">Import Pubs</a>'
         ];
         $row['col-2'] = [
-          '#markup' => $pub_importer->name
+          '#markup' => $pub_query->name
         ];
         $row['col-3'] = [
           '#markup' => $criteria_column_array['remote_db']
@@ -130,9 +134,9 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
 
 
         // Delete should be a button instead of markup @TODO
-        $row['col-7-delete-' . $pub_importer->pub_import_id] = [
+        $row['col-7-delete-' . $pub_query->pub_library_query_id] = [
           '#type' => 'submit',
-          '#name' => 'delete-' . $pub_importer->pub_import_id,
+          '#name' => 'delete-' . $pub_query->pub_library_query_id,
           '#default_value' => 'Delete',
         ];
 
@@ -178,8 +182,8 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
     $user_input = $form_state->getUserInput();
     $trigger_element = $form_state->getTriggeringElement();
     if (stripos($trigger_element['#name'],'delete-') !== FALSE) {
-      $pub_import_id = explode('delete-',$trigger_element['#name'])[1];
-      $url = Url::fromUri('internal:/admin/tripal/loaders/publications/delete_publication_search_query/' . $pub_import_id);
+      $pub_library_query_id = explode('delete-',$trigger_element['#name'])[1];
+      $url = Url::fromUri('internal:/admin/tripal/loaders/publications/delete_publication_search_query/' . $pub_library_query_id);
       $form_state->setRedirectUrl($url);
     }
   }

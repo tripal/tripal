@@ -7,13 +7,14 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal stock field type.
  *
  * @FieldType(
  *   id = "chado_stock_type_default",
- *   object_table = "stock",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Stock"),
  *   description = @Translation("Add a Chado stock to the content type."),
  *   default_widget = "chado_stock_widget_default",
@@ -23,7 +24,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 class ChadoStockTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_stock_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'stock';
   protected static $object_id = 'stock_id';
 
@@ -124,9 +124,9 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     $common_name_term = $mapping->getColumnTermId('organism', 'common_name');
     $common_name_len = $organism_schema_def['fields']['common_name']['size'];
 
-    // Linker table, when used
-    $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? $object_pkey_col;
+    // Linker table, when used, requires specifying the linker table and column.
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
+
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
@@ -311,6 +311,22 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     ]);
 
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+    if (count($linker_tables) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
   }
 
 }

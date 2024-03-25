@@ -68,8 +68,8 @@ class ChadoInstaller extends ChadoTaskBase {
         || is_object($this->parameters['version'])) {
 
         throw new ParameterException(
-          "The requested version must be a string; whereas, you passed an
-          array or object: " . print_r($this->parameters['version'], TRUE)
+          "The requested version must be a string; whereas, you passed an"
+          . " array or object: " . print_r($this->parameters['version'], TRUE)
         );
       }
       // If the version is not a string then make it so...

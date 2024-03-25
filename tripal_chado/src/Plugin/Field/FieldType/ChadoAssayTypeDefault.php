@@ -5,13 +5,14 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal assay field type.
  *
  * @FieldType(
  *   id = "chado_assay_type_default",
- *   object_table = "assay",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Assay"),
  *   description = @Translation("Add a Chado assay to the content type."),
  *   default_widget = "chado_assay_widget_default",
@@ -21,7 +22,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 class ChadoAssayTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_assay_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'assay';
   protected static $object_id = 'assay_id';
 
@@ -111,11 +111,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $db_len = $db_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
-    // For single hop, in the yaml we support using the usual 'base_table'
-    // and 'base_column' settings.
-    $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? $object_pkey_col;
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
@@ -291,6 +287,22 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     ]);
 
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+    if (count($linker_tables) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
   }
 
 }
