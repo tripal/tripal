@@ -17,6 +17,7 @@ jobs:
           - "8.3"
         pgsql-version:
           - "13"
+          - "16"
         drupal-version:
           - "10.0.x-dev"
           - "10.1.x-dev"
@@ -28,19 +29,25 @@ jobs:
           - php-version: "8.3"
             pgsql-version: "13"
             drupal-version: "10.1.x-dev"
-
+          - php-version: "8.3"
+            pgsql-version: "16"
+            drupal-version: "10.0.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "16"
+            drupal-version: "10.1.x-dev"
     steps:
       # Check out the repo
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # Here we fully build a docker using the current checked out code
       # to ensure we have not broken the install/build process.
       - name: Build Docker Image
         run: |
           docker build --tag=tripaldocker:localdocker \
             --build-arg drupalversion="${{ matrix.drupal-version }}" \
+            --build-arg postgresqlversion="${{ matrix.pgsql-version }}" \
             --build-arg chadoschema='teacup' ./ \
-            --file tripaldocker/Dockerfile-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version}}
+            --file tripaldocker/Dockerfile-php${{ matrix.php-version }}
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |

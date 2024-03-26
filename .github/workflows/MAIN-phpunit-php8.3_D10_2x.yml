@@ -3,20 +3,21 @@ on:
   push:
     branches:
       - 4.x
+      - tv4g9-1829-bumpActionVersion
 jobs:
   running-tests:
     name: "Drupal 10.2: PHP 8.3"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run Automated testing
-        uses: tripal/test-tripal-action@v1.4
+        uses: tripal/test-tripal-action@v1.5
         with:
           directory-name: 'tripal'
           modules: 'tripal tripal_biodb tripal_chado'
           php-version: '8.3'
-          pgsql-version: '13'
+          pgsql-version: '16'
           drupal-version: '10.2.x-dev'
           build-image: true
           dockerfile: "UseTripalDockerBackupClause"
