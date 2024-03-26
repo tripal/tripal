@@ -65,34 +65,38 @@ interface TripalPubLibraryInterface extends PluginInspectionInterface {
   public function run(int $query_id);
 
   /**
-   * Retrieve is required by TripalPubLibraryInterface via TripalPubLibraryBase 
-   * The function is called dynamically by the ChadoNewPubSearchQueryForm when 
-   * test search query button is clicked
+   * Returns publications from remote publication library.
+   * 
+   * This function behaves like a pager where you specify the page 
+   * number you want to return and the number of records you want 
+   * prepared.
    * 
    * @param array $query
    * The criteria used by the parser to retreive and parse results.
    * 
    * @param int $limit
-   * The criteria used by the parser to retreive and parse results.
-   * If limit is 0, assume all publications should be retrieved (ignore page)
+   * The number of publication records to return.
    * 
    * @param int $page
-   * The specific page to retrieve publication results (if limit is more than 0)
+   * The specific page to retrieve publication results
+   * Page values start at 0.
    * 
    * @return array
    * Return an array with keys total_records, search_str, pubs(array)
    */
-  public function retrieve(array $query, int $limit, int $page);
+  public function retrieve(array $query, int $limit = 10, int $page = 0);
 
   /**
-   * Generally, this function will receive the raw data from calling the retrieve function 
-   * and formats it into an array / object that PHP can utilize.
+   * Parses raw data and structures it
+   * 
+   * Receive the raw publication data and formats it into an 
+   * array / object that PHP can utilize.
    * 
    * @param string $raw
    * Raw data input example xml data which may be received
    * 
    * @return array/object $results
-   * These results are the process/structured array/object created by extracting 
+   * Results are the processed/structured array/object created by extracting 
    * from the raw data input 
    */
   public function parse(string $raw);

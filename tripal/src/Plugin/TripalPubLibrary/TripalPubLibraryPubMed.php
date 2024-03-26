@@ -79,15 +79,16 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
 
   /**
    * More documentation can be found in TripalPubLibraryInterface
+   * @TODO - This will need to retrieve the publications AND save to CHADO
    */
   public function run(int $query_id) {
-    // @TODO - This will need to retrieve the publications AND save to CHADO
+    
   }
 
   /**
    * More documentation can be found in TripalPubLibraryInterface
    */
-  public function retrieve(array $query, int $limit, int $page) {
+  public function retrieve(array $query, int $limit = 10, int $page = 0) {
     $results = NULL;
     try {
       $results = $this->remoteSearchPMID($query, $limit, $page);
@@ -202,15 +203,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     $web_env = $results['WebEnv'];
   
     // initialize the pager
-    $start = ($page - 1) * $num_to_retrieve;
-
-    // TODO - Ask Stephen (3/20/2024)
-    // New scenario - if num_to_retrieve (limit) is 0, assume max records of 10000, since 
-    // the pmidFetch function needs this argument or it will default to 10
-    if ($num_to_retrieve == 0) {
-      $start = 0;
-      $num_to_retrieve = 10000;
-    }
+    $start = $page * $num_to_retrieve;
  
     // if we have no records then return an empty array
     if ($total_records == 0) {
