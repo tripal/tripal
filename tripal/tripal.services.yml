@@ -45,3 +45,5 @@ services:
                 '@tripal.logger']
   tripal.publish:
     class: Drupal\tripal\Services\TripalPublish
+  tripal.tripal_entity.lookup:
+    class: Drupal\tripal\Services\TripalEntityLookup

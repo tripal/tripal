@@ -47,6 +47,7 @@ class ChadoOrganismFormatterDefault extends ChadoFormatterBase {
     $elements = [];
     $list = [];
     $token_string = $this->getSetting('token_string');
+    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     foreach ($items as $delta => $item) {
       $values = [
@@ -70,6 +71,16 @@ class ChadoOrganismFormatterDefault extends ChadoFormatterBase {
       foreach ($values as $key => $value) {
         $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
       }
+
+      // Create a clickable link to the corresponding entity.
+      $item_settings = $item->getDataDefinition()->getSettings();
+      $id = $item_settings['storage_plugin_settings']['linker_fkey_column'] ?? 'organism_id';
+      $displayed_string = $lookup_manager->getFieldUrl(
+        $displayed_string,
+        $item->get($id)->getString(),
+        $item_settings
+      );
+
       $list[$delta] = [
         '#markup' => $displayed_string,
       ];

@@ -75,7 +75,7 @@ class TripalTokenParser {
    */
   public function setEntity(TripalEntity $entity) {
     if ($entity->getType() != $this->bundle->getId()) {
-      throw new \Exception(t('TripalTokenParser: The entity provide is not of the same time as the bundle'));
+      throw new \Exception(t('TripalTokenParser: The entity provided is not of the same type as the bundle'));
     }
 
     $this->entity = $entity;
@@ -134,12 +134,12 @@ class TripalTokenParser {
    * Replaces the tokens with field values within the provided strings.
    *
    * @param array $tokenized_strings
-   *   Ann array of strings with field names as tokens.  Field name should be
+   *   An array of strings with field names as tokens.  Field name should be
    *   surrounded by square brackets.
    *
    * @return array
    *   An array with all of the strings from the input $tokenized_strings array
-   *   but with field tokens replaced with approprivate values.
+   *   but with field tokens replaced with appropriate values.
    */
   public function replaceTokens(array $tokenized_strings) {
 
