@@ -1432,7 +1432,7 @@ class GFF3Importer extends ChadoImporterBase {
       if (array_key_exists($uniquename, $this->features)) {
         $findex = $this->features[$uniquename]['findex'];
         $feature = $this->getCachedFeature($findex);
-        $feature_id = $feature['feature_id'];
+        $feature_id = $feature['feature_id'] ?? $this->features[$uniquename]['feature_id'];
       }
       else {
         $feature_id = $this->landmarks[$uniquename];
