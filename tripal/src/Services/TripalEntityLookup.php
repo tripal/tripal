@@ -9,7 +9,7 @@ use \Drupal\tripal\Services\TripalEntityTitle;
 class TripalEntityLookup {
 
   /**
-   * Our top-level function, used by fields to get a ready-to-use url to link to an entity.
+   * The top-level function, used by fields to get a ready-to-use url to link to an entity.
    *
    * @param string $displayed_string
    *   The text that will be displayed as a url link
@@ -129,6 +129,12 @@ class TripalEntityLookup {
    *   Will be null if not found, can happen if the entity has not been published.
    */
   public function getEntityURI($base_table, $record_id, $bundle_id, $entity_type = 'tripal_entity') {
+
+    // Catch invalid entity type
+    if ($entity_type != 'tripal_entity') {
+      throw new \Exception("Invalid entity type \"$entity_type\". getEntityIdFromRecordId() only supports the entity type \"tripal_entity\"");
+    }
+
     $uri = NULL;
     $id = $this->getEntityIdFromRecordId($base_table, $record_id, $bundle_id);
     if ($id) {
@@ -155,6 +161,7 @@ class TripalEntityLookup {
    *   Will be null if zero or if multiple hits.
    */
   public function getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type = 'tripal_entity') {
+
     $id = NULL;
     $required_fields = $this->getRequiredFields($bundle_id, $entity_type);
     if (!$required_fields) {
@@ -162,13 +169,14 @@ class TripalEntityLookup {
       return NULL;
     }
 
-    // We only need to evaluate for one required field, just pick the first one.
+    // We only need to evaluate for one of the required fields,
+    // for simplicity just pick the first one.
     $required_field = array_key_first($required_fields);
     $required_base_table = $required_fields[$required_field];
 
     // Make sure base table matches (it should in all cases)
     if ($base_table != $required_base_table) {
-      throw new \Exception("base table for bundle $bundle_id field $required_field is $required_base_table, this does not match passed table $base_table");
+      throw new \Exception("base table for bundle $bundle_id field \"$required_field\" is \"$required_base_table\", this does not match passed table \"$base_table\"");
     }
 
     // This will be the drupal field table and column to query
@@ -219,11 +227,13 @@ class TripalEntityLookup {
   private function getRequiredFields($bundle_id, $entity_type) {
     $field_list = [];
     $cache_id = 'tripal_required_fields';
+    // Get cached value if available
     if ($cache = \Drupal::cache()->get($cache_id)) {
       $field_list = $cache->data;
     }
     else {
-      // Look up every bundle so we only have to cache once. Takes about 1/10 second.
+      // Get and cache values. Look up every bundle so that
+      // we only have to cache once. Takes about 1/10 second.
       $entityFieldManager = \Drupal::service('entity_field.manager');
       $bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo($entity_type);
       foreach ($bundles as $bundle_name => $bundle_info) {
@@ -239,7 +249,7 @@ class TripalEntityLookup {
           }
         }
       }
-      // Set cached values to expire in 1 hour
+      // Cache the values, specifying expiration in 1 hour.
       \Drupal::cache()->set($cache_id, $field_list, \Drupal::time()->getRequestTime() + (3600));
     }
     return $field_list[$bundle_id];
