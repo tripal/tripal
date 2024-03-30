@@ -65,18 +65,16 @@ class ChadoProtocolFormatterDefault extends ChadoFormatterBase {
         $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
       }
 
-      // Create a clickable link to the corresponding entity.
+      // When possible, create a clickable link to the corresponding entity.
       $item_settings = $item->getDataDefinition()->getSettings();
       $id = $item_settings['storage_plugin_settings']['linker_fkey_column'] ?? 'protocol_id';
-      $displayed_string = $lookup_manager->getFieldUrl(
+      $renderable_item = $lookup_manager->getRenderableItem(
         $displayed_string,
         $item->get($id)->getString(),
         $item_settings
       );
 
-      $list[$delta] = [
-        '#markup' => $displayed_string,
-      ];
+      $list[$delta] = $renderable_item;
     }
 
     // If only one element has been found, don't make into a list.

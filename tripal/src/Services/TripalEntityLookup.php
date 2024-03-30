@@ -26,11 +26,13 @@ class TripalEntityLookup {
    *   If no link is possible, then appropriate render array values for simple markup.
    */
   public function getRenderableItem($displayed_string, $record_id, $item_settings) {
-$t1 = microtime(TRUE); //@@@
-    // Default markup is to just display the passed string.
-    $renderabel_item = [
+
+    // Default render array is to just display the passed string.
+    $renderable_item = [
       '#markup' => $displayed_string,
     ];
+
+    // If we can generate a link, then update the render array.
     $bundle_id = $this->getBundleFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
     if ($bundle_id) {
       $base_table = $this->getTableFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
@@ -46,44 +48,7 @@ $t1 = microtime(TRUE); //@@@
         }
       }
     }
-$t2 = microtime(TRUE); //@@@
-dpm($renderable_item, "CP2 renderable_item generation time ".sprintf("%0.4f", $t2-$t1)); //@@@
     return $renderable_item;
-  }
-
-  /**
-   * The top-level function, used by fields to get a ready-to-use url to link to an entity.
-   *
-   * @param string $displayed_string
-   *   The text that will be displayed as a url link
-   * @param integer $record_id
-   *   The primary key value for the requested record
-   * @param array $item_settings
-   *   Contains the following key-value pairs:
-   *   'storage_plugin_id' => The id of the TripalStorage plugin, e.g. "chado_storage"
-   *   'termIdSpace' => The bundle's CV term namespace e.g. "NCIT"
-   *   'termAccession' => The bundle's CV term accession e.g. "C47954"
-   *
-   * @return string
-   *   The rendered url, or if no match was found, the original $displayed_string.
-   */
-  public function getFieldUrl($displayed_string, $record_id, $item_settings) {
-dpm("Deprecated getFieldUrl called $displayed_string");
-    $bundle_id = $this->getBundleFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
-    if ($bundle_id) {
-      $base_table = $this->getTableFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
-      if ($base_table) {
-        $uri = $this->getEntityURI($base_table, $record_id, $bundle_id);
-        if ($uri) {
-          // Url::fromUri($uri) takes multiple seconds!
-          //$displayed_string = Link::fromTextAndUrl($dsplayed_string, Url::fromUri($uri))->toString();
-          // traced as far as the Drupal line $router->match($path);  core/lib/Drupal/Core/Path/PathValidator.php:161
-          // we can just bypass that and save tons of time -- @to-do is that okay?
-          $displayed_string = '<a href="' . $uri . '">' . $displayed_string . '</a>';
-        }
-      }
-    }
-    return $displayed_string;
   }
 
   /**
@@ -154,38 +119,6 @@ dpm("Deprecated getFieldUrl called $displayed_string");
       }
     }
     return $bundle_id;
-  }
-
-  /**
-   * Retrieve a uri for an entity corresponding to a record in a table.
-   *
-   * @param string $base_table
-   *   The name of the chado table
-   * @param integer $record_id
-   *   The primary key value for the requested record in the $base_table
-   * @param string $bundle_id
-   *   The name of the drupal bundle, e.g. for base table 'arraydesign' it is 'array_design'
-   * @param string $entity_type
-   *   The type of entity, only 'tripal_entity' is supported.
-   *
-   * @return string
-   *   The local uri string for the requested entity.
-   *   Will be null if not found, can happen if the entity has not been published.
-   */
-  public function getEntityURI($base_table, $record_id, $bundle_id, $entity_type = 'tripal_entity') {
-
-    // Catch invalid entity type
-    if ($entity_type != 'tripal_entity') {
-      throw new \Exception("Invalid entity type \"$entity_type\". getEntityURI() only supports the entity type \"tripal_entity\"");
-    }
-
-    $uri = NULL;
-    $id = $this->getEntityIdFromRecordId($base_table, $record_id, $bundle_id);
-    if ($id) {
-      $uri = "internal:/$bundle_id/$id";
-    }
-
-    return $uri;
   }
 
   /**
