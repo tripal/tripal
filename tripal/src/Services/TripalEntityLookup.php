@@ -9,7 +9,8 @@ use \Drupal\tripal\Services\TripalEntityTitle;
 class TripalEntityLookup {
 
   /**
-   * The top-level function, used by fields to get a ready-to-use url to link to an entity.
+   * The top-level function, used by fields to get a ready-to-use render
+   * array item to link to an entity.
    *
    * @param string $displayed_string
    *   The text that will be displayed as a url link
@@ -27,12 +28,12 @@ class TripalEntityLookup {
    */
   public function getRenderableItem($displayed_string, $record_id, $item_settings) {
 
-    // Default render array is to just display the passed string.
+    // Default render array item will just display the passed string.
     $renderable_item = [
       '#markup' => $displayed_string,
     ];
 
-    // If we can generate a link, then update the render array.
+    // If we can generate a link, then update the render array item.
     $bundle_id = $this->getBundleFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
     if ($bundle_id) {
       $base_table = $this->getTableFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
@@ -52,7 +53,7 @@ class TripalEntityLookup {
   }
 
   /**
-   * Retrieve the base chado table for a given bundle given the bundle's CV term
+   * Retrieve the base table for a given bundle given the bundle's CV term.
    *
    * @param string $termIdSpace
    *   The bundle's CV Term namespace e.g. "NCIT"
@@ -60,10 +61,10 @@ class TripalEntityLookup {
    *   The bundle's CV term accession e.g. "C47954"
    *
    * @return string
-   *   The chado table name, or null if no match found.
+   *   The table name, or null if no match found.
    */
   public function getTableFromCvTerm($termIdSpace, $termAccession) {
-    $chado_table = NULL;
+    $table = NULL;
     $entity_type = 'tripal_entity';
     $bundle = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
     if ($bundle) {
@@ -82,18 +83,18 @@ class TripalEntityLookup {
             $base_table = $storage_plugin_settings['base_table'];
             $base_column = $storage_plugin_settings['base_column'] ?? '';
             if ($base_table and $base_column) {
-              $chado_table = $base_table;
+              $table = $base_table;
               break;
             }
           }
         }
       }
     }
-    return $chado_table;
+    return $table;
   }
 
   /**
-   * Retrieve a Tripal bundle id based on its CV term
+   * Retrieve a Tripal bundle id based on its CV term.
    *
    * @param string $termIdSpace
    *   The bundle's CV Term namespace e.g. "NCIT"
@@ -112,7 +113,7 @@ class TripalEntityLookup {
       $bundle_info = \Drupal::entityTypeManager()->getStorage('tripal_entity_type')->load($id);
       $bundleIdSpace = $bundle_info->getTermIdSpace();
       $bundleAccession = $bundle_info->getTermAccession();
-      // If this is the desired bundle, the values will match
+      // Search for the bundle where the values match
       if (($termIdSpace == $bundleIdSpace) and ($termAccession == $bundleAccession)) {
         $bundle_id = $id;
         break;
@@ -122,7 +123,7 @@ class TripalEntityLookup {
   }
 
   /**
-   * Retrieve the pkey for an entity corresponding to a record in a table.
+   * Retrieve the pkey for an entity corresponding to a given record in a given table.
    *
    * @param string $base_table
    *   The name of the chado table
@@ -173,7 +174,7 @@ class TripalEntityLookup {
       $query->condition('e.' . $entity_column_name, $record_id, '=');
 
       // There should only be zero or one hit, but this exception is here
-      // just in case. For zero hits, we return null.
+      // during development just in case. For zero hits, we return null.
       $num_hits = $query->countQuery()->execute()->fetchField();
       if ($num_hits > 1) {
         throw new \Exception("TripalEntityLookup: Too many hits ($num_hits) for table $entity_table_name column $entity_column_name record $record_id");
@@ -186,9 +187,7 @@ class TripalEntityLookup {
       }
     }
     catch (\Exception $e) {
-      dpm("Temporary warning that db query was invalid: ".$e->getMessage()); //@@@
-      return NULL;
-      // throw new \Exception('Invalid database query: ' . $e->getMessage());
+      throw new \Exception('Invalid database query: ' . $e->getMessage());
     }
 
     return $id;
