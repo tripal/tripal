@@ -149,7 +149,7 @@ trait TripalTestTrait {
    * Drupal prefixed test tables and dropped after the fact.
    *
    * We went this route intially for maximum code coverage in order to catch
-   * all deprication notices posed by Drupal. We may want to replace this approach
+   * all deprecation notices posed by Drupal. We may want to replace this approach
    * at a later date.
    *
    * @param array $values
@@ -187,7 +187,7 @@ trait TripalTestTrait {
    * Drupal prefixed test tables and dropped after the fact.
    *
    * We went this route intially for maximum code coverage in order to catch
-   * all deprication notices posed by Drupal. We may want to replace this approach
+   * all deprecation notices posed by Drupal. We may want to replace this approach
    * at a later date.
    *
    * @param array $values
