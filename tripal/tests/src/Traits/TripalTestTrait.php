@@ -11,7 +11,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *
  *
  */
-trait ChadoStorageTestTrait {
+trait TripalTestTrait {
 
   /**
    * Creates a Tripal Field for testing purposes.
