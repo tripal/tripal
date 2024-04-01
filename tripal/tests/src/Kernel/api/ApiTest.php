@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal\Kernel\Api\TripalApi;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 
 /**
  * Tests for procedural API functions.
@@ -10,7 +10,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group Tripal
  * @group Tripal Api
  */
-class apiTest extends KernelTestBase {
+class apiTest extends TripalTestKernelBase {
 
   /**
    * {@inheritdoc}
