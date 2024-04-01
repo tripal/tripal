@@ -1,7 +1,7 @@
 <?php
 namespace Drupal\Tests\tripal_chado\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestTrait;
@@ -26,7 +26,7 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestTrait;
  * @group Tripal
  * @group Tripal Chado
  */
-abstract class ChadoTestKernelBase extends KernelTestBase {
+abstract class ChadoTestKernelBase extends TripalTestKernelBase {
 
   use ChadoTestTrait;
 

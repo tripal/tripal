@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Core\Form\FormState;
 
 /**
@@ -13,7 +13,7 @@ use Drupal\Core\Form\FormState;
  *
  * @group TripalImporter
  */
-class TripalImporterFormBuildTest extends KernelTestBase {
+class TripalImporterFormBuildTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
   protected static $modules = ['system', 'user', 'file', 'tripal'];

@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal_biodb\Unit\Lock;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Core\Lock\DatabaseLockBackend;
 use Drupal\Core\Lock\PersistentDatabaseLockBackend;
 use Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend;
@@ -31,7 +31,7 @@ use Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend;
  * @group Tripal BioDb
  * @group Tripal BioDb Lock
  */
-class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
+class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**
    * Database persitent shared lock backend to test.
@@ -53,7 +53,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
    * @var \Drupal\Core\State\StateInterface
    */
   protected $state;
-  
+
   /**
    * Tests setup method.
    */
@@ -73,7 +73,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
   /**
    * Tests exclusive lock.
    *
-   * @covers ::acquire 
+   * @covers ::acquire
    */
   public function testExclusiveLockBasics() {
     $lock_name = 'test_lock_a';
@@ -146,7 +146,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     // Try to reacquire first lock while in use by other.
     $success = $this->sharedLocker->acquire($lock_name);
     $this->assertFalse($success, 'Given up first lock cannot be re-acquired.');
-    
+
     // Release lock.
     $success = $other_locker->release($lock_name);
   }
@@ -154,7 +154,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
   /**
    * Tests shared lock.
    *
-   * @covers ::acquire 
+   * @covers ::acquire
    */
   public function testSharedLockBasics() {
     $lock_name = 'test_lock_a';
@@ -232,7 +232,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
   /**
    * Tests exclusive acquire denies a shared lock.
    *
-   * @covers ::acquire 
+   * @covers ::acquire
    */
   public function testNotAcquireWhenShared() {
     $lock_name = 'test_lock_share';
@@ -244,12 +244,12 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     // Should not be able to "exclusive" lock a shared lock.
     $success = $this->sharedLocker->acquire($lock_name);
     $this->assertFalse($success, 'Shared lock can not be locked for exclusive use.');
-    
+
     // Try to lock using parent class.
     $other_locker = new PersistentDatabaseLockBackend($this->container->get('database'));
     $success = $other_locker->acquire($lock_name);
     $this->assertFalse($success, 'Shared lock can not be locked for exclusive use by parent class.');
-    
+
     // Clear.
     $this->sharedLocker->releaseShared($lock_name, $owner);
   }
@@ -258,7 +258,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
    * Tests acquire will continue even if it could not use state API to store
    * infos.
    *
-   * @covers ::acquire 
+   * @covers ::acquire
    */
   public function testAcquireWithoutState() {
     $lock_name = 'test_lock_share';
@@ -330,7 +330,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     // Make sure main lock is free.
     $is_free = $this->sharedLocker->lockMayBeAvailable($lock_name);
     $this->assertTrue($is_free, 'No main shared lock.');
-    
+
     // Acquire a lock.
     $owner = $this->sharedLocker->acquireShared($lock_name);
     $this->assertNotEmpty($owner, 'Could acquire a shared lock.');
@@ -360,7 +360,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     // Make sure main lock is not free.
     $is_free = $this->sharedLocker->lockMayBeAvailable($lock_name);
     $this->assertFalse($is_free, 'Main shared lock in use.');
-    
+
     // Acquire a lock.
     $owner = $this->sharedLocker->acquireShared($lock_name);
     $this->assertFalse($owner, 'Could not acquire a shared lock.');
@@ -389,7 +389,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     // Make sure main lock is not free.
     $is_free = $this->sharedLocker->lockMayBeAvailable($lock_name);
     $this->assertFalse($is_free, 'Main shared lock in use.');
-    
+
     // Acquire a lock.
     $owner = $this->sharedLocker->acquireShared($lock_name);
     $this->assertNotEmpty($owner, 'Could acquire a shared lock.');
@@ -460,7 +460,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     // PID.
     $pid = $this->sharedLocker->getOwnerPid($lock_name, $owner);
     $this->assertGreaterThan(0, $pid, 'Got a PID.');
-    
+
     // Check that main share lock has no PID.
     $pid = $this->sharedLocker->getOwnerPid(
       $lock_name,
@@ -517,7 +517,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     $this->sharedLocker->release($lock_name);
     $is_free = $this->sharedLocker->lockMayBeAvailable($lock_name);
     $this->assertFalse($is_free, 'Shared lock not released.');
-    
+
     // Release share for real.
     $this->sharedLocker->releaseShared($lock_name, $owner);
     $is_free = $this->sharedLocker->lockMayBeAvailable($lock_name);
@@ -544,7 +544,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     $this->sharedLocker->releaseShared($lock_name, $owner);
     $is_free = $this->sharedLocker->lockMayBeAvailable($lock_name);
     $this->assertFalse($is_free, 'Lock not released by releaseShare().');
-    
+
     // Release lock for real.
     $this->sharedLocker->release($lock_name);
     $is_free = $this->sharedLocker->lockMayBeAvailable($lock_name);
@@ -587,7 +587,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     $this->assertFalse($is_free, 'Lock 3 not released.');
     $is_free = $this->sharedLocker->lockMayBeAvailable($lock_prefix . '4');
     $this->assertFalse($is_free, 'Lock 4 not released.');
-    
+
     // Force lock release through PersistentDatabaseSharedLockBackend.
     $parent_locker = new PersistentDatabaseLockBackend($this->container->get('database'));
     // We must acquire at least one lock with this locker in order to use
@@ -640,7 +640,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     // Acquire a lock.
     $success = $this->sharedLocker->acquire($lock_name, $timeout);
     $this->assertTrue($success, 'Could acquire a lock.');
-    
+
     // Get Expiration (should not be 10 sec less than above timeout).
     $delay = $this->sharedLocker->getCurrentExpirationDelay($lock_name);
     $this->assertGreaterThan($timeout - 10, $delay, 'Expiration close to the initial timeout.');
@@ -652,7 +652,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     // Acquire a shared lock.
     $owner = $this->sharedLocker->acquireShared($lock_name, $timeout);
     $this->assertNotEmpty($owner, 'Could acquire a shared lock.');
-    
+
     // Get Expiration (should not be 10 sec less than above timeout).
     $delay = $this->sharedLocker->getCurrentExpirationDelay($lock_name);
     $this->assertGreaterThan($timeout - 10, $delay, 'Expiration close to the initial timeout (shared).');
