@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
 
 /**
@@ -14,7 +14,7 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
  * @group Tripal TripalDBX
  * @group Tripal TripalDBX Connection
  */
-class ConnectionTest extends KernelTestBase {
+class ConnectionTest extends TripalTestKernelBase {
 
   /**
    * {@inheritdoc}
