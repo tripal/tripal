@@ -9,64 +9,119 @@ use \Drupal\tripal\Services\TripalEntityTitle;
 class TripalEntityLookup {
 
   /**
-   * The top-level function, used by fields to get a ready-to-use render
+   * This is used by field formatters to get a ready-to-use render
    * array item to link to an entity.
    *
    * @param string $displayed_string
    *   The text that will be displayed as a url link
-   * @param integer $record_id
-   *   The primary key value for the requested record
-   * @param array $item_settings
-   *   Contains the following key-value pairs:
-   *   'storage_plugin_id' => The id of the TripalStorage plugin, e.g. "chado_storage"
-   *   'termIdSpace' => The bundle's CV term namespace e.g. "NCIT"
-   *   'termAccession' => The bundle's CV term accession e.g. "C47954"
+   * @param integer $entity_id
+   *   The primary key value for the Drupal entity
    *
    * @return array
    *   If a link is possible, then appropriate render array values to generate the link.
    *   If no link is possible, then appropriate render array values for simple markup.
    */
-  public function getRenderableItem($displayed_string, $record_id, $item_settings) {
+  public function getRenderableItem($displayed_string, $entity_id) {
 
-    // Default render array item will just display the passed string.
-    $renderable_item = [
-      '#markup' => $displayed_string,
-    ];
-
-    // If we can generate a link, then update the render array item.
-    $bundle_id = $this->getBundleFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
-    if ($bundle_id) {
-      $base_table = $this->getTableFromCvTerm($item_settings['termIdSpace'], $item_settings['termAccession']);
-      if ($base_table) {
-        $entity_id = $this->getEntityIdFromRecordId($base_table, $record_id, $bundle_id, 'tripal_entity');
-        if ($entity_id) {
-          $url_object = Url::fromRoute('entity.tripal_entity.canonical', ['tripal_entity' => $entity_id]);
-          $renderable_item = [
-            '#type' => 'link',
-            '#url' => $url_object,
-            '#title' => $displayed_string,
-          ];
-        }
-      }
+    // If entity_id is not null, then provide a linking render array item.
+    if ($entity_id) {
+      $url_object = Url::fromRoute('entity.tripal_entity.canonical', ['tripal_entity' => $entity_id]);
+      $renderable_item = [
+        '#type' => 'link',
+        '#url' => $url_object,
+        '#title' => $displayed_string,
+      ];
     }
+    else {
+      // If there is no entity_id, the render array item will just display the passed string.
+      $renderable_item = [
+        '#markup' => $displayed_string,
+      ];
+    }
+
     return $renderable_item;
   }
 
   /**
-   * Retrieve the base table for a given bundle given the bundle's CV term.
+   * Retrieve a Drupal entity ID for a record in a given bundle given the bundle's CV term.
+   *
+   * @param integer $record_id
+   *   The primary key value for the requested record
+   * @param string $termIdSpace
+   *   The bundle's CV Term namespace e.g. for gene "SO"
+   * @param string $termAccession
+   *   The bundle's CV term accession e.g. for gene "0000704"
+   * @param string $entity_type
+   *   The type of entity, only 'tripal_entity' is supported.
+   *
+   * @return string
+   *   The table name, or null if no match found.
+   */
+  public function getEntityId($record_id, $termIdSpace, $termAccession, $entity_type = 'tripal_entity') {
+
+    // Catch invalid entity type
+    if ($entity_type != 'tripal_entity') {
+      throw new \Exception("Invalid entity type \"$entity_type\". getEntityId() only supports the entity type \"tripal_entity\"");
+    }
+
+    // Perform the lookup steps
+    $entity_id = NULL;
+    $bundle_id = $this->getBundleFromCvTerm($termIdSpace, $termAccession, $entity_type);
+    if ($bundle_id) {
+      $base_table = $this->getBundleBaseTable($bundle_id, $entity_type);
+      if ($base_table) {
+        $entity_id = $this->getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type);
+      }
+    }
+
+    return $entity_id;
+  }
+
+  /**
+   * Retrieve a Tripal bundle id based on its CV term.
    *
    * @param string $termIdSpace
    *   The bundle's CV Term namespace e.g. "NCIT"
    * @param string $termAccession
    *   The bundle's CV term accession e.g. "C47954"
+   * @param string $entity_type
+   *   The type of entity, only 'tripal_entity' is supported.
    *
    * @return string
-   *   The table name, or null if no match found.
+   *   The bundle id, or null if no match found.
    */
-  public function getTableFromCvTerm($termIdSpace, $termAccession) {
+  protected function getBundleFromCvTerm($termIdSpace, $termAccession, $entity_type) {
+    $bundle_id = NULL;
+    $bundle_manager = \Drupal::service('entity_type.bundle.info');
+    $bundle_list = $bundle_manager->getBundleInfo($entity_type);
+    foreach ($bundle_list as $id => $properties) {
+      // Get each bundle's CV term
+      $bundle_info = \Drupal::entityTypeManager()->getStorage('tripal_entity_type')->load($id);
+      $bundleIdSpace = $bundle_info->getTermIdSpace();
+      $bundleAccession = $bundle_info->getTermAccession();
+
+      // Find the bundle where the term values match
+      if (($termIdSpace == $bundleIdSpace) and ($termAccession == $bundleAccession)) {
+        $bundle_id = $id;
+        break;
+      }
+    }
+    return $bundle_id;
+  }
+
+  /**
+   * Retrieve the base table for a given bundle given the bundle's CV term.
+   *
+   * @param string $bundle
+   *   The bundle's ID, e.g. "gene"
+   * @param string $entity_type
+   *   The type of entity, only 'tripal_entity' is supported.
+   *
+   * @return string
+   *   The base table name, or null if no match found.
+   */
+  protected function getBundleBaseTable($bundle, $entity_type) {
     $table = NULL;
-    $entity_type = 'tripal_entity';
-    $bundle = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
     if ($bundle) {
       $entityFieldManager = \Drupal::service('entity_field.manager');
       $fields = $entityFieldManager->getFieldDefinitions($entity_type, $bundle);
@@ -77,7 +132,7 @@ class TripalEntityLookup {
         // Skip drupal fields. Look for the first tripal field that has a base_column
         // set. Fields from linker tables do not have a base_column.
         if (preg_match('/^'.$bundle.'/', $field_name)) {
-          $field_storage = FieldStorageConfig::loadByName('tripal_entity', $field_name);
+          $field_storage = FieldStorageConfig::loadByName($entity_type, $field_name);
           if ($field_storage) {
             $storage_plugin_settings = $field_storage->getSettings()['storage_plugin_settings'];
             $base_table = $storage_plugin_settings['base_table'];
@@ -91,35 +146,6 @@ class TripalEntityLookup {
       }
     }
     return $table;
-  }
-
-  /**
-   * Retrieve a Tripal bundle id based on its CV term.
-   *
-   * @param string $termIdSpace
-   *   The bundle's CV Term namespace e.g. "NCIT"
-   * @param string $termAccession
-   *   The bundle's CV term accession e.g. "C47954"
-   *
-   * @return string
-   *   The bundle id, or null if no match found.
-   */
-  public function getBundleFromCvTerm($termIdSpace, $termAccession) {
-    $bundle_id = NULL;
-    $bundle_manager = \Drupal::service('entity_type.bundle.info');
-    $bundle_list = $bundle_manager->getBundleInfo('tripal_entity');
-    foreach ($bundle_list as $id => $properties) {
-      // Get each bundle's CV term
-      $bundle_info = \Drupal::entityTypeManager()->getStorage('tripal_entity_type')->load($id);
-      $bundleIdSpace = $bundle_info->getTermIdSpace();
-      $bundleAccession = $bundle_info->getTermAccession();
-      // Search for the bundle where the values match
-      if (($termIdSpace == $bundleIdSpace) and ($termAccession == $bundleAccession)) {
-        $bundle_id = $id;
-        break;
-      }
-    }
-    return $bundle_id;
   }
 
   /**
@@ -138,12 +164,7 @@ class TripalEntityLookup {
    *   The id for the requested entity in the tripal_entity table.
    *   Will be null if zero or if multiple hits.
    */
-  public function getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type = 'tripal_entity') {
-
-    // Catch invalid entity type
-    if ($entity_type != 'tripal_entity') {
-      throw new \Exception("Invalid entity type \"$entity_type\". getEntityIdFromRecordId() only supports the entity type \"tripal_entity\"");
-    }
+  protected function getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type) {
 
     $id = NULL;
     $required_fields = $this->getRequiredFields($bundle_id, $entity_type);
@@ -203,9 +224,9 @@ class TripalEntityLookup {
    *
    * @return array
    *   A list of required fields.
-   *   Key is field name, value is chado base table.
+   *   Key is field name, value is base table.
    */
-  private function getRequiredFields($bundle_id, $entity_type) {
+  protected function getRequiredFields($bundle_id, $entity_type) {
     $field_list = [];
     $cache_id = 'tripal_required_fields';
     // Get cached value if available

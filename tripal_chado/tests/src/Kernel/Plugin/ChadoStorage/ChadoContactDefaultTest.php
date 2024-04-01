@@ -337,5 +337,28 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
       'Contact name for testing #1',
       $base_dbrecord->linked_name,
       "Failing the extra more readable check that the updated manufacturer is the one we expect.");
+
+    // Test that a link can be generated to the referenced manufacturer (i.e. contact)
+    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
+    // CV Term for the contact field is 'Communication Contact'
+    $item_settings = [
+      'storage_plugin_id' => 'chado_storage',
+      'termIdSpace' => 'NCIT',
+      'termAccession' => 'C47954',
+    ];
+//    $id = 'manufacturer_id';
+print "records="; var_dump($records); //@@@
+
+
+//      $item_settings = $item->getDataDefinition()->getSettings();
+//      $id = $item_settings['storage_plugin_settings']['linker_fkey_column'] ?? 'contact_id';
+    $renderable_item = $lookup_manager->getRenderableItem(
+      'test_xyzzy',
+      $base_dbrecord->manufacturer_id,
+      $item_settings
+    );
+print "renderable item="; var_dump($renderable_item); //@@@
+
+
   }
 }

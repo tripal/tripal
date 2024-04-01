@@ -69,10 +69,14 @@ class ChadoAnalysisFormatterDefault extends ChadoFormatterBase {
       // When possible, create a clickable link to the corresponding entity.
       $item_settings = $item->getDataDefinition()->getSettings();
       $id = $item_settings['storage_plugin_settings']['linker_fkey_column'] ?? 'analysis_id';
+      $entity_id = $lookup_manager->getEntityId(
+        $item->get($id)->getString(),
+        $item_settings['termIdSpace'],
+        $item_settings['termAccession']
+      );
       $renderable_item = $lookup_manager->getRenderableItem(
         $displayed_string,
-        $item->get($id)->getString(),
-        $item_settings
+        $entity_id
       );
 
       $list[$delta] = $renderable_item;
