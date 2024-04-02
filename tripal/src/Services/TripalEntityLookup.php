@@ -13,9 +13,12 @@ class TripalEntityLookup {
    * array item to link to an entity.
    *
    * @param string $displayed_string
-   *   The text that will be displayed as a url link
+   *   The text that will be displayed as a url link.
    * @param int $entity_id
-   *   The primary key value for the Drupal entity
+   *   The primary key value for the Drupal entity. We store -1 in
+   *   the Drupal field tables to indicate when there is no Drupal
+   *   entity because the TripalEntity class won't save a zero when
+   *   drupal_store is TRUE.
    *
    * @return array
    *   If a link is possible, then appropriate render array values to generate the link.
@@ -24,7 +27,7 @@ class TripalEntityLookup {
   public function getRenderableItem($displayed_string, $entity_id) {
 
     // If an entity_id is provided, then provide a linking render array item.
-    if ($entity_id) {
+    if ($entity_id and ($entity_id > 0)) {
       $url_object = Url::fromRoute('entity.tripal_entity.canonical', ['tripal_entity' => $entity_id]);
       $renderable_item = [
         '#type' => 'link',
@@ -54,8 +57,8 @@ class TripalEntityLookup {
    * @param string $entity_type
    *   The type of entity, only 'tripal_entity' is supported.
    *
-   * @return string
-   *   The table name, or null if no match found.
+   * @return int|null
+   *   The Drupal entity ID, or null if no match found.
    */
   public function getEntityId($record_id, $termIdSpace, $termAccession, $entity_type = 'tripal_entity') {
 
@@ -87,7 +90,7 @@ class TripalEntityLookup {
    * @param string $entity_type
    *   The type of entity, only 'tripal_entity' is supported.
    *
-   * @return string
+   * @return string|null
    *   The bundle id, or null if no match found.
    */
   protected function getBundleFromCvTerm($termIdSpace, $termAccession, $entity_type) {
@@ -117,7 +120,7 @@ class TripalEntityLookup {
    * @param string $entity_type
    *   The type of entity, only 'tripal_entity' is supported.
    *
-   * @return string
+   * @return string|null
    *   The base table name, or null if no match found.
    */
   protected function getBundleBaseTable($bundle, $entity_type) {

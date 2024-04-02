@@ -150,12 +150,12 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     ]);
 
     // This property will store the Drupal entity ID of the linked chado
-    // record, when one exists, using its primary key column name.
+    // record, if one exists.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
       'action' => 'function',
       'drupal_store' => TRUE,
       'namespace' => self::$chadostorage_namespace,
-      'function' => self::$chadostorage_callback,
+      'function' => self::$drupal_entity_callback,
       'fkey' => self::$object_id,
     ]);
 

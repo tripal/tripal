@@ -29,7 +29,7 @@ services:
   tripal.pub_library:
     class: Drupal\tripal\TripalPubLibrary\PluginManagers\TripalPubLibraryManager
     arguments: ['@database']
-    parent: default_plugin_manager   
+    parent: default_plugin_manager
   tripal.pub_parser:
     class: Drupal\tripal\TripalPubParser\PluginManagers\TripalPubParserManager
     parent: default_plugin_manager
