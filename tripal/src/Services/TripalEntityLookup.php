@@ -14,7 +14,7 @@ class TripalEntityLookup {
    *
    * @param string $displayed_string
    *   The text that will be displayed as a url link
-   * @param integer $entity_id
+   * @param int $entity_id
    *   The primary key value for the Drupal entity
    *
    * @return array
@@ -45,7 +45,7 @@ class TripalEntityLookup {
   /**
    * Retrieve a Drupal entity ID for a record in a given bundle given the bundle's CV term.
    *
-   * @param integer $record_id
+   * @param int $record_id
    *   The primary key value for the requested record
    * @param string $termIdSpace
    *   The bundle's CV Term namespace e.g. for gene "SO"
@@ -153,20 +153,22 @@ class TripalEntityLookup {
    *
    * @param string $base_table
    *   The name of the chado table
-   * @param integer $record_id
+   * @param int $record_id
    *   The primary key value for the requested record in the $base_table
    * @param string $bundle_id
    *   The name of the drupal bundle, e.g. for base table 'arraydesign' it is 'array_design'
    * @param string $entity_type
    *   The type of entity, only 'tripal_entity' is supported.
    *
-   * @return integer
-   *   The id for the requested entity in the tripal_entity table.
-   *   Will be null if zero or if multiple hits.
+   * @return int|null
+   *   The id for the requested Drupal entity in the tripal_entity table.
+   *   Will be null if there was no corresponding entity. This can happen
+   *   if the content is not published, or if this is not a content type.
    */
   protected function getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type) {
 
     $id = NULL;
+
     $required_fields = $this->getRequiredFields($bundle_id, $entity_type);
     if (!$required_fields) {
       // Everything is based on the assumption that there is at least one
@@ -180,17 +182,17 @@ class TripalEntityLookup {
     $required_field = array_key_first($required_fields);
     $required_base_table = $required_fields[$required_field];
 
-    // Make sure base table matches (it should in all cases)
+    // Make sure base table matches. It should in all cases, but check just in case.
     if ($base_table != $required_base_table) {
       throw new \Exception("base table for bundle $bundle_id field \"$required_field\" is \"$required_base_table\", this does not match passed table \"$base_table\"");
     }
 
-    // This will be the drupal field table and column to query
+    // These will be the drupal field table name and column name to query.
     $entity_table_name = 'tripal_entity__' . $required_field;
     $entity_column_name = $required_field . '_record_id';
 
+    // Query the appropriate drupal field table for this record_id
     try {
-      // Query the appropriate drupal field table for this record_id
       $conn = \Drupal::service('database');
       $query = $conn->select($entity_table_name, 'e');
       $query->addField('e', 'entity_id');
@@ -205,9 +207,9 @@ class TripalEntityLookup {
       elseif ($num_hits == 1) {
         $id = $query->execute()->fetchField();
       }
-      else {
+      else { //@@@
         dpm("Temporary warning that there were no hits to record_id $record_id in table $entity_table_name column $entity_column_name"); //@@@
-      }
+      } //@@@
     }
     catch (\Exception $e) {
       throw new \Exception('Invalid database query: ' . $e->getMessage());
