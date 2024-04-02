@@ -706,6 +706,9 @@ tables:
             -   name: 'is_obsolete'
                 term_id: 'local:is_obsolete'
                 term_name: 'is_obsolete'
+            -   name: 'is_relationshiptype'
+                term_id: 'local:relationship'
+                term_name: 'relationship'
             -   name: 'name'
                 term_id: 'schema:name'
                 term_name: 'name'
@@ -718,6 +721,9 @@ tables:
             -   name: 'dbxref_id'
                 term_id: 'data:2091'
                 term_name: 'Accession'
+            -   name: 'is_for_definition'
+                term_id: IAO:0000115
+                term_name: definition
 
     -   name: 'cvtermpath'
         columns:
@@ -1152,6 +1158,9 @@ tables:
             -   name: 'rank'
                 term_id: 'OBCS:0000117'
                 term_name: 'rank order'
+            -   name: 'cgroup'
+                term_id: 'NCIT:C43359'
+                term_name: 'Group'
 
     -   name: 'featureloc'
         columns:
@@ -1350,6 +1359,9 @@ tables:
             -   name: 'featuremap_id'
                 term_id: 'data:1274'
                 term_name: 'Map'
+            -   name: 'rangestr'
+                term_id: 'data:1017'
+                term_name: 'Sequence range'
 
     -   name: 'feature_relationship'
         columns:
@@ -2090,6 +2102,12 @@ tables:
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
+            -   name: 'label'
+                term_id: 'rdfs:label'
+                term_name: 'label'
+            -   name: 'distance'
+                term_id: 'NCIT:C25167'
+                term_name: 'Distance'
 
     -   name: 'phylonode_dbxref'
         columns:
@@ -2393,6 +2411,18 @@ tables:
             -   name: 'rank'
                 term_id: 'OBCS:0000117'
                 term_name: 'rank order'
+            -   name: 'givennames'
+                term_id: 'NCIT:C40974'
+                term_name: 'First Name'
+            -   name: 'surname'
+                term_id: 'NCIT:C40975'
+                term_name: 'Last Name'
+            -   name: 'suffix'
+                term_id: 'NCIT:C49106'
+                term_name: 'Suffix'
+            -   name: 'editor'
+                term_id: 'NCIT:C43368'
+                term_name: 'Editor'
 
     -   name: 'pubauthor_contact'
         columns:
@@ -2777,6 +2807,9 @@ tables:
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
+            -   name: 'factorvalue'
+                term_id: 'NCIT:C164386'
+                term_name: 'Experimental Factor Value'
 
     -   name: 'studyfactorvalue'
         columns:
