@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalImporter;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use \Drupal\Tests\user\Traits\UserCreationTrait;
 
 /**
@@ -13,7 +13,7 @@ use \Drupal\Tests\user\Traits\UserCreationTrait;
  *
  * @group TripalImporter
  */
-class TripalImporterFormSubmitTest extends KernelTestBase {
+class TripalImporterFormSubmitTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
   protected static $modules = ['system', 'user', 'file', 'tripal'];

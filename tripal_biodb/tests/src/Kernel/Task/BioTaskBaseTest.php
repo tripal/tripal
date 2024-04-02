@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal_biodb\Kernel\Task;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal_biodb\Task\BioTaskBase;
 use Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxConnectionFake;
 
@@ -15,7 +15,7 @@ use Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxConnectionFake;
  * @group Tripal BioDb
  * @group Tripal BioDb Task
  */
-class BioTaskBaseTest extends KernelTestBase {
+class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**
    * Test members.
