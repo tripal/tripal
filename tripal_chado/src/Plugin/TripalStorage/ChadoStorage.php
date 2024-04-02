@@ -101,8 +101,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $settings = $field_definition->getSettings();
     if (array_key_exists('debug', $settings) AND $settings['debug']) {
       $this->field_debugger->addFieldToDebugger($field_name);
-      $this->logger->notice('Debugging has been enabled for :name field.',
-        [':name' => $field_name],
+      $this->logger->notice('Debugging has been enabled for @name field.',
+        ['@name' => $field_name],
         ['drupal_set_message' => TRUE, 'logger' => FALSE]
       );
     }
@@ -411,7 +411,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $replace[] = [$field_name, $delta, $key, $info];
           }
           else if ($action == 'function') {
-            // Create a context to pass to the callback function
+            // Create a context array to pass information to the callback function.
             $context = [];
             $context['field_name'] = $field_name;
             $context['delta'] = $delta;
@@ -420,7 +420,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $context['prop_type'] = $prop_type;
             $context['field_settings'] = $field_settings;
             $function[] = $context;
-//@@@            $function[] = [$field_name, $delta, $key, $info, $field_settings];
           }
           else {
 
@@ -490,6 +489,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // Lastly, let's call any functions.
     foreach ($function as $context) {
+      // Add current values to the context so that a function
+      // can access other non-function fields if it needs to.
+      $context['values'] = $values;
+
+      // Retrieve the needed keys for the $values array
       $field_name = $context['field_name'];
       $delta = $context['delta'];
       $key = $context['key'];
@@ -499,12 +503,16 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $namespace = $prop_storage_settings['namespace'];
       $callback_function = $prop_storage_settings['function'];
 
-      // Add current values to the context so that a function
-      // can access other non-function fields if it needs to.
-      $context['values'] = $values;
-//dpm($context, "CP23 context"); //@@@
-
-      $value = call_user_func($namespace . '::' . $callback_function, $context);
+      // Validate the callback function and then call it to generate a value.
+      $value = NULL;
+      if (function_exists($namespace . '::' . $callback_function)) {
+        $value = call_user_func($namespace . '::' . $callback_function, $context);
+      }
+      else {
+        $this->logger->error('Callback function for field @field does not exist: @namespace::@function.',
+          ['@field' => $field_name, '@namespace' => $namespace, '@function' => $callback_function]
+        );
+      }
 
       if ($value !== NULL && is_string($value)) {
         $values[$field_name][$delta][$key]['value']->setValue(trim($value));
@@ -683,7 +691,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $record_id = $prop_value->getValue();
     $value_col_info = $this->getPathValueColumn($context['path_array']);
     $elements = [
-      'base_table' =>  $base_table,
+      'base_table' => $base_table,
       'root_table' => $context['root_table'],
       'root_alias' => $context['root_alias'],
       'chado_table' => $value_col_info['chado_table'],
@@ -1210,13 +1218,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   * A callback function to allow any linking fields to include the Drupal entity ID.
+   * A callback function to allow linking fields to include the Drupal entity ID.
    *
    * @param array $context
-   *   All of the values that a callback function might need in order
+   *   Values that a callback function might need in order
    *   to calculate the field's final value.
    *
-   * @return integer
+   * @return int|null
    *   The Drupal entity ID, or NULL if it doesn't exist.
    */
   static public function drupalEntityIdLookupCallback($context) {
@@ -1224,8 +1232,9 @@ dpm($context, "CP31 drupalEntityIdLookupCallback() context="); //@@@
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
     $delta = $context['delta'];
     $field_name = $context['field_name'];
-    // Get then name of the primary key column of the Chado table that
-    // the entity is based on, which is a foreign key to whatever the
+
+    // Get the name of the primary key column of the Chado table that
+    // the entity is based on, which is a foreign key for whatever the
     // current content type is. Because this callback handles all fields,
     // it doesn't know what that is, so we need to have that saved in the
     // field properties.
@@ -1241,7 +1250,7 @@ dpm($context, "CP31 drupalEntityIdLookupCallback() context="); //@@@
       return NULL;
     }
 
-    // We now know the Chado record ID. From this get the Drupal entity ID.
+    // Given the Chado record ID and bundle term, we can lookup the Drupal entity ID.
     $record_id = $record_id->getValue('value');
     $entity_id = $lookup_manager->getEntityId(
       $record_id,
