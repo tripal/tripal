@@ -1,4 +1,4 @@
-SET search_path = so,chado,pg_catalog;
+SET search_path=so,chado,pg_catalog;
 --- *** endogenous transcript of a miRNA gene. M ***
 --- *** icro RNAs are produced from precursor mo ***
 --- *** lecules (SO:0000647) that can form local ***

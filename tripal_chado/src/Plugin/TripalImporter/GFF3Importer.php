@@ -317,7 +317,8 @@ class GFF3Importer extends ChadoImporterBase {
     $form['landmark_type'] = [
       '#title' => t('Default Landmark Type'),
       '#type' => 'textfield',
-      '#description' => t("Optional. Use this field to specify a Sequence Ontology type
+      '#required' => TRUE,
+      '#description' => t("Use this field to specify a Sequence Ontology type
        for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
@@ -1431,7 +1432,7 @@ class GFF3Importer extends ChadoImporterBase {
       if (array_key_exists($uniquename, $this->features)) {
         $findex = $this->features[$uniquename]['findex'];
         $feature = $this->getCachedFeature($findex);
-        $feature_id = $feature['feature_id'];
+        $feature_id = $feature['feature_id'] ?? $this->features[$uniquename]['feature_id'];
       }
       else {
         $feature_id = $this->landmarks[$uniquename];
@@ -1919,6 +1920,7 @@ class GFF3Importer extends ChadoImporterBase {
         ['%findex' => $findex, '%file' -> $this->gff_cache_file]));
     }
     $feature = fgets($this->gff_cache_file);
+    $feature = rtrim($feature, "\n");
     $feature = unserialize($feature);
     return $feature;
   }

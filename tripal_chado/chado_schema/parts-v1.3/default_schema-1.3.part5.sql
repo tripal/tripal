@@ -1,4 +1,4 @@
-SET search_path = so,chado,pg_catalog;
+SET search_path=so,chado,pg_catalog;
 --- *** relation: cyanelle_gene ***
 --- *** relation type: VIEW                      ***
 --- ***                                          ***

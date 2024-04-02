@@ -6,6 +6,7 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
@@ -17,6 +18,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *
  * @FieldType(
  *   id = "chado_synonym_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Synonym"),
  *   description = @Translation("A chado syonym"),
  *   default_widget = "chado_synonym_widget_default",
@@ -239,6 +241,22 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
 
 
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $linker_tables = $this->getLinkerTables('synonym', $base_table);
+    if (count($linker_tables) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
   }
 
 }

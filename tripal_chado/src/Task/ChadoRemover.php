@@ -131,7 +131,7 @@ class ChadoRemover extends ChadoTaskBase {
       foreach ($all_mviews as $table_name) {
         $mviews = \Drupal::service('tripal_chado.materialized_views');
         $mview = $mviews->create($table_name, $old_schema->getSchemaName());
-        $mview->destroy();
+        $mview->delete();
       }
 
       // Remove any custom tables in this schema.
@@ -139,7 +139,7 @@ class ChadoRemover extends ChadoTaskBase {
       $all_custom_tables = $custom_tables->getTables($old_schema->getSchemaName());
       foreach ($all_custom_tables as $table_id => $table_name) {
         $custom_table = $custom_tables->loadById($table_id);
-        $custom_table->destroy();
+        $custom_table->delete();
       }
 
       // Drop the schema.

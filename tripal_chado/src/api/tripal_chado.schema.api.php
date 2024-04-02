@@ -378,7 +378,8 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE, $chado_
 
   // Schema name must be a single word containing only lower case letters
   // or numbers and cannot begin with a number.
-  if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
+  $tripalDbxApi = \Drupal::service('tripal.dbx');
+  if ($tripalDbxApi->isInvalidSchemaName($chado_schema, TRUE)) {
     \Drupal::logger('tripal_chado')->error(
       "chado_get_version: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
     return FALSE;

@@ -6,13 +6,14 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal analysis field type.
  *
  * @FieldType(
  *   id = "chado_analysis_type_default",
- *   object_table = "analysis",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Analysis"),
  *   description = @Translation("Application of analytical methods to existing data of a specific type"),
  *   default_widget = "chado_analysis_widget_default",
@@ -22,7 +23,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_analysis_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'analysis';
   protected static $object_id = 'analysis_id';
 
@@ -52,9 +52,10 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'Analysis'
-    $field_settings['termIdSpace'] = 'operation';
-    $field_settings['termAccession'] = '2945';
+    // No default CV Term for this field
+    // Analysis is operation:2945
+    // Genome Assembly is operation:0525
+    // Genome Annotation is operation:0362
     return $field_settings;
   }
 
@@ -110,11 +111,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     // @todo timeexecuted not yet implemented
 
     // Linker table, when used, requires specifying the linker table and column.
-    // For single hop, in the yaml we support using the usual 'base_table'
-    // and 'base_column' settings.
-    $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_col = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? $object_pkey_col;
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
@@ -123,13 +120,13 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
       $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col);
-      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_col);
+      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column);
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
-        if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_col)) {
+        if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
           $term = $mapping->getColumnTermId($linker_table, $column);
           if ($term) {
             $extra_linker_columns[$column] = $term;
@@ -138,7 +135,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       }
     }
     else {
-      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_col);
+      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column);
     }
 
     $properties = [];
@@ -157,9 +154,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
-        'path' => $base_table . '.' . $linker_fkey_col,
-        //'chado_table' => $base_table,
-        //'chado_column' => $linker_fkey_col,
+        'path' => $base_table . '.' . $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -172,8 +167,6 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $linker_table . '.' . $linker_pkey_col,
-        //'chado_table' => $linker_table,
-        //'chado_column' => $linker_pkey_col,
       ]);
 
       // Define the link between the base table and the linker table.
@@ -182,10 +175,6 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_link',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
-        //'left_table' => $base_table,
-        //'left_table_id' => $base_pkey_col,
-        //'right_table' => $linker_table,
-        //'right_table_id' => $linker_left_col,
       ]);
 
       // Define the link between the linker table and the object table.
@@ -193,9 +182,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, self::$object_id, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
-        'path' => $linker_table . '.' . $linker_fkey_col,
-        //'chado_table' => $linker_table,
-        //'chado_column' => $linker_fkey_col,
+        'path' => $linker_table . '.' . $linker_fkey_column,
         'delete_if_empty' => TRUE,
         'empty_value' => 0,
       ]);
@@ -209,8 +196,6 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
           'action' => 'store',
           'drupal_store' => FALSE,
           'path' => $linker_table . '.' . $column,
-          //'chado_table' => $linker_table,
-          //'chado_column' => $column,
           'as' => 'linker_' . $column,
         ]);
       }
@@ -221,9 +206,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_name', $name_term, $name_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col . ';name',
-      //'chado_table' => $object_table,
-      //'chado_column' => 'name',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
       'as' => 'analysis_name',
     ]);
 
@@ -231,8 +214,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'analysis_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col . ';description',
-      //'chado_column' => 'description',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';description',
       'as' => 'analysis_description',
     ]);
 
@@ -240,8 +222,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_program', $program_term, $program_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col . ';program',
-      //'chado_column' => 'program',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';program',
       'as' => 'analysis_program',
     ]);
 
@@ -249,8 +230,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_programversion', $programversion_term, $programversion_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col . ';programversion',
-      //'chado_column' => 'programversion',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';programversion',
       'as' => 'analysis_programversion',
     ]);
 
@@ -258,8 +238,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_algorithm', $algorithm_term, $algorithm_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col . ';algorithm',
-      //'chado_column' => 'algorithm',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';algorithm',
       'as' => 'analysis_algorithm',
     ]);
 
@@ -267,8 +246,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_sourcename', $sourcename_term, $sourcename_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col .';sourcename',
-      //'chado_column' => 'sourcename',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col .';sourcename',
       'as' => 'analysis_sourcename',
     ]);
 
@@ -276,8 +254,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'analysis_sourceversion', $sourceversion_term, $sourceversion_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col . ';sourceversion',
-      //'chado_column' => 'sourceversion',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';sourceversion',
       'as' => 'analysis_sourceversion',
     ]);
 
@@ -285,14 +262,29 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'analysis_sourceuri', $sourceuri_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_col . '>' . $object_table . '.' . $object_pkey_col . ';sourceuri',
-      //'chado_column' => 'sourceuri',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';sourceuri',
       'as' => 'analysis_sourceuri',
     ]);
 
     // @todo timeexecuted not yet implemented - not null, default CURRENT_TIMESTAMP
 
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+    if (count($linker_tables) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
   }
 
 }

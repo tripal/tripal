@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
@@ -19,20 +20,24 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *
  * @FieldType(
  *   id = "chado_boolean_type_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Boolean Field Type"),
  *   description = @Translation("A boolean field."),
  *   default_widget = "chado_boolean_type_widget",
  *   default_formatter = "chado_boolean_type_formatter",
- *   select_base_column = TRUE,
- *   valid_base_column_types = {
- *     "boolean",
- *   },
  *   cardinality = 1
  * )
  */
 class ChadoBooleanTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_boolean_type_default";
+
+  // This is a flag to the ChadoFieldItemBase parent
+  // class to provide a column selector in the form
+  protected static $select_base_column = TRUE;
+
+  // Valid column types to pass to the ChadoFieldItemBase parent class.
+  protected static $valid_base_column_types = ['boolean'];
 
   /**
    * {@inheritdoc}
@@ -82,6 +87,22 @@ class ChadoBooleanTypeDefault extends ChadoFieldItemBase {
         //'chado_column' => $base_column,
       ]),
     ];
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $table_columns = $this->getTableColumns($base_table, self::$valid_base_column_types);
+    if (count($table_columns) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
   }
 
 }

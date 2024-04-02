@@ -112,6 +112,60 @@ fields:
               region: content
               weight: 30
 
+    -   name: genetic_map_pub
+        content_type: genetic_map
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: featuremap_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
+    -   name: genetic_map_dbxref_ann
+        content_type: genetic_map
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                linker_table: featuremap_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## QTL ##
 
     -   name: qtl_name
@@ -155,7 +209,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -327,6 +381,33 @@ fields:
               region: content
               weight: 80
 
+    -   name: qtl_pub
+        content_type: QTL
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
     -   name: qtl_is_analysis
         content_type: QTL
         label: Is Analysis
@@ -342,7 +423,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
         display:
           view:
             default:
@@ -369,7 +449,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
@@ -402,13 +481,66 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
 
-## Sequence Variant ##
+    -   name: qtl_dbxref
+        content_type: QTL
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: qtl_dbxref_ann
+        content_type: QTL
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+#### Sequence Variant ##
 
     -   name: sequence_variant_name
         content_type: sequence_variant
@@ -451,7 +583,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -622,6 +754,33 @@ fields:
               region: content
               weight: 80
 
+    -   name: sequence_variant_pub
+        content_type: sequence_variant
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
     -   name: sequence_variant_is_analysis
         content_type: sequence_variant
         label: Is Analysis
@@ -637,7 +796,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
         display:
           view:
             default:
@@ -664,7 +822,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
@@ -697,11 +854,64 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
+
+    -   name: sequence_variant_dbxref
+        content_type: sequence_variant
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: sequence_variant_dbxref_ann
+        content_type: sequence_variant
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Genetic Marker ##
 
@@ -746,7 +956,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -917,6 +1127,33 @@ fields:
               region: content
               weight: 80
 
+    -   name: genetic_marker_pub
+        content_type: genetic_marker
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
     -   name: genetic_marker_is_analysis
         content_type: genetic_marker
         label: Is Analysis
@@ -932,7 +1169,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
         display:
           view:
             default:
@@ -959,7 +1195,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
@@ -992,11 +1227,64 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
+
+    -   name: genetic_marker_dbxref
+        content_type: genetic_marker
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: genetic_marker_dbxref_ann
+        content_type: genetic_marker
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Heritable Phenotpic Marker ##
 
@@ -1041,7 +1329,7 @@ fields:
                 base_column: uniquename
         settings:
             termIdSpace: data
-            termAccession: 0842
+            termAccession: "0842"
         display:
           view:
             default:
@@ -1212,6 +1500,33 @@ fields:
               region: content
               weight: 80
 
+    -   name: phenotypic_marker_pub
+        content_type: phenotypic_marker
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 85
+          form:
+            default:
+              region: content
+              weight: 85
+
     -   name: phenotypic_marker_is_analysis
         content_type: phenotypic_marker
         label: Is Analysis
@@ -1227,7 +1542,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_analysis
-            fixed_value: local:is_analysis
         display:
           view:
             default:
@@ -1254,7 +1568,6 @@ fields:
         settings:
             termIdSpace: local
             termAccession: is_obsolete
-            fixed_value: local:is_obsolete
         display:
           view:
             default:
@@ -1287,8 +1600,92 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 66
           form:
             default:
               region: content
-              weight: 10
+              weight: 66
+
+    -   name: phenotypic_marker_dbxref
+        content_type: phenotypic_marker
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: phenotypic_marker_dbxref_ann
+        content_type: phenotypic_marker
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                linker_table: feature_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+### Additional genetic fields to add to core content types ###
+
+## Publication ##
+
+    -   name: publication_featuremap
+        content_type: pub
+        label: Map
+        type: chado_featuremap_type_default
+        description: One or more genetic or physical maps mentioned in this publication
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                linker_table: featuremap_pub
+                linker_fkey_column: featuremap_id
+        settings:
+            termIdSpace: data
+            termAccession: "1274"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 83
+          form:
+            default:
+              region: content
+              weight: 83

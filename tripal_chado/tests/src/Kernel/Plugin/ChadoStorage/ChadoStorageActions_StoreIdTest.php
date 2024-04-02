@@ -224,7 +224,7 @@ class ChadoStorageActions_StoreIdTest extends ChadoTestKernelBase {
         ],
       ],
     ];
-    $this->expectExceptionMessage('tries to set a table alias, which is not supported');
+    $this->expectExceptionMessage('The base table cannot have an alias');
     $this->chadoStorageTestInsertValues($insert_values);
   }
 }

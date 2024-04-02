@@ -11,33 +11,6 @@ fields:
 ##          feature, library, stock, biomaterial, cell_line,
 ##          featuremap_organism, phenotype_comparison, phylonode_organism
 
-    -   name: organism_abbreviation
-        content_type: organism
-        label: Abbreviation
-        type: chado_string_type_default
-        description: A shortened name (or abbreviation) for the organism (e.g. O. sativa).
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: organism
-                base_column: abbreviation
-            max_length: 255
-        settings:
-            termIdSpace: local
-            termAccession: abbreviation
-        display:
-            view:
-                default:
-                    region: content
-                    label: above
-                    weight: 25
-            form:
-                default:
-                    region: content
-                    weight: 25
-
     -   name: organism_genus
         content_type: organism
         label: Genus
@@ -59,11 +32,11 @@ fields:
                 default:
                     region: content
                     label: above
-                    weight: 5
+                    weight: 10
             form:
                 default:
                     region: content
-                    weight: 5
+                    weight: 10
 
     -   name: organism_species
         content_type: organism
@@ -86,38 +59,38 @@ fields:
                 default:
                     region: content
                     label: above
-                    weight: 10
+                    weight: 15
             form:
                 default:
                     region: content
-                    weight: 10
+                    weight: 15
 
-    -   name: organism_common_name
+    -   name: organism_infraspecific_type
         content_type: organism
-        label: Common Name
-        type: chado_string_type_default
-        description: "The common name for the organism."
+        label: Infraspecific Type
+        type: chado_additional_type_type_default
+        description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
         cardinality: 1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: organism
-                base_column: common_name
-            max_length: 255
+                type_table: organism
+                type_column: type_id
         settings:
-            termIdSpace: NCBITaxon
-            termAccession: common_name
+            termIdSpace: local
+            termAccession: "infraspecific_type"
         display:
             view:
                 default:
                     region: content
                     label: above
-                    weight: 30
+                    weight: 20
             form:
                 default:
                     region: content
-                    weight: 30
+                    weight: 20
 
     -   name: organism_infraspecific_name
         content_type: organism
@@ -140,38 +113,65 @@ fields:
                 default:
                     region: content
                     label: above
-                    weight: 20
+                    weight: 25
             form:
                 default:
                     region: content
-                    weight: 20
+                    weight: 25
 
-    -   name: organism_infraspecific_type
+    -   name: organism_abbreviation
         content_type: organism
-        label: Infraspecific Type
-        type: chado_additional_type_type_default
-        description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
+        label: Abbreviation
+        type: chado_string_type_default
+        description: A shortened name (or abbreviation) for the organism (e.g. O. sativa).
         cardinality: 1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: organism
-                type_table: organism
-                type_column: type_id
+                base_column: abbreviation
+            max_length: 255
         settings:
             termIdSpace: local
-            termAccession: "infraspecific_type"
+            termAccession: abbreviation
         display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 15
-          form:
-            default:
-              region: content
-              weight: 15
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 30
+            form:
+                default:
+                    region: content
+                    weight: 30
+
+    -   name: organism_common_name
+        content_type: organism
+        label: Common Name
+        type: chado_string_type_default
+        description: "The common name for the organism."
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: common_name
+            max_length: 255
+        settings:
+            termIdSpace: NCBITaxon
+            termAccession: common_name
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 35
+            form:
+                default:
+                    region: content
+                    weight: 35
 
     -   name: organism_comment
         content_type: organism
@@ -193,11 +193,65 @@ fields:
             default:
               region: content
               label: above
-              weight: 35
+              weight: 40
           form:
             default:
               region: content
-              weight: 35
+              weight: 40
+
+    -   name: organism_pub
+        content_type: organism
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                linker_table: organism_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 45
+          form:
+            default:
+              region: content
+              weight: 45
+
+    -   name: organism_dbxref
+        content_type: organism
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                linker_table: organism_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Analysis ##
 ## Chado Table: analysis
@@ -303,7 +357,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: IAO
-            termAccession: 0000129
+            termAccession: "0000129"
         display:
           view:
             default:
@@ -384,7 +438,7 @@ fields:
             max_length: 255
         settings:
             termIdSpace: IAO
-            termAccession: 0000129
+            termAccession: "0000129"
         display:
           view:
             default:
@@ -421,6 +475,87 @@ fields:
             default:
               region: content
               weight: 45
+
+    -   name: analysis_pub
+        content_type: analysis
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 50
+          form:
+            default:
+              region: content
+              weight: 50
+
+    -   name: analysis_project
+        content_type: analysis
+        label: Project
+        type: chado_project_type_default
+        description: The project which this analysis is a part of
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: project_analysis
+                linker_fkey_column: project_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47885
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 60
+          form:
+            default:
+              region: content
+              weight: 60
+
+    -   name: analysis_dbxref
+        content_type: analysis
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                linker_table: analysis_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Project ##
 ## Chado Table: project
@@ -536,6 +671,60 @@ fields:
               region: content
               weight: 25
 
+    -   name: project_pub
+        content_type: project
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
+    -   name: project_dbxref
+        content_type: project
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                linker_table: project_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
 ## Study ##
 ## Chado Table: study
 ## Required Columns: name (varchar 255), contact_id (contact FK)
@@ -621,39 +810,13 @@ fields:
               region: content
               weight: 20
 
-    -   name: study_dbxref_id
+    -   name: study_pub
         content_type: study
-        label: Dbxref ID
-        type: chado_integer_type_default
-        description: The primary key of the database reference (dbxref) to attach to this study. This field is a placeholder until we develop a more user friendly database reference field.
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: 1
-        required: true
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: study
-                base_column: dbxref_id
-        settings:
-            termIdSpace: data
-            termAccession: "2091"
-        display:
-          view:
-            default:
-              region: hidden
-              label: above
-              weight: 15
-          form:
-            default:
-              region: content
-              weight: 15
-
-    -   name: study_pub_id
-        content_type: study
-        label: Publication ID
-        type: chado_integer_type_default
-        description: The primary key of the publication to attach to this study. This field is a placeholder until we develop a more user friendly publication field.
-        cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -665,13 +828,39 @@ fields:
         display:
           view:
             default:
-              region: hidden
+              region: content
               label: above
               weight: 15
           form:
             default:
               region: content
               weight: 15
+
+    -   name: study_dbxref
+        content_type: study
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                base_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000554"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
 
 ## Contact ##
 ## Chado Table: contact
@@ -756,11 +945,38 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 20
           form:
             default:
               region: content
-              weight: 10
+              weight: 20
+
+    -   name: contact_project
+        content_type: contact
+        label: Project
+        type: chado_project_type_default
+        description: The project which this contact is a part of
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                linker_table: project_contact
+                linker_fkey_column: project_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C47885
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 60
+          form:
+            default:
+              region: content
+              weight: 60
 
 ## Protocol ##
 ## Chado Table: protocol
@@ -860,7 +1076,7 @@ fields:
                 base_column: hardwaredescription
         settings:
             termIdSpace: EFO
-            termAccession: 0000548
+            termAccession: "0000548"
         display:
           view:
             default:
@@ -871,6 +1087,32 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: protocol_hardware
+        content_type: protocol
+        label: Hardware
+        type: chado_text_type_default
+        description: An instrument is a device which provides a mechanical or electronic function.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: hardwaredescription
+        settings:
+            termIdSpace: EFO
+            termAccession: "0000548"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 29
+          form:
+            default:
+              region: content
+              weight: 29
 
     -   name: protocol_software
         content_type: protocol
@@ -925,38 +1167,11 @@ fields:
               region: content
               weight: 10
 
-
-    -   name: protocol_dbxref_id
+    -   name: protocol_pub
         content_type: protocol
-        label: Dbxref ID
-        type: chado_integer_type_default
-        description: The primary key of the database reference (dbxref) to attach to this protocol. This field is a placeholder until we develop a more user friendly database reference field.
-        cardinality: 1
-        required: true
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: protocol
-                base_column: dbxref_id
-        settings:
-            termIdSpace: data
-            termAccession: "2091"
-        display:
-          view:
-            default:
-              region: hidden
-              label: above
-              weight: 15
-          form:
-            default:
-              region: content
-              weight: 15
-
-    -   name: protocol_pub_id
-        content_type: protocol
-        label: Publication ID
-        type: chado_integer_type_default
-        description: The primary key of the publication to attach to this protocol. This field is a placeholder until we develop a more user friendly publication field.
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
         cardinality: 1
         required: true
         storage_settings:
@@ -978,68 +1193,49 @@ fields:
               region: content
               weight: 15
 
-## Publication ##
-## Chado Table: conpubtact
-## Required Columns: type_id (cvterm FK), uniquename (text)
-## Optional columns: title (text), volumetitle (text), volume (varchar 255),
-##         series_name (varchar 255), issue (varchar 255), pyear (varchar 255),
-##         pages (varchar 255), miniref (varchar 255), is_obsolete (bool),
-##         publisher (varchar 255), pubplace (varchar 255)
-
-    -   name: publication_uniquename
-        content_type: pub
-        label: Citation
-        type: chado_text_type_default
-        description: The citation for this publication.
-        cardinality: 1
-        required: true
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: pub
-                base_column: uniquename
-        settings:
-            termIdSpace: TPUB
-            termAccession: "0000003"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 35
-          form:
-            default:
-              region: content
-              weight: 35
-
-    -   name: publication_type
-        content_type: pub
-        label: Publication Type
-        type: chado_additional_type_type_default
-        description: the type of publication.
+    -   name: protocol_dbxref
+        content_type: protocol
+        label: Primary Database Reference
+        type: chado_dbxref_type_default
+        description: The ID where this record may be available in an external online database.
         cardinality: 1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table: pub
-                type_table: pub
-                type_column: type_id
+                base_table: protocol
+                base_column: dbxref_id
         settings:
-            termIdSpace: TPUB
-            termAccession: "0000015"
+            termIdSpace: SBO
+            termAccession: "0000554"
         display:
           view:
             default:
               region: content
               label: above
-              weight: 15
+              weight: 68
           form:
             default:
               region: content
-              weight: 15
+              weight: 68
 
-    -   name: publication_title
+## Publication ##
+## Chado Table: pub
+## Required Columns: type_id (cvterm FK), uniquename (text)
+## Optional columns: title (text), volumetitle (text), volume (varchar 255),
+##         series_name (varchar 255), issue (varchar 255), pyear (varchar 255),
+##         pages (varchar 255), miniref (varchar 255), is_obsolete (bool),
+##         publisher (varchar 255), pubplace (varchar 255)
+## Related: analysis_pub, cell_line_cvterm, cell_line_feature, cell_line_library, cell_line_pub, cell_line_synonym,
+##          cell_lineprop_pub, expression_pub, feature_cvterm, feature_cvterm_pub, feature_expression, feature_pub,
+##          feature_relationship_pub, feature_relationshipprop_pub, feature_synonym, featureloc_pub, featuremap_pub,
+##          featureprop_pub, library_cvterm, library_expression, library_pub, library_relationship_pub,
+##          library_synonym, libraryprop_pub, nd_experiment_pub, organism_cvterm, organism_pub, organismprop_pub,
+##          phendesc, phenotype_comparison_cvterm, phenotype_comparison, phenstatement, phylonode_pub, phylotree_pub,
+##          project_pub, protocol, pub_dbxref, pub_relationship, pub_relationship, pubauthor, pubprop, stock_cvterm,
+##          stock_pub, stock_relationship_cvterm, stock_relationship_pub, stockprop_pub, study
+
+    -   name: pub_title
         content_type: pub
         label: Title
         type: chado_text_type_default
@@ -1059,20 +1255,100 @@ fields:
             default:
               region: content
               label: above
-              weight: 35
+              weight: 10
           form:
             default:
               region: content
-              weight: 35
+              weight: 10
 
+    -   name: pub_type
+        content_type: pub
+        label: Publication Type
+        type: chado_additional_type_type_default
+        description: The type of publication, journal article, book, etc.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                type_table: pub
+                type_column: type_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000015"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 12
+          form:
+            default:
+              region: content
+              weight: 12
 
-    -   name: publication_volumetitle
+    -   name: pub_series_name
+        content_type: pub
+        label: Series Name
+        type: chado_string_type_default
+        description: The name media that produces a series of publications (e.g. journal, conference proceedings, etc.).
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: series_name
+            max_length: 255
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000256"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 14
+          form:
+            default:
+              region: content
+              weight: 14
+
+    -   name: pub_volume
+        content_type: pub
+        label: Volume
+        type: chado_string_type_default
+        description: The volume of the series (e.g. journal) where the publication was printed.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: volume
+            max_length: 255
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000042"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 16
+          form:
+            default:
+              region: content
+              weight: 16
+
+    -   name: pub_volumetitle
         content_type: pub
         label: Volume Title
         type: chado_text_type_default
-        description: The volume title for this publication.
+        description: The title of the volume (if applicable).
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -1086,8 +1362,668 @@ fields:
             default:
               region: content
               label: above
+              weight: 18
+          form:
+            default:
+              region: content
+              weight: 18
+
+    -   name: pub_pyear
+        content_type: pub
+        label: Publication Year
+        type: chado_string_type_default
+        description:
+        cardinality: 1
+        # in Tripal 3 this is set as required, although the pub table does not require it.
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: pyear
+            max_length: 255
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000059"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: pub_issue
+        content_type: pub
+        label: Issue
+        type: chado_string_type_default
+        description: The issue of the series (e.g. journal) where the publication was printed.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: issue
+            max_length: 255
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000043"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 22
+          form:
+            default:
+              region: content
+              weight: 22
+
+    -   name: pub_pages
+        content_type: pub
+        label: Page Numbers
+        type: chado_string_type_default
+        description:
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: pages
+            max_length: 255
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 24
+          form:
+            default:
+              region: content
+              weight: 24
+
+    -   name: pub_publisher
+        content_type: pub
+        label: Publisher
+        type: chado_string_type_default
+        description:
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: publisher
+            max_length: 255
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000244"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 26
+          form:
+            default:
+              region: content
+              weight: 26
+
+    -   name: pub_pubplace
+        content_type: pub
+        label: Publication Location
+        type: chado_string_type_default
+        description:
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: pubplace
+            max_length: 255
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000245"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 28
+          form:
+            default:
+              region: content
+              weight: 28
+
+# property fields, weight 30-44
+
+    -   name: pub_doi
+        content_type: pub
+        label: DOI
+        type: chado_property_type_default
+        description: 'Digital Object Identifier.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000049"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
+    -   name: pub_journal_abbreviation
+        content_type: pub
+        label: Journal Abbreviation
+        type: chado_property_type_default
+        description: 'The journal title ISO Abbreviation.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000038"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 31
+          form:
+            default:
+              region: content
+              weight: 31
+
+    -   name: pub_eissn
+        content_type: pub
+        label: EISSN
+        type: chado_property_type_default
+        description: 'International Standard Serial Number (ISSN) is an eight-character value that uniquely identifies a periodicals in print or other media. There are two sub categories of ISSN: print, p-ISSN and electronic e-ISSN.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000072"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 32
+          form:
+            default:
+              region: content
+              weight: 32
+
+    -   name: pub_publication_date
+        content_type: pub
+        label: Publication Date
+        type: chado_property_type_default
+        description: 'The date the work was published. This should be in the format: YYYY Mon Day, where YYYY is a 4 digit year, Mon is a 3-letter English abbreviation for the month followed by the day. The month and day are optional.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000046"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 33
+          form:
+            default:
+              region: content
+              weight: 33
+
+    -   name: pub_citation
+        content_type: pub
+        label: Citation
+        type: chado_property_type_default
+        description: 'All publications must have a unique citation. Please enter the full citation for this publication. For PubMed style citations list the last name of the author followed by initials. Each author should be separated by a comma. Next comes the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation. Below is an example:<br>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. Does the selection of medicinal plants by Brazilian local populations suffer taxonomic influence? J Ethnopharmacol. 2013 Apr 19; 146(3):842-52.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000003"
+        display:
+          view:
+            default:
+              region: content
+              label: above
               weight: 35
           form:
             default:
               region: content
               weight: 35
+
+    -   name: pub_issn
+        content_type: pub
+        label: ISSN
+        type: chado_property_type_default
+        description: 'International Standard Serial Number (ISSN) is an eight-character value that uniquely identifies a periodicals in print or other media. There are two sub categories of ISSN: print, p-ISSN and electronic e-ISSN.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000048"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 36
+          form:
+            default:
+              region: content
+              weight: 36
+
+    -   name: pub_language_abbr
+        content_type: pub
+        label: Language Abbr
+        type: chado_property_type_default
+        description: 'An abbreviation for a language (e.g. 3 letters)'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000087"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 37
+          form:
+            default:
+              region: content
+              weight: 37
+
+    -   name: pub_publication_type
+        content_type: pub
+        label: Publication Type
+        type: chado_property_type_default
+        description: 
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000015"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 38
+          form:
+            default:
+              region: content
+              weight: 38
+
+    -   name: pub_publication_model
+        content_type: pub
+        label: Publication Model
+        type: chado_property_type_default
+        description: 'This term is used to identify the medium/media in which the item is published. There are four possible values which are the same as used by: print, print-electronic, electronic, electronic-print. Further explanation: "print", the journal is published in print format only; "print-electronic", the journal is published in both print and electronic format; "electronic", the journal is published in electronic format only; "electronic-print", the journal is published first in electronic format followed by print.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000081"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 39
+          form:
+            default:
+              region: content
+              weight: 39
+
+    -   name: pub_authors
+        content_type: pub
+        label: Authors
+        type: chado_property_type_default
+        description: 'The list of authors of the publication. For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000047"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 40
+          form:
+            default:
+              region: content
+              weight: 40
+
+    -   name: pub_language
+        content_type: pub
+        label: Language
+        type: chado_property_type_default
+        description: 'The full name of the languge of the publication (e.g. English).'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000064"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 41
+          form:
+            default:
+              region: content
+              weight: 41
+
+    -   name: pub_elocation
+        content_type: pub
+        label: Elocation
+        type: chado_property_type_default
+        description: 'Provides an electronic location for the items. This includes Digital Object Identifiers (DOI) or Publisher Item Identifiers (PII).'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000080"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 42
+          form:
+            default:
+              region: content
+              weight: 42
+
+    -   name: pub_url
+        content_type: pub
+        label: URL
+        type: chado_property_type_default
+        description: 'A univeral resource locator (URL) reference where the publication can be found.  For publications found online, this would be the web address for the publication.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000052"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 42
+          form:
+            default:
+              region: content
+              weight: 42
+
+    -   name: pub_journal_country
+        content_type: pub
+        label: Journal Country
+        type: chado_property_type_default
+        description: 'The country where the journal was published.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000100"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 43
+          form:
+            default:
+              region: content
+              weight: 43
+
+    -   name: pub_abstract
+        content_type: pub
+        label: Abstract
+        type: chado_property_type_default
+        description: 'The fully printed abstract for the publication.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000050"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 44
+          form:
+            default:
+              region: content
+              weight: 44
+
+    -   name: pub_pii
+        content_type: pub
+        label: PII
+        type: chado_property_type_default
+        description: 'Publisher Item Identifier.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                prop_table: pubprop
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000082"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 45
+          form:
+            default:
+              region: content
+              weight: 45
+
+    -   name: pub_miniref
+        content_type: pub
+        label: Mini Local identifier
+        type: chado_string_type_default
+        description: Some sites use small identifiers for each publication. if your site uses this please provide the proper miniref for this publication.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: miniref
+            max_length: 255
+        settings:
+            termIdSpace: local
+            termAccession: miniref
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 50
+          form:
+            default:
+              region: content
+              weight: 50
+
+    -   name: pub_uniquename
+        content_type: pub
+        label: Unique Local Identifier
+        type: chado_text_type_default
+        description: This publication is housed in Chado which requires a unique identifer (or name) be provided for every publication. This identifier need not be shown to end-users but it is required. Each site must decide on a format for this unique name.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: "0842"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 34
+          form:
+            default:
+              region: content
+              weight: 34
+
+    -   name: pub_dbxref
+        content_type: pub
+        label: Database Reference Annotations
+        type: chado_dbxref_type_default
+        description: The IDs where this record may be available in other external online databases.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                linker_table: pub_dbxref
+                linker_fkey_column: dbxref_id
+        settings:
+            termIdSpace: SBO
+            termAccession: "0000552"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 68
+          form:
+            default:
+              region: content
+              weight: 68
+
+    -   name: pub_is_obsolete
+        content_type: pub
+        label: Is Obsolete
+        type: chado_boolean_type_default
+        description:
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90

@@ -102,7 +102,7 @@ class TripalTokenParser {
     $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $bundle->getID());
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
 
-    // Iterate over the field definitions for the bundle and createa field instance.
+    // Iterate over the field definitions for the bundle and create a field instance.
     /** @var \Drupal\Core\Field\BaseFieldDefinition $field_definition **/
     $field_definition = NULL;
     foreach ($field_defs as $field_name => $field_definition) {

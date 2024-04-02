@@ -1,0 +1,88 @@
+id: 'genomic_view'
+label: 'Genomic Content Types'
+description: 'Layouts for genomic content types (gene, mRNA, etc.) based on Chado and added via the Tripal Chado module.'
+layouts:
+  - tripal_entity_type: "gene" 
+    hidden:
+      - uid
+      - title
+      - gene_is_analysis
+      - gene_is_obsolete
+    field_groups:
+      details:
+        gene_details:
+          label: "Gene Details"
+          weight: 0
+          show_empty: false
+          open: true
+          children: 
+            - gene_details_table
+        gene_sequence_details:
+          label: "Sequence"
+          weight: 10
+          show_empty: false
+          open: false
+          children:
+            - gene_sequence_table
+        gene_properties_details:
+          label: "Properties"
+          weight: 20
+          show_empty: false
+          open: false
+          children: 
+            - gene_properties_table
+        gene_cross_refs_details:
+          label: "Cross References"
+          weight: 30
+          show_empty: false
+          open: false
+          children:
+            - gene_dbxref 
+            - gene_dbxref_ann
+        gene_pubs_details:
+          label: "Publications"
+          weight: 40
+          show_empty: false
+          open: false
+          children:
+            - gene_pub
+        gene_projects_details:
+          label: "Projects"
+          weight: 50
+          show_empty: false
+          open: false
+          children:
+            - gene_project
+        gene_contact_details:
+          label: "Contacts"
+          weight: 60
+          show_empty: false
+          open: false
+          children:
+            - gene_contact
+      field_group_table:
+        gene_details_table:
+          label: "Details Table"
+          weight: 0  
+          show_empty: false
+          children:
+            - gene_name 
+            - gene_uniquename 
+            - gene_type
+            - gene_organism 
+            - gene_synonym 
+        gene_sequence_table:
+          label: "Sequence Table"
+          weight: 0  
+          show_empty: false            
+          children:
+            - gene_length 
+            - gene_sequence 
+            - gene_sequence_md5_checksum 
+        gene_properties_table:
+          label: "Properties Table"
+          weight: 0  
+          show_empty: false            
+          children:
+            - "type:chado_property_type_default"
+          

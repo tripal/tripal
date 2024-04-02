@@ -1,0 +1,6 @@
+tripal_chado:
+  label: Chado Fields
+  description: Fields that connect to data in Chado
+  weight: -90
+  libraries:
+    - tripal_chado/tripal_chado-field-ui

@@ -443,6 +443,106 @@ class ChadoStorageActions_ReadValueTest extends ChadoTestKernelBase {
       "The type_id retrieved should match the one we inserted into chado for substratetype_id.");
   }
 
+
+  /**
+   * Test read_value through a join where two fields access the same tables.
+   *
+   * Base Table: arraydesign
+   *     Columns: arraydesign_id*, manufacturer_id, platformtype_id*, substratetype_id*, name
+   * Chado Table: dbxref
+   *     Columns: accession
+   *
+   * Specically, testing that we can read the database reference for an arraydesign
+   * record through the arraydesign > cvterm > dbxref path for two separate
+   * fields without their being data swap between them.
+   *
+   * Again focusing on load since this action type does not impact insert/update.
+   */
+  public function testReadValueActionJoinLoop() {
+
+    // Set the fields for this test and then re-populate the storage arrays.
+    $this->setFieldsFromYaml($this->yaml_file, 'testReadValueActionJoinLoop');
+    $this->cleanChadoStorageValues();
+
+    // Create the organism record for use with the feature table.
+    $infra_type_id = $this->getCvtermID('TAXRANK', '0000010');
+    $query = $this->chado_connection->insert('1:organism');
+    $query->fields([
+      'genus' => 'Tripalus',
+      'species' => 'databasica',
+      'common_name' => 'Tripal',
+      'abbreviation' => 'T. databasica',
+      'infraspecific_name' => 'postgresql',
+      'type_id' => $infra_type_id,
+      'comment' => 'This is fake organism specifically for testing purposes.'
+    ]);
+    $organism_id = $query->execute();
+
+    // Add Feature, Src Feature & Featureloc
+    // Create the feature and featureloc record for use with the feature table.
+    $gene_type_id = $this->getCvtermID('SO', '0000704');
+    $query = $this->chado_connection->insert('1:feature');
+    $query->fields([
+      'name' => 'Gene1',
+      'uniquename' => 'Gene1',
+      'organism_id' => $organism_id,
+      'type_id' => $gene_type_id,
+    ]);
+    $feature_id = $query->execute();
+
+    $chr_type_id = $this->getCvtermID('SO', '0000340');
+    $query = $this->chado_connection->insert('1:feature');
+    $query->fields([
+      'name' => 'Chr1',
+      'uniquename' => 'Chr1',
+      'organism_id' => $organism_id,
+      'type_id' => $chr_type_id,
+    ]);
+    $src_feature_id = $query->execute();
+
+    $query = $this->chado_connection->insert('1:featureloc');
+    $query->fields([
+      'feature_id' => $feature_id,
+      'srcfeature_id' => $src_feature_id,
+      'fmin' => 100,
+      'fmax' => 200,
+      'strand' => 1,
+      'phase' => 0
+    ]);
+    $featureloc_id = $query->execute();
+
+
+    // For loading only the store id/pkey/link items should be populated.
+    $load_values = [
+      'featurelocfield' => [
+        [
+          'record_id' => $feature_id,
+          'featureloc_id' => $featureloc_id,
+          'fkey' => $feature_id,
+        ],
+      ],
+    ];
+    $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
+
+    // Check that the name in our fields have been loaded.
+    $ret_name = $retrieved_values['featurelocfield'][0]['uniquename']['value']->getValue();
+    $this->assertEquals('Chr1', $ret_name,
+        "The uniquename retrieved should match the one we inserted into chado.");
+    $fmax = $retrieved_values['featurelocfield'][0]['fmax']['value']->getValue();
+    $this->assertEquals(200, $fmax,
+        "The fmax retrieved should match the one we inserted into chado.");
+    $fmin = $retrieved_values['featurelocfield'][0]['fmin']['value']->getValue();
+    $this->assertEquals(100, $fmin,
+        "The fmin retrieved should match the one we inserted into chado.");
+    $phase = $retrieved_values['featurelocfield'][0]['phase']['value']->getValue();
+    $this->assertEquals(0, $phase,
+        "The phase retrieved should match the one we inserted into chado.");
+    $strand = $retrieved_values['featurelocfield'][0]['strand']['value']->getValue();
+    $this->assertEquals(1, $strand,
+        "The strand retrieved should match the one we inserted into chado.");
+
+  }
+
   /**
    * Test read_value works when there is no store on the same column.
    *

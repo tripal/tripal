@@ -321,9 +321,27 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Clone the value array for this match.
           $new_values = $this->cloneValues($values);
 
-          $tables = $this->records->getAncillaryTables($base_table);
+          // Iterate through tables that have conditions.  We don't want to
+          // query tables that only have a condition with a link to the base
+          // table because these records aren't providing any filters to limit
+          // the base records.
+          $tables = $this->records->getAncillaryTablesWithCond($base_table);
+          $found_match = TRUE;
           foreach ($tables as $table_alias) {
-            $match->selectRecords($base_table, $table_alias);
+
+            $num_found = $match->selectRecords($base_table, $table_alias);
+
+            // In order for a set of records to be considered found it must
+            // match all criteria, which means all ancillary tables must
+            // return results.
+            // @todo: when we need more fancy querying where we can set
+            // "or" clauses then this will need to be adjust. For now, we
+            // only use findValues() for publishing and in this case all
+            // criteria must be met.
+            if ($num_found == 0) {
+              $found_match = FALSE;
+              continue;
+            }
 
             // Add any additional items to the values array that are needed.
             $num_items = $match->getNumTableItems($base_table, $table_alias);
@@ -336,8 +354,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           }
 
           // Now set the values.
-          $this->setPropValues($new_values, $match);
-          $found_list[] = $new_values;
+          if ($found_match) {
+            $this->setPropValues($new_values, $match);
+            $found_list[] = $new_values;
+          }
         }
       }
     }
@@ -345,7 +365,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-
     return $found_list;
   }
 
@@ -413,7 +432,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             // becuase this is the table that will have the value.
             $my_delta = $delta;
             if($action == 'read_value' and array_key_exists('join', $path_array)) {
-              $root_table = $value_col_info['root_table'];
               $root_alias = $value_col_info['root_alias'];
               $table_alias = $root_alias;
             }
@@ -553,6 +571,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $context = [];
           $context['is_find'] = $is_find;
           $context['base_table'] = $base_table;
+          $context['root_table'] = $base_table;
+          $context['root_alias'] = $base_table;
           $context['operation'] = array_key_exists('operation', $info) ? $info['operation'] : '=';
           $context['field_name'] = $field_name;
           $context['property_key'] = $key;
@@ -570,9 +590,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $table_alias_mapping = array_key_exists('table_alias_mapping', $prop_storage_settings) ? $prop_storage_settings['table_alias_mapping'] : [];
             $path_array = $this->parsePath($field_name, $base_table, $path, $table_alias_mapping, $as);
 
-            // Add to the context.
-            $context['path_string'] = $prop_storage_settings['path'];
-            $context['path_array'] = $path_array;
+            // The path will have the root table. This may or may not be the
+            // same as the base table so we should track it.
+            $context['root_table'] = $path_array['root_table'];
+            $context['root_alias'] = $path_array['root_alias'];
 
             // We only add joins when the action is 'read_value' because
             // they guarantee a single value (meaning a 1:1 join). For
@@ -581,6 +602,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             if ($action == 'read_value' and array_key_exists('join', $path_array)) {
               $this->handleJoins($path_array, $context);
             }
+
+            // Add to the context.
+            $context['path_string'] = $prop_storage_settings['path'];
+            $context['path_array'] = $path_array;
           }
 
           // Now for each action type, set the conditions and fields for
@@ -645,6 +670,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $value_col_info = $this->getPathValueColumn($context['path_array']);
     $elements = [
       'base_table' =>  $base_table,
+      'root_table' => $context['root_table'],
+      'root_alias' => $context['root_alias'],
       'chado_table' => $value_col_info['chado_table'],
       'table_alias' => $value_col_info['table_alias'],
       'chado_column' => $value_col_info['chado_column'],
@@ -661,8 +688,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     if ($elements['chado_table'] !== $elements['base_table']) {
       $this->logger->error($this->t('The @field.@key property type uses the '
         . 'store_id action type but is not associated with the base table of the field. '
-        . 'Either change the base_table of this field or use store_pkey instead.',
-        ['@field' => $context['field_name'], '@key' => $context['property_key']]));
+        . 'Either change the base_table of this field or use store_pkey instead.  @chado_table != @base_table',
+         ['@field' => $context['field_name'],
+          '@key' => $context['property_key'],
+          '@base_table' => $elements['base_table'],
+          '@chado_table' => $elements['chado_table']
+        ]));
     }
 
     // Now determine the primary key for the chado table.
@@ -709,12 +740,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $pkey_id = $prop_value->getValue();
     $elements = [
       'base_table' => $context['base_table'],
+      'root_table' => $context['root_table'],
+      'root_alias' => $context['root_alias'],
       'chado_table' => $value_col_info['chado_table'],
       'chado_column' => $value_col_info['chado_column'],
       'table_alias' => $value_col_info['table_alias'],
       'column_alias' => $value_col_info['column_alias'],
       'delta' => $context['delta'],
-      'value' => $pkey_id ? $pkey_id : 0,
+      'value' => $pkey_id ? $pkey_id : NULL,
       'field_name' => $context['field_name'],
       'property_key' => $context['property_key'],
     ];
@@ -754,6 +787,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $link_id = $this->records->getRecordID($base_table);
     $elements = [
       'base_table' => $base_table,
+      'root_table' => $context['root_table'],
+      'root_alias' => $context['root_alias'],
       'chado_table' => $value_col_info['chado_table'],
       'table_alias' => $value_col_info['table_alias'],
       'chado_column' => $value_col_info['chado_column'],
@@ -761,13 +796,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // Setting the value to NULL and indicating this field contains a link
       // to the base table will cause the value to be set automatically by
       // ChadoRecord once it's available.
-      'value' => $link_id ? $link_id : 0,
+      'value' => $link_id ? $link_id : NULL,
       'operation' => $context['operation'],
       'delta' => $context['delta'],
       'field_name' => $context['field_name'],
       'property_key' => $context['property_key'],
     ];
     $this->records->addColumn($elements, TRUE);
+
     $this->records->addCondition($elements);
   }
 
@@ -797,6 +833,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
     $elements = [
       'base_table' => $context['base_table'],
+      'root_table' => $context['root_table'],
+      'root_alias' => $context['root_alias'],
       'chado_table' => $value_col_info['chado_table'],
       'chado_column' => $value_col_info['chado_column'],
       'table_alias' => $value_col_info['table_alias'],
@@ -813,7 +851,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->records->addColumn($elements);
 
     // If this is a find operation then we want to add a condition.
-    if ($context['is_find'] and !empty($value)) {
+    if ($context['is_find'] and $value !== NULL) {
       $this->records->addCondition($elements);
     }
   }
@@ -848,7 +886,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
     $value_col_info = $this->getPathValueColumn($context['path_array']);
     $elements = [
-      'base_table' => $value_col_info['base_table'],
+      'base_table' => $context['base_table'],
+      'root_table' => $context['root_table'],
+      'root_alias' => $context['root_alias'],
       'chado_table' => $value_col_info['root_table'],
       'table_alias' => $value_col_info['root_alias'],
       'chado_column' => $value_col_info['chado_column'],
@@ -1060,10 +1100,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param array $context
    *   The field/property context provided by the buildChadoRecords() function.
    */
-  protected function handleJoins(array $path_array, array $context) {
+  protected function handleJoins(array &$path_array, array $context) {
 
     $elements = [
       'base_table' => $context['base_table'],
+      'root_table' => $context['root_table'],
+      'root_alias' => $context['root_alias'],
       'chado_table' => $path_array['root_table'],
       'table_alias' => $path_array['root_alias'],
       'delta' => $context['delta'],
@@ -1077,16 +1119,21 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'join_path' => $path_array['join']['path'],
     ];
     $this->records->addJoin($elements);
+    $path_array['join']['table_alias'] = $elements['right_alias'];
 
     // If there is another join then handle that.
     if (array_key_exists('join', $path_array['join'])) {
-      $this->handleJoins($path_array['join'], $context);
+      $join_path = $path_array['join'];
+      $this->handleJoins($join_path, $context);
+      $path_array['join'] = $join_path;
     }
 
     // If we've reached the end of the joins we need to add the join columns.
     if (array_key_exists('value_column', $path_array['join'])) {
       $elements = [
         'base_table' => $context['base_table'],
+        'root_table' => $context['root_table'],
+        'root_alias' => $context['root_alias'],
         'chado_table' => $path_array['root_table'],
         'table_alias' => $path_array['root_alias'],
         'delta' => $context['delta'],

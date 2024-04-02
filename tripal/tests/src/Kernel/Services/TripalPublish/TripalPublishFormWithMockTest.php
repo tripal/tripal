@@ -3,7 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use \Drupal\Tests\user\Traits\UserCreationTrait;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Core\Form\FormState;
 
 /**
@@ -11,7 +11,7 @@ use Drupal\Core\Form\FormState;
  *
  * @group TripalPublish
  */
-class TripalPublishFormWithMockTest extends KernelTestBase {
+class TripalPublishFormWithMockTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
   use UserCreationTrait;

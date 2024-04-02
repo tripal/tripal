@@ -54,4 +54,24 @@ class TripalEntityListBuilder extends EntityListBuilder {
     return $row + parent::buildRow($entity);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function load() {
+    $session = \Drupal::request()->getSession();
+    $session->set('tripal_load_listing', TRUE);
+    try {
+      $entity_ids = $this->getEntityIds();
+      $entities = $this->storage->loadMultiple($entity_ids);
+      $session->set('tripal_load_listing', FALSE);
+      return $entities;
+    }
+    catch (\Exception $e) {
+      $session->set('tripal_load_listing', FALSE);
+      throw new \Exception($e);
+    }
+  }
+
+
+
 }

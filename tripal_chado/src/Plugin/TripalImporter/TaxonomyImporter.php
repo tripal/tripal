@@ -22,10 +22,11 @@ use Drupal\Core\Url;
  *    upload_title = @Translation("Taxonomy File"),
  *    use_analysis = False,
  *    require_analysis = False,
- *    button_text = @Translation("Import Taxonomy file"),
- *    file_upload = False,
- *    file_remote = False,
- *    file_required = False,
+ *    button_text = @Translation("Import Taxonomy"),
+ *    file_upload = FALSE,
+ *    file_local = FALSE,
+ *    file_remote = FALSE,
+ *    file_required = FALSE,
  *  )
  */
 class TaxonomyImporter extends ChadoImporterBase {
@@ -59,7 +60,7 @@ class TaxonomyImporter extends ChadoImporterBase {
 
     $form['instructions'] = [
       '#type' => 'fieldset',
-      '#title' => 'instructions',
+      '#title' => 'INSTRUCTIONS',
       '#description' => t('This form is used to import species from the NCBI
         Taxonomy database into this site. Alternatively, it can import details
         about organisms from the NCBI Taxonomy database for organisms that
@@ -594,7 +595,7 @@ class TaxonomyImporter extends ChadoImporterBase {
           if (isset($xml->TranslationStack)) {
             $matched = (string) $xml->TranslationStack->TermSet->Term;
             $matched = preg_replace('/\[All Names\]/', '', $matched);
-            if ($matched == $sci_name) {
+            if (strcasecmp($matched, $sci_name) == 0) {
               $taxid = (string) $xml->IdList->Id;
             }
             else {

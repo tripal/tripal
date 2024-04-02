@@ -1,1 +1,1 @@
-tripaldocker/Dockerfile-php8.1-pgsql13
+tripaldocker/Dockerfile-php8.2

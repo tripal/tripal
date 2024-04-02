@@ -176,11 +176,11 @@ CREATE TABLE feature_contact (
 CREATE INDEX feature_contact_idx1 ON feature_contact USING btree (feature_id);
 CREATE INDEX feature_contact_idx2 ON feature_contact USING btree (contact_id);
 
-COMMENT ON TABLE feature_contact IS 'Links contact(s) with a feature.  Used to indicate a particular
+COMMENT ON TABLE feature_contact IS 'Links contact(s) with a feature.  Used to indicate a particular 
 person or organization responsible for discovery or that can provide more information on a particular feature.';
 CREATE VIEW type_feature_count AS
-  SELECT t.name AS type,count(*) AS num_features
-   FROM cvterm AS t INNER JOIN feature ON (type_id=t.cvterm_id)
+  SELECT t.name AS type,count(*) AS num_features 
+   FROM cvterm AS t INNER JOIN feature ON (type_id=t.cvterm_id) 
   GROUP BY t.name;
 COMMENT ON VIEW type_feature_count IS 'per-feature-type feature counts';
 CREATE SCHEMA genetic_code;
@@ -235,8 +235,8 @@ LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION featureloc_slice(varchar, bigint, bigint)
   RETURNS setof featureloc AS
-  'SELECT featureloc.*
-   FROM featureloc
+  'SELECT featureloc.* 
+   FROM featureloc 
    INNER JOIN feature AS srcf ON (srcf.feature_id = featureloc.srcfeature_id)
    WHERE boxquery($2, $3) <@ boxrange(fmin,fmax)
    AND srcf.name = $1 '
@@ -244,8 +244,8 @@ LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION featureloc_slice(bigint, bigint, bigint)
   RETURNS setof featureloc AS
-  'SELECT *
-   FROM featureloc
+  'SELECT * 
+   FROM featureloc 
    WHERE boxquery($2, $3) <@ boxrange(fmin,fmax)
    AND srcfeature_id = $1 '
 LANGUAGE 'sql';
@@ -280,9 +280,9 @@ LANGUAGE 'sql';
 --Goal : increase performances of segment fetching
 --       Implies to optimise featureloc_slice
 
---Background : The existing featureloc_slice uses uses a spatial rtree index. The spatial objects used are a boxrange ((0,fmin), (fmax,500000000)) and a boxquery ((fmin,fmax),(fmin,fmax)) . The boxranges are indexed.
+--Background : The existing featureloc_slice uses uses a spatial rtree index. The spatial objects used are a boxrange ((0,fmin), (fmax,500000000)) and a boxquery ((fmin,fmax),(fmin,fmax)) . The boxranges are indexed. 
 --             To speed up things (for gbrowse) featureloc_slice has been overiden to filter simultaneously on the boxrange and the srcfeature_id. This gives good results.
---             The goal here is to push this logic further and to include the srcfeature_id filter directly into the boxrange object. We propose to consider the following boxs :
+--             The goal here is to push this logic further and to include the srcfeature_id filter directly into the boxrange object. We propose to consider the following boxs : 
 --             boxrange : ((srcfeature_id,fmin),(srcfeature_id,fmax))
 --             boxquery : ((srcfeature_id,fmin),(srcfeature_id,fmax))
 
@@ -301,15 +301,15 @@ CREATE INDEX binloc_boxrange_src ON featureloc USING GIST (boxrange(srcfeature_i
 
 CREATE OR REPLACE FUNCTION featureloc_slice(bigint, bigint, bigint)
   RETURNS setof featureloc AS
-  'SELECT *
-   FROM featureloc
-   WHERE boxquery($1, $2, $3) && boxrange(srcfeature_id,fmin,fmax)'
+  'SELECT * 
+   FROM featureloc 
+   WHERE boxquery($1, $2, $3) && boxrange(srcfeature_id,fmin,fmax)'   
 LANGUAGE 'sql';
 
 -- reverse_string
-CREATE OR REPLACE FUNCTION reverse_string(TEXT) RETURNS TEXT AS
+CREATE OR REPLACE FUNCTION reverse_string(TEXT) RETURNS TEXT AS 
 '
- DECLARE
+ DECLARE 
   reversed_string TEXT;
   incoming ALIAS FOR $1;
  BEGIN
@@ -323,7 +323,7 @@ language plpgsql;
 
 -- complements DNA
 CREATE OR REPLACE FUNCTION complement_residues(text) RETURNS text AS
- 'SELECT (translate($1,
+ 'SELECT (translate($1, 
                    ''acgtrymkswhbvdnxACGTRYMKSWHBVDNX'',
                    ''tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX''))'
 LANGUAGE 'sql';
@@ -334,9 +334,9 @@ CREATE OR REPLACE FUNCTION reverse_complement(TEXT) RETURNS TEXT AS
 LANGUAGE 'sql';
 
 -- DNA to AA
-CREATE OR REPLACE FUNCTION translate_dna(TEXT,BIGINT) RETURNS TEXT AS
+CREATE OR REPLACE FUNCTION translate_dna(TEXT,BIGINT) RETURNS TEXT AS 
 '
- DECLARE
+ DECLARE 
   dnaseq ALIAS FOR $1;
   gcode ALIAS FOR $2;
   translation TEXT;
@@ -388,14 +388,14 @@ initcond = ''
 --is done with those features' entries in the featureprop, feature_dbxref,
 --feature_pub, or feature_cvterm tables.  For the moment, I'm assuming
 --that any annotations that they have when this script is run are
---identical to their non-obsoleted doppelgangers.  If that's not the case,
+--identical to their non-obsoleted doppelgangers.  If that's not the case, 
 --they could be merged via query.
 --
 --The bulk of this code was contributed by Robin Houston at
 --GeneDB/Sanger Centre.
 
-CREATE OR REPLACE FUNCTION share_exons () RETURNS void AS '
-  DECLARE
+CREATE OR REPLACE FUNCTION share_exons () RETURNS void AS '    
+  DECLARE    
   BEGIN
     /* Generate a table of shared exons */
     CREATE temporary TABLE shared_exons AS
@@ -446,7 +446,7 @@ CREATE OR REPLACE FUNCTION share_exons () RETURNS void AS '
         AND exon1_loc.fmin = exon2_loc.fmin
         AND exon1_loc.fmax = exon2_loc.fmax
     ;
-
+    
     /* Choose one of the shared exons to be the canonical representative.
        We pick the one with the smallest feature_id.
      */
@@ -455,7 +455,7 @@ CREATE OR REPLACE FUNCTION share_exons () RETURNS void AS '
       FROM shared_exons
       GROUP BY gene_feature_id,fmin
     ;
-
+    
     CREATE temporary TABLE exon_replacements AS
       SELECT DISTINCT shared_exons.exon2_feature_id AS actual_feature_id
                     , canonical_exon_representatives.canonical_feature_id
@@ -465,8 +465,8 @@ CREATE OR REPLACE FUNCTION share_exons () RETURNS void AS '
       WHERE shared_exons.exon2_feature_id <> canonical_exon_representatives.canonical_feature_id
         AND shared_exons.fmin = canonical_exon_representatives.fmin
     ;
-
-    UPDATE feature_relationship
+    
+    UPDATE feature_relationship 
       SET subject_id = (
             SELECT canonical_feature_id
             FROM exon_replacements
@@ -474,7 +474,7 @@ CREATE OR REPLACE FUNCTION share_exons () RETURNS void AS '
       WHERE subject_id IN (
         SELECT actual_feature_id FROM exon_replacements
     );
-
+    
     UPDATE feature_relationship
       SET object_id = (
             SELECT canonical_feature_id
@@ -483,13 +483,13 @@ CREATE OR REPLACE FUNCTION share_exons () RETURNS void AS '
       WHERE object_id IN (
         SELECT actual_feature_id FROM exon_replacements
     );
-
+    
     UPDATE feature
       SET is_obsolete = true
       WHERE feature_id IN (
         SELECT actual_feature_id FROM exon_replacements
     );
-  END;
+  END;    
 ' LANGUAGE 'plpgsql';
 
 --This is a function to seek out exons of transcripts and orders them,
@@ -511,7 +511,7 @@ CREATE OR REPLACE FUNCTION order_exons (bigint) RETURNS void AS '
     order_by         varchar;
     rowcount         int;
     exon_count       int;
-    ordered_exons    int;
+    ordered_exons    int;    
     transcript_id    bigint;
     transcript_row   feature%ROWTYPE;
   BEGIN
@@ -540,13 +540,13 @@ CREATE OR REPLACE FUNCTION order_exons (bigint) RETURNS void AS '
       --need to reverse the order if the strand is negative
       SELECT INTO strand strand FROM featureloc WHERE feature_id=transcript_id;
       IF strand > 0 THEN
-          order_by = ''fl.fmin'';
+          order_by = ''fl.fmin'';      
       ELSE
           order_by = ''fl.fmax desc'';
       END IF;
 
       exon_count = 0;
-      FOR arow IN EXECUTE
+      FOR arow IN EXECUTE 
         ''SELECT fr.*, fl.fmin, fl.fmax
           FROM feature_relationship fr, featureloc fl
           WHERE fr.object_id  = ''||transcript_id||''
@@ -556,10 +556,10 @@ CREATE OR REPLACE FUNCTION order_exons (bigint) RETURNS void AS '
       LOOP
         --number the exons for a given transcript
         UPDATE feature_relationship
-          SET rank = exon_count
+          SET rank = exon_count 
           WHERE feature_relationship_id = arow.feature_relationship_id;
         exon_count = exon_count + 1;
-      END LOOP;
+      END LOOP; 
 
     END LOOP;
 
@@ -573,7 +573,7 @@ CREATE OR REPLACE FUNCTION project_point_up(bigint,bigint,bigint,bigint)
    THEN $3-$1             -- rev strand
    ELSE $1-$2             -- fwd strand
   END AS p'
-LANGUAGE 'sql';
+LANGUAGE 'sql'; 
 
 -- down the graph: eg from contig to chromosome
 CREATE OR REPLACE FUNCTION project_point_down(bigint,bigint,bigint,bigint)
@@ -583,7 +583,7 @@ CREATE OR REPLACE FUNCTION project_point_down(bigint,bigint,bigint,bigint)
    THEN $3-$1
    ELSE $1+$2
   END AS p'
-LANGUAGE 'sql';
+LANGUAGE 'sql'; 
 
 CREATE OR REPLACE FUNCTION project_featureloc_up(bigint,bigint)
  RETURNS featureloc AS
@@ -615,7 +615,7 @@ BEGIN
   IF up_featureloc.strand IS NULL
    THEN RETURN NULL;
   END IF;
-
+  
   IF up_featureloc.strand < 0
   THEN
    nu_fmin = project_point_up(in_featureloc.fmax,
@@ -636,7 +636,7 @@ BEGIN
   in_featureloc.srcfeature_id = up_featureloc.srcfeature_id;
   RETURN in_featureloc;
 END
-'
+'   
 LANGUAGE 'plpgsql';
 
 CREATE OR REPLACE FUNCTION project_point_g2t(bigint,bigint,bigint)
@@ -651,7 +651,7 @@ CREATE OR REPLACE FUNCTION project_point_g2t(bigint,bigint,bigint)
 BEGIN
  SELECT INTO exon_cvterm_id get_feature_type_id(''exon'');
  SELECT INTO out_p
-  CASE
+  CASE 
    WHEN strand<0 THEN fmax-p
    ELSE p-fmin
    END AS p
@@ -666,7 +666,7 @@ BEGIN
    in_p <= fmax;
   RETURN in_featureloc;
 END
-'
+'   
 LANGUAGE 'plpgsql';
 
 
@@ -678,22 +678,22 @@ CREATE OR REPLACE FUNCTION get_cv_id_for_feature_relationsgip() RETURNS BIGINT
  AS 'SELECT cv_id FROM cv WHERE name=''relationship''' LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION get_feature_type_id(VARCHAR) RETURNS BIGINT
- AS '
-  SELECT cvterm_id
+ AS ' 
+  SELECT cvterm_id 
   FROM cv INNER JOIN cvterm USING (cv_id)
   WHERE cvterm.name=$1 AND cv.name=''sequence''
  ' LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION get_featureprop_type_id(VARCHAR) RETURNS BIGINT
  AS '
-  SELECT cvterm_id
+  SELECT cvterm_id 
   FROM cv INNER JOIN cvterm USING (cv_id)
   WHERE cvterm.name=$1 AND cv.name=''feature_property''
  ' LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION get_feature_relationship_type_id(VARCHAR) RETURNS BIGINT
  AS '
-  SELECT cvterm_id
+  SELECT cvterm_id 
   FROM cv INNER JOIN cvterm USING (cv_id)
   WHERE cvterm.name=$1 AND cv.name=''relationship''
  ' LANGUAGE 'sql';
@@ -701,7 +701,7 @@ CREATE OR REPLACE FUNCTION get_feature_relationship_type_id(VARCHAR) RETURNS BIG
 -- depends on sequence-cv-helper
 CREATE OR REPLACE FUNCTION get_feature_id(VARCHAR,VARCHAR,VARCHAR) RETURNS BIGINT
  AS '
-  SELECT feature_id
+  SELECT feature_id 
   FROM feature
   WHERE uniquename=$1
     AND type_id=get_feature_type_id($2)

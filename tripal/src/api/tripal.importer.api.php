@@ -175,16 +175,18 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
  */
 function tripal_run_importer_run($loader, $logger) {
 
-  // begin the transaction
-  $public = \Drupal::database();
-  $transaction = $public->startTransaction();
+  // Tell the loader class to start a transaction.
+  $transactions = $loader->startTransactions();
   try {
     $loader->run();
     $logger->notice("Done.");
   }
   catch (\Exception $e) {
     // Rollback and re-throw the error.
-    $transaction->rollback();
+    foreach ($transactions as $transaction) {
+      $transaction->rollback();
+    }
+    $loader->rollbackTransaction('run');
     throw $e;
   }
 }
@@ -200,15 +202,18 @@ function tripal_run_importer_run($loader, $logger) {
  * @ingroup tripal_importer_api
  */
 function tripal_run_importer_post_run($loader, $logger) {
-  // the transaction
-  $public = \Drupal::database();
-  $transaction = $public->startTransaction();
+
+  // Tell the loader class to start a transaction.
+  $transactions = $loader->startTransactions();
   try {
     $loader->postRun();
   }
   catch (\Exception $e) {
     // Rollback and re-throw the error.
-    $transaction->rollback();
+    foreach ($transactions as $transaction) {
+      $transaction->rollback();
+    }
+    $loader->rollbackTransaction('postRun');
     throw $e;
   }
 }

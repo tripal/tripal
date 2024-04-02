@@ -128,8 +128,8 @@ create index analysis_dbxref_idx2 on analysis_dbxref (dbxref_id);
 
 COMMENT ON TABLE analysis_dbxref IS 'Links an analysis to dbxrefs.';
 
-COMMENT ON COLUMN analysis_dbxref.is_current IS 'True if this dbxref
-is the most up to date accession in the corresponding db. Retired
+COMMENT ON COLUMN analysis_dbxref.is_current IS 'True if this dbxref 
+is the most up to date accession in the corresponding db. Retired 
 accessions should set this field to false';
 
 
@@ -153,8 +153,8 @@ create index analysis_cvterm_idx2 on analysis_cvterm (cvterm_id);
 
 COMMENT ON TABLE analysis_cvterm IS 'Associate a term from a cv with an analysis.';
 
-COMMENT ON COLUMN analysis_cvterm.is_not IS 'If this is set to true, then this
-annotation is interpreted as a NEGATIVE annotation - i.e. the analysis does
+COMMENT ON COLUMN analysis_cvterm.is_not IS 'If this is set to true, then this 
+annotation is interpreted as a NEGATIVE annotation - i.e. the analysis does 
 NOT have the specified term.';
 
 -- ================================================
@@ -181,18 +181,18 @@ create index analysis_relationship_idx3 on analysis_relationship (type_id);
 COMMENT ON COLUMN analysis_relationship.subject_id IS 'analysis_relationship.subject_id i
 s the subject of the subj-predicate-obj sentence.';
 
-COMMENT ON COLUMN analysis_relationship.object_id IS 'analysis_relationship.object_id
+COMMENT ON COLUMN analysis_relationship.object_id IS 'analysis_relationship.object_id 
 is the object of the subj-predicate-obj sentence.';
 
-COMMENT ON COLUMN analysis_relationship.type_id IS 'analysis_relationship.type_id
-is relationship type between subject and object. This is a cvterm, typically
+COMMENT ON COLUMN analysis_relationship.type_id IS 'analysis_relationship.type_id 
+is relationship type between subject and object. This is a cvterm, typically 
 from the OBO relationship ontology, although other relationship types are allowed.';
 
-COMMENT ON COLUMN analysis_relationship.rank IS 'analysis_relationship.rank is
-the ordering of subject analysiss with respect to the object analysis may be
+COMMENT ON COLUMN analysis_relationship.rank IS 'analysis_relationship.rank is 
+the ordering of subject analysiss with respect to the object analysis may be 
 important where rank is used to order these; starts from zero.';
 
-COMMENT ON COLUMN analysis_relationship.value IS 'analysis_relationship.value
+COMMENT ON COLUMN analysis_relationship.value IS 'analysis_relationship.value 
 is for additional notes or comments.';
 
 -- ================================================
@@ -213,8 +213,8 @@ create index analysis_pub_idx2 on analysis_pub (pub_id);
 
 COMMENT ON TABLE analysis_pub IS 'Provenance. Linking table between analyses and the publications that mention them.';
 
-CREATE OR REPLACE FUNCTION store_analysis (VARCHAR,VARCHAR,VARCHAR)
-  RETURNS BIGINT AS
+CREATE OR REPLACE FUNCTION store_analysis (VARCHAR,VARCHAR,VARCHAR) 
+  RETURNS BIGINT AS 
 'DECLARE
    v_program            ALIAS FOR $1;
    v_programversion     ALIAS FOR $2;
@@ -227,7 +227,7 @@ CREATE OR REPLACE FUNCTION store_analysis (VARCHAR,VARCHAR,VARCHAR)
             programversion=v_programversion AND
             sourcename=v_sourcename;
     IF NOT FOUND THEN
-      INSERT INTO analysis
+      INSERT INTO analysis 
        (program,programversion,sourcename)
          VALUES
        (v_program,v_programversion,v_sourcename);
@@ -242,7 +242,7 @@ CREATE OR REPLACE FUNCTION store_analysis (VARCHAR,VARCHAR,VARCHAR)
 --RETURNS INT AS
 --'DECLARE
 --  v_srcfeature_id       ALIAS FOR $1;
-
+  
 -- $Id: phenotype.sql,v 1.6 2007-04-27 16:09:46 emmert Exp $
 -- ==========================================
 -- Chado phenotype module
@@ -322,7 +322,7 @@ CREATE TABLE feature_phenotype (
     FOREIGN KEY (feature_id) REFERENCES feature (feature_id) ON DELETE CASCADE,
     phenotype_id bigint NOT NULL,
     FOREIGN KEY (phenotype_id) REFERENCES phenotype (phenotype_id) ON DELETE CASCADE,
-    CONSTRAINT feature_phenotype_c1 UNIQUE (feature_id,phenotype_id)
+    CONSTRAINT feature_phenotype_c1 UNIQUE (feature_id,phenotype_id)       
 );
 CREATE INDEX feature_phenotype_idx1 ON feature_phenotype (feature_id);
 CREATE INDEX feature_phenotype_idx2 ON feature_phenotype (phenotype_id);
@@ -362,13 +362,13 @@ COMMENT ON TABLE phenotypeprop IS 'A phenotype can have any number of slot-value
 -- redesigned 2003-10-28
 --
 -- changes 2003-11-10:
---   incorporating suggestions to make everything a gcontext; use
---   gcontext_relationship to make some gcontexts derivable from others. we
---   would incorporate environment this way - just add the environment
+--   incorporating suggestions to make everything a gcontext; use 
+--   gcontext_relationship to make some gcontexts derivable from others. we 
+--   would incorporate environment this way - just add the environment 
 --   descriptors as properties of the child gcontext
 --
 -- changes 2004-06 (Documented by DE: 10-MAR-2005):
---   Many, including rename of gcontext to genotype,  split
+--   Many, including rename of gcontext to genotype,  split 
 --   phenstatement into phenstatement & phenotype, created environment
 --
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -400,10 +400,10 @@ create index genotype_idx2 on genotype(name);
 
 COMMENT ON TABLE genotype IS 'Genetic context. A genotype is defined by a collection of features, mutations, balancers, deficiencies, haplotype blocks, or engineered constructs.';
 
-COMMENT ON COLUMN genotype.uniquename IS 'The unique name for a genotype;
+COMMENT ON COLUMN genotype.uniquename IS 'The unique name for a genotype; 
 typically derived from the features making up the genotype.';
 
-COMMENT ON COLUMN genotype.name IS 'Optional alternative name for a genotype,
+COMMENT ON COLUMN genotype.name IS 'Optional alternative name for a genotype, 
 for display purposes.';
 
 -- ===============================================
@@ -713,8 +713,8 @@ CREATE TABLE featuremapprop (
 create index featuremapprop_idx1 on featuremapprop(featuremap_id);
 create index featuremapprop_idx2 on featuremapprop(type_id);
 
-COMMENT ON TABLE featuremapprop IS 'A featuremap can have any number of slot-value property
-tags attached to it. This is an alternative to hardcoding a list of columns in the
+COMMENT ON TABLE featuremapprop IS 'A featuremap can have any number of slot-value property 
+tags attached to it. This is an alternative to hardcoding a list of columns in the 
 relational schema, and is completely extensible.';
 
 -- ================================================
@@ -732,8 +732,8 @@ CREATE TABLE featuremap_contact (
 CREATE INDEX featuremap_contact_idx1 ON featuremap_contact USING btree (featuremap_id);
 CREATE INDEX featuremap_contact_idx2 ON featuremap_contact USING btree (contact_id);
 
-COMMENT ON TABLE featuremap_contact IS 'Links contact(s) with a featuremap.  Used to
-indicate a particular person or organization responsible for constrution of or
+COMMENT ON TABLE featuremap_contact IS 'Links contact(s) with a featuremap.  Used to 
+indicate a particular person or organization responsible for constrution of or 
 that can provide more information on a particular featuremap.';
 
 
@@ -755,8 +755,8 @@ CREATE INDEX featuremap_dbxref_idx2 ON featuremap_dbxref USING btree (dbxref_id)
 
 COMMENT ON TABLE feature_dbxref IS 'Links a feature to dbxrefs.';
 
-COMMENT ON COLUMN feature_dbxref.is_current IS 'True if this secondary dbxref is
-the most up to date accession in the corresponding db. Retired accessions
+COMMENT ON COLUMN feature_dbxref.is_current IS 'True if this secondary dbxref is 
+the most up to date accession in the corresponding db. Retired accessions 
 should set this field to false';
 
 
@@ -856,19 +856,19 @@ create table phylotreeprop (
 create index phylotreeprop_idx1 on phylotreeprop (phylotree_id);
 create index phylotreeprop_idx2 on phylotreeprop (type_id);
 
-COMMENT ON TABLE phylotreeprop IS 'A phylotree can have any number of slot-value property
-tags attached to it. This is an alternative to hardcoding a list of columns in the
+COMMENT ON TABLE phylotreeprop IS 'A phylotree can have any number of slot-value property 
+tags attached to it. This is an alternative to hardcoding a list of columns in the 
 relational schema, and is completely extensible.';
 
-COMMENT ON COLUMN phylotreeprop.type_id IS 'The name of the property/slot is a cvterm.
+COMMENT ON COLUMN phylotreeprop.type_id IS 'The name of the property/slot is a cvterm. 
 The meaning of the property is defined in that cvterm.';
 
-COMMENT ON COLUMN phylotreeprop.value IS 'The value of the property, represented as text.
-Numeric values are converted to their text representation. This is less efficient than
+COMMENT ON COLUMN phylotreeprop.value IS 'The value of the property, represented as text. 
+Numeric values are converted to their text representation. This is less efficient than 
 using native database types, but is easier to query.';
 
 COMMENT ON COLUMN phylotreeprop.rank IS 'Property-Value ordering. Any
-phylotree can have multiple values for any particular property type
+phylotree can have multiple values for any particular property type 
 these are ordered in a list using rank, counting from zero. For
 properties that are single-valued rather than multi-valued, the
 default 0 value should be used';
@@ -1018,7 +1018,7 @@ create index phylonode_relationship_idx1 on phylonode_relationship (subject_id);
 create index phylonode_relationship_idx2 on phylonode_relationship (object_id);
 create index phylonode_relationship_idx3 on phylonode_relationship (type_id);
 
-COMMENT ON TABLE phylonode_relationship IS 'This is for
+COMMENT ON TABLE phylonode_relationship IS 'This is for 
 relationships that are not strictly hierarchical; for example,
 horizontal gene transfer. Most phylogenetic trees are strictly
 hierarchical, nevertheless it is here for completeness.';
@@ -1030,7 +1030,7 @@ CREATE OR REPLACE FUNCTION phylonode_depth(bigint)
   DECLARE  curr_node phylonode%ROWTYPE;
   BEGIN
    SELECT INTO curr_node *
-    FROM phylonode
+    FROM phylonode 
     WHERE phylonode_id=id;
    depth = depth + curr_node.distance;
    IF curr_node.parent_phylonode_id IS NULL
