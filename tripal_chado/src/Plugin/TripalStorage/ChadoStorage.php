@@ -505,7 +505,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       // Validate the callback function and then call it to generate a value.
       $value = NULL;
-      if (function_exists($namespace . '::' . $callback_function)) {
+      if (method_exists($namespace, $callback_function)) {
         $value = call_user_func($namespace . '::' . $callback_function, $context);
       }
       else {
