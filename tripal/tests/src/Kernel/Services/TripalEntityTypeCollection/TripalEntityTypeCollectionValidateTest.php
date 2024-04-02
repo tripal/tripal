@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal\Kernel\Services\TripalEntityTypeCollection;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Core\Url;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
@@ -15,7 +15,7 @@ use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
  * @group Tripal Content
  * @group TripalEntityTypeCollection
  */
-class TripalEntityTypeCollectionValidateTest extends KernelTestBase {
+class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
 
 
   /**

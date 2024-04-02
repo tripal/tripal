@@ -3,7 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\Entity;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\Entity\TripalEntityType;
 use \Drupal\Tests\user\Traits\UserCreationTrait;
@@ -13,7 +13,7 @@ use \Drupal\Tests\user\Traits\UserCreationTrait;
  *
  * @group TripalEntity
  */
-class TripalEntityTest extends KernelTestBase {
+class TripalEntityTest extends TripalTestKernelBase {
 
   /**
    * {@inheritdoc}
