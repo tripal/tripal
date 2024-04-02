@@ -739,6 +739,9 @@ tables:
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
+            -   name: 'pathdistance'
+                term_id: 'NCIT:C25167'
+                term_name: 'Distance'
 
     -   name: 'cvtermprop'
         columns:
@@ -2807,9 +2810,6 @@ tables:
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
-            -   name: 'factorvalue'
-                term_id: 'NCIT:C164386'
-                term_name: 'Experimental Factor Value'
 
     -   name: 'studyfactorvalue'
         columns:
@@ -2819,6 +2819,9 @@ tables:
             -   name: 'name'
                 term_id: 'schema:name'
                 term_name: 'name'
+            -   name: 'factorvalue'
+                term_id: 'NCIT:C164386'
+                term_name: 'Experimental Factor Value'
             -   name: 'rank'
                 term_id: 'OBCS:0000117'
                 term_name: 'rank order'
