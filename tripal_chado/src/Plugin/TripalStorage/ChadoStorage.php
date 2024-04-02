@@ -40,13 +40,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   protected $field_debugger;
 
   /**
-   * A service to lookup a Drupal entity.
-   *
-   * @var \Drupal\tripal_chado\Plugin\TripalStorage\TripalEntityLookup
-   */
-  protected $lookup_manager;
-
-  /**
    * Holds an instance of ChadoRecords.
    *
    * @var \Drupal\tripal_chado\TripalStorage\ChadoRecords
@@ -73,7 +66,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $plugin_id,
       $plugin_definition,
       $container->get('tripal.logger'),
-      $container->get('tripal.tripal_entity.lookup'),
       $container->get('tripal_chado.database'),
       $container->get('tripal_chado.field_debugger')
     );
@@ -91,14 +83,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param string $plugin_id
    * @param mixed $plugin_definition
    * @param \Drupal\tripal\Services\TripalLogger $logger
-   * @param \Drupal\tripal_chado\Plugin\TripalStorage\TripalEntityLookup $lookup_manager
    * @param \Drupal\tripal_chado\Database\ChadoConnection $connection
    * @param \Drupal\tripal_chado\Services\ChadoFieldDebugger $field_debugger
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, TripalEntityLookup $lookup_manager, ChadoConnection $connection, ChadoFieldDebugger $field_debugger) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection, ChadoFieldDebugger $field_debugger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
 
-    $this->lookup_manager = $lookup_manager;
     $this->connection = $connection;
     $this->field_debugger = $field_debugger;
   }
