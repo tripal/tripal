@@ -73,7 +73,6 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
 
   public function formValidate($form, &$form_state) {
     // @TODO
-    dpm('TripalPubLibraryPubmed formValidations called');
   }
 
 
