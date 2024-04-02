@@ -23,7 +23,7 @@ class TripalEntityLookup {
    */
   public function getRenderableItem($displayed_string, $entity_id) {
 
-    // If entity_id is not null, then provide a linking render array item.
+    // If an entity_id is provided, then provide a linking render array item.
     if ($entity_id) {
       $url_object = Url::fromRoute('entity.tripal_entity.canonical', ['tripal_entity' => $entity_id]);
       $renderable_item = [
@@ -169,6 +169,8 @@ class TripalEntityLookup {
     $id = NULL;
     $required_fields = $this->getRequiredFields($bundle_id, $entity_type);
     if (!$required_fields) {
+      // Everything is based on the assumption that there is at least one
+      // required field for every content type. If not, we cannot create a link.
       dpm("Temporary warning that there are no required fields for bundle \"$bundle_id\""); //@@@
       return NULL;
     }
@@ -258,3 +260,4 @@ class TripalEntityLookup {
   }
 
 }
+

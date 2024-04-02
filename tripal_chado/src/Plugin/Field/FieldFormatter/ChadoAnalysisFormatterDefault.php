@@ -74,6 +74,7 @@ class ChadoAnalysisFormatterDefault extends ChadoFormatterBase {
         $item_settings['termIdSpace'],
         $item_settings['termAccession']
       );
+dpm("CP17 formatter termIdSpace=".$item_settings['termIdSpace']."  termAccession=".$item_settings['termAccession']."  record=".$item->get($id)->getString()."  displayed_string=$displayed_string"); //@@@
       $renderable_item = $lookup_manager->getRenderableItem(
         $displayed_string,
         $entity_id
