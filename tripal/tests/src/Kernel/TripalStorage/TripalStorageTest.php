@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalStorage;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
@@ -13,7 +13,7 @@ use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
  * @group Tripal
  * @group TripalStorage
  */
-class TripalStorageTest extends KernelTestBase {
+class TripalStorageTest extends TripalTestKernelBase {
 
   /**
    * {@inheritdoc}

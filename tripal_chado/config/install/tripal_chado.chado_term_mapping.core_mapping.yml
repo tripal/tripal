@@ -127,6 +127,18 @@ tables:
             -   name: 'feature_id'
                 term_id: 'SO:0000110'
                 term_name: 'sequence_feature'
+            -   name: 'rawscore'
+                term_id: 'local:rawscore'
+                term_name: 'rawscore'
+            -   name: 'normscore'
+                term_id: 'local:normscore'
+                term_name: 'normscore'
+            -   name: 'significance'
+                term_id: 'local:significance'
+                term_name: 'significance'
+            -   name: 'identity'
+                term_id: 'local:identity'
+                term_name: 'identity'
 
     -   name: 'analysisfeatureprop'
         columns:
@@ -694,6 +706,9 @@ tables:
             -   name: 'is_obsolete'
                 term_id: 'local:is_obsolete'
                 term_name: 'is_obsolete'
+            -   name: 'is_relationshiptype'
+                term_id: 'local:relationship'
+                term_name: 'relationship'
             -   name: 'name'
                 term_id: 'schema:name'
                 term_name: 'name'
@@ -706,6 +721,9 @@ tables:
             -   name: 'dbxref_id'
                 term_id: 'data:2091'
                 term_name: 'Accession'
+            -   name: 'is_for_definition'
+                term_id: IAO:0000115
+                term_name: definition
 
     -   name: 'cvtermpath'
         columns:
@@ -721,6 +739,9 @@ tables:
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
+            -   name: 'pathdistance'
+                term_id: 'NCIT:C25167'
+                term_name: 'Distance'
 
     -   name: 'cvtermprop'
         columns:
@@ -841,6 +862,15 @@ tables:
             -   name: 'eimage_id'
                 term_id: 'data:2968'
                 term_name: 'Image'
+            -   name: 'eimage_data'
+                term_id: 'IAO:0000101'
+                term_name: 'image'
+            -   name: 'eimage_type'
+                term_id: 'IAO:0000098'
+                term_name: 'data format specification'
+            -   name: 'image_uri'
+                term_id: 'data:1047'
+                term_name: 'URI'
 
     -   name: 'element'
         columns:
@@ -1131,6 +1161,9 @@ tables:
             -   name: 'rank'
                 term_id: 'OBCS:0000117'
                 term_name: 'rank order'
+            -   name: 'cgroup'
+                term_id: 'NCIT:C43359'
+                term_name: 'Group'
 
     -   name: 'featureloc'
         columns:
@@ -1140,9 +1173,21 @@ tables:
             -   name: 'fmax'
                 term_id: 'local:fmax'
                 term_name: 'maximal boundary'
+            -   name: 'is_fmax_partial'
+                term_id: 'local:is_fmax_partial'
+                term_name: 'is_fmax_partial'
             -   name: 'fmin'
                 term_id: 'local:fmin'
                 term_name: 'minimal boundary'
+            -   name: 'is_fmin_partial'
+                term_id: 'local:is_fmin_partial'
+                term_name: 'is_fmin_partial'
+            -   name: 'residue_info'
+                term_id: 'local:residue_info'
+                term_name: 'residue_info'
+            -   name: 'locgroup'
+                term_id: 'local:locgroup'
+                term_name: 'locgroup'
             -   name: 'phase'
                 term_id: 'data:2336'
                 term_name: 'Translation phase specification'
@@ -1317,6 +1362,9 @@ tables:
             -   name: 'featuremap_id'
                 term_id: 'data:1274'
                 term_name: 'Map'
+            -   name: 'rangestr'
+                term_id: 'data:1017'
+                term_name: 'Sequence range'
 
     -   name: 'feature_relationship'
         columns:
@@ -1703,6 +1751,18 @@ tables:
             -   name: 'nd_geolocation_id'
                 term_id: 'NCIT:C25341'
                 term_name: 'Location'
+            -   name: 'latitude'
+                term_id: 'SIO:000319'
+                term_name: 'latitude'
+            -   name: 'longitude'
+                term_id: 'SIO:000318'
+                term_name: 'longitude'
+            -   name: 'geodetic_datum'
+                term_id: 'GEO:000000788'
+                term_name: 'geodetic datum'
+            -   name: 'altitude'
+                term_id: 'SIO:000438'
+                term_name: 'altitude'
 
     -   name: 'nd_geolocationprop'
         columns:
@@ -2045,6 +2105,12 @@ tables:
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
+            -   name: 'label'
+                term_id: 'rdfs:label'
+                term_name: 'label'
+            -   name: 'distance'
+                term_id: 'NCIT:C25167'
+                term_name: 'Distance'
 
     -   name: 'phylonode_dbxref'
         columns:
@@ -2246,6 +2312,9 @@ tables:
             -   name: 'project_id'
                 term_id: 'NCIT:C47885'
                 term_name: 'Project'
+            -   name: 'stock_id'
+                term_id: 'NCIT:C70699'
+                term_name: 'Biospecimen'
 
     -   name: 'protocol'
         columns:
@@ -2345,6 +2414,18 @@ tables:
             -   name: 'rank'
                 term_id: 'OBCS:0000117'
                 term_name: 'rank order'
+            -   name: 'givennames'
+                term_id: 'NCIT:C40974'
+                term_name: 'First Name'
+            -   name: 'surname'
+                term_id: 'NCIT:C40975'
+                term_name: 'Last Name'
+            -   name: 'suffix'
+                term_id: 'NCIT:C49106'
+                term_name: 'Suffix'
+            -   name: 'editor'
+                term_id: 'NCIT:C43368'
+                term_name: 'Editor'
 
     -   name: 'pubauthor_contact'
         columns:
@@ -2738,6 +2819,9 @@ tables:
             -   name: 'name'
                 term_id: 'schema:name'
                 term_name: 'name'
+            -   name: 'factorvalue'
+                term_id: 'NCIT:C164386'
+                term_name: 'Experimental Factor Value'
             -   name: 'rank'
                 term_id: 'OBCS:0000117'
                 term_name: 'rank order'
@@ -2777,6 +2861,9 @@ tables:
             -   name: 'type_id'
                 term_id: 'schema:additionalType'
                 term_name: 'additionalType'
+            -   name: 'synonym_sgml'
+                term_id: 'local:synonym_sgml'
+                term_name: 'synonym_sgml'
 
     -   name: 'tableinfo'
         columns:

@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalStorage;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 
 /**
  * Tests for Tripal Storage Base class.
@@ -10,7 +10,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group Tripal
  * @group TripalStorage
  */
-class PropertyTypeClassTest extends KernelTestBase {
+class PropertyTypeClassTest extends TripalTestKernelBase {
 
   /**
    * {@inheritdoc}
