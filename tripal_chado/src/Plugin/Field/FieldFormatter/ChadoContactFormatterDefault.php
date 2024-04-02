@@ -44,6 +44,7 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
 
     foreach ($items as $delta => $item) {
       $values = [
+        'entity_id' => $item->get('entity_id')->getString(),
         'name' => $item->get('contact_name')->getString(),
         'description' => $item->get('contact_description')->getString(),
         'type' => $item->get('contact_type')->getString(),
@@ -60,18 +61,8 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
         $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
       }
 
-      // When possible, create a clickable link to the corresponding entity.
-      $item_settings = $item->getDataDefinition()->getSettings();
-      $id = $item_settings['storage_plugin_settings']['linker_fkey_column'] ?? 'contact_id';
-      $entity_id = $lookup_manager->getEntityId(
-        $item->get($id)->getString(),
-        $item_settings['termIdSpace'],
-        $item_settings['termAccession']
-      );
-      $renderable_item = $lookup_manager->getRenderableItem(
-        $displayed_string,
-        $entity_id
-      );
+      // Create a clickable link to the corresponding entity when one exists.
+      $renderable_item = $lookup_manager->getRenderableItem($displayed_string, $values['entity_id']);
 
       $list[$delta] = $renderable_item;
     }

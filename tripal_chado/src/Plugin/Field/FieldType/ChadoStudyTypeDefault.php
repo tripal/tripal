@@ -143,6 +143,16 @@ class ChadoStudyTypeDefault extends ChadoFieldItemBase {
       'path' => $base_table . '.' . $base_pkey_col,
     ]);
 
+    // This property will store the Drupal entity ID of the linked chado
+    // record, if one exists.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => self::$chadostorage_namespace,
+      'function' => self::$drupal_entity_callback,
+      'fkey' => self::$object_id,
+    ]);
+
     // Base table links directly
     if ($base_table == $linker_table) {
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
