@@ -61,6 +61,10 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         $this->form_state_previous_user_input = $_SESSION['tripal_pub_import']['perform_test_user_input'];
         $form_state_values['button_next'] = "Next";
       }
+      else {
+        // Else this is a submit so we want to submit and then get redirected back to the list
+        $form_state->setRebuild(FALSE);
+      }
     }
 
     $html = "<ul class='action-links'>";
@@ -113,7 +117,9 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
             // The selected plugin defines a test specific to itself.
             $criteria_column_array = $_SESSION['tripal_pub_import']['perform_test_criteria_array'];
-            $results = $plugin->test($form, $form_state, $criteria_column_array);
+
+            // Perform a retrieve aka test lookup (retrieve 5 items, page 0)
+            $results = $plugin->retrieve($criteria_column_array, 5, 0);
 
             // On successful results, it should return array with keys total_records, search_str, pubs(array)
             $headers = ['', 'Publication', 'Authors'];
@@ -599,6 +605,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         // Older code before 1/5/2024
         // $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $this->criteria_convert_to_array($form, $form_state);
         $_SESSION['tripal_pub_import']['perform_test_user_input'] = $form_state->getUserInput();
+        $form_state->setRebuild(TRUE);
       }
     }
     else {
