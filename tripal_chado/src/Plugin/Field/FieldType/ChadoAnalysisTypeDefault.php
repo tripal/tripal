@@ -149,15 +149,13 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       //'chado_column' => $base_pkey_col,
     ]);
 
-    // Define a property to store the Drupal entity ID of the linked chado
-    // record, using its primary key column name. Might return NULL.
-$entity_id_term = 'local:Phenotyping'; //@@@
-$chadostorage_namespace = 'Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage'; //@@@
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', $entity_id_term, [
+    // This property will store the Drupal entity ID of the linked chado
+    // record, when one exists, using its primary key column name.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
       'action' => 'function',
       'drupal_store' => TRUE,
-      'namespace' => $chadostorage_namespace,
-      'function' => 'drupalEntityIdLookupCallback',  // Name of callback function
+      'namespace' => self::$chadostorage_namespace,
+      'function' => self::$chadostorage_callback,
       'fkey' => self::$object_id,
     ]);
 
