@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Services;
 
 use Drupal\Core\Url;
+use Drupal\Core\Render\Markup;
 use Drupal\field\Entity\FieldStorageConfig;
 use \Drupal\tripal\Services\TripalEntityTitle;
 
@@ -32,7 +33,7 @@ class TripalEntityLookup {
       $renderable_item = [
         '#type' => 'link',
         '#url' => $url_object,
-        '#title' => $displayed_string,
+        '#title' => Markup::create($displayed_string),
       ];
     }
     else {
