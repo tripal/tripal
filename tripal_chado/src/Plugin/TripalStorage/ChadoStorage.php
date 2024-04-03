@@ -1253,9 +1253,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     if (!$record_id) {
       return -1;
     }
+    $record_id = $record_id->getValue('value');
+
+    // During publish, record_id may be null. In this particular case, return null.
+    if (!$record_id) {
+      return NULL;
+    }
 
     // Given the Chado record ID and bundle term, we can lookup the Drupal entity ID.
-    $record_id = $record_id->getValue('value');
     $entity_id = $lookup_manager->getEntityId(
       $record_id,
       $context['field_settings']['termIdSpace'],
