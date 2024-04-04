@@ -62,13 +62,41 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
 
     // Create the terms for the field property storage types.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    foreach(['OBI','local','TAXRANK','NCBITaxon','SIO','schema','data','NCIT','operation','OBCS','SWO','IAO'] as $termIdSpace) {
+    foreach(['OBI','local','TAXRANK','NCBITaxon','SIO','schema','data','NCIT','operation','OBCS','SWO','IAO','TPUB'] as $termIdSpace) {
       $idsmanager->createCollection($termIdSpace, "chado_id_space");
     }
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    foreach(['obi','local','taxonomic_rank','ncbitaxon','SIO','schema','EDAM','ncit','OBCS','swo','IAO'] as $termVocab) {
+    foreach(['obi','local','taxonomic_rank','ncbitaxon','SIO','schema','EDAM','ncit','OBCS','swo','IAO','tripal_pub'] as $termVocab) {
       $vmanager->createCollection($termVocab, "chado_vocabulary");
     }
+
+    // Create terms for organism_dbxref since it seems to be missing.
+    $this->createTripalTerm(
+      [
+        'vocab_name' => 'sbo',
+        'id_space_name' => 'SBO',
+        'term' => [
+          'name' => 'reference annotation',
+          'definition' => 'Additional information that supplements existing data, usually in a document, by providing a link to more detailed information, which is held externally, or elsewhere.',
+          'accession' => '0000552',
+        ],
+      ],
+      'chado_id_space',
+      'chado_vocabulary'
+    );
+     $this->createTripalTerm(
+      [
+        'vocab_name' => 'ero',
+        'id_space_name' => 'ERO',
+        'term' => [
+          'name' => 'database',
+          'definition' => 'A database is an organized collection of data, today typically in digital form.',
+          'accession' => '0001716',
+        ],
+      ],
+      'chado_id_space',
+      'chado_vocabulary'
+    );
 
     // Create the content types + fields that we need.
     $this->createContentTypeFromConfig('general_chado', 'organism', TRUE);
