@@ -156,7 +156,6 @@ class TripalPublish {
       throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
     }
     $this->entity_type = $entity_type;
-    // @debug print "\nEntity is " . $this->entity_type->id() . "\n";
 
     // Get the storage plugin used to publish.
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
@@ -277,7 +276,6 @@ class TripalPublish {
     /** @var \Drupal\Core\Field\BaseFieldDefinition $field_definition **/
     $field_definition = NULL;
     foreach ($field_defs as $field_name => $field_definition) {
-      // @debug print "Adding field: $field_name... Properties: |";
 
       if (!empty($field_definition->getTargetBundle())) {
         $storage_definition = $field_definition->getFieldStorageDefinition();
@@ -301,13 +299,11 @@ class TripalPublish {
           // Order the property types by key for eacy lookup.
           foreach ($prop_types as $prop_type) {
             $field_info['prop_types'][$prop_type->getKey()] = $prop_type;
-            // @debug print $prop_key . "|";
           }
           $this->field_info[$field_name] = $field_info;
 
         }
       }
-      // @debug print "\n";
     }
   }
 
