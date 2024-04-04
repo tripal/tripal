@@ -50,6 +50,8 @@ class chadoInstallerFormTest extends BrowserTestBase {
    * @group chado-install-form
    */
   public function testLoadInstallerForm() {
+    $this->assertTrue($this->hasSession(),
+      'This test depends on having a session but for some reason there is not one available.');
     $session = $this->getSession();
 
     // Check that the page opens.
