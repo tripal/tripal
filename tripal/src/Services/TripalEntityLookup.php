@@ -177,7 +177,6 @@ class TripalEntityLookup {
     if (!$required_fields) {
       // Everything is based on the assumption that there is at least one
       // required field for every content type. If not, we cannot create a link.
-      dpm("Temporary warning that there are no required fields for bundle \"$bundle_id\""); //@@@
       return NULL;
     }
 
@@ -203,7 +202,7 @@ class TripalEntityLookup {
       $query->condition('e.' . $entity_column_name, $record_id, '=');
 
       // There should only be zero or one hit, but this exception is here
-      // during development just in case. For zero hits, we return null.
+      // to let us know if it ever happens. For zero hits, we return null.
       $num_hits = $query->countQuery()->execute()->fetchField();
       if ($num_hits > 1) {
         throw new \Exception("TripalEntityLookup: Too many hits ($num_hits) for table $entity_table_name column $entity_column_name record $record_id");
@@ -211,9 +210,6 @@ class TripalEntityLookup {
       elseif ($num_hits == 1) {
         $id = $query->execute()->fetchField();
       }
-      else { //@@@
-        dpm("Temporary warning that there were no hits to record_id $record_id in table $entity_table_name column $entity_column_name"); //@@@
-      } //@@@
     }
     catch (\Exception $e) {
       throw new \Exception('Invalid database query: ' . $e->getMessage());
