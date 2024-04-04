@@ -434,7 +434,7 @@ function tripal_chado_update_10403() {
  * 
  * Adds a 'locked' column to the tripal_mviews table.
  */
-function tripal_chado_update_10001() {
+function tripal_chado_update_10404() {
   $schema = Database::getConnection()->schema();
   $tableExists = $schema->tableExists('tripal_mviews');
 
