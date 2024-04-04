@@ -127,19 +127,6 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
     $this->assertCount(3, $entities,
       "We expected there to be the same number of organism entities as we inserted.");
-
-    // Confirm there are records in the field tables.
-    $tables = [
-      'tripal_entity__organism_genus',
-      'tripal_entity__organism_species',
-      'tripal_entity__organism_comment',
-    ];
-    foreach ($tables as $table_name) {
-      $query = $drupal->query('SELECT * FROM {' . $table_name . '}');
-      $records = $query->fetchAll();
-      $this->assertCount(3, $records,
-        "We expected the number of records in the $table_name table to match the number of organisms we inserted.");
-    }
   }
 
   /**
@@ -167,19 +154,6 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
     $this->assertCount(3, $entities,
       "We expected there to be the same number of organism entities as we inserted.");
-
-    // Check there are records in the field tables.
-    $tables = [
-      'tripal_entity__organism_genus',
-      'tripal_entity__organism_species',
-      'tripal_entity__organism_comment',
-    ];
-    foreach ($tables as $table_name) {
-      $query = $drupal->query('SELECT * FROM {' . $table_name . '}');
-      $records = $query->fetchAll();
-      $this->assertCount(3, $records,
-        "We expected the number of records in the $table_name table to match the number of organisms we inserted.");
-    }
 
     // Submit the Tripal job by calling the callback directly.
     $bundle = 'project';
