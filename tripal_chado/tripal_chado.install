@@ -5,6 +5,8 @@
  */
 
 use \Drupal\Core\Database\Database;
+use \Drupal\Core\Utility\UpdateException;
+use \Drupal\tripal_chado\Entity\ChadoTermMapping;
 
 /**
  * Implements hook_install().
@@ -336,42 +338,72 @@ function tripal_chado_tripal_custom_tables_schema() {
 }
 
 /**
- * Implements hook_update_N().
- *
- * Changes the "hidden" column" to "locked" in the tripal_custom_tables table.
+ * Adds third party settings for Tripal content types to Chado base tables.
  */
-function tripal_chado_update_10000() {
-  // Check if the column already exists.
-  $schema = Database::getConnection()->schema();
-  $table_name = 'tripal_custom_tables';
-  if ($schema->fieldExists($table_name, 'hidden')) {
-    // Rename the column from 'hidden' to 'locked'.
-    $schema->changeField($table_name, 'hidden', 'locked', array(
-      'description' => 'Indicates if the custom table is locked',
-      'type' => 'int',
-      'size' => 'tiny',
-      'not null' => FALSE,
-      'default' => 0,
-    ));
+function tripal_chado_update_10401() {
+  $settings = [
+    // Generic content types.
+    'organism' => 'organism',
+    'analysis' => 'analysis',
+    'project' => 'project',
+    'study' => 'study',
+    'contact' => 'contact',
+    'pub' => 'pub',
+    'protocol' => 'protocol',
+    // Expression content types.
+    'biosample' => 'biomaterial',
+    'assay' => 'assay',
+    'array_design' => 'arraydesign',
+    // Genetic expression types.
+    'genetic_map' => 'featuremap',
+    'QTL' => 'feature',
+    'sequence_variant' => 'feature',
+    'genetic_marker' => 'feature',
+    'phenotypic_marker' => 'feature',
+    // Germplams types.
+    'germplasm' => 'stock',
+    'breeding_cross' => 'stock',
+    'germplasm_variety' => 'stock',
+    'ril' => 'stock',
+    // Genomic types.
+    'gene' => 'feature',
+    'mrna' => 'feature',
+    'phylotree' => 'phylotree',
+    'physical_map' => 'featuremap',
+    'dna_library' => 'library',
+    'genome_assembly' => 'analysis',
+    'genome_annotation' => 'analysis',
+    'genome_project' => 'project'
+  ];
+
+  /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+  /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+  $entity_type_manager = \Drupal::entityTypeManager();
+  foreach ($settings as $bundle => $chado_base_table) {
+    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+    if ($entity_type) {
+      $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $chado_base_table);
+      $entity_type->save();
+    }
   }
 }
 
 /**
- * Implements hook_update_N().
- * 
- * Adds a 'locked' column to the tripal_mviews table.
+ * Updates missing mapping of CV terms to some chado table columns
  */
-function tripal_chado_update_10001() {
-  $schema = Database::getConnection()->schema();
-  $tableExists = $schema->tableExists('tripal_mviews');
-  
-  if ($tableExists && !$schema->fieldExists('tripal_mviews', 'locked')) {
-    $schema->addField('tripal_mviews', 'locked', [
-      'description' => 'Indicates if the materialized view is locked',
-      'type' => 'int',
-      'size' => 'tiny',
-      'not null' => FALSE,
-      'default' => 0,
-    ]);
+function tripal_chado_update_10402() {
+  try {
+    $messenger = \Drupal::messenger();
+
+    $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
+    ChadoTermMapping::refreshMapping($id);
+    $messenger->addMessage('Reloaded Chado content terms');
+
+    $id = 'config/install/tripal_chado.chado_term_mapping.core_mapping';
+    ChadoTermMapping::refreshMapping($id);
+    $messenger->addMessage('Reloaded Chado term mapping');
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not reload Chado terms and mappings: ' . $e->getMessage());
   }
 }

@@ -31,11 +31,8 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       $public = \Drupal::database();
 
       // This is the edit version of the form, we need to lookup the current pub_import_id
-      $publication = $public->select('tripal_pub_import', 'tpi')
-        ->fields('tpi')
-        ->condition('pub_import_id', $pub_import_id, '=')
-        ->execute()
-        ->fetchObject();
+      $pub_library_manager = \Drupal::service('tripal.pub_library');
+      $publication = $pub_library_manager->getSearchQuery($pub_import_id);
       $criteria = unserialize($publication->criteria);
 
 
@@ -63,6 +60,10 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       if ($_SESSION['tripal_pub_import']['perform_test'] == 1) {
         $this->form_state_previous_user_input = $_SESSION['tripal_pub_import']['perform_test_user_input'];
         $form_state_values['button_next'] = "Next";
+      }
+      else {
+        // Else this is a submit so we want to submit and then get redirected back to the list
+        $form_state->setRebuild(FALSE);
       }
     }
 
@@ -116,7 +117,9 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
             // The selected plugin defines a test specific to itself.
             $criteria_column_array = $_SESSION['tripal_pub_import']['perform_test_criteria_array'];
-            $results = $plugin->test($form, $form_state, $criteria_column_array);
+
+            // Perform a retrieve aka test lookup (retrieve 5 items, page 0)
+            $results = $plugin->retrieve($criteria_column_array, 5, 0);
 
             // On successful results, it should return array with keys total_records, search_str, pubs(array)
             $headers = ['', 'Publication', 'Authors'];
@@ -514,16 +517,18 @@ class ChadoNewPubSearchQueryForm extends FormBase {
       $op = $user_input['op'];
       if ($op == 'Save Search Query') {
         $_SESSION['tripal_pub_import']['perform_test'] = 0;
-        // tripal_pub_import table columns are: pub_import_id, name, criteria, disabled, do_contact
+        // tripal_pub_library_query table columns are: pub_library_query_id, name, criteria, disabled, do_contact
 
         // Translate the submitted data into a variable which can be serialized into a criteria column
-        // of the tripal_pub_import table
+        // of the tripal_pub_library_query table
         $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
 
         // Load the plugin and initialize an instance to perform it's unique form_submit function
         // This will run plugin specific form submit operations that can alter the criteria database column
         // which stores the specific plugin importer settings (basically all the form data)
         $plugin_id = $user_input['plugin_id'];
+        $pub_library_manager = NULL;
+        $plugin = NULL;
         if ($plugin_id) {
           // Instantiate the selected plugin
           // Pub Library Manager is found in tripal module: 
@@ -549,7 +554,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
         // If form_mode is not edit, then it is a new importer
         if ($form_mode != "edit") {
-          $public->insert('tripal_pub_import')->fields($db_fields)->execute();
+          $pub_library_manager->addSearchQuery($db_fields);
           $messenger->addMessage("Importer successfully added!");
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
@@ -557,10 +562,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
         // If form_mode is 'edit', this is an update to the database
         else {
-          $public->update('tripal_pub_import')
-            ->fields($db_fields)
-            ->condition('pub_import_id', $user_input['pub_import_id'])
-            ->execute();
+          $pub_library_manager->updateSearchQuery($user_input['pub_import_id'], $db_fields);
           $messenger->addMessage("Importer successfully edited!");
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
@@ -580,7 +582,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         $_SESSION['tripal_pub_import']['perform_test'] = 1;
 
         // Translate the submitted data into a variable which can be serialized into a criteria column
-        // of the tripal_pub_import table
+        // of the tripal_pub_library_query table
         $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
 
         // Load the plugin and initialize an instance to perform it's unique form_submit function
@@ -603,6 +605,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
         // Older code before 1/5/2024
         // $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $this->criteria_convert_to_array($form, $form_state);
         $_SESSION['tripal_pub_import']['perform_test_user_input'] = $form_state->getUserInput();
+        $form_state->setRebuild(TRUE);
       }
     }
     else {
@@ -613,7 +616,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
 
   /**
    * This function accepts the form state and converts the data into a criteria array
-   * This criteria array is serialized and saved in the tripal_pub_import table as a row if Save Importer is clicked
+   * This criteria array is serialized and saved in the tripal_pub_library_query table as a row if Save Importer is clicked
    * This array will be given to the plugin test function to perform a test if Test Importer is clicked
    */
   public function criteria_convert_to_array($form, FormStateInterface $form_state) {

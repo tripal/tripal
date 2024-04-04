@@ -6,13 +6,14 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal Array Design field type.
  *
  * @FieldType(
  *   id = "chado_array_design_type_default",
- *   object_table = "arraydesign",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Array Design"),
  *   description = @Translation("Add a Chado Array Design to the content type."),
  *   default_widget = "chado_array_design_widget_default",
@@ -22,7 +23,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_array_design_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'arraydesign';
   protected static $object_id = 'arraydesign_id';
 
@@ -124,11 +124,7 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     $db_len = $db_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
-    // For single hop, in the yaml we support using the usual 'base_table'
-    // and 'base_column' settings.
-    $linker_table = $storage_settings['linker_table'] ?? $base_table;
-    $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? $object_pkey_col;
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
@@ -300,7 +296,7 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'array_design_database_accession', $dbxref_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col 
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.dbxref_id>dbxref.dbxref_id;accession',
       'as' => 'array_design_database_accession',
     ]);
@@ -346,6 +342,22 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     ]);
 
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+    if (count($linker_tables) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
   }
 
 }

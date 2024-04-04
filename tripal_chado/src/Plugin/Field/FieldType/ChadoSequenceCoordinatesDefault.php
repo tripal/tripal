@@ -4,12 +4,14 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of Default Tripal field for sequence data.
  *
  * @FieldType(
  *   id = "chado_sequence_coordinates_default",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Sequence Coordinates"),
  *   description = @Translation("Locations on reference sequences where the feature is located"),
  *   default_widget = "chado_sequence_coordinates_widget_default",
@@ -38,7 +40,7 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
-  /**  
+  /**
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
@@ -88,13 +90,13 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
       'drupal_store' => TRUE,
       'path' => 'feature.feature_id',
     ]);
-    
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'featureloc_id', $record_id_term, [
       'action' => 'store_pkey',
       'drupal_store' => TRUE,
       'path' => 'featureloc.featureloc_id',
     ]);
-    
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fkey', $record_id_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
@@ -122,8 +124,25 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'path' => 'feature.feature_id>featureloc.feature_id;phase',
     ]);
-      
-    return($properties);    
+
+    return($properties);
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = FALSE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+
+    // This is a "specialty" field for a single content type
+    if ($base_table == 'feature') {
+      $compatible = TRUE;
+    }
+    return $compatible;
   }
 
 }

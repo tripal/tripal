@@ -6,13 +6,14 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal project field type.
  *
  * @FieldType(
  *   id = "chado_project_type_default",
- *   object_table = "project",
+ *   category = "tripal_chado",
  *   label = @Translation("Chado Project"),
  *   description = @Translation("Add a Chado project to the content type."),
  *   default_widget = "chado_project_widget_default",
@@ -22,7 +23,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 class ChadoProjectTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_project_type_default';
-  // The following needs to match the object_table annotation above
   protected static $object_table = 'project';
   protected static $object_id = 'project_id';
 
@@ -204,6 +204,22 @@ class ChadoProjectTypeDefault extends ChadoFieldItemBase {
     ]);
 
     return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+    if (count($linker_tables) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
   }
 
 }

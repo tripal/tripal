@@ -73,17 +73,24 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
 
   public function formValidate($form, &$form_state) {
     // @TODO
-    dpm('TripalPubLibraryPubmed formValidations called');
+  }
+
+
+  /**
+   * More documentation can be found in TripalPubLibraryInterface
+   * @TODO - This will need to retrieve the publications AND save to CHADO
+   */
+  public function run(int $query_id) {
+    
   }
 
   /**
-   * This function gets called dynamically from the ChadoNewPubSearchQueryForm Test Importer function
-   * Return an array with keys total_records, search_str, pubs(array)
+   * More documentation can be found in TripalPubLibraryInterface
    */
-  public function test($form, &$form_state, $search_array) {
+  public function retrieve(array $query, int $limit = 10, int $page = 0) {
     $results = NULL;
     try {
-      $results = $this->remoteSearchPMID($search_array, 5, 0);
+      $results = $this->remoteSearchPMID($query, $limit, $page);
     }
     catch (\Exception $ex) {
 
@@ -91,10 +98,6 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     return $results;
   }
 
-  // @TODO To be completed - will need to likely call other classes to push data into chado
-  public function run(array $criteria) {
-
-  }
 
   /** THIS IS FROM 7.x-3.x/tripal_chado/includes/loaders/tripal_chado.pub_importer_PMID.inc */
   /** UPGRADED FOR TRIPAL 4 USE */
@@ -199,7 +202,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     $web_env = $results['WebEnv'];
   
     // initialize the pager
-    $start = ($page - 1) * $num_to_retrieve;
+    $start = $page * $num_to_retrieve;
  
     // if we have no records then return an empty array
     if ($total_records == 0) {
@@ -404,7 +407,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  private function parse($pub_xml) {
+  public function parse($pub_xml) {
     $pub = [];
   
     if (!$pub_xml) {
