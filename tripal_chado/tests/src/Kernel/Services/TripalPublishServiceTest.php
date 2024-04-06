@@ -41,7 +41,7 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     // Get Chado in place
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
-    // Create a couple of organisms in chado to be published.
+    // Create three organisms in chado to be published.
     for ($i=1; $i <= 3; $i++) {
       $this->connection->insert('1:organism')
         ->fields([
@@ -51,11 +51,20 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
         ])->execute();
     }
 
-    // Create a couple of projects in chado to be published.
+    // Create three projects in chado to be published.
     for ($i=1; $i <= 3; $i++) {
       $this->connection->insert('1:project')
         ->fields([
           'name' => 'Project No. ' . $i,
+          'description' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
+        ])->execute();
+    }
+
+    // Create three contacts in chado to be published.
+    for ($i=1; $i <= 3; $i++) {
+      $this->connection->insert('1:contact')
+        ->fields([
+          'name' => 'Contact No. ' . $i,
           'description' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
         ])->execute();
     }
@@ -101,6 +110,7 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     // Create the content types + fields that we need.
     $this->createContentTypeFromConfig('general_chado', 'organism', TRUE);
     $this->createContentTypeFromConfig('general_chado', 'project', TRUE);
+    $this->createContentTypeFromConfig('general_chado', 'contact', TRUE);
 
   }
 
@@ -146,17 +156,23 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     // Submit the Tripal job by calling the callback directly.
     $current_user = \Drupal::currentUser();
     $values = ["schema_name" => $this->testSchemaName];
-    $bundle = 'organism';
     $datastore = 'chado_storage';
+    $bundle = 'project';
     tripal_publish($bundle, $datastore, $values);
 
     // confirm the entities are added.
-    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
+    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'project']);
     $this->assertCount(3, $entities,
-      "We expected there to be the same number of organism entities as we inserted.");
+      "We expected there to be the same number of project entities as we inserted.");
 
     // Submit the Tripal job by calling the callback directly.
-    $bundle = 'project';
+    $bundle = 'contact';
     tripal_publish($bundle, $datastore, $values);
+
+    // confirm the entities are added.
+    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
+    $this->assertCount(3, $entities,
+      "We expected there to be the same number of contact entities as we inserted.");
+
   }
 }
