@@ -169,9 +169,10 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     $bundle = 'contact';
     tripal_publish($bundle, $datastore, $values);
 
-    // confirm the entities are added.
+    // confirm the entities are added. Chado defines a default "null" contact, which
+    // will get published, so expect 4 instead of 3. (Issue #1809)
     $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
-    $this->assertCount(3, $entities,
+    $this->assertCount(4, $entities,
       "We expected there to be the same number of contact entities as we inserted.");
 
   }
