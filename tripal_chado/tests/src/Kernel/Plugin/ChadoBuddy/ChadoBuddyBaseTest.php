@@ -63,5 +63,14 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
 			'Implementations of the chado buddy plugin should be returned in an array.'
 		);
 
+    // --Use the plugin manager to create an instance.
+    $instance = $type->createInstance('chado_cvterm_buddy', []);
+    $this->assertIsObject($instance,
+      "We did not have an object created when trying to create an ChadoBuddy instance.");
+    $this->assertIsObject($instance->connection,
+      "The chado connection should have been set by the plugin manager but the value is NOT AN OBJECT.");
+    $this->assertInstanceOf(ChadoConnection::class, $instance->connection,
+      "The chado connection should have been set by the plugin manager but the value is NOT A CHADOCONNECTION OBJECT.");
+
 	}
 }
