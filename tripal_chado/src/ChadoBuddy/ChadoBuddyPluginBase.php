@@ -21,6 +21,14 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   /**
    * {@inheritdoc}
    */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $connection) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->connection = $connection;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function label(): string {
     // Cast the label to a string since it is a TranslatableMarkup object.
     return (string) $this->pluginDefinition['label'];
@@ -29,9 +37,9 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $connection) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->connection = $connection;
+  public function description(): string {
+    // Cast the description to a string since it is a TranslatableMarkup object.
+    return (string) $this->pluginDefinition['description'];
   }
 
 }

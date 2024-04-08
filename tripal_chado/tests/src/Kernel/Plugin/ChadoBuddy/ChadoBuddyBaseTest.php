@@ -23,10 +23,10 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
    * Annotations associated with the mock_plugin.
    * @var Array
    */
-  protected $plugin_definition = [
-    'id' => 'fake_chado_buddy',
-    'label' => 'Gemstone Querier',
-    'description' => 'Queries details on the incredible diversity of gemstones created by our earth into Chado.',
+  protected $cvtermbuddy_plugin_definition = [
+    'id' => "chado_cvterm_buddy",
+    'label' => "Chado Cvterm Buddy",
+    'description' => "Provides helper methods for managing chado cvs and cvterms.",
   ];
 
   protected $test_file;
@@ -71,6 +71,27 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       "The chado connection should have been set by the plugin manager but the value is NOT AN OBJECT.");
     $this->assertInstanceOf(ChadoConnection::class, $instance->connection,
       "The chado connection should have been set by the plugin manager but the value is NOT A CHADOCONNECTION OBJECT.");
-
 	}
+
+  /**
+   * Tests focused on basic getter/setters.
+   */
+  public function testChadoBuddyGetterSetters() {
+
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $this->assertIsObject($type, 'An chado buddy plugin service object was not returned.');
+    $instance = $type->createInstance('chado_cvterm_buddy', []);
+    $this->assertIsObject($instance,
+      "We did not have an object created when trying to create an ChadoBuddy instance.");
+
+    $label = $instance->label();
+    $this->assertIsString($label, "The label is expected to be a string.");
+    $this->assertEquals($label, $this->cvtermbuddy_plugin_definition['label'],
+      "The label returned did not match what we expected for the Chado Cvterm Buddy.");
+
+    $description = $instance->description();
+    $this->assertIsString($description, "The description is expected to be a string.");
+    $this->assertEquals($description, $this->cvtermbuddy_plugin_definition['description'],
+      "The description returned did not match what we expected for the Chado Cvterm Buddy.");
+  }
 }

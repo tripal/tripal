@@ -40,8 +40,8 @@ final class ChadoBuddyPluginManager extends DefaultPluginManager {
    */
   public function createInstance($plugin_id, array $configuration = []) {
 
-    $plugin_definition = $this->discovery
-      ->getDefinition($plugin_id);
+    $all_plugin_definitions = $this->getDefinitions();
+    $plugin_definition = $all_plugin_definitions[$plugin_id];
     $plugin_class = $plugin_definition['class'];
 
     return new $plugin_class($configuration, $plugin_id, $plugin_definition, $this->connection);

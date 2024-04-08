@@ -21,7 +21,7 @@ final class ChadoBuddy extends Plugin {
    *
    * @ingroup plugin_translatable
    */
-  public readonly string $title;
+  public readonly string $label;
 
   /**
    * The description of the plugin.
