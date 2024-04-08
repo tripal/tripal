@@ -29,7 +29,7 @@ services:
   tripal_chado.preparer:
     class: Drupal\tripal_chado\Task\ChadoPreparer
 
-  plugin.manager.chado_buddy:
-    class: Drupal\tripal_chado\ChadoBuddyPluginManager
+  tripal_chado.chado_buddy:
+    class: Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
     parent: default_plugin_manager
     arguments: ['@tripal_chado.database']
