@@ -28,11 +28,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
-   * @return array|ChadoBuddyRecord
+   * @return bool|array|ChadoBuddyRecord
    *   If the select values return a single record then we return the
    *     ChadoBuddyRecord describing the chado record.
    *   If the select values return multiple records, then we return an array
    *     of ChadoBuddyRecords describing the results.
+   *   If there are no results then we return FALSE and if an error is
+   *     encountered then an exception will be thrown.
    */
   public function getCv(array $identifiers, array $options = []) {
 
@@ -55,11 +57,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
-   * @return array|ChadoBuddyRecord
+   * @return bool|array|ChadoBuddyRecord
    *   If the select values return a single record then we return the
    *     ChadoBuddyRecord describing the chado record.
    *   If the select values return multiple records, then we return an array
    *     of ChadoBuddyRecords describing the results.
+   *   If there are no results then we return FALSE and if an error is
+   *     encountered then an exception will be thrown.
    */
   public function getCvterm(array $identifiers, array $options = []) {
 
