@@ -25,11 +25,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
    */
   protected $cvtermbuddy_plugin_definition = [
     'id' => "chado_cvterm_buddy",
-    'label' => "Chado Cvterm Buddy",
+    'label' => "Chado Controlled Vocabulary Term Buddy",
     'description' => "Provides helper methods for managing chado cvs and cvterms.",
   ];
-
-  protected $test_file;
 
   /**
    * {@inheritdoc}
