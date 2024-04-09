@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\ChadoBuddy;
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
 /**
  * Base class for chado_buddy plugins.
