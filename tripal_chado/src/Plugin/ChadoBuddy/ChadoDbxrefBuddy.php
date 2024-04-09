@@ -239,7 +239,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   The base table for which the dbxref should be associated. Thus to associate
    *   a dbxref with a feature the basetable=feature and dbxref_id is added to the
    *   feature_dbxref table.
-   * @param integer $record_id
+   * @param int $record_id
    *   The primary key of the basetable to associate the dbxref with.
    * @param ChadoBuddyRecord $dbxref
    *   A dbxref object returned by any of the *Dbxref() in this service.
@@ -250,7 +250,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   encountered. Both the dbxref and the chado record indicated by $record_id
    *   MUST ALREADY EXIST.
    */
-  public function associateDbxref(string $basetable, integer $record_id, ChadoBuddyRecord $dbxref, array $options = []) {
+  public function associateDbxref(string $basetable, int $record_id, ChadoBuddyRecord $dbxref, array $options = []) {
 
   }
 }

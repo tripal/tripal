@@ -219,7 +219,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   The base table for which the cvterm should be associated. Thus to associate
    *   a cvterm with a feature the basetable=feature and cvterm_id is added to the
    *   feature_cvterm table.
-   * @param integer $record_id
+   * @param int $record_id
    *   The primary key of the basetable to associate the cvterm with.
    * @param ChadoBuddyRecord $cvterm
    *   A cvterm object returned by any of the *Cvterm() in this service.
@@ -231,7 +231,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   encountered. Both the cvterm and the chado record indicated by $record_id
    *   MUST ALREADY EXIST.
    */
-  public function associateCvterm(string $basetable, integer $record_id, ChadoBuddyRecord $cvterm, array $options = []) {
+  public function associateCvterm(string $basetable, int $record_id, ChadoBuddyRecord $cvterm, array $options = []) {
 
   }
 }
