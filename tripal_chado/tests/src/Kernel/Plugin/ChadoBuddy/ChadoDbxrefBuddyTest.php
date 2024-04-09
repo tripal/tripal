@@ -23,6 +23,10 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
    */
   public function testDbMethods() {
 
+    $this->markTestIncomplete(
+          'This test has not been implemented yet.'
+    );
+
     // TEST: if there is no record then it should return false when we try to get it.
 
     // TEST: We should be able to insert a record if it doesn't exist.
@@ -42,6 +46,10 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
    * Focuses on those expected to work ;-)
    */
   public function testDbxrefMethods() {
+
+    $this->markTestIncomplete(
+          'This test has not been implemented yet.'
+    );
 
     // TEST: if there is no record then it should return false when we try to get it.
 
