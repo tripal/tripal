@@ -8,14 +8,14 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 /**
  * @ChadoBuddy(
  *   id = "chado_dbxref_buddy",
- *   label = @Translation("Chado Dbxref Buddy"),
+ *   label = @Translation("Chado Database Reference Buddy"),
  *   description = @Translation("Provides helper methods for managing chado dbs and dbxrefs.")
  * )
  */
 class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
 
   /**
-   * Get chado.db record.
+   * Retrieves a chado database.
    *
    * @param array $identifiers
    *   An array where the key is a column in the chado.db table and the value
@@ -37,7 +37,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   }
 
   /**
-   * Retrieves a chado database reference variable.
+   * Retrieves a chado database reference.
    *
    * @param array $identifiers
    *   An array where the key is a column in chado and the value describes the
