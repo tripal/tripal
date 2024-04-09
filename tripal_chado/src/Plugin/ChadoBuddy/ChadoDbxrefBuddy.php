@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
+use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
 /**
  * @ChadoBuddy(
@@ -22,15 +23,16 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db_id
    *     - name
    *     - description
-   * @param $options
+   * @param array $options (Optional)
    *   None supported yet. Here for consistency.
-   * @return array|object
-   *   If the identifiers match a single record then we return an object
-   *     describing that record.
-   *   If the identifiers match multiple records, then we return an array
-   *     of objects describing the results.
+   *
+   * @return array|ChadoBuddyRecord
+   *   If the select values return a single record then we return the
+   *     ChadoBuddyRecord describing the chado record.
+   *   If the select values return multiple records, then we return an array
+   *     of ChadoBuddyRecords describing the results.
    */
-  public function getDb(array $identifiers, array $options) {
+  public function getDb(array $identifiers, array $options = []) {
 
   }
 
@@ -46,15 +48,16 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - idspace
    *     - version
    *     - dbxref_id
-   * @param $options
+   * @param array $options (Optional)
    *   None supported yet. Here for consistency.
-   * @return array|object
-   *   If the select values return a single record then we return an object
-   *     describing that record.
+   *
+   * @return array|ChadoBuddyRecord
+   *   If the select values return a single record then we return the
+   *     ChadoBuddyRecord describing the chado record.
    *   If the select values return multiple records, then we return an array
-   *     of objects describing the results.
+   *     of ChadoBuddyRecords describing the results.
    */
-  public function getDbxref(array $identifiers, array $options) {
+  public function getDbxref(array $identifiers, array $options = []) {
 
   }
 
@@ -68,14 +71,17 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * when if present in the db.urlprefix string will be replaced with the db.name
    * and dbxref.accession respectively.
    *
-   * @param $dbxref
+   * @param ChadoBuddyRecord $dbxref
    *   A dbxref object retrieved by getDbxref().
-   * @param $options
+   * @param array $options (Optional)
    *   None supported yet. Here for consistency.
-   * @return
-   *   A string containing the URL.
+   *
+   * @return string
+   *   A string containing the URL. If this database doesn't have a URL prefix,
+   *   then the built in version for your Tripal site will be used. An exception
+   *   is thrown if an error is encountered.
    */
-  public function getDbxrefUrl(object $dbxref, array $options) {
+  public function getDbxrefUrl(ChadoBuddyRecord $dbxref, array $options = []) {
 
   }
 
@@ -91,13 +97,16 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   - url: (Optional) The URL for the database.
    *   - urlprefix: (Optional) The URL that is to be used as a prefix when
    *     constructing a link to a database term.
-   * @param $options
+   * @param $options (Optional)
    *   None supported yet. Here for consistency.
-   * @return
-   *   An object populated with fields from the newly added database.  If the
-   *   database already exists it returns the values in the current entry.
+   *
+   * @return ChadoBuddyRecord
+   *   The inserted ChadoBuddyRecord will be returned on success and an
+   *   exception will be thrown if an error is encountered. If the record
+   *   already exists then an error will be thrown... if this is not the desired
+   *   behaviour then use the upsert version of this method.
    */
-  public function insertDb(array $values, array $options) {
+  public function insertDb(array $values, array $options = []) {
 
   }
 
@@ -110,67 +119,134 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *    - accession: the accession.
    *    - version: (Optional) The version of the database reference.
    *    - description: (Optional) A description of the database reference.
-   * @param $options
-   *   Currently no options are supported.
-   *   This is here for consistency throughout the API.
+   * @param $options (Optional)
+   *   None supported yet. Here for consistency.
    *
-   * @return
-   *   The newly inserted dbxref as an object, similar to that returned by
-   *   the chado_select_record() function.
+   * @return ChadoBuddyRecord
+   *   The inserted ChadoBuddyRecord will be returned on success and an
+   *   exception will be thrown if an error is encountered. If the record
+   *   already exists then an error will be thrown... if this is not the desired
+   *   behaviour then use the upsert version of this method.
    */
-  public function insertDbxref(array $values, array $options) {
+  public function insertDbxref(array $values, array $options = []) {
 
   }
 
   /**
-   * Update chado.db record.
+   * Updates an existing database.
+   *
+   * @param array $values
+   *   An associative array of the values for the final record (i.e what you
+   *   want to update the record to be) including:
+   *   - name: The name of the database. This name is usually used as the prefix
+   *     for CV term accessions.
+   *   - description: (Optional) A description of the database.  By default no
+   *     description is required.
+   *   - url: (Optional) The URL for the database.
+   *   - urlprefix: (Optional) The URL that is to be used as a prefix when
+   *     constructing a link to a database term.
+   * @param array $conditions
+   *   An associative array of the conditions to find the record to update.
+   *   The same keys are supported as those indicated for the $values.
+   * @param array $options (Optional)
+   *   None supported yet. Here for consistency.
+   *
+   * @return bool|ChadoBuddyRecord
+   *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
+   *   returned if no record was found to update and an exception will be thrown
+   *   if an error is encountered.
    */
-  public function updateDb() {
+  public function updateDb(array $values, array $conditions, array $options = []) {
 
   }
 
   /**
-   * Update chado.dbxref record.
+   * Updates an existing database reference.
+   *
+   * @param array $values
+   *   An associative array of the values for the final record (i.e what you
+   *   want to update the record to be) including:
+   *    - db_id: the database_id of the database the reference is from.
+   *    - accession: the accession.
+   *    - version: (Optional) The version of the database reference.
+   *    - description: (Optional) A description of the database reference.
+   * @param array $conditions
+   *   An associative array of the conditions to find the record to update.
+   *   The same keys are supported as those indicated for the $values.
+   * @param array $options (Optional)
+   *   None supported yet. Here for consistency.
+   *
+   * @return bool|ChadoBuddyRecord
+   *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
+   *   returned if no record was found to update and an exception will be thrown
+   *   if an error is encountered.
    */
   public function updateDbxref() {
 
   }
 
   /**
-   * Insert chado.db record if it doesn't yet exist OR update if does.
+   * Insert a database if it doesn't yet exist OR update it if does.
+   *
+   * @param array $values
+   *   An associative array of the values for the final record including:
+   *   - name: The name of the database. This name is usually used as the prefix
+   *     for CV term accessions.
+   *   - description: (Optional) A description of the database.  By default no
+   *     description is required.
+   *   - url: (Optional) The URL for the database.
+   *   - urlprefix: (Optional) The URL that is to be used as a prefix when
+   *     constructing a link to a database term.
+   * @param array $options (Optional)
+   *   None supported yet. Here for consistency.
+   *
+   * @return ChadoBuddyRecord
+   *   The inserted/updated ChadoBuddyRecord will be returned on success, and
+   *   an exception will be thrown if an error is encountered.
    */
-  public function upsertDb() {
+  public function upsertDb(array $values, array $options = []) {
 
   }
 
   /**
-   * Insert chado.dbxref record if it doesn't yet exist OR update if does.
+   * Insert a database reference if it doesn't yet exist OR update it if does.
+   *
+   * @param array $values
+   *   An associative array of the values for the final record including:
+   *    - db_id: the database_id of the database the reference is from.
+   *    - accession: the accession.
+   *    - version: (Optional) The version of the database reference.
+   *    - description: (Optional) A description of the database reference.
+   * @param array $options (Optional)
+   *   None supported yet. Here for consistency.
+   *
+   * @return ChadoBuddyRecord
+   *   The inserted/updated ChadoBuddyRecord will be returned on success, and
+   *   an exception will be thrown if an error is encountered.
    */
-  public function upsertDbxref() {
+  public function upsertDbxref(array $values, array $options = []) {
 
   }
 
   /**
    * Add a record to a database reference linking table (ie: feature_dbxref).
    *
-   * @param $basetable
+   * @param string $basetable
    *   The base table for which the dbxref should be associated. Thus to associate
    *   a dbxref with a feature the basetable=feature and dbxref_id is added to the
    *   feature_dbxref table.
-   * @param $record_id
-   *   The primary key of the basetable to associate the dbxref with. This should
-   *   be in integer.
-   * @param $dbxref
-   *   An associative array describing the dbxref. Valid keys include:
-   *   'accession' => the accession for the dbxref, 'db_name' => the name of the
-   *    database the dbxref belongs to.
-   *   'db_id' => the primary key of the database the dbxref belongs to.
+   * @param integer $record_id
+   *   The primary key of the basetable to associate the dbxref with.
+   * @param ChadoBuddyRecord $dbxref
+   *   A dbxref object returned by any of the *Dbxref() in this service.
    * @param $options
-   *   An associative array of options. Valid keys include:
-   *    - insert_dbxref: Insert the dbxref if it doesn't already exist. TRUE is
-   *      the default.
+   *   None supported yet. Here for consistency.
+   * @return bool
+   *   Returns true if successful, and throws an exception if an error is
+   *   encountered. Both the dbxref and the chado record indicated by $record_id
+   *   MUST ALREADY EXIST.
    */
-  public function chado_associate_dbxref($basetable, $record_id, $dbxref, $options = []) {
+  public function associateDbxref(string $basetable, integer $record_id, ChadoBuddyRecord $dbxref, array $options = []) {
 
   }
 }
