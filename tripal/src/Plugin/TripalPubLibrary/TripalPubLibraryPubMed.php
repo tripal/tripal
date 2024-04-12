@@ -17,7 +17,6 @@ use Drupal\Core\Url;
  *  )
  */
 class TripalPubLibraryPubmed extends TripalPubLibraryBase {
-
   public function formSubmit($form, &$form_state) {
     // DUMMY function from inheritance so it had to be kept.
     // The form_submit function which is called by TripalPubLibrary
@@ -72,16 +71,30 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
   }
 
   public function formValidate($form, &$form_state) {
-    // @TODO
+    // @TODO - Perform any form validations necessary with the form data
   }
 
 
   /**
    * More documentation can be found in TripalPubLibraryInterface
-   * @TODO - This will need to retrieve the publications AND save to CHADO
    */
   public function run(int $query_id) {
-    
+    // public connection is already defined due to dependency injection happening on TripalPubLibraryBase
+    $row = $this->public->select('tripal_pub_library_query', 'tpi')
+    ->fields('tpi')
+    ->condition('pub_library_query_id', $query_id, '=')
+    ->execute()
+    ->fetchObject();
+    // Get the criteria column which has serialized data, so unserialize it into $query variable
+    $query = unserialize($row->criteria);
+    // @TODO Run a unit test to see if this works correctly
+    // Go through all results until pubs is empty
+    $page_results = $this->retrieve($query);
+    $publications = [];
+    while (count($page_results['pub']) != 0) {
+      $publications = array_merge($publications, $page_results['pub']);
+    }
+    return $publications; // @TODO I might need to change this to a structured array
   }
 
   /**
