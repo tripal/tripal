@@ -160,49 +160,6 @@ class ChadoMview extends ChadoCustomTable {
   }
 
   /**
-   * Toggles the materialized view's locked status.
-   * 
-   * In some cases, a module will provide a materialized view and
-   * in such cases it is beneficial to have these be locked from editing
-   * by the site maintainer.
-   * 
-   * @param bool $lock
-   *   Set to True to lock the materialized view. Set to False to allow the
-   *   materialized view to be edited by the end-user (default).
-   */
-  // public function setLocked($lock = False) {
-  //   $public = \Drupal::database();
-  //   $update = $public->update('tripal_mviews');
-  //   $update->fields(['locked' => $lock == TRUE ? 1 : 0]);
-  //   $update->condition('mview_id', $this->mview_id);
-  //   $update->execute();
-  // }
-
-  /**
-   * Indicates if the materialized view is locked from editing by the end-user.
-   * 
-   * In some cases, a module will provide a materialized view and
-   * in such cases it is beneficial to have these be locked from editing
-   * by the site maintainer.
-   * 
-   * Because there is no reason to have the locked status of a custom table and 
-   * its materialized view to differ, we will check the 'locked' column 
-   * in the tripal_custom_tables table. 
-   */
-  // public function isLocked() {
-  //   $public = \Drupal::database();
-  //   $query = $public->select('tripal_mviews', 'tmv');
-  //   $query->fields('tmv', ['locked']);
-  //   $query->condition('tmv.mview_id', $this->mview_id);
-  //   $locked = $query->execute()->fetchField();
-
-  //   if ($locked == 1) {
-  //     return True;
-  //   }
-  //   return False;
-  // }
-
-  /**
    * Retrieves the timestamp for the last time the mview was populated.
    *
    * @return int
