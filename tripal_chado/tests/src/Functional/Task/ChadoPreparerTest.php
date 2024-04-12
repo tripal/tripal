@@ -100,10 +100,10 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     // 3: IMPORT ONTOLOGIES.
     // --------------------------------
     $expected_counts_by_table = [
-      'cv' => 31,
-      'db' => 41,
-      'cvterm' => 3145,
-      'dbxref' => 3454,
+      'cv' => 32,
+      'db' => 40,
+      'cvterm' => 3178,
+      'dbxref' => 3485,
     ];
     foreach ($expected_counts_by_table as $table_name => $expected_count) {
       $count = $chado2check->query("SELECT count(*) FROM {1:$table_name}")->fetchField();
