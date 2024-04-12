@@ -576,3 +576,36 @@ tripal.import_tripalentitytype_collection:
     _form: 'Drupal\tripal\Form\ImportTripalEntityTypeCollection'
   requirements:
     _permission: 'manage tripal content types'
+
+# Manage Pub Search Queries
+tripal.data_loaders.publication_loaders.manage_publication_search_queries:
+  path: 'admin/tripal/loaders/publications/manage_publication_search_queries'
+  defaults:
+    _form: 'Drupal\tripal\Form\ManagePubSearchQueriesForm'
+    _title: 'Manage Pub Search Queries'
+  requirements:
+    _permission: 'allow tripal import'
+
+tripal.data_loaders.publication_loaders.new_publication_search_query:
+  path: 'admin/tripal/loaders/publications/new_publication_search_query'
+  defaults:
+    _form: 'Drupal\tripal\Form\NewPubSearchQueryForm'
+    _title: 'New publication search query'
+  requirements:
+    _permission: 'allow tripal import'
+
+tripal.data_loaders.publication_loaders.delete_publication_search_query:
+  path: 'admin/tripal/loaders/publications/delete_publication_search_query/{pub_library_query_id}'
+  defaults:
+    _form: 'Drupal\tripal\Form\DeletePubSearchQueryForm'
+    _title: 'Delete publication'
+  requirements:
+    _permission: 'allow tripal import'   
+
+tripal.data_loaders.publication_loaders.edit_publication_search_query:
+  path: 'admin/tripal/loaders/publications/edit_publication_search_query/{pub_import_id}'
+  defaults:
+    _form: 'Drupal\tripal\Form\NewPubSearchQueryForm'
+    _title: 'Edit publication search query'
+  requirements:
+    _permission: 'allow tripal import'  
