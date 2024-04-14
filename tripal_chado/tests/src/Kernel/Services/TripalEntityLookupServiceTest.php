@@ -22,8 +22,6 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
   protected $project_Accession = 'C47885';
   protected $analysis_termIdSpace = 'operation';
   protected $analysis_Accession = '2945';
-  // Tests 2 links, 1 link, and 0 links.
-  protected $testlinks = [[1,1], [1,2], [2,2]];
 
   /**
    * {@inheritdoc}
@@ -61,15 +59,6 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
           'name' => 'Analysis No. ' . $i,
           'program' => 'PHP',
           'programversion' => 'Version ' . $i,
-        ])->execute();
-    }
-
-    // Create several links between these content types.
-    foreach ($this->testlinks as $testlink) {
-      $this->connection->insert('1:project_analysis')
-        ->fields([
-          'project_id' => $testlink[0],
-          'analysis_id' => $testlink[1],
         ])->execute();
     }
 
@@ -143,7 +132,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
       $this->analysis_termIdSpace,
       $this->analysis_Accession,
     );
-    $this->assertNull($entity_id, 'We retrieved an entity_id for a nonexistant record');
+    $this->assertNull($entity_id, 'We retrieved an entity_id for a nonexistent record');
 
     // A valid record but invalid term should return NULL, mimics if this is not a content type.
     $analysis_id = 1;
@@ -169,6 +158,21 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     $this->assertIsObject($renderable_item['#url'], 'getRenderableItem should return an object for the url');
     $this->assertArrayNotHasKey('#markup', $renderable_item, 'getRenderableItem should not return plain markup if entity_id provided');
     $this->assertEquals($displayed_string, $renderable_item['#title'], 'getRenderableItem title is not the value we supplied');
-    
+
+    // Query a Drupal entity table to confirm that it stores the Chado record ID, and that it is correct.
+    $entity_table_name = 'tripal_entity__analysis_name';
+    $entity_column_name = 'analysis_name_record_id';
+    for ($entity_id=4; $entity_id <= 6; $entity_id++) {
+      $expected_analysis_id = $entity_id - 3;
+      $sql = "SELECT $entity_column_name FROM $entity_table_name WHERE entity_id = :record_id";
+      $args = [':record_id' => $entity_id];
+      $results = $this->connection->query($sql, $args);
+      $ids = [];
+      while ($result = $results->fetchField()) {
+        $ids[] = $result;
+      }
+      $this->assertEquals(1, count($ids), "Expected exactly one match from $entity_table_name query");
+      $this->assertEquals($expected_analysis_id, $ids[0], "Analysis Chado record analysis_id for entity $entity_id is not what we expected");
+    }
   }
 }
