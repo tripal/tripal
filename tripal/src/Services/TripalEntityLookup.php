@@ -74,7 +74,12 @@ class TripalEntityLookup {
     if ($bundle_id) {
       $base_table = $this->getBundleBaseTable($bundle_id, $entity_type);
       if ($base_table) {
-        $entity_id = $this->getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type);
+        $entity_ids = $this->getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type);
+        if ($entity_ids) {
+          // Here we are just returning the first hit, e.g. analysis published as both
+          // analysis and genome assembly. Ideally this will be prevented from happening.
+          $entity_id = $entity_ids[0];
+        }
       }
     }
 
@@ -164,20 +169,23 @@ class TripalEntityLookup {
    * @param string $entity_type
    *   The type of entity, only 'tripal_entity' is supported.
    *
-   * @return int|null
+   * @return array
    *   The id for the requested Drupal entity in the tripal_entity table.
-   *   Will be null if there was no corresponding entity. This can happen
+   *   Will be an empty array if there was no corresponding entity. This can happen
    *   if the content is not published, or if this is not a content type.
+   *   If a given record was published as more than one content type, the
+   *   returned array may have more than one entity id. This would happen
+   *   in Tripal 3, for example if an analysis is published as both
+   *   "analysis", and as "Genome Assembly".
    */
-  protected function getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type) {
+  protected function getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type) : array {
 
-    $id = NULL;
-
+    $ids = [];
     $required_fields = $this->getRequiredFields($bundle_id, $entity_type);
     if (!$required_fields) {
       // Everything is based on the assumption that there is at least one
       // required field for every content type. If not, we cannot create a link.
-      return NULL;
+      return $ids;
     }
 
     // We only need to evaluate for one of the required fields,
@@ -187,7 +195,8 @@ class TripalEntityLookup {
 
     // Make sure base table matches. It should in all cases, but check just in case.
     if ($base_table != $required_base_table) {
-      throw new \Exception("base table for bundle $bundle_id field \"$required_field\" is \"$required_base_table\", this does not match passed table \"$base_table\"");
+      throw new \Exception("base table for bundle $bundle_id field \"$required_field\" is"
+         . " \"$required_base_table\", this does not match passed table \"$base_table\"");
     }
 
     // These will be the drupal field table name and column name to query.
@@ -195,27 +204,23 @@ class TripalEntityLookup {
     $entity_column_name = $required_field . '_record_id';
 
     // Query the appropriate drupal field table for this record_id
+    // Ideally there should only be zero or one hit, but in Tripal 3 you
+    // could for example publish an analysis as both analysis and Genome Assembly.
+    // This function will return all matching entities.
     try {
       $conn = \Drupal::service('database');
-      $query = $conn->select($entity_table_name, 'e');
-      $query->addField('e', 'entity_id');
-      $query->condition('e.' . $entity_column_name, $record_id, '=');
-
-      // There should only be zero or one hit, but this exception is here
-      // to let us know if it ever happens. For zero hits, we return null.
-      $num_hits = $query->countQuery()->execute()->fetchField();
-      if ($num_hits > 1) {
-        throw new \Exception("TripalEntityLookup: Too many hits ($num_hits) for table $entity_table_name column $entity_column_name record $record_id");
-      }
-      elseif ($num_hits == 1) {
-        $id = $query->execute()->fetchField();
+      $sql = "SELECT entity_id FROM $entity_table_name WHERE $entity_column_name = :record_id";
+      $args = [':record_id' => $record_id];
+      $results = $conn->query($sql, $args);
+      while ($result = $results->fetchField()) {
+        $ids[] = $result;
       }
     }
     catch (\Exception $e) {
       throw new \Exception('Invalid database query: ' . $e->getMessage());
     }
 
-    return $id;
+    return $ids;
   }
 
   /**
