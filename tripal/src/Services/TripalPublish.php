@@ -514,7 +514,7 @@ class TripalPublish {
     $entities = [];
 
     $sql = "
-      SELECT id,type,title FROM tripal_entity\n
+      SELECT id,type,title FROM {tripal_entity}\n
       WHERE type = :type AND title in (:titles[])\n";
 
     $i = 0;
