@@ -632,7 +632,7 @@ class TripalPublish {
     $items = [];
 
     $sql = "
-      SELECT entity_id FROM $field_table\n
+      SELECT entity_id, delta FROM $field_table\n
       WHERE bundle = :bundle\n
         AND entity_id IN (:entity_ids[])\n";
 
@@ -654,7 +654,7 @@ class TripalPublish {
         ];
         $results = $database->query($sql, $args);
         while ($result = $results->fetchAssoc()) {
-          $items[$result['entity_id']] = $result['entity_id'];
+          $items[$result['entity_id']][$result['delta']] = 1;
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -703,7 +703,7 @@ class TripalPublish {
    * @param array $entities
    *   An associative array that maps entity titles to their keys.
    * @param array $existing
-   *   An associative array of entities that already have an existing item for this field.
+   *   An associative array of [entity_id][delta] that already have an existing item for this field.
    */
   protected function insertFieldItems($field_name, $matches, $titles, $entities, $existing) {
 
@@ -744,7 +744,7 @@ class TripalPublish {
         $total++;
 
         // No need to add items to those that are already published.
-        if (array_key_exists($entity_id, $existing)) {
+        if (array_key_exists($entity_id, $existing) and array_key_exists($delta, $existing[$entity_id])) {
           continue;
         }
 
