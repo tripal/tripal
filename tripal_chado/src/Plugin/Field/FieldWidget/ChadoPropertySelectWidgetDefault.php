@@ -122,8 +122,6 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
    */
   public static function defaultSettings() {
     return [
-      // Create the custom setting 'size', and
-      // assign a default value of 60
       'options' => [],
     ] + parent::defaultSettings();
   }
@@ -149,7 +147,10 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
   public function settingsSummary() {
     $summary = [];
 
-    $summary[] = $this->t('Its too hard to summarize these options.');
+    $raw_options = $this->getSetting('options');
+    $count = sizeof(explode("\n", $raw_options));
+
+    $summary[] = $this->t("There are $count options configured.");
 
     return $summary;
   }
