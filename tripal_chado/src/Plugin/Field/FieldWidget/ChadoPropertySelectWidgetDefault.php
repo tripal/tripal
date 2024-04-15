@@ -122,7 +122,7 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
    */
   public static function defaultSettings() {
     return [
-      'options' => [],
+      'options' => '',
     ] + parent::defaultSettings();
   }
 
@@ -148,9 +148,13 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
     $summary = [];
 
     $raw_options = $this->getSetting('options');
-    $count = sizeof(explode("\n", $raw_options));
-
-    $summary[] = $this->t("There are $count options configured.");
+    if (!empty($raw_options)) {
+      $count = sizeof(explode("\n", $raw_options));
+      $summary[] = $this->t("There are $count options configured.");
+    }
+    else {
+      $summary[] = $this->t("There are no options yet options configured.");
+    }
 
     return $summary;
   }
