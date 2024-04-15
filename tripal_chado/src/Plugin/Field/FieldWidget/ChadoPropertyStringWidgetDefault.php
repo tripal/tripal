@@ -12,8 +12,8 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *
  * @FieldWidget(
  *   id = "chado_property_string_widget_default",
- *   label = @Translation("Chado Property String"),
- *   description = @Translation("Provides a simple string widget for Chado Properties."),
+ *   label = @Translation("Chado Property: Short Text"),
+ *   description = @Translation("Provides a simple string widget for Chado Properties using a textfield."),
  *   field_types = {
  *     "chado_property_type_default"
  *   }
