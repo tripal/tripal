@@ -86,9 +86,9 @@ function tripal_chado_views_data_custom_tables(&$data) {
     ],
   ];
 
-  $data['tripal_custom_tables']['hidden'] = [
-    'title' => t('Hidden'),
-    'help' => t('Indicates if the table is hidden from end-users.'),
+  $data['tripal_custom_tables']['locked'] = [
+    'title' => t('Locked'),
+    'help' => t('Indicates if the table is locked from end-users.'),
     'field' => [
       'id' => 'boolean',
     ],
@@ -97,9 +97,6 @@ function tripal_chado_views_data_custom_tables(&$data) {
     ],
     'filter' => [
       'id' => 'string',
-      'label' => t('Is Hidden'),
-      'type' => 'yes-no',
-      'use_equal' => TRUE,
     ],
     'argument' => [
       'id' => 'string',
