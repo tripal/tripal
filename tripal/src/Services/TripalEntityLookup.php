@@ -51,8 +51,6 @@ class TripalEntityLookup {
    *
    * @param int $record_id
    *   The primary key value for the requested record
-   * @param string $base_table
-   *   The chado base table for the bundle
    * @param string $termIdSpace
    *   The bundle's CV Term namespace e.g. for gene "SO"
    * @param string $termAccession
@@ -63,7 +61,7 @@ class TripalEntityLookup {
    * @return int|null
    *   The Drupal entity ID, or null if no match found.
    */
-  public function getEntityId($record_id, $base_table, $termIdSpace, $termAccession, $entity_type = 'tripal_entity') {
+  public function getEntityId($record_id, $termIdSpace, $termAccession, $entity_type = 'tripal_entity') {
 
     // Catch invalid entity type
     if ($entity_type != 'tripal_entity') {
@@ -72,9 +70,10 @@ class TripalEntityLookup {
 
     // Perform the lookup steps
     $entity_id = NULL;
-    if ($base_table) {
-      $bundle_id = $this->getBundleFromCvTerm($termIdSpace, $termAccession, $entity_type);
-      if ($bundle_id) {
+    $bundle_id = $this->getBundleFromCvTerm($termIdSpace, $termAccession, $entity_type);
+    if ($bundle_id) {
+      $base_table = $this->getBundleBaseTable($bundle_id, $entity_type);
+      if ($base_table) {
         $entity_ids = $this->getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type);
         if ($entity_ids) {
           // Here we are just returning the first hit, e.g. analysis published as both
@@ -120,6 +119,45 @@ class TripalEntityLookup {
   }
 
   /**
+   * Retrieve the base table for a given bundle given the bundle's CV term.
+   *
+   * @param string $bundle
+   *   The bundle's ID, e.g. "gene"
+   * @param string $entity_type
+   *   The type of entity, only 'tripal_entity' is supported.
+   *
+   * @return string|null
+   *   The base table name, or null if no match found.
+   */
+  protected function getBundleBaseTable($bundle, $entity_type) {
+    $table = NULL;
+    if ($bundle) {
+      $entityFieldManager = \Drupal::service('entity_field.manager');
+      $fields = $entityFieldManager->getFieldDefinitions($entity_type, $bundle);
+      $field_list = array_keys($fields);
+      $type_name = NULL;
+      $base_table = NULL;
+      foreach ($field_list as $field_name) {
+        // Skip drupal fields. Look for the first tripal field that has a base_column
+        // set. Fields from linker tables do not have a base_column.
+        if (preg_match('/^'.$bundle.'/', $field_name)) {
+          $field_storage = FieldStorageConfig::loadByName($entity_type, $field_name);
+          if ($field_storage) {
+            $storage_plugin_settings = $field_storage->getSettings()['storage_plugin_settings'];
+            $base_table = $storage_plugin_settings['base_table'];
+            $base_column = $storage_plugin_settings['base_column'] ?? '';
+            if ($base_table and $base_column) {
+              $table = $base_table;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return $table;
+  }
+
+  /**
    * Retrieve the pkey for an entity corresponding to a given record in a given table.
    *
    * @param string $base_table
@@ -138,7 +176,7 @@ class TripalEntityLookup {
    *   If a given record was published as more than one content type, the
    *   returned array may have more than one entity id. This would happen
    *   in Tripal 3, for example if an analysis is published as both
-   *   "Analysis", and as "Genome Assembly".
+   *   "analysis", and as "Genome Assembly".
    */
   protected function getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type) : array {
 
