@@ -12,7 +12,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *
  * @FieldWidget(
  *   id = "chado_property_select_widget_default",
- *   label = @Translation("Chado Property Select"),
+ *   label = @Translation("Chado Property: Select Drop-down"),
  *   description = @Translation("Provides a configurable drop-down widget for Chado Properties."),
  *   field_types = {
  *     "chado_property_type_default"
