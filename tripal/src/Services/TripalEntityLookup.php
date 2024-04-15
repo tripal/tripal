@@ -70,7 +70,7 @@ class TripalEntityLookup {
 
     // Perform the lookup steps
     $entity_id = NULL;
-    $bundle_id = $this->getBundleFromCvTerm($termIdSpace, $termAccession, $entity_type);
+    $bundle_id = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
     if ($bundle_id) {
       $base_table = $this->getBundleBaseTable($bundle_id, $entity_type);
       if ($base_table) {
@@ -93,27 +93,17 @@ class TripalEntityLookup {
    *   The bundle's CV Term namespace e.g. "NCIT"
    * @param string $termAccession
    *   The bundle's CV term accession e.g. "C47954"
-   * @param string $entity_type
-   *   The type of entity, only 'tripal_entity' is supported.
    *
    * @return string|null
    *   The bundle id, or null if no match found.
    */
-  protected function getBundleFromCvTerm($termIdSpace, $termAccession, $entity_type) {
+  protected function getBundleFromCvTerm($termIdSpace, $termAccession) {
     $bundle_id = NULL;
-    $bundle_manager = \Drupal::service('entity_type.bundle.info');
-    $bundle_list = $bundle_manager->getBundleInfo($entity_type);
-    foreach ($bundle_list as $id => $properties) {
-      // Get each bundle's CV term
-      $bundle_info = \Drupal::entityTypeManager()->getStorage('tripal_entity_type')->load($id);
-      $bundleIdSpace = $bundle_info->getTermIdSpace();
-      $bundleAccession = $bundle_info->getTermAccession();
-
-      // Find the bundle where the term values match
-      if (($termIdSpace == $bundleIdSpace) and ($termAccession == $bundleAccession)) {
-        $bundle_id = $id;
-        break;
-      }
+    $bundles = \Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->loadByProperties(['termIdSpace' => $termIdSpace, 'termAccession' => $termAccession]);
+    if (sizeof($bundles) == 1) {
+      $bundle_id = key($bundles);
     }
     return $bundle_id;
   }
