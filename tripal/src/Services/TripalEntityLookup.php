@@ -110,6 +110,9 @@ class TripalEntityLookup {
 
   /**
    * Retrieve the base table for a given bundle.
+   * This is used when, from a given content type, we have a linking field
+   * to another content type, and we need the base table of that linked
+   * content type, which is specified by $bundle.
    *
    * @param string $bundle
    *   The bundle's ID, e.g. "gene"
@@ -151,7 +154,7 @@ class TripalEntityLookup {
    * Retrieve the pkey for an entity corresponding to a given record in a given table.
    *
    * @param int $record_id
-   *   The primary key value for the requested record in the $base_table
+   *   The primary key value for the requested record in its base table.
    * @param string $bundle_id
    *   The name of the drupal bundle, e.g. for base table 'arraydesign' it is 'array_design'
    * @param string $entity_type
@@ -164,7 +167,7 @@ class TripalEntityLookup {
    *   If a given record was published as more than one content type, the
    *   returned array may have more than one entity id. This would happen
    *   in Tripal 3, for example if an analysis is published as both
-   *   "analysis", and as "Genome Assembly".
+   *   "Analysis", and as "Genome Assembly".
    */
   protected function getEntityIdFromRecordId($record_id, $bundle_id, $entity_type) : array {
 
@@ -180,15 +183,25 @@ class TripalEntityLookup {
     // for simplicity just pick the first one.
     $required_field = array_key_first($required_fields);
 
+    // We are assuming here that the pkey property always uses 'record_id'
+    // as the key. For core chado this is true, but someone might write a
+    // module where this is not the case, and an exception will be thrown.
+    $pkey_property_id = 'record_id';
+    $required_property = $required_field . '.' . $pkey_property_id;
+
     // Use the entity query API to lookup the entity id
-    $pkey_id = 'record_id';
-    $query = \Drupal::entityQuery($entity_type)
-      ->condition('type', $bundle_id)
-      ->condition($required_field . '.' . $pkey_id, $record_id, '=')
-      ->accessCheck(TRUE);
-    // The values of the array are always entity ids. The keys will be
-    // revision ids if the entity supports revision and entity ids if not.
-    $ids = $query->execute();
+    try {
+      $query = \Drupal::entityQuery($entity_type)
+        ->condition('type', $bundle_id)
+        ->condition($required_property, $record_id, '=')
+        ->accessCheck(TRUE);
+      // The values of the array are always entity ids. The keys will be
+      // revision ids if the entity supports revision and entity ids if not.
+      $ids = $query->execute();
+    }
+    catch (\Exception $e) {
+      // @todo Look up the pkey if the $required_property exists under a different id.
+    }
 
     return $ids;
   }
@@ -237,4 +250,3 @@ class TripalEntityLookup {
   }
 
 }
-
