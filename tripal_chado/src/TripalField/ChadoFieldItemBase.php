@@ -67,6 +67,15 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $entity_type_manager = \Drupal::entityTypeManager();
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+    // If this is not a Chado content type, then $entity_type will be NULL.
+    if (!$entity_type) {
+      \Drupal::messenger()->addError($this->t(
+          'Chado fields cannot be added to non-Chado content types.',
+          []));
+      $response = new RedirectResponse("/admin/structure/types/manage/" . $bundle . "/fields");
+      $response->send();
+      return;
+    }
     $entity_type_chado_base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
 
     // The base table should be selectable by default.
