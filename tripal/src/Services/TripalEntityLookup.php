@@ -74,11 +74,11 @@ class TripalEntityLookup {
     if ($bundle_id) {
       $base_table = $this->getBundleBaseTable($bundle_id, $entity_type);
       if ($base_table) {
-        $entity_ids = $this->getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type);
+        $entity_ids = $this->getEntityIdFromRecordId($record_id, $bundle_id, $entity_type);
         if ($entity_ids) {
           // Here we are just returning the first hit, e.g. analysis published as both
           // analysis and genome assembly. Ideally this will be prevented from happening.
-          $entity_id = $entity_ids[0];
+          $entity_id = reset($entity_ids);
         }
       }
     }
@@ -150,8 +150,6 @@ class TripalEntityLookup {
   /**
    * Retrieve the pkey for an entity corresponding to a given record in a given table.
    *
-   * @param string $base_table
-   *   The name of the chado table
    * @param int $record_id
    *   The primary key value for the requested record in the $base_table
    * @param string $bundle_id
@@ -168,7 +166,7 @@ class TripalEntityLookup {
    *   in Tripal 3, for example if an analysis is published as both
    *   "analysis", and as "Genome Assembly".
    */
-  protected function getEntityIdFromRecordId($base_table, $record_id, $bundle_id, $entity_type) : array {
+  protected function getEntityIdFromRecordId($record_id, $bundle_id, $entity_type) : array {
 
     $ids = [];
     $required_fields = $this->getRequiredFields($bundle_id, $entity_type);
@@ -181,34 +179,17 @@ class TripalEntityLookup {
     // We only need to evaluate for one of the required fields,
     // for simplicity just pick the first one.
     $required_field = array_key_first($required_fields);
-    $required_base_table = $required_fields[$required_field];
 
-    // Make sure base table matches. It should in all cases, but check just in case.
-    if ($base_table != $required_base_table) {
-      throw new \Exception("base table for bundle $bundle_id field \"$required_field\" is"
-         . " \"$required_base_table\", this does not match passed table \"$base_table\"");
-    }
-
-    // These will be the drupal field table name and column name to query.
-    $entity_table_name = 'tripal_entity__' . $required_field;
-    $entity_column_name = $required_field . '_record_id';
-
-    // Query the appropriate drupal field table for this record_id
-    // Ideally there should only be zero or one hit, but in Tripal 3 you
-    // could for example publish an analysis as both analysis and Genome Assembly.
-    // This function will return all matching entities.
-    try {
-      $conn = \Drupal::service('database');
-      $sql = "SELECT entity_id FROM $entity_table_name WHERE $entity_column_name = :record_id";
-      $args = [':record_id' => $record_id];
-      $results = $conn->query($sql, $args);
-      while ($result = $results->fetchField()) {
-        $ids[] = $result;
-      }
-    }
-    catch (\Exception $e) {
-      throw new \Exception('Invalid database query: ' . $e->getMessage());
-    }
+    // Use the entity query API to lookup the entity id
+    $pkey_id = 'record_id';
+    $query = \Drupal::entityQuery($entity_type)
+      ->condition('type', $bundle_id)
+      ->condition($required_field . '.' . $pkey_id, $record_id, '=')
+      ->accessCheck(TRUE);
+    // The values of the array are always entity ids. The keys will be
+    // revision ids if the entity supports revision and entity ids if not.
+    $ids = $query->execute();
+dpm($ids, "CP1 ids"); //@@@
 
     return $ids;
   }
