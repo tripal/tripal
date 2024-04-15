@@ -189,7 +189,6 @@ class TripalEntityLookup {
     // The values of the array are always entity ids. The keys will be
     // revision ids if the entity supports revision and entity ids if not.
     $ids = $query->execute();
-dpm($ids, "CP1 ids"); //@@@
 
     return $ids;
   }
