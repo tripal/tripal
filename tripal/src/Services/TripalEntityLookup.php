@@ -109,7 +109,7 @@ class TripalEntityLookup {
   }
 
   /**
-   * Retrieve the base table for a given bundle given the bundle's CV term.
+   * Retrieve the base table for a given bundle.
    *
    * @param string $bundle
    *   The bundle's ID, e.g. "gene"
