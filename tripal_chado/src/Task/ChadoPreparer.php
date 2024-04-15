@@ -250,7 +250,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $custom_tables = \Drupal::service('tripal_chado.custom_tables');
     $custom_table = $custom_tables->create('tripal_gff_temp', $this->chado_schema_main);
     $custom_table->setTableSchema($schema);
-    $custom_table->setHidden(True);
+    $custom_table->setLocked(True);
   }
 
   /**
@@ -296,7 +296,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $custom_tables = \Drupal::service('tripal_chado.custom_tables');
     $custom_table = $custom_tables->create('tripal_gffcds_temp', $this->chado_schema_main);
     $custom_table->setTableSchema($schema);
-    $custom_table->setHidden(True);
+    $custom_table->setLocked(True);
   }
 
   /**
@@ -337,7 +337,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $custom_tables = \Drupal::service('tripal_chado.custom_tables');
     $custom_table = $custom_tables->create('tripal_gffprotein_temp', $this->chado_schema_main);
     $custom_table->setTableSchema($schema);
-    $custom_table->setHidden(True);
+    $custom_table->setLocked(True);
   }
 
   /**
@@ -376,7 +376,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $custom_tables = \Drupal::service('tripal_chado.custom_tables');
     $custom_table = $custom_tables->create('tripal_obo_temp', $this->chado_schema_main);
     $custom_table->setTableSchema($schema);
-    $custom_table->setHidden(True);
+    $custom_table->setLocked(True);
   }
 
   /**
@@ -724,7 +724,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
-    $mview->setHidden(True);
+    $mview->setLocked(True);
   }
 
   /**
@@ -782,7 +782,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
-    $mview->setHidden(True);
+    $mview->SetLocked(True);
   }
 
   /**
