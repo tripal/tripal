@@ -94,6 +94,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     $bundle = 'project';
     tripal_publish($bundle, $datastore, $values);
     $project_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'project']);
+
     $this->assertCount(3, $project_entities,
       "We expected there to be the same number of project entities as we inserted.");
 
