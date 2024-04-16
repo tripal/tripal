@@ -514,7 +514,7 @@ class TripalPublish {
     $entities = [];
 
     $sql = "
-      SELECT id,type,title FROM {tripal_entity}\n
+      SELECT id,type,title FROM {0:tripal_entity}\n
       WHERE type = :type AND title in (:titles[])\n";
 
     $i = 0;
@@ -568,7 +568,7 @@ class TripalPublish {
     $this->setTotalItems($num_batches);
 
     $init_sql = "
-      INSERT INTO {tripal_entity}
+      INSERT INTO {0:tripal_entity}
         (type, title, status, created, changed)
       VALUES\n";
 
@@ -638,7 +638,7 @@ class TripalPublish {
     $items = [];
 
     $sql = "
-      SELECT entity_id FROM $field_table\n
+      SELECT entity_id FROM {0:$field_table}\n
       WHERE bundle = :bundle\n
         AND entity_id IN (:entity_ids[])\n";
 
@@ -725,7 +725,7 @@ class TripalPublish {
 
     // Generate the insert SQL and add to it the field-specific columns.
     $init_sql = "
-      INSERT INTO {$field_table}
+      INSERT INTO {0:$field_table}
         (bundle, deleted, entity_id, revision_id, langcode, delta, ";
     foreach (array_keys($this->required_types[$field_name]) as $key) {
       $init_sql .= $field_name . '_'. $key . ', ';
