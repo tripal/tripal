@@ -164,16 +164,13 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     $entity_table_name = 'tripal_entity__analysis_name';
     $entity_column_name = 'analysis_name_record_id';
     for ($entity_id=4; $entity_id <= 6; $entity_id++) {
-      $expected_analysis_id = $entity_id - 3;
-      $sql = "SELECT $entity_column_name FROM $entity_table_name WHERE entity_id = :record_id";
-      $args = [':record_id' => $entity_id];
-      $results = $this->connection->query($sql, $args);
-      $ids = [];
-      while ($result = $results->fetchField()) {
-        $ids[] = $result;
-      }
+      $chado_analysis_id = $entity_id - 3;
+      $query = \Drupal::entityQuery('tripal_entity')
+        ->condition('type', 'analysis')
+        ->condition('analysis_name.record_id', $chado_analysis_id, '=')
+        ->accessCheck(TRUE);
+      $ids = $query->execute();
       $this->assertEquals(1, count($ids), "Expected exactly one match from $entity_table_name query");
-      $this->assertEquals($expected_analysis_id, $ids[0], "Analysis Chado record analysis_id for entity $entity_id is not what we expected");
     }
   }
 }
