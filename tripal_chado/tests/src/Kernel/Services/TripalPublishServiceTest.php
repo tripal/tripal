@@ -175,5 +175,19 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     $this->assertContains(count($entities), [3, 4],
       "We expected there to be the same number of contact entities as we inserted plus the null contact.");
 
+    // Verify that a field table was populated
+    // Because this is a test environment, we know that the entity IDs
+    // that we just published will start with 1, but because of the
+    // "null" contact, we will just check the project table.
+    for ($i=1; $i <= 3; $i++) {
+      $query = \Drupal::entityQuery('tripal_entity')
+        ->condition('type', 'project')
+        ->condition('project_name.record_id', $i, '=')
+        ->accessCheck(TRUE);
+      $ids = $query->execute();
+      $this->assertEquals(1, count($ids), 'We did not retrieve the project name field');
+      $entity_id = reset($ids);
+      $this->assertEquals($i, $entity_id, 'We did not retrieve the expected project entity id from its field');
+    }
   }
 }
