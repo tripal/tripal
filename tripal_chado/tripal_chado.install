@@ -403,7 +403,7 @@ function tripal_chado_update_10402() {
 }
 
 /**
- * Updates entity_id properties added to linking fields in PR 1632
+ * Updates entity_id properties added to linking fields in PR 1782
  */
 function tripal_chado_update_10403() {
   try {
