@@ -57,7 +57,8 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
     // Check that the default value is one of the available options.
     if (!array_key_exists($default_value, $options)){
       $field_label = $field_definition->label();
-      $this->messenger()->addWarning("The value saved for the '$field_label' does not match any of the available options. As such it has been set to none and the original value ('$default_value') will be overwritten when you save this page. Please contact your administrator to get this added as an option before making any changes to this page.");
+      $this->messenger()->addWarning($this->t("The value saved for the '@field_label' does not match any of the available options. As such it has been set to 'None' and the original value ('@default_value') will be overwritten when you save this page. Please contact your administrator to get this added as an option before making any changes to this page.",
+          ['@field_label' => $field_label, '@default_value' => $default_value]));
     }
 
     $elements = [];
