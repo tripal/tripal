@@ -139,7 +139,7 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
     $element['options'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Widget Options'),
-      '#description' => "Enter the options you want to be available in the widget drop down with each option on it's own line.",
+      '#description' => $this->t("Enter the options you want to be available in the widget drop down with each option on its own line."),
       '#default_value' => $this->getSetting('options'),
       '#required' => TRUE,
     ];
