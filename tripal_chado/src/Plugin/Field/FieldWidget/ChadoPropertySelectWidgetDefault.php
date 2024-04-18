@@ -157,7 +157,7 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
     $raw_options = $this->getSetting('options');
     if (!empty($raw_options)) {
       $count = sizeof(explode("\n", $raw_options));
-      $summary[] = $this->t("There are $count options configured.");
+      $summary[] = $this->t("There are @count options configured.", ['@count' => $count]);
     }
     else {
       $summary[] = $this->t("There are no options configured yet.");
