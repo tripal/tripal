@@ -594,6 +594,23 @@ tripal.data_loaders.publication_loaders.new_publication_search_query:
   requirements:
     _permission: 'allow tripal import'
 
+tripal.data_loaders.publication_loaders.run_publication_search_query:
+  path: 'admin/tripal/loaders/publications/run_publication_search_query'
+  defaults:
+    _form: 'Drupal\tripal\Form\RunPubSearchQueryForm'
+    _title: 'Run publication search query'
+  requirements:
+    _permission: 'allow tripal import'
+
+tripal.data_loaders.publication_loaders.run_publication_search_query_execute:
+  path: 'admin/tripal/loaders/publications/run_publication_search_query_execute/{pub_library_query_id}'
+  defaults:
+    _form: 'Drupal\tripal\Form\RunPubSearchQueryExecuteForm'
+    _title: 'Run publication execute'
+  requirements:
+    _permission: 'allow tripal import'   
+
+
 tripal.data_loaders.publication_loaders.delete_publication_search_query:
   path: 'admin/tripal/loaders/publications/delete_publication_search_query/{pub_library_query_id}'
   defaults:

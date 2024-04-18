@@ -195,13 +195,7 @@ tripal.data_loaders.publication_loaders:
 
 
 # TODO - Add the correct form here
-tripal.data_loaders.publication_loaders.run_publication_search_query:
-  path: 'admin/tripal/loaders/publications/manage_publication_search_query'
-  defaults:
-    _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
-    _title: 'Run Pub Search Query'
-  requirements:
-    _permission: 'allow tripal import'
+
 
 # TODO - Add the correct form here
 tripal.data_loaders.publication_loaders.import_publication_file:

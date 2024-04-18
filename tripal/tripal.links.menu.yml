@@ -180,7 +180,7 @@ tripal.data_loaders.publication_loaders.manage_publication_search_queries:
 
 tripal.data_loaders.publication_loaders.run_publication_search_query:
   route_name: tripal.data_loaders.publication_loaders.run_publication_search_query
-  title: 'Run Pub Search Query (NOT IMPLEMENTED)'
+  title: 'Run Pub Search Query'
   description: 'Run publication search query (import)'
   parent: tripal.data_loaders.publication_loaders
   weight: 50
