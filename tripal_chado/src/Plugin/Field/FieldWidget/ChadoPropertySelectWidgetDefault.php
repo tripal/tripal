@@ -159,7 +159,7 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
       $summary[] = $this->t("There are $count options configured.");
     }
     else {
-      $summary[] = $this->t("There are no options yet options configured.");
+      $summary[] = $this->t("There are no options configured yet.");
     }
 
     return $summary;
