@@ -15,8 +15,8 @@ use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
  *    file_types = {"fasta","txt","fa","aa","pep","nuc","faa","fna"},
  *    upload_description = @Translation("Please provide a file."),
  *    upload_title = @Translation("File"),
- *    use_analysis = True,
- *    require_analysis = True,
+ *    use_analysis = False,
+ *    require_analysis = False,
  *    button_text = @Translation("Import Chado Pub Search Query"),
  *    file_upload = False,
  *    file_remote = False,
@@ -29,10 +29,22 @@ class ChadoPubSearchQueryImporter extends ChadoImporterBase {
   /**
    * @see TripalImporter::form()
    */
-  public function form($form, &$form_state) {
+  public function form($form, &$form_state, $param_1 = null) {
     $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
+
+    $default_value = "";
+    if ($param_1 != null) {
+        $default_value;
+    }
+    $form['query_id'] = [
+        '#title' => t('Query ID'),
+        '#type' => 'textfield',
+        '#required' => TRUE,
+        '#value' => $default_value,
+        '#description' => t("Required to import the publications based on query id"),
+    ];
 
     return $form;
   }
