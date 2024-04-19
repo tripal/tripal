@@ -247,6 +247,16 @@ tripal.data_loaders_tripalimporter:
   requirements:
     _permission: 'allow tripal import'
 
+# Added specifically for Chado Pub Search Query Loader but generalized for use with other loaders
+# that may need additional param_1
+tripal.data_loaders_tripalimporter.chado_pub_search_query_loader_params1:
+  path: 'admin/tripal/loaders/{plugin_id}/{param_1}'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalImporterForm'
+    _title: 'Tripal Importer'
+  requirements:
+    _permission: 'allow tripal import'    
+
 # AJAX callbacks to upload files.
 tripal.upload:
   path: 'tripal/upload/{type}/{filename}/{action}'
