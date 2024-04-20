@@ -1443,7 +1443,7 @@ class ChadoRecords  {
 
           // Add a constraint violation if we have a match and the
           // record_id is 0. This would be an insert but a record already
-          // exists. Or, if the record_id isn't the same as the  matched
+          // exists. Or, if the record_id isn't the same as the matched
           // record. This is an update that conflicts with an existing
           // record.
           if (($record_id == 0) or ($record_id != $match->$pkey)) {
@@ -1454,12 +1454,9 @@ class ChadoRecords  {
             foreach ($ukey_cols as $col) {
               $col = trim($col);
               $col_val = NULL;
-              if (array_key_exists($col, $record['columns'])) {
+              if (in_array($col, $record['columns'])) {
                 // @todo need to use the column alias when getting the value.
                 $col_val = $record['values'][$col];
-              }
-              if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
-                continue;
               }
               $message .=  ucfirst($col) . ": '@$col'. ";
               $params["@$col"] = $col_val;
