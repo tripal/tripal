@@ -1449,7 +1449,7 @@ class ChadoRecords  {
           if (($record_id == 0) or ($record_id != $match->$pkey)) {
             // Documentation for how to create a violation is here
             // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
-            $message = 'The item cannot be saved as another already exists with the following values. ';
+            $message = 'The item cannot be saved as another already exists with the following values: ';
             $params = [];
             foreach ($ukey_cols as $col) {
               $col = trim($col);
@@ -1458,9 +1458,18 @@ class ChadoRecords  {
                 // @todo need to use the column alias when getting the value.
                 $col_val = $record['values'][$col];
               }
-              $message .=  ucfirst($col) . ": '@$col'. ";
               $params["@$col"] = $col_val;
+              $message .=  ucfirst($col) . ": '@$col'" . (count($ukey_cols) == count($params)?'. ':', ');
             }
+            // Explanation of the unique violation.
+            if (count($params) > 1) {
+              $message .= 'The combination of these @param_count values';
+              $params['@param_count'] = count($params);
+            }
+            else {
+              $message .= 'This value';
+            }
+            $message .= ' must be unique for every item.';
             $this->violations[] = new ConstraintViolation(t($message, $params)->render(),
                 $message, $params, '', NULL, '', 1, 0, NULL, '');
           }
