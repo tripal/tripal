@@ -67,7 +67,8 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/${postgresqlversion}/main/pos
   && echo "max_locks_per_transaction = 1024" >> /etc/postgresql/${postgresqlversion}/main/postgresql.conf
 
 ########## PHP EXTENSIONS #####################################################
-RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" \
+  && pear config-set php_ini $PHP_INI_DIR/php.ini
 
 ## Xdebug
 RUN pecl install xdebug-3.2.1 \
@@ -75,7 +76,7 @@ RUN pecl install xdebug-3.2.1 \
     && cat /app/tripaldocker/default_files/xdebug/xdebug-coverage.ini >> /usr/local/etc/php/php.ini \
     && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
     && cp /app/tripaldocker/default_files/xdebug/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.dis \
-    && rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    && rm -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 ## install the PHP extensions we need
 RUN set -eux; \
@@ -192,6 +193,11 @@ RUN cd /var/www/drupal \
   --site-name="Tripal 4.x-dev on Drupal ${drupalversion}" \
   && service apache2 stop \
   && service postgresql stop
+
+## APCu for much faster loading of classes then the deprecated Symphony version.
+RUN pecl install apcu \
+  && docker-php-ext-enable apcu \
+  && echo '$settings["class_loader_auto_detect"] = FALSE;' >> /var/www/drupal/web/sites/default/settings.php
 
 ############# Tripal ##########################################################
 
