@@ -2,7 +2,7 @@ FROM php:8.1-apache-bullseye
 
 ARG drupalversion='~10.1.0'
 ARG postgresqlversion='16'
-ARG modules='devel devel_php field_group field_group_table'
+ARG modules='devel devel_php field_group field_group_table webprofiler'
 ARG chadoschema='chado'
 ARG installchado=TRUE
 ARG phpuploadsize=8M
@@ -161,7 +161,7 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 ## Use composer to install Drupal.
 WORKDIR /var/www
 ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit"
-ARG composerpackages="drupal/devel drupal/devel_php drupal/field_group drupal/field_group_table"
+ARG composerpackages="drupal/devel drupal/devel_php drupal/webprofiler:10.1.5 drupal/field_group drupal/field_group_table"
 RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal \
   && cd drupal \
   && composer config --no-plugins allow-plugins.composer/installers true \
@@ -213,6 +213,7 @@ RUN service apache2 start \
     && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
     && vendor/bin/drush trp-import-types --collection_id=general_chado --username=drupaladmin; \
     fi \
+  && vendor/bin/drush role:perm:add anonymous 'view webprofiler toolbar' \
   && service apache2 stop \
   && service postgresql stop
 
@@ -224,7 +225,8 @@ RUN mv /app/tripaldocker/default_files/000-default.conf /etc/apache2/sites-avail
   && mv /app/tripaldocker/init_scripts/init.sh /usr/bin/init.sh \
   && chmod +x /usr/bin/init.sh \
   && mv /app/tripaldocker/default_files/xdebug/xdebug_toggle.sh /usr/bin/xdebug_toggle.sh \
-  && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal/web/sites/default/settings.php
+  && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal/web/sites/default/settings.php \
+  && echo "\$settings['tracer_plugin'] = 'stopwatch_tracer';" >> /var/www/drupal/web/sites/default/settings.php
 
 ## Make global commands. Symlink for drupal9 is for backward compatibility.
 RUN ln -s /var/www/drupal/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
@@ -233,6 +235,11 @@ RUN ln -s /var/www/drupal/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
 
 ## Set the working directory to DRUPAL_ROOT
 WORKDIR /var/www/drupal/web
+
+## Reset files directory permissions
+RUN chown -R www-data:www-data /var/www/drupal \
+  && chmod 02775 -R /var/www/drupal/web/sites/default/files \
+  && usermod -g www-data root
 
 ## Expose http, xdebug and psql port
 EXPOSE 80 5432 9003
