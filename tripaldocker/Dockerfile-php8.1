@@ -2,7 +2,7 @@ FROM php:8.1-apache-bullseye
 
 ARG drupalversion='~10.1.0'
 ARG postgresqlversion='16'
-ARG modules='devel devel_php field_group field_group_table webprofiler'
+ARG modules='devel devel_php field_group field_group_table'
 ARG chadoschema='chado'
 ARG installchado=TRUE
 ARG phpuploadsize=8M
@@ -161,7 +161,7 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 ## Use composer to install Drupal.
 WORKDIR /var/www
 ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit"
-ARG composerpackages="drupal/devel drupal/devel_php drupal/webprofiler:10.1.5 drupal/field_group drupal/field_group_table"
+ARG composerpackages="drupal/devel drupal/devel_php  drupal/field_group drupal/field_group_table"
 RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal \
   && cd drupal \
   && composer config --no-plugins allow-plugins.composer/installers true \
@@ -199,6 +199,19 @@ RUN pecl install apcu \
   && docker-php-ext-enable apcu \
   && echo '$settings["class_loader_auto_detect"] = FALSE;' >> /var/www/drupal/web/sites/default/settings.php
 
+## Add webprofiler toolbar
+RUN if $(dpkg --compare-versions "${drupalversion}" "ge" "10.1.x-dev"); then \
+    service apache2 start \
+    && service postgresql start \
+    && sleep 30 \
+    && cd /var/www/drupal \
+    && composer require 'drupal/webprofiler:10.1.5' \
+    && vendor/bin/drush en webprofiler --yes \
+    && vendor/bin/drush role:perm:add anonymous 'view webprofiler toolbar' \
+    && service apache2 stop \
+    && service postgresql stop; \
+  fi
+
 ############# Tripal ##########################################################
 
 WORKDIR /var/www/drupal
@@ -213,7 +226,6 @@ RUN service apache2 start \
     && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
     && vendor/bin/drush trp-import-types --collection_id=general_chado --username=drupaladmin; \
     fi \
-  && vendor/bin/drush role:perm:add anonymous 'view webprofiler toolbar' \
   && service apache2 stop \
   && service postgresql stop
 
