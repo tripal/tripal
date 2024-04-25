@@ -54,7 +54,6 @@ jobs:
           docker run --publish=80:80 --name=tripaldocker -tid \
             --volume=`pwd`:/var/www/drupal/web/modules/contrib/tripal \
             tripaldocker:localdocker
-          docker exec tripaldocker service postgresql restart
       # Runs the PHPUnit tests.
       - name: Run PHPUnit Tests
         env:

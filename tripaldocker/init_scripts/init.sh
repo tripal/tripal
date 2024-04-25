@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-## Order is very important ;-p The apache command should always be last!
+supervisord -c /etc/supervisord.conf
 
+## Now handled by Supervisord:
 ## Start PostgreSQL
-service postgresql start
-
+# service postgresql start
 ## Start Apache
-apache2ctl -D FOREGROUND
+# apache2ctl -D FOREGROUND

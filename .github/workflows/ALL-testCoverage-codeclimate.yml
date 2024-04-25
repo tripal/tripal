@@ -32,7 +32,6 @@ jobs:
           docker run --publish=80:80 --name=tripaldocker -tid \
             --volume=`pwd`:/var/www/drupal/web/modules/contrib/tripal \
             tripaldocker:localdocker
-          docker exec tripaldocker service postgresql restart
       # Ensure we have the variables we need.
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4

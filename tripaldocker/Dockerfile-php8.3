@@ -20,7 +20,7 @@ COPY . /app
 
 ## Install some basic support programs and update apt-get.
 RUN chmod -R +x /app && apt-get update 1> ~/aptget.update.log \
-  && apt-get install git unzip zip wget gnupg2 vim --yes -qq 1> ~/aptget.extras.log
+  && apt-get install git unzip zip wget supervisor gnupg2 vim --yes -qq 1> ~/aptget.extras.log
 
 ########## POSTGRESQL #########################################################
 
@@ -220,7 +220,8 @@ RUN service apache2 start \
 ############# Scripts #########################################################
 
 ## Configuration files & Activation script
-RUN mv /app/tripaldocker/default_files/000-default.conf /etc/apache2/sites-available/000-default.conf \
+RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
+  && mv /app/tripaldocker/default_files/000-default.conf /etc/apache2/sites-available/000-default.conf \
   && echo "\$settings['trusted_host_patterns'] = [ '^localhost$', '^127\.0\.0\.1$', \$_SERVER['SERVER_NAME'] ];" >> /var/www/drupal/web/sites/default/settings.php \
   && mv /app/tripaldocker/init_scripts/init.sh /usr/bin/init.sh \
   && chmod +x /usr/bin/init.sh \
