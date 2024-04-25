@@ -9,35 +9,33 @@ use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
  * Chado Pub Search Query Importer implementation of the TripalImporterBase.
  *
  *  @TripalImporter(
- *    id = "chado_pub_search_query_loader",
- *    label = @Translation("Chado Pub Search Query Loader"),
- *    description = @Translation("Import a Chado Pub Search Query file into Chado"),
+ *    id = "pub_search_query_loader",
+ *    label = @Translation("Pub Search Query Loader"),
+ *    description = @Translation("Import a Pub Search Query file into Chado"),
  *    file_types = {"fasta","txt","fa","aa","pep","nuc","faa","fna"},
  *    upload_description = @Translation("Please provide a file."),
  *    upload_title = @Translation("File"),
  *    use_analysis = False,
  *    require_analysis = False,
- *    button_text = @Translation("Import Chado Pub Search Query"),
+ *    button_text = @Translation("Import Pub Search Query"),
  *    file_upload = False,
  *    file_remote = False,
  *    file_local = False,
  *    file_required = True,
  *  )
  */
-class ChadoPubSearchQueryImporter extends ChadoImporterBase {
+class PubSearchQueryImporter extends ChadoImporterBase {
 
   /**
    * @see TripalImporter::form()
    */
-  public function form($form, &$form_state, $param_1 = null) {
+  public function form($form, &$form_state) {
     $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
     $default_value = "";
-    if ($param_1 != null) {
-        $default_value;
-    }
+    // dpm($form_state);
     $form['query_id'] = [
         '#title' => t('Query ID'),
         '#type' => 'textfield',

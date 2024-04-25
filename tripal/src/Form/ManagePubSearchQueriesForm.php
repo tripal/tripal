@@ -55,6 +55,7 @@ class ManagePubSearchQueriesForm extends FormBase {
       'Disabled',
       'Create Contact',
       '',
+      'Actions',
     ];
     $form['pub_manager']['table'] = [
       '#type' => 'table',
@@ -130,7 +131,9 @@ class ManagePubSearchQueriesForm extends FormBase {
         // Create contact
         $row['col-6'] = [
           '#markup' => $do_contact
-        ]; 
+        ];
+
+
 
 
         // Delete should be a button instead of markup @TODO
@@ -138,6 +141,31 @@ class ManagePubSearchQueriesForm extends FormBase {
           '#type' => 'submit',
           '#name' => 'delete-' . $pub_query->pub_library_query_id,
           '#default_value' => 'Delete',
+        ];
+
+        // Actions
+        $row['col-8'] = [
+          '#markup' => '
+            <div class="dropbutton-wrapper dropbutton-multiple" data-drupal-ajax-container="" data-once="dropbutton">
+              <div class="dropbutton-widget">
+                <ul class="dropbutton dropbutton--multiple">
+                <li class="mview-edit-link dropbutton__item dropbutton-action">
+                  <a href="/admin/tripal/storage/chado/mview/4">Edit</a>
+                </li>
+                <li class="dropbutton-toggle">
+                  <button type="button" class="dropbutton__toggle">
+                  <span class="visually-hidden">List additional actions</span>
+                  </button>
+                </li>
+                <li class="mview-populate-link dropbutton__item dropbutton-action secondary-action">
+                  <a href="/admin/tripal/storage/chado/mview_populate/4">Populate</a>
+                </li>
+                <li class="mview-delete-link dropbutton__item dropbutton-action secondary-action">
+                  <a href="/admin/tripal/storage/chado/mview_delete/4">Delete</a>
+                </li>
+                </ul>
+              </div></div>
+          '
         ];
 
         $form['pub_manager']['table'][] = $row;

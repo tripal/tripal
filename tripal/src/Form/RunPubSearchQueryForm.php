@@ -105,7 +105,7 @@ class RunPubSearchQueryForm extends FormBase {
           '#markup' => 
             Link::fromTextAndUrl(
               'Run', 
-              Url::fromUri('internal:/admin/tripal/loaders/chado_pub_search_query_loader/' . $pub_query->pub_library_query_id)
+              Url::fromUri('internal:/admin/tripal/loaders/pub_search_query_loader/' . $pub_query->pub_library_query_id)
             )
             ->toString()
         ];

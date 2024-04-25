@@ -171,19 +171,19 @@ tripal.data_loaders.publication_loaders:
   parent: tripal.data_loaders
   weight: 90
 
-tripal.data_loaders.publication_loaders.manage_publication_search_queries:
-  route_name: tripal.data_loaders.publication_loaders.manage_publication_search_queries
-  title: 'Pub Search Queries'
-  description: 'Create, add, delete publication search queries'
-  parent: tripal.data_loaders.publication_loaders
-  weight: 40
+# tripal.data_loaders.publication_loaders.manage_publication_search_queries:
+#   route_name: tripal.data_loaders.publication_loaders.manage_publication_search_queries
+#   title: 'Pub Search Queries'
+#   description: 'Create, add, delete publication search queries'
+#   parent: tripal.data_loaders.publication_loaders
+#   weight: 40
 
-tripal.data_loaders.publication_loaders.run_publication_search_query:
-  route_name: tripal.data_loaders.publication_loaders.run_publication_search_query
-  title: 'Run Pub Search Query'
-  description: 'Run publication search query (import)'
-  parent: tripal.data_loaders.publication_loaders
-  weight: 50
+# tripal.data_loaders.publication_loaders.run_publication_search_query:
+#   route_name: tripal.data_loaders.publication_loaders.run_publication_search_query
+#   title: 'Run Pub Search Query'
+#   description: 'Run publication search query (import)'
+#   parent: tripal.data_loaders.publication_loaders
+#   weight: 50
 
 tripal.data_loaders.publication_loaders.import_publication_file:
   route_name: tripal.data_loaders.publication_loaders.import_publication_file
