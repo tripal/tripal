@@ -1,4 +1,4 @@
-uuid: 87f8b983-fbd6-4c08-8f20-de334a6302ec
+uuid: 0c2f0e72-352a-4146-9d89-b46883da67ee
 langcode: en
 status: true
 dependencies:
@@ -408,7 +408,7 @@ display:
             alter_text: true
             text: Run
             make_link: true
-            path: 'admin/tripal/loaders/pub_search_query_loader?id={{ pub_library_query_id }}'
+            path: 'admin/tripal/loaders/pub_search_query_loader/{{ pub_library_query_id }}'
             absolute: false
             external: false
             replace_spaces: false

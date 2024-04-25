@@ -30,19 +30,47 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
+    // $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
-    $default_value = "";
+    $query_id = "";
+    $build_args = $form_state->getBuildInfo();
+    if ($build_args['args'][1] != NULL) {
+      $query_id = $build_args['args'][1];
+    }
     // dpm($form_state);
     $form['query_id'] = [
         '#title' => t('Query ID'),
         '#type' => 'textfield',
         '#required' => TRUE,
-        '#value' => $default_value,
-        '#description' => t("Required to import the publications based on query id"),
+        '#value' => $query_id,
+        '#description' => t("Required to import the publications based on query id"), 
     ];
+
+    // If the query id is set, display the data
+    if ($build_args['args'][1] != NULL) {
+      $public = \Drupal::service('database');
+      $row = $public->select('tripal_pub_library_query', 'tpi')
+        ->fields('tpi')
+        ->condition('pub_library_query_id', $query_id, '=')
+        ->execute()->fetchObject();
+      $criteria_column_array = unserialize($row->criteria);
+      // Get search string from the criteria data
+      $search_string = "";
+      foreach ($criteria_column_array['criteria'] as $criteria_row) {
+        $search_string .= $criteria_row['operation'] . ' (' . $criteria_row['scope'] . ': ' . $criteria_row['search_terms'] . ') ';
+      }
+      // Get the database from the criteria data
+      $db_string = $criteria_column_array['remote_db'];
+      $markup = "<h4>Search Query Details</h4>";
+      $markup .= "<p>Name: " . $row->name . "</p>";
+      $markup .= "<p>Database: " . $db_string . "</p>";
+      $markup .= "<p>Search string: " . $search_string . "</p>";
+      $form['query_info'] = [
+        '#markup' => $markup
+      ];
+    }
 
     return $form;
   }
