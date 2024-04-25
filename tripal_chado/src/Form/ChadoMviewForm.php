@@ -39,11 +39,15 @@ class ChadoMviewForm extends FormBase {
     $default_comment = '';
     $default_sql_query = '';
     $default_chado_schema = $chado->getSchemaName();
+    $mview_is_locked = 'FALSE';
 
     // If this is an edit then set the form defaults differently.
     if (strcmp($action, 'Edit') == 0) {
       $mviews = \Drupal::service('tripal_chado.materialized_views');
       $mview = $mviews->loadById($mview_id);
+      
+      // Get the locked status of this mview (from the parent table).
+      $mview_is_locked = $mview->isLocked();
 
       // set the default values.  If there is a value set in the
       // form_state then let's use that, otherwise, we'll pull
@@ -78,6 +82,12 @@ class ChadoMviewForm extends FormBase {
       }
     }
 
+    // Emit a warning if this table is locked, explaining why the submit button
+    // is disabled.
+    if ($action == 'Edit' && $mview_is_locked) {
+      $messenger = \Drupal::service('messenger');
+      $messenger->addWarning('This materialized view is locked and therefore cannot be edited.');
+    }
 
     // Build the form
     $form['action'] = [
@@ -257,6 +267,7 @@ SELECT
       '#type' => 'submit',
       '#value' => t($value),
       '#executes_submit_callback' => TRUE,
+      '#disabled' => $mview_is_locked == 'TRUE' ? TRUE : FALSE,
     ];
 
     $form['cancel'] = [

@@ -38,11 +38,15 @@ class ChadoCustomTableForm extends FormBase {
     $default_table_schema = '';
     $default_force_drop = 0;
     $default_chado_schema = $chado->getSchemaName();
+    $table_is_locked = 'FALSE';
 
     // If this is an edit then set the form defaults differently.
     if (strcmp($action, 'Edit') == 0) {
 
       $custom_table = $custom_tables->loadById($table_id);
+
+      // Do not allow edits if the custom table is locked. This will be used to disable the submit button on this form and warn the user.
+      $table_is_locked = $custom_table->isLocked();
 
       // Get the default table schema.
       $default_table_schema = var_export($custom_table->getTableSchema(), 1);
@@ -61,6 +65,13 @@ class ChadoCustomTableForm extends FormBase {
       if ($form_state->getValue('chado_schema')) {
         $default_chado_schema = $form_state->getValue('chado_schema');
       }
+    }
+
+    // Emit a warning if this table is locked, explaining why the submit button
+    // is disabled.
+    if ($action == 'Edit' && $table_is_locked) {
+      $messenger = \Drupal::service('messenger');
+      $messenger->addWarning('The table is locked and therefore cannot be edited.');
     }
 
     // Build the form
@@ -204,6 +215,7 @@ class ChadoCustomTableForm extends FormBase {
       '#type' => 'submit',
       '#value' => t($value),
       '#executes_submit_callback' => TRUE,
+      '#disabled' => $table_is_locked == 'TRUE' ? TRUE : FALSE,
     ];
 
     $form['cancel'] = [
