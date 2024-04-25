@@ -483,7 +483,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: dropbutton
-          label: Action
+          label: Actions
           exclude: false
           alter:
             alter_text: false
@@ -526,8 +526,8 @@ display:
           hide_alter_empty: true
           destination: true
           fields:
-            mview_edit_link: mview_edit_link
             mview_populate_link: mview_populate_link
+            mview_edit_link: mview_edit_link
             mview_delete_link: mview_delete_link
             mview_id: '0'
             name: '0'
