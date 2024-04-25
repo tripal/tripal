@@ -162,8 +162,8 @@ class ChadoCustomTable {
     $public = \Drupal::database();
     $query = $public->select('tripal_custom_tables','tct');
     $query->fields('tct', ['locked']);
-    $query->condition('ct.table_name', $this->table_name);
-    $query->condition('ct.chado', $this->chado_schema);
+    $query->condition('tct.table_name', $this->table_name);
+    $query->condition('tct.chado', $this->chado_schema);
     $locked = $query->execute()->fetchField();
 
     if ($locked == 1) {
