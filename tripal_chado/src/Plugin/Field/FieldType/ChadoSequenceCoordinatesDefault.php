@@ -109,17 +109,20 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     ]);
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fmin', $fmin_term, [
-        'action' => 'read_value',
-        'path' => 'feature.feature_id>featureloc.feature_id;fmin',
+      'action' => 'read_value',
+      'path' => 'feature.feature_id>featureloc.feature_id;fmin',
     ]);
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fmax', $fmax_term, [
       'action' => 'read_value',
       'path' => 'feature.feature_id>featureloc.feature_id;fmax',
     ]);
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'strand', $strand_term, [
       'action' => 'read_value',
       'path' => 'feature.feature_id>featureloc.feature_id;strand',
     ]);
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'phase', $phase_term, [
       'action' => 'read_value',
       'path' => 'feature.feature_id>featureloc.feature_id;phase',
