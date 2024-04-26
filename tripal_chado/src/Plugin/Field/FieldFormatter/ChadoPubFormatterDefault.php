@@ -51,9 +51,11 @@ class ChadoPubFormatterDefault extends ChadoFormatterBase {
     $elements = [];
     $list = [];
     $token_string = $this->getSetting('token_string');
+    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     foreach ($items as $delta => $item) {
       $values = [
+        'entity_id' => $item->get('entity_id')->getString(),
         'title' => $item->get('pub_title')->getString(),
         'volumetitle' => $item->get('pub_volumetitle')->getString(),
         'volume' => $item->get('pub_volume')->getString(),
@@ -79,9 +81,11 @@ class ChadoPubFormatterDefault extends ChadoFormatterBase {
       foreach ($values as $key => $value) {
         $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
       }
-      $list[$delta] = [
-        '#markup' => $displayed_string,
-      ];
+
+      // Create a clickable link to the corresponding entity when one exists.
+      $renderable_item = $lookup_manager->getRenderableItem($displayed_string, $values['entity_id']);
+
+      $list[$delta] = $renderable_item;
     }
 
     // If only one element has been found, don't make into a list.
