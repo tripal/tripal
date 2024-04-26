@@ -60,7 +60,7 @@ class ChadoDbxrefFormatterDefault extends ChadoFormatterBase {
       ];
 
       // If this database does not have a urlprefix, generate a default one.
-      if (!$values['db_urlprefix']) {
+      if (($values['db_name'] or $values['accession']) and !$values['db_urlprefix']) {
         $values['db_urlprefix'] = '{db}:{accession}';
       }
 
