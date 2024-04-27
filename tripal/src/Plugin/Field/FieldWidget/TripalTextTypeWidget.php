@@ -56,6 +56,19 @@ class TripalTextTypeWidget extends TripalWidgetBase {
   }
 
   /**
+   * {@inheritDoc}
+   */
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+
+    // The text_format element returns an item consisting of both a value and a
+    // format. We only want to keep the format.
+    foreach ($values as $key => $item) {
+      $values[$key]['value'] = $item['value']['value'];
+    }
+    return $values;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function defaultSettings() {
