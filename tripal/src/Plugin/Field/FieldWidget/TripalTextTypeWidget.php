@@ -82,12 +82,11 @@ class TripalTextTypeWidget extends TripalWidgetBase {
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
 
-    $options = [
-      'plain_text' => 'Plain Text',
-      'basic_html' => 'Basic HTML',
-      'filtered_html' => 'Filtered HTML',
-      'full_html' => 'Full HTML',
-    ];
+    // Get all the filter formats available for the current site.
+    $options = [];
+    foreach (filter_formats() as $name => $object) {
+      $options[$name] = $object->get('name');
+    }
 
     $element['filter_format'] = [
       '#type' => 'select',
@@ -113,14 +112,10 @@ class TripalTextTypeWidget extends TripalWidgetBase {
     $summary = [];
 
     $format = $this->getSetting('filter_format');
-    $options = [
-      'plain_text' => 'Plain Text',
-      'basic_html' => 'Basic HTML',
-      'filtered_html' => 'Filtered HTML',
-      'full_html' => 'Full HTML',
-    ];
+    $all_formats = filter_formats();
+    $format_label = $all_formats[$format]->get('name');
 
-    $summary[] = $this->t("Text Format: @format", ['@format' => $options[$format]]);
+    $summary[] = $this->t("Text Format: @format", ['@format' => $format_label]);
 
     return $summary;
   }
