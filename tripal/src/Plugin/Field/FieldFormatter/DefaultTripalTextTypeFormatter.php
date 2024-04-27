@@ -26,11 +26,21 @@ class DefaultTripalTextTypeFormatter extends TripalFormatterBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
 
+    // We need to get the format set in the widget settings
+    // because they need to match.
+    $entity_type = $this->fieldDefinition->get('entity_type');
+    $bundle = $this->fieldDefinition->get('bundle');
+    $field_name = $this->fieldDefinition->get('field_name');
+    $form_display = \Drupal::service('entity_display.repository')->getFormDisplay($entity_type, $bundle);
+    $widget = $form_display->getComponent($field_name);
+    $filter_format = $widget['settings']['filter_format'];
+
     foreach($items as $delta => $item) {
+      $value_string = $item->get('value')->getValue();
       $elements[$delta] = [
         '#type' => 'processed_text',
-        '#text' => $item->get('value'),
-        '#format' => 'full_html',
+        '#text' => $value_string,
+        '#format' => $filter_format,
         '#langcode' => $item->getLangcode(),
       ];
     }
