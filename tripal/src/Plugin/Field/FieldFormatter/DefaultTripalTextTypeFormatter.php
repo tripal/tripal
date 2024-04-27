@@ -28,7 +28,10 @@ class DefaultTripalTextTypeFormatter extends TripalFormatterBase {
 
     foreach($items as $delta => $item) {
       $elements[$delta] = [
-        "#markup" => $item->get("value")->getString(),
+        '#type' => 'processed_text',
+        '#text' => $item->get('value'),
+        '#format' => 'full_html',
+        '#langcode' => $item->getLangcode(),
       ];
     }
 
