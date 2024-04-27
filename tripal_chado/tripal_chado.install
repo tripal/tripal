@@ -470,7 +470,7 @@ function tripal_chado_update_10403() {
 
 /**
  * Adds or updates several properties added to the
- * chado_sequence_coordinates_default field in PR TBD
+ * chado_sequence_coordinates_default field in PR 1861
  */
 function tripal_chado_update_10405() {
   try {
