@@ -518,7 +518,7 @@ function tripal_chado_update_10405() {
                 $messenger->addMessage(t("Updating entity id in Drupal table \"@table_name\", field \"@field_name\"",
                     ['@table_name' => $table_name, '@field_name' => $field_name]));
                 $schema->changeField($table_name, $columns[$new_property], $columns[$new_property], $field_schema['columns'][$new_property]);
-                $n_added++;
+                $n_updated++;
               }
               else {
                 $messenger->addMessage(t("Adding entity id to Drupal table \"@table_name\", field \"@field_name\"",
@@ -526,10 +526,10 @@ function tripal_chado_update_10405() {
                 $schema->addField($table_name, $columns[$new_property], $field_schema['columns'][$new_property]);
                 $n_added++;
               }
-              $manager->updateFieldStorageDefinition($field_storage_definition);
             }
           }
         }
+        $manager->updateFieldStorageDefinition($field_storage_definition);
       }
     }
     $messenger->addMessage(t("Added @n_added entity id properties, updated @n_updated entity id properties",
