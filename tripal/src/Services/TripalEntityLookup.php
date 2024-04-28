@@ -7,6 +7,15 @@ use Drupal\Core\Render\Markup;
 use Drupal\field\Entity\FieldStorageConfig;
 use \Drupal\tripal\Services\TripalEntityTitle;
 
+/**
+ * This class provides functions to assist with finding a Drupal
+ * entity that corresponds to a Chado record.
+ *
+ * The two public functions defined here are:
+ *   getEntityId() which looks up a Drupal entity id from a Chado record id
+ *   getRenderableItem() is a helper function for field formatters, it will
+ *     handle converting an entity_id into a render array element.
+ */
 class TripalEntityLookup {
 
   /**
