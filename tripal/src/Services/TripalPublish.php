@@ -620,9 +620,12 @@ class TripalPublish {
    *   An associative array of entities
    *
    * @return array
-   *   An associative array of matched entities keyed by the
-   *   entity_id with a value of the entity id. This is an
-   *   associative array to take advantage of quick lookups.
+   *   An associative array of the following format:
+   *   [entity_id] =>
+   *     [field delta] =>
+   *       [property key] => [value]
+   *   indicating which datastore records we already have values published for.
+   *   Only required property types will be listed.
    */
   protected function findFieldItems($field_name, $entities) {
     $database = \Drupal::database();
@@ -635,10 +638,19 @@ class TripalPublish {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
+    // We also want to put the required field values in the return lookup array.
+    $required_property_column_names = [];
+    $mapping = [];
+    foreach (array_keys($this->required_types[$field_name]) as $key) {
+      $required_property_column_names[] = $field_name . '_' . $key;
+      $mapping[ $field_name . '_' . $key ] = $key;
+    }
+
     $items = [];
 
     $sql = "
-      SELECT entity_id, delta FROM {" . $field_table . "}\n
+      SELECT entity_id, delta, " . implode(', ', $required_property_column_names) . "\n
+      FROM {" . $field_table . "}\n
       WHERE bundle = :bundle\n
         AND entity_id IN (:entity_ids[])\n";
 
@@ -652,7 +664,7 @@ class TripalPublish {
       $total++;
       $i++;
 
-      // If we've reached the size of the batch then let's do the insert.
+      // If we've reached the size of the batch then let's do the query.
       if ($i == $batch_size or $total == $num_matches) {
         $args = [
           ':bundle' => $this->bundle,
@@ -660,7 +672,12 @@ class TripalPublish {
         ];
         $results = $database->query($sql, $args);
         while ($result = $results->fetchAssoc()) {
-          $items[$result['entity_id']][$result['delta']] = 1;
+          // Compile required property values.
+          $required_property_values = [];
+          foreach ($mapping as $column_name => $key) {
+            $required_property_values[$key] = $result[$column_name];
+          }
+          $items[$result['entity_id']][$result['delta']] = $required_property_values;
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -671,6 +688,7 @@ class TripalPublish {
         $batch_ids = [];
       }
     }
+
     return $items;
   }
 
@@ -709,7 +727,12 @@ class TripalPublish {
    * @param array $entities
    *   An associative array that maps entity titles to their keys.
    * @param array $existing
-   *   An associative array of [entity_id][delta] that already have an existing item for this field.
+   *   An associative array of the following format:
+   *   [entity_id] =>
+   *     [field delta] =>
+   *       [property key] => [value]
+   *   indicating which datastore records we already have values published for.
+   *   Only required property types will be listed.
    */
   protected function insertFieldItems($field_name, $matches, $titles, $entities, $existing) {
 
@@ -739,6 +762,11 @@ class TripalPublish {
     $sql = '';
     $args = [];
 
+    // In order to check if there is a published field entry for this datastore record,
+    // we will want to check the required property type values. Here we are getting
+    // that list since it is contant for this field.
+    $required_property_keys = array_keys($this->required_types[$field_name]);
+
     // Iterate through the matches.
     foreach ($matches as $match) {
       $title = $titles[$total];
@@ -749,11 +777,32 @@ class TripalPublish {
         $j++;
         $total++;
 
-        // No need to add items to those that are already published.
-        if (array_key_exists($entity_id, $existing) and array_key_exists($delta, $existing[$entity_id])) {
-          continue;
+        // Lets retrieve all the values for the required property types
+        // in this match. These are used to confirm if this record has already
+        // been published and if not, then these will be inserted.
+        $required_property_values = [];
+        foreach ($required_property_keys as $key) {
+          $required_property_values[$key] = $match[$field_name][$delta][$key]['value']->getValue();
         }
 
+        // Check if we have an existing entry for this particular datastore record.
+        if (isset($delta, $existing[$entity_id])) {
+          // Do we need to worry about the delta not matching? Let's check this
+          // is really the same record just in case.
+          if (empty(array_diff_assoc($existing[$entity_id][$delta], $required_property_values))) {
+            print "SKIPPING: Not publishing $entity_id|$delta because the required property values are already published:" . print_r($required_property_values, TRUE);
+            continue;
+          }
+          else {
+            print "WARNING: The delta didn't match the value we expected!\n";
+          }
+        }
+
+        // @todo we should also skip if this entry is empty, right?
+        // Note: when publishing a contact, we see the description is published
+        // every time if no description was entered.
+
+        print "-- PUBLISHING: $entity_id|$delta " . print_r($required_property_values, TRUE);
         // Add items to those that are not already published.
         $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
         $args[":bundle_$j"] = $this->bundle;
@@ -762,10 +811,10 @@ class TripalPublish {
         $args[":revision_id_$j"] = 1;
         $args[":langcode_$j"] = 'und';
         $args[":delta_$j"] = $delta;
-        foreach (array_keys($this->required_types[$field_name]) as $key) {
+        foreach ($required_property_values as $key => $value) {
           $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
           $sql .=  $placeholder . ', ';
-          $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+          $args[$placeholder] = $value;
         }
         $sql = rtrim($sql, ", ");
         $sql .= "),\n";
