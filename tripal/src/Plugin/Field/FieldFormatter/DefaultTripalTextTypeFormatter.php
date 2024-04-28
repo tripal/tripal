@@ -29,7 +29,7 @@ class DefaultTripalTextTypeFormatter extends TripalFormatterBase {
     // Default filter format.
     $filter_format = 'basic_html';
 
-    // We need to get the format set in the widget settings
+    // We need to get the format which was set in the widget settings
     // because they need to match.
     $entity_type = $this->fieldDefinition->get('entity_type');
     $bundle = $this->fieldDefinition->get('bundle');
