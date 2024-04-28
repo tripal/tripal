@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\TripalConfig;
+namespace Drupal\Tests\tripal\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 
 /**
  * Tests for configuration in Yaml files.
@@ -11,7 +11,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group Tripal
  * @group Tripal Config
  */
-class configTest extends KernelTestBase {
+class configTest extends TripalTestKernelBase {
 
   /**
    * {@inheritdoc}
