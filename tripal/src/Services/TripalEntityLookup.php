@@ -64,13 +64,16 @@ class TripalEntityLookup {
    *   The bundle's CV Term namespace e.g. for gene "SO"
    * @param string $termAccession
    *   The bundle's CV term accession e.g. for gene "0000704"
+   * @param string $base_table
+   *   The Chado base table for the requested entity e.g. for gene "feature".
+   *   Only needed if term does not map to a content type.
    * @param string $entity_type
    *   The type of entity, only 'tripal_entity' is supported.
    *
    * @return int|null
    *   The Drupal entity ID, or null if no match found.
    */
-  public function getEntityId($record_id, $termIdSpace, $termAccession, $entity_type = 'tripal_entity') {
+  public function getEntityId($record_id, $termIdSpace, $termAccession, $base_table = NULL, $entity_type = 'tripal_entity') {
 
     // Catch invalid entity type
     if ($entity_type != 'tripal_entity') {
@@ -80,8 +83,17 @@ class TripalEntityLookup {
     // Perform the lookup steps
     $entity_id = NULL;
     $bundle_id = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
+
+    // If the term does not have a content type, fallback is
+    // to use the base table's default content type.
+    if (!$bundle_id and $base_table) {
+      $bundle_id = $this->getDefaultBundle($base_table);
+    }
+
     if ($bundle_id) {
-      $base_table = $this->getBundleBaseTable($bundle_id, $entity_type);
+      if (!$base_table) {
+        $base_table = $this->getBundleBaseTable($bundle_id, $entity_type);
+      }
       if ($base_table) {
         $entity_ids = $this->getEntityIdFromRecordId($record_id, $bundle_id, $entity_type);
         if ($entity_ids) {
@@ -112,6 +124,27 @@ class TripalEntityLookup {
       ->getStorage('tripal_entity_type')
       ->loadByProperties(['termIdSpace' => $termIdSpace, 'termAccession' => $termAccession]);
     if (sizeof($bundles) == 1) {
+      $bundle_id = key($bundles);
+    }
+    return $bundle_id;
+  }
+
+  /**
+   * Retrieve the default Tripal bundle for a given base
+   * table. This table name is expected to match the bundle id.
+   *
+   * @param string $base_table
+   *   The table name e.g. "feature"
+   *
+   * @return string|null
+   *   The bundle id, or null if no match found.
+   */
+  protected function getDefaultBundle($base_table) {
+    $bundle_id = NULL;
+    $bundles = \Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->loadByProperties(['id' => $base_table]);
+    if (sizeof($bundles) >= 1) {
       $bundle_id = key($bundles);
     }
     return $bundle_id;
@@ -255,7 +288,7 @@ class TripalEntityLookup {
       // Cache the values, specifying expiration in 1 hour.
       \Drupal::cache()->set($cache_id, $field_list, \Drupal::time()->getRequestTime() + (3600));
     }
-    return $field_list[$bundle_id];
+    return $field_list[$bundle_id] ?? NULL;
   }
 
 }
