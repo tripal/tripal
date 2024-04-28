@@ -13,7 +13,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *
  * @group Tripal
  * @group Tripal Services
- * @group Tripal Publish
+ * @group TripalPublish
  */
 class TripalTokenParserTest extends TripalTestBrowserBase {
 

@@ -3,7 +3,9 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
@@ -60,14 +62,10 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     $field_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $field_settings['base_table'];
 
+    // If we don't have a base table then we're not ready to specify the
+    // properties for this field.
     if (!$base_table) {
-      $record_id_term = 'data:3002';
-      return [
-        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
-          'action' => 'store_id',
-          'drupal_store' => TRUE,
-        ])
-      ];
+      return;
     }
 
     // Get the property terms by using the Chado table columns they map to.
@@ -77,10 +75,16 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     $record_id_term = $mapping->getColumnTermId( 'feature', 'feature_id' );
     $ft_uniqname_term = $mapping->getColumnTermId( 'feature', 'name' );
 
+    $srcfeature_id_term = $mapping->getColumnTermId('featureloc', 'srcfeature_id');
     $fmin_term = $mapping->getColumnTermId('featureloc', 'fmin');
+    $is_fmin_partial_term = $mapping->getColumnTermId('featureloc', 'is_fmin_partial');
     $fmax_term = $mapping->getColumnTermId('featureloc', 'fmax');
+    $is_fmax_partial_term = $mapping->getColumnTermId('featureloc', 'is_fmax_partial');
     $strand_term = $mapping->getColumnTermId('featureloc', 'strand');
     $phase_term = $mapping->getColumnTermId('featureloc', 'phase');
+    $residue_info_term = $mapping->getColumnTermId('featureloc', 'residue_info');
+    $locgroup_term = $mapping->getColumnTermId('featureloc', 'locgroup');
+    $rank_term = $mapping->getColumnTermId('featureloc', 'rank');
 
     // Get property terms using Chado table columns they map to. Return the properties for this field.
     $properties = [];
@@ -103,26 +107,59 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
       'path' => 'feature.feature_id>featureloc.feature_id',
     ]);
 
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'uniquename', $ft_uniqname_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'srcfeature_id', $srcfeature_id_term, [
+      'action' => 'store',
+      'path' => 'feature.feature_id>featureloc.feature_id;srcfeature_id',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'uniquename', $ft_uniqname_term, [
       'action' => 'read_value',
       'path' => 'feature.feature_id>featureloc.feature_id;featureloc.srcfeature_id>feature.feature_id;uniquename',
     ]);
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fmin', $fmin_term, [
-        'action' => 'read_value',
-        'path' => 'feature.feature_id>featureloc.feature_id;fmin',
+      'action' => 'store',
+      'path' => 'feature.feature_id>featureloc.feature_id;fmin',
     ]);
+
+    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'is_fmin_partial', $is_fmin_partial_term, [
+      'action' => 'store',
+      'path' => 'feature.feature_id>featureloc.feature_id;is_fmin_partial',
+    ]);
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fmax', $fmax_term, [
-      'action' => 'read_value',
+      'action' => 'store',
       'path' => 'feature.feature_id>featureloc.feature_id;fmax',
     ]);
+
+    $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'is_fmax_partial', $is_fmax_partial_term, [
+      'action' => 'store',
+      'path' => 'feature.feature_id>featureloc.feature_id;is_fmax_partial',
+    ]);
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'strand', $strand_term, [
-      'action' => 'read_value',
+      'action' => 'store',
       'path' => 'feature.feature_id>featureloc.feature_id;strand',
     ]);
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'phase', $phase_term, [
-      'action' => 'read_value',
+      'action' => 'store',
       'path' => 'feature.feature_id>featureloc.feature_id;phase',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'residue_info', $residue_info_term, [
+      'action' => 'store',
+      'path' => 'feature.feature_id>featureloc.feature_id;residue_info',
+    ]);
+
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'locgroup', $locgroup_term, [
+      'action' => 'store',
+      'path' => 'feature.feature_id>featureloc.feature_id;locgroup',
+    ]);
+
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank', $rank_term, [
+      'action' => 'store',
+      'path' => 'feature.feature_id>featureloc.feature_id;rank',
     ]);
 
     return($properties);

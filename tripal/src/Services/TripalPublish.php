@@ -14,7 +14,7 @@ class TripalPublish {
    *
    * @var integer $total_items
    */
-  private $total_items;
+  private $total_items = 0;
 
   /**
    * The number of items that have been handled so far.  This must never
@@ -22,7 +22,7 @@ class TripalPublish {
    *
    * @var integer $num_handled
    */
-  private $num_handled;
+  private $num_handled = 0;
 
   /**
    * The interval when the job progress should be updated. Updating the job
@@ -33,7 +33,7 @@ class TripalPublish {
    *
    * @var integer $interval
    */
-  private $interval;
+  private $interval = 1;
 
   /**
    * The TripalJob object.
@@ -41,13 +41,6 @@ class TripalPublish {
    * @var \Drupal\tripal\Services\TripalJob $job
    */
   protected $job = NULL;
-
-  /**
-   * The TripalLogger object.
-   *
-   * @var \Drupal\tripal\Services\TripalLogger $logger
-   */
-  protected $logger = NULL;
 
   /**
    * The id of the entity type (bundle)
@@ -73,14 +66,12 @@ class TripalPublish {
    */
   protected $field_info = [];
 
-
   /**
    * Stores the bundle (entity type) object.
    *
    * @var \Drupal\tripal\Entity\TripalEntityType $entity_type
    **/
   protected $entity_type = NULL;
-
 
   /**
    * The TripalStorage object.
@@ -109,14 +100,21 @@ class TripalPublish {
    *
    * @var array $unsupported_fields
    */
-  protected $unsupported_fields;
+  protected $unsupported_fields = [];
 
   /**
    * Stores the last percentage that progress was reported.
    *
    * @var integer
    */
-  protected $reported;
+  protected $reported = 0;
+
+  /**
+   * The TripalLogger object.
+   *
+   * @var \Drupal\tripal\Services\TripalLogger $logger
+   */
+  protected $logger = NULL;
 
   /**
    * Initializes the publisher service.
@@ -128,14 +126,19 @@ class TripalPublish {
    */
   public function init($bundle, $datastore, $datastore_options = [], TripalJob $job = NULL) {
 
+    // Initialize class variables that may persist between consecutive jobs
+    $this->total_items = 0;
+    $this->num_handled = 0;
+    $this->interval = 1;
+    $this->job = $job;
     $this->bundle = $bundle;
     $this->datastore = $datastore;
-    $this->job = $job;
-    $this->total_items = 0;
-    $this->interval = 1;
-    $this->num_handled = 0;
+    $this->field_info = [];
+    $this->entity_type = NULL;
+    $this->storage = NULL;
+    $this->required_types = [];
+    $this->unsupported_fields = [];
     $this->reported = 0;
-
 
     // Initialize the logger.
     $this->logger = \Drupal::service('tripal.logger');
@@ -298,6 +301,7 @@ class TripalPublish {
             $field_info['prop_types'][$prop_type->getKey()] = $prop_type;
           }
           $this->field_info[$field_name] = $field_info;
+
         }
       }
     }
@@ -473,7 +477,9 @@ class TripalPublish {
           $field = $this->field_info[$field_name]['instance'];
           $main_prop = $field->mainPropertyName();
           $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
-          $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
+          if ($value !== NULL) {
+            $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
+          }
         }
       }
       $titles[] = $entity_title;
@@ -508,7 +514,7 @@ class TripalPublish {
     $entities = [];
 
     $sql = "
-      SELECT id,type,title FROM tripal_entity\n
+      SELECT id,type,title FROM {tripal_entity}\n
       WHERE type = :type AND title in (:titles[])\n";
 
     $i = 0;
@@ -632,7 +638,7 @@ class TripalPublish {
     $items = [];
 
     $sql = "
-      SELECT entity_id, delta FROM $field_table\n
+      SELECT entity_id, delta FROM {" . $field_table . "}\n
       WHERE bundle = :bundle\n
         AND entity_id IN (:entity_ids[])\n";
 
@@ -719,7 +725,7 @@ class TripalPublish {
 
     // Generate the insert SQL and add to it the field-specific columns.
     $init_sql = "
-      INSERT INTO {$field_table}
+      INSERT INTO {" . $field_table . "}
         (bundle, deleted, entity_id, revision_id, langcode, delta, ";
     foreach (array_keys($this->required_types[$field_name]) as $key) {
       $init_sql .= $field_name . '_'. $key . ', ';

@@ -11,15 +11,15 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  * Plugin implementation of default Tripal linker property widget.
  *
  * @FieldWidget(
- *   id = "chado_property_widget_default",
- *   label = @Translation("Chado Property: Long Text"),
- *   description = @Translation("Provides a long text widget for Chado Properties using a formatted textarea."),
+ *   id = "chado_property_string_widget_default",
+ *   label = @Translation("Chado Property: Short Text"),
+ *   description = @Translation("Provides a simple string widget for Chado Properties using a textfield."),
  *   field_types = {
  *     "chado_property_type_default"
  *   }
  * )
  */
-class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
+class ChadoPropertyStringWidgetDefault extends ChadoWidgetBase {
 
 
   /**
@@ -64,7 +64,7 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
       '#value' => $term_id,
     ];
     $elements['value'] = $element + [
-      '#type' => 'textarea',
+      '#type' => 'textfield',
       '#default_value' => $default_value,
       '#title' => '',
       '#description' => '',

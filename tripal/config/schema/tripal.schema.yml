@@ -376,3 +376,10 @@ field.formatter.settings.*:
       type: integer
       label: 'Word wrap setting'
       nullable: true
+
+field.widget.settings.*:
+  type: mapping
+  mapping:
+    filter_format:
+      type: string
+      label: 'Filter format for a filtered text field'

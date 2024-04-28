@@ -49,9 +49,11 @@ class ChadoBiomaterialFormatterDefault extends ChadoFormatterBase {
     $elements = [];
     $list = [];
     $token_string = $this->getSetting('token_string');
+    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     foreach ($items as $delta => $item) {
       $values = [
+        'entity_id' => $item->get('entity_id')->getString(),
         'name' => $item->get('biomaterial_name')->getString(),
         'description' => $item->get('biomaterial_description')->getString(),
         'biosourceprovider' => $item->get('biomaterial_biosourceprovider')->getString(),
@@ -73,9 +75,11 @@ class ChadoBiomaterialFormatterDefault extends ChadoFormatterBase {
       foreach ($values as $key => $value) {
         $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
       }
-      $list[$delta] = [
-        '#markup' => $displayed_string,
-      ];
+
+      // Create a clickable link to the corresponding entity when one exists.
+      $renderable_item = $lookup_manager->getRenderableItem($displayed_string, $values['entity_id']);
+
+      $list[$delta] = $renderable_item;
     }
 
     // If only one element has been found, don't make into a list.

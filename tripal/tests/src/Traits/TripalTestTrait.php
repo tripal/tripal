@@ -232,4 +232,78 @@ trait TripalTestTrait {
 
     return $entity_type_obj;
   }
+
+  /**
+   * Creates a content type and associated fields using the
+   * tripalentitytype_collection and tripalfield_collection configuration.
+   *
+   * @param string $config_id
+   *   The id from a tripalentitytype_collection config file. Fields will also be
+   *   added if there is a tripalfield_collection with this same id.
+   * @param string $content_type_id
+   *   The id of the content type to create. It must exist in the specified YAML.
+   *
+   * @return integer
+   *   The return value is 1 if everything went well and 2 if the content type
+   *   was created but the fields were not due to a missing config with matching
+   *   id. If the content type was not created then PHPUnit asserts fail.
+   */
+  protected function createContentTypeFromConfig($config_id, $content_type_id, $createTerms = FALSE) {
+    $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
+    $field_service = \Drupal::service('tripal.tripalfield_collection');
+    $config_factory = \Drupal::service('config.factory');
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
+    // FIRST THE CONTENT TYPE.
+    $yaml_contentTypes = 'tripal.tripalentitytype_collection.' . $config_id;
+
+    // check that config is installed.
+    $config = $config_factory->get($yaml_contentTypes);
+    $this->assertIsObject($config,
+      'You need to have called $this->installConfig for the module containing the configuration for the content type you want to use in this test.');
+    $specific_config = $config->get('content_types');
+    $this->assertIsArray($specific_config,
+      'You need to have called $this->installConfig for the module containing the configuration for the content type you want to use in this test.');
+
+    foreach ($specific_config as $content_type) {
+
+      if (!array_key_exists('id', $content_type) OR $content_type['id'] != $content_type_id) {
+        continue;
+      }
+
+      list($termIdSpace, $termAccession) = explode(':', $content_type['term']);
+      $idspace = $idsmanager->loadCollection($termIdSpace);
+      $this->assertIsObject($idspace, "We were not able to get the id space " . $termIdSpace);
+      $term =  $idspace->getTerm($termAccession);
+      $this->assertIsObject($term, "We were not able to get the term " . $content_type['term']);
+      $content_type['term'] = $term;
+
+      // Add the content type
+      $content_type = $content_type_service->createContentType($content_type);
+      $this->assertIsObject($content_type,
+        "We were not able to create the $content_type_id content type in the testing environment.");
+    }
+
+    // NOW THE FIELDS
+    $yaml_fields = 'tripal.tripalfield_collection.' . $config_id;
+
+    // check that config is installed.
+    $config = $config_factory->get($yaml_fields);
+    if (!is_object($config)) {
+      return 2;
+    }
+    $specific_config = $config->get('fields');
+    if (!is_array($specific_config)) {
+      return 2;
+    }
+
+    foreach ($specific_config as $field) {
+      if (array_key_exists('content_type', $field) AND $field['content_type'] === $content_type_id) {
+        // @debug print "\nAdding Field to Bundle: " . print_r($field,TRUE);
+        $field_service->addBundleField($field);
+      }
+    }
+
+    return 1;
+  }
 }
