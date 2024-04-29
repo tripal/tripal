@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal\Functional;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\file\Entity\File;
 use Drupal\user\Entity\Role;
+use Drupal\Core\Session;
 use Drupal\Core\Url;
 
 /**
@@ -27,6 +28,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    */
   public function testTripalAdminPages() {
+    $this->assertTrue(\Drupal::request()->hasSession(),
+      'This test depends on having a session but for some reason there is not one available.');
     $session = $this->getSession();
 
     // The URLs to check with the key being the label expected in the
@@ -108,6 +111,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Jobs
    */
   public function testTripalJobPages() {
+    $this->assertTrue(\Drupal::request()->hasSession(),
+      'This test depends on having a session but for some reason there is not one available.');
     $session = $this->getSession();
 
     // The job to use for testing.
@@ -173,6 +178,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Dashboard
    */
   public function testTripalDashboardPages() {
+    $this->assertTrue(\Drupal::request()->hasSession(),
+      'This test depends on having a session but for some reason there is not one available.');
     $session = $this->getSession();
 
     // The URLs to check.
@@ -232,6 +239,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Content
    */
   public function testTripalContentPages() {
+    $this->assertTrue(\Drupal::request()->hasSession(),
+      'This test depends on having a session but for some reason there is not one available.');
     $session = $this->getSession();
 
     // Create a Content Type + Entity for this test.
@@ -345,6 +354,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    */
   public function testAdminTripalDataFilesPages() {
     $session = $this->getSession();
+    $this->assertTrue(\Drupal::request()->hasSession(),
+      'This test depends on having a session but for some reason there is not one available.');
 
     // The URLs to check.
     $urls = [
@@ -398,6 +409,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Data Files
    */
   public function testTripalDataFilesPages() {
+    $this->assertTrue(\Drupal::request()->hasSession(),
+      'This test depends on having a session but for some reason there is not one available.');
     $session = $this->getSession();
 
     $permission = 'manage tripal files';
@@ -476,6 +489,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Term Configuration
    */
   public function testTripalTermConfigPages() {
+    $this->assertTrue(\Drupal::request()->hasSession(),
+      'This test depends on having a session but for some reason there is not one available.');
     $session = $this->getSession();
 
     // The URLs to check.

@@ -16,7 +16,7 @@ jobs:
     steps:
       # Check out the repo
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # Here we fully  build a docker using the current checked out code
       # to ensure we have not broken the install/build process.
       - name: Build the Docker
@@ -35,7 +35,7 @@ jobs:
           docker exec tripaldocker service postgresql restart
       # Ensure we have the variables we need.
       - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v3.x
+        uses: rlespinasse/github-slug-action@v4
       # Prepare for code coverage.
       - name: Prepare for Code Coverage
         run: |

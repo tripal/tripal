@@ -31,6 +31,58 @@ class ChadoSequenceCoordinatesWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $item_vals['record_id'] ?? 0,
     ];
+    $elements['featureloc_id'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['featureloc_id'] ?? 0,
+    ];
+    $elements['fkey'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['fkey'] ?? 0,
+    ];
+    $elements['srcfeature_id'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['srcfeature_id'] ?? 0,
+    ];
+    $elements['uniquename'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['uniquename'] ?? '',
+    ];
+    $elements['fmin'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['fmin'] ?? 0,
+    ];
+    $elements['is_fmin_partial'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['is_fmin_partial'] ?? 0,
+    ];
+    $elements['fmax'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['fmax'] ?? 0,
+    ];
+    $elements['is_fmax_partial'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['is_fmax_partial'] ?? 0,
+    ];
+    $elements['strand'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['strand'] ?? 0,
+    ];
+    $elements['phase'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['phase'] ?? 0,
+    ];
+    $elements['residue_info'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['residue_info'] ?? '',
+    ];
+    $elements['locgroup'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['locgroup'] ?? 0,
+    ];
+    $elements['rank'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['rank'] ?? 0,
+    ];
 
     return $elements;
   }
