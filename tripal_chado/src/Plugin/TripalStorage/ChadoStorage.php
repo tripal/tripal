@@ -319,6 +319,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         // Now for each matching base record we need to select
         // the ancillary tables.
         foreach ($matches as $match) {
+          /* @debug
+          $records_array_debug = $match->getRecordsArray();
+          foreach ($records_array_debug as $table_name => $lvl1) {
+            print "Chado storage $table_name: " . print_r($lvl1, true);
+          }*/
 
           // Clone the value array for this match.
           $new_values = $this->cloneValues($values);
@@ -574,6 +579,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $prop_type = $this->getPropertyType($field_name, $key);
           $prop_storage_settings = $prop_type->getStorageSettings();
 
+          // @debug if ($field_name == 'contact_project') { print "$field_name|$delta|$key: " . print_r($prop_storage_settings, TRUE); }
+
           // Make sure we have an action for this property.
           if (!array_key_exists('action', $prop_storage_settings)) {
             $this->logger->error($this->t('Cannot store the property, @field.@prop ("@label"), in Chado. The property is missing an action in the property settings: @settings',
@@ -604,7 +611,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $context['property_settings'] = $prop_storage_settings;
           $context['delta'] = $delta;
           $context['action'] = $action;
-
 
           // Get the path array for this field and add any joins if any are needed.
           if (array_key_exists('path', $prop_storage_settings)) {
@@ -830,6 +836,19 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->records->addColumn($elements, TRUE);
 
     $this->records->addCondition($elements);
+
+    // If this is a find then we want to add the join as well.
+    if ($context['is_find']) {
+      $elements['join_path'] = $context['path_string'];
+      $elements['join_type'] = $context['path_array']['join']['type'];
+      $elements['left_table'] = $context['path_array']['join']['root_table'];
+      $elements['left_column'] = $context['path_array']['join']['left_column'];
+      $elements['right_table'] = $context['path_array']['join']['chado_table'];
+      $elements['right_column'] = $context['path_array']['join']['right_column'];
+      $elements['left_alias'] = $context['path_array']['join']['root_alias'];
+      $elements['right_alias'] = $context['path_array']['join']['table_alias'];
+      $this->records->addJoin($elements);
+    }
   }
 
   /**

@@ -790,11 +790,11 @@ class TripalPublish {
           // Do we need to worry about the delta not matching? Let's check this
           // is really the same record just in case.
           if (empty(array_diff_assoc($existing[$entity_id][$delta], $required_property_values))) {
-            print "SKIPPING: Not publishing $entity_id|$delta because the required property values are already published:" . print_r($required_property_values, TRUE);
+            // @debug print "SKIPPING: Not publishing $entity_id|$delta because the required property values are already published:" . print_r($required_property_values, TRUE);
             continue;
           }
           else {
-            print "WARNING: The delta didn't match the value we expected!\n";
+            // @debug print "WARNING: The delta didn't match the value we expected!\n";
           }
         }
 
@@ -802,7 +802,7 @@ class TripalPublish {
         // Note: when publishing a contact, we see the description is published
         // every time if no description was entered.
 
-        print "-- PUBLISHING: $entity_id|$delta " . print_r($required_property_values, TRUE);
+        // @debug print "-- PUBLISHING: $entity_id|$delta " . print_r($required_property_values, TRUE);
         // Add items to those that are not already published.
         $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
         $args[":bundle_$j"] = $this->bundle;
@@ -895,6 +895,18 @@ class TripalPublish {
 
     $this->logger->notice("Step  1 of 6: Find matching records... ");
     $matches = $this->storage->findValues($search_values);
+
+    /* @debug matches srray
+    foreach ($matches as $entity_id => $lvl1) {
+      foreach ($lvl1 as $field_name => $lvl2) {
+        foreach ($lvl2 as $delta => $lvl3) {
+          $record_id = $lvl3['record_id']['value']->getValue();
+          $link = (array_key_exists('link', $lvl3)) ? $lvl3['link']['value']->getValue() : 'Not a Linker';
+          print "Match $entity_id|$field_name|$delta: record '$record_id'; link '$link'.\n";
+        }
+      }
+    }
+    */
 
     $this->logger->notice("Step  2 of 6: Generate page titles...");
     $titles = $this->getEntityTitles($matches);

@@ -1655,7 +1655,7 @@ class ChadoRecords  {
     // Get informatino about this Chado table.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
-    // Iterate through each item of the table and perform an insert.
+    // Iterate through each item of the table...
     $items = $this->getTableItems($base_table, $table_alias);
     foreach ($items as $delta => $record) {
 
