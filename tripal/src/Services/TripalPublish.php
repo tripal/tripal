@@ -884,7 +884,7 @@ class TripalPublish {
     $this->logger->notice("Step  1 of 6: Find matching records... ");
     $matches = $this->storage->findValues($search_values);
 
-    /* @debug matches array
+    /* @debug matches array *
     print "\nDebuggin Matches after findValues():\n";
     foreach ($matches as $entity_id => $lvl1) {
       foreach ($lvl1 as $field_name => $lvl2) {
@@ -899,7 +899,7 @@ class TripalPublish {
         }
       }
     }
-    */
+    * */
 
 
     $this->logger->notice("Step  2 of 6: Generate page titles...");

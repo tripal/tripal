@@ -298,6 +298,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // Build the ChadoRecords object.
     $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
     $this->buildChadoRecords($values, TRUE);
+    /** @debug
+    print "Checking records after buildChadoRecords():\n";
+    $records_array_debug = $this->records->getRecordsArray();
+    foreach ($records_array_debug as $table_name => $lvl1) {
+      print "Chado storage $table_name: " . print_r($lvl1, true);
+    }
+    */
 
     // Start an array to keep track of the results we find.
     // Each element in this array will be a clone of the full $values array
@@ -839,15 +846,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // If this is a find then we want to add the join as well.
     if ($context['is_find']) {
-      $elements['join_path'] = $context['path_string'];
-      $elements['join_type'] = $context['path_array']['join']['type'];
-      $elements['left_table'] = $context['path_array']['join']['root_table'];
-      $elements['left_column'] = $context['path_array']['join']['left_column'];
-      $elements['right_table'] = $context['path_array']['join']['chado_table'];
-      $elements['right_column'] = $context['path_array']['join']['right_column'];
-      $elements['left_alias'] = $context['path_array']['join']['root_alias'];
-      $elements['right_alias'] = $context['path_array']['join']['table_alias'];
-      $this->records->addJoin($elements);
+      $this->handleJoins($context['path_array'], $context);
     }
   }
 
