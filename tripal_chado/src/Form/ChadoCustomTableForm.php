@@ -71,7 +71,7 @@ class ChadoCustomTableForm extends FormBase {
     // is disabled.
     if ($action == 'Edit' && $table_is_locked) {
       $messenger = \Drupal::service('messenger');
-      $messenger->addWarning('The table is locked and therefore cannot be edited.');
+      $messenger->addWarning('The Tripal module that provides this table has requested it to be locked for the proper functioning of the module and therefore no changes can be made.');
     }
 
     // Build the form
