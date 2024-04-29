@@ -3,15 +3,11 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\ReplaceCommand;
 
 
 /**
@@ -122,14 +118,10 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col,
-        //'chado_table' => $base_table,
-        //'chado_column' => $base_pkey_col
       ]),
       new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, $max_length, [
         'action' => 'store',
         'path' => $base_table . '.' . $base_column,
-        //'chado_table' => $base_table,
-        //'chado_column' => $base_column,
       ]),
     ];
   }
