@@ -184,7 +184,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: boolean
-          label: 'Locked'
+          label: Locked
           exclude: false
           alter:
             alter_text: false
@@ -479,7 +479,7 @@ display:
           expose:
             operator_id: table_name_op
             label: 'Table Name'
-            description: ''
+            description: 'Filter this list by table name.'
             use_operator: false
             operator: table_name_op
             operator_limit_selection: false
@@ -606,7 +606,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: '<a class="button button-action button--primary button--small" href="[site:url]admin/tripal/storage/chado/chado_custom_table">Add Custom Table</a>'
+          content: "<a class=\"button button-action button--primary button--small\" href=\"[site:url]admin/tripal/storage/chado/chado_custom_table\">Add Custom Table</a>\r\n<p>The following table lists the custom tables managed by Tripal in various chado schema.</p>\r\n<p>You can also use Tripal to manage materialized views which take advantage of the chado custom table infrastructure with an added layer to manage populating them. You can manage materialized views <a href=\"[site:url]admin/tripal/storage/chado/mviews\">here</a>.</p>"
           tokenize: false
       footer: {  }
       display_extenders: {  }
