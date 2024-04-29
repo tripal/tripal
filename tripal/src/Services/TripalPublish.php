@@ -777,30 +777,17 @@ class TripalPublish {
         $j++;
         $total++;
 
-        // Lets retrieve all the values for the required property types
-        // in this match. These are used to confirm if this record has already
-        // been published and if not, then these will be inserted.
-        $required_property_values = [];
-        foreach ($required_property_keys as $key) {
-          $required_property_values[$key] = $match[$field_name][$delta][$key]['value']->getValue();
-        }
-
         // Check if we have an existing entry for this particular datastore record.
         if (isset($delta, $existing[$entity_id])) {
-          // Do we need to worry about the delta not matching? Let's check this
-          // is really the same record just in case.
-          if (empty(array_diff_assoc($existing[$entity_id][$delta], $required_property_values))) {
-            // @debug print "SKIPPING: Not publishing $entity_id|$delta because the required property values are already published:" . print_r($required_property_values, TRUE);
-            continue;
+          /** @debug
+          $required_property_values = [];
+            foreach ($required_property_keys as $key) {
+            $required_property_values[$key] = $match[$field_name][$delta][$key]['value']->getValue();
           }
-          else {
-            // @debug print "WARNING: The delta didn't match the value we expected!\n";
-          }
+          print "SKIPPING: Not publishing $entity_id|$delta because the required property values are already published:" . print_r($required_property_values, TRUE);
+          */
+          continue;
         }
-
-        // @todo we should also skip if this entry is empty, right?
-        // Note: when publishing a contact, we see the description is published
-        // every time if no description was entered.
 
         // @debug print "-- PUBLISHING: $entity_id|$delta " . print_r($required_property_values, TRUE);
         // Add items to those that are not already published.
@@ -811,7 +798,8 @@ class TripalPublish {
         $args[":revision_id_$j"] = 1;
         $args[":langcode_$j"] = 'und';
         $args[":delta_$j"] = $delta;
-        foreach ($required_property_values as $key => $value) {
+        foreach ($required_property_keys as $key) {
+          $value = $match[$field_name][$delta][$key]['value']->getValue();
           $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
           $sql .=  $placeholder . ', ';
           $args[$placeholder] = $value;
@@ -896,17 +884,23 @@ class TripalPublish {
     $this->logger->notice("Step  1 of 6: Find matching records... ");
     $matches = $this->storage->findValues($search_values);
 
-    /* @debug matches srray
+    /* @debug matches array
+    print "\nDebuggin Matches after findValues():\n";
     foreach ($matches as $entity_id => $lvl1) {
       foreach ($lvl1 as $field_name => $lvl2) {
-        foreach ($lvl2 as $delta => $lvl3) {
-          $record_id = $lvl3['record_id']['value']->getValue();
-          $link = (array_key_exists('link', $lvl3)) ? $lvl3['link']['value']->getValue() : 'Not a Linker';
-          print "Match $entity_id|$field_name|$delta: record '$record_id'; link '$link'.\n";
+        if ($field_name == 'contact_project') {
+          foreach ($lvl2 as $delta => $lvl3) {
+            $debug_values = [];
+            foreach ($lvl3 as $key => $valueobj) {
+              $debug_values[$key] = $valueobj['value']->getValue();
+            }
+            print "Match $entity_id|$field_name|$delta: " . print_r($debug_values, TRUE);
+          }
         }
       }
     }
     */
+
 
     $this->logger->notice("Step  2 of 6: Generate page titles...");
     $titles = $this->getEntityTitles($matches);
@@ -917,6 +911,23 @@ class TripalPublish {
     // Exclude any matches that are already published. We
     // need to publish these matches.
     list($new_matches, $new_titles) = $this->excludeExisting($matches, $titles, $existing);
+
+    /* @debug matches array
+    print "\nDebuggin Matches after exclude existing:\n";
+    foreach ($matches as $entity_id => $lvl1) {
+      foreach ($lvl1 as $field_name => $lvl2) {
+        if ($field_name == 'contact_project') {
+          foreach ($lvl2 as $delta => $lvl3) {
+            $debug_values = [];
+            foreach ($lvl3 as $key => $valueobj) {
+              $debug_values[$key] = $valueobj['value']->getValue();
+            }
+            print "Match $entity_id|$field_name|$delta: " . print_r($debug_values, TRUE);
+          }
+        }
+      }
+    }
+    */
 
     // Note: entities are not tied to any storage backend. An entity
     // references an "object".  The information about that object
