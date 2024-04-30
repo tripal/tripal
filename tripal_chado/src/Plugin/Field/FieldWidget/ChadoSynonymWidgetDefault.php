@@ -2,8 +2,6 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\Plugin\Field\FieldWidget\TripalTextTypeWidget;
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
@@ -30,11 +28,11 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
 
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
-    $field_settings = $field_definition->getSettings();
+    // $field_settings = $field_definition->getSettings();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-    $base_table = $storage_settings['base_table'];
-    $linker_table = $storage_settings['linker_table'];
-    $linker_fkey_column = $storage_settings['linker_fkey_column'];
+    // $base_table = $storage_settings['base_table'];
+    // $linker_table = $storage_settings['linker_table'];
+    // $linker_fkey_column = $storage_settings['linker_fkey_column'];
 
     $schema = $chado->schema();
     $synonym_table_def = $schema->getTableDef('synonym', ['format' => 'Drupal']);
@@ -50,8 +48,8 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
     $is_current = $item_vals['is_current'] ?? TRUE;
     $is_internal = $item_vals['is_internal'] ?? FALSE;
     $name = $item_vals['name'] ?? '';
-    $synonym_type = $item_vals['synonym_type'] ?? 'exact';
-    $synonym_sgml = $item_vals['synonym_sgml'] ?? '';
+    // $synonym_type = $item_vals['synonym_type'] ?? 'exact';
+    // $synonym_sgml = $item_vals['synonym_sgml'] ?? '';
 
     // Get the `exact` synonym type.  There are other types
     // that are installed by Tripal such as BROAD, NARROW, and RELATED
