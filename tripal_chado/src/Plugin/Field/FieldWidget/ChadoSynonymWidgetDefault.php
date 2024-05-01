@@ -26,14 +26,6 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $chado = \Drupal::service('tripal_chado.database');
 
-    // Get the field settings.
-    $field_definition = $items[$delta]->getFieldDefinition();
-    // $field_settings = $field_definition->getSettings();
-    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-    // $base_table = $storage_settings['base_table'];
-    // $linker_table = $storage_settings['linker_table'];
-    // $linker_fkey_column = $storage_settings['linker_fkey_column'];
-
     $schema = $chado->schema();
     $synonym_table_def = $schema->getTableDef('synonym', ['format' => 'Drupal']);
     $syn_name_len = $synonym_table_def['fields']['name']['size'];
@@ -48,8 +40,6 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
     $is_current = $item_vals['is_current'] ?? TRUE;
     $is_internal = $item_vals['is_internal'] ?? FALSE;
     $name = $item_vals['name'] ?? '';
-    // $synonym_type = $item_vals['synonym_type'] ?? 'exact';
-    // $synonym_sgml = $item_vals['synonym_sgml'] ?? '';
 
     // Get the `exact` synonym type.  There are other types
     // that are installed by Tripal such as BROAD, NARROW, and RELATED

@@ -56,9 +56,6 @@ class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Get the base table columns needed for this field.
-    // $settings = $field_definition->getSetting('storage_plugin_settings');
-
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');

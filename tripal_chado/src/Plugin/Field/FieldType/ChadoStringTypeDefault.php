@@ -57,8 +57,6 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $values = [];
-    //$random = new Random();
-    //$values['value'] = $random->word(mt_rand(1, $field_definition->getSetting('max_length')));
     return $values;
   }
 

@@ -77,8 +77,7 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
       return;
     }
 
-    // Check if a corresponding synonym table exists for the
-    // base table.
+    // Check if a corresponding synonym table exists for the base table.
     $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
     $linker_table = $base_table . '_synonym';
     $chado = \Drupal::service('tripal_chado.database');

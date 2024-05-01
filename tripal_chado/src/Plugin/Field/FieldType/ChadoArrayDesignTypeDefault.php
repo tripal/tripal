@@ -99,7 +99,6 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     $array_dimensions_term = $mapping->getColumnTermId($object_table, 'array_dimensions');  // text
     $element_dimensions_term = $mapping->getColumnTermId($object_table, 'element_dimensions');  // text
     $num_of_elements_term = $mapping->getColumnTermId($object_table, 'num_of_elements');
-    $num_array_elements_term = $mapping->getColumnTermId($object_table, 'num_array_elements');
     $num_array_rows_term = $mapping->getColumnTermId($object_table, 'num_array_rows');
     $num_array_columns_term = $mapping->getColumnTermId($object_table, 'num_array_columns');
     $num_grid_columns_term = $mapping->getColumnTermId($object_table, 'num_grid_columns');

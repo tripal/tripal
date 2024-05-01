@@ -90,17 +90,12 @@ class ChadoBiomaterialTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    // $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
     $name_term = $mapping->getColumnTermId($object_table, 'name');
     $description_term = $mapping->getColumnTermId($object_table, 'description');
 
     // Columns from linked tables
-    // $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
     $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
-    // $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
-    // $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
     $db_term = $mapping->getColumnTermId('db', 'name');
-    // $db_len = $db_schema_def['fields']['name']['size'];
     $contact_schema_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
     $biosourceprovider_term = $mapping->getColumnTermId('contact', 'name');
     $biosourceprovider_len = $contact_schema_def['fields']['name']['size'];

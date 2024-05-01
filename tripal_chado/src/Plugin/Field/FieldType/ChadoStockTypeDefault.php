@@ -101,12 +101,8 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete');  // boolean
 
     // Columns from linked tables
-    $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
     $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
-    // $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
-    $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
     $db_term = $mapping->getColumnTermId('db', 'name');
-    // $db_len = $db_schema_def['fields']['name']['size'];
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
     $stock_type_term = $mapping->getColumnTermId('cvterm', 'name');
     $stock_type_len = $cvterm_schema_def['fields']['name']['size'];

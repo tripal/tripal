@@ -90,7 +90,6 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    // $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
     $genus_term = $mapping->getColumnTermId($object_table, 'genus');
     $genus_len = $object_schema_def['fields']['genus']['size'];
     $species_term = $mapping->getColumnTermId($object_table, 'species');
