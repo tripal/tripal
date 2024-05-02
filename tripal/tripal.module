@@ -573,6 +573,18 @@ function tripal_rebuild() {
     $view = $storage->create($config);
     $view->save();
   }
+
+
+  $config = $fileStorage->read('config/install/views.view.manage_pub_search_queries');
+
+  // Next load the storage system for views entities and check if the view
+  // already exists. If it does then don't reload it.
+  $storage = \Drupal::entityTypeManager()->getStorage('view');
+  $view = $storage->load('manage_pub_search_queries');
+  if (!$view) {
+    $view = $storage->create($config);
+    $view->save();
+  }
 }
 
 /**
