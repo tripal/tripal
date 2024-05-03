@@ -257,6 +257,19 @@ tripal.data_loaders_tripalimporter_loader_params1:
   requirements:
     _permission: 'allow tripal import'
 
+tripal.pubsearchqueryname_autocomplete:
+  path: 'admin/tripal/autocomplete/pubsearchqueryname'
+  defaults:
+    _controller: 'Drupal\tripal\Controller\PubSearchQueryNameAutocompleteController::handleAutocomplete'
+    _title: 'Chado Vocabulary Term Autocomplete'
+    _format: json
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      string:
+        type: string
+
 # AJAX callbacks to upload files.
 tripal.upload:
   path: 'tripal/upload/{type}/{filename}/{action}'
