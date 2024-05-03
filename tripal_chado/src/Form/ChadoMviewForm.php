@@ -255,6 +255,19 @@ SELECT
       '#default_value' => $default_comment,
     ];
 
+    if ($action == 'Add') {
+      $form['locked'] = [
+        '#type' => 'select',
+        '#title' => t('Locked'),
+        '#description' => t('Decide whether this materialized view should be locked or not. This will also set the custom table to be locked as well'),
+        '#options' => [
+          False => t('No'),
+          True => t('Yes'),
+        ],
+        '#default_value' => False, // Set the default value to not locked
+      ];
+    }
+
 
     if ($action == 'Edit') {
       $value = 'Save';
@@ -300,6 +313,18 @@ SELECT
     foreach ($errors as $error) {
       $form_state->setErrorByName('schema', $error);
     }
+
+    // If we're adding a new materialized view, make sure that it is not an existing one that is locked.
+    if ($action == 'Add') {
+      $table = $schema_arr['table'];
+      dpm($table);
+
+      $mviews = \Drupal::service('tripal_chado.materialized_views');
+      $tripal_mview = $mviews->loadByName($table, $chado_schema);
+      if($tripal_mview->isLocked()) {
+        $form_state->setErrorByName('schema', 'That table already exists, and furthermore, is locked for editing.');
+      }
+    }
   }
 
   /**
@@ -314,6 +339,7 @@ SELECT
     $force_drop = $values['force_drop'];
     $comment = $values['comment'];
     $sql_query = $values['sql_query'];
+    $locked = $values['locked'];
 
     $mviews = \Drupal::service('tripal_chado.materialized_views');
 
@@ -339,6 +365,7 @@ SELECT
       $mview = $mviews->create($schema_arr['table'], $chado_schema);
       $mview->setComment($comment);
       $mview->setSqlQuery($sql_query);
+      $mview->setLocked($locked);
       $success = $mview->setTableSchema($schema_arr);
       if ($success) {
         \Drupal::messenger()->addMessage(t("The materialized view has been added."), 'status');
