@@ -83,29 +83,50 @@ class TripalEntityUIController extends ControllerBase {
    * @todo update all code.
    */
   public function tripalCheckForFields($tripal_entity_type) {
-    $new_fields = [];
 
     $bundle_name = $tripal_entity_type->id();
-    $term = $tripal_entity_type->getTerm();
+
+    $messenger = \Drupal::messenger();
 
     // Get all of the fields and call the `discover()` method for each one.
     /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
+    /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+    /** @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields **/
+    $tripal_fields = \Drupal::service('tripal.tripalfield_collection');
+
     $all_field_defs = $field_type_manager->getDefinitions();
-    foreach ($all_field_defs as $field_name => $field_def) {
+    $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle_name);
+    foreach ($all_field_defs as $field_id => $field_def) {
       $field_class = $field_def['class'];
       if (is_subclass_of($field_class, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
-        $new = $field_class::discover($tripal_entity_type, $field_name, $all_field_defs);
-        foreach ($new as $new_field) {
-          $new_fields[] = $new_field;
+        $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs);
+        foreach ($discovered as $discovered_field) {
+
+          // If the doscovered field already exists then skip it.
+          if (array_key_exists($discovered_field['name'], $entity_field_defs)) {
+            $messenger->addStatus('Skipping field, "' . $discovered_field['name'] .'", as it already exists for this content type.');
+            continue;
+          }
+
+          // If the field is not valid then skip it.
+          $is_valid = $tripal_fields->validate($discovered_field);
+          if (!$is_valid) {
+            throw new \Exception('Error: "' . $discovered_field['name'] . '", as it did not pass validation checks.');
+          }
+
+          // Add the field
+          $added = $tripal_fields->addBundleField($discovered_field);
+          if ($added) {
+            $messenger->addMessage('Successfully added field "' . $discovered_field['name'] . '"');
+          }
+          else {
+            $messenger->addError('Could not add field, "' . $discovered_field['name'] . '". Check the Drupal logs for more information.');
+          }
         }
       }
     }
-
-    dpm($new_fields);
-
-
-    \Drupal::messenger()->addWarning(t('This functionality is not implemented yet.'));
 
     return $this->redirect('entity.tripal_entity.field_ui_fields',
       ['tripal_entity_type' => $bundle_name]);

@@ -139,8 +139,8 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * @param \Drupal\tripal\Entity\TripalEntityType $bundle
    *   The entity type object for which new field instances should be found.
    *
-   * @param string $field_name
-   *   The name of the field.
+   * @param string $field_id
+   *   The id of the field.
    *
    * @param array $field_definitions
    *   The field definition array.
@@ -149,5 +149,5 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    *   An associative array that follows the same structure as expected by `
    *   tripal.tripalfield_collection.* configuration.
    */
-  public static function discover(TripalEntityType $bundle, string $field_name, array $field_definitions) : array;
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array;
 }

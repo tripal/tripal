@@ -198,6 +198,64 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
   }
 
   /**
+   * Discovers new fields for a given entity type.
+   *
+   * Fields can be specified in one of 2 ways.  Using the installation method
+   * where they are specified by a YML file created by the module developer or
+   * by fields that have a discover() function implemented. This function
+   * supports adding new fields to the collection using the discover apprach.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   *   The object representing the bundle.
+   */
+  public function discover($tripal_entity_type) {
+    $bundle_name = $tripal_entity_type->id();
+
+    $messenger = \Drupal::messenger();
+
+    // Get all of the fields and call the `discover()` method for each one.
+    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
+    $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
+    /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+    /** @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields **/
+    $tripal_fields = \Drupal::service('tripal.tripalfield_collection');
+
+    $all_field_defs = $field_type_manager->getDefinitions();
+    $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle_name);
+    foreach ($all_field_defs as $field_id => $field_def) {
+      $field_class = $field_def['class'];
+      if (is_subclass_of($field_class, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
+        $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs);
+        foreach ($discovered as $discovered_field) {
+
+          // If the doscovered field already exists then skip it.
+          if (array_key_exists($discovered_field['name'], $entity_field_defs)) {
+            $messenger->addStatus('Skipping field, "' . $discovered_field['name'] .'", as it already exists for this content type.');
+            continue;
+          }
+
+          // If the field is not valid then skip it.
+          $is_valid = $tripal_fields->validate($discovered_field);
+          if (!$is_valid) {
+            $messenger->addError('Skipping field, "' . $discovered_field['name'] . '", as it did not pass validation checks.');
+            continue;
+          }
+
+          // Add the field
+          $added = $tripal_fields->addBundleField($discovered_field);
+          if ($added) {
+            $messenger->addMessage('Successfully added field "' . $discovered_field['name'] . '"');
+          }
+          else {
+            $messenger->addError('Could not add field, "' . $discovered_field['name'] . '". Check the Drupal logs for more information.');
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * Validates a field definition array.
    *
    * This function can be used to check a field definition prior to adding

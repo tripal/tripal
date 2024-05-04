@@ -260,7 +260,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_name, array $field_definitions) : array{
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array{
     $field_list = [];
 
     // If we don't have a Chado base table then don't continue;
@@ -282,17 +282,66 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     }
 
     // Search for all unique types in the prop table.
-    $query = $chado->select('1:cvterm', 'cvt');
+    $query = $chado->select('1:' . $prop_table, 'pt');
+    $query->leftJoin('1:cvterm', 'cvt', 'pt.type_id = cvt.cvterm_id');
     $query->leftJoin('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
     $query->leftJoin('1:db', 'db', 'db.db_id = dbx.db_id');
     $query->leftJoin('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
-    $query->leftJoin('1:' . $prop_table, 'pt', 'pt.type_id = cvt.cvterm_id');
     $query->addField('cvt', 'cvterm_id');
+    $query->addField('cvt', 'name', 'cvterm_name');
+    $query->addField('cvt', 'definition');
     $query->addField('dbx', 'accession');
     $query->addField('db', 'name', 'db_name');
     $query->addField('cv', 'name', 'cv_name');
     $results = $query->distinct()->execute()->fetchAll();
-    dpm($results);
+
+    foreach ($results as $recprop) {
+      // @todo: we should probably create a small class to help folks build
+      // these array entries because if they don't do it correctly for their
+      // own fields then it can be problematic.
+
+      // Generate a field name.  This will become a table in Drupal so we
+      // need to make sure the field name plus the text 'tripal_entity_' don't
+      // exceed 64 characters
+      $field_name = strtolower($bundle->getID() . '_' . $recprop->cvterm_name);
+      $field_name = preg_replace('/[^\w]/', '_', $field_name);
+      $field_name = substr($field_name, 0, 50);
+
+      // Create a field entry in the list.
+      $field_list[] = [
+        'name' => $field_name,
+        'content_type' => $bundle->getID(),
+        'label' => ucwords($recprop->cvterm_name),
+        'type' => self::$id,
+        'description' => 'A record property with the following definition: ' . $recprop->definition,
+        'cardinality' => -1,
+        'required' => False,
+        'storage_settings' => [
+          'storage_plugin_id' => 'chado_storage',
+          'storage_plugin_settings' => [
+          ],
+        ],
+        'settings' => [
+          'termIdSpace' => $recprop->cv_name,
+          'termAccession' => $recprop->accession,
+        ],
+        'display' => [
+          'view' => [
+            'default' => [
+              'region' => 'content',
+              'label' => 'above',
+              'weight' => 10,
+            ],
+          ],
+          'form' => [
+            'default' => [
+              'region' => 'content',
+              'weight' => 10
+            ],
+          ],
+        ],
+      ];
+    }
 
     return $field_list;
   }
