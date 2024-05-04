@@ -85,47 +85,42 @@ class TripalEntityUIController extends ControllerBase {
   public function tripalCheckForFields($tripal_entity_type) {
 
     $bundle_name = $tripal_entity_type->id();
-
     $messenger = \Drupal::messenger();
 
-    // Get all of the fields and call the `discover()` method for each one.
-    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
-    $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
-    /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
-    $entity_field_manager = \Drupal::service('entity_field.manager');
     /** @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields **/
     $tripal_fields = \Drupal::service('tripal.tripalfield_collection');
+    $field_status = $tripal_fields->discover($tripal_entity_type);
 
-    $all_field_defs = $field_type_manager->getDefinitions();
-    $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle_name);
-    foreach ($all_field_defs as $field_id => $field_def) {
-      $field_class = $field_def['class'];
-      if (is_subclass_of($field_class, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
-        $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs);
-        foreach ($discovered as $discovered_field) {
+    // Report on any fields that had errors when trying to add them.
+    $fields_error = [];
+    foreach ($field_status['error'] as $discovered_field) {
+      $fields_error[] = $discovered_field['name'];
+    }
+    if (count($fields_error) > 0) {
+      $messenger->addMessage('The following fields were found but could not be added due to errors: "' . implode(',', $fields_error) . '"');
+    }
 
-          // If the doscovered field already exists then skip it.
-          if (array_key_exists($discovered_field['name'], $entity_field_defs)) {
-            $messenger->addStatus('Skipping field, "' . $discovered_field['name'] .'", as it already exists for this content type.');
-            continue;
-          }
+    // Report on any fields that had had an invalid definition.
+    $fields_invalid = [];
+    foreach ($field_status['invalid'] as $discovered_field) {
+      $fields_invalid[] = $discovered_field['name'];
+    }
+    if (count($fields_error) > 0) {
+      $messenger->addMessage('The following fields were found but were not correctly configured by the module developer and could not be added: "' . implode(',', $fields_invalid) . '"');
+    }
 
-          // If the field is not valid then skip it.
-          $is_valid = $tripal_fields->validate($discovered_field);
-          if (!$is_valid) {
-            throw new \Exception('Error: "' . $discovered_field['name'] . '", as it did not pass validation checks.');
-          }
+    // Report on the fields that were added.
+    $fields_added = [];
+    foreach ($field_status['added'] as $discovered_field) {
+      $fields_added[] = $discovered_field['name'];
+    }
+    if (count($fields_added) > 0) {
+      $messenger->addMessage('Successfully added field the following fields: "' . implode(',', $fields_added) . '"');
+    }
 
-          // Add the field
-          $added = $tripal_fields->addBundleField($discovered_field);
-          if ($added) {
-            $messenger->addMessage('Successfully added field "' . $discovered_field['name'] . '"');
-          }
-          else {
-            $messenger->addError('Could not add field, "' . $discovered_field['name'] . '". Check the Drupal logs for more information.');
-          }
-        }
-      }
+    // Report if no new fields were found.
+    if (count($fields_added) == 0 and count($fields_invalid) == 0 and count($fields_error) == 0) {
+      $messenger->addMessage('No new fields were added');
     }
 
     return $this->redirect('entity.tripal_entity.field_ui_fields',

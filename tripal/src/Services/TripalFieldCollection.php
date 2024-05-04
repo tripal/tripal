@@ -211,15 +211,19 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
   public function discover($tripal_entity_type) {
     $bundle_name = $tripal_entity_type->id();
 
-    $messenger = \Drupal::messenger();
+    // Holds the status of each field (e.g., skipped, added, etc.)
+    $field_status = [
+      'error' => [],
+      'skipped' => [],
+      'added' => [],
+      'invalid' => [],
+    ];
 
     // Get all of the fields and call the `discover()` method for each one.
     /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
     /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
     $entity_field_manager = \Drupal::service('entity_field.manager');
-    /** @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields **/
-    $tripal_fields = \Drupal::service('tripal.tripalfield_collection');
 
     $all_field_defs = $field_type_manager->getDefinitions();
     $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle_name);
@@ -231,28 +235,29 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
 
           // If the doscovered field already exists then skip it.
           if (array_key_exists($discovered_field['name'], $entity_field_defs)) {
-            $messenger->addStatus('Skipping field, "' . $discovered_field['name'] .'", as it already exists for this content type.');
+            $field_status['skipped'][] = $discovered_field;
             continue;
           }
 
           // If the field is not valid then skip it.
-          $is_valid = $tripal_fields->validate($discovered_field);
+          $is_valid = $this->validate($discovered_field);
           if (!$is_valid) {
-            $messenger->addError('Skipping field, "' . $discovered_field['name'] . '", as it did not pass validation checks.');
+            $field_status['invalid'][] = $discovered_field;
             continue;
           }
 
           // Add the field
-          $added = $tripal_fields->addBundleField($discovered_field);
+          $added = $this->addBundleField($discovered_field);
           if ($added) {
-            $messenger->addMessage('Successfully added field "' . $discovered_field['name'] . '"');
+            $field_status['added'][] = $discovered_field;
           }
           else {
-            $messenger->addError('Could not add field, "' . $discovered_field['name'] . '". Check the Drupal logs for more information.');
+            $field_status['error'][] = $discovered_field;
           }
         }
       }
     }
+    return $field_status;
   }
 
   /**
