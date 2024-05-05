@@ -320,7 +320,7 @@ tripal.tripalfield_collection.*:
                            nullable: false
                    form:
                      type: sequence
-                     label: 'View'
+                     label: 'Edit'
                      sequence:
                        type: mapping
                        mapping:
