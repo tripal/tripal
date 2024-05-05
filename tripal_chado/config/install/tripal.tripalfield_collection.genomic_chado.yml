@@ -1565,6 +1565,8 @@ fields:
             default:
               region: content
               weight: 45
+              settings:
+                filter_format: plain_text
 
     -   name: genome_assembly_type
         content_type: genome_assembly
@@ -1863,6 +1865,8 @@ fields:
             default:
               region: content
               weight: 45
+              settings:
+                filter_format: plain_text
 
     -   name: genome_annotation_type
         content_type: genome_annotation

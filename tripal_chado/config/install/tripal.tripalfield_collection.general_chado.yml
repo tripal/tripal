@@ -475,6 +475,8 @@ fields:
             default:
               region: content
               weight: 45
+              settings:
+                filter_format: plain_text
 
     -   name: analysis_pub
         content_type: analysis
@@ -1035,6 +1037,8 @@ fields:
             default:
               region: content
               weight: 15
+              settings:
+                filter_format: plain_text
 
     -   name: protocol_description
         content_type: protocol
