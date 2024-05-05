@@ -1956,6 +1956,8 @@ fields:
             default:
               region: content
               weight: 34
+              settings:
+                filter_format: plain_text
 
     -   name: pub_dbxref
         content_type: pub
