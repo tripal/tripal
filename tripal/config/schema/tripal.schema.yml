@@ -340,6 +340,10 @@ tripal.tripalfield_collection.*:
                            type: integer
                            label: 'Weight'
                            nullable: false
+                         filter_format:
+                           type: string
+                           label: 'Filter format for a filtered text field'
+                           nullable: true
 
 field.formatter.settings.*:
   type: mapping
