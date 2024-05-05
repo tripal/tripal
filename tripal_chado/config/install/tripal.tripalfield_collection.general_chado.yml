@@ -1011,6 +1011,8 @@ fields:
             default:
               region: content
               weight: 10
+              settings:
+                filter_format: plain_text
 
     -   name: protocol_uri
         content_type: protocol
