@@ -758,6 +758,8 @@ fields:
             default:
               region: content
               weight: 10
+              settings:
+                filter_format: plain_text
 
     -   name: study_description
         content_type: study

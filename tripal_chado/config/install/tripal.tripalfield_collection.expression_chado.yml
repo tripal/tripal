@@ -30,6 +30,8 @@ fields:
             default:
               region: content
               weight: 10
+              settings:
+                filter_format: plain_text
 
     -   name: biosample_description
         content_type: biosample
@@ -537,6 +539,8 @@ fields:
             default:
               region: content
               weight: 10
+              settings:
+                filter_format: plain_text
 
     -   name: array_design_description
         content_type: array_design
