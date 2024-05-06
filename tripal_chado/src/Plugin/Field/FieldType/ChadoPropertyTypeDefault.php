@@ -255,23 +255,22 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array{
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+
+    // Initialize with an empty field list.
     $field_list = [];
 
-    // If we don't have a Chado base table then don't continue;
+    // Make sure the base table setting exists.
     $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
     if (!$base_table) {
       return $field_list;
     }
 
-    // Get a Chado connection.
-    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-
-    // As a sanity check, make sure the prop table exists.
+    // Make sure the prop table exists in Chado.
     $prop_table = $base_table . 'prop';
-    $prop_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
-    if (!$prop_def) {
+    if (!$chado->schema()->tableExists($prop_table)) {
       return $field_list;
     }
 
@@ -289,21 +288,10 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $query->addField('cv', 'name', 'cv_name');
     $results = $query->distinct()->execute()->fetchAll();
 
+    // Create a field entry for each property type.
     foreach ($results as $recprop) {
-      // @todo: we should probably create a small class to help folks build
-      // these array entries because if they don't do it correctly for their
-      // own fields then it can be problematic.
-
-      // Generate a field name.  This will become a table in Drupal so we
-      // need to make sure the field name plus the text 'tripal_entity_' don't
-      // exceed 64 characters
-      $field_name = strtolower($bundle->getID() . '_' . $recprop->cvterm_name);
-      $field_name = preg_replace('/[^\w]/', '_', $field_name);
-      $field_name = substr($field_name, 0, 50);
-
-      // Create a field entry in the list.
       $field_list[] = [
-        'name' => $field_name,
+        'name' => self::generateFieldName($bundle, $recprop->cvterm_name),
         'content_type' => $bundle->getID(),
         'label' => ucwords($recprop->cvterm_name),
         'type' => self::$id,

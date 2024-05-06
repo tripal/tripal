@@ -76,19 +76,18 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     // Get the various tables and columns needed for this field.
     // We will get the property terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $record_id_term = 'SIO:000729';
 
     // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_schema_def = $chado->schema()->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_schema_def['primary key'];
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_schema_def = $chado->schema()->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
     $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
     $genus_term = $mapping->getColumnTermId($object_table, 'genus');
@@ -107,7 +106,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $comment_term = $mapping->getColumnTermId($object_table, 'comment');
 
     // Cvterm table, to retrieve the name for the organism type
-    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $cvterm_schema_def = $chado->schema()->getTableDef('cvterm', ['format' => 'Drupal']);
     $infraspecific_type_term = $mapping->getColumnTermId('cvterm', 'name');
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
 
@@ -120,7 +119,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_schema_def = $chado->schema()->getTableDef($linker_table, ['format' => 'Drupal']);
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
@@ -294,30 +293,28 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array {
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+
+    // Initialize with an empty field list.
     $field_list = [];
 
-    // If we don't have a Chado base table then don't continue;
+    // Make sure the base table setting exists.
     $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
     if (!$base_table) {
       return $field_list;
     }
 
-    // Get a Chado connection.
-    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-
-    $base_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    if (!array_key_exists('organism', $base_def['foreign keys'])) {
+    // Make sure the base table has a foriegn key to the organism table.
+    if (!$chado->schema()->foreignKeyExists($base_table, 'organism')) {
       return $field_list;
     }
-
-    $field_name = strtolower($bundle->getID() . '_organism');
-    $field_name = substr($field_name, 0, 50);
+    $fk_def = $chado->schema()->getForeignKeyDef($base_table, 'organism');
 
     // Create a field entry in the list.
     $field_list[] = [
-      'name' => $field_name,
+      'name' => self::generateFieldName($bundle, 'organism'),
       'content_type' => $bundle->getID(),
       'label' => 'Organism',
       'type' => self::$id,
@@ -328,7 +325,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings' => [
           'base_table' => $base_table,
-          'base_column' => array_keys($base_def['foreign keys']['organism']['columns'])[0]
+          'base_column' => array_keys($fk_def['columns'])[0]
         ],
       ],
       'settings' => [

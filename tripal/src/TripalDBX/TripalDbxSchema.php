@@ -691,6 +691,38 @@ EOD;
   }
 
   /**
+   * If a FK exists between two tables, return the left and right columns.
+   *
+   * @param string $left_table
+   *   The name of the table the foreign key resides in. E.g. 'feature' for
+   *   the feature.type_id => cvterm.cvterm_id foreign key.
+   * @param string $right_table
+   */
+  public function getForeignKeyDef(string $left_table, string $right_table) {
+    $left_def = $this->getTableDef($left_table, ['format' => 'Drupal']);
+    if (!array_key_exists($right_table, $left_def['foreign keys'])) {
+      return NULL;
+    }
+    return $left_def['foreign keys'][$right_table];
+  }
+
+  /**
+   * If a FK exists between two tables, return the left and right columns.
+   *
+   * @param string $left_table
+   *   The name of the table the foreign key resides in. E.g. 'feature' for
+   *   the feature.type_id => cvterm.cvterm_id foreign key.
+   * @param string $right_table
+   */
+  public function foreignKeyExists(string $left_table, string $right_table) {
+    $left_def = $this->getForeignKeyDef($left_table, $right_table);
+    if ($left_def) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
    * Check the foreign key constrain specified exists.
    *
    * @param string $base_table
