@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -77,28 +76,20 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => 'analysis.analysis_id',
-      //'chado_table' => 'analysis',
-      //'chado_column' => 'analysis_id',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'sourceuri', $src_uri_term, 100, [
       'action' => 'store',
       'path' => 'analysis.sourceuri',
-      //'chado_table' => 'analysis',
-      //'chado_column' => 'sourceuri',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'sourcename', $src_name_term, 200, [
       'action' => 'store',
       'path' => 'analysis.sourcename',
-      //'chado_table' => 'analysis',
-      //'chado_column' => 'sourcename',
       'delete_if_empty' => TRUE,
       'empty_value' => '',
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'sourceversion', $src_vers_term, 100, [
       'action' => 'store',
       'path' => 'analysis.sourceversion',
-      //'chado_table' => 'analysis',
-      //'chado_column' => 'sourceversion',
     ]);
 
     return ($properties);
