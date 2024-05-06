@@ -3,9 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalTextTypeFormatter;
-use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Plugin implementation of default Chado text type formatter.
