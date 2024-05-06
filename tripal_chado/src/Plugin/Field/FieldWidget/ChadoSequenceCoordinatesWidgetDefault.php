@@ -27,6 +27,15 @@ class ChadoSequenceCoordinatesWidgetDefault extends ChadoWidgetBase {
 
     $item_vals = $items[$delta]->getValue();
     $elements = [];
+
+    // This widget currently only passes through existing values,
+    // it doesn't currently allow editing. If no existing record
+    // exists, then just return without setting any defaults,
+    // because we don't want to generate a new record.
+    if (!array_key_exists('featureloc_id', $item_vals) or !$item_vals['featureloc_id']) {
+      return $elements;
+    }
+
     $elements['record_id'] = [
       '#type' => 'value',
       '#default_value' => $item_vals['record_id'] ?? 0,
