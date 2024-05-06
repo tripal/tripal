@@ -93,9 +93,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    // $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
     $name_term = $mapping->getColumnTermId($object_table, 'name');
-    // $name_len = $object_schema_def['fields']['name']['size'];
     $uniquename_term = $mapping->getColumnTermId($object_table, 'uniquename');  // text
     $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
     $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete');  // boolean

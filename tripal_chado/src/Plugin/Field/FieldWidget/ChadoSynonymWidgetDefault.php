@@ -40,6 +40,8 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
     $is_current = $item_vals['is_current'] ?? TRUE;
     $is_internal = $item_vals['is_internal'] ?? FALSE;
     $name = $item_vals['name'] ?? '';
+    $synonym_type = $item_vals['synonym_type'] ?? 'exact';
+    $synonym_sgml = $item_vals['synonym_sgml'] ?? '';
 
     // Get the `exact` synonym type.  There are other types
     // that are installed by Tripal such as BROAD, NARROW, and RELATED
@@ -101,7 +103,11 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
     ];
     $elements['synonym_type'] = [
       '#type' => 'value',
-      '#default_value' => 'exact',
+      '#default_value' => $synonym_type,
+    ];
+    $elements['synonym_sgml'] = [
+      '#type' => 'value',
+      '#default_value' => $synonym_sgml,
     ];
     $elements['is_current'] = [
       '#type' => 'checkbox',
