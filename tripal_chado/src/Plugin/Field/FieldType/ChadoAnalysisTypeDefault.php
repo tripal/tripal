@@ -91,7 +91,6 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
 
     // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');
@@ -107,7 +106,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $sourcename_len = $object_schema_def['fields']['sourcename']['size'];
     $sourceversion_term = $mapping->getColumnTermId($object_table, 'sourceversion');
     $sourceversion_len = $object_schema_def['fields']['sourceversion']['size'];
-    $sourceuri_term = $mapping->getColumnTermId($object_table, 'sourceuri'); // text
+    $sourceuri_term = $mapping->getColumnTermId($object_table, 'sourceuri'); // text    
     // @todo timeexecuted not yet implemented
 
     // Linker table, when used, requires specifying the linker table and column.
@@ -145,8 +144,6 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
-      //'chado_table' => $base_table,
-      //'chado_column' => $base_pkey_col,
     ]);
 
     // This property will store the Drupal entity ID of the linked chado
