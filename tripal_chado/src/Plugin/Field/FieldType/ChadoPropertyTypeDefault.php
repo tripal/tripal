@@ -59,14 +59,8 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Create variables for easy access to settings.
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
-    $base_table = $settings['base_table'];
-    $prop_table = $settings['prop_table'];
-
-    // If we don't have a base table then we're not ready to specify the
-    // properties for this field.
-    if (!$base_table) {
-      return;
-    }
+    $base_table = array_key_exists('base_table', $settings) ? $settings['base_table'] : NULL;
+    $prop_table = array_key_exists('prop_table', $settings) ? $settings['prop_table'] : NULL;
 
     // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
@@ -319,6 +313,8 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
         'storage_settings' => [
           'storage_plugin_id' => 'chado_storage',
           'storage_plugin_settings' => [
+            'base_table' => $base_table,
+            'prop_table' => $prop_table
           ],
         ],
         'settings' => [

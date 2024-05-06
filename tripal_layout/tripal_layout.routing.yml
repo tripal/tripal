@@ -1,4 +1,4 @@
-# Adds a +Check for new fields link on the 'Tripal Content Types' page.
+# Adds a +Apply Defeault Layout link on the 'Tripal Content Field Display' page.
 tripal_layout.content_type_field_layout:
   path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/layout'
   defaults:

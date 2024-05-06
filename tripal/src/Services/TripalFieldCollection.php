@@ -213,10 +213,9 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
 
     // Holds the status of each field (e.g., skipped, added, etc.)
     $field_status = [
-      'error' => [],
-      'skipped' => [],
-      'added' => [],
       'invalid' => [],
+      'new' => [],
+      'existing' => [],
     ];
 
     // Get all of the fields and call the `discover()` method for each one.
@@ -233,27 +232,20 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs);
         foreach ($discovered as $discovered_field) {
 
-          // If the doscovered field already exists then skip it.
+          // If the doscovered field already exists then mark it as existing.
           if (array_key_exists($discovered_field['name'], $entity_field_defs)) {
-            $field_status['skipped'][] = $discovered_field;
+            $field_status['existing'][$discovered_field['name']] = $discovered_field;
             continue;
           }
 
           // If the field is not valid then skip it.
           $is_valid = $this->validate($discovered_field);
           if (!$is_valid) {
-            $field_status['invalid'][] = $discovered_field;
+            $field_status['invalid'][$discovered_field['name']] = $discovered_field;
             continue;
           }
 
-          // Add the field
-          $added = $this->addBundleField($discovered_field);
-          if ($added) {
-            $field_status['added'][] = $discovered_field;
-          }
-          else {
-            $field_status['error'][] = $discovered_field;
-          }
+          $field_status['new'][$discovered_field['name']] = $discovered_field;
         }
       }
     }

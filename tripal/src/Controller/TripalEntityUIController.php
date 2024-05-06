@@ -3,7 +3,6 @@
 namespace Drupal\tripal\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
 
@@ -24,7 +23,7 @@ class TripalEntityUIController extends ControllerBase {
    * Route: entity.tripal_entity.add_page
    * Template: tripal-entity-content-add-list.html.twig
    *
-   * @return Drupal\Core\Render\Element
+   * @return \Drupal\Core\Render\Element
    *   Returns a rendered listing of Tripal Content Types linking to add forms.
    */
   public function tripalContentAddPage() {
@@ -74,56 +73,5 @@ class TripalEntityUIController extends ControllerBase {
       '#theme' => 'tripal_entity_content_add_list',
       '#types' => $bundles,
     ];
-  }
-
-  /**
-   * Checks for to see if new fields need to be added to a Tripal Content Type.
-   *
-   * @todo call this from somewhere.
-   * @todo update all code.
-   */
-  public function tripalCheckForFields($tripal_entity_type) {
-
-    $bundle_name = $tripal_entity_type->id();
-    $messenger = \Drupal::messenger();
-
-    /** @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields **/
-    $tripal_fields = \Drupal::service('tripal.tripalfield_collection');
-    $field_status = $tripal_fields->discover($tripal_entity_type);
-
-    // Report on any fields that had errors when trying to add them.
-    $fields_error = [];
-    foreach ($field_status['error'] as $discovered_field) {
-      $fields_error[] = $discovered_field['name'];
-    }
-    if (count($fields_error) > 0) {
-      $messenger->addMessage('The following fields were found but could not be added due to errors: "' . implode(',', $fields_error) . '"');
-    }
-
-    // Report on any fields that had had an invalid definition.
-    $fields_invalid = [];
-    foreach ($field_status['invalid'] as $discovered_field) {
-      $fields_invalid[] = $discovered_field['name'];
-    }
-    if (count($fields_error) > 0) {
-      $messenger->addMessage('The following fields were found but were not correctly configured by the module developer and could not be added: "' . implode(',', $fields_invalid) . '"');
-    }
-
-    // Report on the fields that were added.
-    $fields_added = [];
-    foreach ($field_status['added'] as $discovered_field) {
-      $fields_added[] = $discovered_field['name'];
-    }
-    if (count($fields_added) > 0) {
-      $messenger->addMessage('Successfully added field the following fields: "' . implode(',', $fields_added) . '"');
-    }
-
-    // Report if no new fields were found.
-    if (count($fields_added) == 0 and count($fields_invalid) == 0 and count($fields_error) == 0) {
-      $messenger->addMessage('No new fields were added');
-    }
-
-    return $this->redirect('entity.tripal_entity.field_ui_fields',
-      ['tripal_entity_type' => $bundle_name]);
   }
 }

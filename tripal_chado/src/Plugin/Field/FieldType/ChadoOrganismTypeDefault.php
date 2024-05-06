@@ -289,4 +289,68 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     return $compatible;
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array {
+    $field_list = [];
+
+    // If we don't have a Chado base table then don't continue;
+    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
+    if (!$base_table) {
+      return $field_list;
+    }
+
+    // Get a Chado connection.
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+
+    $base_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    if (!array_key_exists('organism', $base_def['foreign keys'])) {
+      return $field_list;
+    }
+
+    $field_name = strtolower($bundle->getID() . '_organism');
+    $field_name = substr($field_name, 0, 50);
+
+    // Create a field entry in the list.
+    $field_list[] = [
+      'name' => $field_name,
+      'content_type' => $bundle->getID(),
+      'label' => 'Organism',
+      'type' => self::$id,
+      'description' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
+      'cardinality' => 1,
+      'required' => TRUE,
+      'storage_settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'base_table' => $base_table,
+          'base_column' => array_keys($base_def['foreign keys']['organism']['columns'])[0]
+        ],
+      ],
+      'settings' => [
+        'termIdSpace' => 'OBI',
+        'termAccession' => '0100026'
+      ],
+      'display' => [
+        'view' => [
+          'default' => [
+            'region' => 'content',
+            'label' => 'above',
+            'weight' => 10,
+          ],
+        ],
+        'form' => [
+          'default' => [
+            'region' => 'content',
+            'weight' => 10
+          ],
+        ],
+      ],
+    ];
+    return $field_list;
+  }
 }
