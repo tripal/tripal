@@ -345,9 +345,9 @@ tripal.tripalfield_collection.*:
                            label: 'Settings'
                            mapping:
                              filter_format:
-                             type: string
-                             label: 'Filter format for a filtered text field'
-                             nullable: true
+                               type: string
+                               label: 'Filter format for a filtered text field'
+                               nullable: true
 
 field.formatter.settings.*:
   type: mapping
