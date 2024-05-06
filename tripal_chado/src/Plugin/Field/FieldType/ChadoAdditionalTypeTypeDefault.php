@@ -7,11 +7,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 
@@ -107,8 +103,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
-      //'chado_table' => $base_table,
-      //'chado_column' => $base_pkey_col
     ]);
 
     // If the type table and the base table are not the same then we are
@@ -127,22 +121,16 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $type_table  . '.' . $type_pkey_col,
-        //'chado_table' => $type_table,
-        //'chado_column' => $type_pkey_col,
       ]);
       // (e.g., analysisprop.feature_id)
       $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', $link_term, [
         'action' => 'store_link',
         'path' => $type_table . '.' . $type_fkey_col,
-        //'chado_table' => $type_table,
-        //'chado_column' => $type_fkey_col,
       ]);
       // (e.g., analysisprop.value)
       $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'path' => $type_table . '.' . 'value',
-        //'chado_table' => $type_table,
-        //'chado_column' => 'value',
       ]);
     }
 
@@ -151,8 +139,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
       'action' => 'store',
       'path' => $type_table . '.' . $type_column,
-      //'chado_table' => $type_table,
-      //'chado_column' => $type_column,
       'empty_value' => 0
     ]);
 

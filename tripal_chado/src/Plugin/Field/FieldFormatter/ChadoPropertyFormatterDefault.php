@@ -3,11 +3,9 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\UrlHelper;
-use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**

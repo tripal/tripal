@@ -56,9 +56,6 @@ class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Get the base table columns needed for this field.
-    $settings = $field_definition->getSetting('storage_plugin_settings');
-
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
@@ -78,20 +75,14 @@ class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'path' => 'feature.feature_id',
-        //'chado_table' => 'feature',
-        //'chado_column' => 'feature_id'
     ]);
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
       'action' => 'read_value',
       'path' => 'feature.seqlen',
-      //'chado_column' => 'seqlen',
-      //'chado_table' => 'feature'
     ]);
     $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5_checksum_len, [
       'action' => 'read_value',
       'path' => 'feature.md5checksum',
-      //'chado_column' => 'md5checksum',
-      //'chado_table' => 'feature'
     ]);
     return $properties;
   }
