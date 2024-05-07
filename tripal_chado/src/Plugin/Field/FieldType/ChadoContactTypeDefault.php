@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -55,37 +54,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     // CV Term is 'Communication Contact'
     $field_settings['termIdSpace'] = 'NCIT';
     $field_settings['termAccession'] = 'C47954';
-    $field_settings['restrict2type'] = FALSE;
     return $field_settings;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
-    $elements = parent::fieldSettingsForm($form, $form_state);
-
-    $elements['restrict2type_fieldset'] = [
-      '#type' => 'details',
-      '#title' => t('Filter Contacts by Link Type'),
-      '#open' => TRUE,
-    ];
-
-    $elements['restrict2type_fieldset']['msg'] = [
-      '#markup' => '<p>By default, this field will show all contacts linked to a specific record in the base table. For example, when this field is on a Project Content Type, it would show any contact linked through the project_contact table.</p>'
-        . '<p>However, in some Chado instances, these linking tables have a type_id allowing the type of link to be specified. If this column is available, this field will support only managing contacts linked via a specific link type. This can be indicated by turning on "Restrict to Link Type" below and setting the "Controlled Vocabulary Term" for this field to the link type you would like to restrict to.</p>'
-        .'<p>For example, if you would like this field to only show contacts who are defined as funders of the current project, you would check the "Restrict to Link Type" checkbox and then set the "Controlled Vocabulary Term" for this field to Funder (EFO:0001736). Then when contacts are linked through this field, the project_contact.type_id will reference the "Funder (EFO:0001736)" cvterm.</p>'
-        .'<p><strong>NOTE: The following checkbox will only have an effect if there is a type_id in the linking table. This is not standard as of Chado v1.3 but is currently under review to be included in Chado v1.4. See <a href="https://github.com/GMOD/Chado/pull/144" target="_blank">PR #144</a> for the status on this addition and comment there if you need this functionality.</strong></p>',
-    ];
-
-    $elements['restrict2type_fieldset']['restrict2type'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Restrict to Link Type'),
-      '#description' => t('Restrict the contacts managed by this field to only those where the linking table record type_id matches the cvterm set above.'),
-      '#default_value' => $this->getSetting('restrict2type'),
-    ];
-
-    return $elements;
   }
 
   /**

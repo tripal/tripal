@@ -140,13 +140,6 @@ function tripal_chado_config_schema_info_alter(&$definitions) {
     'label' => 'The column in the linking table which is a foreign key pointing to the base table (e.g. for feature_synonym this would be feature_id).',
     'nullable' => true
   ];
-
-  // Contact Field specific addition.
-  $definitions['field.field.tripal_entity.*.*']['mapping']['settings']['mapping']['restrict2type'] = [
-    'type' => 'boolean',
-    'label' => 'Flag to indicate to filter the current field by type',
-    'nullable' => true
-  ];
 }
 
 /**
