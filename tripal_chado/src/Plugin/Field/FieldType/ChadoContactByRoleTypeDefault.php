@@ -14,7 +14,7 @@ use Drupal\tripal\Entity\TripalEntityType;
  *   id = "chado_contact_by_role_type_default",
  *   category = "tripal_chado",
  *   label = @Translation("Chado Contact By Role"),
- *   description = @Translation("Supports linking contacts fullfilling a certain role to content types."),
+ *   description = @Translation("Supports linking contacts fullfilling a specific role to content types."),
  *   default_widget = "chado_contact_widget_default",
  *   default_formatter = "chado_contact_formatter_default",
  * )
@@ -68,7 +68,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
 
-    if ($base_table === NULL) {
+    if (empty($base_table)) {
       return;
     }
 
@@ -202,7 +202,9 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_name', $terms['name'], $max_lengths['name'], [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
+      'path' => $table_alias . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
+
+      'table_alias_mapping' => [$table_alias => $linker_table],
       'as' => 'contact_name',
     ]);
 
@@ -210,7 +212,8 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_description', $terms['description'], $max_lengths['description'], [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';description',
+      'path' => $table_alias . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';description',
+      'table_alias_mapping' => [$table_alias => $linker_table],
       'as' => 'contact_description',
     ]);
 
@@ -218,8 +221,9 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'contact_type', $terms['contact_type'], $max_lengths['contact_type'], [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+      'path' => $table_alias . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
+      'table_alias_mapping' => [$table_alias => $linker_table],
       'as' => 'contact_type',
     ]);
 
@@ -264,14 +268,39 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
   public function isCompatible(TripalEntityType $entity_type) : bool {
-    $compatible = TRUE;
 
     // Get the base table for the content type.
+    $has_linker = FALSE;
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    // Get the list of tables linking the base table and our object table.
     $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
-    if (count($linker_tables) < 1) {
-      $compatible = FALSE;
+    if (!empty($linker_tables)) {
+      $has_linker = TRUE;
     }
-    return $compatible;
+
+    // Ensure that the linker table has a type_id.
+    $has_type_id = FALSE;
+    foreach ($linker_tables as $item) {
+
+      [$table_name, $contact_fkey] = $item;
+
+      // Get the definition.
+      $schemaObj = \Drupal::service('tripal_chado.database')->schema();
+      $schemaDef = $schemaObj->getTableDef($table_name, ['format' => 'Drupal']);
+      // Check there is a type_id field.
+      if (array_key_exists('type_id', $schemaDef['fields'])) {
+        $has_type_id = TRUE;
+      }
+      else {
+        \Drupal::messenger()->addError('The Contact By Role field requires a type_id in the linking table. This is not present in Chado 1.31 but will likely be added in subsequent versions. For more information, see https://github.com/GMOD/Chado/pull/144.');
+      }
+
+    }
+
+    // Only compatible if there is a linker and it has a type_id.
+    if ($has_linker AND $has_type_id) {
+      return TRUE;
+    }
+    return FALSE;
   }
 }
