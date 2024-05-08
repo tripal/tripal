@@ -284,17 +284,13 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
 
       [$table_name, $contact_fkey] = $item;
 
-      // Get the definition.
-      $schemaObj = \Drupal::service('tripal_chado.database')->schema();
-      $schemaDef = $schemaObj->getTableDef($table_name, ['format' => 'Drupal']);
       // Check there is a type_id field.
-      if (array_key_exists('type_id', $schemaDef['fields'])) {
-        $has_type_id = TRUE;
-      }
-      else {
+      $schemaObj = \Drupal::service('tripal_chado.database')->schema();
+      $has_type_id = $schemaObj->fieldExists($table_name, 'type_id');
+
+      if (!$has_type_id) {
         \Drupal::messenger()->addError('The Contact By Role field requires a type_id in the linking table. This is not present in Chado 1.31 but will likely be added in subsequent versions. For more information, see https://github.com/GMOD/Chado/pull/144.');
       }
-
     }
 
     // Only compatible if there is a linker and it has a type_id.
