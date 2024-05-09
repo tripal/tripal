@@ -324,12 +324,47 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    */
   public function run() {
     $arguments = $this->arguments['run_args'];
-
-    $organism_id = $arguments['organism_id'];
+    print_r($arguments);
+    
+    // THIS IS TRIPAL 3 CODE TO UNDERSTAND
+    // $args = [':import_id' => $import_id];
+    // $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
+    // $import = db_query($sql, $args)->fetchObject();
+  
+    // $args = [$import_id, TRUE, FALSE];
+    // $includes = [];
+    // $includes[] = module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
+    // tripal_add_job("Import publications $import->name", 'tripal_chado',
+    //   'chado_execute_pub_importer', $args, $user->uid, 10, $includes);
 
     // $this->loadFasta($file_path, $organism_id, $type, $re_name, $re_uname, $re_accession,
     //   $db_id, $rel_type, $re_subject, $parent_type, $method, $analysis_id,
     //   $match_type);
+
+    // @RISH NOTES: I think all of the above should be bypassed since the job is already created and
+    // executed by this run function
+    // I see it running the chado_execute_pub_importer function so maybe we should start there
+    $query_id = NULL;
+    if (!isset($arguments['query_id'])) {
+      $search_query_name = $arguments['search_query_name'];
+
+      // This will extract the query id from the query name selected from the autocomplete field
+      $start_bracket_pos = strrpos($search_query_name, '(');
+      $right_string = substr($search_query_name, $start_bracket_pos);
+      $right_string = ltrim($right_string, '(');
+      $query_id = rtrim($right_string, ')');
+    }
+    else {
+      $query_id = $arguments['query_id'];
+    }
+
+    if (!isset($query_id)) {
+      chado_execute_pub_importer($query_id, TRUE, FALSE, NULL);
+    }
+    else {
+      echo "Query ID was not found, cannot run the publication importer.\n";
+    }
+
   }
 
   /**
@@ -343,6 +378,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function formSubmit($form, &$form_state) {
-    $form_state->setRebuild(TRUE);
+    // $form_state->setRebuild(TRUE);
   }  
 }
