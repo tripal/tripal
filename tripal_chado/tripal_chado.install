@@ -403,6 +403,12 @@ function tripal_chado_update_10402() {
 }
 
 /**
+ * Updates entity_id properties added to linking fields in PR 1782
+ * Note: tripal_chado_update_10403 has been renumbered to
+ * tripal_chado_update_10405 by PR 1865
+ */
+
+/**
  * Adds or updates several properties added to the
  * chado_sequence_coordinates_default field in PR 1861
  */
@@ -466,8 +472,8 @@ function tripal_chado_update_10404() {
 }
 
 /**
- * Updates entity_id properties added to linking fields in PR 1782
- * This replaces tripal_chado_update_10403
+ * Updates entity_id properties added to linking fields in PR 1782 and PR 1865
+ * This is the same as former tripal_chado_update_10403 but we need to run it again
  */
 function tripal_chado_update_10405() {
   try {
