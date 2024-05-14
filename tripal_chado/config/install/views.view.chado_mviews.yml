@@ -712,7 +712,7 @@ display:
           expose:
             operator_id: name_op
             label: 'Table Name'
-            description: ''
+            description: 'Filter this list by materialized view name.'
             use_operator: false
             operator: name_op
             operator_limit_selection: false
