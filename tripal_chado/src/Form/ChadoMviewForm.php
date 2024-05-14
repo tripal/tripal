@@ -314,15 +314,13 @@ SELECT
       $form_state->setErrorByName('schema', $error);
     }
 
-    // If we're adding a new materialized view, make sure that it is not an existing one that is locked.
+    // When adding a new materialized view, make sure that it is not an existing materialized view. We check for uniqueness by combining table name and schema, as some sites may have more than one instance of Chado installed. 
     if ($action == 'Add') {
       $table = $schema_arr['table'];
-      dpm($table);
 
       $mviews = \Drupal::service('tripal_chado.materialized_views');
-      $tripal_mview = $mviews->loadByName($table, $chado_schema);
-      if($tripal_mview->isLocked()) {
-        $form_state->setErrorByName('schema', 'That table already exists, and furthermore, is locked for editing.');
+      if ($mviews->loadByName($table, $chado_schema)) {
+        $form_state->setErrorByName('schema', 'A materialized view based on that table in this schema already exists. Please choose a different table or schema, or edit the existing one.');
       }
     }
   }
