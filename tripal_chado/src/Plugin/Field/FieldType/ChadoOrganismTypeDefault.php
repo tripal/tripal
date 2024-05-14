@@ -90,7 +90,6 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
     $genus_term = $mapping->getColumnTermId($object_table, 'genus');
     $genus_len = $object_schema_def['fields']['genus']['size'];
     $species_term = $mapping->getColumnTermId($object_table, 'species');
@@ -150,6 +149,16 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
+    ]);
+
+    // This property will store the Drupal entity ID of the linked chado
+    // record, if one exists.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => self::$chadostorage_namespace,
+      'function' => self::$drupal_entity_callback,
+      'fkey' => self::$object_id,
     ]);
 
     // Base table links directly

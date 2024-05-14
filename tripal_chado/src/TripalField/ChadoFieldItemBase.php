@@ -29,6 +29,14 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   // delimiter between table name and column name in form select
   protected static $table_column_delimiter = " \u{2192} ";  # right arrow
 
+  // Term, namespace, and callback function used for a
+  // property for all linking fields to store the Drupal
+  // entity ID. The callback function is located in
+  // tripal_chado/src/Plugin/TripalStorage/ChadoStorage.php
+  protected static $drupal_entity_term = 'schema:ItemPage';
+  protected static $chadostorage_namespace = 'Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage';
+  protected static $drupal_entity_callback = 'drupalEntityIdLookupCallback';
+
   /**
    * {@inheritdoc}
    */

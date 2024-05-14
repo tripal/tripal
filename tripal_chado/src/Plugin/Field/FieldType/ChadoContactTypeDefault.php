@@ -89,7 +89,6 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
 
     // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');
@@ -137,8 +136,16 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
-      //'chado_table' => $base_table,
-      //'chado_column' => $base_pkey_col,
+    ]);
+
+    // This property will store the Drupal entity ID of the linked chado
+    // record, if one exists.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => self::$chadostorage_namespace,
+      'function' => self::$drupal_entity_callback,
+      'fkey' => self::$object_id,
     ]);
 
     // Base table links directly
@@ -158,8 +165,6 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $linker_table . '.' . $linker_pkey_col,
-        //'chado_table' => $linker_table,
-        //'chado_column' => $linker_pkey_col,
       ]);
 
       // Define the link between the base table and the linker table.
@@ -167,10 +172,6 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_link',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
-        //'left_table' => $base_table,
-        //'left_table_id' => $base_pkey_col,
-        //'right_table' => $linker_table,
-        //'right_table_id' => $linker_left_col,
       ]);
 
       // Define the link between the linker table and the object table.
@@ -190,8 +191,6 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
           'action' => 'store',
           'drupal_store' => FALSE,
           'path' => $linker_table . '.' . $column,
-          //'chado_table' => $linker_table,
-          //'chado_column' => $column,
           'as' => 'linker_' . $column,
         ]);
       }

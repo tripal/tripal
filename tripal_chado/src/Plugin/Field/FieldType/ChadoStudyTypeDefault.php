@@ -5,7 +5,6 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
@@ -90,7 +89,6 @@ class ChadoStudyTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
 
     // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');
@@ -99,12 +97,8 @@ class ChadoStudyTypeDefault extends ChadoFieldItemBase {
     // Columns from linked tables
     $contact_term = $mapping->getColumnTermId('contact', 'name');
     $pub_title_term = $mapping->getColumnTermId('pub', 'title');
-    $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
     $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
-    $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
-    $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
     $db_term = $mapping->getColumnTermId('db', 'name');
-    $db_len = $db_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
@@ -141,6 +135,16 @@ class ChadoStudyTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
+    ]);
+
+    // This property will store the Drupal entity ID of the linked chado
+    // record, if one exists.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => self::$chadostorage_namespace,
+      'function' => self::$drupal_entity_callback,
+      'fkey' => self::$object_id,
     ]);
 
     // Base table links directly

@@ -4,14 +4,9 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\core\Field\FieldStorageDefinitionInterface;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
-
 
 /**
  * Plugin implementation of Tripal linker property field type.
@@ -102,35 +97,22 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col,
-        //'chado_table' => $base_table,
-        //'chado_column' => $base_pkey_col
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_pkey_col,
         'table_alias_mapping' => [$table_alias => $prop_table],
-        //'chado_table' => $prop_table,
-        //'chado_column' => $prop_pkey_col,
-        //'chado_table_alias' => $table_alias,
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  $link_term, [
         'action' => 'store_link',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col,
         'table_alias_mapping' => [$table_alias => $prop_table],
-        //'left_table' => $base_table,
-        //'left_table_id' => $base_pkey_col,
-        //'right_table' => $prop_table,
-        //'right_table_alias' => $table_alias,
-        //'right_table_id' => $prop_fk_col,
       ]),
       new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';value',
         'table_alias_mapping' => [$table_alias => $prop_table],
-        //'chado_table' => $prop_table,
-        //'chado_table_alias' => $table_alias,
-        //'chado_column' => 'value',
         'delete_if_empty' => TRUE,
         'empty_value' => ''
       ]),
@@ -138,17 +120,11 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
         'action' => 'store',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';rank',
         'table_alias_mapping' => [$table_alias => $prop_table],
-        //'chado_table' => $prop_table,
-        //'chado_table_alias' => $table_alias,
-        //'chado_column' => 'rank'
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
         'action' => 'store',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';type_id',
         'table_alias_mapping' => [$table_alias => $prop_table],
-        //'chado_table' => $prop_table,
-        //'chado_table_alias' => $table_alias,
-        //'chado_column' => 'type_id'
       ]),
     ];
   }

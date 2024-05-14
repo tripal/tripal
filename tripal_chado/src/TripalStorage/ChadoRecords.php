@@ -1443,27 +1443,33 @@ class ChadoRecords  {
 
           // Add a constraint violation if we have a match and the
           // record_id is 0. This would be an insert but a record already
-          // exists. Or, if the record_id isn't the same as the  matched
+          // exists. Or, if the record_id isn't the same as the matched
           // record. This is an update that conflicts with an existing
           // record.
           if (($record_id == 0) or ($record_id != $match->$pkey)) {
             // Documentation for how to create a violation is here
             // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
-            $message = 'The item cannot be saved as another already exists with the following values. ';
+            $message = 'The item cannot be saved as another already exists with the following values: ';
             $params = [];
             foreach ($ukey_cols as $col) {
               $col = trim($col);
               $col_val = NULL;
-              if (array_key_exists($col, $record['columns'])) {
+              if (in_array($col, $record['columns'])) {
                 // @todo need to use the column alias when getting the value.
                 $col_val = $record['values'][$col];
               }
-              if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
-                continue;
-              }
-              $message .=  ucfirst($col) . ": '@$col'. ";
               $params["@$col"] = $col_val;
+              $message .=  ucfirst($col) . ": '@$col'" . (count($ukey_cols) == count($params)?'. ':', ');
             }
+            // Explanation of the unique violation.
+            if (count($params) > 1) {
+              $message .= 'The combination of these @param_count values';
+              $params['@param_count'] = count($params);
+            }
+            else {
+              $message .= 'This value';
+            }
+            $message .= ' must be unique for every item.';
             $this->violations[] = new ConstraintViolation(t($message, $params)->render(),
                 $message, $params, '', NULL, '', 1, 0, NULL, '');
           }
