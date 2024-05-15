@@ -194,32 +194,6 @@ fields:
               region: content
               weight: 10
 
-    -   name: assay_batch_id
-        content_type: assay
-        label: Array Batch Identifier
-        type: chado_text_type_default
-        description: A unique identifier for an array batch.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: assay
-                base_column: arraybatchidentifier
-        settings:
-            termIdSpace: local
-            termAccession: array_batch_identifier
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 15
-          form:
-            default:
-              region: content
-              weight: 15
-
     -   name: assay_name
         content_type: assay
         label: Name
