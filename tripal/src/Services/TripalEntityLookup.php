@@ -130,11 +130,19 @@ class TripalEntityLookup {
   }
 
   /**
-   * Retrieve the default Tripal bundle for a given base
-   * table. This table name is expected to match the bundle id.
+   * Retrieve the default Tripal bundle for a given base table.
+   *
+   * If there is more than one bundle for a given base
+   * table, this function will only return a value if there
+   * is a bundle with the same name as the base table.
+   * If all bundle names are different, then we return NULL.
+   * For example with the "feature" table, there is no
+   * generic "feature" bundle, so return NULL in this case.
+   * On the other hand, for the "analysis" table, there is
+   * a generic "analysis" bundle, so that can be returned.
    *
    * @param string $base_table
-   *   The table name e.g. "feature"
+   *   The table name e.g. "contact"
    *
    * @return string|null
    *   The bundle id, or null if no match found.
@@ -143,9 +151,16 @@ class TripalEntityLookup {
     $bundle_id = NULL;
     $bundles = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
-      ->loadByProperties(['id' => $base_table]);
-    if (sizeof($bundles) >= 1) {
+      ->getQuery()
+      ->condition('third_party_settings.tripal.chado_base_table', $base_table)
+      ->execute();
+    if (sizeof($bundles) == 1) {
       $bundle_id = key($bundles);
+    }
+    else if (sizeof($bundles) > 1) {
+      if (array_key_exists($base_table, $bundles)) {
+        $bundle_id = $base_table;
+      }
     }
     return $bundle_id;
   }
