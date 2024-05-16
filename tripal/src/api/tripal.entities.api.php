@@ -232,3 +232,105 @@ function tripal_tripal_cron_notification() {
     }
   }
 }
+
+/**
+ * @TODO UPGRADE FROM TRIPAL3 - Retrieves a TripalTerm entity that matches the given arguments.
+ *
+ * @param $values
+ *   An associative array used to match a term.
+ *   Valid keys may be:
+ *        - vocabulary: Must always be used with accession to uniquely
+ *                        identify a term.
+ *        - accession: Must always be used with vocabulary to uniquely
+ *                       identify a term.
+ *        - term_id: Can be used alone to uniquely identify a term.
+ *
+ * @return
+ *   A TripalTerm entity object or NULL if not found.
+ *
+ * @ingroup tripal_entities_api
+ */
+function tripal_load_term_entity($values) {
+  $vocabulary = array_key_exists('vocabulary', $values) ? $values['vocabulary'] : '';
+  $accession = array_key_exists('accession', $values) ? $values['accession'] : '';
+  $term_id = array_key_exists('term_id', $values) ? $values['term_id'] : '';
+
+  $term = NULL;
+
+  if ($vocabulary and $accession) {
+    $query = db_select('tripal_term', 'tt');
+    $query->join('tripal_vocab', 'tv', 'tv.id = tt.vocab_id');
+    $query->fields('tt', ['id'])
+      ->fields('tv', ['vocabulary'])
+      ->condition('tv.vocabulary', $vocabulary)
+      ->condition('tt.accession', $accession);
+    $term = $query->execute()->fetchObject();
+  }
+  else {
+    if ($term_id) {
+      $query = db_select('tripal_term', 'tt');
+      $query->fields('tt', ['id'])
+        ->condition('tt.id', $term_id);
+      $term = $query->execute()->fetchObject();
+    }
+  }
+
+  if ($term) {
+    $entity = entity_load('TripalTerm', [$term->id]);
+    return reset($entity);
+  }
+  return NULL;
+}
+
+/**
+ * @TODO UPGRADE FROM TRIPAL3 - Retrieves a TripalBundle entity that matches the given arguments.
+ *
+ * @param $values
+ *   An associative array used to match a bundle.  Valid keys may:
+ *     - id: the numeric id of the bundle.
+ *     - name:  the bundle name (e.g. 'bio_data_234')
+ *     - label: the bundle label (e.g. 'Organism')
+ *     - term_id: the term ID to which the bundle belongs
+ *     - accession: the full accession for the bundle (e.g. OBI:0100026)
+ *
+ * @return
+ *   A TripalBundle entity object or NULL if not found.
+ *
+ * @ingroup tripal_entities_api
+ */
+function tripal_load_bundle_entity($values) {
+
+  $query = db_select('tripal_bundle', 'tb');
+  $query->fields('tb');
+  if (array_key_exists('id', $values)) {
+    $query->condition('tb.id', $values['id']);
+  }
+  if (array_key_exists('name', $values)) {
+    $query->condition('tb.name', $values['name']);
+  }
+  if (array_key_exists('label', $values)) {
+    $query->condition('tb.label', $values['label']);
+  }
+  if (array_key_exists('term_id', $values)) {
+    $query->condition('tb.term_id', $values['term_id']);
+  }
+  if (array_key_exists('accession', $values)) {
+    list($vocab, $accession) = explode(':', $values['accession'], 2);
+    $term = tripal_load_term_entity([
+      'vocabulary' => $vocab,
+      'accession' => $accession,
+    ]);
+    if (!$term) {
+      return NULL;
+    }
+    $query->condition('tb.term_id', $term->id);
+
+  }
+  $bundle = $query->execute()->fetchObject();
+
+  if ($bundle) {
+    $entity = entity_load_unchanged('TripalBundle', $bundle->id);
+    return $entity;
+  }
+  return NULL;
+}
