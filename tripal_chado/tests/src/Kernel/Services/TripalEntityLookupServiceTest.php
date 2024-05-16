@@ -218,20 +218,12 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     $this->assertCount(1, $arraydesign_entities,
       "We expected there to be the same number of $bundle entities as we inserted.");
 
-    // Set the third party setting for the base table for the contact
-    // bundle, which is needed for the following fallback entity lookup test.
-    $base_table = 'contact';
-    $entity_type = \Drupal::entityTypeManager()->getStorage('tripal_entity_type')->load('contact');
-    $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $base_table);
-    $entity_type->save();
-    $table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    $this->assertEquals($base_table, $table, "We did not retrieve the correct third party base table setting");
-
     // The entity lookup from arraydesign manufacturer_id should
     // retrieve the entity for the contact_id we published, internally
     // this uses the fallback entity lookup function getDefaultBundle(),
     // because the term for manufacturer_id is NOT a content type.
     // For the fallback lookup we need to also pass the base table.
+    $base_table = 'contact';
     $chado_contact_id = 2;  // 1 is the null contact
     $expected_contact_entity_id = 8; // 1-3: project, 4-6: analysis, 7: null contact, 8: test contact, 9: array_design
     $entity_id = $lookup_manager->getEntityId(
