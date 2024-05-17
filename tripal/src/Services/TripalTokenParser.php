@@ -131,7 +131,9 @@ class TripalTokenParser {
     // will be stored wrapped in paragraph tags <p></p>.
     // These are disruptive to the title, so remove them.
     // Any other HTML markup is allowed, e.g. <em> <strong>
-    $value = preg_replace('/^<p>(.*)<\/p>[\r\n]*$/', '$1', $value);
+    if ($value) {
+      $value = preg_replace('/^<p>(.*)<\/p>[\r\n]*$/', '$1', $value);
+    }
     $this->values[$field_name][$key] = $value;
   }
 
