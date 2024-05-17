@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
+use Drupal\Component\Render\FormattableMarkup;
 
 /**
  * Defines a class to build a listing of Tripal Content entities.
@@ -36,7 +37,7 @@ class TripalEntityListBuilder extends EntityListBuilder {
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($type_name);
 
     $row['title'] = Link::fromTextAndUrl(
-      $entity->getTitle(),
+      new FormattableMarkup($entity->getTitle(), []),
       $entity->toUrl('canonical', ['tripal_entity' => $entity->id()])
     )->toString();
 
