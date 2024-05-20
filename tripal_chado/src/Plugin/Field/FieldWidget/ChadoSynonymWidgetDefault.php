@@ -2,8 +2,6 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\Plugin\Field\FieldWidget\TripalTextTypeWidget;
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
@@ -27,14 +25,6 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $chado = \Drupal::service('tripal_chado.database');
-
-    // Get the field settings.
-    $field_definition = $items[$delta]->getFieldDefinition();
-    $field_settings = $field_definition->getSettings();
-    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-    $base_table = $storage_settings['base_table'];
-    $linker_table = $storage_settings['linker_table'];
-    $linker_fkey_column = $storage_settings['linker_fkey_column'];
 
     $schema = $chado->schema();
     $synonym_table_def = $schema->getTableDef('synonym', ['format' => 'Drupal']);
@@ -113,7 +103,11 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
     ];
     $elements['synonym_type'] = [
       '#type' => 'value',
-      '#default_value' => 'exact',
+      '#default_value' => $synonym_type,
+    ];
+    $elements['synonym_sgml'] = [
+      '#type' => 'value',
+      '#default_value' => $synonym_sgml,
     ];
     $elements['is_current'] = [
       '#type' => 'checkbox',

@@ -90,7 +90,6 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
 
     // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');  // text
@@ -99,7 +98,6 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     $array_dimensions_term = $mapping->getColumnTermId($object_table, 'array_dimensions');  // text
     $element_dimensions_term = $mapping->getColumnTermId($object_table, 'element_dimensions');  // text
     $num_of_elements_term = $mapping->getColumnTermId($object_table, 'num_of_elements');
-    $num_array_elements_term = $mapping->getColumnTermId($object_table, 'num_array_elements');
     $num_array_rows_term = $mapping->getColumnTermId($object_table, 'num_array_rows');
     $num_array_columns_term = $mapping->getColumnTermId($object_table, 'num_array_columns');
     $num_grid_columns_term = $mapping->getColumnTermId($object_table, 'num_grid_columns');
@@ -116,12 +114,9 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     $manufacturer_term = $mapping->getColumnTermId('contact', 'name');
     $manufacturer_len = $contact_schema_def['fields']['name']['size'];
     $protocol_term = $mapping->getColumnTermId('protocol', 'name');  // text
-    $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
     $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
-    $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
     $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
     $db_term = $mapping->getColumnTermId('db', 'name');
-    $db_len = $db_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
