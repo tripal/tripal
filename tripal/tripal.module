@@ -616,3 +616,19 @@ function tripal_form_field_config_edit_form_alter(&$form, \Drupal\Core\Form\Form
     $form['settings'] = $form['settings'] + $elements;
   }
 }
+
+/**
+ * Implements hook_preprocess_block for the page_title_block.
+ *
+ * This is to permit HTML markup in the page title block, for
+ * example on an organism page, to display genus and species
+ * in italics.
+ *
+ */
+function tripal_preprocess_block(&$variables) {
+  if ($variables['plugin_id'] == 'page_title_block') {
+    if (is_string($variables['content']['#title'])) {
+      $variables['content']['#title'] = Drupal\Core\Render\Markup::create($variables['content']['#title']);
+    }
+  }
+}
