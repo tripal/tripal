@@ -1261,10 +1261,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     // Given the Chado record ID and bundle term, we can lookup the Drupal entity ID.
+    $ftable = $prop_storage_settings['ftable'] ?? NULL;
     $entity_id = $lookup_manager->getEntityId(
       $record_id,
       $context['field_settings']['termIdSpace'],
-      $context['field_settings']['termAccession']
+      $context['field_settings']['termAccession'],
+      $ftable
     );
 
     // In the TripalEntity class, the preSave function will flag all falsey
