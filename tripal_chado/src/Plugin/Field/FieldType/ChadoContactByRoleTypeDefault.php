@@ -280,12 +280,12 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
 
     // Ensure that the linker table has a type_id.
     $has_type_id = FALSE;
+    $schemaObj = \Drupal::service('tripal_chado.database')->schema();
     foreach ($linker_tables as $item) {
 
       [$table_name, $contact_fkey] = $item;
 
       // Check there is a type_id field.
-      $schemaObj = \Drupal::service('tripal_chado.database')->schema();
       $has_type_id = $schemaObj->fieldExists($table_name, 'type_id');
 
       if (!$has_type_id) {
