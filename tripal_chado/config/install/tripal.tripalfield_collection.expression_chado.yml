@@ -259,14 +259,15 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: assay
-                base_column: protocol_id
+                linker_table: assay
+                linker_fkey_column: protocol_id
         settings:
             termIdSpace: data
             termAccession: "1047"
         display:
           view:
             default:
-              region: hidden
+              region: content
               label: above
               weight: 25
           form:
@@ -610,14 +611,15 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: arraydesign
-                base_column: protocol_id
+                linker_table: arraydesign
+                linker_fkey_column: protocol_id
         settings:
             termIdSpace: data
             termAccession: "1047"
         display:
           view:
             default:
-              region: hidden
+              region: content
               label: above
               weight: 35
           form:

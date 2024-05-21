@@ -7,6 +7,15 @@ use Drupal\Core\Render\Markup;
 use Drupal\field\Entity\FieldStorageConfig;
 use \Drupal\tripal\Services\TripalEntityTitle;
 
+/**
+ * This class provides functions to assist with finding a Drupal
+ * entity that corresponds to a Chado record.
+ *
+ * The two public functions defined here are:
+ *   getEntityId() which looks up a Drupal entity id from a Chado record id
+ *   getRenderableItem() is a helper function for field formatters, it will
+ *     handle converting an entity_id into a render array element.
+ */
 class TripalEntityLookup {
 
   /**
@@ -55,13 +64,16 @@ class TripalEntityLookup {
    *   The bundle's CV Term namespace e.g. for gene "SO"
    * @param string $termAccession
    *   The bundle's CV term accession e.g. for gene "0000704"
+   * @param string $base_table
+   *   The Chado base table for the requested entity e.g. for gene "feature".
+   *   Only needed if term does not map to a content type.
    * @param string $entity_type
    *   The type of entity, only 'tripal_entity' is supported.
    *
    * @return int|null
    *   The Drupal entity ID, or null if no match found.
    */
-  public function getEntityId($record_id, $termIdSpace, $termAccession, $entity_type = 'tripal_entity') {
+  public function getEntityId($record_id, $termIdSpace, $termAccession, $base_table = NULL, $entity_type = 'tripal_entity') {
 
     // Catch invalid entity type
     if ($entity_type != 'tripal_entity') {
@@ -71,14 +83,30 @@ class TripalEntityLookup {
     // Perform the lookup steps
     $entity_id = NULL;
     $bundle_id = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
+
+    // in most cases we will have a bundle ID
     if ($bundle_id) {
-      $base_table = $this->getBundleBaseTable($bundle_id, $entity_type);
+      $entity_ids = $this->getEntityIdFromRecordId($record_id, $bundle_id, $entity_type);
+      if ($entity_ids) {
+        // Here we are just returning the first hit, e.g. analysis published as both
+        // analysis and genome assembly. Ideally this will be prevented from happening.
+        $entity_id = reset($entity_ids);
+      }
+    }
+    // If the term does not have a content type, the fallback is
+    // to check all bundles derived from the base table.
+    else {
+      $bundle_ids = [];
       if ($base_table) {
-        $entity_ids = $this->getEntityIdFromRecordId($record_id, $bundle_id, $entity_type);
-        if ($entity_ids) {
-          // Here we are just returning the first hit, e.g. analysis published as both
-          // analysis and genome assembly. Ideally this will be prevented from happening.
-          $entity_id = reset($entity_ids);
+        $bundle_ids = $this->getBundles($base_table);
+      }
+      if ($bundle_ids) {
+        foreach ($bundle_ids as $bundle_id) {
+          $entity_ids = $this->getEntityIdFromRecordId($record_id, $bundle_id, $entity_type);
+          if ($entity_ids) {
+            $entity_id = reset($entity_ids);
+            break;
+          }
         }
       }
     }
@@ -109,45 +137,22 @@ class TripalEntityLookup {
   }
 
   /**
-   * Retrieve the base table for a given bundle.
-   * This is used when, from a given content type, we have a linking field
-   * to another content type, and we need the base table of that linked
-   * content type, which is specified by $bundle.
+   * Retrieve a list of Tripal bundles for a given base table.
    *
-   * @param string $bundle
-   *   The bundle's ID, e.g. "gene"
-   * @param string $entity_type
-   *   The type of entity, only 'tripal_entity' is supported.
+   * @param string $base_table
+   *   The table name e.g. "contact"
    *
-   * @return string|null
-   *   The base table name, or null if no match found.
+   * @return array
+   *   The bundle ids, or an empty array if no matches found.
    */
-  protected function getBundleBaseTable($bundle, $entity_type) {
-    $table = NULL;
-    if ($bundle) {
-      $entityFieldManager = \Drupal::service('entity_field.manager');
-      $fields = $entityFieldManager->getFieldDefinitions($entity_type, $bundle);
-      $field_list = array_keys($fields);
-      $type_name = NULL;
-      $base_table = NULL;
-      foreach ($field_list as $field_name) {
-        // Skip drupal fields. Look for the first tripal field that has a base_column
-        // set. Fields from linker tables do not have a base_column.
-        if (preg_match('/^'.$bundle.'/', $field_name)) {
-          $field_storage = FieldStorageConfig::loadByName($entity_type, $field_name);
-          if ($field_storage) {
-            $storage_plugin_settings = $field_storage->getSettings()['storage_plugin_settings'];
-            $base_table = $storage_plugin_settings['base_table'];
-            $base_column = $storage_plugin_settings['base_column'] ?? '';
-            if ($base_table and $base_column) {
-              $table = $base_table;
-              break;
-            }
-          }
-        }
-      }
-    }
-    return $table;
+  protected function getBundles($base_table) {
+    $bundles = \Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->getQuery()
+      ->condition('third_party_settings.tripal.chado_base_table', $base_table)
+      ->execute();
+    $bundle_ids = array_keys($bundles);
+    return $bundle_ids;
   }
 
   /**
@@ -247,6 +252,7 @@ class TripalEntityLookup {
         }
       }
     }
+
     // Cache the values, specifying expiration in 1 hour.
     \Drupal::cache()->set($cache_id, $field_list, \Drupal::time()->getRequestTime() + (3600));
 
