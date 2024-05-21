@@ -158,7 +158,8 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
       'drupal_store' => TRUE,
       'namespace' => self::$chadostorage_namespace,
       'function' => self::$drupal_entity_callback,
-      'fkey' => self::$object_id,
+      'ftable' => self::$object_table,
+      'fkey' => $linker_fkey_column,
     ]);
 
     // Base table links directly

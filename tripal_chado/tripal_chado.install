@@ -404,69 +404,9 @@ function tripal_chado_update_10402() {
 
 /**
  * Updates entity_id properties added to linking fields in PR 1782
+ * Note: tripal_chado_update_10403 has been renumbered to
+ * tripal_chado_update_10405 by PR 1865
  */
-function tripal_chado_update_10403() {
-  try {
-    $messenger = \Drupal::messenger();
-
-    $new_property = 'entity_id';
-    // This is the list of Chado fields needing an entity_id
-    $upgradable_types = [
-      'chado_analysis_type_default',
-      'chado_array_design_type_default',
-      'chado_assay_type_default',
-      'chado_biomaterial_type_default',
-      'chado_contact_type_default',
-      'chado_feature_type_default',
-      'chado_featuremap_type_default',
-      'chado_organism_type_default',
-      'chado_project_type_default',
-      'chado_protocol_type_default',
-      'chado_pub_type_default',
-      'chado_stock_type_default',
-      'chado_study_type_default',
-    ];
-    $entity_type = 'tripal_entity';
-
-    $manager = \Drupal::entityDefinitionUpdateManager();
-    $schema = \Drupal::database()->schema();
-    $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
-    $field_map = \Drupal::service('entity_field.manager')->getFieldMap();
-    $fields = $field_map[$entity_type];
-    $n_added = 0;
-
-    foreach ($fields as $field_name => $field_def) {
-      $id = $field_def['type'];
-      if (in_array($id, $upgradable_types, TRUE)) {
-        $field_storage_definition = $manager->getFieldStorageDefinition($field_name, 'tripal_entity');
-        if ($field_storage_definition) {
-          $field_schema = $field_storage_definition->getSchema();
-          $table_mapping = $storage->getTableMapping([$field_name => $field_storage_definition]);
-          $table_names = $table_mapping->getDedicatedTableNames();
-          $columns = $table_mapping->getColumnNames($field_name);
-
-          foreach ($table_names as $table_name) {
-            $table_exists = $schema->tableExists($table_name);
-            if ($table_exists) {
-              $field_exists = $schema->fieldExists($table_name, $columns[$new_property]);
-              if (!$field_exists) {
-                $messenger->addMessage(t("Adding entity id to Drupal table \"@table_name\", field \"@field_name\"",
-                    ['@table_name' => $table_name, '@field_name' => $field_name]));
-                $schema->addField($table_name, $columns[$new_property], $field_schema['columns'][$new_property]);
-                $manager->updateFieldStorageDefinition($field_storage_definition);
-                $n_added++;
-              }
-            }
-          }
-        }
-      }
-    }
-    $messenger->addMessage(t("Added @n_added entity id properties", ['@n_added' => $n_added]));
-  }
-  catch (\Exception $e) {
-    throw new UpdateException('Could not add entity id to fields: ' . $e->getMessage());
-  }
-}
 
 /**
  * Adds or updates several properties added to the
@@ -528,5 +468,80 @@ function tripal_chado_update_10404() {
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not update property: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Updates entity_id properties added to linking fields in PR 1782 and PR 1865
+ * This is the same as former tripal_chado_update_10403 but we need to run it again
+ */
+function tripal_chado_update_10405() {
+  try {
+    $messenger = \Drupal::messenger();
+
+    $new_property = 'entity_id';
+    // This is the list of Chado fields needing an entity_id
+    $upgradable_types = [
+      'chado_analysis_type_default',
+      'chado_array_design_type_default',
+      'chado_assay_type_default',
+      'chado_biomaterial_type_default',
+      'chado_contact_type_default',
+      'chado_feature_type_default',
+      'chado_featuremap_type_default',
+      'chado_organism_type_default',
+      'chado_project_type_default',
+      'chado_protocol_type_default',
+      'chado_pub_type_default',
+      'chado_stock_type_default',
+      'chado_study_type_default',
+    ];
+    $entity_type = 'tripal_entity';
+
+    $manager = \Drupal::entityDefinitionUpdateManager();
+    $schema = \Drupal::database()->schema();
+    $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
+    $field_map = \Drupal::service('entity_field.manager')->getFieldMap();
+    $fields = $field_map[$entity_type];
+    $n_added = 0;
+    $n_updated = 0;
+
+    foreach ($fields as $field_name => $field_def) {
+      $id = $field_def['type'];
+      if (in_array($id, $upgradable_types, TRUE)) {
+        $field_storage_definition = $manager->getFieldStorageDefinition($field_name, 'tripal_entity');
+        if ($field_storage_definition) {
+          $field_schema = $field_storage_definition->getSchema();
+          $table_mapping = $storage->getTableMapping([$field_name => $field_storage_definition]);
+          $table_names = $table_mapping->getDedicatedTableNames();
+          $columns = $table_mapping->getColumnNames($field_name);
+
+          foreach ($table_names as $table_name) {
+            $table_exists = $schema->tableExists($table_name);
+            if ($table_exists) {
+              $field_exists = $schema->fieldExists($table_name, $columns[$new_property]);
+              if ($field_exists) {
+                $messenger->addMessage(t("Updating entity id in Drupal table \"@table_name\", field \"@field_name\"",
+                    ['@table_name' => $table_name, '@field_name' => $field_name]));
+                $schema->changeField($table_name, $columns[$new_property], $columns[$new_property], $field_schema['columns'][$new_property]);
+                $n_updated++;
+              }
+              else {
+                $messenger->addMessage(t("Adding entity id to Drupal table \"@table_name\", field \"@field_name\"",
+                    ['@table_name' => $table_name, '@field_name' => $field_name]));
+                $schema->addField($table_name, $columns[$new_property], $field_schema['columns'][$new_property]);
+                $n_added++;
+              }
+            }
+          }
+        }
+        $manager->updateFieldStorageDefinition($field_storage_definition);
+      }
+    }
+    $messenger->addMessage(t("Added @n_added entity id properties, updated @n_updated entity id properties",
+        ['@n_added' => $n_added, '@n_updated' => $n_updated]));
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not add entity id to fields: ' . $e->getMessage());
   }
 }
