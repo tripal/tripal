@@ -475,6 +475,8 @@ fields:
             default:
               region: content
               weight: 45
+              settings:
+                filter_format: plain_text
 
     -   name: analysis_pub
         content_type: analysis
@@ -756,6 +758,8 @@ fields:
             default:
               region: content
               weight: 10
+              settings:
+                filter_format: plain_text
 
     -   name: study_description
         content_type: study
@@ -1009,6 +1013,8 @@ fields:
             default:
               region: content
               weight: 10
+              settings:
+                filter_format: plain_text
 
     -   name: protocol_uri
         content_type: protocol
@@ -1035,6 +1041,8 @@ fields:
             default:
               region: content
               weight: 15
+              settings:
+                filter_format: plain_text
 
     -   name: protocol_description
         content_type: protocol
@@ -1087,32 +1095,6 @@ fields:
             default:
               region: content
               weight: 25
-
-    -   name: protocol_hardware
-        content_type: protocol
-        label: Hardware
-        type: chado_text_type_default
-        description: An instrument is a device which provides a mechanical or electronic function.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: protocol
-                base_column: hardwaredescription
-        settings:
-            termIdSpace: EFO
-            termAccession: "0000548"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 29
-          form:
-            default:
-              region: content
-              weight: 29
 
     -   name: protocol_software
         content_type: protocol
@@ -1974,6 +1956,8 @@ fields:
             default:
               region: content
               weight: 34
+              settings:
+                filter_format: plain_text
 
     -   name: pub_dbxref
         content_type: pub

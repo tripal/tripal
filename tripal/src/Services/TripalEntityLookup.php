@@ -226,31 +226,36 @@ class TripalEntityLookup {
   protected function getRequiredFields($bundle_id, $entity_type) {
     $field_list = [];
     $cache_id = 'tripal_required_fields';
+
     // Get cached value if available
     if ($cache = \Drupal::cache()->get($cache_id)) {
       $field_list = $cache->data;
+      if (array_key_exists($bundle_id, $field_list)) {
+        return $field_list[$bundle_id];
+      }
     }
-    else {
-      // Get and cache values. Look up every bundle so that
-      // we only have to cache once. Takes about 1/10 second.
-      $entityFieldManager = \Drupal::service('entity_field.manager');
-      $bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo($entity_type);
-      foreach ($bundles as $bundle_name => $bundle_info) {
-        $fields = $entityFieldManager->getFieldDefinitions($entity_type, $bundle_name);
-        foreach ($fields as $field_name => $field_info) {
-          $storage_settings = $field_info->getSetting('storage_plugin_settings');
-          $base_table = $storage_settings['base_table'] ?? '';
-          $base_column = $storage_settings['base_table_dependant']['base_column']
-              ?? $storage_settings['base_column'] ?? '';
-          $is_required = $field_info->isRequired();
-          if ($is_required and $base_table and $base_column) {
-            $field_list[$bundle_name][$field_name] = $base_table;
-          }
+
+    // Get and cache values. Look up every bundle so that
+    // we only have to cache once. Takes about 1/10 second.
+    $entityFieldManager = \Drupal::service('entity_field.manager');
+    $bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo($entity_type);
+    foreach ($bundles as $bundle_name => $bundle_info) {
+      $fields = $entityFieldManager->getFieldDefinitions($entity_type, $bundle_name);
+      foreach ($fields as $field_name => $field_info) {
+        $storage_settings = $field_info->getSetting('storage_plugin_settings');
+        $base_table = $storage_settings['base_table'] ?? '';
+        $base_column = $storage_settings['base_table_dependant']['base_column']
+            ?? $storage_settings['base_column'] ?? '';
+        $is_required = $field_info->isRequired();
+        if ($is_required and $base_table and $base_column) {
+          $field_list[$bundle_name][$field_name] = $base_table;
         }
       }
-      // Cache the values, specifying expiration in 1 hour.
-      \Drupal::cache()->set($cache_id, $field_list, \Drupal::time()->getRequestTime() + (3600));
     }
+
+    // Cache the values, specifying expiration in 1 hour.
+    \Drupal::cache()->set($cache_id, $field_list, \Drupal::time()->getRequestTime() + (3600));
+
     return $field_list[$bundle_id] ?? NULL;
   }
 
