@@ -124,7 +124,7 @@ class TripalContentFieldsForm implements FormInterface {
     $invalid_fields = [];
     $invalid_defaults = [];
     foreach ($fields['invalid'] as $field) {
-      $invalid_fields[$field['name']] = $field['label'] . " (" . $field['name'] . "): " . $field['description'];
+      $invalid_fields[$field['name']] = $field['label'] . " (" . $field['name'] . "): " . $field['description']. '. Invalid Reason: ' . $field['invalid_reason'];;
     }
     $invalid_fields_desc = t('The following fields do not pass validation tests. They need correction by the module developer and cannot be added.');
     if (empty($invalid_fields_desc)) {
