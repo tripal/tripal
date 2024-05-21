@@ -16,6 +16,14 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 class TripalFieldCollectionTest extends TripalTestBrowserBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected static $modules = [
+    'tripal_test',
+  ];
+
+
+  /**
    * Tests the TripalContentTypes class public functions.
    */
   public function testTripalFieldCollection() {
@@ -246,5 +254,41 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     $bad['settings']['termAccession'] = 'XYZPDQ';
     $is_added = $fields_service->addBundleField($bad);
     $this->assertFalse($is_added, "A bad field definition with an incorrect 'termAccession' should have not been added.");
+
+    // -------------------------------------------------------------
+    // Tests for field discovery
+    // -------------------------------------------------------------
+
+    // Test that the discover function works by providing the default keys.
+    $discovered_fields = $fields_service->discover($content_type);
+    $this->assertTrue(array_key_exists('new', $discovered_fields), "Missing the 'new' key in the array returned by the discover() function.");
+    $this->assertTrue(array_key_exists('existing', $discovered_fields), "Missing the 'existing' key in the array returned by the discover() function.");
+    $this->assertTrue(array_key_exists('invalid', $discovered_fields), "Missing the 'invalid' key in the array returned by the discover() function.");
+
+    // The TripalTestTextTypeItem is a test field provided in
+    // the `tripal_test` module which is included as a new module
+    // in testing. There we'll find a discover method that should
+    // return various types of fields.  We'll make sure we see
+    // those fields as expected.
+
+    // Make sure we see a valid field
+    //print_r($discovered_fields);
+    $this->assertTrue(array_key_exists('organism_test_field', $discovered_fields['new']), "Missing the 'organism_test_field' key in the 'new' array returned by the discover() function.");
+
+    // Make sure we have an invalid field. We don't need to test every
+    // case where a field may be invalid. That happens above. We just need to
+    // make sure that if a field is invalid that it is listed in the invalid
+    // section with the reason included.
+    $this->assertTrue(array_key_exists('organism_test_field2', $discovered_fields['invalid']), "The 'organism_test_field2' key should be in the 'invalid' array returned by the discover() function.");
+
+    // Now add the valid field to the content type. and check to make sure
+    // it is listed as `existing` afterwards when discover() is called again.
+    $is_added = $fields_service->addBundleField($discovered_fields['new']['organism_test_field']);
+    $this->assertTrue($is_added, "A valid field definition from the discover() method failed to be added to the content type.");
+    $discovered_fields = $fields_service->discover($content_type);
+    $this->assertTrue(array_key_exists('organism_test_field', $discovered_fields['existing']), "Missing the 'organism_test_field' key in the 'existing' array returned by the discover() function.");
+
   }
+
+
 }
