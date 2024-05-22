@@ -150,6 +150,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'drupal_store' => TRUE,
       'namespace' => self::$chadostorage_namespace,
       'function' => self::$drupal_entity_callback,
+      'ftable' => self::$object_table,
       'fkey' => self::$object_id,
     ]);
 
