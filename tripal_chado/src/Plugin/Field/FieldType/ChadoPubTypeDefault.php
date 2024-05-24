@@ -91,7 +91,6 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
 
     // Columns specific to the object table
     $title_term = $mapping->getColumnTermId($object_table, 'title'); // text
@@ -163,7 +162,8 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
       'drupal_store' => TRUE,
       'namespace' => self::$chadostorage_namespace,
       'function' => self::$drupal_entity_callback,
-      'fkey' => self::$object_id,
+      'ftable' => self::$object_table,
+      'fkey' => $linker_fkey_column,
     ]);
 
     // Base table links directly

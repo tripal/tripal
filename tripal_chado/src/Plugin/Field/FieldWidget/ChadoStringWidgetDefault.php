@@ -3,7 +3,6 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\tripal\Plugin\Field\FieldWidget\TripalStringTypeWidget;
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
