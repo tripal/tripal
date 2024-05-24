@@ -568,10 +568,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // `tripal_load_listing` session variable to TRUE.  If it is TRUE then
     // we skip this. @todo: in the future if we want to only attach
     // specific fields we can get more fancy.
-    $session = \Drupal::request()->getSession();
-    $is_listing = $session->get('tripal_load_listing');
-    if ($is_listing === TRUE) {
-      return;
+    if (\Drupal::request()->hasSession()) {
+      $session = \Drupal::request()->getSession();
+      $is_listing = $session->get('tripal_load_listing');
+      if ($is_listing === TRUE) {
+        return;
+      }
     }
 
     $entity_type_id = $storage->getEntityTypeId();

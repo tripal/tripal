@@ -93,20 +93,14 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
     $name_term = $mapping->getColumnTermId($object_table, 'name');
-    $name_len = $object_schema_def['fields']['name']['size'];
     $uniquename_term = $mapping->getColumnTermId($object_table, 'uniquename');  // text
     $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
     $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete');  // boolean
 
     // Columns from linked tables
-    $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
     $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
-    $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
-    $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
     $db_term = $mapping->getColumnTermId('db', 'name');
-    $db_len = $db_schema_def['fields']['name']['size'];
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
     $stock_type_term = $mapping->getColumnTermId('cvterm', 'name');
     $stock_type_len = $cvterm_schema_def['fields']['name']['size'];
@@ -159,6 +153,17 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
+    ]);
+
+    // This property will store the Drupal entity ID of the linked chado
+    // record, if one exists.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => self::$chadostorage_namespace,
+      'function' => self::$drupal_entity_callback,
+      'ftable' => self::$object_table,
+      'fkey' => $linker_fkey_column,
     ]);
 
     // Base table links directly

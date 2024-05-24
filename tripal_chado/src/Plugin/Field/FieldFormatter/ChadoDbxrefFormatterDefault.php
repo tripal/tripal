@@ -59,6 +59,11 @@ class ChadoDbxrefFormatterDefault extends ChadoFormatterBase {
         'db_url' => $item->get('dbxref_db_url')->getString(),
       ];
 
+      // If this database does not have a urlprefix, generate a default one.
+      if (($values['db_name'] or $values['accession']) and !$values['db_urlprefix']) {
+        $values['db_urlprefix'] = '{db}:{accession}';
+      }
+
       // Substitue db or accession into db_urlprefix
       $values['db_urlprefix'] = preg_replace('/\{db\}/', $values['db_name'], $values['db_urlprefix']);
       $values['db_urlprefix'] = preg_replace('/\{accession\}/', $values['accession'], $values['db_urlprefix']);

@@ -53,7 +53,8 @@ function tripal_chado_config_schema_info_alter(&$definitions) {
     'label' => 'Entity Third Party Setting for Base Chado Table',
     'nullable' => true
   ];
-  $definitions['tripal.content_type.*']['mapping']['third_party_settings']['mapping']['tripal']['mapping']['chado_base_table'] = [
+
+  $definitions['tripal.content_type.*']['mapping']['third_party_settings']['sequence']['mapping']['chado_base_table'] = [
     'type' => 'string',
     'label' => 'Entity Third Party Setting for Base Chado Table',
     'nullable' => true

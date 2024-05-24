@@ -220,6 +220,8 @@ fields:
             default:
               region: content
               weight: 15
+              settings:
+                filter_format: plain_text
 
     -   name: qtl_sequence
         content_type: QTL
@@ -594,6 +596,8 @@ fields:
             default:
               region: content
               weight: 15
+              settings:
+                filter_format: plain_text
 
     -   name: sequence_variant_sequence
         content_type: sequence_variant
@@ -967,6 +971,8 @@ fields:
             default:
               region: content
               weight: 15
+              settings:
+                filter_format: plain_text
 
     -   name: genetic_marker_sequence
         content_type: genetic_marker
@@ -1340,6 +1346,8 @@ fields:
             default:
               region: content
               weight: 15
+              settings:
+                filter_format: plain_text
 
     -   name: phenotypic_marker_sequence
         content_type: phenotypic_marker
