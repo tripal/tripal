@@ -3,7 +3,6 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\tripal\Plugin\Field\FieldWidget\TripalBooleanTypeWidget;
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -28,7 +27,6 @@ class ChadoBooleanWidgetDefault extends TripalBooleanTypeWidget {
 
     $item_vals = $items[$delta]->getValue();
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
-    $default_value = !empty($item_vals['record_id']);
     $element['record_id'] = [
       '#default_value' => !empty($item_vals['record_id']),
     ];
