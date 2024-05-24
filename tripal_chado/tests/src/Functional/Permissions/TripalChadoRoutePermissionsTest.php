@@ -25,6 +25,8 @@ class TripalChadoRoutePermissionsTest extends BrowserTestBase {
    *
    */
   public function testTripalChadoAdminPages() {
+    $this->assertTrue(\Drupal::request()->hasSession(),
+      'This test depends on having a session but for some reason there is not one available.');
     $session = $this->getSession();
 
     // The URLs to check with the key being the label expected in the

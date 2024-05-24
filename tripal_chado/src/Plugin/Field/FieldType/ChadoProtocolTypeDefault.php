@@ -90,7 +90,6 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);
 
     // Columns specific to the object table
     $name_term = $mapping->getColumnTermId($object_table, 'name');  // text
@@ -104,12 +103,8 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     $protocol_type_term = $mapping->getColumnTermId('cvterm', 'name');
     $protocol_type_len = $cvterm_schema_def['fields']['name']['size'];
     $pub_title_term = $mapping->getColumnTermId('pub', 'title');
-    $dbxref_schema_def = $schema->getTableDef('dbxref', ['format' => 'Drupal']);
     $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
-    $dbxref_len = $dbxref_schema_def['fields']['accession']['size'];
-    $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
     $db_term = $mapping->getColumnTermId('db', 'name');
-    $db_len = $db_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
@@ -146,6 +141,17 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
+    ]);
+
+    // This property will store the Drupal entity ID of the linked chado
+    // record, if one exists.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => self::$chadostorage_namespace,
+      'function' => self::$drupal_entity_callback,
+      'ftable' => self::$object_table,
+      'fkey' => $linker_fkey_column,
     ]);
 
     // Base table links directly
