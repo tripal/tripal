@@ -57,6 +57,12 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $base_table = array_key_exists('base_table', $settings) ? $settings['base_table'] : NULL;
     $prop_table = array_key_exists('prop_table', $settings) ? $settings['prop_table'] : NULL;
 
+    // If we don't have a base table then we're not ready to specify the
+    // properties for this field.
+    if (!$base_table) {
+      return;
+    }
+
     // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
