@@ -22,6 +22,12 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
   protected $project_Accession = 'C47885';
   protected $analysis_termIdSpace = 'operation';
   protected $analysis_Accession = '2945';
+  protected $contact_termIdSpace = 'NCIT';
+  protected $contact_Accession = 'C47954';
+  protected $array_design_termIdSpace = 'EFO';
+  protected $array_design_Accession = '0000269';
+  protected $manufacturer_termIdSpace = 'EFO';
+  protected $manufacturer_Accession = '0001728';
 
   /**
    * {@inheritdoc}
@@ -62,19 +68,36 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
         ])->execute();
     }
 
+    // Create one contact in chado.
+    $this->connection->insert('1:contact')
+      ->fields([
+        'name' => 'Contact No. 1',
+      ])->execute();
+
+    // Create one arraydesign in chado, to test the mismatched
+    // foreign key names manufacturer_id -> contact_id
+    $this->connection->insert('1:arraydesign')
+      ->fields([
+        'name' => 'ArrayDesign No. 1',
+        'platformtype_id' => 1,  // not used, whatever the very first cvterm is
+        'manufacturer_id' => 2,  // 1 is the null contact, defined by chado
+      ])->execute();
+
     // Create the terms for the field property storage types.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    foreach(['local', 'SIO', 'schema', 'data', 'NCIT', 'operation', 'OBCS', 'SWO', 'IAO', 'TPUB', 'SBO', 'ERO'] as $termIdSpace) {
+    foreach(['local', 'SIO', 'schema', 'data', 'NCIT', 'operation', 'OBCS', 'SWO', 'IAO', 'TPUB', 'SBO', 'sep', 'ERO', 'EFO'] as $termIdSpace) {
       $idsmanager->createCollection($termIdSpace, "chado_id_space");
     }
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    foreach(['local', 'SIO', 'schema', 'EDAM', 'ncit', 'OBCS', 'swo', 'IAO', 'tripal_pub', 'sbo', 'ero'] as $termVocab) {
+    foreach(['local', 'SIO', 'schema', 'EDAM', 'ncit', 'OBCS', 'swo', 'IAO', 'tripal_pub', 'sbo', 'sep', 'ero', 'efo'] as $termVocab) {
       $vmanager->createCollection($termVocab, "chado_vocabulary");
     }
 
     // Create the content types + fields that we need.
     $this->createContentTypeFromConfig('general_chado', 'project', TRUE);
     $this->createContentTypeFromConfig('general_chado', 'analysis', TRUE);
+    $this->createContentTypeFromConfig('general_chado', 'contact', TRUE);
+    $this->createContentTypeFromConfig('expression_chado', 'array_design', TRUE);
   }
 
   /**
@@ -86,21 +109,21 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     $drupal = \Drupal::service('database');
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
     $current_user = \Drupal::currentUser();
-    $values = ["schema_name" => $this->testSchemaName];
+    $publish_options = ["schema_name" => $this->testSchemaName];
     $datastore = 'chado_storage';
 
     // Publish the test content entities and confirm that they have been created.
     // Submit the Tripal jobs by calling the callback directly.
     $bundle = 'project';
-    tripal_publish($bundle, $datastore, $values);
-    $project_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'project']);
+    tripal_publish($bundle, $datastore, $publish_options);
+    $project_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
 
     $this->assertCount(3, $project_entities,
       "We expected there to be the same number of project entities as we inserted.");
 
     $bundle = 'analysis';
-    tripal_publish($bundle, $datastore, $values);
-    $analysis_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'analysis']);
+    tripal_publish($bundle, $datastore, $publish_options);
+    $analysis_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
     $this->assertCount(3, $analysis_entities,
       "We expected there to be the same number of analysis entities as we inserted.");
 
@@ -113,6 +136,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
         $project_id,
         $this->project_termIdSpace,
         $this->project_Accession,
+        NULL
       );
       $this->assertEquals($expected_entity_id, $entity_id, "We did not retrieve the expected entity_id for project $project_id");
     }
@@ -122,6 +146,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
         $analysis_id,
         $this->analysis_termIdSpace,
         $this->analysis_Accession,
+        NULL
       );
       $this->assertEquals($expected_entity_id, $entity_id, "We did not retrieve the expected entity_id for analysis $analysis_id");
     }
@@ -132,6 +157,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
       $analysis_id,
       $this->analysis_termIdSpace,
       $this->analysis_Accession,
+      NULL
     );
     $this->assertNull($entity_id, 'We retrieved an entity_id for a nonexistent record');
 
@@ -141,6 +167,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
       $analysis_id,
       $this->analysis_termIdSpace,
       'not-a-real-accession',
+      NULL
     );
     $this->assertNull($entity_id, 'We retrieved an entity_id for an invalid CV accession');
 
@@ -172,5 +199,49 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
       $ids = $query->execute();
       $this->assertEquals(1, count($ids), "Expected exactly one match from $entity_table_name query");
     }
+
+    // Sometimes foreign key names are different than the object table
+    // primary key, e.g. arraydesign table column manufacturer_id is
+    // a foreign key to the contact table column contact_id.
+
+    // Publish the (null and) test contact and arraydesign entities and confirm that they have been created.
+    $bundle = 'contact';
+    tripal_publish($bundle, $datastore, $publish_options);
+    $contact_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
+    // Expect 2 here instead of 1 because the null contact will also be published - Issue #1809
+    $this->assertCount(2, $contact_entities,
+      "We expected there to be the same number of $bundle entities as we inserted plus one.");
+
+    $bundle = 'array_design';  // not the same as the table name
+    tripal_publish($bundle, $datastore, $publish_options);
+    $arraydesign_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
+    $this->assertCount(1, $arraydesign_entities,
+      "We expected there to be the same number of $bundle entities as we inserted.");
+
+    // The entity lookup from arraydesign manufacturer_id should
+    // retrieve the entity for the contact_id we published, internally
+    // this uses the fallback entity lookup function getDefaultBundle(),
+    // because the term for manufacturer_id is NOT a content type.
+    // For the fallback lookup we need to also pass the base table.
+    $base_table = 'contact';
+    $chado_contact_id = 2;  // 1 is the null contact
+    $expected_contact_entity_id = 8; // 1-3: project, 4-6: analysis, 7: null contact, 8: test contact, 9: array_design
+    $entity_id = $lookup_manager->getEntityId(
+      $chado_contact_id,
+      $this->manufacturer_termIdSpace,
+      $this->manufacturer_Accession,
+      $base_table
+    );
+    $this->assertEquals($expected_contact_entity_id, $entity_id, "We did not retrieve the expected entity_id for manufacturer_id $chado_contact_id");
+
+    // Also check that the contact_id (as manufacturer_id) is in the Drupal table
+    $entity_table_name = 'tripal_entity__array_design_manufacturer';
+    $entity_column_name = 'array_design_manufacturer_record_id';
+    $query = \Drupal::entityQuery('tripal_entity')
+      ->condition('type', 'array_design')
+      ->condition('array_design_manufacturer.manufacturer_id', $chado_contact_id, '=')
+      ->accessCheck(TRUE);
+    $ids = $query->execute();
+    $this->assertEquals(1, count($ids), "Expected exactly one match from array_design manufacturer query");
   }
 }

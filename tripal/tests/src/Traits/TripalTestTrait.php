@@ -242,6 +242,8 @@ trait TripalTestTrait {
    *   added if there is a tripalfield_collection with this same id.
    * @param string $content_type_id
    *   The id of the content type to create. It must exist in the specified YAML.
+   * @param bool $createTerms
+   *   Not implemented
    *
    * @return integer
    *   The return value is 1 if everything went well and 2 if the content type
@@ -253,6 +255,7 @@ trait TripalTestTrait {
     $field_service = \Drupal::service('tripal.tripalfield_collection');
     $config_factory = \Drupal::service('config.factory');
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity_type');
 
     // FIRST THE CONTENT TYPE.
     $yaml_contentTypes = 'tripal.tripalentitytype_collection.' . $config_id;
@@ -279,9 +282,18 @@ trait TripalTestTrait {
       $content_type['term'] = $term;
 
       // Add the content type
-      $content_type = $content_type_service->createContentType($content_type);
-      $this->assertIsObject($content_type,
+      $added_content_type = $content_type_service->createContentType($content_type);
+      $this->assertIsObject($added_content_type,
         "We were not able to create the $content_type_id content type in the testing environment.");
+
+      // Set the third party setting for base table
+      $base_table = $content_type['settings']['chado_base_table'] ?? NULL;
+      $this->assertNotNull($base_table, "There is no YAML base table setting for content type $content_type_id");
+      $entity_type = $storage->load($content_type_id);
+      $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $base_table);
+      $entity_type->save();
+      $table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+      $this->assertEquals($base_table, $table, "We did not retrieve the correct third party base table setting for $content_type_id");
     }
 
     // NOW THE FIELDS
