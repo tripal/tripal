@@ -26,7 +26,7 @@ class TripalContentFieldsForm implements FormInterface {
     $tripal_field_collection = \Drupal::service('tripal.tripalfield_collection');
     $fields = $tripal_field_collection->discover($tripal_entity_type);
 
-    // Save the tripal entit type for use in the form submit.
+    // Save the tripal entity type for use in the form submit.
     $form['tripal_entity_type'] = [
       '#type' => 'value',
       '#value' => $tripal_entity_type,
