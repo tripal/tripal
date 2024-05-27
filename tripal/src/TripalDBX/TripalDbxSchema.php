@@ -697,6 +697,10 @@ EOD;
    *   The name of the table the foreign key resides in. E.g. 'feature' for
    *   the feature.type_id => cvterm.cvterm_id foreign key.
    * @param string $right_table
+   *   The name of the table the foreign key refers to. For the example
+   *   above it would be cvterm.
+   * @return array
+   *    The foreign key definition
    */
   public function getForeignKeyDef(string $left_table, string $right_table) {
     $left_def = $this->getTableDef($left_table, ['format' => 'Drupal']);
@@ -707,12 +711,16 @@ EOD;
   }
 
   /**
-   * If a FK exists between two tables, return the left and right columns.
+   * Indicates whether a FK exists between two tables.
    *
    * @param string $left_table
    *   The name of the table the foreign key resides in. E.g. 'feature' for
    *   the feature.type_id => cvterm.cvterm_id foreign key.
    * @param string $right_table
+   *   The name of the table the foreign key refers to. For the example
+   *   above it would be cvterm.
+   * @return bool
+   *   TRUE if a foreign key exists, FALSE if not.
    */
   public function foreignKeyExists(string $left_table, string $right_table) {
     $left_def = $this->getForeignKeyDef($left_table, $right_table);
