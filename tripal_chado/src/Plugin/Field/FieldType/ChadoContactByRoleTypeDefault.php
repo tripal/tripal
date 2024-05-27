@@ -132,6 +132,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     $field_settings = $field_definition->getSettings();
     $term = $field_settings['termIdSpace'] . ':' . $field_settings['termAccession'];
     $table_alias = $linker_table . '_' . preg_replace( '/[^a-z0-9]+/', '', strtolower( $term ) );
+    $table_mapping = [$table_alias => $linker_table];
 
     // FINALLY, THE PROPERTIES!
     $properties = [];
@@ -159,7 +160,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_pkey',
       'drupal_store' => TRUE,
       'path' => $table_alias . '.' . $linker_pkey_col,
-      'table_alias_mapping' => [$table_alias => $linker_table],
+      'table_alias_mapping' => $table_mapping,
     ]);
 
     // Define the link between the base table and the linker table.
@@ -167,7 +168,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $linker_left_col,
-      'table_alias_mapping' => [$table_alias => $linker_table],
+      'table_alias_mapping' => $table_mapping,
     ]);
 
     // Define the link between the linker table and the object table.
@@ -175,7 +176,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'action' => 'store',
       'drupal_store' => TRUE,
       'path' => $table_alias . '.' . $linker_fkey_column,
-      'table_alias_mapping' => [$table_alias => $linker_table],
+      'table_alias_mapping' => $table_mapping,
       'delete_if_empty' => TRUE,
       'empty_value' => 0,
     ]);
@@ -185,7 +186,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'action' => 'store',
       'drupal_store' => FALSE,
       'path' => $table_alias . '.type_id',
-      'table_alias_mapping' => [$table_alias => $linker_table],
+      'table_alias_mapping' => $table_mapping,
       'as' => 'linker_type_id',
     ]);
 
@@ -194,7 +195,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'action' => 'store',
       'drupal_store' => FALSE,
       'path' => $table_alias . '.rank',
-      'table_alias_mapping' => [$table_alias => $linker_table],
+      'table_alias_mapping' => $table_mapping,
       'as' => 'linker_rank',
     ]);
 
@@ -204,8 +205,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $table_alias . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
-
-      'table_alias_mapping' => [$table_alias => $linker_table],
+      'table_alias_mapping' => $table_mapping,
       'as' => 'contact_name',
     ]);
 
@@ -214,7 +214,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $table_alias . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';description',
-      'table_alias_mapping' => [$table_alias => $linker_table],
+      'table_alias_mapping' => $table_mapping,
       'as' => 'contact_description',
     ]);
 
@@ -224,7 +224,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
       'drupal_store' => FALSE,
       'path' => $table_alias . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
         . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
-      'table_alias_mapping' => [$table_alias => $linker_table],
+      'table_alias_mapping' => $table_mapping,
       'as' => 'contact_type',
     ]);
 
