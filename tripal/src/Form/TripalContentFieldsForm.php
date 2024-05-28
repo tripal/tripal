@@ -183,8 +183,6 @@ class TripalContentFieldsForm implements FormInterface {
 
     /** @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields **/
     $tripal_field_collection = \Drupal::service('tripal.tripalfield_collection');
-    $fields = $tripal_field_collection->discover($tripal_entity_type);
-
     foreach ($add_fields as $field_name => $is_checked) {
       $field = $fields['new'][$field_name];
       if($is_checked) {
