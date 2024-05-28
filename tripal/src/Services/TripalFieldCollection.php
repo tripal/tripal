@@ -204,7 +204,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    * Fields can be specified in one of 2 ways.  Using the installation method
    * where they are specified by a YML file created by the module developer or
    * by fields that have a discover() function implemented. This function
-   * supports adding new fields to the collection using the discover apprach.
+   * supports adding new fields to the collection using the discover approach.
    *
    * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
    *   The object representing the bundle.
