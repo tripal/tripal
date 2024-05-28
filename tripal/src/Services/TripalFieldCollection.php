@@ -233,7 +233,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs);
         foreach ($discovered as $discovered_field) {
 
-          // If the doscovered field already exists then mark it as existing.
+          // If the discovered field already exists then mark it as existing.
           if (array_key_exists($discovered_field['name'], $entity_field_defs)) {
             $field_status['existing'][$discovered_field['name']] = $discovered_field;
             continue;
