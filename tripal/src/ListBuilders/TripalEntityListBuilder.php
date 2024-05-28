@@ -36,8 +36,11 @@ class TripalEntityListBuilder extends EntityListBuilder {
     $type_name = $entity->getType();
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($type_name);
 
+    // @todo this variable could be made global and configurable
+    $tripal_allowed_tags = ['em','strong'];
+    $sanitized_value = Drupal\Component\Utility\Xss::filter($entity->getTitle(), $tripal_allowed_tags);
     $row['title'] = Link::fromTextAndUrl(
-      new FormattableMarkup($entity->getTitle(), []),
+      new FormattableMarkup($sanitized_value, []),
       $entity->toUrl('canonical', ['tripal_entity' => $entity->id()])
     )->toString();
 
