@@ -19,6 +19,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
    * {@inheritdoc}
    */
   protected static $modules = [
+    'tripal',
     'tripal_test',
   ];
 
