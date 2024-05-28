@@ -26,7 +26,7 @@ class TripalContentFieldsForm implements FormInterface {
     $tripal_field_collection = \Drupal::service('tripal.tripalfield_collection');
     $fields = $tripal_field_collection->discover($tripal_entity_type);
 
-    // Save the tripal entit type for use in the form submit.
+    // Save the tripal entity type for use in the form submit.
     $form['tripal_entity_type'] = [
       '#type' => 'value',
       '#value' => $tripal_entity_type,
@@ -50,7 +50,7 @@ class TripalContentFieldsForm implements FormInterface {
           . 'discovered. Fields that are new can be added to the content type '
           . 'by selecting them and clicking the "Add Fields" button. Fields '
           . 'that were discovered but already added are shown but cannot be '
-          . 'added again. For module developers, fields that do no pass '
+          . 'added again. For module developers, fields that do not pass '
           . 'validation checks are also shown but cannot be added'),
     ];
 

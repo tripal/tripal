@@ -130,7 +130,7 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * Fields are added to Tripal using the tripal.tripalfield_collection.*
    * configuration file during installation of a module.  In some cases,
    * however, not all possible instances of a field can be added to a content
-   * type at installation of the module.  This function can be called to disover
+   * type at installation of the module.  This function can be called to discover
    * if new instances of a field are appropraite for a given content type.  An
    * example of this is the `chado_property_type_default` field.  This function
    * should examine its storage backend and return a list of new fields
