@@ -314,7 +314,9 @@ SELECT
       $form_state->setErrorByName('schema', $error);
     }
 
-    // When adding a new materialized view, make sure that it is not an existing materialized view. We check for uniqueness by combining table name and schema, as some sites may have more than one instance of Chado installed. 
+// When adding a new materialized view, make sure that it is not an existing 
+// materialized view.  We check for uniqueness by combining table name and 
+// schema, as some sites may have more than one instance of Chado installed,
     if ($action == 'Add') {
       $table = $schema_arr['table'];
 
