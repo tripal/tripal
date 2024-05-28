@@ -51,11 +51,16 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    */
   public static function tripalTypes($field_definition) {
 
+
     // Create variables for easy access to settings.
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = array_key_exists('base_table', $settings) ? $settings['base_table'] : NULL;
     $prop_table = array_key_exists('prop_table', $settings) ? $settings['prop_table'] : NULL;
+
+    if (!$base_table) {
+      return;
+    }
 
     // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
@@ -271,7 +276,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
         'content_type' => $bundle->getID(),
         'label' => ucwords($recprop->cvterm_name),
         'type' => self::$id,
-        'description' => 'A record property with the following definition: ' . $recprop->definition,
+        'description' => $recprop->definition ? 'A record property with the following definition: ' . $recprop->definition : '',
         'cardinality' => -1,
         'required' => False,
         'storage_settings' => [

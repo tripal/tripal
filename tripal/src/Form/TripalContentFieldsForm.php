@@ -82,10 +82,14 @@ class TripalContentFieldsForm implements FormInterface {
     $new_fields = [];
     $new_defaults = [];
     foreach ($fields['new'] as $field) {
-      $new_fields[$field['name']] = $field['label'] . " (" . $field['name'] . "): " . $field['description'];
+      $new_fields[$field['name']] = $field['label'] . " (" . $field['name'] . ")";
+      if ($field['description']) {
+        $new_fields[$field['name']] .= ': ' . $field['description'];
+      }
       $new_defaults[] = $field['name'];
     }
-    $new_fields_desc = t('The following is a list of new fields that are compatible with this content type. Select those you want to add.');
+    $new_fields_desc = t('The following is a list of new fields that are '
+      . 'compatible with this content type. Select those you want to add.');
     if (empty($new_fields)) {
       $new_fields_desc = t('No new fields were found for this content type');
     }
@@ -103,10 +107,15 @@ class TripalContentFieldsForm implements FormInterface {
     $existing_fields = [];
     $existing_defaults = [];
     foreach ($fields['existing'] as $field) {
-      $existing_fields[$field['name']] = $field['label'] . " (" . $field['name'] . "): " . $field['description'];
+      $existing_fields[$field['name']] = $field['label'] . " (" . $field['name'] . ")";
+      if ($field['description']) {
+        $existing_fields[$field['name']] .= ": " . $field['description'];
+      }
       $existing_defaults[] = $field['name'];
     }
-    $existing_fields_desc = t('The following is a list of fields that were discovered but which are already attached to this content type. They are shown here but cannot be added again.');
+    $existing_fields_desc = t('The following is a list of fields that were '
+      . 'discovered but which are already attached to this content type. They '
+      . 'are shown here but cannot be added again.');
     if (empty($existing_fields)) {
       $existing_fields_desc = t('No new fields were found for this content type');
     }
@@ -124,9 +133,14 @@ class TripalContentFieldsForm implements FormInterface {
     $invalid_fields = [];
     $invalid_defaults = [];
     foreach ($fields['invalid'] as $field) {
-      $invalid_fields[$field['name']] = $field['label'] . " (" . $field['name'] . "): " . $field['description']. '. Invalid Reason: ' . $field['invalid_reason'];;
+      $invalid_fields[$field['name']] = $field['label'] . " (" . $field['name'] . ")";
+      if ($field['description']) {
+        $invalid_fields[$field['name']] .= ": " . $field['description'];
+      }
+      $invalid_fields[$field['name']] .= '. Invalid Reason: ' . $field['invalid_reason'];
     }
-    $invalid_fields_desc = t('The following fields do not pass validation tests. They need correction by the module developer and cannot be added.');
+    $invalid_fields_desc = t('The following fields do not pass validation tests. '
+      . 'They need correction by the module developer and cannot be added.');
     if (empty($invalid_fields_desc)) {
       $invalid_fields_desc = t('All fields passed validation tests!');
     }
