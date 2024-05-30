@@ -3854,7 +3854,7 @@ INSERT INTO chado.cvterm VALUES (2960, 25, 'City', '', 3267, 0, 0);
 INSERT INTO chado.cvterm VALUES (196, 26, 'Publication Type', '', 196, 0, 0);
 INSERT INTO chado.cvterm VALUES (197, 26, 'Volume Title', '', 197, 0, 0);
 INSERT INTO chado.cvterm VALUES (202, 27, 'title', 'A title, often used along with a description.', 202, 0, 0);
-INSERT INTO chado.cvterm VALUES (203, 27, 'PartialCollectionView', 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the the next/previous properties to allow a client to retrieve all members of the collection.', 203, 0, 0);
+INSERT INTO chado.cvterm VALUES (203, 27, 'PartialCollectionView', 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the next/previous properties to allow a client to retrieve all members of the collection.', 203, 0, 0);
 INSERT INTO chado.cvterm VALUES (204, 28, 'name', 'The name of the item.', 204, 0, 0);
 INSERT INTO chado.cvterm VALUES (205, 28, 'alternateName', 'An alias for the item.', 205, 0, 0);
 INSERT INTO chado.cvterm VALUES (206, 28, 'comment', 'Comments, typically from users.', 206, 0, 0);

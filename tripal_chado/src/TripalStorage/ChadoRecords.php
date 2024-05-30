@@ -1810,7 +1810,7 @@ class ChadoRecords  {
    *   The alias of the table.  For the base table, use the same table name as
    *   base tables don't have aliases.
    * @param bool $graceful
-   *   Set to TRUE not not throw an exception if valid conditions are not
+   *   Set to TRUE to not throw an exception if valid conditions are not
    *   set. If TRUE then it skips the record rather than performs the delete.
    *
    * @throws \Exception
