@@ -13,8 +13,8 @@ use Drupal\tripal\Entity\TripalEntityType;
  * @FieldType(
  *   id = "chado_contact_type_default",
  *   category = "tripal_chado",
- *   label = @Translation("Chado Contact"),
- *   description = @Translation("Add a Chado contact to the content type."),
+ *   label = @Translation("Chado Contacts: All"),
+ *   description = @Translation("Supports linking contacts to the current content type without restricting to a specific type of link (i.e role the contact plays)."),
  *   default_widget = "chado_contact_widget_default",
  *   default_formatter = "chado_contact_formatter_default",
  * )

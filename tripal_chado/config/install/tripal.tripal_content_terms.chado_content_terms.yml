@@ -153,6 +153,9 @@ vocabularies:
             -   id: 'EFO:0000269'
                 name: 'array design'
                 description: 'An instrument design which describes the design of the array.'
+            -   id: 'EFO:0001736'
+                name: 'funder'
+                description: 'A person or organization that supports (sponsors) something through some kind of financial contribution.'
 
     -   name: 'ero'
         label: 'The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).'
@@ -692,6 +695,21 @@ vocabularies:
             -   id: 'NCIT:C164386'
                 name: 'Experimental Factor Value'
                 description: 'A specific type, time period, compound, dose, temperature, magnitude, quantity, element, aspect or other item in a variable manipulated by the experimentalist. (BRIDG)'
+            -   id: 'NCIT:C165210'
+                name: "Data Custodian"
+                description: "The person responsible for a specific data set."
+            -   id: 'NCIT:C69141'
+                name: "Curator"
+                description: "The person in charge of the care and superintendence of something, especially a collection."
+            -   id: 'NCIT:C43611'
+                name: 'License'
+                description: 'Official or legal permission to do or own a specified thing.'
+            -   id: 'NCIT:C41196'
+                name: 'Citation'
+                description: 'An extract or quotation from or reference to an authoritative source, e.g. a book or author, used, for example, to support an idea, theory, or argument.'
+            -   id: 'NCIT:C93448'
+                name: 'Research Organization'
+                description: 'An organization whose purpose is to support systemic, rigorous study and investigation into a particular field or fields.'
     -   name: 'ncbitaxon'
         label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'
         url: 'http://www.berkeleybop.org/ontologies/ncbitaxon/'
@@ -705,6 +723,20 @@ vocabularies:
             -   id: 'NCBITaxon:scientific_name'
                 name: 'scientific name'
 
+    -   name: 'AGRO'
+        label: 'Agronomy Ontology'
+        url: 'https://agroportal.lirmm.fr/ontologies/AGRO'
+        idSpaces:
+            -   name: 'AGRO'
+                description: 'Agronomy Ontology'
+                urlPrefix: 'http://purl.obolibrary.org/obo/{db}_{accession}'
+        terms:
+            -   id: 'AGRO:00000360'
+                name: 'experimental site'
+                description: 'Location where the experiment is implemented.'
+            -   id: 'AGRO:00000379'
+                name: 'data collector'
+                description: 'A person that has a role of collecting data related to the experiment.'
 
     -   name: 'rdfs'
         label: 'Resource Description Framework Schema'

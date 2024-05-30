@@ -3,7 +3,6 @@
 namespace Drupal\tripal\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
 
@@ -24,7 +23,7 @@ class TripalEntityUIController extends ControllerBase {
    * Route: entity.tripal_entity.add_page
    * Template: tripal-entity-content-add-list.html.twig
    *
-   * @return Drupal\Core\Render\Element
+   * @return \Drupal\Core\Render\Element
    *   Returns a rendered listing of Tripal Content Types linking to add forms.
    */
   public function tripalContentAddPage() {
@@ -74,30 +73,5 @@ class TripalEntityUIController extends ControllerBase {
       '#theme' => 'tripal_entity_content_add_list',
       '#types' => $bundles,
     ];
-  }
-
-  /**
-   * Checks for to see if new fields need to be added to a Tripal Content Type.
-   *
-   * @todo call this from somewhere.
-   * @todo update all code.
-   */
-  public function tripalCheckForFields($tripal_entity_type) {
-
-    $bundle_name = $tripal_entity_type->id();
-    $term = $tripal_entity_type->getTerm();
-
-    //$added = tripal_create_bundle_fields($bundle, $term);
-    //if (count($added) == 0) {
-      //$this->messenger->addMessage('No new fields were added');
-    //}
-    //foreach ($added as $field_name) {
-      //$this->messenger->addMessage('Added field: ' . $field_name);
-    //}
-
-    \Drupal::messenger()->addWarning(t('This functionality is not implemented yet.'));
-
-    return $this->redirect('entity.tripal_entity.field_ui_fields',
-      ['tripal_entity_type' => $bundle_name]);
   }
 }
