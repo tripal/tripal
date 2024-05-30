@@ -52,21 +52,21 @@
  * @ingroup tripal_pub_api
  */
 function chado_get_publication($identifiers, $options = []) {
-
+  $logger = \Drupal::service('tripal.logger');
   // Error Checking of parameters
   if (!is_array($identifiers)) {
-    tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
-      "chado_get_publication: The identifier passed in is expected to be an array with the key
-       matching a column name in the pub table (ie: pub_id or name). You passed in %identifier.",
-      ['%identifier' => print_r($identifiers, TRUE)]
-    );
+    $logger->error(
+      "tripal_pub_api chado_get_publication: The identifier passed in is expected to be an array with the key
+       matching a column name in the pub table (ie: pub_id or name). You passed in @identifier.",
+      ['@identifier' => print_r($identifiers, TRUE)]
+    );    
   }
   elseif (empty($identifiers)) {
-    tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
-      "chado_get_publication: You did not pass in anything to identify the publication you want. The identifier
+    $logger->error(
+      "tripal_pub_api chado_get_publication: You did not pass in anything to identify the publication you want. The identifier
        is expected to be an array with the key matching a column name in the pub table
-       (ie: pub_id or name). You passed in %identifier.",
-      ['%identifier' => print_r($identifiers, TRUE)]
+       (ie: pub_id or name). You passed in @identifier.",
+      ['@identifier' => print_r($identifiers, TRUE)]
     );
   }
 
@@ -104,9 +104,9 @@ function chado_get_publication($identifiers, $options = []) {
       $pub = chado_generate_var('pub', ['pub_id' => $pub_dbxref[0]->pub_id], $options);
     }
     else {
-      tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
-        "chado_get_publication: The dbxref identifier is not correctly formatted. Identifiers passed: %identifier.",
-        ['%identifier' => print_r($identifiers, TRUE)]
+      $logger->error(
+        "tripal_pub_api chado_get_publication: The dbxref identifier is not correctly formatted. Identifiers passed: @identifier.",
+        ['@identifier' => print_r($identifiers, TRUE)]
       );
     }
   }
@@ -133,16 +133,16 @@ function chado_get_publication($identifiers, $options = []) {
 
   // Ensure the pub is singular. If it's an array then it is not singular.
   if (is_array($pub)) {
-    tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
-      "chado_get_publication: The identifiers did not find a single unique record. Identifiers passed: %identifier.",
-      ['%identifier' => print_r($identifiers, TRUE)]
+    $logger->error(
+      "tripal_pub_api chado_get_publication: The identifiers did not find a single unique record. Identifiers passed: @identifier.",
+      ['@identifier' => print_r($identifiers, TRUE)]
     );
   }
 
   // Report an error if $pub is FALSE since then chado_generate_var has failed.
   elseif ($pub === FALSE) {
-    tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
-      "chado_get_publication: Could not find a publication using the identifiers
+    $logger->error(
+      "tripal_pub_api chado_get_publication: Could not find a publication using the identifiers
        provided. Check that the identifiers are correct. Identifiers passed: %identifier.",
       ['%identifier' => print_r($identifiers, TRUE)]
     );
@@ -191,7 +191,7 @@ function chado_get_publication($identifiers, $options = []) {
  * @ingroup tripal_pub_api
  */
 function chado_publication_exists($pub_details) {
-
+  $logger = \Drupal::service('tripal.logger');
   // First try to find the publication using the accession number if that key
   // exists in the details array.
   if (array_key_exists('Publication Dbxref', $pub_details)) {
@@ -227,14 +227,14 @@ function chado_publication_exists($pub_details) {
     $pub_type = chado_get_cvterm($identifiers);
   }
   else {
-    tripal_report_error('tripal_pub', TRIPAL_ERROR,
-      "chado_publication_exists(): The Publication Type is a " .
+    $logger->error(
+      "tripal_pub_api chado_publication_exists(): The Publication Type is a " .
       "required property but is missing", []);
     return [];
   }
   if (!$pub_type) {
-    tripal_report_error('tripal_pub', TRIPAL_ERROR,
-      "chado_publication_exists(): Cannot find publication type: '%type'",
+    $logger->error(
+      "tripal_pub_api chado_publication_exists(): Cannot find publication type: '%type'",
       ['%type' => $pub_details['Publication Type'][0]]);
     return [];
   }
@@ -348,7 +348,7 @@ function chado_autocomplete_pub($string = '') {
  */
 function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE,
                                     $publish = TRUE, $do_update = TRUE) {
-
+  $logger = \Drupal::service('tripal.logger');
   $num_to_retrieve = 1;
   $pager_id = 0;
   $page = 0;
@@ -369,7 +369,7 @@ function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE,
   $message = "Importing of publications is performed using a database transaction. " .
     "If the load fails or is terminated prematurely then the entire set of " .
     "insertions/updates is rolled back and will not be found in the database";
-  tripal_report_error($message_type, TRIPAL_INFO, $message, [], $message_opts);
+  $logger->error($message, []);
 
 
   $transaction = db_transaction();
@@ -485,7 +485,7 @@ function chado_execute_active_pub_importers($report_email = FALSE,
  */
 function chado_execute_pub_importer($import_id, $publish = TRUE,
                                     $do_update = FALSE, $job = NULL) {
-
+  $logger = \Drupal::service('tripal.logger');
   // Holds the list of imported pubs which includes their ID and Citation.
   $report = [];
   $report['error'] = [];
@@ -503,10 +503,10 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
     'print' => TRUE,
   ];
 
-  $message = "Importing of publications for this importer is performed using a database transaction. " .
+  $message = "pub_import Importing of publications for this importer is performed using a database transaction. " .
     "If the load fails or is terminated prematurely then the entire set of " .
     "insertions/updates is rolled back and will not be found in the database";
-  tripal_report_error($message_type, TRIPAL_INFO, $message, [], $message_opts);
+  $logger->error($message, []);
 
 
   // start the transaction
@@ -522,8 +522,8 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
     $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
     $import = db_query($sql, $args)->fetchObject();
 
-    tripal_report_error($message_type, TRIPAL_INFO,
-      "Executing Importer: !name.", ['!name' => $import->name], $message_opts);
+    $logger->error(
+      "pub_import Executing Importer: !name.", ['!name' => $import->name]);
 
     $criteria = unserialize($import->criteria);
     $remote_db = $criteria['remote_db'];
@@ -534,19 +534,19 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
     do {
       // retrieve the pubs for this page. We'll retrieve 100 at a time
       $npages = isset($num_pubs)?(intval($num_pubs/$num_to_retrieve)+1):'?';  // will be 0 to 99 in last page
-      tripal_report_error($message_type, TRIPAL_INFO,
-        "Page ".($page+1)." of $npages. Querying !remote_db for up to !num pubs that match the criteria.",
+      $logger->error(
+        "pub_import Page ".($page+1)." of $npages. Querying @remote_db for up to @num pubs that match the criteria.",
         [
-          '!num' => $num_to_retrieve,
-          '!remote_db' => $remote_db,
+          '@num' => $num_to_retrieve,
+          '@remote_db' => $remote_db,
         ], $message_opts);
       $results = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
       $pubs = $results['pubs'];
       $num_pubs = $results['total_records'];
       $total_pubs += $num_pubs;
-      tripal_report_error($message_type, TRIPAL_INFO,
-        "Found %num publications.",
-        ['%num' => $num_pubs], $message_opts);
+      $logger->error(
+        "pub_import Found @num publications.",
+        ['@num' => $num_pubs]);
 
       $subset_report = tripal_pub_add_publications($pubs, $import->do_contact, $do_update, $job);
       $countpubs = count($pubs);  // the following merge resets count($pubs) so save it
@@ -565,9 +565,9 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
   } catch (Exception $e) {
     $transaction->rollback();
     watchdog_exception('T_pub_import', $e);
-    tripal_report_error($message_type, TRIPAL_ERROR,
-      "Rolling back database changes... !message",
-      ['!message' => $e->getMessage()], $message_opts);
+    $logger->error(
+      "pub_import Rolling back database changes... @message",
+      ['@message' => $e->getMessage()]);
     return FALSE;
   }
 
@@ -576,8 +576,8 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
   foreach ($report as $action => $pubs) {
     $message .= ' ' . $action . '=' . count($pubs);
   }
-  tripal_report_error($message_type, TRIPAL_INFO,
-    $message, [], $message_opts);
+  $logger->error(
+    $message, []);
 
   return $report;
 }
@@ -596,7 +596,7 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
  *   only entities are created.
  */
 function _chado_execute_pub_importer_publish($publish, $job, $message_type, $message_opts) {
-
+  $logger = \Drupal::service('tripal.logger');
   // If the user wants to publish then do so.
   if ($publish === TRUE or $publish === 'both') {
 
@@ -608,8 +608,8 @@ function _chado_execute_pub_importer_publish($publish, $job, $message_type, $mes
     if ($bundle_term) {
       $bundle = tripal_load_bundle_entity(['term_id' => $bundle_term->id]);
       if ($bundle) {
-        tripal_report_error($message_type, TRIPAL_INFO,
-          "Publishing publications with Drupal...", [], $message_opts);
+        $logger->error($message_type . " " . 
+          "Publishing publications with Drupal...", []);
         chado_publish_records(['bundle_name' => $bundle->name], $job);
       }
       // Note: we won't publish contacts as Tripal v2 did because there is
@@ -622,11 +622,11 @@ function _chado_execute_pub_importer_publish($publish, $job, $message_type, $mes
   // For backwords compatibility with legacy module do a sync.
   if ($publish === 'sync' or $publish === 'both') {
     if (module_exists('tripal_pub')) {
-      tripal_report_error($message_type, TRIPAL_INFO,
-        "Syncing publications with Drupal...", [], $message_opts);
+      $logger->error($message_type . " " . 
+        "Syncing publications with Drupal...", []);
       chado_node_sync_records('pub');
       if ($import->do_contact) {
-        tripal_report_error($message_type, TRIPAL_INFO,
+        $logger->error($message_type . " " . 
           "Syncing contacts with Drupal...", [], $message_opts);
         chado_node_sync_records('contact');
       }
@@ -665,7 +665,7 @@ function _chado_execute_pub_importer_publish($publish, $job, $message_type, $mes
  */
 function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL,
                                      $db = NULL, $publish = TRUE) {
-
+  $logger = \Drupal::service('tripal.logger');
   // These are options for the tripal_report_error function. We do not
   // want to log messages to the watchdog but we do for the job and to
   // the terminal
@@ -678,7 +678,7 @@ function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL,
   $message = "Importing of publications for this importer is performed using a database transaction. " .
     "If the load fails or is terminated prematurely then the entire set of " .
     "insertions/updates is rolled back and will not be found in the database";
-  tripal_report_error($message_type, TRIPAL_INFO, $message, [], $message_opts);
+  $logger->error($message_type . " " . $message, []);
 
   $transaction = db_transaction();
   try {
@@ -747,9 +747,9 @@ function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL,
   } catch (Exception $e) {
     $transaction->rollback();
     watchdog_exception('T_pub_import', $e);
-    tripal_report_error($message_type, TRIPAL_ERROR,
-      "Rolling back database changes... !message",
-      ['!message' => $e->getMessage()], $message_opts);
+    $logger->error($message_type . "  " . 
+      "Rolling back database changes... @message",
+      ['@message' => $e->getMessage()], $message_opts);
     return;
   }
   print "Done.\n";
