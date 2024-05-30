@@ -54,8 +54,8 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Create variables for easy access to settings.
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
-    $base_table = $settings['base_table'];
-    $prop_table = $settings['prop_table'];
+    $base_table = array_key_exists('base_table', $settings) ? $settings['base_table'] : NULL;
+    $prop_table = array_key_exists('prop_table', $settings) ? $settings['prop_table'] : NULL;
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
@@ -230,6 +230,86 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
       }
     }
     return $compatible;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array{
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+
+    // Initialize with an empty field list.
+    $field_list = [];
+
+    // Make sure the base table setting exists.
+    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
+    if (!$base_table) {
+      return $field_list;
+    }
+
+    // Make sure the prop table exists in Chado.
+    $prop_table = $base_table . 'prop';
+    if (!$chado->schema()->tableExists($prop_table)) {
+      return $field_list;
+    }
+
+    // Search for all unique types in the prop table.
+    $query = $chado->select('1:' . $prop_table, 'pt');
+    $query->leftJoin('1:cvterm', 'cvt', 'pt.type_id = cvt.cvterm_id');
+    $query->leftJoin('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
+    $query->leftJoin('1:db', 'db', 'db.db_id = dbx.db_id');
+    $query->leftJoin('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+    $query->addField('cvt', 'cvterm_id');
+    $query->addField('cvt', 'name', 'cvterm_name');
+    $query->addField('cvt', 'definition');
+    $query->addField('dbx', 'accession');
+    $query->addField('db', 'name', 'db_name');
+    $query->addField('cv', 'name', 'cv_name');
+    $results = $query->distinct()->execute()->fetchAll();
+
+    // Create a field entry for each property type.
+    foreach ($results as $recprop) {
+      $field_list[] = [
+        'name' => self::generateFieldName($bundle, $recprop->cvterm_name),
+        'content_type' => $bundle->getID(),
+        'label' => ucwords($recprop->cvterm_name),
+        'type' => self::$id,
+        'description' => $recprop->definition ? 'A record property with the following definition: ' . $recprop->definition : '',
+        'cardinality' => -1,
+        'required' => False,
+        'storage_settings' => [
+          'storage_plugin_id' => 'chado_storage',
+          'storage_plugin_settings' => [
+            'base_table' => $base_table,
+            'prop_table' => $prop_table
+          ],
+        ],
+        'settings' => [
+          'termIdSpace' => $recprop->cv_name,
+          'termAccession' => $recprop->accession,
+        ],
+        'display' => [
+          'view' => [
+            'default' => [
+              'region' => 'content',
+              'label' => 'above',
+              'weight' => 10,
+            ],
+          ],
+          'form' => [
+            'default' => [
+              'region' => 'content',
+              'weight' => 10
+            ],
+          ],
+        ],
+      ];
+    }
+
+    return $field_list;
   }
 
 }

@@ -748,5 +748,4 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $fields[$machine_name]->delete();
     }
   }
-
 }

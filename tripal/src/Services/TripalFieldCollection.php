@@ -8,6 +8,7 @@ use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Provides an tripalStorage plugin manager.
@@ -198,6 +199,63 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
   }
 
   /**
+   * Discovers new fields for a given entity type.
+   *
+   * Fields can be specified in one of 2 ways.  Using the installation method
+   * where they are specified by a YML file created by the module developer or
+   * by fields that have a discover() function implemented. This function
+   * supports adding new fields to the collection using the discover approach.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   *   The object representing the bundle.
+   */
+  public function discover(TripalEntityType $tripal_entity_type) {
+    $bundle_name = $tripal_entity_type->id();
+
+    // Holds the status of each field (e.g., skipped, added, etc.)
+    $field_status = [
+      'invalid' => [],
+      'new' => [],
+      'existing' => [],
+    ];
+
+    // Get all of the fields and call the `discover()` method for each one.
+    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
+    $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
+    /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+
+    $all_field_defs = $field_type_manager->getDefinitions();
+    $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle_name);
+    foreach ($all_field_defs as $field_id => $field_def) {
+      $field_class = $field_def['class'];
+      if (is_subclass_of($field_class, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
+        $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs);
+        foreach ($discovered as $discovered_field) {
+
+          // If the discovered field already exists then mark it as existing.
+          if (array_key_exists($discovered_field['name'], $entity_field_defs)) {
+            $field_status['existing'][$discovered_field['name']] = $discovered_field;
+            continue;
+          }
+
+          // If the field is not valid then skip it.
+          $reason = '';
+          $is_valid = $this->validate($discovered_field, $reason);
+          if (!$is_valid) {
+            $field_status['invalid'][$discovered_field['name']] = $discovered_field;
+            $field_status['invalid'][$discovered_field['name']]['invalid_reason'] = $reason;
+            continue;
+          }
+
+          $field_status['new'][$discovered_field['name']] = $discovered_field;
+        }
+      }
+    }
+    return $field_status;
+  }
+
+  /**
    * Validates a field definition array.
    *
    * This function can be used to check a field definition prior to adding
@@ -205,13 +263,17 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    *
    * @param array $field_def
    *   A definition array for the field.
+   * @param string $reason
+   *   The reason for why a field is invalid. Set only if the function returns
+   *   FALSE.
    * @return bool
    *   True if the array passes validation checks. False otherwise.
    */
-  public function validate($field_def) : bool {
+  public function validate($field_def, string &$reason = '') : bool {
 
     if (!array_key_exists('content_type', $field_def)) {
-      $this->logger->error('The field is missing the "content_type" property.');
+      $reason = 'The field is missing the "content_type" property.';
+      $this->logger->error($reason);
       return FALSE;
     }
     // Check if the type already exists.
@@ -219,64 +281,76 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
       ->getStorage('tripal_entity_type')
       ->loadByProperties(['id' => $field_def['content_type']]);
     if (empty($entityTypes)) {
-      $this->logger->error('The specified entity type, "' . $field_def['content_type'] . '", for field "' . $field_def['name'] . '", does not exist.');
+      $reason = 'The specified entity type, "' . $field_def['content_type'] . '", for field "' . $field_def['name'] . '", does not exist.';
+      $this->logger->error($reason);
       return FALSE;
     }
     if (!array_key_exists('name', $field_def) or empty($field_def['name'])) {
-      $this->logger->error('The field is missing the "name" property.');
+      $reason = 'The field is missing the "name" property.';
+      $this->logger->error($reason);
       return FALSE;
     }
     if (!array_key_exists('content_type', $field_def) or empty($field_def['content_type'])) {
-      $this->logger->error('The field is missing the "content_type" property.');
+      $reason = 'The field is missing the "content_type" property.';
+      $this->logger->error($reason);
       return FALSE;
     }
     if (!array_key_exists('type', $field_def) or empty($field_def['type'])) {
-      $this->logger->error('The field is missing the "type" property.');
+      $reason = 'The field is missing the "type" property.';
+      $this->logger->error($reason);
       return FALSE;
     }
     else {
       $field_types = \Drupal::service('plugin.manager.field.field_type')->getDefinitions();
       if (!in_array($field_def['type'], array_keys($field_types))) {
-        $this->logger->error('The field type, "' . $field_def['type'] . '", is not a valid field type.');
+        $reason = 'The field type, "' . $field_def['type'] . '", is not a valid field type.';
+        $this->logger->error($reason);
         return FALSE;
       }
     }
     if (!array_key_exists('storage_settings', $field_def) or empty($field_def['storage_settings'])) {
-      $this->logger->error('The field is missing the "storage_settings" property');
+      $reason = 'The field is missing the "storage_settings" property';
+      $this->logger->error($reason);
       return FALSE;
     }
     if (!array_key_exists('storage_plugin_id', $field_def['storage_settings'])) {
-      $this->logger->error('The field is missing the "storage_plugin_id" of the "storage_settings" property');
+      $reason = 'The field is missing the "storage_plugin_id" of the "storage_settings" property';
+      $this->logger->error($reason);
       return FALSE;
     }
     if (!array_key_exists('termIdSpace', $field_def['settings'])) {
-      $this->logger->error('The field is missing the "termIdSpace" of the "settings" property');
+      $reason = 'The field is missing the "termIdSpace" of the "settings" property';
+      $this->logger->error($reason);
       return FALSE;
     }
     if (!array_key_exists('termAccession', $field_def['settings'])) {
-      $this->logger->error('The field is missing the "termAccession" of the "settings" property');
+      $reason = 'The field is missing the "termAccession" of the "settings" property';
+      $this->logger->error($reason);
       return FALSE;
     }
     if (empty($field_def['storage_settings']['storage_plugin_id'])) {
       // @todo verify the name of the plugin is a real plugin.
-      $this->logger->error('You must set the "storage_plugin_id" property.');
+      $reason = 'You must set the "storage_plugin_id" property.';
+      $this->logger->error($reason);
       return FALSE;
     }
 
     // Make sure the term exists.
     $idSpace = $this->idSpaceManager->loadCollection($field_def['settings']['termIdSpace']);
     if (!$idSpace) {
-      $this->logger->error(t('The term Id Space "@idspace" is not known. Check the "termIdSpace" element.',
-                             ['@idspace' => $field_def['settings']['termIdSpace']]));
+      $reason = t('The term Id Space "@idspace" is not known. Check the "termIdSpace" element.',
+          ['@idspace' => $field_def['settings']['termIdSpace']]);
+      $this->logger->error($reason);
       return FALSE;
     }
     $term = $idSpace->getTerm($field_def['settings']['termAccession']);
     if (!$term) {
-      $this->logger->error('The term accession. "@id:@accession", is not known in the Term Id Space for field, "@field". Check the "termIdSpace" and "termAccession" elements.',
-          ['@id' => $field_def['settings']['termIdSpace'],
-           '@accession' => $field_def['settings']['termAccession'],
-           '@field' => $field_def['name']
-          ]);
+      $reason = t('The term accession. "@id:@accession", is not known in the Term Id Space for field, "@field". Check the "termIdSpace" and "termAccession" elements.',
+        ['@id' => $field_def['settings']['termIdSpace'],
+          '@accession' => $field_def['settings']['termAccession'],
+          '@field' => $field_def['name']
+        ]);
+      $this->logger->error($reason);
       return FALSE;
     }
 
