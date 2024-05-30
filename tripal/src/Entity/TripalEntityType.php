@@ -427,7 +427,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     ]);
 
     // Set an extremely ugly empty title for in case there are no tokens/fields.
-    $format = 'Uknown ' . date('Ymd-h:i:sA');
+    $format = 'Unknown ' . date('Ymd-h:i:sA');
 
     // A) Check to see if more informed modules have suggested a title for this
     //    type. Invoke hook_tripal_default_title_format() to get all suggestions
@@ -480,7 +480,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   // --------------------------------------------------------------------------
   //                             URL ALIAS FORMATS
   //
-  // The following methods all pertain to setting alias' for Tripal Content
+  // The following methods all pertain to setting aliases for Tripal Content
   // Pages. This allows administrators to set readable, more friendly URLs
   // for their biological content in bulk through the use of tokens and
   // patterns.

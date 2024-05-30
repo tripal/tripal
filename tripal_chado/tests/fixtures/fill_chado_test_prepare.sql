@@ -145,12 +145,12 @@ INSERT INTO chado.db VALUES (1, 'null', 'No database', 'cv/lookup/{db}/{accessio
 INSERT INTO chado.db VALUES (9, 'ERO', 'The Eagle-I Research Resource Ontology', 'http://purl.bioontology.org/ontology/ERO/{db}:{accession}', 'http://purl.bioontology.org/ontology/ERO');
 INSERT INTO chado.db VALUES (22, 'rdfs', 'Resource Description Framework Schema', 'http://www.w3.org/2000/01/rdf-schema#{accession}', 'https://www.w3.org/TR/rdf-schema/');
 INSERT INTO chado.db VALUES (10, 'GEO', 'An ontology of geographical entities', 'http://purl.obolibrary.org/obo/{$db}_{accession}', 'https://github.com/mcwdsi/geographical-entity-ontology/wiki');
-INSERT INTO chado.db VALUES (26, 'TCONTACT', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.', 'cv/lookup/TCONTACT/{accession}', 'cv/lookup/TCONTACT');
+INSERT INTO chado.db VALUES (26, 'TCONTACT', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology can be identified.', 'cv/lookup/TCONTACT/{accession}', 'cv/lookup/TCONTACT');
 INSERT INTO chado.db VALUES (15, 'local', 'Terms created for this site', 'cv/lookup/{db}/{accession}', 'cv/lookup/local');
 INSERT INTO chado.db VALUES (23, 'RO', 'Relationship Ontology (legacy)', 'cv/lookup/RO/{accession}', 'cv/lookup/RO');
 INSERT INTO chado.db VALUES (16, 'SBO', 'Systems Biology Ontology', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'http://www.ebi.ac.uk/sbo/main/');
 INSERT INTO chado.db VALUES (17, 'SWO', 'Bioinformatics operations, data types, formats, identifiers and topics', 'http://www.ebi.ac.uk/swo/{db}_{accession}', 'http://purl.obolibrary.org/obo/swo');
-INSERT INTO chado.db VALUES (27, 'TPUB', 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.', 'cv/lookup/TPUB/{accession}  ', 'cv/lookup/TPUB');
+INSERT INTO chado.db VALUES (27, 'TPUB', 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified.', 'cv/lookup/TPUB/{accession}  ', 'cv/lookup/TPUB');
 INSERT INTO chado.db VALUES (24, 'SO', 'The Sequence Ontology', 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}', 'http://www.sequenceontology.org');
 INSERT INTO chado.db VALUES (18, 'PMID', 'PubMed', 'http://www.ncbi.nlm.nih.gov/pubmed/{accession}', 'http://www.ncbi.nlm.nih.gov/pubmed');
 INSERT INTO chado.db VALUES (30, 'sep', 'Sample processing and separation techniques.', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'http://psidev.info/index.php?q=node/312');

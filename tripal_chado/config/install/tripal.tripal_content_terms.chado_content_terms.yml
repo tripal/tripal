@@ -814,7 +814,7 @@ vocabularies:
         url: 'cv/lookup/TCONTACT'
         idSpaces:
             -   name: 'TCONTACT'
-                description: "Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified."
+                description: "Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
                 urlPrefix: "cv/lookup/TCONTACT/{accession}"
 
     -   name: 'tripal_pub'
@@ -822,7 +822,7 @@ vocabularies:
         url: 'cv/lookup/TPUB'
         idSpaces:
             -   name: 'TPUB'
-                description: "Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified."
+                description: "Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
                 urlPrefix: "cv/lookup/TPUB/{accession}  "
         terms:
             -   id: 'TPUB:0000002'
