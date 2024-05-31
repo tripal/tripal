@@ -21,6 +21,7 @@ require_once 'src/api/tripal_chado.phylotree.api.php';
 require_once 'src/api/tripal_chado.phylotree_newick.api.php';
 require_once 'src/api/tripal_chado.pub.api.php';
 require_once 'src/api/tripal_chado.pub_importers.php';
+require_once 'src/api/tripal_chado.contact.api.php';
 require_once 'src/api/tripal_chado.api.php';
 require_once 'src/api/tripal_core.chado_nodes.api.php';
 require_once 'src/legacyFunctions.php';
