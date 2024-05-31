@@ -1528,10 +1528,11 @@ class ChadoRecords  {
     if (count($missing) > 0) {
       // Documentation for how to create a violation is here
       // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
-      $message = 'The item cannot be saved because the following values are missing. ';
+      $message = 'The item cannot be saved because the following fields for the Chado '
+        . '"' . $base_table . '" table are missing. ';
       $params = [];
       foreach ($missing as $col) {
-        $message .=  ucfirst($col) . ", ";
+        $message .=  $col . ", ";
       }
       $message = substr($message, 0, -2) . '.';
       $this->violations[] = new ConstraintViolation(t($message, $params)->render(),

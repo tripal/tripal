@@ -639,7 +639,7 @@ class TripalPublish {
     $items = [];
 
     $sql = "
-      SELECT entity_id FROM {" . $field_table . "}\n
+      SELECT entity_id, delta FROM {" . $field_table . "}\n
       WHERE bundle = :bundle\n
         AND entity_id IN (:entity_ids[])\n";
 
@@ -661,7 +661,11 @@ class TripalPublish {
         ];
         $results = $database->query($sql, $args);
         while ($result = $results->fetchAssoc()) {
-          $items[$result['entity_id']] = $result['entity_id'];
+          $entity_id = $result['entity_id'];
+          if (!array_key_exists($entity_id, $items)) {
+            $items[$entity_id] = [];
+          }
+          $items[$entity_id][$result['delta']] = TRUE;
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -711,6 +715,9 @@ class TripalPublish {
    *   An associative array that maps entity titles to their keys.
    * @param array $existing
    *   An associative array of entities that already have an existing item for this field.
+   *
+   * @return int
+   *   The number of items inserted for the field.
    */
   protected function insertFieldItems($field_name, $matches, $titles, $entities, $existing) {
 
@@ -734,17 +741,25 @@ class TripalPublish {
     $init_sql = rtrim($init_sql, ", ");
     $init_sql .= ") VALUES\n";
 
+    $i = 0;
     $j = 0;
     $total = 0;
     $batch_num = 1;
     $sql = '';
     $args = [];
+    $num_inserted = 0;
 
-    // Iterate through the matches.
+    // Iterate through the matches. Each match corresponds to a single
+    // entity. The titles provided should be in order of the entities
+    // in the matches array.
     foreach ($matches as $match) {
-      $title = $titles[$total];
-      $entity_id = $entities[$title];
 
+      $title = $titles[$i];
+      $entity_id = $entities[$title];
+      $i++;
+
+      // Iterate through the "items" of each feild and insert a record value
+      // for each item.
       $num_delta = count(array_keys($match[$field_name]));
       for ($delta = 0; $delta < $num_delta; $delta++) {
         $j++;
@@ -752,7 +767,9 @@ class TripalPublish {
 
         // No need to add items to those that are already published.
         if (array_key_exists($entity_id, $existing)) {
-          continue;
+          if (array_key_exists($delta, $existing[$entity_id])) {
+            continue;
+          }
         }
 
         // Add items to those that are not already published.
@@ -770,6 +787,7 @@ class TripalPublish {
         }
         $sql = rtrim($sql, ", ");
         $sql .= "),\n";
+        $num_inserted++;
 
         // If we've reached the size of the batch then let's do the insert.
         if ($j == $batch_size or $total == $num_matches) {
@@ -788,6 +806,7 @@ class TripalPublish {
         }
       }
     }
+    return $num_inserted;
   }
 
   /**
@@ -884,11 +903,10 @@ class TripalPublish {
       $this->logger->notice("  Checking for published items for the field: $field_name...");
       $existing_field_items = $this->findFieldItems($field_name, $entities);
 
-      $num_field_items =  $this->countFieldMatches($field_name, $matches);
-      $this->logger->notice("  Publishing " . number_format($num_field_items) . " items for field: $field_name...");
+      $num_inserted = $this->insertFieldItems($field_name, $matches, $titles, $entities, $existing_field_items);
+      $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
 
-      $this->insertFieldItems($field_name, $matches, $titles, $entities, $existing_field_items);
-      $total_items += $num_field_items;
+      $total_items += $num_inserted;
     }
     $this->logger->notice("Published " .  number_format(count($new_matches)) . " new entities, and " . number_format($total_items) . " field values.");
     $this->logger->notice('Done');

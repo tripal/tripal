@@ -355,7 +355,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
           // Now set the values.
           $this->setPropValues($new_values, $match);
-          print_r($match->getRecordsArray());
 
           // Remove any values that are not valid.
           foreach ($new_values as $field_name => $deltas) {
@@ -1084,10 +1083,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         $sub_path_arr = $this->parsePath($field_name, $base_table, $path_arr, $aliases, $as, $full_path);
       }
       // If there are no more joins, then we need to set the value column to be
-      // the same as the last column in tge join.
+      // the same as the last column in the join.
       else {
         $ret_array['join']['value_column'] = $right_column;
-        $ret_array['join']['value_alias'] = $as ? $as : $field_name . '__' . $right_column;
+        $ret_array['join']['value_alias'] = $as ? $as : $right_column;
       }
 
       // If we have a value column in the return value then this means that it hit
@@ -1115,6 +1114,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       if (array_key_exists($table_alias, $aliases)) {
         $chado_table = $aliases[$table_alias];
       }
+      // If the base table is not the same as the root table then
+      // we should add the field name to the colun alias. Otherwise
+      // we may have conflicts if mutiple fields use the same alias.
+      $value_alias = $as ? $as : $value_column;
+      if ($base_table != $root_table) {
+        $value_alias = $field_name . '__' . $value_alias;
+      }
       return [
         'path' => $full_path,
         'base_table' => $base_table,
@@ -1123,7 +1129,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         'chado_table' => $chado_table,
         'table_alias' => $table_alias,
         'value_column' => $value_column,
-        'value_alias' => $as ? $as : $field_name . '__' . $value_column
+        'value_alias' => $value_alias
       ];
     }
 
@@ -1131,12 +1137,17 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // end of the path with joins and the value column is not the same as the
     // right join column. We can just return the value column.
     else {
+      // If the base table is not the same as the root table then
+      // we should add the field name to the colun alias. Otherwise
+      // we may have conflicts if mutiple fields use the same alias.
+      $value_alias = $as ? $as : $curr_path;
+      $value_alias = $field_name . '__' . $value_alias;
       return [
         'base_table' => $base_table,
         'root_table' => $root_table,
         'root_alias' => $root_alias,
         'value_column' => $curr_path,
-        'value_alias' => $as ? $as : $field_name . '__' . $curr_path
+        'value_alias' => $value_alias
       ];
     }
   }
