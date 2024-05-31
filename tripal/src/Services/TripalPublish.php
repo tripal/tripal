@@ -477,9 +477,10 @@ class TripalPublish {
           $field = $this->field_info[$field_name]['instance'];
           $main_prop = $field->mainPropertyName();
           $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
-          if ($value !== NULL) {
-            $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
+          if ($value === NULL) {
+            $value = '';
           }
+          $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
         }
       }
       $titles[] = $entity_title;
@@ -775,7 +776,6 @@ class TripalPublish {
           if (count($args) > 0) {
             $sql = rtrim($sql, ",\n");
             $sql = $init_sql . $sql;
-
             $database->query($sql, $args);
           }
           $this->setItemsHandled($batch_num);
@@ -886,6 +886,7 @@ class TripalPublish {
 
       $num_field_items =  $this->countFieldMatches($field_name, $matches);
       $this->logger->notice("  Publishing " . number_format($num_field_items) . " items for field: $field_name...");
+
       $this->insertFieldItems($field_name, $matches, $titles, $entities, $existing_field_items);
       $total_items += $num_field_items;
     }
