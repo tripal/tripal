@@ -7,6 +7,7 @@ use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal\Services\TripalEntityLookup;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
@@ -50,7 +51,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
    * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the contructor.
+   * this method is used to determine the parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    * @param array $configuration
@@ -71,7 +72,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   * Implements __contruct().
+   * Implements __construct().
    *
    * Since we have implemented the ContainerFactoryPluginInterface, the constructor
    * will be passed additional parameters added by the create() function. This allows
@@ -83,6 +84,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param mixed $plugin_definition
    * @param \Drupal\tripal\Services\TripalLogger $logger
    * @param \Drupal\tripal_chado\Database\ChadoConnection $connection
+   * @param \Drupal\tripal_chado\Services\ChadoFieldDebugger $field_debugger
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection, ChadoFieldDebugger $field_debugger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
@@ -101,8 +103,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $settings = $field_definition->getSettings();
     if (array_key_exists('debug', $settings) AND $settings['debug']) {
       $this->field_debugger->addFieldToDebugger($field_name);
-      $this->logger->notice('Debugging has been enabled for :name field.',
-        [':name' => $field_name],
+      $this->logger->notice('Debugging has been enabled for @name field.',
+        ['@name' => $field_name],
         ['drupal_set_message' => TRUE, 'logger' => FALSE]
       );
     }
@@ -171,7 +173,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
       }
 
-      // Now taht we've done the inserts, set the property values.
+      // Now that we've done the inserts, set the property values.
       $this->setPropValues($values, $this->records);
     }
     catch (\Exception $e) {
@@ -378,7 +380,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param ChadoRecords $records
    *   An instance of a ChadoRecords object from which values will be pulled.
    *   We don't use the built in member variable and instead allow it to
-   *   be passed in because the findValues() functino can generate copies
+   *   be passed in because the findValues() function can generate copies
    *   of the $records array and use that to set multiple values.
    */
   protected function setPropValues(&$values, ChadoRecords $records) {
@@ -411,7 +413,16 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $replace[] = [$field_name, $delta, $key, $info];
           }
           else if ($action == 'function') {
-            $function[] = [$field_name, $delta, $key, $info];
+            // Create a context array to pass information to the callback function.
+            $context = [
+              'field_name' => $field_name,
+              'delta' => $delta,
+              'key' => $key,
+              'info' => $info,
+              'prop_type' => $prop_type,
+              'field_settings' => $field_settings,
+            ];
+            $function[] = $context;
           }
           else {
 
@@ -480,17 +491,31 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     // Lastly, let's call any functions.
-    foreach ($function as $item) {
-      $field_name = $item[0];
-      $delta = $item[1];
-      $key = $item[2];
-      $info = $item[3];
-      $prop_type = $this->getPropertyType($field_name, $key);
-      $prop_storage_settings = $prop_type->getStorageSettings();
-      $namespace = $prop_storage_settings['namespace'];
-      $callback = $prop_storage_settings['function'];
+    foreach ($function as $context) {
+      // Add current values to the context so that a function
+      // can access other non-function fields if it needs to.
+      $context['values'] = $values;
 
-      $value = call_user_func($namespace . '\\' . $callback);
+      // Retrieve the needed keys for the $values array
+      $field_name = $context['field_name'];
+      $delta = $context['delta'];
+      $key = $context['key'];
+
+      // Retrieve the call back function
+      $prop_storage_settings = $context['prop_type']->getStorageSettings();
+      $namespace = $prop_storage_settings['namespace'];
+      $callback_function = $prop_storage_settings['function'];
+
+      // Validate the callback function and then call it to generate a value.
+      $value = NULL;
+      if (method_exists($namespace, $callback_function)) {
+        $value = call_user_func($namespace . '::' . $callback_function, $context);
+      }
+      else {
+        $this->logger->error('Callback function for field @field does not exist: @namespace::@function.',
+          ['@field' => $field_name, '@namespace' => $namespace, '@function' => $callback_function]
+        );
+      }
 
       if ($value !== NULL && is_string($value)) {
         $values[$field_name][$delta][$key]['value']->setValue(trim($value));
@@ -669,7 +694,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $record_id = $prop_value->getValue();
     $value_col_info = $this->getPathValueColumn($context['path_array']);
     $elements = [
-      'base_table' =>  $base_table,
+      'base_table' => $base_table,
       'root_table' => $context['root_table'],
       'root_alias' => $context['root_alias'],
       'chado_table' => $value_col_info['chado_table'],
@@ -1193,5 +1218,64 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ];
 
     return $storage_form;
+  }
+
+  /**
+   * A callback function to allow linking fields to include the Drupal entity ID.
+   *
+   * @param array $context
+   *   Values that a callback function might need in order
+   *   to calculate the field's final value.
+   *
+   * @return int
+   *   The Drupal entity ID, or -1 if it doesn't exist.
+   *   We use -1 because Tripal preSave will flag a zero for deletion.
+   */
+  static public function drupalEntityIdLookupCallback($context) {
+
+    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
+    $delta = $context['delta'];
+    $field_name = $context['field_name'];
+
+    // Get the name of the primary key column of the Chado table that
+    // the entity is based on, which is a foreign key for whatever the
+    // current content type is. Because this callback handles all fields,
+    // it doesn't know what that is, so we need to have that saved in the
+    // field properties.
+    $prop_storage_settings = $context['prop_type']->getStorageSettings();
+    $fkey = $prop_storage_settings['fkey'] ?? NULL;
+    if (!$fkey) {
+      // Maybe throw an exception here so developers know they forgot the 'fkey'
+      return -1;
+    }
+
+    $record_id = $context['values'][$field_name][$delta][$fkey]['value'] ?? NULL;
+    if (!$record_id) {
+      return -1;
+    }
+    $record_id = $record_id->getValue('value');
+
+    // During publish, record_id may be null. In this particular case, return null.
+    if (!$record_id) {
+      return NULL;
+    }
+
+    // Given the Chado record ID and bundle term, we can lookup the Drupal entity ID.
+    $ftable = $prop_storage_settings['ftable'] ?? NULL;
+    $entity_id = $lookup_manager->getEntityId(
+      $record_id,
+      $context['field_settings']['termIdSpace'],
+      $context['field_settings']['termAccession'],
+      $ftable
+    );
+
+    // In the TripalEntity class, the preSave function will flag all falsey
+    // property values for deletion when drupal_store is set to TRUE.
+    // To get around this, indicate the lack of a Drupal entity with a -1.
+    if (!$entity_id) {
+      $entity_id = -1;
+    }
+
+    return $entity_id;
   }
 }

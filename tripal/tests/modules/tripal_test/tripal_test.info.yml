@@ -1,0 +1,6 @@
+type: module
+name: Tripal Test Module
+core_version_requirement: ^10
+package: Tripal Testing
+dependencies:
+  - tripal:tripal

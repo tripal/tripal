@@ -58,9 +58,6 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Get the base table columns needed for this field.
-    $settings = $field_definition->getSetting('storage_plugin_settings');
-
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
@@ -75,21 +72,15 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'path' => 'feature.feature_id',
-        //'chado_table' => 'feature',
-        //'chado_column' => 'feature_id'
     ]);
     $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'residues', $residues_term, [
       'action' => 'store',
       'path' => 'feature.residues',
-      //'chado_column' => 'residues',
-      //'chado_table' => 'feature'
     ]);
 
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
       'action' => 'store',
       'path' => 'feature.seqlen',
-      //'chado_column' => 'seqlen',
-      //'chado_table' => 'feature'
     ]);
 
     // Hard-coded as the length of MD3Checksum supported by the chado feature.md5checksum column.
@@ -97,8 +88,6 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5checksum_len, [
       'action' => 'store',
       'path' => 'feature.md5checksum',
-      //'chado_column' => 'md5checksum',
-      //'chado_table' => 'feature'
     ]);
 
     return $properties;

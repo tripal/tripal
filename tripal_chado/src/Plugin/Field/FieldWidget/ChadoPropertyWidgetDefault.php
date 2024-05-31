@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
@@ -12,8 +11,8 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *
  * @FieldWidget(
  *   id = "chado_property_widget_default",
- *   label = @Translation("Chado Property"),
- *   description = @Translation("Add a property or attribute to the content type."),
+ *   label = @Translation("Chado Property: Long Text"),
+ *   description = @Translation("Provides a long text widget for Chado Properties using a formatted textarea."),
  *   field_types = {
  *     "chado_property_type_default"
  *   }

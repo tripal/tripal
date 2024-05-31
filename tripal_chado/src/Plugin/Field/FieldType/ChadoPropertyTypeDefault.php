@@ -4,14 +4,9 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\core\Field\FieldStorageDefinitionInterface;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
-
 
 /**
  * Plugin implementation of Tripal linker property field type.
@@ -59,8 +54,8 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Create variables for easy access to settings.
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
-    $base_table = $settings['base_table'];
-    $prop_table = $settings['prop_table'];
+    $base_table = array_key_exists('base_table', $settings) ? $settings['base_table'] : NULL;
+    $prop_table = array_key_exists('prop_table', $settings) ? $settings['prop_table'] : NULL;
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
@@ -102,35 +97,22 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col,
-        //'chado_table' => $base_table,
-        //'chado_column' => $base_pkey_col
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_pkey_col,
         'table_alias_mapping' => [$table_alias => $prop_table],
-        //'chado_table' => $prop_table,
-        //'chado_column' => $prop_pkey_col,
-        //'chado_table_alias' => $table_alias,
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  $link_term, [
         'action' => 'store_link',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col,
         'table_alias_mapping' => [$table_alias => $prop_table],
-        //'left_table' => $base_table,
-        //'left_table_id' => $base_pkey_col,
-        //'right_table' => $prop_table,
-        //'right_table_alias' => $table_alias,
-        //'right_table_id' => $prop_fk_col,
       ]),
       new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';value',
         'table_alias_mapping' => [$table_alias => $prop_table],
-        //'chado_table' => $prop_table,
-        //'chado_table_alias' => $table_alias,
-        //'chado_column' => 'value',
         'delete_if_empty' => TRUE,
         'empty_value' => ''
       ]),
@@ -138,17 +120,11 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
         'action' => 'store',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';rank',
         'table_alias_mapping' => [$table_alias => $prop_table],
-        //'chado_table' => $prop_table,
-        //'chado_table_alias' => $table_alias,
-        //'chado_column' => 'rank'
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
         'action' => 'store',
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_fk_col . ';type_id',
         'table_alias_mapping' => [$table_alias => $prop_table],
-        //'chado_table' => $prop_table,
-        //'chado_table_alias' => $table_alias,
-        //'chado_column' => 'type_id'
       ]),
     ];
   }
@@ -254,6 +230,86 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
       }
     }
     return $compatible;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array{
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+
+    // Initialize with an empty field list.
+    $field_list = [];
+
+    // Make sure the base table setting exists.
+    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
+    if (!$base_table) {
+      return $field_list;
+    }
+
+    // Make sure the prop table exists in Chado.
+    $prop_table = $base_table . 'prop';
+    if (!$chado->schema()->tableExists($prop_table)) {
+      return $field_list;
+    }
+
+    // Search for all unique types in the prop table.
+    $query = $chado->select('1:' . $prop_table, 'pt');
+    $query->leftJoin('1:cvterm', 'cvt', 'pt.type_id = cvt.cvterm_id');
+    $query->leftJoin('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
+    $query->leftJoin('1:db', 'db', 'db.db_id = dbx.db_id');
+    $query->leftJoin('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+    $query->addField('cvt', 'cvterm_id');
+    $query->addField('cvt', 'name', 'cvterm_name');
+    $query->addField('cvt', 'definition');
+    $query->addField('dbx', 'accession');
+    $query->addField('db', 'name', 'db_name');
+    $query->addField('cv', 'name', 'cv_name');
+    $results = $query->distinct()->execute()->fetchAll();
+
+    // Create a field entry for each property type.
+    foreach ($results as $recprop) {
+      $field_list[] = [
+        'name' => self::generateFieldName($bundle, $recprop->cvterm_name),
+        'content_type' => $bundle->getID(),
+        'label' => ucwords($recprop->cvterm_name),
+        'type' => self::$id,
+        'description' => $recprop->definition ? 'A record property with the following definition: ' . $recprop->definition : '',
+        'cardinality' => -1,
+        'required' => False,
+        'storage_settings' => [
+          'storage_plugin_id' => 'chado_storage',
+          'storage_plugin_settings' => [
+            'base_table' => $base_table,
+            'prop_table' => $prop_table
+          ],
+        ],
+        'settings' => [
+          'termIdSpace' => $recprop->cv_name,
+          'termAccession' => $recprop->accession,
+        ],
+        'display' => [
+          'view' => [
+            'default' => [
+              'region' => 'content',
+              'label' => 'above',
+              'weight' => 10,
+            ],
+          ],
+          'form' => [
+            'default' => [
+              'region' => 'content',
+              'weight' => 10
+            ],
+          ],
+        ],
+      ];
+    }
+
+    return $field_list;
   }
 
 }

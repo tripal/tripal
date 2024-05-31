@@ -58,8 +58,13 @@ class TripalEntityListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function load() {
-    $session = \Drupal::request()->getSession();
-    $session->set('tripal_load_listing', TRUE);
+    // Using the session helps speed up this listing by telling TripalEntity not
+    // to load ALL the fields.
+    if (\Drupal::request()->hasSession()) {
+      $session = \Drupal::request()->getSession();
+      $session->set('tripal_load_listing', TRUE);
+    }
+
     try {
       $entity_ids = $this->getEntityIds();
       $entities = $this->storage->loadMultiple($entity_ids);

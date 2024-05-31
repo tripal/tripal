@@ -282,11 +282,13 @@ class TripalEntityUILayoutController extends ControllerBase {
     /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
     /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_entity_storage **/
     /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $display **/
+    /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
     $bundle = $tripal_entity_type->id();
     $bundle_label = $tripal_entity_type->getLabel();
     $entity_type_manager = \Drupal::service('entity_type.manager');
     $config_entity_storage = $entity_type_manager->getStorage('entity_view_display');
     $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
+    $entity_field_manager = \Drupal::service('entity_field.manager');
 
     // First reset the display.
     $this->clearFieldGroups($display);
@@ -336,7 +338,30 @@ class TripalEntityUILayoutController extends ControllerBase {
                   ['@group_name' => $group_name, '@child' => $child]));
               continue;
             }
-            $this->setChild($child, $group_name, $display);
+
+            // Before adding the child we need to distinguish between a
+            // field instance name and a field type name.  The latter begins
+            // with 'type:'.  If the former, we can simply add the child. If
+            // the latter then we have to find all of the fields of the given
+            // field type and then add each one at a time.
+            $matches = [];
+            if (preg_match('/^type:(.+)$/', $child, $matches)) {
+              $child_type = $matches[1];
+
+              // Get the fields of this bundle and if any match the type
+              // then set the child.
+              $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle);
+              /** @var \Drupal\field\Entity\FieldConfig $entity_field_def **/
+              foreach ($entity_field_defs as $entity_field_def) {
+                if ($entity_field_def->getType() == $child_type) {
+                  $this->setChild($entity_field_def->getName(), $group_name, $display);
+                }
+              }
+            }
+            // We don't have a field type, so simply set the field instance.
+            else {
+              $this->setChild($child, $group_name, $display);
+            }
           }
         }
       }

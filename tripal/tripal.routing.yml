@@ -178,7 +178,7 @@ tripal.content_type_field_attach:
 tripal.content_type_field_check:
   path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/check'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalEntityUIController::tripalCheckForFields'
+    _form: '\Drupal\tripal\Form\TripalContentFieldsForm'
     _title: 'Check for new fields'
   options:
     parameters:
