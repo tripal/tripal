@@ -999,7 +999,7 @@ function tripal_pub_importer_delete($import_id) {
  * @ingroup tripal_pub
  */
 function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job = NULL) {
-
+  $logger = \Drupal::service('tripal.logger');
   // These are options for the tripal_report_error function. We do not
   // want to log messages to the watchdog but we do for the job and to
   // the terminal
@@ -1039,12 +1039,13 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
             $dbxref['accession'] = $matches[2];
           }
           else {
-            tripal_report_error($message_type, TRIPAL_ERROR,
-              'Unable to extract the dbxref to be associated with the publication (pub ID=@pub_id) from @dbxref. This reference should be [database-name]:[accession]',
+            $logger->error($message_type . " " . 
+              'Unable to extract the dbxref to be associated with the publication (pub ID=@pub_id) from @dbxref. 
+              This reference should be [database-name]:[accession]',
               [
                 '@pub_id' => $pub_id,
                 '@dbxref' => $pub['Publication Dbxref'],
-                $message_opts,
+                // $message_opts,
               ]
             );
           }
@@ -1114,6 +1115,7 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
  * @ingroup tripal_pub
  */
 function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE, $update_if_exists = FALSE, $job = NULL) {
+  $logger = \Drupal::service('tripal.logger');
   $pub_id = 0;
 
   // These are options for the tripal_report_error function. We do not
@@ -1140,14 +1142,14 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   $pub_ids = chado_publication_exists($pub_details);
 
   if (count($pub_ids) == 1 and !$update_if_exists) {
-    tripal_report_error($message_type, TRIPAL_NOTICE,
-      "The following publication already exists on this site:  %title %dbxref (Matching Pub id: %ids). Skipping.",
+    $logger->notice($message_type . " " . 
+      "The following publication already exists on this site:  @title @dbxref (Matching Pub id: @ids). Skipping.",
       [
-        '%title' => $pub_details['Citation'],
-        '%dbxref' => $pub_details['Publication Dbxref'],
-        '%ids' => implode(",", $pub_ids),
+        '@title' => $pub_details['Citation'],
+        '@dbxref' => $pub_details['Publication Dbxref'],
+        '@ids' => implode(",", $pub_ids),
       ],
-      $message_opts
+      // $message_opts
     );
     $action = 'skipped';
     return FALSE;
@@ -1156,13 +1158,13 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // If we have more than one matching pub then return an error as we don't
   // know which to update even if update_if_exists is set to TRUE.
   if (count($pub_ids) > 1) {
-    tripal_report_error($message_type, TRIPAL_NOTICE,
-      "The following publication exists %num times on this site:  %title %dbxref (Matching Pub id: %ids). Skipping.",
+    $logger->notice($message_type . " " . 
+      "The following publication exists %num times on this site:  @title @dbxref (Matching Pub id: @ids). Skipping.",
       [
-        '%num' => count($pub_ids),
-        '%title' => $pub_details['Citation'],
-        '%dbxref' => $pub_details['Publication Dbxref'],
-        '%ids' => implode(",", $pub_ids),
+        '@num' => count($pub_ids),
+        '@title' => $pub_details['Citation'],
+        '@dbxref' => $pub_details['Publication Dbxref'],
+        '@ids' => implode(",", $pub_ids),
       ],
       $message_opts
     );
@@ -1191,15 +1193,19 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $pub_type = chado_get_cvterm($identifiers);
   }
   else {
-    tripal_report_error($message_type, TRIPAL_ERROR,
-      "The Publication Type is a required property but is missing", [], $error_opts);
+    $logger->error($message_type . " " . 
+      "The Publication Type is a required property but is missing", [], 
+      //$error_opts
+    );
     $action = 'error';
     return FALSE;
   }
   if (!$pub_type) {
-    tripal_report_error($message_type, TRIPAL_ERROR,
-      "Cannot find publication type: '%type'",
-      ['%type' => $pub_details['Publication Type'][0]], $error_opts);
+    $logger->error($message_type . " " . 
+      "Cannot find publication type: '@type'",
+      ['@type' => $pub_details['Publication Type'][0]], 
+      //$error_opts
+    );
     $action = 'error';
     return FALSE;
   }
@@ -1231,9 +1237,11 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $options = ['statement_name' => 'ins_pub_tivoseispypaunty'];
     $pub = chado_insert_record('pub', $values, $options);
     if (!$pub) {
-      tripal_report_error($message_type, TRIPAL_ERROR,
-        "Cannot insert the publication with title: %title",
-        ['%title' => $pub_details['Title']], $error_opts);
+      $logger->error($message_type . " " . 
+        "Cannot insert the publication with title: @title",
+        ['@title' => $pub_details['Title']], 
+        // $error_opts
+      );
       $action = 'error';
       return FALSE;
     }
@@ -1248,9 +1256,9 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       $options = ['statement_name' => 'up_pub_tivoseispypaunty'];
       $success = chado_update_record('pub', $match, $values, $options);
       if (!$success) {
-        tripal_report_error($message_type, TRIPAL_ERROR,
-          "Cannot update the publication with title: %title",
-          ['%title' => $pub_details['Title']], $error_opts);
+        $logger->error($message_type . " " . 
+          "Cannot update the publication with title: @title",
+          ['@title' => $pub_details['Title']], $error_opts);
         $action = 'error';
         return FALSE;
       }
@@ -1315,8 +1323,11 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       $cvterm = chado_get_cvterm($identifiers);
     }
     if (!$cvterm) {
-      tripal_report_error($message_type, TRIPAL_ERROR,
-        "Cannot find term: '%prop'. Skipping.", ['%prop' => $key], $error_opts);
+      $logger->error($message_type . " " . 
+        "Cannot find term: '@prop'. Skipping.", 
+        ['@prop' => $key], 
+        // $error_opts
+      );
       continue;
     }
 
@@ -1366,9 +1377,11 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       );
     }
     if (!$success) {
-      tripal_report_error($message_type, TRIPAL_ERROR,
-        "Cannot add property '%prop' to pubprop table. Skipping.",
-        ['%prop' => $key], $error_opts);
+      $logger->error($message_type . " " . 
+        "Cannot add property '@prop' to pubprop table. Skipping.",
+        ['@prop' => $key], 
+        // $error_opts
+      );
       continue;
     }
   }
@@ -1392,6 +1405,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
  * @ingroup tripal_pub
  */
 function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
+  $logger = \Drupal::service('tripal.logger');
   $rank = 0;
 
   // First remove any of the existing pubauthor entires.
@@ -1464,7 +1478,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
         $options = ['statement_name' => 'ins_pubauthorcontact_puco'];
         $pubauthor_contact = chado_insert_record('pubauthor_contact', $values, $options);
         if (!$pubauthor_contact) {
-          tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot link pub authro and contact.", []);
+          $logger->error('tripal_pub' . " " . "Cannot link pub authro and contact.", []);
         }
       }
     }
@@ -1491,7 +1505,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
  * @ingroup tripal_pub
  */
 function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
-
+  $logger = \Drupal::service('tripal.logger');
   $options = ['return_array' => 1];
 
   // ---------------------------------
@@ -1548,8 +1562,8 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
     $citation = chado_expand_var($citation, 'field', 'pubprop.value', $options);
     // If multiple citations, it will be an array of objects.
     if (is_array($citation) and (count($citation) > 1)) {
-      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple citations already: %pub_id",
-        ['%pub_id' => $pubid]);
+      $logger->error('tripal_pub' . " " .  "Publication has multiple citations already: @pub_id",
+        ['@pub_id' => $pub->pub_id]);
       return FALSE;
     }
     // If only one citation, it will be an object and not an array of objects.
@@ -1589,8 +1603,8 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   $authors = chado_expand_var($authors, 'field', 'pubprop.value', $options);
   // If multiple author lists, $authors will be an array of objects instead of a single object.
   if (is_array($authors) and (count($authors) > 1)) {
-    tripal_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple author lists. It should have only one list: %pub_id",
-      ['%pub_id' => $pubid]);
+    $logger->error('tripal_pub' . " " . "Publication has multiple author lists. It should have only one list: @pub_id",
+      ['@pub_id' => $pub->pub_id]);
     return FALSE;
   }
   else {

@@ -355,7 +355,9 @@ function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE,
   $num_pubs = 0;
   $pub_id = NULL;
 
-  module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
+  // T3 this was call here
+  // T4 this was added to the tripal_chado includes within the tripal_chado.module
+  // module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
 
   // These are options for the tripal_report_error function. We do not
   // want to log messages to the watchdog but we do for the job and to
@@ -372,7 +374,11 @@ function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE,
   $logger->error($message, []);
 
 
-  $transaction = db_transaction();
+  // $transaction = db_transaction();
+  // $public = \Drupal::database();
+  // $transaction = $public->startTransaction();
+  $chado = \Drupal::service('tripal_chado.database');
+  $transaction = $chado->startTransaction();
   try {
     if (preg_match('/^(.*?):(.*?)$/', $pub_dbxref, $matches)) {
       $dbname = $matches[1];
