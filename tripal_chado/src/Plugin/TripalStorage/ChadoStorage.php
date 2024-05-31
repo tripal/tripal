@@ -545,7 +545,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * However, for the findVales() function there are often no criteria set
    * and we want to find all linked records associated with a base record.
    * All Chado fields will have a `record_id` property and the value of that
-   * comes from the base table.  This means that all fields will ahve at
+   * comes from the base table.  This means that all fields will have at
    * least one property set even if nothing was found. So we need to know
    * if the field has a valid set of property values. If so, we can
    * proceed as if the field was "found" otherwise, we should remove the
