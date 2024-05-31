@@ -187,7 +187,9 @@ class ChadoRecords  {
         // for the base table that should be included in the record.
         'columns' => [],
 
-        // An array the indicates which fields want column values.
+        // An array mapping which Tripal fields want which Chado column values.
+        // The key is the column alias and the value is an array, one entry
+        // for each field/property that uses the value.
         'field_columns' => [],
 
         // Conditinos for this table when performing a query.
@@ -216,7 +218,14 @@ class ChadoRecords  {
         // any columns from joined tables.  There is no guarnatee that fields
         // won't give the same name to the same fields in the same tables so
         // these values will be indexed by the field and key they belong to.
-        'values' => []
+        'values' => [],
+
+        // A boolean to indicate if any values have been set. We can't
+        // rely on checking if all values are empty because it could be
+        // possible that all values are meant to be empty. This value will
+        // get set when a query is successful for the table and values have
+        // been set.
+        'has_values' => FALSE,
       ];
     }
     return TRUE;
@@ -664,7 +673,7 @@ class ChadoRecords  {
    * Sets the record ID for all fields.
    *
    * Record IDs may not be known when ChadoRecords is setup. For example,
-   * a field may be added that needs a link to a bse table, but it may not
+   * a field may be added that needs a link to a base table, but it may not
    * yet be known, especially before an insert of the base record.  This
    * function should be run before a database operation like an insert, select,
    * update, or delete, this function can be used to populate IDs that
@@ -824,11 +833,6 @@ class ChadoRecords  {
   /**
    * For the given base table, returns non base tables that have conditions set.
    *
-   * Excludes tables whose only condition is the linker column to the base
-   * table.  This function is useful when finding values.  We don't want
-   * to iterate through tables that won't have any records to filter so
-   * we can use this function results to exclude those tables.
-   *
    * @param string $base_table
    *   The name of the Chado table used as a base table.
    *
@@ -841,14 +845,8 @@ class ChadoRecords  {
     $tables = $this->getAncillaryTables($base_table);
     foreach ($tables as $table_alias) {
       $items = $this->getTableItems($base_table, $table_alias);
-      $linker_cols = array_keys($items[0]['link_columns']);
       foreach (array_keys($items[0]['conditions']) as $column_alias) {
-        if (in_array($column_alias, $linker_cols) and
-            $items[0]['link_columns'][$column_alias] == $base_table) {
-          continue;
-        }
         $ret_val[] = $table_alias;
-
       }
     }
     return $ret_val;
@@ -1086,6 +1084,7 @@ class ChadoRecords  {
 
     // Set the value.
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] = $value;
+    $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['has_values'] = TRUE;
     return TRUE;
   }
 
@@ -1123,8 +1122,14 @@ class ChadoRecords  {
       return NULL;
     }
 
-    return $items[$delta]['values'][$column_alias];
+    // If the values were set then return it, otherwise return NULL;
+    if ($items[$delta]['values'] == TRUE) {
+      return $items[$delta]['values'][$column_alias];
+    }
+
+    return NULL;
   }
+
 
 
   /**
@@ -1635,7 +1640,7 @@ class ChadoRecords  {
   }
 
   /**
-   * Queries for multiple records in Chado for a given table..
+   * Queries for multiple records in Chado for a given table.
    *
    * @param string $base_table
    *   The name of the Chado table used as a base table.
@@ -1643,14 +1648,14 @@ class ChadoRecords  {
    *   The alias of the table.  For the base table, use the same table name as
    *   base tables don't have aliases.
    *
+   * @return array
+   *   An array of \Drupal\tripal_chado\TripalStorage\ChadoRecords objects.
+   *
    * @throws \Exception
    */
   public function findRecords(string $base_table, string $table_alias) {
 
     $found_records = [];
-
-    // Make sure all IDs are up to date.
-    $this->setLinks($base_table);
 
     // Get informatino about this Chado table.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
@@ -1717,7 +1722,6 @@ class ChadoRecords  {
           // If this is the base table be sure to set the record ID.
           if ($base_table === $table_alias and array_key_exists($column_alias, $record['link_columns'])) {
             $this->setRecordID($base_table, $value);
-            $this->setLinks($base_table);
           }
         }
 

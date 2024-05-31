@@ -323,10 +323,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Clone the value array for this match.
           $new_values = $this->cloneValues($values);
 
-          // Iterate through tables that have conditions.  We don't want to
-          // query tables that only have a condition with a link to the base
-          // table because these records aren't providing any filters to limit
-          // the base records.
+          // Limit base records by iterating through tables with conditions.
           $tables = $this->records->getAncillaryTablesWithCond($base_table);
           $found_match = TRUE;
           foreach ($tables as $table_alias) {
@@ -341,7 +338,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             // only use findValues() for publishing and in this case all
             // criteria must be met.
             if ($num_found == 0) {
-              $found_match = FALSE;
               continue;
             }
 
@@ -355,11 +351,23 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             }
           }
 
+          // Now, of the remaining base records left
+
           // Now set the values.
-          if ($found_match) {
-            $this->setPropValues($new_values, $match);
-            $found_list[] = $new_values;
+          $this->setPropValues($new_values, $match);
+          print_r($match->getRecordsArray());
+
+          // Remove any values that are not valid.
+          foreach ($new_values as $field_name => $deltas) {
+            foreach ($deltas as $delta => $properties) {
+              $is_valid = $this->isFieldValid($field_name, $delta, $new_values);
+              if (!$is_valid) {
+                unset($new_values[$field_name][$delta]);
+              }
+            }
           }
+
+          $found_list[] = $new_values;
         }
       }
     }
@@ -367,6 +375,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
+
     return $found_list;
   }
 
@@ -440,7 +449,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $column_alias  = $value_col_info['column_alias'];
 
             // For values that come from joins, we need to use the root table
-            // becuase this is the table that will have the value.
+            // because this is the table that will have the value.
             $my_delta = $delta;
             if($action == 'read_value' and array_key_exists('join', $path_array)) {
               $root_alias = $value_col_info['root_alias'];
@@ -453,9 +462,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               $my_delta = 0;
             }
 
-            // Set the value.
             $value = $records->getColumnValue($base_table, $table_alias, $my_delta, $column_alias);
-            $values[$field_name][$delta][$key]['value']->setValue($value);
+            if ($value !== NULL) {
+              $values[$field_name][$delta][$key]['value']->setValue($value);
+            }
           }
         }
       }
@@ -524,6 +534,55 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         $values[$field_name][$delta][$key]['value']->setValue($value);
       }
     }
+  }
+
+
+  /**
+   * Checks if a field has all necessary elements to be considered 'foudn'.
+   *
+   * The ChadoRecords class will search for all records necessary to
+   * populate the values of the fields for a content type. This works well
+   * when all conditions are set for the insertValues() and loadValues().
+   * However, for the findVales() function there are often no criteria set
+   * and we want to find all linked records associated with a base record.
+   * All Chado fields will have a `record_id` property and the value of that
+   * comes from the base table.  This means that all fields will ahve at
+   * least one property set even if nothing was found. So we need to know
+   * if the field has a valid set of property values. If so, we can
+   * proceed as if the field was "found" otherwise, we should remove the
+   * field values as nothing was found.
+   *
+   * A field is valid if all of the properties that have an action of 'store'
+   * have a non NULL value and if all required properties have a non NULL value.
+   *
+   * @param string $field_name
+   *   The name of the field.
+   * @param integer $delta
+   *   The field item's delta value.
+   * @param array $values
+   *  An array of field values.
+   * @return boolean
+   *   returns TRUE if the field has all necessary elements for inserting
+   *   into the Drupal tables for publishing. FALSE otherwise.
+   */
+  protected function isFieldValid($field_name, $delta, $values) {
+
+    foreach ($values[$field_name][$delta] as $key => $prop_value) {
+      /** @var \Drupal\tripal\TripalStorage\StoragePropertyTypeBase $prop_type **/
+      $prop_type = $this->getPropertyType($field_name, $key);
+      $prop_settings = $prop_type->getStorageSettings();
+      $action = $prop_settings['action'];
+      $is_store = preg_match('/^store/', $action);
+      $value = $prop_value['value']->getValue();
+      $is_required = $prop_type->getRequired();
+      if ($is_store and $value === NULL) {
+        return FALSE;
+      }
+      if ($is_required and $value === NULL) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
@@ -930,6 +989,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * Takes a path string for a field property and converts it to an array structure.
    *
+   * @param string $field_name
+   *   The name of the field.
+   * @param string $base_table
+   *   The name of the base table for thie field.
    * @param mixed $path
    *   A string continaining the path.  Note: this is a recursive function and on
    *   recursive calls this variable will be n array. Hence, the type is "mixed".*
@@ -946,7 +1009,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @return array
    *
    */
-  protected function parsePath(string $field_name, string $base_table, mixed $path, array $aliases = [], string $as = '', string $full_path = '') {
+  protected function parsePath(string $field_name, string $base_table, mixed $path,
+      array $aliases = [], string $as = '', string $full_path = '') {
 
     // If the path is a string then split it.
     $path_arr = [];
@@ -1023,7 +1087,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // the same as the last column in tge join.
       else {
         $ret_array['join']['value_column'] = $right_column;
-        $ret_array['join']['value_alias'] = $as ? $as : $right_column;
+        $ret_array['join']['value_alias'] = $as ? $as : $field_name . '__' . $right_column;
       }
 
       // If we have a value column in the return value then this means that it hit
@@ -1051,14 +1115,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       if (array_key_exists($table_alias, $aliases)) {
         $chado_table = $aliases[$table_alias];
       }
-
-      // If the base table is not the same as the root table then
-      // we should add the field name to the colun alias. Otherwise
-      // we may have conflicts if mutiple fields use the same alias.
-      $value_alias = $as ? $as : $value_column;
-      if ($base_table != $root_table) {
-        $value_alias = $field_name . '__' . $value_alias;
-      }
       return [
         'path' => $full_path,
         'base_table' => $base_table,
@@ -1067,24 +1123,20 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         'chado_table' => $chado_table,
         'table_alias' => $table_alias,
         'value_column' => $value_column,
-        'value_alias' => $value_alias
+        'value_alias' => $as ? $as : $field_name . '__' . $value_column
       ];
     }
 
     // There is no period in the path so there is no Chado table. We are at the
-    // end of the path with joins and we can just return the value column.
+    // end of the path with joins and the value column is not the same as the
+    // right join column. We can just return the value column.
     else {
-      // If the base table is not the same as the root table then
-      // we should add the field name to the colun alias. Otherwise
-      // we may have conflicts if mutiple fields use the same alias.
-      $value_alias = $as ? $as : $curr_path;
-      $value_alias = $field_name . '__' . $value_alias;
       return [
         'base_table' => $base_table,
         'root_table' => $root_table,
         'root_alias' => $root_alias,
         'value_column' => $curr_path,
-        'value_alias' => $value_alias
+        'value_alias' => $as ? $as : $field_name . '__' . $curr_path
       ];
     }
   }
@@ -1257,7 +1309,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // During publish, record_id may be null. In this particular case, return null.
     if (!$record_id) {
-      return NULL;
+      return -1;
     }
 
     // Given the Chado record ID and bundle term, we can lookup the Drupal entity ID.

@@ -162,6 +162,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     // An intermediate linker table is used
     else {
       // Define the linker table that links the base table to the object table.
+      // E.g.,:  project_contact.project_contact_id
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
@@ -169,6 +170,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       ]);
 
       // Define the link between the base table and the linker table.
+      // E.g.,:  project.project_id>project_contact.project_id
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
         'action' => 'store_link',
         'drupal_store' => TRUE,
@@ -176,6 +178,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       ]);
 
       // Define the link between the linker table and the object table.
+      // E.g.,:  project_contact.contact_id
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
         'action' => 'store',
         'drupal_store' => TRUE,
