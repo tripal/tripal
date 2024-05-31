@@ -537,7 +537,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
 
   /**
-   * Checks if a field has all necessary elements to be considered 'foudn'.
+   * Checks if a field has all necessary elements to be considered 'found'.
    *
    * The ChadoRecords class will search for all records necessary to
    * populate the values of the fields for a content type. This works well
