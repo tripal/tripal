@@ -1318,7 +1318,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
     $record_id = $record_id->getValue('value');
 
-    // During publish, record_id may be null. In this particular case, return null.
     if (!$record_id) {
       return -1;
     }
