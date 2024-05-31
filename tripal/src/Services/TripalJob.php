@@ -159,7 +159,7 @@ class TripalJob {
    *   On failure an exception is thrown.
    *
    * @return
-   *   Returns TRUE if the job was succesfully created. Returns FALSE otherwise.
+   *   Returns TRUE if the job was successfully created. Returns FALSE otherwise.
    *   A return of FALSE does not mean the job creation failed. If the
    *   ignore_duplicate is set to false and the job already is present in the
    *   queue then the return value will be FALSE.
