@@ -476,7 +476,10 @@ class TripalPublish {
           $delta = 0;
           $field = $this->field_info[$field_name]['instance'];
           $main_prop = $field->mainPropertyName();
-          $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
+          $value = '';
+          if (array_key_exists($delta, $match[$field_name])) {
+            $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
+          }
           $value = '';
           if (array_key_exists($delta, $match[$field_name])) {
             $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
