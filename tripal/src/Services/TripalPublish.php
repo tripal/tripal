@@ -168,7 +168,7 @@ class TripalPublish {
 
     $this->setFieldInfo();
 
-    // Get the rquired field properties that will uniquely identify an entity.
+    // Get the required field properties that will uniquely identify an entity.
     // We only need to search on those properties.
     $this->required_types = $this->storage->getStoredTypes();
   }
@@ -296,7 +296,7 @@ class TripalPublish {
             'prop_types' => [],
             'instance' => $instance,
           ];
-          // Order the property types by key for eacy lookup.
+          // Order the property types by key for easy lookup.
           foreach ($prop_types as $prop_type) {
             $field_info['prop_types'][$prop_type->getKey()] = $prop_type;
           }
@@ -308,7 +308,7 @@ class TripalPublish {
   }
 
   /**
-   * Adds to the search values array the required proprty values.
+   * Adds to the search values array the required property values.
    *
    * @param array $seach_values
    */
@@ -494,7 +494,7 @@ class TripalPublish {
 
 
   /**
-   * Makes sure that we will not be adding any dupliate entities.
+   * Makes sure that we will not be adding any duplicate entities.
    *
    * @param array $matches
    *   The array of matches for each entity.
@@ -616,7 +616,7 @@ class TripalPublish {
   }
 
   /**
-   * Makes sure that we will not be adding any dupliate entities.
+   * Makes sure that we will not be adding any duplicate entities.
    *
    * @param string $field_name
    *   The name of the field
@@ -685,7 +685,7 @@ class TripalPublish {
   /**
    * Counts the total items to insert for a field.
    *
-   * The matches array returned by the TripalStorage is orgnized by entity
+   * The matches array returned by the TripalStorage is organized by entity
    * but fields can have a cardinality > 1.  This function counts the number
    * of items for the given field.
    *

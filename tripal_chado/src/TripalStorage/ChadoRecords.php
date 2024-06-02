@@ -107,14 +107,14 @@ class ChadoRecords  {
    * @throws \Exception
    *
    * @return book:
-   *   TRUE if the table and delta were enitalized. FASLSE otherwise. The
+   *   TRUE if the table and delta were initalized. FALSE otherwise. The
    *   base table can only be initialized once. This function will
    *   return FALSE if there is an attempt to initalize it with a delta
    *   higher than 1.
    */
   protected function initTable($elements) : bool {
 
-    // Make sure all of the required elements are preesent
+    // Make sure all of the required elements are present
     $this->checkElement($elements, 'base_table', 'Initializing', 'table');
     $this->checkElement($elements, 'root_table', 'Initializing', 'table');
     $this->checkElement($elements, 'root_alias', 'Initializing', 'table');
@@ -140,7 +140,7 @@ class ChadoRecords  {
     }
 
     // We do not want to initalize the base table more than once. When a
-    // field has a cardinality > 0 then it can pass a delta value > 0. That
+    // field has a cardinality > 1 then it can pass a delta value > 0. That
     // delta value is for the item not for the base table.  There can only
     // be one base table record.
     if ($base_table == $chado_table and $delta > 0)  {
@@ -242,10 +242,10 @@ class ChadoRecords  {
    *   These keys are required:
    *   - base_table: the base table the field should be added to.
    *   - chado_table: the chado table the field should be added to. This
-   *     can be the base table or an anciallary table.
+   *     can be the base table or an ancillary table.
    *   - table_alias: the alias fo the table. A base table alias will always
    *     be the same as the as the base table name.
-   *   - delta: the detla index of the field item being added.
+   *   - delta: the delta index of the field item being added.
    *   - chado_column: the name of the column that the field is for.
    *   - column_alias: an alias for the column.
    *   - value: a value for the column.  If the value is not known this should
@@ -273,13 +273,13 @@ class ChadoRecords  {
    */
   public function addColumn(array $elements, bool $is_link = FALSE, bool $read_only = FALSE) {
 
-    // Initlaize the table. If the function returns FALSE
-    // then the caller is trying to re-intalize the base table so jus quit.
+    // Initialize the table. If the function returns FALSE
+    // then the caller is trying to re-initialize the base table so just quit.
     if(!$this->initTable($elements)){
       return;
     }
 
-    // Make sure all of the required elements are preesent.
+    // Make sure all of the required elements are present.
     $this->checkElement($elements, 'chado_column', 'Setting', 'field');
     $this->checkElement($elements, 'column_alias', 'Setting', 'field');
     $this->checkElement($elements, 'value', 'Setting', 'field');
@@ -339,7 +339,7 @@ class ChadoRecords  {
     }
 
     // If this field is for an ID then keep track of it. If this is the base
-    // table thnn we can set the ID from any value provided.
+    // table then we can set the ID from any value provided.
     if ($is_link) {
       $this->checkElement($elements, 'base_table', 'Setting', 'field');
       $base_table = $elements['base_table'];
@@ -362,10 +362,10 @@ class ChadoRecords  {
    *   These keys are required:
    *   - base_table: the base table the field should be added to.
    *   - chado_table: the chado table the field should be added to. This
-   *     can be the base table or an anciallary table.
+   *     can be the base table or an ancillary table.
    *   - table_alias: the alias fo the table. A base table alias will always
    *     be the same as the as the base table name.
-   *   - delta: the detla index of the field item being added.
+   *   - delta: the delta index of the field item being added.
    *   - column_alias: the alias used for the column (set via the setField()
    *     function.
    *   - value: a value for the column to use as the condition.
@@ -375,13 +375,13 @@ class ChadoRecords  {
    */
   public function addCondition(array $elements) {
 
-    // Initlaize the table. If the function returns FALSE
-    // then the caller is trying to re-intalize the base table so jus quit.
+    // Initialize the table. If the function returns FALSE
+    // then the caller is trying to re-initialize the base table so just quit.
     if(!$this->initTable($elements)){
       return;
     }
 
-    // Make sure all of the required elements are preesent
+    // Make sure all of the required elements are present
     $this->checkElement($elements, 'column_alias', 'Setting', 'condition');
     $this->checkElement($elements, 'value', 'Setting', 'condition');
 
@@ -450,10 +450,10 @@ class ChadoRecords  {
    *   These keys are required:
    *   - base_table: the base table the field should be added to.
    *   - chado_table: the chado table the field should be added to. This
-   *     can be the base table or an anciallary table.
+   *     can be the base table or an ancillary table.
    *   - table_alias: the alias fo the table. A base table alias will always
    *     be the same as the as the base table name.
-   *   - delta: the detla index of the field item being added.
+   *   - delta: the delta index of the field item being added.
    *   - join_path:  the path from the StoragePropertyType that indicates
    *     the sequences of tables joined together.
    *   - join_type: corresponds to 'inner', 'outer', etc. Currently, only
@@ -470,13 +470,13 @@ class ChadoRecords  {
    */
   public function addJoin(array &$elements) {
 
-    // Initlaize the table. If the function returns FALSE
-    // then the caller is trying to re-intalize the base table so jus quit.
+    // Initialize the table. If the function returns FALSE
+    // then the caller is trying to re-initialize the base table so just quit.
     if (!$this->initTable($elements)){
       return;
     }
 
-    // Make sure all of the required elements are preesent
+    // Make sure all of the required elements are present
     $this->checkElement($elements, 'join_path', 'Setting', 'join');
     $this->checkElement($elements, 'join_type', 'Setting', 'join');
     $this->checkElement($elements, 'left_table', 'Setting', 'join');
@@ -605,7 +605,7 @@ class ChadoRecords  {
    * Adds a fields to extract from a join in this ChadoRecords object.
    *
    * This function is used after an addJoin() function to indicate the
-   * fileds (or table columns) that should be added to the fields retrieved
+   * fields (or table columns) that should be added to the fields retrieved
    * after a query.
    *
    * @param array $elements
@@ -614,10 +614,10 @@ class ChadoRecords  {
    *   These keys are required:
    *   - base_table: the base table the field should be added to.
    *   - chado_table: the chado table the field should be added to. This
-   *     can be the base table or an anciallary table.
+   *     can be the base table or an ancillary table.
    *   - table_alias: the alias fo the table. A base table alias will always
    *     be the same as the as the base table name.
-   *   - delta: the detla index of the field item being added.
+   *   - delta: the delta index of the field item being added.
    *   - join_path:  the path from the StoragePropertyType that indicates
    *     the sequences of tables joined together.
    *   - chado_column: the column name in the table to add as a field.
@@ -632,13 +632,13 @@ class ChadoRecords  {
    */
   public function addJoinColumn(array $elements) {
 
-    // Initlaize the table. If the function returns FALSE
-    // then the caller is trying to re-intalize the base table so jus quit.
+    // Initialize the table. If the function returns FALSE
+    // then the caller is trying to re-initialize the base table so just quit.
     if(!$this->initTable($elements)){
       return;
     }
 
-    // Make sure all of the required elements are preesent
+    // Make sure all of the required elements are present
     $this->checkElement($elements, 'join_path', 'Setting', 'join column');
     $this->checkElement($elements, 'chado_column', 'Setting', 'join column');
     $this->checkElement($elements, 'column_alias', 'Setting', 'join column');
@@ -1585,7 +1585,7 @@ class ChadoRecords  {
     // Get the Chado table for this given table alias.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
-    // Get informatino about this Chado table.
+    // Get information about this Chado table.
     $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
@@ -1658,7 +1658,7 @@ class ChadoRecords  {
 
     $found_records = [];
 
-    // Get informatino about this Chado table.
+    // Get information about this Chado table.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
     // Iterate through each item of the table and perform an insert.
@@ -1757,7 +1757,7 @@ class ChadoRecords  {
     // Get the Chado table for this given table alias.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
-    // Get informatino about this Chado table.
+    // Get information about this Chado table.
     $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
@@ -1815,7 +1815,7 @@ class ChadoRecords  {
    *   The alias of the table.  For the base table, use the same table name as
    *   base tables don't have aliases.
    * @param bool $graceful
-   *   Set to TRUE not not throw na exception of valid conditions are not
+   *   Set to TRUE to not throw an exception if valid conditions are not
    *   set. If TRUE then it skips the record rather than performs the delete.
    *
    * @throws \Exception
@@ -1978,7 +1978,7 @@ class ChadoRecords  {
       $num_records = $delta;
       while ($values = $results->fetchAssoc()) {
         // If we have more records than we have items then we have a field
-        // with cardinatliy > 1 and we this select is part of a findValues()
+        // with cardinality > 1 and this select is part of a findValues()
         // call.  For a loadValues() then the delta should already be set for
         // all the property items.  We need to create a copy of the previous
         // item so we can add the new values.

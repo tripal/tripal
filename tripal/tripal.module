@@ -253,7 +253,7 @@ function tripal_theme_suggestions_tripal_entity(array $variables) {
 /**
  * Replacement for tripal_init.
  * Implements hook_preprocess_html()
- * @param $$variables
+ * @param &$variables
  *   An associative array containing:
  *    page: A render element representing the page.
  */
