@@ -5,7 +5,7 @@ tripal_entity_type:
   # This should only by set in the TripalEntityType::save() method.
   max_id: 0
   # HTML tags allowed in entity titles
-  allowed_title_tags: ['em', 'i', 'strong', 'u']
+  allowed_title_tags: 'em i strong u'
 
 files:
   # Maximum size for file uploads (defaults to 1 GB)
