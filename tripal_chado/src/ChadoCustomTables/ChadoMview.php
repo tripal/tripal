@@ -151,7 +151,7 @@ class ChadoMview extends ChadoCustomTable {
   }
 
   /**
-   * Retrieves the the status of the last time the mview was populated.
+   * Retrieves the status of the last time the mview was populated.
    *
    * @return string
    */

@@ -660,7 +660,7 @@ class GFF3Importer extends ChadoImporterBase {
       $this->parseGFF3();
 
       // Prep the database for necessary records.
-      $this->prepSynonms();
+      $this->prepSynonyms();
       $this->prepNullPub();
       $this->prepDBs();
 
@@ -843,7 +843,7 @@ class GFF3Importer extends ChadoImporterBase {
   /**
    * Makes sure Chado is ready with the necessary synonym type records.
    */
-  private function prepSynonms() {
+  private function prepSynonyms() {
     $chado = $this->getChadoConnection();
     // make sure we have a 'synonym_type' vocabulary
     $select = ['name' => 'synonym_type'];
@@ -2141,7 +2141,7 @@ class GFF3Importer extends ChadoImporterBase {
   }
 
   /**
-   * Deletes all anciallary data about a feature so we can re-insert it.
+   * Deletes all ancillary data about a feature so we can re-insert it.
    */
   private function deleteFeatureData() {
     $chado = $this->getChadoConnection();

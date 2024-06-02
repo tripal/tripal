@@ -4679,8 +4679,8 @@ INSERT INTO public.tripal_cv_obo VALUES (1, 'Relationship Ontology (legacy)', '{
 INSERT INTO public.tripal_cv_obo VALUES (2, 'The Gene Ontology (GO) knowledgebase is the world’s largest source of information on the functions of genes', 'http://purl.obolibrary.org/obo/go.obo');
 INSERT INTO public.tripal_cv_obo VALUES (3, 'The Sequence Ontology', 'http://purl.obolibrary.org/obo/so.obo');
 INSERT INTO public.tripal_cv_obo VALUES (4, 'A vocabulary of taxonomic ranks (species, family, phylum, etc)', 'http://purl.obolibrary.org/obo/taxrank.obo');
-INSERT INTO public.tripal_cv_obo VALUES (5, 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.', '{tripal_chado}/files/tcontact.obo');
-INSERT INTO public.tripal_cv_obo VALUES (6, 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.', '{tripal_chado}/files/tpub.obo');
+INSERT INTO public.tripal_cv_obo VALUES (5, 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology can be identified.', '{tripal_chado}/files/tcontact.obo');
+INSERT INTO public.tripal_cv_obo VALUES (6, 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified.', '{tripal_chado}/files/tpub.obo');
 
 
 INSERT INTO public.tripal_id_space_collection VALUES ('CO_010', 'chado_id_space');

@@ -33,7 +33,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *
    * Anyway, using this trait solves the problem and although the error
    * mentions this should be a temporary solution, there are no mentioned plans
-   * in the Drupal forumns or code that this trait will be removed at any point.
+   * in the Drupal forums or code that this trait will be removed at any point.
    */
   use DependencySerializationTrait;
 
@@ -554,7 +554,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
          . "\r"
       );
 
-      // If we have a job the update the job progress too.
+      // If we have a job then update the job progress too.
       if ($this->job) {
         $this->job->setProgress($percent);
       }
@@ -570,7 +570,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
          . "\r"
       );
 
-      // If we have a job the update the job progress too.
+      // If we have a job then update the job progress too.
       if ($this->job) {
         $this->job->setProgress(100);
       }

@@ -2,7 +2,7 @@ langcode: 'en'
 
 tripal_entity_type:
   # The current highest Tripal Content Type ID
-  # This should only by set in the TripalEntityType::save() method.
+  # This should only be set in the TripalEntityType::save() method.
   max_id: 0
 
 files:

@@ -316,7 +316,7 @@ SELECT
       $mview->setSqlQuery($sql_query);
       $success = $mview->setTableSchema($schema_arr, $force_drop);
       if ($success) {
-        \Drupal::messenger()->addMessage(t("The materialized view was succesfully updated."), 'status');
+        \Drupal::messenger()->addMessage(t("The materialized view was successfully updated."), 'status');
       }
       else {
         $link = Link::fromTextAndUrl(t('recent logs'), Url::fromUserInput('/admin/reports/dblog'))->toString();
