@@ -40,7 +40,7 @@ class TripalEntitySettingsForm extends FormBase {
 
     $form['tripal_entity_settings']['#markup'] = 'Settings form for Tripal Content entities.';
 
-    // Provide overall server consumption (and space remaining)
+    // Define the HTML tags that tripal supports in Tripal Entity titles.
     $allowed_title_tags = $form_state->getValue('allowed_title_tags',
       $settings->get('tripal_entity_type.allowed_title_tags'));
 
