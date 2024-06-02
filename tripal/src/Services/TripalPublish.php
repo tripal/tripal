@@ -480,16 +480,16 @@ class TripalPublish {
           if (array_key_exists($delta, $match[$field_name])) {
             $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
           }
-          $value = '';
-          if (array_key_exists($delta, $match[$field_name])) {
-            $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
-          }
           if ($value === NULL) {
             $value = '';
           }
           $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
         }
       }
+      // Trim any training spaces and remove double spaces. Double spaces
+      // can occur if a token replacment has no value but there are spaces
+      // around it.
+      $entity_title = trim(preg_replace('/\s\s/', ' ', $entity_title));
       $titles[] = $entity_title;
     }
     return $titles;
@@ -773,28 +773,26 @@ class TripalPublish {
         $total++;
 
         // No need to add items to those that are already published.
-        if (array_key_exists($entity_id, $existing)) {
-          if (array_key_exists($delta, $existing[$entity_id])) {
-            continue;
-          }
-        }
+        if (!array_key_exists($entity_id, $existing) or
+            !array_key_exists($delta, $existing[$entity_id])) {
 
-        // Add items to those that are not already published.
-        $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
-        $args[":bundle_$j"] = $this->bundle;
-        $args[":deleted_$j"] = 0;
-        $args[":entity_id_$j"] = $entity_id;
-        $args[":revision_id_$j"] = 1;
-        $args[":langcode_$j"] = 'und';
-        $args[":delta_$j"] = $delta;
-        foreach (array_keys($this->required_types[$field_name]) as $key) {
-          $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
-          $sql .=  $placeholder . ', ';
-          $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+          // Add items to those that are not already published.
+          $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
+          $args[":bundle_$j"] = $this->bundle;
+          $args[":deleted_$j"] = 0;
+          $args[":entity_id_$j"] = $entity_id;
+          $args[":revision_id_$j"] = 1;
+          $args[":langcode_$j"] = 'und';
+          $args[":delta_$j"] = $delta;
+          foreach (array_keys($this->required_types[$field_name]) as $key) {
+            $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
+            $sql .=  $placeholder . ', ';
+            $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+          }
+          $sql = rtrim($sql, ", ");
+          $sql .= "),\n";
+          $num_inserted++;
         }
-        $sql = rtrim($sql, ", ");
-        $sql .= "),\n";
-        $num_inserted++;
 
         // If we've reached the size of the batch then let's do the insert.
         if ($j == $batch_size or $total == $num_matches) {
