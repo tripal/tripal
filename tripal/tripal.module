@@ -632,8 +632,9 @@ function tripal_preprocess_field(&$variables) {
       $value = $item['content']['#context']['value'];
       // Convert strings into markup, this will cause HTML tags to be rendered.
       if (is_string($value)) {
-        // @todo this variable could be made global and configurable
-        $tripal_allowed_tags = ['em', 'i', 'strong', 'u'];
+        // We can configure which tags are allowed at /admin/tripal/config
+        $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
+        $tripal_allowed_tags = explode(' ', $tag_string ?? '');
         $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
         $variables['items'][$delta]['content']['#context']['value'] = Drupal\Core\Render\Markup::create($sanitized_value);
       }
@@ -653,8 +654,9 @@ function tripal_preprocess_block(&$variables) {
   if ($variables['plugin_id'] == 'page_title_block') {
     // Convert strings into markup, this will cause HTML tags to be rendered.
     if (is_string($variables['content']['#title'])) {
-      // @todo this variable could be made global and configurable
-      $tripal_allowed_tags = ['em', 'i', 'strong', 'u'];
+      // We can configure which tags are allowed at /admin/tripal/config
+      $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
+      $tripal_allowed_tags = explode(' ', $tag_string ?? '');
       $sanitized_value = Xss::filter($variables['content']['#title'], $tripal_allowed_tags);
       $variables['content']['#title'] = Drupal\Core\Render\Markup::create($sanitized_value);
     }

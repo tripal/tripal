@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal\Form;
 
-use Drupal;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -37,7 +36,7 @@ class TripalEntitySettingsForm extends FormBase {
    *   Form definition array.
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $settings = Drupal::config('tripal.settings');
+    $settings = \Drupal::config('tripal.settings');
 
     $form['tripal_entity_settings']['#markup'] = 'Settings form for Tripal Content entities.';
 
@@ -49,8 +48,10 @@ class TripalEntitySettingsForm extends FormBase {
       '#type' => 'textfield',
       '#title' => t('HTML tags allowed in page titles'),
       '#description' => t('A list of HTML tags that can be used in page titles.'
-                        . ' Enter one or more tags separated by spaces, or leave blank to disable HTML tag rendering.'
-                        . ' Any tag not in this list will be escaped if present in a page title.'),
+                        . ' Enter one or more tags separated by spaces, for example "em strong u".'
+                        . ' Leave blank to disable HTML tag rendering.'
+                        . ' Any tag not in this list will be filtered out if present in a page title.'
+                        . ' You may need to rebuild the cache for changes to take effect.'),
       '#default_value' => $allowed_title_tags,
       '#required' => FALSE,
     ];
@@ -94,7 +95,7 @@ class TripalEntitySettingsForm extends FormBase {
     $allowed_title_tags = preg_replace('/ +/', ' ', $allowed_title_tags);
 
     // Update configuration
-    Drupal::configFactory()
+    \Drupal::configFactory()
       ->getEditable('tripal.settings')
       ->set('tripal_entity_type.allowed_title_tags', $allowed_title_tags)
       ->save();
