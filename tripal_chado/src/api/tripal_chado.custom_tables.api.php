@@ -43,7 +43,7 @@ use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
  *   True if the table should not be changed if it already exists.
  *   False, to change it regardles.
  * @return bool
- *   True if the table was edited succesfully, False otherwise.
+ *   True if the table was edited successfully, False otherwise.
  *
  * @ingroup tripal_custom_tables_api
  */

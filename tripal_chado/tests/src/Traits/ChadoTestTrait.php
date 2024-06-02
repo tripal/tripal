@@ -351,7 +351,7 @@ trait ChadoTestTrait  {
     // We don't want to perform tests in a live schema.
     $this->assertTrue($tripaldbx_db->getSchemaName() == $schema_name, 'TripalDBX is not using the test schema.');
 
-    // Set this to be the Chad connection used in the current test schema.
+    // Set this to be the Chado connection used in the current test schema.
     $container = \Drupal::getContainer();
     $container->set('tripal_chado.database', $tripaldbx_db);
 

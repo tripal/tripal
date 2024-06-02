@@ -836,7 +836,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * integer indicating the schema the table is in. For example, {1: feature}
    * would indicate the feature table in the current Tripal DBX managed schema,
    * {0: system} would indicate the drupal system table and additional numeric
-   * indices would be used for extra Tripal DBX managed schema.
+   * indices would be used for extra Tripal DBX managed schemas.
    *
    * For Example, lets say the schema name of the current TripalDBX managed
    * schema is "chado", Drupal is in the "public" schema and we have a second

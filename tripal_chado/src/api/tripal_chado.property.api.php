@@ -312,7 +312,7 @@ function chado_insert_property($record, $property, $options = [], $schema_name =
  *     -value: The specific value for the property.
  *     -rank: The specific rank for the property.
  *     -cvalue_id: The cvterm_id of the value for the property.
- *      **note** cvalue_id is an anticipated column in the the next Chado
+ *      **note** cvalue_id is an anticipated column in the next Chado
  *      release (1.4).  It is included here for early adopters.
  *
  * @param $options
@@ -564,7 +564,7 @@ function chado_delete_property($record, $property, $schema_name = 'chado') {
  *     -value: The specific value for the property.
  *     -rank: The specific rank for the property.
  *     -cvalue_id: The cvterm_id of the value for the property.
- *      **note** cvalue_id is an anticipated column in the the next Chado
+ *      **note** cvalue_id is an anticipated column in the next Chado
  *      release (1.4).  It is included here for early adopters.
  *
  * @param $options
