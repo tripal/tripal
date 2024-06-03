@@ -21,7 +21,7 @@ class TripalEntitySettingsForm extends FormBase {
    *   The unique string identifying the form.
    */
   public function getFormId() {
-    return 'tripal_entity_settings';
+    return 'tripal_entity_settings_form';
   }
 
   /**
