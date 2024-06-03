@@ -127,13 +127,6 @@ class TripalTokenParser {
    *   The property values
    */
   public function addFieldValue($field_name, string $key, $value){
-    // Special case handling, fields set to one of the HTML formats
-    // will be stored wrapped in paragraph tags <p></p>.
-    // These are disruptive to the title, so remove them.
-    // Any other HTML markup is allowed, e.g. <em> <strong>
-    if ($value) {
-      $value = preg_replace('/^<p>(.*)<\/p>[\r\n]*$/', '$1', $value);
-    }
     $this->values[$field_name][$key] = $value;
   }
 
