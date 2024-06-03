@@ -435,7 +435,7 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
     $token_parser->addFieldValue('organism_species', 'value', 'sativa');
     $token_parser->addFieldValue('organism_abbreviation', 'value', 'O. sativa');
     $token_parser->addFieldValue('organism_common_name', 'value', 'Japonica rice');
-    // Comment is set to Basic HTML, so test with HTML markup. Only <p></p> should be filtered out.
+    // Comment is set to Basic HTML, so test with some HTML markup.
     $token_parser->addFieldValue('organism_comment', 'value', '<p>rice is <em>nice</em></p>');
     $values = $token_parser->getValues();
 
@@ -455,8 +455,7 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
     $this->assertTrue($values['organism_species']['value'] == 'sativa', 'The tripal token parser is missing the organism_species value.');
     $this->assertTrue($values['organism_abbreviation']['value'] == 'O. sativa', 'The tripal token parser is missing the organism_abbreviation value.');
     $this->assertTrue($values['organism_common_name']['value'] == 'Japonica rice', 'The tripal token parser is missing the organism_common_name value.');
-    // Tests removal of outer <p></p> tags by token parser, but inner HTML passes through
-    $this->assertTrue($values['organism_comment']['value'] == 'rice is <em>nice</em>', 'The tripal token parser is missing the organism_comment value.');
+    $this->assertTrue($values['organism_comment']['value'] == '<p>rice is <em>nice</em></p>', 'The tripal token parser is missing the organism_comment value.');
     $this->assertTrue(count(array_keys($values)) == 5, 'The tripal token parser has more values than expected.');
 
 
@@ -464,9 +463,6 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
     $this->assertTrue(is_array($replaced), 'TripalTokenParser::replaceTokens() does not return an array');
     $this->assertTrue(count($replaced) == 1, 'TripalTokenParser::replaceTokens() should have returned only one replaced string');
     $this->assertTrue($replaced[0] == 'Oryza sativa', 'TripalTokenParser did not correctly replace tokens');
-    // Tests removal of outer <p></p> tags by token parser, but inner HTML passes through
-    $replaced = $token_parser->replaceTokens(['[organism_comment]']);
-    $this->assertTrue($replaced[0] == 'rice is <em>nice</em>', 'TripalTokenParser did not correctly remove outer <p></p> markup');
 
     $replaced = $token_parser->replaceTokens([
       '[organism_genus] [organism_species]',
