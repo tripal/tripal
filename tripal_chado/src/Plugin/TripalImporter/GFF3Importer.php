@@ -660,7 +660,7 @@ class GFF3Importer extends ChadoImporterBase {
       $this->parseGFF3();
 
       // Prep the database for necessary records.
-      $this->prepSynonms();
+      $this->prepSynonyms();
       $this->prepNullPub();
       $this->prepDBs();
 
@@ -813,6 +813,8 @@ class GFF3Importer extends ChadoImporterBase {
     // If the term couldn't be found and it's a property term then insert it
     // as a local term.
     if (!$cvterm_match) {
+      $this->logger->notice("Inserting the term \"@term\" in vocabulary \"@vocab\".",
+                            ['@term' => $type, '@vocab' => $cv->name]);
       $term = [
         'id' => "local:$type",
         'name' => $type,
@@ -841,7 +843,7 @@ class GFF3Importer extends ChadoImporterBase {
   /**
    * Makes sure Chado is ready with the necessary synonym type records.
    */
-  private function prepSynonms() {
+  private function prepSynonyms() {
     $chado = $this->getChadoConnection();
     // make sure we have a 'synonym_type' vocabulary
     $select = ['name' => 'synonym_type'];
@@ -855,6 +857,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     if ($results_count == 0) {
       // insert the 'synonym_type' vocabulary
+      $this->logger->notice("Inserting the synonym_type vocabulary.");
       $values = [
           'name' => 'synonym_type',
           'definition' => 'vocabulary for synonym types',
@@ -906,6 +909,7 @@ class GFF3Importer extends ChadoImporterBase {
     $result_count = $result_query->countQuery()->execute()->fetchField();
 
     if ($result_count == 0) {
+      $this->logger->notice("Inserting the synonym_type:exact term.");
       $term = [
         'name' => 'exact',
         'id' => "synonym_type:exact",
@@ -940,6 +944,7 @@ class GFF3Importer extends ChadoImporterBase {
     $result_count = $result_query->countQuery()->execute()->fetchField();
 
     if ($result_count == 0) {
+      $this->logger->notice("Inserting the null publication.");
       $pub_sql = "
         INSERT INTO {1:pub} (uniquename,type_id)
         VALUES (:uname,
@@ -1001,6 +1006,8 @@ class GFF3Importer extends ChadoImporterBase {
       }
 
       if ($db_count == 0) {
+        $this->logger->notice("Inserting the database \"@dbname\".",
+                              ['@dbname' => $dbname]);
         $values = [
           'name' => $dbname,
           'description' => 'Added automatically by the Tripal GFF loader.',
@@ -2134,7 +2141,7 @@ class GFF3Importer extends ChadoImporterBase {
   }
 
   /**
-   * Deletes all anciallary data about a feature so we can re-insert it.
+   * Deletes all ancillary data about a feature so we can re-insert it.
    */
   private function deleteFeatureData() {
     $chado = $this->getChadoConnection();
