@@ -195,3 +195,24 @@
   .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-more.is-active::before {
     background-image: url("../miscellaneous/icons/000000/more.png");
   }
+
+/* Tripal toolbar icons - manage menu item */
+.toolbar-bar .toolbar-icon-tripal-admin:before {
+  background-image: url("../miscellaneous/icons/787878/tripal.svg");
+}
+
+.no-svg .toolbar-bar .toolbar-icon-tripal-admin:before {
+  background-image: url("../miscellaneous/icons/787878/tripal.png");
+}
+
+.toolbar-bar .toolbar-icon-tripal-admin:active:before,
+.toolbar-bar .toolbar-icon-tripal-admin.active:before,
+.toolbar-bar .toolbar-icon-tripal-admin.is-active::before {
+  background-image: url("../miscellaneous/icons/000000/tripal.svg");
+}
+
+.no-svg .toolbar-bar .toolbar-icon-tripal-admin:active:before,
+.no-svg .toolbar-bar .toolbar-icon-tripal-admin.active:before,
+.toolbar-bar .toolbar-icon-tripal-admin.is-active::before {
+  background-image: url("../miscellaneous/icons/000000/tripal.png");
+}
