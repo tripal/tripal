@@ -6,6 +6,8 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
+use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Component\Utility\Xss;
 
 /**
  * Defines a class to build a listing of Tripal Content entities.
@@ -13,6 +15,11 @@ use Drupal\Core\Url;
  * @ingroup tripal
  */
 class TripalEntityListBuilder extends EntityListBuilder {
+
+  /**
+   * Local copy of stored setting for better performance.
+   */
+  protected $tripal_allowed_tags = [];
 
   /**
    * {@inheritdoc}
@@ -23,6 +30,10 @@ class TripalEntityListBuilder extends EntityListBuilder {
     $header['term'] = $this->t('Term');
     $header['author'] = $this->t('Author');
     $header['created'] = $this->t('Created');
+
+    // Retrieve allowed tags setting to use when building rows.
+    $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
+    $this->tripal_allowed_tags = explode(' ', $tag_string ?? '');
 
     return $header + parent::buildHeader();
   }
@@ -35,8 +46,9 @@ class TripalEntityListBuilder extends EntityListBuilder {
     $type_name = $entity->getType();
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($type_name);
 
+    $sanitized_value = Xss::filter($entity->getTitle(), $this->tripal_allowed_tags);
     $row['title'] = Link::fromTextAndUrl(
-      $entity->getTitle(),
+      new FormattableMarkup($sanitized_value, []),
       $entity->toUrl('canonical', ['tripal_entity' => $entity->id()])
     )->toString();
 
