@@ -60,6 +60,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       //to-do add ajax callback to populate?
       '#size' => 20,
     ];
+
     $form['pub_library']['days'] = [
       '#title' => t('Days since record modified'),
       '#type' => 'textfield',
@@ -90,9 +91,11 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     // @TODO Run a unit test to see if this works correctly
     // Go through all results until pubs is empty
     $page_results = $this->retrieve($query);
+    // print_r($page_results);
+    // print_r(count($page_results['pubs']));
     $publications = [];
-    while (count($page_results['pub']) != 0) {
-      $publications = array_merge($publications, $page_results['pub']);
+    if (count($page_results['pubs']) != 0) {
+      $publications = array_merge($publications, $page_results['pubs']);
     }
     return $publications; // @TODO I might need to change this to a structured array
   }

@@ -31,6 +31,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
   // Public connection
   private $public = NULL;
+  // Chado connection
+  private $chado = NULL;
+  private $db_id = NULL;
 
   /**
    * @see TripalImporter::form()
@@ -329,23 +332,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $this->public = \Drupal::database();
     $public = $this->public;
     $arguments = $this->arguments['run_args'];
-    print_r($arguments);
+    // print_r($arguments);
     
-    // THIS IS TRIPAL 3 CODE TO UNDERSTAND
-    // $args = [':import_id' => $import_id];
-    // $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
-    // $import = db_query($sql, $args)->fetchObject();
-  
-    // $args = [$import_id, TRUE, FALSE];
-    // $includes = [];
-    // $includes[] = module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
-    // tripal_add_job("Import publications $import->name", 'tripal_chado',
-    //   'chado_execute_pub_importer', $args, $user->uid, 10, $includes);
-
-    // $this->loadFasta($file_path, $organism_id, $type, $re_name, $re_uname, $re_accession,
-    //   $db_id, $rel_type, $re_subject, $parent_type, $method, $analysis_id,
-    //   $match_type);
-
     // @RISH NOTES: I think all of the above should be bypassed since the job is already created and
     // executed by this run function
     // I see it running the chado_execute_pub_importer function so maybe we should start there
@@ -367,6 +355,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $criteria = NULL;
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $pub_record = $pub_library_manager->getSearchQuery($query_id);
+
     $criteria = unserialize($pub_record->criteria);
     $plugin_id = $criteria['form_state_user_input']['plugin_id'];
     
@@ -377,13 +366,153 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     print_r($criteria);
 
+    // Initialize chado variable (used in other helper functions within this class)
+    $chado = $this->getChadoConnection();
+    $this->chado = $chado;
+    $this->logger->notice("Step  1 of 27: Find db_id for remote database (table: db) ...");
+    $results = $this->chado->query('SELECT * FROM {1:db} WHERE lower(description) LIKE :remote_db', [
+      ':remote_db' => $criteria['remote_db']
+    ]);
+    $db_id = NULL;
+    foreach ($results as $db_row) {
+      $db_id = $db_row->db_id;
+      $this->db_id = $db_id; // used in other helper functions
+    }
+    if ($db_id == NULL) {
+      throw new \Exception("Could not find a db_id for this remote database. A db record must exist in the db table that matches description " . $criteria['remote_db']);
+    }
+    $this->logger->notice("🗸 Found db_id: " . $this->db_id);
+
     // Run a pull from the remote database and return publications in an array
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
+    $this->logger->notice("Step  2 of 27: Retrieving publication data from remote database ...");
     $publications = $plugin->run($query_id);
-    print_r($publications);
+    $this->logger->notice("🗸 Found publications: " . count($publications));
+    // $publications = $plugin->retrieve($criteria, 5, 0);
+    // print_r($publications);
 
 
+    // $this->chado->startTransaction();
+    try { 
+
+      $this->logger->notice("Step  3 of 27: Check for already imported publications ...         ");
+      $missing_publications_dbxref = $this->findMissingPublicationsDbxref($publications);
+
+      $missing_publications_dbxref_count = count($missing_publications_dbxref);
+      $this->logger->notice("🗸 Missing publications to be inserted: " . $missing_publications_dbxref_count);
+
+      // Insert missingPublicationsDbxref
+      $this->logger->notice("Step  3 of 27: Insert new publication dbxrefs ...                ");
+      if ($missing_publications_dbxref_count > 0) {
+        $inserted_count = $this->insertMissingPublicationsDbxref($missing_publications_dbxref);
+        $this->logger->notice("🗸 Inserted: " . $inserted_count);
+      }
+
+      
+      
+
+    }
+    catch (\Exception $e) {
+      throw $e;
+    }
+    
+  }
+
+  /**
+   * Inserts missing publication dbxrefs into the dbxref table
+   */
+  public function insertMissingPublicationsDbxref($missing_publications_dbxref) {
+    // Create a bulk query
+    $batch_size = 1000;
+    $init_sql = "INSERT INTO {1:dbxref} (db_id, accession, version) VALUES \n";
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    $total_missing_publications_dbxref = count($missing_publications_dbxref);
+    foreach ($missing_publications_dbxref as $accession) {
+      $total++;
+      $i++;
+
+      $sql .= " (:db_id_$i, :accession_$i, :version_$i), ";
+      $args[":db_id_$i"] = $this->db_id;
+      $args[":accession_$i"] = $accession;
+      $args[":version_$i"] = '';
+      
+      if ($i == $batch_size or $total == $total_missing_publications_dbxref) {
+        $sql = rtrim($sql, ", ");
+        $sql = $init_sql . $sql;
+        $this->chado->query($sql, $args);
+
+        $batch_num++;
+        // Now reset all of the variables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
+      }
+    }
+    return $total;
+  }
+
+  
+  /**
+   * Finds PublicationDbxrefs that do not exist in the dbxref table and returns
+   * an array of the accessions
+   */
+  public function findMissingPublicationsDbxref($publications) {
+    $found_publications_dbxref = []; // these are for the accession column query in dbxref table
+    $missing_publications_dbxref = [];
+
+    // Get all accessions
+    $all_publications_dbxref = [];
+    foreach ($publications as $publication) {
+      $all_publications_dbxref[] = $publication['Publication Dbxref'];
+    }
+
+    // Create a bulk query
+    $batch_size = 1000;
+    $init_sql = "SELECT * FROM {1:dbxref} WHERE (\n";
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    $total_all_publications_dbxref = count($all_publications_dbxref);
+    foreach ($all_publications_dbxref as $accession) {
+      $total++;
+      $i++;
+
+      $sql .= " accession = :accession_$i OR";
+      $args[":accession_$i"] = $accession;
+      
+      if ($i == $batch_size or $total == $total_all_publications_dbxref) {
+        $sql = rtrim($sql, "OR");
+        $sql .= ")";
+        $sql = $init_sql . $sql;
+        $results_found = $this->chado->query($sql, $args);
+        foreach ($results_found as $found_record) {
+          $found_publications_dbxref[] = $found_record['accession'];
+        }
+
+        $batch_num++;
+        // Now reset all of the variables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
+      }
+    }
+
+    // Now we have all found dbxrefs
+    foreach ($all_publications_dbxref as $accession) {
+      if (!in_array($accession, $found_publications_dbxref)) {
+        $missing_publications_dbxref[] = $accession;
+      }
+    }
+
+    // Now we have all missing dbxrefs
+    return $missing_publications_dbxref;
 
   }
 
