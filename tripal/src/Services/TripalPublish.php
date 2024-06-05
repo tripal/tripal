@@ -904,6 +904,7 @@ class TripalPublish {
       $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
     }
 
+    print_r($entities);
     $total_items = 0;
     $published_entities = [];
     foreach ($this->field_info as $field_name => $field_info) {
