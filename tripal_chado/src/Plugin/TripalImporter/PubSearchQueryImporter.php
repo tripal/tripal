@@ -29,6 +29,9 @@ use Drupal\Core\Render\Markup;
  */
 class PubSearchQueryImporter extends ChadoImporterBase {
 
+  // Public connection
+  private $public = NULL;
+
   /**
    * @see TripalImporter::form()
    */
@@ -323,6 +326,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * @see TripalImporter::run()
    */
   public function run() {
+    $this->public = \Drupal::database();
+    $public = $this->public;
     $arguments = $this->arguments['run_args'];
     print_r($arguments);
     
@@ -345,25 +350,40 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     // executed by this run function
     // I see it running the chado_execute_pub_importer function so maybe we should start there
     $query_id = NULL;
-    if (!isset($arguments['query_id'])) {
+    if (!isset($arguments['query_id']) and !empty($arguments['query_id'])) {
+      $query_id = $arguments['query_id'];
+    }
+    else {
       $search_query_name = $arguments['search_query_name'];
 
       // This will extract the query id from the query name selected from the autocomplete field
       $start_bracket_pos = strrpos($search_query_name, '(');
       $right_string = substr($search_query_name, $start_bracket_pos);
       $right_string = ltrim($right_string, '(');
-      $query_id = rtrim($right_string, ')');
-    }
-    else {
-      $query_id = $arguments['query_id'];
+      $query_id = rtrim($right_string, ')');      
     }
 
-    if (!isset($query_id)) {
-      chado_execute_pub_importer($query_id, TRUE, FALSE, NULL);
+    // Retrieve plugin_id from the database
+    $criteria = NULL;
+    $pub_library_manager = \Drupal::service('tripal.pub_library');
+    $pub_record = $pub_library_manager->getSearchQuery($query_id);
+    $criteria = unserialize($pub_record->criteria);
+    $plugin_id = $criteria['form_state_user_input']['plugin_id'];
+    
+    if ($criteria == NULL || $plugin_id == NULL) {
+      print_r('Could not find criteria or plugin_id, could not find adequate query information');
+      return;
     }
-    else {
-      echo "Query ID was not found, cannot run the publication importer.\n";
-    }
+
+    print_r($criteria);
+
+    // Run a pull from the remote database and return publications in an array
+    $pub_library_manager = \Drupal::service('tripal.pub_library');
+    $plugin = $pub_library_manager->createInstance($plugin_id, []);
+    $publications = $plugin->run($query_id);
+    print_r($publications);
+
+
 
   }
 
