@@ -63,8 +63,6 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
 
-    $record_id_term = $mapping->getColumnTermId('analysis', 'analysis_id');
-
     $src_uri_term = $mapping->getColumnTermId('analysis', 'sourceuri');
     $src_name_term = $mapping->getColumnTermId('analysis', 'sourcename');
     $src_vers_term = $mapping->getColumnTermId('analysis', 'sourceversion');
