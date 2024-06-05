@@ -213,7 +213,7 @@ class NewPubSearchQueryForm extends FormBase {
       '#title' => t('Create Contact'),
       '#description' => t('Check to create an entry in the contact table for each author of'
          . ' a matching publication during import. This allows storage of additional information'
-         . ' such as affilation, etc. Otherwise, only authors\' names are retrieved'),
+         . ' such as affiliation, etc. Otherwise, only authors\' names are retrieved'),
       '#default_value' => $do_contact,
       '#weight' => -48,
     ];

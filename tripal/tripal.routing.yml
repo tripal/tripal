@@ -573,6 +573,15 @@ entity.tripalentitytype_collection.delete_form:
     _title: 'Delete Configuration'
   requirements:
     _permission: 'administer tripal'
+
+entity.tripal_entity_settings:
+  path: 'admin/tripal/config/entity_settings'
+  defaults:
+    _title: 'Tripal Entity Configuration'
+    _form: 'Drupal\tripal\Form\TripalEntitySettingsForm'
+  requirements:
+    _permission: 'administer tripal'
+
 ##
 # Tripal Field Collection entity.
 ##

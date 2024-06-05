@@ -127,6 +127,14 @@ entity.tripalfield_collection.collection:
   route_name: entity.tripalfield_collection.collection
   weight: 30
 
+# -- Configuration for Tripal Entities.
+entity.tripal_entity_settings:
+  title: 'Tripal Entity Settings'
+  parent: tripal.config
+  description: 'Manage how Tripal entities are displayed.'
+  route_name: entity.tripal_entity_settings
+  weight: 40
+
 # -- Root link for Tripal extension listing.
 tripal.extension:
   route_name: tripal.extension

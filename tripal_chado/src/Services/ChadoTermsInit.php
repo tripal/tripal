@@ -17,7 +17,7 @@ class ChadoTermsInit{
   }
 
   /**
-   * Gets a controlled voabulary object.
+   * Gets a controlled vocabulary object.
    *
    * @param string $name
    *   The name of the vocabulary
