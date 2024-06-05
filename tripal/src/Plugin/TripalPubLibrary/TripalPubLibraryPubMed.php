@@ -136,7 +136,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  public function remoteSearchPMID($search_array, $num_to_retrieve, $page) {
+  public function remoteSearchPMID($search_array, $num_to_retrieve, $page, $row_mode = 1) {
     // convert the terms list provided by the caller into a string with words
     // separated by a '+' symbol.
     $num_criteria = $search_array['num_criteria'];
@@ -515,7 +515,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     // @TODO refer to T3 tripal_chado module, tripal_chado.pub.api.inc
     // $pub['Citation'] = chado_pub_create_citation($pub);
   
-    $pub['raw'] = $pub_xml;
+    // $pub['raw'] = $pub_xml;
     return $pub;
   }
 

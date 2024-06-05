@@ -387,7 +387,10 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
     $this->logger->notice("Step  2 of 27: Retrieving publication data from remote database ...");
-    $publications = $plugin->run($query_id);
+    $publications = $plugin->run($query_id); // max of 10 since limit was not set @TODO
+    // Wouldn't publications end up causing an issue memory wise? 
+    // @TODO: Remove the raw value
+
     $this->logger->notice("🗸 Found publications: " . count($publications));
     // $publications = $plugin->retrieve($criteria, 5, 0);
     // print_r($publications);
@@ -398,16 +401,20 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
       $this->logger->notice("Step  3 of 27: Check for already imported publications ...         ");
       $missing_publications_dbxref = $this->findMissingPublicationsDbxref($publications);
-
       $missing_publications_dbxref_count = count($missing_publications_dbxref);
       $this->logger->notice("🗸 Missing publications to be inserted: " . $missing_publications_dbxref_count);
 
       // Insert missingPublicationsDbxref
-      $this->logger->notice("Step  3 of 27: Insert new publication dbxrefs ...                ");
+      $this->logger->notice("Step  4 of 27: Insert new publication dbxrefs ...                ");
+      $inserted_dbxref_ids = [];
       if ($missing_publications_dbxref_count > 0) {
-        $inserted_count = $this->insertMissingPublicationsDbxref($missing_publications_dbxref);
-        $this->logger->notice("🗸 Inserted: " . $inserted_count);
+        $inserted_dbxref_ids = $this->insertMissingPublicationsDbxref($missing_publications_dbxref);
+        $this->logger->notice("🗸 Inserted: " . count($inserted_dbxref_ids));
       }
+
+      // $missing_publications_dbxref contains the accessions ()
+      // $inserted_dbxref_ids in same order as $missing_publications_dbxref
+
 
       
       
@@ -424,7 +431,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    */
   public function insertMissingPublicationsDbxref($missing_publications_dbxref) {
     // Create a bulk query
-    $batch_size = 1000;
+    $batch_size = 100;
     $init_sql = "INSERT INTO {1:dbxref} (db_id, accession, version) VALUES \n";
     $i = 0;
     $total = 0;
@@ -432,6 +439,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $sql = '';
     $args = [];
     $total_missing_publications_dbxref = count($missing_publications_dbxref);
+    $dbxref_ids = [];
     foreach ($missing_publications_dbxref as $accession) {
       $total++;
       $i++;
@@ -443,8 +451,13 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       
       if ($i == $batch_size or $total == $total_missing_publications_dbxref) {
         $sql = rtrim($sql, ", ");
-        $sql = $init_sql . $sql;
-        $this->chado->query($sql, $args);
+        $sql = $init_sql . $sql . ' RETURNING dbxref_id';
+        $return = $this->chado->query($sql, $args);
+
+        // Add the ids inserted into the $dbxref_ids variable
+        foreach ($return as $return_id) {
+          $dbxref_ids[] = $return_id->dbxref_id;
+        }
 
         $batch_num++;
         // Now reset all of the variables for the next batch.
@@ -453,7 +466,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $args = [];
       }
     }
-    return $total;
+    return $dbxref_ids;
   }
 
   
@@ -493,7 +506,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $sql = $init_sql . $sql;
         $results_found = $this->chado->query($sql, $args);
         foreach ($results_found as $found_record) {
-          $found_publications_dbxref[] = $found_record['accession'];
+          $found_publications_dbxref[] = $found_record->accession;
         }
 
         $batch_num++;
