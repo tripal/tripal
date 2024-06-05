@@ -1,0 +1,23 @@
+name: PHPUnit
+on:
+  push:
+    branches:
+      - 4.x
+      - tv4g9-issue1888-drupal-10-3
+jobs:
+  running-tests:
+    name: "Drupal 10.3: PHP 8.2"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Run Automated testing
+        uses: tripal/test-tripal-action@v1.5
+        with:
+          directory-name: 'tripal'
+          modules: 'tripal tripal_biodb tripal_chado'
+          php-version: '8.2'
+          pgsql-version: '16'
+          drupal-version: '10.3.x-dev'
+          build-image: true
+          dockerfile: "UseTripalDockerBackupClause"
