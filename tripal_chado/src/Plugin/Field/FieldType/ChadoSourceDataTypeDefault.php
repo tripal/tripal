@@ -72,7 +72,7 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
     // Get property terms using Chado table columns they map to. Return the properties for this field.
     $properties = [];
 
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => 'analysis.analysis_id',

@@ -131,7 +131,6 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     // from Chado tables if appropriate.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-    $record_id_term = 'SIO:000729';
 
     // Synonym table fields
     $syn_name_term = $mapping->getColumnTermId('synonym', 'name');
@@ -150,7 +149,7 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     // Always store the record id of the base record that this field is
     // associated with in Chado.
     $properties = [];
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,

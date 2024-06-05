@@ -76,7 +76,7 @@ class ChadoUnitTypeDefault extends ChadoFieldItemBase {
 
     $properties = [];
 
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => 'featuremap.featuremap_id',
