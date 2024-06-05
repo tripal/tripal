@@ -73,7 +73,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    */
   public function addProperty($chado, $base_table, $details) {
 
-    $insert = $chado->insert('1:' . $base_table . 'prop', 'p');
+    $insert = $chado->insert('1:' . $base_table . 'prop');
     $insert->fields([
       $base_table . '_id' => $details[$base_table . '_id'],
       'value' => $details['value'],
@@ -121,10 +121,13 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         "The published item value for field, '$field_name', is missing");
 
     // Make sure we have at least $index records.
-    $record = $records[$index];
-    print_r($record);
     $this->assertTrue(count($records) >= $index + 1,
-      "There are missing published item value for field, '$field_name'.");
+      "There are missing published items for field , '$field_name'.");
+
+    if (count($records) < $index + 1) {
+      return;
+    }
+    $record = $records[$index];
 
     // Make sure we have an entity ID for the specified record.
     $this->assertTrue($record->bundle == $bundle,
@@ -141,7 +144,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // Make sure the expected values are present.
     foreach ($values as $column => $value) {
       $column_name = $field_name . '_' . $column;
-      $this->assertTrue($record->$column_name != $value,
+      $this->assertTrue($record->$column_name == $value,
         "The published item value for field, '$field_name', is not correct: $column != $value");
     }
   }
@@ -150,9 +153,30 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    * A helper function to add fields to the content types used in the tests.
    */
   public function addOrganismCustomFields() {
-    /** @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields **/
+
+    // Create the terms for the field property storage types.
+    /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idsmanager */
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
+    $local_db = $idsmanager->loadCollection('local', "chado_id_space");
+    $note_term = new TripalTerm();
+    $note_term->setName('Note');
+    $note_term->setIdSpace('local');
+    $note_term->setVocabulary('local');
+    $note_term->setAccession('Note');
+    $local_db->saveTerm($note_term);
+
+    $schema_db = $idsmanager->loadCollection('schema', "chado_id_space");
+    $comment_term = new TripalTerm();
+    $comment_term->setName('comment');
+    $comment_term->setIdSpace('schema');
+    $comment_term->setVocabulary('schema');
+    $comment_term->setAccession('comment');
+    $schema_db->saveTerm($comment_term);
+
+    /** @var \Drupal\tripal\Services\TripalFieldCollection $fields_service **/
     // Now add a ChadoProperty field for the two types of properties.
-    $tripal_field_collection = \Drupal::service('tripal.tripalfield_collection');
+    $fields_service = \Drupal::service('tripal.tripalfield_collection');
     $prop_field1 = [
       'name' => 'organism_note',
       'content_type' => 'organism',
@@ -165,7 +189,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings'=> [
           'base_table' => 'organism',
-          'prop_table' => 'organism_prop'
+          'prop_table' => 'organismprop'
         ],
       ],
       'settings' => [
@@ -188,13 +212,13 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         ],
       ],
     ];
-    $is_added = $tripal_field_collection->addBundleField($prop_field1);
-    $this->assertTrue($is_added,
-      'The Organism property "local:Note" could not be added.');
+    $reason = '';
+    $is_valid = $fields_service->validate($prop_field1, $reason);
+    $this->assertTrue($is_valid, $reason);
+    $is_added = $fields_service->addBundleField($prop_field1);
+    $this->assertTrue($is_added, 'The organism property field "local:Note" could not be added.');
 
-    /** @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields **/
     // Now add a ChadoProperty field for the two types of properties.
-    $tripal_field_collection = \Drupal::service('tripal.tripalfield_collection');
     $prop_field2 = [
       'name' => 'organism_comment',
       'content_type' => 'organism',
@@ -207,7 +231,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings'=> [
           'base_table' => 'organism',
-          'prop_table' => 'organism_prop'
+          'prop_table' => 'organismprop'
         ],
       ],
       'settings' => [
@@ -230,9 +254,12 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         ],
       ],
     ];
-    $is_added = $tripal_field_collection->addBundleField($prop_field2);
+    $reason = '';
+    $is_valid = $fields_service->validate($prop_field2, $reason);
+    $this->assertTrue($is_valid, $reason);
+    $is_added = $fields_service->addBundleField($prop_field2);
     $this->assertTrue($is_added,
-        'The Organism property "schema:comment" could not be added.');
+        'The Organism property field "schema:comment" could not be added.');
   }
 
   /**
@@ -283,11 +310,11 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->checkFieldItem('organism', 'organism_species', $organism_id, ['value' => NULL]);
     $this->checkFieldItem('organism', 'organism_abbreviation', $organism_id, ['value' => NULL]);
     $this->checkFieldItem('organism', 'organism_infraspecific_name', $organism_id, ['value' => NULL]);
-    $this->checkFieldItem('organism', 'organism_type_id', $organism_id, []);
+    $this->checkFieldItem('organism', 'organism_infraspecific_type', $organism_id, []);
     $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['value' => NULL]);
 
     // Test that the title via token replacement is working.
-    $this->assertTrue(array_keys($entities)[0] == 'Oryza species subspecies Japonica',
+    $this->assertTrue(array_values($entities)[0] == 'Oryza species subspecies Japonica',
       'The title of a Chado organism is incorrect after publishing.');
 
     // Test a title without all tokens
@@ -298,16 +325,16 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'comment' => 'Gorilla'
     ]);
     $entities = $publish->publish();
-    $this->assertTrue(array_keys($entities)[0] == 'Gorilla gorilla',
-        'The title of a Chado organism is incorrect after publishing.');
+    $this->assertTrue(array_values($entities)[0] == 'Gorilla gorilla',
+        'The title of Chado organism with missing tokens is incorrect after publishing: "' . array_keys($entities)[0] . '" != "Gorilla gorilla"');
 
     // Make sure the second organism has published fields.
-    $this->checkFieldItem('organism', 'organism_genus', $organism_id, ['value' => NULL], 1);
-    $this->checkFieldItem('organism', 'organism_species', $organism_id, ['value' => NULL], 1);
-    $this->checkFieldItem('organism', 'organism_abbreviation', $organism_id, ['value' => NULL], 1);
-    $this->checkFieldItem('organism', 'organism_infraspecific_name', $organism_id, ['value' => NULL], 1);
-    $this->checkFieldItem('organism', 'organism_type_id', $organism_id, [], 1);
-    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['value' => NULL], 1);
+    $this->checkFieldItem('organism', 'organism_genus', $organism_id, ['value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_species', $organism_id, ['value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_abbreviation', $organism_id, ['value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_infraspecific_name', $organism_id, ['value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_infraspecific_type', $organism_id, []);
+    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['value' => NULL]);
 
     // Test cardinality. We'll use the property field for this. First, lets
     // add three properties of the same type and three properties of
@@ -354,6 +381,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // Now publish the organism contnet type again.
     $publish->init('organism', 'chado_storage');
     $entities = $publish->publish();
+    print_r($entities);
 
     // Because we added properties for the first organism we should set it's
     // entity in those returned, but not the gorilla organism.
@@ -372,8 +400,8 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 1], 0);
     $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 2], 2);
     $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 3], 1);
-    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 1], 0);
-    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 2], 1);
-    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 3], 2);
+    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 4], 0);
+    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 5], 1);
+    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 6], 2);
   }
 }

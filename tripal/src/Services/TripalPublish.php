@@ -726,7 +726,7 @@ class TripalPublish {
    * @return int
    *   The number of items inserted for the field.
    */
-  protected function insertFieldItems($field_name, $matches, $titles, $entities, $existing) {
+  protected function insertFieldItems($field_name, $matches, $titles, $entities, $existing, &$published) {
 
     $database = \Drupal::database();
     $field_table = 'tripal_entity__' . $field_name;
@@ -775,6 +775,8 @@ class TripalPublish {
         // No need to add items to those that are already published.
         if (!array_key_exists($entity_id, $existing) or
             !array_key_exists($delta, $existing[$entity_id])) {
+
+          $published[$entity_id] = $title;
 
           // Add items to those that are not already published.
           $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
@@ -903,18 +905,21 @@ class TripalPublish {
     }
 
     $total_items = 0;
+    $published_entities = [];
     foreach ($this->field_info as $field_name => $field_info) {
 
       $this->logger->notice("  Checking for published items for the field: $field_name...");
       $existing_field_items = $this->findFieldItems($field_name, $entities);
 
-      $num_inserted = $this->insertFieldItems($field_name, $matches, $titles, $entities, $existing_field_items);
-      $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
+      $num_inserted = $this->insertFieldItems($field_name, $matches, $titles,
+        $entities, $existing_field_items, $published_entities);
 
+      $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
       $total_items += $num_inserted;
     }
-    $this->logger->notice("Published " .  number_format(count($new_matches)) . " new entities, and " . number_format($total_items) . " field values.");
+    $this->logger->notice("Published " .  number_format(count(array_keys($published_entities)))
+        . " new entities, and " . number_format($total_items) . " field values.");
     $this->logger->notice('Done');
-    return $entities;
+    return $published_entities;
   }
 }
