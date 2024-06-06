@@ -47,7 +47,7 @@ class TripalTextTypeWidget extends TripalWidgetBase {
     // Alter the format drop down so that it is hidden.
     // We do this because any changes here are not actually saved and thus
     // having it enabled is misleading.
-    // Note: We couldn't disable it for the text format element would stop working ;-)
+    // Note: We couldn't disable it because the text format element would stop working ;-)
     foreach(\Drupal\Core\Render\Element::children($element) as $key) {
       $element[$key]['value']['format']['#attributes']['class'][] = 'hidden';
     }
