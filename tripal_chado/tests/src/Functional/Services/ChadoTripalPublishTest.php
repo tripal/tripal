@@ -78,7 +78,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       $base_table . '_id' => $details[$base_table . '_id'],
       'value' => $details['value'],
       'type_id' => $details['type_id'],
+      'rank' => $details['rank'],
     ]);
+    $insert->execute();
   }
   /**
    * helper fection toget a cvterm_id
@@ -106,7 +108,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
   /**
    * A helper function to test if the elements of a field item are present.
    */
-  public function checkFieldItem($bundle, $field_name, $record_id, $values = [], $index=0) {
+  public function checkFieldItem($bundle, $field_name, $record_id, $values = [], $delta=0) {
 
     $public = \Drupal::service('database');
     $select = $public->select('tripal_entity__' . $field_name, 'f');
@@ -115,19 +117,22 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $select->orderBy('delta');
     $result = $select->execute();
     $records = $result->fetchAll();
+    if ($field_name == 'organism_note' or $field_name == 'organism_comment') {
+      print_r([$field_name, $records]);
+    }
 
     // Make sure we have at least one  item.
     $this->assertTrue(count($records) > 0,
         "The published item value for field, '$field_name', is missing");
 
     // Make sure we have at least $index records.
-    $this->assertTrue(count($records) >= $index + 1,
+    $this->assertTrue(count($records) >= $delta + 1,
       "There are missing published items for field , '$field_name'.");
 
-    if (count($records) < $index + 1) {
+    if (count($records) < $delta + 1) {
       return;
     }
-    $record = $records[$index];
+    $record = $records[$delta];
 
     // Make sure we have an entity ID for the specified record.
     $this->assertTrue($record->bundle == $bundle,
@@ -138,14 +143,15 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'The entity_id for a published item is missing for the field ' . $field_name);
 
     // Make sure the delta matches
-    $this->assertTrue($record->delta == $index,
+    $this->assertTrue($record->delta == $delta,
       'The delta for a published item is incorrect for the field ' . $field_name);
 
     // Make sure the expected values are present.
     foreach ($values as $column => $value) {
       $column_name = $field_name . '_' . $column;
       $this->assertTrue($record->$column_name == $value,
-        "The published item value for field, '$field_name', is not correct: $column != $value");
+        'The value for, "' . $column_name . '", is not correct: '
+          . $record->$column_name . ' (actual) != ' . $value . ' (expected); delta: ' . $delta . '.');
     }
   }
 
@@ -378,28 +384,27 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'rank' => 2,
     ]);
 
-    // Now publish the organism contnet type again.
+    // Now publish the organism content type again.
     $publish->init('organism', 'chado_storage');
     $entities = $publish->publish();
-    print_r($entities);
 
     // Because we added properties for the first organism we should set it's
     // entity in those returned, but not the gorilla organism.
-    $this->assertTrue(array_key_exists('Oryza species subspecies Japonica', $entities),
+    $this->assertTrue(array_values($entities)[0] == 'Oryza species subspecies Japonica',
       'The Oryza species subspecies Japonica organism should appear in the published list because it has new properties.');
-    $this->assertTrue(!array_key_exists('Gorilla gorilla', $entities),
-      'The Gorilla gorilla organism should NOT appear in the published list because it has new properties.');
+    $this->assertTrue(count(array_values($entities)) == 1,
+      'There should only be one published entity for a single organism with new properties.');
 
     // Check that all three properties were added.  The prop_id will be the
     // primary key in the prop table. Since we had no properties in the
     // organismprop table these should start with 1.  The properties should be
-    // published in rank order and since we flipped the rank of the second
+    // published in rank order (delta) and since we flipped the rank of the second
     // and third property of the Note property they should be flipped as well.
     // We didn't flip the order for the Comment property so they should be in
     // order.
     $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 1], 0);
-    $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 2], 2);
     $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 3], 1);
+    $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 2], 2);
     $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 4], 0);
     $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 5], 1);
     $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 6], 2);
