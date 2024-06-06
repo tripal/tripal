@@ -210,8 +210,9 @@ class ChadoManageCommands extends DrushCommands {
 
             // Check if the cvterm record for this term exists.
             $query = $chado->select('1:cvterm', 'cvt')
-              ->fields('cvt', ['cvterm_id', 'name', 'definition', 'dbxref_id'])
-              ->condition('cvt.name', $term_info['name']);
+              ->fields('cvt', ['cvterm_id', 'name', 'definition', 'dbxref_id', 'cv_id'])
+              ->condition('cvt.name', $term_info['name'])
+              ->condition('cvt.cv_id', $existing_cv->cv_id);
             $existing_cvterm = $query->execute()->fetchObject();
             if ($existing_cvterm) {
               $this->output()->writeln('         - CVTerm Exists: "' . $term_info['name'] . '" (' . $existing_cvterm->cvterm_id . ').');
@@ -230,16 +231,32 @@ class ChadoManageCommands extends DrushCommands {
               $query->addField('db', 'name', 'db_name');
               $existing_dbxref = $query->execute()->fetchObject();
               if ($existing_dbxref) {
+                $this->output()->writeln('           - DBXref Exists: "' . $term_info['id'] . '" (' . $existing_dbxref->dbxref_id . ').');
+
                 [$term_db, $term_accession] = explode(':', $term_info['id']);
+
                 // Check the term id space was defined in the id spaces block
+                // @todo Needs to be implemented, first keep track of id spaces above.
                 // Check the term id space matches the dbxref>db.name
+                if ($existing_dbxref->db_name != $term_db) {
+                  $this->output()->writeln('');
+                  $this->io()->error('The dbxref.db_id>db.name for this term is expected to be "' . $term_db . '" but was actually "' . $existing_dbxref->db_name . '".');
+                }
                 // Check the term accession matches the dbxref.accession
+                if ($existing_dbxref->accession != $term_accession) {
+                  $this->output()->writeln('');
+                  $this->io()->error('The dbxref.accession for this term is expected to be "' . $term_accession . '" but was actually "' . $existing_dbxref->accession . '".');
+                }
               }
               else {
                 $this->io()->error('NO DBXREF Record associated with the cvterm "' . $existing_cvterm->name . '" (' . $existing_cvterm->cv_id . ')! This should not be possible due to database contraints so your Chado is Very Broken!');
               }
             }
             else {
+
+              // @todo Check if the term exists under a different cv but with the same accession.
+
+              // Otherwise it's just missing which is not a concern really.
               $this->output()->writeln('         - CVTerm Missing: "' . $term_info['name'] . '".');
             }
           }
