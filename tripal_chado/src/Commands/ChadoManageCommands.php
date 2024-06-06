@@ -137,8 +137,6 @@ class ChadoManageCommands extends DrushCommands {
     }
 
     $this->output()->writeln('');
-    $this->output()->writeln('Currently being implemented...');
-    $this->output()->writeln('');
 
     $chado = \Drupal::service('tripal_chado.database');
     $chado->setSchemaName($options['chado_schema']);
