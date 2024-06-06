@@ -118,4 +118,24 @@ class ChadoManageCommands extends DrushCommands {
 
     $this->output()->writeln('There is no longer any need to prepare the chado test environment.');
   }
+
+  /**
+   * Checks a given chado install for any inconsistencies between its cvterms
+   * and what Tripal expects.
+   *
+   * @command tripal-chado:trp-check-terms
+   * @aliases trp-check-terms
+   * @options chado_schema
+   *   The name of the chado schema to check.
+   * @usage drush trp-check-terms --chado_schema=chado_prod
+   *   Checks the terms stored in chado_prod.cvterm for consistency.
+   */
+  public function tripalImportContentTypes($options = ['chado_schema' => NULL]) {
+
+    if (!$options['chado_schema']) {
+      throw new \Exception(dt('The --chado_schema argument is required.'));
+    }
+
+    $this->output()->writeln('Currently being implemented...');
+  }
 }
