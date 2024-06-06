@@ -215,8 +215,9 @@ class ChadoManageCommands extends DrushCommands {
             // Check if the cvterm record for this term exists.
             $query = $chado->select('1:cvterm', 'cvt')
               ->fields('cvt', ['cvterm_id', 'name', 'definition', 'dbxref_id', 'cv_id'])
-              ->condition('cvt.name', $term_info['name'])
-              ->condition('cvt.cv_id', $existing_cv->cv_id);
+              ->condition('cvt.name', $term_info['name']);
+            $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+            $query->condition('cv.name', $vocab_info['name']);
             $existing_cvterm = $query->execute()->fetchObject();
             if ($existing_cvterm) {
               $this->output()->writeln('         - CVTerm Exists: "' . $term_info['name'] . '" (' . $existing_cvterm->cvterm_id . ').');
@@ -272,11 +273,12 @@ class ChadoManageCommands extends DrushCommands {
               $query->condition('db.name', $term_db);
               $query->join('1:cvterm', 'cvt', 'cvt.dbxref_id = dbx.dbxref_id');
               $query->addField('cvt', 'name', 'cvterm_name');
+              $query->addField('cvt', 'cvterm_id', 'cvterm_id');
               $existing_dbxref = $query->execute()->fetchObject();
 
               if ($existing_dbxref) {
                 $this->output()->writeln('');
-                $this->io()->error('The accession of the term defined as "' . $term_info['name'] . '" ("' . $term_info['id'] . '") exists in the dbxref table (' . $existing_dbxref->dbxref_id . ') but not in the cvterm table. Instead this dbxref record is connected to a cvterm with the name "' . $existing_dbxref->cvterm_name . '".');
+                $this->io()->error('The accession of the term defined as "' . $term_info['name'] . '" ("' . $term_info['id'] . '") exists in the dbxref table (' . $existing_dbxref->dbxref_id . ') but not in the cvterm table. Instead this dbxref record is connected to a cvterm with the name "' . $existing_dbxref->cvterm_name . '" (' . $existing_dbxref->cvterm_id . ').');
               }
               else {
                 // Otherwise it's just missing which is not a concern really.
