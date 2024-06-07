@@ -320,8 +320,8 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['value' => NULL]);
 
     // Test that the title via token replacement is working.
-    $this->assertTrue(array_values($entities)[0] == 'Oryza species subspecies Japonica',
-      'The title of a Chado organism is incorrect after publishing.');
+    $this->assertTrue(array_values($entities)[0] == '<em>Oryza species</em> subspecies <em>Japonica</em>',
+        'The title of a Chado organism is incorrect after publishing: ' . array_values($entities)[0] . '!=' . '<em>Oryza species</em> subspecies <em>Japonica</em>');
 
     // Test a title without all tokens
     $organism_id2 = $this->addChadoOrganism($chado, [
@@ -331,8 +331,8 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'comment' => 'Gorilla'
     ]);
     $entities = $publish->publish();
-    $this->assertTrue(array_values($entities)[0] == 'Gorilla gorilla',
-        'The title of Chado organism with missing tokens is incorrect after publishing: "' . array_keys($entities)[0] . '" != "Gorilla gorilla"');
+    $this->assertTrue(array_values($entities)[0] == '<em>Gorilla gorilla</em> <em></em>',
+        'The title of Chado organism with missing tokens is incorrect after publishing: "' . array_values($entities)[0] . '" != "<em>Gorilla gorilla</em> <em></em>"');
 
     // Make sure the second organism has published fields.
     $this->checkFieldItem('organism', 'organism_genus', $organism_id, ['value' => NULL]);
@@ -349,38 +349,38 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $this->getTypeID($chado, 'local:Note'),
-      'value' => 'This is the first note',
+      'value' => 'Note 1',
       'rank' => 1,
     ]);
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $this->getTypeID($chado, 'local:Note'),
-      'value' => 'This is the second note',
+      'value' => 'Note 0',
       'rank' => 0,
     ]);
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $this->getTypeID($chado, 'local:Note'),
-      'value' => 'This is the third note',
+      'value' => 'Note 2',
       'rank' => 2,
     ]);
 
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $this->getTypeID($chado, 'schema:comment'),
-      'value' => 'This is the first comment',
+      'value' => 'Comment 0',
       'rank' => 0,
     ]);
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $this->getTypeID($chado, 'schema:comment'),
-      'value' => 'This is the second comment',
+      'value' => 'Comment 1',
       'rank' => 1,
     ]);
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $this->getTypeID($chado, 'schema:comment'),
-      'value' => 'This is the third comment',
+      'value' => 'Comment 2t',
       'rank' => 2,
     ]);
 
@@ -390,7 +390,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
     // Because we added properties for the first organism we should set it's
     // entity in those returned, but not the gorilla organism.
-    $this->assertTrue(array_values($entities)[0] == 'Oryza species subspecies Japonica',
+    $this->assertTrue(array_values($entities)[0] == '<em>Oryza species</em> subspecies <em>Japonica</em>',
       'The Oryza species subspecies Japonica organism should appear in the published list because it has new properties.');
     $this->assertTrue(count(array_values($entities)) == 1,
       'There should only be one published entity for a single organism with new properties.');
@@ -403,8 +403,8 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // We didn't flip the order for the Comment property so they should be in
     // order.
     $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 1], 0);
-    $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 3], 1);
     $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 2], 2);
+    $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 3], 1);
     $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 4], 0);
     $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 5], 1);
     $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 6], 2);

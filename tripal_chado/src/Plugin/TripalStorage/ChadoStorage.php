@@ -255,12 +255,12 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       foreach ($base_tables as $base_table) {
 
         // Do the select for the base tables
-        $this->records->selectRecords($base_table, $base_table);
+        $this->records->selectItems($base_table, $base_table);
 
         // Then do the selects for the ancillary tables.
         $tables = $this->records->getAncillaryTables($base_table);
         foreach ($tables as $table_alias) {
-          $this->records->selectRecords($base_table, $table_alias);
+          $this->records->selectItems($base_table, $table_alias);
         }
       }
       $this->setPropValues($values, $this->records);
@@ -314,44 +314,37 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       foreach ($base_tables as $base_table) {
 
         // First we find all matching base records.
-        $matches = $this->records->findRecords($base_table, $base_table);
+        $entity_matches = $this->records->findRecords($base_table, $base_table);
 
         // Now for each matching base record we need to select
         // the ancillary tables.
-        foreach ($matches as $match) {
+        foreach ($entity_matches as $match) {
 
           // Clone the value array for this match.
           $new_values = $this->cloneValues($values);
 
           // Limit base records by iterating through tables with conditions.
           $tables = $this->records->getAncillaryTablesWithCond($base_table);
-          $found_match = TRUE;
           foreach ($tables as $table_alias) {
 
-            $num_found = $match->selectRecords($base_table, $table_alias);
 
-            // In order for a set of records to be considered found it must
-            // match all criteria, which means all ancillary tables must
-            // return results.
-            // @todo: when we need more fancy querying where we can set
-            // "or" clauses then this will need to be adjust. For now, we
-            // only use findValues() for publishing and in this case all
-            // criteria must be met.
-            if ($num_found == 0) {
+            // Now find any items for this linked table.
+            $num_items_found = $match->selectItems($base_table, $table_alias);
+            if ($num_items_found == 0) {
               continue;
             }
 
-            // Add any additional items to the values array that are needed.
-            $num_items = $match->getNumTableItems($base_table, $table_alias);
-            for ($i = 0; $i < $num_items - 1; $i++) {
-              $table_fields = $match->getTableFields($base_table, $table_alias);
-              foreach ($table_fields as $field_name) {
-                $this->addEmptyValuesItem($new_values, $field_name);
+            // Prepare the values array to receive all the new values. We'll
+            // get all the fields for this ancialiary table and then
+            // reset the values in the new cloned values array for all of
+            // those fields.
+            $table_fields = $match->getTableFields($base_table, $table_alias);
+            foreach ($table_fields as $field_name) {
+              for ($i = 0; $i < $num_items_found; $i++) {
+                $this->resetValuesItem($new_values, $field_name, $i);
               }
             }
           }
-
-          // Now, of the remaining base records left
 
           // Now set the values.
           $this->setPropValues($new_values, $match);
@@ -365,7 +358,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               }
             }
           }
-
           $found_list[] = $new_values;
         }
       }
@@ -374,7 +366,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-
     return $found_list;
   }
 
@@ -449,19 +440,21 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
             // For values that come from joins, we need to use the root table
             // because this is the table that will have the value.
-            $my_delta = $delta;
-            if($action == 'read_value' and array_key_exists('join', $path_array)) {
+            if ($action == 'read_value' and array_key_exists('join', $path_array)) {
               $root_alias = $value_col_info['root_alias'];
               $table_alias = $root_alias;
             }
 
-            // Anytime we need to pull data from the base table, the delta
+            // Anytime we need to pull a value from the base table, the delta
             // should always be zero. There will only ever be one base record.
+            // This is needed because all fields use a `record_id` which has
+            // a path that is set for the base table.
+            $value_delta = $delta;
             if ($table_alias == $base_table) {
-              $my_delta = 0;
+              $value_delta = 0;
             }
 
-            $value = $records->getColumnValue($base_table, $table_alias, $my_delta, $column_alias);
+            $value = $records->getColumnValue($base_table, $table_alias, $value_delta, $column_alias);
             if ($value !== NULL) {
               $values[$field_name][$delta][$key]['value']->setValue($value);
             }

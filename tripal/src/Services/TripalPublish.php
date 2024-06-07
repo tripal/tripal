@@ -756,6 +756,7 @@ class TripalPublish {
     $args = [];
     $num_inserted = 0;
 
+
     // Iterate through the matches. Each match corresponds to a single
     // entity. The titles provided should be in order of the entities
     // in the matches array.
@@ -767,8 +768,8 @@ class TripalPublish {
 
       // Iterate through the "items" of each feild and insert a record value
       // for each item.
-      $num_delta = count(array_keys($match[$field_name]));
-      for ($delta = 0; $delta < $num_delta; $delta++) {
+      $num_items = count(array_keys($match[$field_name]));
+      for ($delta = 0; $delta < $num_items; $delta++) {
         $j++;
         $total++;
 

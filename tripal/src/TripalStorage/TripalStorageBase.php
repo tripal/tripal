@@ -228,20 +228,34 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   }
 
   /**
-   * A helper function to add a new item for a field by cloning delta 0.
+   * Sets the values for a field to be empty.
+   *
+   * If the detla value doesn't exist in the values array then a new values
+   * array is added.
    *
    * @param array $values
    *   An array of property values.
    * @param string $field_name
    *   The name of the field to addd an item to.
    */
-  protected function addEmptyValuesItem(&$values, $field_name) {
+  protected function resetValuesItem(&$values, $field_name, $delta) {
+    $is_new = FALSE;
+
+    // Is the caller wanting to add a new element? If so, add one.
     $num_items = count($values[$field_name]);
-    $values[$field_name][$num_items] = [];
-    foreach ($values[$field_name][0] as $key => $value) {
-      $values[$field_name][$num_items][$key] = [];
-      $values[$field_name][$num_items][$key]['value'] = clone $value['value'];
-      $values[$field_name][$num_items][$key]['value']->setValue(NULL);
+    if ($delta > $num_items - 1) {
+      $values[$field_name][$delta] = [];
+      $is_new = TRUE;
+    }
+
+    // Reset the values to NULL. Use the first values element
+    // to get the keys.
+    foreach ($values[$field_name][0] as $key => $details) {
+      if ($is_new) {
+        $values[$field_name][$delta][$key] = [];
+        $values[$field_name][$delta][$key]['value'] = clone $details['value'];
+      }
+      $values[$field_name][$delta][$key]['value']->setValue(NULL);
     }
   }
 
