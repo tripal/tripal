@@ -82,76 +82,44 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     ]);
     $insert->execute();
   }
-  /**
-   * helper fection toget a cvterm_id
-   */
-  public function getTypeID($chado, $accession) {
-    $type_id = NULL;
-    $matches = [];
-    $this->assertTrue(preg_match('/^(.+):(.*+)/', $accession) == 1,
-        'The CV term used for publishing is invalid: ' . $accession);
-    if (preg_match('/^(.+):(.*+)/', $accession, $matches)) {
-      $select = $chado->select('1:cvterm', 'cvt');
-      $select->join('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
-      $select->join('1:db', 'db', 'db.db_id = dbx.db_id');
-      $select->fields('cvt', ['cvterm_id']);
-      $select->condition('dbx.accession', $matches[2]);
-      $select->condition('db.name', $matches[1]);
-      $result = $select->execute();
-      $type_id = $result->fetchField();
-      $this->assertTrue(!is_int($type_id),
-        'The CV term used for publishing could not be found: ' . $accession);
-    }
-    return $type_id;
-  }
+
 
   /**
    * A helper function to test if the elements of a field item are present.
    */
-  public function checkFieldItem($bundle, $field_name, $record_id, $values = [], $delta=0) {
+  public function checkFieldItem($bundle, $field_name, $match, $check = []) {
 
     $public = \Drupal::service('database');
     $select = $public->select('tripal_entity__' . $field_name, 'f');
     $select->fields('f');
-    $select->condition($field_name . '_record_id', $record_id);
+    foreach ($match as $key => $val) {
+      $select->condition($field_name . '_' . $key, $val);
+    }
     $select->orderBy('delta');
     $result = $select->execute();
     $records = $result->fetchAll();
-    if ($field_name == 'organism_note' or $field_name == 'organism_comment') {
-      print_r([$field_name, $records]);
-    }
+    foreach ($records as $delta => $record) {
 
-    // Make sure we have at least one  item.
-    $this->assertTrue(count($records) > 0,
-        "The published item value for field, '$field_name', is missing");
+      // Make sure we have a bundle for the specified record.
+      $this->assertTrue($record->bundle == $bundle,
+          'The bundle for a published item is incorrect (' . $record->bundle . '!='
+          . $bundle . ') for the field "' . $field_name . '" at delta ' . $delta);
 
-    // Make sure we have at least $index records.
-    $this->assertTrue(count($records) >= $delta + 1,
-      "There are missing published items for field , '$field_name'.");
+      // Make sure we have an entity ID for the specified record.
+      $this->assertNotNull($record->entity_id,
+        'The entity_id for a published item is missing for the field "'
+          . $field_name . '" at delta ' . $delta);
 
-    if (count($records) < $delta + 1) {
-      return;
-    }
-    $record = $records[$delta];
-
-    // Make sure we have an entity ID for the specified record.
-    $this->assertTrue($record->bundle == $bundle,
-        'The bundle for a published item is incorrect (' . $record->bundle . '!=' . $bundle . ') for the field ' . $field_name);
-
-    // Make sure we have an entity ID for the specified record.
-    $this->assertNotNull($record->entity_id,
-      'The entity_id for a published item is missing for the field ' . $field_name);
-
-    // Make sure the delta matches
-    $this->assertTrue($record->delta == $delta,
-      'The delta for a published item is incorrect for the field ' . $field_name);
-
-    // Make sure the expected values are present.
-    foreach ($values as $column => $value) {
-      $column_name = $field_name . '_' . $column;
-      $this->assertTrue($record->$column_name == $value,
-        'The value for, "' . $column_name . '", is not correct: '
-          . $record->$column_name . ' (actual) != ' . $value . ' (expected); delta: ' . $delta . '.');
+      // Make sure the expected values are present.
+      foreach ($check as $key => $val) {
+        $column_name = $key;
+        if ($key != 'bundle' and $key != 'entity_id') {
+          $column_name = $field_name . '_' . $key;
+        }
+        $this->assertTrue($record->$column_name == $val,
+          'The value for, "' . $column_name . '", is not correct: '
+            . $record->$column_name . ' (actual) != ' . $val . ' (expected)');
+      }
     }
   }
 
@@ -159,26 +127,6 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    * A helper function to add fields to the content types used in the tests.
    */
   public function addOrganismCustomFields() {
-
-    // Create the terms for the field property storage types.
-    /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idsmanager */
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-
-    $local_db = $idsmanager->loadCollection('local', "chado_id_space");
-    $note_term = new TripalTerm();
-    $note_term->setName('Note');
-    $note_term->setIdSpace('local');
-    $note_term->setVocabulary('local');
-    $note_term->setAccession('Note');
-    $local_db->saveTerm($note_term);
-
-    $schema_db = $idsmanager->loadCollection('schema', "chado_id_space");
-    $comment_term = new TripalTerm();
-    $comment_term->setName('comment');
-    $comment_term->setIdSpace('schema');
-    $comment_term->setVocabulary('schema');
-    $comment_term->setAccession('comment');
-    $schema_db->saveTerm($comment_term);
 
     /** @var \Drupal\tripal\Services\TripalFieldCollection $fields_service **/
     // Now add a ChadoProperty field for the two types of properties.
@@ -282,6 +230,26 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $terms_setup = \Drupal::service('tripal_chado.terms_init');
     $terms_setup->installTerms();
 
+    // Create the terms for the field property storage types.
+    /** @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idsmanager */
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
+    $local_db = $idsmanager->loadCollection('local', "chado_id_space");
+    $note_term = new TripalTerm();
+    $note_term->setName('Note');
+    $note_term->setIdSpace('local');
+    $note_term->setVocabulary('local');
+    $note_term->setAccession('Note');
+    $local_db->saveTerm($note_term);
+
+    $schema_db = $idsmanager->loadCollection('schema', "chado_id_space");
+    $comment_term = new TripalTerm();
+    $comment_term->setName('comment');
+    $comment_term->setIdSpace('schema');
+    $comment_term->setVocabulary('schema');
+    $comment_term->setAccession('comment');
+    $schema_db->saveTerm($comment_term);
+
     // Make sure we have the content types and fields that we want to test.
     $collection_ids = ['general_chado'];
     $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
@@ -299,11 +267,14 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'The TripalPublish service should return 0 entities when no records are available.');
 
     // Test publishing a single record.
+    $taxrank_db = $idsmanager->loadCollection('TAXRANK', "chado_id_space");
+    $subspecies_term_id = $taxrank_db->getTerm('0000023')->getInternalId();
+
     $organism_id = $this->addChadoOrganism($chado, [
       'genus' => 'Oryza',
       'species' => 'species',
       'abbreviation' => 'O. sativa',
-      'type_id' => $this->getTypeID($chado, 'TAXRANK:0000023'),
+      'type_id' => $subspecies_term_id,
       'infraspecific_name' => 'Japonica',
       'comment' => 'rice is nice'
     ]);
@@ -311,13 +282,26 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->assertTrue(count(array_keys($entities)) == 1,
       'The TripalPublish service should have published 1 organism.');
 
-    // Test that entries were added for all field items.
-    $this->checkFieldItem('organism', 'organism_genus', $organism_id, ['value' => NULL]);
-    $this->checkFieldItem('organism', 'organism_species', $organism_id, ['value' => NULL]);
-    $this->checkFieldItem('organism', 'organism_abbreviation', $organism_id, ['value' => NULL]);
-    $this->checkFieldItem('organism', 'organism_infraspecific_name', $organism_id, ['value' => NULL]);
-    $this->checkFieldItem('organism', 'organism_infraspecific_type', $organism_id, []);
-    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['value' => NULL]);
+    // Test that entries were added for all field items and that fields that
+    // shouldn't be saved in Drupal are NULL.
+    $this->checkFieldItem('organism', 'organism_genus',
+        ['record_id' => $organism_id],
+        ['bundle' => 'organism', 'entity_id' => 1, 'value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_species',
+        ['record_id' => $organism_id],
+        ['bundle' => 'organism', 'entity_id' => 1, 'value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_abbreviation',
+        ['record_id' => $organism_id],
+        ['bundle' => 'organism', 'entity_id' => 1, 'value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_infraspecific_name',
+        ['record_id' => $organism_id],
+        ['bundle' => 'organism', 'entity_id' => 1, 'value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_infraspecific_type',
+        ['record_id' => $organism_id],
+        ['bundle' => 'organism', 'entity_id' => 1, 'type_id' => NULL]);
+    $this->checkFieldItem('organism', 'organism_comment',
+        ['record_id' => $organism_id],
+        ['bundle' => 'organism', 'entity_id' => 1, 'value' => NULL]);
 
     // Test that the title via token replacement is working.
     $this->assertTrue(array_values($entities)[0] == '<em>Oryza species</em> subspecies <em>Japonica</em>',
@@ -334,52 +318,64 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->assertTrue(array_values($entities)[0] == '<em>Gorilla gorilla</em> <em></em>',
         'The title of Chado organism with missing tokens is incorrect after publishing: "' . array_values($entities)[0] . '" != "<em>Gorilla gorilla</em> <em></em>"');
 
-    // Make sure the second organism has published fields.
-    $this->checkFieldItem('organism', 'organism_genus', $organism_id, ['value' => NULL]);
-    $this->checkFieldItem('organism', 'organism_species', $organism_id, ['value' => NULL]);
-    $this->checkFieldItem('organism', 'organism_abbreviation', $organism_id, ['value' => NULL]);
-    $this->checkFieldItem('organism', 'organism_infraspecific_name', $organism_id, ['value' => NULL]);
-    $this->checkFieldItem('organism', 'organism_infraspecific_type', $organism_id, []);
-    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['value' => NULL]);
 
-    // Test cardinality. We'll use the property field for this. First, lets
-    // add three properties of the same type and three properties of
-    // anothe rtype.
+    $this->checkFieldItem('organism', 'organism_genus',
+        ['record_id' => $organism_id2],
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_species',
+        ['record_id' => $organism_id2],
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_abbreviation',
+        ['record_id' => $organism_id2],
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_infraspecific_name',
+        ['record_id' => $organism_id2],
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => NULL]);
+    $this->checkFieldItem('organism', 'organism_infraspecific_type',
+        ['record_id' => $organism_id2],
+        ['bundle' => 'organism', 'entity_id' => 2, 'type_id' => NULL]);
+    $this->checkFieldItem('organism', 'organism_comment',
+        ['record_id' => $organism_id2],
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => NULL]);
+
+    $comment_type_id = $schema_db->getTerm('comment')->getInternalId();
+    $note_type_id = $local_db->getTerm('Note')->getInternalId();
+
     $this->addOrganismCustomFields();
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
-      'type_id' => $this->getTypeID($chado, 'local:Note'),
+      'type_id' => $note_type_id,
       'value' => 'Note 1',
       'rank' => 1,
     ]);
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
-      'type_id' => $this->getTypeID($chado, 'local:Note'),
+      'type_id' => $note_type_id,
       'value' => 'Note 0',
       'rank' => 0,
     ]);
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
-      'type_id' => $this->getTypeID($chado, 'local:Note'),
+      'type_id' => $note_type_id,
       'value' => 'Note 2',
       'rank' => 2,
     ]);
 
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
-      'type_id' => $this->getTypeID($chado, 'schema:comment'),
+      'type_id' => $comment_type_id,
       'value' => 'Comment 0',
       'rank' => 0,
     ]);
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
-      'type_id' => $this->getTypeID($chado, 'schema:comment'),
+      'type_id' => $comment_type_id,
       'value' => 'Comment 1',
       'rank' => 1,
     ]);
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
-      'type_id' => $this->getTypeID($chado, 'schema:comment'),
+      'type_id' => $comment_type_id,
       'value' => 'Comment 2t',
       'rank' => 2,
     ]);
@@ -395,18 +391,24 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->assertTrue(count(array_values($entities)) == 1,
       'There should only be one published entity for a single organism with new properties.');
 
-    // Check that all three properties were added.  The prop_id will be the
-    // primary key in the prop table. Since we had no properties in the
-    // organismprop table these should start with 1.  The properties should be
-    // published in rank order (delta) and since we flipped the rank of the second
-    // and third property of the Note property they should be flipped as well.
-    // We didn't flip the order for the Comment property so they should be in
-    // order.
-    $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 1], 0);
-    $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 2], 2);
-    $this->checkFieldItem('organism', 'organism_note', $organism_id, ['prop_id' => 3], 1);
-    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 4], 0);
-    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 5], 1);
-    $this->checkFieldItem('organism', 'organism_comment', $organism_id, ['prop_id' => 6], 2);
+    // Check that the property values got published.
+    $this->checkFieldItem('organism', 'organism_note',
+        ['record_id' => $organism_id, 'prop_id' => 1],
+        ['type_id' => NULL, 'bundle' => 'organism', 'entity_id' => 1]);
+    $this->checkFieldItem('organism', 'organism_note',
+        ['record_id' => $organism_id, 'prop_id' => 2],
+        ['type_id' => NULL, 'bundle' => 'organism', 'entity_id' => 1]);
+    $this->checkFieldItem('organism', 'organism_note',
+        ['record_id' => $organism_id, 'prop_id' => 3],
+        ['type_id' => NULL, 'bundle' => 'organism', 'entity_id' => 1]);
+    $this->checkFieldItem('organism', 'organism_note',
+        ['record_id' => $organism_id, 'prop_id' => 1],
+        ['type_id' => NULL, 'bundle' => 'organism', 'entity_id' => 1]);
+    $this->checkFieldItem('organism', 'organism_note',
+        ['record_id' => $organism_id, 'prop_id' => 2],
+        ['type_id' => NULL, 'bundle' => 'organism', 'entity_id' => 1]);
+    $this->checkFieldItem('organism', 'organism_note',
+        ['record_id' => $organism_id, 'prop_id' => 3],
+        ['type_id' => NULL, 'bundle' => 'organism', 'entity_id' => 1]);
   }
 }
