@@ -3,3 +3,7 @@ services:
     class: \Drupal\tripal_chado\Commands\ChadoManageCommands
     tags:
       - { name: drush.command }
+  tripal_chado.chadofixingcommands:
+    class: \Drupal\tripal_chado\Commands\ChadoFixingCommands
+    tags:
+      - { name: drush.command }
