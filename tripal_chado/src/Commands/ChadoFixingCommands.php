@@ -151,6 +151,7 @@ class ChadoFixingCommands extends DrushCommands {
               }
             } else {
               $summary_dbs[$idspace_info['name']] = ' - ';
+              $defined_ispaces[$idspace_info['name']] = NULL;
             }
           }
 
@@ -171,8 +172,10 @@ class ChadoFixingCommands extends DrushCommands {
               // ERROR:
               $problems['error']['missing-db'][$term_db][] = [
                 'message' => $summary_term . ': The YAML-defined term includes an ID Space that was not defined in the ID Spaces section for this vocabulary.',
-                'YOURS' => $term_db,
-                'EXPECTED' => $defined_ispaces,
+                'missing-db-name' => $term_db,
+                'defined-dbs' => $defined_ispaces,
+                'term' => $summary_term,
+                'vocab' => $vocab_info['name'],
               ];
               // No solution for this one... instead the developer of the module needs to fix their YAML ;-p
             }
@@ -219,9 +222,10 @@ class ChadoFixingCommands extends DrushCommands {
 
                   // ERROR:
                   $problems['error']['dbxref'][$existing_dbxref->dbxref_id][] = [
-                    'message' => $summary_term . ': The dbxref.db_id>db.name for this term in your chado instance does not match what is in the YAML.',
+                    'message' => 'The dbxref.db_id>db.name for this term in your chado instance does not match what is in the YAML.',
                     'YOURS' => $existing_dbxref->db_name,
                     'EXPECTED' => $term_db,
+                    'term' => $summary_term,
                   ];
                   // We only have a solution to suggest if the db was defined and existed already.
                   if (array_key_exists($term_db, $defined_ispaces)) {
@@ -235,9 +239,10 @@ class ChadoFixingCommands extends DrushCommands {
 
                   // ERROR:
                   $problems['error']['dbxref'][$existing_dbxref->dbxref_id][] = [
-                    'message' => $summary_term . ': The dbxref.accession for this term in your chado instance does not match what is in the YAML.',
+                    'message' => 'The dbxref.accession for this term in your chado instance does not match what is in the YAML.',
                     'YOURS' => $existing_dbxref->accession,
                     'EXPECTED' => $term_accession,
+                    'term' => $summary_term,
                   ];
                   $solutions['error']['dbxref'][$existing_dbxref->dbxref_id]['accession'] = $term_accession;
                 }
@@ -247,9 +252,8 @@ class ChadoFixingCommands extends DrushCommands {
                 // ERROR:
                 // NO DBXREF Record associated with the existing cvterm! This should not be possible due to database contraints so your Chado is Very Broken!
                 $problems['error']['missing-dbxref'][$existing_cvterm->cvterm_id][] = [
-                  'message' => $summary_term . ': The cvterm exists and has a dbxref_id but the actual dbxref record is missing! This should not be possible due to database contraints so your Chado is Very Broken!',
-                  'YOURS' => $existing_cvterm->dbxref_id,
-                  'EXPECTED' => '',
+                  'dbxref_id' => $existing_cvterm->dbxref_id,
+                  'term' => $summary_term,
                 ];
                 // We only have a solution to suggest if the db was defined and existed already.
                 if (array_key_exists($term_db, $defined_ispaces)) {
@@ -270,23 +274,58 @@ class ChadoFixingCommands extends DrushCommands {
               $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
               $query->addField('db', 'name', 'db_name');
               $query->condition('db.name', $term_db);
-              $query->join('1:cvterm', 'cvt', 'cvt.dbxref_id = dbx.dbxref_id');
-              $query->addField('cvt', 'name', 'cvterm_name');
-              $query->addField('cvt', 'cvterm_id', 'cvterm_id');
-              $existing_dbxref = $query->execute()->fetchObject();
+              $existing_dbxrefs = $query->execute()->fetchAll();
 
-              if ($existing_dbxref) {
+              if ($existing_dbxrefs) {
+                foreach ($existing_dbxrefs as $existing_dbxref) {
 
-                $summary_dbxref = sprintf($red, ' X (' . $existing_dbxref->dbxref_id . ')');
+                  // Get information about any attached terms.
+                  $query = $chado->select('1:cvterm', 'cvt')
+                    ->fields('cvt', ['name'])
+                    ->condition('cvt.dbxref_id', $existing_dbxref->dbxref_id);
+                  $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+                  $query->addField('cv', 'name', 'cv_name');
 
-                // ERROR:
-                $problems['error']['dbxref-not-attached'][$existing_dbxref->dbxref_id][] = [
-                  'message' => $summary_term . ': The YAML-defined accession does exist but it is not attached to the term!',
-                  'YOURS' => NULL,
-                  'EXPECTED' => $existing_dbxref->dbxref_id,
-                ];
-                // We don't have a solution for this (grimaces).
+                  // If there are any terms associated this may be a
+                  // cv error rather then a dbxref one...
+                  $has_terms = FALSE;
+                  $attached_terms = [];
+                  foreach ($query->execute() as $existing_cvterm) {
+                    $has_terms = TRUE;
 
+                    // Check if the attached term name matches ours.
+                    if ($existing_cvterm->name == $term_info['name']) {
+                      $has_terms = TRUE;
+                    }
+                    // Otherwise just keep track of them.
+                    else {
+                      $attached_terms[] = $existing_cvterm;
+                    }
+                  }
+
+                  if ($has_terms) {
+
+                    // @todo report term with wrong cv.
+
+                    // @todo report possible terms which maybe should be attached to this dbxref.
+
+                  }
+                  else {
+                    $summary_dbxref = sprintf($red, ' X (' . $existing_dbxref->dbxref_id . ')');
+
+                    // @todo check here if we have an existing term above.
+                    // maybe it's just missing a connection?
+
+                    // ERROR:
+                    $problems['error']['dbxref-not-attached'][$existing_dbxref->dbxref_id][] = [
+                      'dbxref-id' => $existing_dbxref->dbxref_id,
+                      'dbxref-accession' => $existing_dbxref->accession,
+                      'dbxref-dbname' => $existing_dbxref->db_name,
+                      'term' => $summary_term,
+                    ];
+                    // We don't have a solution for this (grimaces).
+                  }
+                }
               } else {
                 // Otherwise it's just missing which is not a concern really.
                 $summary_dbxref = ' - ';
@@ -322,9 +361,91 @@ class ChadoFixingCommands extends DrushCommands {
     if ($show_errors) {
 
       // missing-db
+      if (array_key_exists('missing-db', $problems['error'])) {
+        $this->io()->section('YAML Issues: Missing ID Space definitions.');
+        $num_detected = count($problems['error']['missing-db']);
+        $this->output()->writeln("We have detected $num_detected problems with your YAML file. You will want to contact the developers to let them know the following output:");
+        $list = [];
+        foreach($problems['error']['missing-db'] as $idspace => $terms_with_issues) {
+          foreach ($terms_with_issues as $prob_deets) {
+            $list[] = sprintf(
+              "Term %s: Missing '%s' ID Space from defined ID Spaces for '%s' vocabulary. Defined ID Spaces include %s.",
+              $prob_deets['term'],
+              $prob_deets['missing-db-name'],
+              $prob_deets['vocab'],
+              implode(', ', array_keys($prob_deets['defined-dbs'])
+            ));
+          }
+        }
+        $this->io()->listing($list);
+      }
+
       // dbxref
+      if (array_key_exists('dbxref', $problems['error'])) {
+        $this->io()->section('Term Accessions with unexpected values.');
+        $num_detected = count($problems['error']['dbxref']);
+        $this->output()->writeln("We have detected $num_detected serious problems with existing dbxref. These are highlighted red and show the existing id above.");
+        foreach($problems['error']['dbxref'] as $dbxref_id => $specific_issues) {
+          $list = [];
+          $term = NULL;
+          foreach ($specific_issues as $prob_deets) {
+            $term = $prob_deets['term'];
+            $list[] = sprintf(
+              "%s\n     Your chado instance has '%s' but Tripal expects '%s'",
+              $prob_deets['message'],
+              $prob_deets['YOURS'],
+              $prob_deets['EXPECTED']
+            );
+          }
+          $this->output()->writeln('Term: ' . $term);
+          $this->io()->listing($list);
+        }
+      }
+
       // missing-dbxref
+      if (array_key_exists('missing-dbxref', $problems['error'])) {
+        $this->io()->section('Referential Integrity Issues.');
+        $num_detected = count($problems['error']['dbxref']);
+        $this->output()->writeln("We have detected $num_detected serious problems with referential integrity!");
+        $this->output()->writeln("More specifically, the following existing cvterms have a dbxref_id indicated but that record does not exist in your chado instance.");
+        $this->output()->writeln("This should not be possible due to database contraints so your Chado is Very Broken!");
+        $list = [];
+        foreach($problems['error']['missing-dbxref'] as $cvterm_id => $specific_issues) {
+          $term = NULL;
+          foreach ($specific_issues as $prob_deets) {
+            $term = $prob_deets['term'];
+            $list[] = sprintf(
+              'Term %s (id: %s) has a dbxref_id of %s (missing in dbxref table)',
+              $term,
+              $cvterm_id,
+              $prob_deets['dbxref_id']
+            );
+          }
+        }
+        $this->io()->listing($list);
+      }
+
       // dbxref-not-attached
+      if (array_key_exists('dbxref-not-attached', $problems['error'])) {
+        $this->io()->section('Term Accessions not attached to their term.');
+        $num_detected = count($problems['error']['dbxref-not-attached']);
+        $this->output()->writeln("We have detected $num_detected database references that are not attached to the term we expected them to be.");
+        $list = [];
+        foreach ($problems['error']['dbxref-not-attached'] as $dbxref_id => $specific_issues) {
+          foreach ($specific_issues as $prob_deets) {
+            $list[] = sprintf(
+              "'%s:%s' (%s) is attached to term '%s' (%s) but Tripal expected it to be attached to term '%s'.",
+              $prob_deets['dbxref-dbname'],
+              $prob_deets['dbxref-accession'],
+              $prob_deets['dbxref-id'],
+              $prob_deets['cvterm-name'],
+              $prob_deets['cvterm-id'],
+              $prob_deets['term'],
+            );
+          }
+        }
+        $this->io()->listing($list);
+      }
     }
   }
 }
