@@ -149,13 +149,23 @@ class ChadoManageCommands extends DrushCommands {
       'dbxref' => 'DBXREF',
     ];
     $summary_rows = [];
-
-    $this->output()->writeln('');
+    // We are also going to keep track of the issues so we can offer to fix them
+    // in some cases.
+    $problems = [
+      'error' => [],
+      'warning' => [],
+    ];
+    $solutions = [
+      'error' => [],
+      'warning' => [],
+    ];
 
     $chado = \Drupal::service('tripal_chado.database');
     $chado->setSchemaName($options['chado_schema']);
 
+    $this->output()->writeln('');
     $this->output()->writeln('Using the Chado Content Terms YAML specification to determine what Tripal expects.');
+    $this->output()->writeln('');
 
     $config_factory = \Drupal::service('config.factory');
 
@@ -174,7 +184,6 @@ class ChadoManageCommands extends DrushCommands {
           $summary_dbs = [];
           $summary_cvterm = NULL;
           $summary_dbxref = NULL;
-          $summary_comments = [];
 
           // Check if the cv record for this vocabulary exists.
           $query = $chado->select('1:cv', 'cv')
@@ -189,9 +198,12 @@ class ChadoManageCommands extends DrushCommands {
               $summary_cv = sprintf($yellow, $existing_cv->cv_id);
 
               // WARNING:
-              // $this->io()->warning('The cv.definition for this vocabulary is doesn\'t match what is expected.');
-              // $sql_fix = "UPDATE {1:cv} SET definition='" . $vocab_info['label'] . "' WHERE cv_id=$summary_cv;";
-              // $this->io()->note($sql_fix);
+              $problems['warning']['cv'][$existing_cv->cv_id][] = [
+                'message' => $vocab_info['name'] . ': The cv.definition for this vocabulary in your chado instance does not match what is in the YAML.',
+                'YOURS' => $existing_cv->definition,
+                'EXPECTED' => $vocab_info['label'],
+              ];
+              $solutions['warning']['cv'][ $existing_cv->cv_id ]['definition'] = $vocab_info['label'];
             }
           }
           else {
@@ -217,25 +229,36 @@ class ChadoManageCommands extends DrushCommands {
                 $summary_dbs[ $idspace_info['name'] ] = sprintf($yellow, $existing_db->db_id);
 
                 // WARNING:
-                // $summary_comments[] = 'db.description mismatched';
-                //$sql_fix = "UPDATE {1:db} SET description='" . $idspace_info['description'] . "' WHERE db_id=" . $existing_db->db_id . ";";
-                //$this->io()->note($sql_fix);
+                $problems['warning']['db'][$existing_db->db_id][] = [
+                  'message' => $idspace_info['name'] . ': The db.description for this ID Space in your chado instance does not match what is in the YAML.',
+                  'YOURS' => $existing_db->description,
+                  'EXPECTED' => $idspace_info['description'],
+                ];
+                $solutions['warning']['db'][$existing_db->db_id]['description'] = $idspace_info['description'];
               }
               if ($existing_db->urlprefix != $idspace_info['urlPrefix']) {
 
                 $summary_dbs[$idspace_info['name']] = sprintf($yellow, $existing_db->db_id);
 
                 // WARNING:
-                // $summary_comments[] = 'db.urlprefix mismatched';
-                // $this->io()->warning('The db.urlprefix for this ID Space is expected to be "' . $idspace_info['urlPrefix'] . '" but was actually "' . $existing_db->urlprefix . '".');
+                $problems['warning']['db'][$existing_db->db_id][] = [
+                  'message' => $idspace_info['name'] . ': The db.urlprefix for this ID Space in your chado instance does not match what is in the YAML.',
+                  'YOURS' => $existing_db->urlprefix,
+                  'EXPECTED' => $idspace_info['urlPrefix'],
+                ];
+                $solutions['warning']['db'][$existing_db->db_id]['urlprefix'] = $idspace_info['urlPrefix'];
               }
               if ($existing_db->url != $vocab_info['url']) {
 
                 $summary_dbs[$idspace_info['name']] = sprintf($yellow, $existing_db->db_id);
 
                 // WARNING:
-                // $summary_comments[] = 'db.url mismatched';
-                //$this->io()->warning('The db.url for this ID Space is expected to be "' . $vocab_info['url'] . '" but was actually "' . $existing_db->url . '".');
+                $problems['warning']['db'][$existing_db->db_id][] = [
+                  'message' => $vocab_info['url'] . ': The db.url for this vocabulary in your chado instance does not match what is in the YAML.',
+                  'YOURS' => $existing_db->url,
+                  'EXPECTED' => $vocab_info['url'],
+                ];
+                $solutions['warning']['db'][$existing_db->db_id]['urlprefix'] = $vocab_info['url'];
               }
 
             } else {
@@ -259,8 +282,12 @@ class ChadoManageCommands extends DrushCommands {
               $summary_dbs[$idspace_info['name']] = sprintf($red, ' X ');
 
               // ERROR:
-              // $summary_comments[] = 'ID space not defined in YAML';
-              //$this->io()->error('The term id includes an id space ("' . $term_db . '") that was not defined in the YAML for this vocabulary.');
+              $problems['error']['missing-db'][$term_db][] = [
+                'message' => $summary_term . ': The YAML-defined term includes an ID Space that was not defined in the ID Spaces section for this vocabulary.',
+                'YOURS' => $term_db,
+                'EXPECTED' => $defined_ispaces,
+              ];
+              // No solution for this one... instead the developer of the module needs to fix their YAML ;-p
             }
 
             // Check if the cvterm record for this term exists.
@@ -274,13 +301,18 @@ class ChadoManageCommands extends DrushCommands {
               $summary_cvterm = $existing_cvterm->cvterm_id;
 
               // Now check the term definition.
-              if (array_key_exists('description', $term_info) && ($existing_cvterm->definition != $term_info['description'])) {
+              $term_info['description'] = (array_key_exists('description', $term_info)) ? $term_info['description'] : '';
+              if ($existing_cvterm->definition != $term_info['description']) {
 
                 $summary_cvterm = sprintf($yellow, $existing_cvterm->cvterm_id);
 
                 // WARNING:
-                // $summary_comments[] = 'cvterm.definition mismatched';
-                // $this->io()->warning('The cvterm.definition for this Term is expected to be "' . $term_info['description'] . '" but was actually "' . $existing_cvterm->definition . '".');
+                $problems['warning']['cvterm'][$existing_cvterm->cvterm_id][] = [
+                  'message' => $summary_term . ': The cvterm.definition for this term in your chado instance does not match what is in the YAML.',
+                  'YOURS' => $existing_cvterm->definition,
+                  'EXPECTED' => $term_info['description'],
+                ];
+                $solutions['warning']['cvterm'][$existing_cvterm->cvterm_id]['definition'] = $term_info['description'];
               }
 
               // Now get the dbxref record for this cvterm.
@@ -299,8 +331,15 @@ class ChadoManageCommands extends DrushCommands {
                   $summary_dbxref = sprintf($red, $existing_dbxref->dbxref_id);
 
                   // ERROR:
-                  // $summary_comments[] = 'existing dbxref has different db';
-                  // $this->io()->error('The dbxref.db_id>db.name for this term is expected to be "' . $term_db . '" but was actually "' . $existing_dbxref->db_name . '".');
+                  $problems['error']['dbxref'][$existing_dbxref->dbxref_id][] = [
+                    'message' => $summary_term . ': The dbxref.db_id>db.name for this term in your chado instance does not match what is in the YAML.',
+                    'YOURS' => $existing_dbxref->db_name,
+                    'EXPECTED' => $term_db,
+                  ];
+                  // We only have a solution to suggest if the db was defined and existed already.
+                  if (array_key_exists($term_db, $defined_ispaces)) {
+                    $solutions['error']['dbxref'][$existing_dbxref->dbxref_id]['db_id'] = $defined_ispaces[$term_db];
+                  }
                 }
                 // Check the term accession matches the dbxref.accession
                 if ($existing_dbxref->accession != $term_accession) {
@@ -308,16 +347,32 @@ class ChadoManageCommands extends DrushCommands {
                   $summary_dbxref = sprintf($red, $existing_dbxref->dbxref_id);
 
                   // ERROR:
-                  // $summary_comments[] = 'existing dbxref has different accession';
-                  // $this->io()->error('The dbxref.accession for this term is expected to be "' . $term_accession . '" but was actually "' . $existing_dbxref->accession . '".');
+                  $problems['error']['dbxref'][$existing_dbxref->dbxref_id][] = [
+                    'message' => $summary_term . ': The dbxref.accession for this term in your chado instance does not match what is in the YAML.',
+                    'YOURS' => $existing_dbxref->accession,
+                    'EXPECTED' => $term_accession,
+                  ];
+                  $solutions['error']['dbxref'][$existing_dbxref->dbxref_id]['accession'] = $term_accession;
                 }
               }
               else {
                 $summary_dbxref = sprintf($red, $existing_cvterm->dbxref_id);
 
                 // ERROR:
-                // $summary_comments[] = 'dbxref dependency broken';
-                $this->io()->error('NO DBXREF Record associated with the cvterm "' . $existing_cvterm->name . '" (' . $existing_cvterm->cv_id . ')! This should not be possible due to database contraints so your Chado is Very Broken!');
+                // NO DBXREF Record associated with the existing cvterm! This should not be possible due to database contraints so your Chado is Very Broken!
+                $problems['error']['missing-dbxref'][$existing_cvterm->cvterm_id][] = [
+                  'message' => $summary_term . ': The cvterm exists and has a dbxref_id but the actual dbxref record is missing! This should not be possible due to database contraints so your Chado is Very Broken!',
+                  'YOURS' => $existing_cvterm->dbxref_id,
+                  'EXPECTED' => '',
+                ];
+                // We only have a solution to suggest if the db was defined and existed already.
+                if (array_key_exists($term_db, $defined_ispaces)) {
+                  $solutions['error']['missing-dbxref'][$existing_cvterm->cvterm_id] = [
+                    'dbxref_id' => $existing_cvterm->dbxref_id,
+                    'db_id' => $defined_ispaces[$term_db],
+                    'accession' => $term_accession,
+                  ];
+                }
               }
             }
             else {
@@ -340,8 +395,12 @@ class ChadoManageCommands extends DrushCommands {
                 $summary_dbxref = sprintf($red, ' X ('. $existing_dbxref->dbxref_id . ')');
 
                 // ERROR:
-                // $summary_comments[] = 'dbxref not attached to term';
-                // $this->io()->error('The accession of the term defined as "' . $term_info['name'] . '" ("' . $term_info['id'] . '") exists in the dbxref table (' . $existing_dbxref->dbxref_id . ') but not in the cvterm table. Instead this dbxref record is connected to a cvterm with the name "' . $existing_dbxref->cvterm_name . '" (' . $existing_dbxref->cvterm_id . ').');
+                $problems['error']['dbxref-not-attached'][$existing_dbxref->dbxref_id][] = [
+                  'message' => $summary_term . ': The YAML-defined accession does exist but it is not attached to the term!',
+                  'YOURS' => NULL,
+                  'EXPECTED' => $existing_dbxref->dbxref_id,
+                ];
+                // We don't have a solution for this (grimaces).
 
               }
               else {
@@ -365,6 +424,7 @@ class ChadoManageCommands extends DrushCommands {
     }
 
     // Finally tell the user the summary state of things.
+    $this->output()->writeln('');
     $this->output()->writeln('The following table summarizes the terms.');
     $this->io()->table($summary_headers, $summary_rows);
     $this->output()->writeln('Legend:');
@@ -372,5 +432,15 @@ class ChadoManageCommands extends DrushCommands {
     $this->output()->writeln(sprintf($red, '  RED   ') . ' Indicates there is a serious mismatch which will cause the prepare to fail on this chado instance.');
     $this->output()->writeln('    -      Indicates this one is missing but that is not a concern as it will be added when you run prepare.');
     $this->output()->writeln('');
+
+    // Now we can start reporting more detail if they want.
+    $show_errors = $this->io()->confirm('Would you like to see more details about the errors?');
+    if ($show_errors) {
+
+      // missing-db
+      // dbxref
+      // missing-dbxref
+      // dbxref-not-attached
+    }
   }
 }
