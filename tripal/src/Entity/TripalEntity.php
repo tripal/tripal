@@ -33,6 +33,7 @@ use Drupal\tripal\TripalField\TripalFieldItemBase;
  *       "add" = "Drupal\tripal\Form\TripalEntityForm",
  *       "edit" = "Drupal\tripal\Form\TripalEntityForm",
  *       "delete" = "Drupal\tripal\Form\TripalEntityDeleteForm",
+ *       "unpublish" = "Drupal\tripal\Form\TripalEntityUnpublishForm",
  *     },
  *     "access" = "Drupal\tripal\Access\TripalEntityAccessControlHandler",
  *     "route_provider" = {
@@ -52,6 +53,7 @@ use Drupal\tripal\TripalField\TripalFieldItemBase;
  *     "add-form" = "/bio_data/add/{tripal_entity_type}",
  *     "edit-form" = "/bio_data/{tripal_entity}/edit",
  *     "delete-form" = "/bio_data/{tripal_entity}/delete",
+ *     "unpublish-form" = "/bio_data/{tripal_entity}/unpublish",
  *     "collection" = "/admin/content/bio_data",
  *   },
  *   bundle_entity_type = "tripal_entity_type",
@@ -668,4 +670,5 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     return $violations;
   }
+
 }

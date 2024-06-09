@@ -11,5 +11,18 @@ use Drupal\Core\Entity\ContentEntityDeleteForm;
  */
 class TripalEntityDeleteForm extends ContentEntityDeleteForm {
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getQuestion() {
+    return $this->t('Are you sure you want to unpublish and permanenty '
+      . 'delete %name?', ['%name' => $this->entity->label()]);
+  }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getConfirmText() {
+    return $this->t('Unpublish');
+  }
 }

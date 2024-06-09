@@ -5,6 +5,7 @@ namespace Drupal\tripal\Form;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerTrait;
+use Drupal\Component\Serialization\Json;
 
 /**
  * Form controller for Tripal Content edit forms.
@@ -57,4 +58,30 @@ class TripalEntityForm extends ContentEntityForm {
     $form_state->setRedirect('entity.tripal_entity.canonical', ['tripal_entity' => $entity->id()]);
   }
 
+  /**
+   *
+   * {@inheritDoc}
+   * @see \Drupal\Core\Entity\EntityForm::actions()
+   */
+  protected function actions(array $form, FormStateInterface $form_state) {
+    $actions = parent::actions($form, $form_state);
+    $route_info = $this->entity->toUrl('unpublish-form');
+    $actions['unpublish'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Unpublish'),
+      '#access' => $this->entity->access('administer tripal content'),
+      '#attributes' => [
+        'class' => ['button', 'button--danger', 'use-ajax'],
+        'data-dialog-type' => 'modal',
+        'data-dialog-options' => Json::encode([
+          'width' => 880,
+        ]),
+      ],
+      '#url' => $route_info,
+      '#attached' => [
+        'library' => ['core/drupal.dialog.ajax'],
+      ],
+    ];
+    return $actions;
+  }
 }

@@ -138,7 +138,7 @@ entity.tripal_entity.add_page:
     _title: 'Add Tripal Content'
     _description: 'Add biological data provided by Tripal.'
   options:
-    _admin_route: 'TRUE'
+    _admin_route: True
   requirements:
     _permission: 'administer tripal content'
 
@@ -150,7 +150,7 @@ tripal.content_bio_data_publish_form:
     _title: 'Publish Tripal Content'
     _description: 'Publish content from Chado or other datastores to Tripal.'
   options:
-    _admin_route: 'TRUE'
+    _admin_route: True
   requirements:
     _permission: 'publish tripal content+administer tripal content'
 
@@ -187,6 +187,19 @@ tripal.content_type_field_check:
   requirements:
     _permission: 'administer tripal'
 
+# Adds an unpublished link to Tripal entity pages.
+entity.tripal_entity.unpublish_form:
+  path: 'bio_data/{tripal_entity}/unpublish'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalEntityUnpublishForm'
+    _title: 'Unpublish'
+  options:
+    parameters:
+      tripal_entity:
+        type: entity:tripal_entity
+  requirements:
+    _permission: 'administer tripal content'
+    
 ##
 # Controlled Vocabularies.
 ##

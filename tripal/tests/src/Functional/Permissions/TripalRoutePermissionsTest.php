@@ -272,6 +272,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
       'entity-add-form' => 'bio_data/add/' . $content_type,
       'entity-edit-form' => 'bio_data/' . $entity_id . '/edit',
       'entity-delete-form' => 'bio_data/' . $entity_id . '/delete',
+      'entity-unpublish-form' => 'bio_data/' . $entity_id . '/unpublish',
       'entity-collection' => 'admin/content/bio_data',
       //'publish-content' => '',
       'unpublish-content' => 'admin/content/bio_data/unpublish',
