@@ -138,7 +138,7 @@ entity.tripal_entity.add_page:
     _title: 'Add Tripal Content'
     _description: 'Add biological data provided by Tripal.'
   options:
-    _admin_route: True
+    _admin_route: 'TRUE'
   requirements:
     _permission: 'administer tripal content'
 
@@ -150,7 +150,7 @@ tripal.content_bio_data_publish_form:
     _title: 'Publish Tripal Content'
     _description: 'Publish content from Chado or other datastores to Tripal.'
   options:
-    _admin_route: True
+    _admin_route: 'TRUE'
   requirements:
     _permission: 'publish tripal content+administer tripal content'
 
