@@ -3,12 +3,16 @@ namespace Drupal\tripal_chado\Commands;
 
 use Drush\Commands\DrushCommands;
 use Symfony\Component\Console\Helper\Table;
+use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * Drush commands
  */
 class ChadoFixingCommands extends DrushCommands {
 
+  protected $chado_schema;
+
+  protected ChadoConnection $chado;
 
   /**
    * Checks a given chado install for any inconsistencies between its cvterms
@@ -28,6 +32,7 @@ class ChadoFixingCommands extends DrushCommands {
     if (!$options['chado_schema']) {
       throw new \Exception(dt('The --chado_schema argument is required.'));
     }
+    $this->chado_schema = $options['chado_schema'];
 
     /// We're going to use symphony tables to summarize what this command finds.
     // As such, I'm going to setup the header now and then compile the rows as I go.
@@ -53,6 +58,7 @@ class ChadoFixingCommands extends DrushCommands {
 
     $chado = \Drupal::service('tripal_chado.database');
     $chado->setSchemaName($options['chado_schema']);
+    $this->chado = $chado;
 
     $this->output()->writeln('');
     $this->output()->writeln('Using the Chado Content Terms YAML specification to determine what Tripal expects.');
@@ -161,7 +167,7 @@ class ChadoFixingCommands extends DrushCommands {
                   'YOURS' => $existing_db->url,
                   'EXPECTED' => $vocab_info['url'],
                 ];
-                $solutions['warning']['db'][$existing_db->db_id]['urlprefix'] = $vocab_info['url'];
+                $solutions['warning']['db'][$existing_db->db_id]['url'] = $vocab_info['url'];
               }
             } else {
               $summary_dbs[$idspace_info['name']] = ' - ';
@@ -245,6 +251,7 @@ class ChadoFixingCommands extends DrushCommands {
     else {
       $this->io()->success('There are no errors associated with this chado instance!');
     }
+    $this->output()->writeln('');
 
     // Then WARNINGS:
     $this->io()->title('Warnings');
@@ -261,6 +268,8 @@ class ChadoFixingCommands extends DrushCommands {
           );
         }
 
+        $this->output()->writeln('');
+
         // Small differences between the expected and found chado.db record.
         if (array_key_exists('db', $problems['warning'])) {
           $this->chadoCheckTermsAreAsExpected_eccentricDb(
@@ -268,10 +277,36 @@ class ChadoFixingCommands extends DrushCommands {
             $solutions['warning']['db']
           );
         }
+
+        $this->output()->writeln('');
       }
     }
     else {
       $this->io()->success('There are no warning associated with this chado instance!');
+    }
+  }
+
+  /**
+   * Updates records in chado based on an array of records.
+   *
+   * @param string $table_name
+   *  The name of the chado table to be updated.
+   * @param string $pkey
+   *  The name of the primary key of the table to be updated.
+   * @param array $records
+   *  An array of the following format:
+   *   - [primary key of the table]: an array of columns to update where each
+   *     is of the form:
+   *      - [column]: [value to update it to]
+   * @return void
+   */
+  protected function updateChadoTermRecords(string $table_name, string $pkey, array $records) {
+
+    foreach ($records as $id => $values) {
+      $query = $this->chado->update('1:' . $table_name)
+        ->fields($values)
+        ->condition($pkey, $id);
+      $query->execute();
     }
   }
 
@@ -387,6 +422,11 @@ class ChadoFixingCommands extends DrushCommands {
     }
     $table->addRows($rows);
     $table->render();
+
+    $fix = $this->io()->confirm('Would you like us to update the descriptions of your chado cvs to match our expectations?');
+    if ($fix) {
+      $this->updateChadoTermRecords('cv', 'cv_id', $solutions);
+    }
   }
 
   /**
@@ -442,5 +482,10 @@ class ChadoFixingCommands extends DrushCommands {
     }
     $table->addRows($rows);
     $table->render();
+
+    $fix = $this->io()->confirm('Would you like us to update the descriptions of your chado dbs to match our expectations?');
+    if ($fix) {
+      $this->updateChadoTermRecords('db', 'db_id', $solutions);
+    }
   }
 }
