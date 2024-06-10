@@ -2,6 +2,7 @@
 namespace Drupal\tripal_chado\Commands;
 
 use Drush\Commands\DrushCommands;
+use Symfony\Component\Console\Helper\Table;
 
 /**
  * Drush commands
@@ -88,10 +89,13 @@ class ChadoFixingCommands extends DrushCommands {
               $summary_cv = sprintf($yellow, $existing_cv->cv_id);
 
               // WARNING:
+              // @see chadoCheckTermsAreAsExpected_eccentricCv().
               $problems['warning']['cv'][$existing_cv->cv_id][] = [
-                'message' => $vocab_info['name'] . ': The cv.definition for this vocabulary in your chado instance does not match what is in the YAML.',
+                'column' => 'cv.definition',
+                'property' => 'label',
                 'YOURS' => $existing_cv->definition,
                 'EXPECTED' => $vocab_info['label'],
+                'vocab-name' => $vocab_info['name'],
               ];
               $solutions['warning']['cv'][$existing_cv->cv_id]['definition'] = $vocab_info['label'];
             }
@@ -118,8 +122,11 @@ class ChadoFixingCommands extends DrushCommands {
                 $summary_dbs[$idspace_info['name']] = sprintf($yellow, $existing_db->db_id);
 
                 // WARNING:
+                // @see chadoCheckTermsAreAsExpected_eccentricDb().
                 $problems['warning']['db'][$existing_db->db_id][] = [
-                  'message' => $idspace_info['name'] . ': The db.description for this ID Space in your chado instance does not match what is in the YAML.',
+                  'idspace-name' => $idspace_info['name'],
+                  'column' => 'db.description',
+                  'property' => 'idSpace.description',
                   'YOURS' => $existing_db->description,
                   'EXPECTED' => $idspace_info['description'],
                 ];
@@ -130,8 +137,11 @@ class ChadoFixingCommands extends DrushCommands {
                 $summary_dbs[$idspace_info['name']] = sprintf($yellow, $existing_db->db_id);
 
                 // WARNING:
+                // @see chadoCheckTermsAreAsExpected_eccentricDb().
                 $problems['warning']['db'][$existing_db->db_id][] = [
-                  'message' => $idspace_info['name'] . ': The db.urlprefix for this ID Space in your chado instance does not match what is in the YAML.',
+                  'idspace-name' => $idspace_info['name'],
+                  'column' => 'db.urlprefix',
+                  'property' => 'idSpace.urlPrefix',
                   'YOURS' => $existing_db->urlprefix,
                   'EXPECTED' => $idspace_info['urlPrefix'],
                 ];
@@ -142,8 +152,12 @@ class ChadoFixingCommands extends DrushCommands {
                 $summary_dbs[$idspace_info['name']] = sprintf($yellow, $existing_db->db_id);
 
                 // WARNING:
+                // @see chadoCheckTermsAreAsExpected_eccentricDb().
                 $problems['warning']['db'][$existing_db->db_id][] = [
                   'message' => $vocab_info['url'] . ': The db.url for this vocabulary in your chado instance does not match what is in the YAML.',
+                  'idspace-name' => $idspace_info['name'],
+                  'column' => 'db.url',
+                  'property' => 'vocabulary.url',
                   'YOURS' => $existing_db->url,
                   'EXPECTED' => $vocab_info['url'],
                 ];
@@ -165,173 +179,27 @@ class ChadoFixingCommands extends DrushCommands {
             [$term_db, $term_accession] = explode(':', $term_info['id']);
 
             // Check the term id space was defined in the id spaces block
+            // Note: if a id space was defined but not found in the database
+            // it will still be in the $defined_idspaces array but the value
+            // will be NULL.
             if (!array_key_exists($term_db, $defined_ispaces)) {
 
               $summary_dbs[$idspace_info['name']] = sprintf($red, ' X ');
 
               // ERROR:
-              $problems['error']['missing-db'][$term_db][] = [
-                'message' => $summary_term . ': The YAML-defined term includes an ID Space that was not defined in the ID Spaces section for this vocabulary.',
+              // The YAML-defined term includes an ID Space that was not defined in the ID Spaces section for this vocabulary.
+              // @ see chadoCheckTermsAreAsExpected_missingDbYaml().
+              $problems['error']['missingDbYaml'][$term_db][] = [
                 'missing-db-name' => $term_db,
                 'defined-dbs' => $defined_ispaces,
                 'term' => $summary_term,
                 'vocab' => $vocab_info['name'],
               ];
               // No solution for this one... instead the developer of the module needs to fix their YAML ;-p
+              $solutions['error']['missingDbYaml'] = [];
             }
 
-            // Check if the cvterm record for this term exists.
-            $query = $chado->select('1:cvterm', 'cvt')
-              ->fields('cvt', ['cvterm_id', 'name', 'definition', 'dbxref_id', 'cv_id'])
-              ->condition('cvt.name', $term_info['name']);
-            $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
-            $query->condition('cv.name', $vocab_info['name']);
-            $existing_cvterm = $query->execute()->fetchObject();
-            if ($existing_cvterm) {
-              $summary_cvterm = $existing_cvterm->cvterm_id;
-
-              // Now check the term definition.
-              $term_info['description'] = (array_key_exists('description', $term_info)) ? $term_info['description'] : '';
-              if ($existing_cvterm->definition != $term_info['description']) {
-
-                $summary_cvterm = sprintf($yellow, $existing_cvterm->cvterm_id);
-
-                // WARNING:
-                $problems['warning']['cvterm'][$existing_cvterm->cvterm_id][] = [
-                  'message' => $summary_term . ': The cvterm.definition for this term in your chado instance does not match what is in the YAML.',
-                  'YOURS' => $existing_cvterm->definition,
-                  'EXPECTED' => $term_info['description'],
-                ];
-                $solutions['warning']['cvterm'][$existing_cvterm->cvterm_id]['definition'] = $term_info['description'];
-              }
-
-              // Now get the dbxref record for this cvterm.
-              $query = $chado->select('1:dbxref', 'dbx')
-                ->fields('dbx', ['dbxref_id', 'accession'])
-                ->condition('dbx.dbxref_id', $existing_cvterm->dbxref_id);
-              $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
-              $query->addField('db', 'name', 'db_name');
-              $existing_dbxref = $query->execute()->fetchObject();
-              if ($existing_dbxref) {
-                $summary_dbxref = $existing_dbxref->dbxref_id;
-
-                // Check the term id space matches the dbxref>db.name
-                if ($existing_dbxref->db_name != $term_db) {
-
-                  $summary_dbxref = sprintf($red, $existing_dbxref->dbxref_id);
-
-                  // ERROR:
-                  $problems['error']['dbxref'][$existing_dbxref->dbxref_id][] = [
-                    'message' => 'The dbxref.db_id>db.name for this term in your chado instance does not match what is in the YAML.',
-                    'YOURS' => $existing_dbxref->db_name,
-                    'EXPECTED' => $term_db,
-                    'term' => $summary_term,
-                  ];
-                  // We only have a solution to suggest if the db was defined and existed already.
-                  if (array_key_exists($term_db, $defined_ispaces)) {
-                    $solutions['error']['dbxref'][$existing_dbxref->dbxref_id]['db_id'] = $defined_ispaces[$term_db];
-                  }
-                }
-                // Check the term accession matches the dbxref.accession
-                if ($existing_dbxref->accession != $term_accession) {
-
-                  $summary_dbxref = sprintf($red, $existing_dbxref->dbxref_id);
-
-                  // ERROR:
-                  $problems['error']['dbxref'][$existing_dbxref->dbxref_id][] = [
-                    'message' => 'The dbxref.accession for this term in your chado instance does not match what is in the YAML.',
-                    'YOURS' => $existing_dbxref->accession,
-                    'EXPECTED' => $term_accession,
-                    'term' => $summary_term,
-                  ];
-                  $solutions['error']['dbxref'][$existing_dbxref->dbxref_id]['accession'] = $term_accession;
-                }
-              } else {
-                $summary_dbxref = sprintf($red, $existing_cvterm->dbxref_id);
-
-                // ERROR:
-                // NO DBXREF Record associated with the existing cvterm! This should not be possible due to database contraints so your Chado is Very Broken!
-                $problems['error']['missing-dbxref'][$existing_cvterm->cvterm_id][] = [
-                  'dbxref_id' => $existing_cvterm->dbxref_id,
-                  'term' => $summary_term,
-                ];
-                // We only have a solution to suggest if the db was defined and existed already.
-                if (array_key_exists($term_db, $defined_ispaces)) {
-                  $solutions['error']['missing-dbxref'][$existing_cvterm->cvterm_id] = [
-                    'dbxref_id' => $existing_cvterm->dbxref_id,
-                    'db_id' => $defined_ispaces[$term_db],
-                    'accession' => $term_accession,
-                  ];
-                }
-              }
-            } else {
-              $summary_cvterm = ' - ';
-              // Check if the accession exists as defined in case there is a
-              // mismatch between term name and accession.
-              $query = $chado->select('1:dbxref', 'dbx')
-                ->fields('dbx', ['dbxref_id', 'accession'])
-                ->condition('dbx.accession', $term_accession);
-              $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
-              $query->addField('db', 'name', 'db_name');
-              $query->condition('db.name', $term_db);
-              $existing_dbxrefs = $query->execute()->fetchAll();
-
-              if ($existing_dbxrefs) {
-                foreach ($existing_dbxrefs as $existing_dbxref) {
-
-                  // Get information about any attached terms.
-                  $query = $chado->select('1:cvterm', 'cvt')
-                    ->fields('cvt', ['name'])
-                    ->condition('cvt.dbxref_id', $existing_dbxref->dbxref_id);
-                  $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
-                  $query->addField('cv', 'name', 'cv_name');
-
-                  // If there are any terms associated this may be a
-                  // cv error rather then a dbxref one...
-                  $has_terms = FALSE;
-                  $attached_terms = [];
-                  foreach ($query->execute() as $existing_cvterm) {
-                    $has_terms = TRUE;
-
-                    // Check if the attached term name matches ours.
-                    if ($existing_cvterm->name == $term_info['name']) {
-                      $has_terms = TRUE;
-                    }
-                    // Otherwise just keep track of them.
-                    else {
-                      $attached_terms[] = $existing_cvterm;
-                    }
-                  }
-
-                  if ($has_terms) {
-
-                    // @todo report term with wrong cv.
-
-                    // @todo report possible terms which maybe should be attached to this dbxref.
-
-                  }
-                  else {
-                    $summary_dbxref = sprintf($red, ' X (' . $existing_dbxref->dbxref_id . ')');
-
-                    // @todo check here if we have an existing term above.
-                    // maybe it's just missing a connection?
-
-                    // ERROR:
-                    $problems['error']['dbxref-not-attached'][$existing_dbxref->dbxref_id][] = [
-                      'dbxref-id' => $existing_dbxref->dbxref_id,
-                      'dbxref-accession' => $existing_dbxref->accession,
-                      'dbxref-dbname' => $existing_dbxref->db_name,
-                      'term' => $summary_term,
-                    ];
-                    // We don't have a solution for this (grimaces).
-                  }
-                }
-              } else {
-                // Otherwise it's just missing which is not a concern really.
-                $summary_dbxref = ' - ';
-                $summary_dbs[$term_db] = ' - ';
-              }
-            }
+            // @todo Check the cvterms/dbxrefs
 
             // Now add the details of what we found for this term to the summary table.
             $summary_rows[] = [
@@ -357,95 +225,222 @@ class ChadoFixingCommands extends DrushCommands {
     $this->output()->writeln('');
 
     // Now we can start reporting more detail if they want.
-    $show_errors = $this->io()->confirm('Would you like to see more details about the errors?');
-    if ($show_errors) {
+    // First ERRORS:
+    $this->io()->title('Errors');
+    $this->output()->writeln('Differences are categorized as errors if they are likely to cause failures when preparing this chado instance or to cause Tripal to be unable to find the term reliably.');
 
-      // missing-db
-      if (array_key_exists('missing-db', $problems['error'])) {
-        $this->io()->section('YAML Issues: Missing ID Space definitions.');
-        $num_detected = count($problems['error']['missing-db']);
-        $this->output()->writeln("We have detected $num_detected problems with your YAML file. You will want to contact the developers to let them know the following output:");
-        $list = [];
-        foreach($problems['error']['missing-db'] as $idspace => $terms_with_issues) {
-          foreach ($terms_with_issues as $prob_deets) {
-            $list[] = sprintf(
-              "Term %s: Missing '%s' ID Space from defined ID Spaces for '%s' vocabulary. Defined ID Spaces include %s.",
-              $prob_deets['term'],
-              $prob_deets['missing-db-name'],
-              $prob_deets['vocab'],
-              implode(', ', array_keys($prob_deets['defined-dbs'])
-            ));
-          }
-        }
-        $this->io()->listing($list);
-      }
+    if (array_key_exists('error', $problems) && count($problems['error']) > 0) {
+      $show_errors = $this->io()->confirm('Would you like to see more details about the errors?');
+      if ($show_errors) {
 
-      // dbxref
-      if (array_key_exists('dbxref', $problems['error'])) {
-        $this->io()->section('Term Accessions with unexpected values.');
-        $num_detected = count($problems['error']['dbxref']);
-        $this->output()->writeln("We have detected $num_detected serious problems with existing dbxref. These are highlighted red and show the existing id above.");
-        foreach($problems['error']['dbxref'] as $dbxref_id => $specific_issues) {
-          $list = [];
-          $term = NULL;
-          foreach ($specific_issues as $prob_deets) {
-            $term = $prob_deets['term'];
-            $list[] = sprintf(
-              "%s\n     Your chado instance has '%s' but Tripal expects '%s'",
-              $prob_deets['message'],
-              $prob_deets['YOURS'],
-              $prob_deets['EXPECTED']
-            );
-          }
-          $this->output()->writeln('Term: ' . $term);
-          $this->io()->listing($list);
+        // missingDbYaml
+        if (array_key_exists('missingDbYaml', $problems['error'])) {
+          $this->chadoCheckTermsAreAsExpected_missingDbYaml(
+            $problems['error']['missingDbYaml'],
+            $solutions['error']['missingDbYaml']
+          );
         }
-      }
-
-      // missing-dbxref
-      if (array_key_exists('missing-dbxref', $problems['error'])) {
-        $this->io()->section('Referential Integrity Issues.');
-        $num_detected = count($problems['error']['dbxref']);
-        $this->output()->writeln("We have detected $num_detected serious problems with referential integrity!");
-        $this->output()->writeln("More specifically, the following existing cvterms have a dbxref_id indicated but that record does not exist in your chado instance.");
-        $this->output()->writeln("This should not be possible due to database contraints so your Chado is Very Broken!");
-        $list = [];
-        foreach($problems['error']['missing-dbxref'] as $cvterm_id => $specific_issues) {
-          $term = NULL;
-          foreach ($specific_issues as $prob_deets) {
-            $term = $prob_deets['term'];
-            $list[] = sprintf(
-              'Term %s (id: %s) has a dbxref_id of %s (missing in dbxref table)',
-              $term,
-              $cvterm_id,
-              $prob_deets['dbxref_id']
-            );
-          }
-        }
-        $this->io()->listing($list);
-      }
-
-      // dbxref-not-attached
-      if (array_key_exists('dbxref-not-attached', $problems['error'])) {
-        $this->io()->section('Term Accessions not attached to their term.');
-        $num_detected = count($problems['error']['dbxref-not-attached']);
-        $this->output()->writeln("We have detected $num_detected database references that are not attached to the term we expected them to be.");
-        $list = [];
-        foreach ($problems['error']['dbxref-not-attached'] as $dbxref_id => $specific_issues) {
-          foreach ($specific_issues as $prob_deets) {
-            $list[] = sprintf(
-              "'%s:%s' (%s) is attached to term '%s' (%s) but Tripal expected it to be attached to term '%s'.",
-              $prob_deets['dbxref-dbname'],
-              $prob_deets['dbxref-accession'],
-              $prob_deets['dbxref-id'],
-              $prob_deets['cvterm-name'],
-              $prob_deets['cvterm-id'],
-              $prob_deets['term'],
-            );
-          }
-        }
-        $this->io()->listing($list);
       }
     }
+    else {
+      $this->io()->success('There are no errors associated with this chado instance!');
+    }
+
+    // Then WARNINGS:
+    $this->io()->title('Warnings');
+    $this->output()->writeln('Differences are categorized as warnings if they are in non-critical parts of the terms, vocabularies and references. These can be safely ignored but you may also want to use this opprotinuity to update your version of these terms.');
+    if (array_key_exists('warning', $problems) && count($problems['warning']) > 0) {
+      $show_warnings = $this->io()->confirm('Would you like to see more details about the warnings?');
+      if ($show_warnings) {
+
+        // Small differences between the expected and found chado.cv record.
+        if (array_key_exists('cv', $problems['warning'])) {
+          $this->chadoCheckTermsAreAsExpected_eccentricCv(
+            $problems['warning']['cv'],
+            $solutions['warning']['cv']
+          );
+        }
+
+        // Small differences between the expected and found chado.db record.
+        if (array_key_exists('db', $problems['warning'])) {
+          $this->chadoCheckTermsAreAsExpected_eccentricDb(
+            $problems['warning']['db'],
+            $solutions['warning']['db']
+          );
+        }
+      }
+    }
+    else {
+      $this->io()->success('There are no warning associated with this chado instance!');
+    }
+  }
+
+  /**
+   * Reports errors and potential solutions for the "missingDbYaml" error type.
+   *
+   * Trigger Example: Imagine there is a term defined whose id is DATUM:12345
+   *   but the vocabulary this term is in either
+   *   1. has a number of ID Spaces defined but none of them have the
+   *      idSpaces[name] of 'DATUM' (case sensitive match required).
+   *   2. does not have any id spaces defined.
+   *
+   * @param array $problems
+   *  An array describing instances with this type of error with the following format:
+   *    - [YAML ID Sapce name]: an array of reports where a term had the ID Space
+   *      indicated by the key despite that ID Space not being defined in the YAML.
+   *      Each report has the following structure:
+   *        - missing-db-name:
+   *        - defined-dbs:
+   *        - term:
+   *        - vocab:
+   * @param array $solutions
+   *  There are currently no easy suggested solutions for this but the parameter
+   *  is here in case we decide to be more helpful later ;-p
+   *
+   * @return void
+   *   This function interacts through command-line input/output directly and
+   *   as such, does not need to return anything to the parent Drush command.
+   */
+  protected function chadoCheckTermsAreAsExpected_missingDbYaml($problems, $solutions = []) {
+
+    $this->io()->section('YAML Issues: Missing ID Space definitions.');
+    $num_detected = count($problems);
+    $this->output()->writeln("We have detected $num_detected ID Space(s) missing from your YAML file. You will want to contact the developers to let them know the following output:");
+    $list = [];
+    foreach ($problems as $idspace => $terms_with_issues) {
+      foreach ($terms_with_issues as $prob_deets) {
+        if (count($prob_deets['defined-dbs']) > 0) {
+          $list[] = sprintf(
+            "Term %s: Missing '%s' ID Space from defined ID Spaces for '%s' vocabulary. Defined ID Spaces include %s.",
+            $prob_deets['term'],
+            $prob_deets['missing-db-name'],
+            $prob_deets['vocab'],
+            implode(
+              ', ',
+              array_keys($prob_deets['defined-dbs'])
+            )
+          );
+        }
+        else {
+          $list[] = sprintf(
+            "Term %s: Missing '%s' ID Space from defined ID Spaces for '%s' vocabulary. There were no ID Spaces at all defined for this vocabulary.",
+            $prob_deets['term'],
+            $prob_deets['missing-db-name'],
+            $prob_deets['vocab']
+          );
+        }
+      }
+    }
+    $this->io()->listing($list);
+  }
+
+  /**
+   * Reports warnings and potential solutions for the "cv" warning type.
+   *
+   * Trigger Example: Imagine there is a vocabulary defined whose
+   *   1. definition in the YAML is different from in your chado instance
+   *
+   * @param array $problems
+   *  An array describing instances with this type of warning with the following format:
+   *    - [Existing cv_id]: an array of reports describing how this cv differs
+   *      in your chado instance from what is defined in the YAML.
+   *      Each report has the following structure:
+   *        - vocab-name: the name of the vocabulary in the YAML which must
+   *          match the cv in your chado instance.
+   *        - column: the chado column showing a difference
+   *        - property: the yaml property being compared
+   *        - YOURS: the value in your chado instance
+   *        - THEIRS: the value in the YAML
+   * @param array $solutions
+   *  An array describing possible solutions with the following format:
+   *    - [Existing cv_id]: an array of columns in the cv table to update.
+   *      Each entry has the following structure:
+   *        - [column name]: [value in YAML]
+   *
+   * @return void
+   *   This function interacts through command-line input/output directly and
+   *   as such, does not need to return anything to the parent Drush command.
+   */
+  protected function chadoCheckTermsAreAsExpected_eccentricCv($problems, $solutions) {
+
+    $this->io()->section('Small differences in vocabulary definitions.');
+    $num_detected = count($problems);
+    $this->output()->writeln("We have detected $num_detected vocabularies in your chado instance that differ from those defined in the YAML in small ways. More specifically:");
+
+    $table = new Table($this->output());
+    $table->setHeaders(['VOCAB','PROPERTY', 'COLUMN', 'EXPECTED', 'YOURS']);
+    // Set the yours/expected columns to wrap at 50 characters each.
+    $table->setColumnMaxWidth(3, 50);
+    $table->setColumnMaxWidth(4, 50);
+
+    $rows = [];
+    foreach ($problems as $cv_id => $specific_issues) {
+      foreach ($specific_issues as $prob_deets) {
+        $rows[] = [
+          $prob_deets['vocab-name'],
+          $prob_deets['property'],
+          $prob_deets['column'],
+          $prob_deets['EXPECTED'],
+          $prob_deets['YOURS'],
+        ];
+      }
+    }
+    $table->addRows($rows);
+    $table->render();
+  }
+
+  /**
+   * Reports warnings and potential solutions for the "db" warning type.
+   *
+   * Trigger Example: Imagine there is a ID Space defined whose
+   *   1. definition in the YAML is different from in your chado instance
+   *
+   * @param array $problems
+   *  An array describing instances with this type of warning with the following format:
+   *    - [Existing db_id]: an array of reports describing how this db differs
+   *      in your chado instance from what is defined in the YAML.
+   *      Each report has the following structure:
+   *        - idspace-name: the name of the id space in the YAML which must
+   *          match the cv in your chado instance.
+   *        - column: the chado column showing a difference
+   *        - property: the yaml property being compared
+   *        - YOURS: the value in your chado instance
+   *        - THEIRS: the value in the YAML
+   * @param array $solutions
+   *  An array describing possible solutions with the following format:
+   *    - [Existing db_id]: an array of columns in the db table to update.
+   *      Each entry has the following structure:
+   *        - [column name]: [value in YAML]
+   *
+   * @return void
+   *   This function interacts through command-line input/output directly and
+   *   as such, does not need to return anything to the parent Drush command.
+   */
+  protected function chadoCheckTermsAreAsExpected_eccentricDb($problems, $solutions) {
+
+    $this->io()->section('Small differences in ID Space entries.');
+    $num_detected = count($problems);
+    $this->output()->writeln("We have detected $num_detected ID Spaces in your chado instance that differ from those defined in the YAML in small ways. More specifically:");
+
+    $table = new Table($this->output());
+    $table->setHeaders(['ID SPACE', 'PROPERTY', 'COLUMN', 'EXPECTED', 'YOURS']);
+    // Set the yours/expected columns to wrap at 50 characters each.
+    $table->setColumnMaxWidth(3, 50);
+    $table->setColumnMaxWidth(4, 50);
+
+    $rows = [];
+    foreach ($problems as $db_id => $specific_issues) {
+      foreach ($specific_issues as $prob_deets) {
+        $rows[] = [
+          $prob_deets['idspace-name'],
+          $prob_deets['property'],
+          $prob_deets['column'],
+          $prob_deets['EXPECTED'],
+          $prob_deets['YOURS'],
+        ];
+      }
+    }
+    $table->addRows($rows);
+    $table->render();
   }
 }
