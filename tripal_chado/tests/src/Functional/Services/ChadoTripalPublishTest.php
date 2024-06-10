@@ -6,7 +6,6 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\Core\Url;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Symfony\Component\Validator\Constraints\IsNull;
-use Drupal\bootstrap\Theme;
 
 
 
