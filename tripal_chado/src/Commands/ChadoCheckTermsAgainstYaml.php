@@ -6,9 +6,13 @@ use Symfony\Component\Console\Helper\Table;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
- * Drush commands
+ * Drush command specific to checking the cv/db/cvterm/dbxref records in a
+ * specific chado schema against the expected terms in the Tripal Content Terms
+ * YAML.
+ *
+ * DO NOT ADD ADDITION DRUSH COMMANDS TO THIS CLASS.
  */
-class ChadoFixingCommands extends DrushCommands {
+class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
   protected $chado_schema;
 
