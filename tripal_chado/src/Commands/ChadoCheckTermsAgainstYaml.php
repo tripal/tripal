@@ -209,7 +209,37 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
               $solutions['error']['missingDbYaml'] = [];
             }
 
-            // @todo Check the cvterms/dbxrefs
+            // First check that cvterm.name, cvterm.cv, dbxref.accession
+            // and dbxref.db all match that which is expected.
+
+            // If not, then select the cvterm...
+            // ... assuming the cvterm.name and cvterm.cv match
+            // @todo implement this.
+
+            // ... only looking for the matching cvterm.name.
+            // @todo implement this.
+
+            // Also, indendantly select the dbxref...
+            // ... assuming the dbxref.accession and dbxref.db match
+            // @todo implement this.
+
+            // ... only looking for the matching dbxref.accession.
+            // @todo implement this.
+
+            // Then we can check a number of cases:
+            // CASE: cvterm.name, dbxref.accession, dbxref.db match + are connected.
+            //       only cvterm.cv is not matching and may need to be updated.
+            // @todo implement this.
+
+            // CASE: cvterm.name, cvterm.cv, and dbxref.accession match + are connected.
+            //       only dbxref.db is not matching and may need to be updated.
+            // @todo implement this.
+
+            // CASE: all match but are not connected.
+            // @todo implement this.
+
+            // CASE: it's just missing which is not actually a problem.
+            // @todo implement this.
 
             // Now add the details of what we found for this term to the summary table.
             $summary_rows[] = [
