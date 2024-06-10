@@ -35,21 +35,4 @@ class TripalEntityDeleteForm extends ContentEntityDeleteForm {
     return $this->t('This action is not fully implemented in Tripal v4. It currently functions as an"unpublish".');
   }
 
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-
-    // Call the parent class submit so that we can delete the Drupal entity.
-    parent::submitForm($form, $form_state);
-
-    // Now remove the record from Chado.
-
-    /** @var \Drupal\tripal\TripalStorage\TripalStorageBase $storage **/
-    /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
-    $storage_manager = \Drupal::service('tripal.storage');
-
-
-  }
 }
