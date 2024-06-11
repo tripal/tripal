@@ -90,7 +90,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // from Chado tables if appropriate.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-    $record_id_term = 'SIO:000729';
     $type_id_term = $mapping->getColumnTermId($type_table, $type_column);
     $name_term = $mapping->getColumnTermId('cvterm', 'name');
     $idspace_term = 'SIO:000067';
@@ -99,7 +98,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // Always store the record id of the base record that this field is
     // associated with in Chado.
     $properties = [];
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
@@ -117,7 +116,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $value_term = $mapping->getColumnTermId($type_table, 'value');
 
       // (e.g., analysisprop.analysisprop_id)
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', $record_id_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', self::$record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $type_table  . '.' . $type_pkey_col,

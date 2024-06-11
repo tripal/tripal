@@ -70,11 +70,11 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
 
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load( 'core_mapping' );
+    $mapping = $storage->load('core_mapping');
 
-    $record_id_term = $mapping->getColumnTermId( 'feature', 'feature_id' );
-    $ft_uniqname_term = $mapping->getColumnTermId( 'feature', 'name' );
+    $ft_uniqname_term = $mapping->getColumnTermId('feature', 'name');
 
+    $feature_id_term = $mapping->getColumnTermId('featureloc', 'feature_id');
     $srcfeature_id_term = $mapping->getColumnTermId('featureloc', 'srcfeature_id');
     $fmin_term = $mapping->getColumnTermId('featureloc', 'fmin');
     $is_fmin_partial_term = $mapping->getColumnTermId('featureloc', 'is_fmin_partial');
@@ -89,19 +89,19 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     // Get property terms using Chado table columns they map to. Return the properties for this field.
     $properties = [];
 
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => 'feature.feature_id',
     ]);
 
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'featureloc_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'featureloc_id', self::$record_id_term, [
       'action' => 'store_pkey',
       'drupal_store' => TRUE,
       'path' => 'featureloc.featureloc_id',
     ]);
 
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fkey', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fkey', $feature_id_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'path' => 'feature.feature_id>featureloc.feature_id',
