@@ -118,5 +118,4 @@ class ChadoManageCommands extends DrushCommands {
 
     $this->output()->writeln('There is no longer any need to prepare the chado test environment.');
   }
-
 }
