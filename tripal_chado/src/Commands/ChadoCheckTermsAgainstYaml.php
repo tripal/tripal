@@ -44,17 +44,13 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
     $this->chado_schema = $options['chado_schema'];
 
-    /// We're going to use symphony tables to summarize what this command finds.
-    // As such, I'm going to setup the header now and then compile the rows as I go.
-    // Each row will be a term and the whole table will be printed at once at the end.
-    $summary_headers = [
-      'term' => 'YAML Term',
-      'cv' => 'CV',
-      'db' => 'DB',
-      'cvterm' => 'CVTERM',
-      'dbxref' => 'DBXREF',
-    ];
+    // We're going to use symphony tables to summarize what this command finds.
+    // The headers are: YAML Term, CD, DB, CVTERM, DBXREF
+    // Each row will be a term and each cell will either be an existing id
+    // or use the ` - ` string to indicate that it isn't found.
+    // @see chadoCheckTerms_printSummaryTable() to see how it will be printed.
     $summary_rows = [];
+
     // We are also going to keep track of the issues so we can offer to fix them
     // in some cases.
     $problems = [
@@ -78,175 +74,176 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $id = 'chado_content_terms';
     $config_key = 'tripal.tripal_content_terms.' . $id;
     $config = $config_factory->get($config_key);
-    if ($config) {
-      $this->output()->writeln("  Finding term definitions for $id term collection.");
-      $vocabs = $config->get('vocabularies');
-      if ($vocabs) {
-        foreach ($vocabs as $vocab_info) {
+    if (!$config) {
+      $this->io()->error('Unable to access the configuration for tripal content terms!');
+      return FALSE;
+    }
 
-          // Reset for the new vocab.
-          $summary_term = NULL;
-          $summary_cv = NULL;
-          $summary_dbs = [];
-          $summary_cvterm = NULL;
-          $summary_dbxref = NULL;
+    $this->output()->writeln("  Finding term definitions for $id term collection.");
+    $vocabs = $config->get('vocabularies');
+    if (!$vocabs) {
+      $this->io()->error('Tripal content terms configuration did not have an array of vocabularies!');
+      return FALSE;
+    }
 
-          [$summary_cv, $existing_cv] = $this->chadoCheckTerms_checkVocab($vocab_info, $problems, $solutions);
+    foreach ($vocabs as $vocab_info) {
 
-          [$summary_dbs, $defined_ispaces] = $this->chadoCheckTerms_checkIdSpaces($vocab_info, $problems, $solutions);
+      // Reset for the new vocab.
+      $summary_term = NULL;
+      $summary_cv = NULL;
+      $summary_dbs = [];
+      $summary_cvterm = NULL;
+      $summary_dbxref = NULL;
 
-          // Now for each term in this vocabulary...
-          $vocab_info['terms'] = (array_key_exists('terms', $vocab_info)) ? $vocab_info['terms'] : [];
-          foreach ($vocab_info['terms'] as $term_info) {
+      [$summary_cv, $existing_cv] = $this->chadoCheckTerms_checkVocab($vocab_info, $problems, $solutions);
 
-            $summary_term = $term_info['name'] . ' (' . $term_info['id'] . ')';
+      [$summary_dbs, $defined_ispaces] = $this->chadoCheckTerms_checkIdSpaces($vocab_info, $problems, $solutions);
 
-            // Extract the parts of the id.
-            [$term_db, $term_accession] = explode(':', $term_info['id']);
+      // Now for each term in this vocabulary...
+      $vocab_info['terms'] = (array_key_exists('terms', $vocab_info)) ? $vocab_info['terms'] : [];
+      foreach ($vocab_info['terms'] as $term_info) {
 
-            // Check the term id space was defined in the id spaces block
-            // Note: if a id space was defined but not found in the database
-            // it will still be in the $defined_idspaces array but the value
-            // will be NULL.
-            if (!array_key_exists($term_db, $defined_ispaces)) {
+        $summary_term = $term_info['name'] . ' (' . $term_info['id'] . ')';
 
-              $summary_dbs[$idspace_info['name']] = sprintf($this->red_format, ' X ');
+        // Extract the parts of the id.
+        [$term_db, $term_accession] = explode(':', $term_info['id']);
 
-              // ERROR:
-              // The YAML-defined term includes an ID Space that was not defined in the ID Spaces section for this vocabulary.
-              // @ see chadoCheckTermsAreAsExpected_missingDbYaml().
-              $problems['error']['missingDbYaml'][$term_db][] = [
-                'missing-db-name' => $term_db,
-                'defined-dbs' => $defined_ispaces,
-                'term' => $summary_term,
-                'vocab' => $vocab_info['name'],
-              ];
-              // No solution for this one... instead the developer of the module needs to fix their YAML ;-p
-              $solutions['error']['missingDbYaml'] = [];
-            }
+        // Check the term id space was defined in the id spaces block
+        // Note: if a id space was defined but not found in the database
+        // it will still be in the $defined_idspaces array but the value
+        // will be NULL.
+        if (!array_key_exists($term_db, $defined_ispaces)) {
 
-            // First check that cvterm.name, cvterm.cv, dbxref.accession
-            // and dbxref.db all match that which is expected.
+          $summary_dbs[$idspace_info['name']] = sprintf($this->red_format, ' X ');
 
-            // If not, then select the cvterm...
-            // ... assuming the cvterm.name and cvterm.cv match
-            // @todo implement this.
-
-            // ... only looking for the matching cvterm.name.
-            // @todo implement this.
-
-            // Also, indendantly select the dbxref...
-            // ... assuming the dbxref.accession and dbxref.db match
-            // @todo implement this.
-
-            // ... only looking for the matching dbxref.accession.
-            // @todo implement this.
-
-            // Then we can check a number of cases:
-            // CASE: cvterm.name, dbxref.accession, dbxref.db match + are connected.
-            //       only cvterm.cv is not matching and may need to be updated.
-            // @todo implement this.
-
-            // CASE: cvterm.name, cvterm.cv, and dbxref.accession match + are connected.
-            //       only dbxref.db is not matching and may need to be updated.
-            // @todo implement this.
-
-            // CASE: all match but are not connected.
-            // @todo implement this.
-
-            // CASE: it's just missing which is not actually a problem.
-            // @todo implement this.
-
-            // Now add the details of what we found for this term to the summary table.
-            $summary_rows[] = [
-              'term' => $summary_term,
-              'cv' => $summary_cv,
-              'db' => $summary_dbs[$term_db],
-              'cvterm' => $summary_cvterm,
-              'dbxref' => $summary_dbxref,
-            ];
-          }
+          // ERROR:
+          // The YAML-defined term includes an ID Space that was not defined in the ID Spaces section for this vocabulary.
+          // @ see chadoCheckTermsAreAsExpected_missingDbYaml().
+          $problems['error']['missingDbYaml'][$term_db][] = [
+            'missing-db-name' => $term_db,
+            'defined-dbs' => $defined_ispaces,
+            'term' => $summary_term,
+            'vocab' => $vocab_info['name'],
+          ];
+          // No solution for this one... instead the developer of the module needs to fix their YAML ;-p
+          $solutions['error']['missingDbYaml'] = [];
         }
+
+        // First check that cvterm.name, cvterm.cv, dbxref.accession
+        // and dbxref.db all match that which is expected.
+
+        // If not, then select the cvterm...
+        // ... assuming the cvterm.name and cvterm.cv match
+        // @todo implement this.
+
+        // ... only looking for the matching cvterm.name.
+        // @todo implement this.
+
+        // Also, indendantly select the dbxref...
+        // ... assuming the dbxref.accession and dbxref.db match
+        // @todo implement this.
+
+        // ... only looking for the matching dbxref.accession.
+        // @todo implement this.
+
+        // Then we can check a number of cases:
+        // CASE: cvterm.name, dbxref.accession, dbxref.db match + are connected.
+        //       only cvterm.cv is not matching and may need to be updated.
+        // @todo implement this.
+
+        // CASE: cvterm.name, cvterm.cv, and dbxref.accession match + are connected.
+        //       only dbxref.db is not matching and may need to be updated.
+        // @todo implement this.
+
+        // CASE: all match but are not connected.
+        // @todo implement this.
+
+        // CASE: it's just missing which is not actually a problem.
+        // @todo implement this.
+
+        // Now add the details of what we found for this term to the summary table.
+        $summary_rows[] = [
+          'term' => $summary_term,
+          'cv' => $summary_cv,
+          'db' => $summary_dbs[$term_db],
+          'cvterm' => $summary_cvterm,
+          'dbxref' => $summary_dbxref,
+        ];
       }
     }
 
     // Finally tell the user the summary state of things.
-    $this->output()->writeln('');
-    $this->output()->writeln('The following table summarizes the terms.');
-    $this->io()->table($summary_headers, $summary_rows);
-    $this->output()->writeln('Legend:');
-    $this->output()->writeln(sprintf($this->yellow_format, ' YELLOW ') . ' Indicates there are some mismatches between the existing version and what we expected but it\'s minor.');
-    $this->output()->writeln(sprintf($this->red_format, '  RED   ') . ' Indicates there is a serious mismatch which will cause the prepare to fail on this chado instance.');
-    $this->output()->writeln('    -      Indicates this one is missing but that is not a concern as it will be added when you run prepare.');
-    $this->output()->writeln('');
+    $this->chadoCheckTerms_printSummaryTable($summary_rows);
 
     // Now we can start reporting more detail if they want.
     // First ERRORS:
     $this->io()->title('Errors');
     $this->output()->writeln('Differences are categorized as errors if they are likely to cause failures when preparing this chado instance or to cause Tripal to be unable to find the term reliably.');
 
-    if (array_key_exists('error', $problems) && count($problems['error']) > 0) {
-      if (array_key_exists('auto-expand', $options) && $options['auto-expand']) {
-        $show_errors = TRUE;
-      }
-      else {
-        $show_errors = $this->io()->confirm('Would you like to see more details about the errors?');
-      }
+    $has_errors = (array_key_exists('error', $problems) && count($problems['error']) > 0);
 
-      if ($show_errors) {
-
-        // missingDbYaml
-        if (array_key_exists('missingDbYaml', $problems['error'])) {
-          $this->chadoCheckTermsAreAsExpected_missingDbYaml(
-            $problems['error']['missingDbYaml'],
-            $solutions['error']['missingDbYaml']
-          );
-        }
-      }
-    }
-    else {
+    if (!$has_errors) {
       $this->io()->success('There are no errors associated with this chado instance!');
     }
+
+    $show_errors = $this->askOrRespectOptions(
+      'Would you like more details regarding the errors we found?',
+      $options,
+      'auto-expand',
+      $has_errors
+    );
+    if ($show_errors) {
+
+      // missingDbYaml
+      if (array_key_exists('missingDbYaml', $problems['error'])) {
+        $this->chadoCheckTermsAreAsExpected_missingDbYaml(
+          $problems['error']['missingDbYaml'],
+          $solutions['error']['missingDbYaml']
+        );
+      }
+    }
+
     $this->output()->writeln('');
 
     // Then WARNINGS:
     $this->io()->title('Warnings');
     $this->output()->writeln('Differences are categorized as warnings if they are in non-critical parts of the terms, vocabularies and references. These can be safely ignored but you may also want to use this opprotinuity to update your version of these terms.');
-    if (array_key_exists('warning', $problems) && count($problems['warning']) > 0) {
-      if (array_key_exists('auto-expand', $options) && $options['auto-expand']) {
-        $show_warnings = TRUE;
-      }
-      else {
-        $show_warnings = $this->io()->confirm('Would you like to see more details about the warnings?');
-      }
 
-      if ($show_warnings) {
+    $has_warnings = (array_key_exists('warning', $problems) && count($problems['warning']) > 0);
 
-        // Small differences between the expected and found chado.cv record.
-        if (array_key_exists('cv', $problems['warning'])) {
-          $this->chadoCheckTermsAreAsExpected_eccentricCv(
-            $problems['warning']['cv'],
-            $solutions['warning']['cv'],
-            $options
-          );
-        }
-
-        $this->output()->writeln('');
-
-        // Small differences between the expected and found chado.db record.
-        if (array_key_exists('db', $problems['warning'])) {
-          $this->chadoCheckTermsAreAsExpected_eccentricDb(
-            $problems['warning']['db'],
-            $solutions['warning']['db'],
-            $options
-          );
-        }
-
-        $this->output()->writeln('');
-      }
-    }
-    else {
+    if (!$has_warnings) {
       $this->io()->success('There are no warnings associated with this chado instance!');
+    }
+
+    $show_warnings = $this->askOrRespectOptions(
+      'Would you like more details regarding the warnings we found?',
+      $options,
+      'auto-expand',
+      $has_warnings
+    );
+    if ($show_warnings) {
+
+      // Small differences between the expected and found chado.cv record.
+      if (array_key_exists('cv', $problems['warning'])) {
+        $this->chadoCheckTermsAreAsExpected_eccentricCv(
+          $problems['warning']['cv'],
+          $solutions['warning']['cv'],
+          $options
+        );
+      }
+
+      $this->output()->writeln('');
+
+      // Small differences between the expected and found chado.db record.
+      if (array_key_exists('db', $problems['warning'])) {
+        $this->chadoCheckTermsAreAsExpected_eccentricDb(
+          $problems['warning']['db'],
+          $solutions['warning']['db'],
+          $options
+        );
+      }
+
+      $this->output()->writeln('');
     }
   }
 
@@ -373,6 +370,65 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
 
     return [$summary_dbs, $defined_ispaces];
+  }
+
+  /**
+   * Prints a beautiful summary table showing the status of all terms.
+   *
+   * @param array $summary_rows
+   * @return void
+   *   No need to return as we are printing directly.
+   */
+  protected function chadoCheckTerms_printSummaryTable(array $summary_rows) {
+
+    $summary_headers = [
+      'term' => 'YAML Term',
+      'cv' => 'CV',
+      'db' => 'DB',
+      'cvterm' => 'CVTERM',
+      'dbxref' => 'DBXREF',
+    ];
+
+    $this->output()->writeln('');
+    $this->output()->writeln('The following table summarizes the terms.');
+    $this->io()->table($summary_headers, $summary_rows);
+    $this->output()->writeln('Legend:');
+    $this->output()->writeln(sprintf($this->yellow_format, ' YELLOW ') . ' Indicates there are some mismatches between the existing version and what we expected but it\'s minor.');
+    $this->output()->writeln(sprintf($this->red_format, '  RED   ') . ' Indicates there is a serious mismatch which will cause the prepare to fail on this chado instance.');
+    $this->output()->writeln('    -      Indicates this one is missing but that is not a concern as it will be added when you run prepare.');
+    $this->output()->writeln('');
+
+  }
+
+  /**
+   * Asks the user if the options specified by option key is not TRUE.
+   *
+   * @param string $ask_message
+   *  A message to show to the user if we need to ask them whether we should continue.
+   * @param array $options
+   *  The options provided to the drush command.
+   * @param string $option_key
+   *  The key of the option to check.
+   *  Should be either 'auto-expand' or 'auto-fix'.
+   * @param boolean $worth_continuing
+   *  Indicates if there is any point asking the user or checking options. For
+   *  example, when the point is to decide whether to show more detail, if there
+   *  are no details recorded then there is no point continueing ;-p
+   */
+  private function askOrRespectOptions(string $ask_message, array $options, string $option_key, bool $worth_continuing) {
+
+    if (!$worth_continuing) {
+      return FALSE;
+    }
+
+    if (array_key_exists($option_key, $options)) {
+      $response = $options[$option_key];
+    }
+    else {
+      $response = $this->io()->confirm($ask_message);
+    }
+
+    return $response;
   }
 
   /**
