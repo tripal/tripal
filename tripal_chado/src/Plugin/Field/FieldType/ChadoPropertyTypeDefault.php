@@ -75,7 +75,6 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-    $record_id_term = 'SIO:000729';
     $link_term = $mapping->getColumnTermId($prop_table, $prop_fk_col);
     $value_term = $mapping->getColumnTermId($prop_table, 'value');
     $rank_term = $mapping->getColumnTermId($prop_table, 'rank');
@@ -93,12 +92,12 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
 
     // Create the property types.
     return [
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col,
       ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', $record_id_term, [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', self::$record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $base_table . '.' . $base_pkey_col . '>' . $table_alias . '.' . $prop_pkey_col,
