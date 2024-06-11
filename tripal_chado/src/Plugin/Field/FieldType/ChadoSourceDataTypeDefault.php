@@ -63,8 +63,6 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
 
-    $record_id_term = $mapping->getColumnTermId('analysis', 'analysis_id');
-
     $src_uri_term = $mapping->getColumnTermId('analysis', 'sourceuri');
     $src_name_term = $mapping->getColumnTermId('analysis', 'sourcename');
     $src_vers_term = $mapping->getColumnTermId('analysis', 'sourceversion');
@@ -72,7 +70,7 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
     // Get property terms using Chado table columns they map to. Return the properties for this field.
     $properties = [];
 
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => 'analysis.analysis_id',
