@@ -484,6 +484,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
     if ($fix) {
       $this->updateChadoTermRecords('cv', 'cv_id', $solutions);
+      $this->io()->success('Vocabularies have been updated to match our expectations.');
     }
   }
 
@@ -549,6 +550,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
     if ($fix) {
       $this->updateChadoTermRecords('db', 'db_id', $solutions);
+      $this->io()->success('ID Spaces have been updated to match our expectations.');
     }
   }
 }
