@@ -1183,7 +1183,7 @@ EOD;
    * We needed to override it because core Drupal makes some assumptions
    * when building the where condition that do not match our multi-schema setup.
    */
-  public function tableExists($table) {
+  public function tableExists($table, $add_prefix = true) {
 
     // We can't use \Drupal::database()->select() here
     // because it would prefix information_schema.tables
