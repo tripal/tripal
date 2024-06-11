@@ -18,6 +18,9 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
   protected ChadoConnection $chado;
 
+  protected string $red_format = "\033[31;40m\033[1m %s \033[0m";
+  protected string $yellow_format = "\033[1;33;40m\033[1m %s \033[0m";
+
   /**
    * Checks a given chado install for any inconsistencies between its cvterms
    * and what Tripal expects.
@@ -35,8 +38,6 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *   Checks the terms stored in chado_prod.cvterm for consistency.
    */
   public function chadoCheckTermsAreAsExpected($options = ['chado_schema' => NULL]) {
-    $red = "\033[31;40m\033[1m %s \033[0m";
-    $yellow = "\033[1;33;40m\033[1m %s \033[0m";
 
     if (!$options['chado_schema']) {
       throw new \Exception(dt('The --chado_schema argument is required.'));
@@ -65,9 +66,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'warning' => [],
     ];
 
-    $chado = \Drupal::service('tripal_chado.database');
-    $chado->setSchemaName($options['chado_schema']);
-    $this->chado = $chado;
+    $this->chado = \Drupal::service('tripal_chado.database');
+    $this->chado->setSchemaName($options['chado_schema']);
 
     $this->output()->writeln('');
     $this->output()->writeln('Using the Chado Content Terms YAML specification to determine what Tripal expects.');
@@ -91,98 +91,9 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           $summary_cvterm = NULL;
           $summary_dbxref = NULL;
 
-          // Check if the cv record for this vocabulary exists.
-          $query = $chado->select('1:cv', 'cv')
-            ->fields('cv', ['cv_id', 'definition'])
-            ->condition('cv.name', $vocab_info['name']);
-          $existing_cv = $query->execute()->fetchObject();
-          if ($existing_cv) {
-            $summary_cv = $existing_cv->cv_id;
+          [$summary_cv, $existing_cv] = $this->chadoCheckTerms_checkVocab($vocab_info, $problems, $solutions);
 
-            // Check if the definition matches our expectations and warn if not.
-            if ($existing_cv->definition != $vocab_info['label']) {
-              $summary_cv = sprintf($yellow, $existing_cv->cv_id);
-
-              // WARNING:
-              // @see chadoCheckTermsAreAsExpected_eccentricCv().
-              $problems['warning']['cv'][$existing_cv->cv_id][] = [
-                'column' => 'cv.definition',
-                'property' => 'label',
-                'YOURS' => $existing_cv->definition,
-                'EXPECTED' => $vocab_info['label'],
-                'vocab-name' => $vocab_info['name'],
-              ];
-              $solutions['warning']['cv'][$existing_cv->cv_id]['definition'] = $vocab_info['label'];
-            }
-          } else {
-            $summary_cv = ' - ';
-          }
-
-          // Now look for connected ID Spaces...
-          $defined_ispaces = [];
-          foreach ($vocab_info['idSpaces'] as $idspace_info) {
-
-            // Check if the db record for this id space exists.
-            $query = $chado->select('1:db', 'db')
-              ->fields('db', ['db_id', 'description', 'urlprefix', 'url'])
-              ->condition('db.name', $idspace_info['name']);
-            $existing_db = $query->execute()->fetchObject();
-            if ($existing_db) {
-              $summary_dbs[$idspace_info['name']] = $existing_db->db_id;
-              $defined_ispaces[$idspace_info['name']] = $existing_db->db_id;
-
-              // Now check the db description, url prefix and url match what we expect and warn if not.
-              if ($existing_db->description != $idspace_info['description']) {
-
-                $summary_dbs[$idspace_info['name']] = sprintf($yellow, $existing_db->db_id);
-
-                // WARNING:
-                // @see chadoCheckTermsAreAsExpected_eccentricDb().
-                $problems['warning']['db'][$existing_db->db_id][] = [
-                  'idspace-name' => $idspace_info['name'],
-                  'column' => 'db.description',
-                  'property' => 'idSpace.description',
-                  'YOURS' => $existing_db->description,
-                  'EXPECTED' => $idspace_info['description'],
-                ];
-                $solutions['warning']['db'][$existing_db->db_id]['description'] = $idspace_info['description'];
-              }
-              if ($existing_db->urlprefix != $idspace_info['urlPrefix']) {
-
-                $summary_dbs[$idspace_info['name']] = sprintf($yellow, $existing_db->db_id);
-
-                // WARNING:
-                // @see chadoCheckTermsAreAsExpected_eccentricDb().
-                $problems['warning']['db'][$existing_db->db_id][] = [
-                  'idspace-name' => $idspace_info['name'],
-                  'column' => 'db.urlprefix',
-                  'property' => 'idSpace.urlPrefix',
-                  'YOURS' => $existing_db->urlprefix,
-                  'EXPECTED' => $idspace_info['urlPrefix'],
-                ];
-                $solutions['warning']['db'][$existing_db->db_id]['urlprefix'] = $idspace_info['urlPrefix'];
-              }
-              if ($existing_db->url != $vocab_info['url']) {
-
-                $summary_dbs[$idspace_info['name']] = sprintf($yellow, $existing_db->db_id);
-
-                // WARNING:
-                // @see chadoCheckTermsAreAsExpected_eccentricDb().
-                $problems['warning']['db'][$existing_db->db_id][] = [
-                  'message' => $vocab_info['url'] . ': The db.url for this vocabulary in your chado instance does not match what is in the YAML.',
-                  'idspace-name' => $idspace_info['name'],
-                  'column' => 'db.url',
-                  'property' => 'vocabulary.url',
-                  'YOURS' => $existing_db->url,
-                  'EXPECTED' => $vocab_info['url'],
-                ];
-                $solutions['warning']['db'][$existing_db->db_id]['url'] = $vocab_info['url'];
-              }
-            } else {
-              $summary_dbs[$idspace_info['name']] = ' - ';
-              $defined_ispaces[$idspace_info['name']] = NULL;
-            }
-          }
+          [$summary_dbs, $defined_ispaces] = $this->chadoCheckTerms_checkIdSpaces($vocab_info, $problems, $solutions);
 
           // Now for each term in this vocabulary...
           $vocab_info['terms'] = (array_key_exists('terms', $vocab_info)) ? $vocab_info['terms'] : [];
@@ -199,7 +110,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
             // will be NULL.
             if (!array_key_exists($term_db, $defined_ispaces)) {
 
-              $summary_dbs[$idspace_info['name']] = sprintf($red, ' X ');
+              $summary_dbs[$idspace_info['name']] = sprintf($this->red_format, ' X ');
 
               // ERROR:
               // The YAML-defined term includes an ID Space that was not defined in the ID Spaces section for this vocabulary.
@@ -264,8 +175,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $this->output()->writeln('The following table summarizes the terms.');
     $this->io()->table($summary_headers, $summary_rows);
     $this->output()->writeln('Legend:');
-    $this->output()->writeln(sprintf($yellow, ' YELLOW ') . ' Indicates there are some mismatches between the existing version and what we expected but it\'s minor.');
-    $this->output()->writeln(sprintf($red, '  RED   ') . ' Indicates there is a serious mismatch which will cause the prepare to fail on this chado instance.');
+    $this->output()->writeln(sprintf($this->yellow_format, ' YELLOW ') . ' Indicates there are some mismatches between the existing version and what we expected but it\'s minor.');
+    $this->output()->writeln(sprintf($this->red_format, '  RED   ') . ' Indicates there is a serious mismatch which will cause the prepare to fail on this chado instance.');
     $this->output()->writeln('    -      Indicates this one is missing but that is not a concern as it will be added when you run prepare.');
     $this->output()->writeln('');
 
@@ -337,6 +248,131 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     else {
       $this->io()->success('There are no warnings associated with this chado instance!');
     }
+  }
+
+  /**
+   * Checks that the vocabulary metadata in the YAML matches this chado instance.
+   *
+   * @param array $vocab_info
+   * @param array $problems
+   * @param array $solutions
+   * @return array
+   *   - summary_cv: the value to print in the summary table
+   *   - existing_cv: the cv object selected from the database or NULL if there wasn't one.
+   */
+  protected function chadoCheckTerms_checkVocab(array $vocab_info, array &$problems, array &$solutions) {
+
+    // Check if the cv record for this vocabulary exists.
+    $query = $this->chado->select('1:cv', 'cv')
+      ->fields('cv', ['cv_id', 'definition'])
+      ->condition('cv.name', $vocab_info['name']);
+    $existing_cv = $query->execute()->fetchObject();
+    if ($existing_cv) {
+      $summary_cv = $existing_cv->cv_id;
+
+      // Check if the definition matches our expectations and warn if not.
+      if ($existing_cv->definition != $vocab_info['label']) {
+        $summary_cv = sprintf($this->yellow_format, $existing_cv->cv_id);
+
+        // WARNING:
+        // @see chadoCheckTermsAreAsExpected_eccentricCv().
+        $problems['warning']['cv'][$existing_cv->cv_id][] = [
+          'column' => 'cv.definition',
+          'property' => 'label',
+          'YOURS' => $existing_cv->definition,
+          'EXPECTED' => $vocab_info['label'],
+          'vocab-name' => $vocab_info['name'],
+        ];
+        $solutions['warning']['cv'][$existing_cv->cv_id]['definition'] = $vocab_info['label'];
+      }
+    } else {
+      $summary_cv = ' - ';
+    }
+
+    return [$summary_cv, $existing_cv];
+  }
+
+  /**
+   * Checks that the id space metadata in the YAML matches this chado instance.
+   *
+   * @param array $vocab_info
+   * @param array $problems
+   * @param array $solutions
+   * @return array
+   *   - summary_dbs: an array where the key is the id space name and the value
+   *       summarizes its status.
+   *   - defined_idspaces: an array where the key is the id space name and the
+   *       value is the db_id found or NULL if not.
+   */
+  protected function chadoCheckTerms_checkIdSpaces(array $vocab_info, array &$problems, array &$solutions) {
+
+    $summary_dbs = [];
+    $defined_ispaces = [];
+    foreach ($vocab_info['idSpaces'] as $idspace_info) {
+
+      // Check if the db record for this id space exists.
+      $query = $this->chado->select('1:db', 'db')
+        ->fields('db', ['db_id', 'description', 'urlprefix', 'url'])
+        ->condition('db.name', $idspace_info['name']);
+      $existing_db = $query->execute()->fetchObject();
+      if ($existing_db) {
+        $summary_dbs[$idspace_info['name']] = $existing_db->db_id;
+        $defined_ispaces[$idspace_info['name']] = $existing_db->db_id;
+
+        // Now check the db description, url prefix and url match what we expect and warn if not.
+        if ($existing_db->description != $idspace_info['description']) {
+
+          $summary_dbs[$idspace_info['name']] = sprintf($this->yellow_format, $existing_db->db_id);
+
+          // WARNING:
+          // @see chadoCheckTermsAreAsExpected_eccentricDb().
+          $problems['warning']['db'][$existing_db->db_id][] = [
+            'idspace-name' => $idspace_info['name'],
+            'column' => 'db.description',
+            'property' => 'idSpace.description',
+            'YOURS' => $existing_db->description,
+            'EXPECTED' => $idspace_info['description'],
+          ];
+          $solutions['warning']['db'][$existing_db->db_id]['description'] = $idspace_info['description'];
+        }
+        if ($existing_db->urlprefix != $idspace_info['urlPrefix']) {
+
+          $summary_dbs[$idspace_info['name']] = sprintf($this->yellow_format, $existing_db->db_id);
+
+          // WARNING:
+          // @see chadoCheckTermsAreAsExpected_eccentricDb().
+          $problems['warning']['db'][$existing_db->db_id][] = [
+            'idspace-name' => $idspace_info['name'],
+            'column' => 'db.urlprefix',
+            'property' => 'idSpace.urlPrefix',
+            'YOURS' => $existing_db->urlprefix,
+            'EXPECTED' => $idspace_info['urlPrefix'],
+          ];
+          $solutions['warning']['db'][$existing_db->db_id]['urlprefix'] = $idspace_info['urlPrefix'];
+        }
+        if ($existing_db->url != $vocab_info['url']) {
+
+          $summary_dbs[$idspace_info['name']] = sprintf($this->yellow_format, $existing_db->db_id);
+
+          // WARNING:
+          // @see chadoCheckTermsAreAsExpected_eccentricDb().
+          $problems['warning']['db'][$existing_db->db_id][] = [
+            'message' => $vocab_info['url'] . ': The db.url for this vocabulary in your chado instance does not match what is in the YAML.',
+            'idspace-name' => $idspace_info['name'],
+            'column' => 'db.url',
+            'property' => 'vocabulary.url',
+            'YOURS' => $existing_db->url,
+            'EXPECTED' => $vocab_info['url'],
+          ];
+          $solutions['warning']['db'][$existing_db->db_id]['url'] = $vocab_info['url'];
+        }
+      } else {
+        $summary_dbs[$idspace_info['name']] = ' - ';
+        $defined_ispaces[$idspace_info['name']] = NULL;
+      }
+    }
+
+    return [$summary_dbs, $defined_ispaces];
   }
 
   /**
