@@ -22,6 +22,7 @@ jobs:
           - "10.0.x-dev"
           - "10.1.x-dev"
           - "10.2.x-dev"
+          - "10.3.x-dev"
         exclude:
           - php-version: "8.3"
             pgsql-version: "13"
