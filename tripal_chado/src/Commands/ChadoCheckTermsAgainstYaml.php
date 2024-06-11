@@ -316,7 +316,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       }
     }
     else {
-      $this->io()->success('There are no warning associated with this chado instance!');
+      $this->io()->success('There are no warnings associated with this chado instance!');
     }
   }
 
