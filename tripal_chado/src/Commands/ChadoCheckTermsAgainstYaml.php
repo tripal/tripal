@@ -24,8 +24,13 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *
    * @command tripal-chado:trp-check-terms
    * @aliases trp-check-terms
-   * @options chado_schema
+   * @option chado_schema
    *   The name of the chado schema to check.
+   * @option auto-expand
+   *   Indicates that you always want to show specifics of any errors or warnings.
+   * @option auto-fix
+   *   Indicates that you always want us to attempt to fix any issues without
+   *   the need for us to prompt.
    * @usage drush trp-check-terms --chado_schema=chado_prod
    *   Checks the terms stored in chado_prod.cvterm for consistency.
    */
@@ -270,7 +275,13 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $this->output()->writeln('Differences are categorized as errors if they are likely to cause failures when preparing this chado instance or to cause Tripal to be unable to find the term reliably.');
 
     if (array_key_exists('error', $problems) && count($problems['error']) > 0) {
-      $show_errors = $this->io()->confirm('Would you like to see more details about the errors?');
+      if (array_key_exists('auto-expand', $options) && $options['auto-expand']) {
+        $show_errors = TRUE;
+      }
+      else {
+        $show_errors = $this->io()->confirm('Would you like to see more details about the errors?');
+      }
+
       if ($show_errors) {
 
         // missingDbYaml
@@ -291,14 +302,21 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $this->io()->title('Warnings');
     $this->output()->writeln('Differences are categorized as warnings if they are in non-critical parts of the terms, vocabularies and references. These can be safely ignored but you may also want to use this opprotinuity to update your version of these terms.');
     if (array_key_exists('warning', $problems) && count($problems['warning']) > 0) {
-      $show_warnings = $this->io()->confirm('Would you like to see more details about the warnings?');
+      if (array_key_exists('auto-expand', $options) && $options['auto-expand']) {
+        $show_warnings = TRUE;
+      }
+      else {
+        $show_warnings = $this->io()->confirm('Would you like to see more details about the warnings?');
+      }
+
       if ($show_warnings) {
 
         // Small differences between the expected and found chado.cv record.
         if (array_key_exists('cv', $problems['warning'])) {
           $this->chadoCheckTermsAreAsExpected_eccentricCv(
             $problems['warning']['cv'],
-            $solutions['warning']['cv']
+            $solutions['warning']['cv'],
+            $options
           );
         }
 
@@ -308,7 +326,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         if (array_key_exists('db', $problems['warning'])) {
           $this->chadoCheckTermsAreAsExpected_eccentricDb(
             $problems['warning']['db'],
-            $solutions['warning']['db']
+            $solutions['warning']['db'],
+            $options
           );
         }
 
@@ -370,7 +389,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTermsAreAsExpected_missingDbYaml($problems, $solutions = []) {
+  protected function chadoCheckTermsAreAsExpected_missingDbYaml($problems, $solutions, $options) {
 
     $this->io()->section('YAML Issues: Missing ID Space definitions.');
     $num_detected = count($problems);
@@ -430,7 +449,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTermsAreAsExpected_eccentricCv($problems, $solutions) {
+  protected function chadoCheckTermsAreAsExpected_eccentricCv($problems, $solutions, $options) {
 
     $this->io()->section('Small differences in vocabulary definitions.');
     $num_detected = count($problems);
@@ -457,7 +476,12 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $table->addRows($rows);
     $table->render();
 
-    $fix = $this->io()->confirm('Would you like us to update the descriptions of your chado cvs to match our expectations?');
+    if (array_key_exists('auto-fix', $options)) {
+      $fix = $options['auto-fix'];
+    }
+    else {
+      $fix = $this->io()->confirm('Would you like us to update the descriptions of your chado cvs to match our expectations?');
+    }
     if ($fix) {
       $this->updateChadoTermRecords('cv', 'cv_id', $solutions);
     }
@@ -517,7 +541,12 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $table->addRows($rows);
     $table->render();
 
-    $fix = $this->io()->confirm('Would you like us to update the descriptions of your chado dbs to match our expectations?');
+    if (array_key_exists('auto-fix', $options)) {
+      $fix = $options['auto-fix'];
+    }
+    else {
+      $fix = $this->io()->confirm('Would you like us to update the descriptions of your chado dbs to match our expectations?');
+    }
     if ($fix) {
       $this->updateChadoTermRecords('db', 'db_id', $solutions);
     }
