@@ -152,7 +152,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
    * @param array $match
    *   An array of key/value pairs where the keys are the column names of
    *   field table in Drupal and the values are those to match in a select
-   *   condition.  All fields other than the `entity_id', 'bundle', 'delta'
+   *   condition.  All fields other than the 'entity_id', 'bundle', 'delta'
    *   'deleted',  'langcode', and 'revision' have the field name as a prefix.
    *   But the keys need not include the prefix, just the field property key.
    *   The field name prefix will be added automatically.
@@ -487,7 +487,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'There should only be one published entity for a single organism with new properties.');
 
     // Check that the property values got published.  The type_id should be
-    // NULL because that's not stored in DRupal.
+    // NULL because that's not stored in Drupal.
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 1],
         ['type_id' => NULL, 'linker_id' => $organism_id,
@@ -521,7 +521,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // Test publishing a field that uses a linker table.
     //
 
-    // Create an and publish the contacts and the project.
+    // Create and publish the contacts and the project.
     $contact_db = $idsmanager->loadCollection('TCONTACT', "chado_id_space");
     $person_term_id = $contact_db->getTerm('0000003')->getInternalId();
     $contact_id1 = $this->addChadoContact($chado, [
@@ -557,7 +557,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
     // Now publish the projects and contacts. We check that 3 items are
     // published because there is a null contact and currently there is
-    // nothing to prevent that contact from being published.
+    // nothing to prevent that contact from being published. (Issue #1809)
     $publish->init('contact', 'chado_storage');
     $entities = $publish->publish();
     $this->assertTrue(count(array_values($entities)) == 3,

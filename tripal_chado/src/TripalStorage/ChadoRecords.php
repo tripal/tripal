@@ -1713,7 +1713,7 @@ class ChadoRecords  {
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
       }
 
-      // Iterate through the results and create a new record for each one..
+      // Iterate through the results and create a new record for each one.
       while ($values = $results->fetchAssoc()) {
 
         // We start by cloning the records array that was used to query.
@@ -1881,7 +1881,7 @@ class ChadoRecords  {
    *
    * This function is used for the findValues() and loadValues() functions so
    * it needs to be able to find multiple records from the base table and
-   * multiple items from an anciallyar table.
+   * multiple items from an ancillary table.
    *
    * @param string $base_table
    *   The name of the Chado table used as a base table.
@@ -1911,7 +1911,7 @@ class ChadoRecords  {
     // Get the Chado table for this given table alias.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
-    // Iterate through each item of the table and perform an select.
+    // Iterate through each item of the table and perform a select.
     $items = $this->getTableItems($base_table, $table_alias);
     foreach ($items as $delta => $record) {
 

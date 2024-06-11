@@ -335,7 +335,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             }
 
             // Prepare the values array to receive all the new values. We'll
-            // get all the fields for this ancialiary table and then
+            // get all the fields for this ancillary table and then
             // reset the values in the new cloned values array for all of
             // those fields.
             $table_fields = $match->getTableFields($base_table, $table_alias);
@@ -535,7 +535,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * The ChadoRecords class will search for all records necessary to
    * populate the values of the fields for a content type. This works well
    * when all conditions are set for the insertValues() and loadValues().
-   * However, for the findVales() function there are often no criteria set
+   * However, for the findValues() function there are often no criteria set
    * and we want to find all linked records associated with a base record.
    * All Chado fields will have a `record_id` property and the value of that
    * comes from the base table.  This means that all fields will have at

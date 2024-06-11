@@ -230,7 +230,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   /**
    * Sets the values for a field to be empty.
    *
-   * If the detla value doesn't exist in the values array then a new values
+   * If the delta value doesn't exist in the values array then a new values
    * array is added.
    *
    * @param array $values
