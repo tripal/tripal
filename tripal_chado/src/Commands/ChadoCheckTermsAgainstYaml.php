@@ -120,7 +120,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
           // ERROR:
           // The YAML-defined term includes an ID Space that was not defined in the ID Spaces section for this vocabulary.
-          // @ see chadoCheckTermsAreAsExpected_missingDbYaml().
+          // @ see chadoCheckTerms_reportProblem_missingDbYaml().
           $problems['error']['missingDbYaml'][$term_db][] = [
             'missing-db-name' => $term_db,
             'defined-dbs' => $defined_ispaces,
@@ -198,7 +198,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // missingDbYaml
       if (array_key_exists('missingDbYaml', $problems['error'])) {
-        $this->chadoCheckTermsAreAsExpected_missingDbYaml(
+        $this->chadoCheckTerms_reportProblem_missingDbYaml(
           $problems['error']['missingDbYaml'],
           $solutions['error']['missingDbYaml']
         );
@@ -226,7 +226,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // Small differences between the expected and found chado.cv record.
       if (array_key_exists('cv', $problems['warning'])) {
-        $this->chadoCheckTermsAreAsExpected_eccentricCv(
+        $this->chadoCheckTerms_reportProblem_eccentricCv(
           $problems['warning']['cv'],
           $solutions['warning']['cv'],
           $options
@@ -237,7 +237,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // Small differences between the expected and found chado.db record.
       if (array_key_exists('db', $problems['warning'])) {
-        $this->chadoCheckTermsAreAsExpected_eccentricDb(
+        $this->chadoCheckTerms_reportProblem_eccentricDb(
           $problems['warning']['db'],
           $solutions['warning']['db'],
           $options
@@ -273,7 +273,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         $summary_cv = sprintf($this->yellow_format, $existing_cv->cv_id);
 
         // WARNING:
-        // @see chadoCheckTermsAreAsExpected_eccentricCv().
+        // @see chadoCheckTerms_reportProblem_eccentricCv().
         $problems['warning']['cv'][$existing_cv->cv_id][] = [
           'column' => 'cv.definition',
           'property' => 'label',
@@ -323,7 +323,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           $summary_dbs[$idspace_info['name']] = sprintf($this->yellow_format, $existing_db->db_id);
 
           // WARNING:
-          // @see chadoCheckTermsAreAsExpected_eccentricDb().
+          // @see chadoCheckTerms_reportProblem_eccentricDb().
           $problems['warning']['db'][$existing_db->db_id][] = [
             'idspace-name' => $idspace_info['name'],
             'column' => 'db.description',
@@ -338,7 +338,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           $summary_dbs[$idspace_info['name']] = sprintf($this->yellow_format, $existing_db->db_id);
 
           // WARNING:
-          // @see chadoCheckTermsAreAsExpected_eccentricDb().
+          // @see chadoCheckTerms_reportProblem_eccentricDb().
           $problems['warning']['db'][$existing_db->db_id][] = [
             'idspace-name' => $idspace_info['name'],
             'column' => 'db.urlprefix',
@@ -353,7 +353,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           $summary_dbs[$idspace_info['name']] = sprintf($this->yellow_format, $existing_db->db_id);
 
           // WARNING:
-          // @see chadoCheckTermsAreAsExpected_eccentricDb().
+          // @see chadoCheckTerms_reportProblem_eccentricDb().
           $problems['warning']['db'][$existing_db->db_id][] = [
             'message' => $vocab_info['url'] . ': The db.url for this vocabulary in your chado instance does not match what is in the YAML.',
             'idspace-name' => $idspace_info['name'],
@@ -482,7 +482,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTermsAreAsExpected_missingDbYaml($problems, $solutions, $options) {
+  protected function chadoCheckTerms_reportProblem_missingDbYaml($problems, $solutions, $options) {
 
     $this->io()->section('YAML Issues: Missing ID Space definitions.');
     $num_detected = count($problems);
@@ -542,7 +542,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTermsAreAsExpected_eccentricCv($problems, $solutions, $options) {
+  protected function chadoCheckTerms_reportProblem_eccentricCv($problems, $solutions, $options) {
 
     $this->io()->section('Small differences in vocabulary definitions.');
     $num_detected = count($problems);
@@ -609,7 +609,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *   This function interacts through command-line input/output directly and
    *   as such, does not need to return anything to the parent Drush command.
    */
-  protected function chadoCheckTermsAreAsExpected_eccentricDb($problems, $solutions, $options) {
+  protected function chadoCheckTerms_reportProblem_eccentricDb($problems, $solutions, $options) {
 
     $this->io()->section('Small differences in ID Space entries.');
     $num_detected = count($problems);
