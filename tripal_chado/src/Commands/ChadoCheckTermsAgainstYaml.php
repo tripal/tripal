@@ -120,6 +120,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         [$term_db, $term_accession] = explode(':', $term_info['id']);
         $term_info['idspace'] = $term_db;
         $term_info['accession'] = $term_accession;
+        $term_info['cv_name'] = $vocab_info['name'];
 
         // Check the term id space was defined in the id spaces block
         // Note: if a id space was defined but not found in the database
@@ -372,22 +373,85 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // First check that cvterm.name, cvterm.cv, dbxref.accession
     // and dbxref.db all match that which is expected.
+    $query = $this->chado->select('1:cvterm', 'cvt')
+      ->fields('cvt', ['cvterm_id', 'name', 'definition'])
+      ->condition('cvt.name', $term_info['name']);
+    $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+    $query->condition('cv.name', $term_info['cv_name']);
+    $query->join('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
+    $query->condition('dbx.accession', $term_info['accession']);
+    $query->fields('dbx', ['dbxref_id', 'accession']);
+    $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
+    $query->condition('db.name', $term_info['idspace']);
+    $terms = $query->execute()->fetchAll();
+    if ($terms && count($terms) == 1) {
+      $summary_cvterm = $terms[0]->cvterm_id;
+      $summary_dbxref = $terms[0]->dbxref_id;
+
+      // This term is great so no need to continue looking.
+      return [$summary_cvterm, $summary_dbxref];
+    }
 
     // If not, then select the cvterm...
     // ... assuming the cvterm.name and cvterm.cv match
-    // @todo implement this.
+    $cv_matches = TRUE;
+    $query = $this->chado->select('1:cvterm', 'cvt')
+      ->fields('cvt', ['cvterm_id', 'name', 'definition'])
+      ->condition('cvt.name', $term_info['name']);
+    $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+    $query->addField('cv', 'name', 'cv_name');
+    $query->condition('cv.name', $term_info['cv_name']);
+    $cvterms = $query->execute()->fetchAll();
 
     // ... only looking for the matching cvterm.name.
-    // @todo implement this.
+    if (!$cvterms) {
+      $query = $this->chado->select('1:cvterm', 'cvt')
+        ->fields('cvt', ['cvterm_id', 'name', 'definition'])
+        ->condition('cvt.name', $term_info['name']);
+      $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+      $query->addField('cv', 'name', 'cv_name');
+      $cvterms = $query->execute()->fetchAll();
+      $cv_matches = FALSE;
+    }
 
     // Also, indendantly select the dbxref...
     // ... assuming the dbxref.accession and dbxref.db match
-    // @todo implement this.
+    $db_matches = TRUE;
+    $query = $this->chado->select('1:dbxref', 'dbx')
+      ->fields('dbx', ['dbxref_id', 'accession'])
+      ->condition('dbx.accession', $term_info['accession']);
+    $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
+    $query->addField('db', 'name', 'db_name');
+    $query->condition('db.name', $term_info['idspace']);
+    $dbxrefs = $query->execute()->fetchAll();
 
     // ... only looking for the matching dbxref.accession.
-    // @todo implement this.
+    if (!$dbxrefs) {
+      $query = $this->chado->select('1:dbxref', 'dbx')
+        ->fields('dbx', ['dbxref_id', 'accession'])
+        ->condition('dbx.accession', $term_info['accession']);
+      $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
+      $query->addField('db', 'name', 'db_name');
+      $dbxrefs = $query->execute()->fetchAll();
+      $db_matches = FALSE;
+    }
 
     // Then we can check a number of cases:
+    // CASE: there just is not a cvterm or dbxref.
+    if (!$cvterms && !$dbxrefs) {
+      $summary_cvterm = ' - ';
+      $summary_dbxref = ' - ';
+    }
+    // CASE: There is only 1 cvterm with matching cv but no dbxref
+    elseif (count($cvterms) == 1 && $cv_matches && !$dbxrefs) {
+      $summary_dbxref = ' - ';
+      $summary_cvterm = $cvterms[0]->cvterm_id;
+    }
+    // CASE: There is only 1 dbxref with matching db but no cvterm
+    elseif (count($dbxrefs) == 1 && $db_matches && !$cvterms) {
+      $summary_cvterm = ' - ';
+      $summary_dbxref = $dbxrefs[0]->dbxref_id;
+    }
     // CASE: cvterm.name, dbxref.accession, dbxref.db match + are connected.
     //       only cvterm.cv is not matching and may need to be updated.
     // @todo implement this.
@@ -399,9 +463,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     // CASE: all match but are not connected.
     // @todo implement this.
 
-    // CASE: it's just missing which is not actually a problem.
-    // @todo implement this.
-
+    return [$summary_cvterm, $summary_dbxref];
   }
 
   /**
