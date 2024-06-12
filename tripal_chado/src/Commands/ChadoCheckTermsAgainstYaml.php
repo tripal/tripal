@@ -445,9 +445,15 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $summary_dbxref = ' - ';
     }
     // CASE: There is only 1 cvterm with matching cv but no dbxref
+    //       In this case the cvterm must be connected to the wrong dbxref.
     elseif (count($cvterms) == 1 && $cv_matches && !$dbxrefs) {
       $summary_dbxref = ' - ';
-      $summary_cvterm = $cvterms[0]->cvterm_id;
+      $summary_cvterm = sprintf($this->red_format, $cvterms[0]->cvterm_id);
+
+      // ERROR:
+      // Cvterm must be connected to the wrong dbxref.
+      // @todo document the error in the problems array.
+      // @todo suggest a fix.
     }
     // CASE: There is only 1 dbxref with matching db but no cvterm
     elseif (count($dbxrefs) == 1 && $db_matches && !$cvterms) {
