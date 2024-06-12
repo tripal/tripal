@@ -474,6 +474,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // @todo suggest fix.
     }
 
+    // At this point we have one match and the other is either missing or not unique.
+    // Single dbxref match but missing or non-unique cvterm.
     if ($db_matches && $summary_cvterm == ' ? ') {
       $single_dbx = $dbxrefs[0];
       // CASE: cvterm.name, dbxref.accession, dbxref.db match + are connected.
@@ -493,18 +495,40 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         }
       }
 
-      // If no connection is found with the selection of cvterms already selected
-      // Then we should look for other cvterms connected to this dbxref.
+      // We should also look for other cvterms connected to this dbxref.
       if (!$connection_found) {
-        // CASE: dbxref.accession, dbxref.db match but they are connected to
-        //       a different cvterm.
+        $query = $this->chado->select('1:dbxref', 'dbx')
+          ->fields('dbx', ['dbxref_id', 'accession'])
+          ->condition('dbx.accession', $term_info['accession']);
+        $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
+        $query->addField('db', 'name', 'db_name');
+        $query->condition('db.name', $term_info['idspace']);
+        $query->join('1:cvterm', 'cvt', 'cvt.dbxref_id = dbx.dbxref_id');
+        $query->addField('cvt', 'name', 'cvt_name');
+        $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+        $query->addField('cv', 'name', 'cv_name');
+        $connected_cvterms = $query->execute()->fetchAll();
 
-        // CASE: dbxref.accession, dbxref.db match but there is no matching cvterm.
+        // At this point we can decide the previously found cvterm were false positives.
+        $summary_cvterm = ' - ';
+        if ($connected_cvterms) {
+          // CASE: dbxref.accession, dbxref.db match but they are connected to
+          //       a different cvterm.
+          $summary_dbxref = sprintf($this->red_format, $single_dbx->dbxref_id);
 
+          // ERROR:
+          // Dbxref is connected to other cvterms and not it's correct one!
+          // @todo document the error in the problems array
+          // @todo suggest a fix.
+        }
+        else {
+          // CASE: dbxref.accession, dbxref.db match but there is no matching cvterm.
+          $summary_dbxref = $single_dbx->dbxref_id;
+        }
       }
     }
-
-    if ($cv_matches && $summary_dbxref == ' ? ') {
+    // Single cvterm match but missing or non-unique dbxref.
+    elseif ($cv_matches && $summary_dbxref == ' ? ') {
       $single_cvt = $cvterms[0];
       // CASE: cvterm.name, cvterm.cv, and dbxref.accession match + are connected.
       //       only dbxref.db is not matching and may need to be updated.
@@ -534,6 +558,22 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         // @todo document the error in the problems array
         // @todo suggest a fix
       }
+    }
+
+    // Try to catch a few final cases that slip through...
+    if ($summary_cvterm == ' ? ' && !$cvterms) {
+      $summary_cvterm = ' - ';
+    }
+    if ($summary_dbxref == ' ? ' && !$dbxrefs) {
+      $summary_dbxref = ' - ';
+    }
+
+    // Report missed cases.
+    if ($summary_cvterm == ' ? ') {
+      $this->io()->error('We missed a case with the cvterm for ' . $term_info['label'] . '. These are the cvterms we have to work with: ' . print_r($cvterms, TRUE));
+    }
+    if ($summary_dbxref == ' ? ') {
+      $this->io()->error('We missed a case with the dbxref for ' . $term_info['label'] . '. These are the dbxrefs we have to work with: ' . print_r($dbxrefs, TRUE));
     }
 
     return [$summary_cvterm, $summary_dbxref];
