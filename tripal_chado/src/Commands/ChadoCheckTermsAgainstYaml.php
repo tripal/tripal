@@ -97,18 +97,29 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $summary_cvterm = NULL;
       $summary_dbxref = NULL;
 
-      [$summary_cv, $existing_cv] = $this->chadoCheckTerms_checkVocab($vocab_info, $problems, $solutions);
+      [$summary_cv, $existing_cv] = $this->chadoCheckTerms_checkVocab(
+        $vocab_info,
+        $problems,
+        $solutions
+      );
 
-      [$summary_dbs, $defined_ispaces] = $this->chadoCheckTerms_checkIdSpaces($vocab_info, $problems, $solutions);
+      [$summary_dbs, $defined_ispaces] = $this->chadoCheckTerms_checkIdSpaces(
+        $vocab_info,
+        $problems,
+        $solutions
+      );
 
       // Now for each term in this vocabulary...
       $vocab_info['terms'] = (array_key_exists('terms', $vocab_info)) ? $vocab_info['terms'] : [];
       foreach ($vocab_info['terms'] as $term_info) {
 
         $summary_term = $term_info['name'] . ' (' . $term_info['id'] . ')';
+        $term_info['label'] = $summary_term;
 
         // Extract the parts of the id.
         [$term_db, $term_accession] = explode(':', $term_info['id']);
+        $term_info['idspace'] = $term_db;
+        $term_info['accession'] = $term_accession;
 
         // Check the term id space was defined in the id spaces block
         // Note: if a id space was defined but not found in the database
@@ -131,37 +142,11 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           $solutions['error']['missingDbYaml'] = [];
         }
 
-        // First check that cvterm.name, cvterm.cv, dbxref.accession
-        // and dbxref.db all match that which is expected.
-
-        // If not, then select the cvterm...
-        // ... assuming the cvterm.name and cvterm.cv match
-        // @todo implement this.
-
-        // ... only looking for the matching cvterm.name.
-        // @todo implement this.
-
-        // Also, indendantly select the dbxref...
-        // ... assuming the dbxref.accession and dbxref.db match
-        // @todo implement this.
-
-        // ... only looking for the matching dbxref.accession.
-        // @todo implement this.
-
-        // Then we can check a number of cases:
-        // CASE: cvterm.name, dbxref.accession, dbxref.db match + are connected.
-        //       only cvterm.cv is not matching and may need to be updated.
-        // @todo implement this.
-
-        // CASE: cvterm.name, cvterm.cv, and dbxref.accession match + are connected.
-        //       only dbxref.db is not matching and may need to be updated.
-        // @todo implement this.
-
-        // CASE: all match but are not connected.
-        // @todo implement this.
-
-        // CASE: it's just missing which is not actually a problem.
-        // @todo implement this.
+        [$summary_cvterm, $summary_dbxref] = $this->chadoCheckTerms_checkTerm(
+          $term_info,
+          $problems,
+          $solutions
+        );
 
         // Now add the details of what we found for this term to the summary table.
         $summary_rows[] = [
@@ -371,6 +356,52 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
 
     return [$summary_dbs, $defined_ispaces];
+  }
+
+  /**
+   * Checks that the term metadata in the YAML matches this chado instance.
+   *
+   * @param array $term_info
+   * @param array $problems
+   * @param array $solutions
+   * @return array
+   *   - summary_cvterm: the value to print in the summary table
+   *   - summary_dbxref: the value to print in the summary table
+   */
+  protected function chadoCheckTerms_checkTerm(array $term_info, array &$problems, array &$solutions) {
+
+    // First check that cvterm.name, cvterm.cv, dbxref.accession
+    // and dbxref.db all match that which is expected.
+
+    // If not, then select the cvterm...
+    // ... assuming the cvterm.name and cvterm.cv match
+    // @todo implement this.
+
+    // ... only looking for the matching cvterm.name.
+    // @todo implement this.
+
+    // Also, indendantly select the dbxref...
+    // ... assuming the dbxref.accession and dbxref.db match
+    // @todo implement this.
+
+    // ... only looking for the matching dbxref.accession.
+    // @todo implement this.
+
+    // Then we can check a number of cases:
+    // CASE: cvterm.name, dbxref.accession, dbxref.db match + are connected.
+    //       only cvterm.cv is not matching and may need to be updated.
+    // @todo implement this.
+
+    // CASE: cvterm.name, cvterm.cv, and dbxref.accession match + are connected.
+    //       only dbxref.db is not matching and may need to be updated.
+    // @todo implement this.
+
+    // CASE: all match but are not connected.
+    // @todo implement this.
+
+    // CASE: it's just missing which is not actually a problem.
+    // @todo implement this.
+
   }
 
   /**
