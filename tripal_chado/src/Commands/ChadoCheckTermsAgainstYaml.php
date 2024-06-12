@@ -34,10 +34,12 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    * @option auto-fix
    *   Indicates that you always want us to attempt to fix any issues without
    *   the need for us to prompt.
+   * @option no-fix
+   *   Indicates that you do not want us to offer to fix anything.
    * @usage drush trp-check-terms --chado_schema=chado_prod
    *   Checks the terms stored in chado_prod.cvterm for consistency.
    */
-  public function chadoCheckTermsAreAsExpected($options = ['chado_schema' => NULL, 'auto-expand' => FALSE, 'auto-fix' => FALSE]) {
+  public function chadoCheckTermsAreAsExpected($options = ['chado_schema' => NULL, 'auto-expand' => FALSE, 'auto-fix' => FALSE, 'no-fix' => FALSE]) {
 
     if (!$options['chado_schema']) {
       throw new \Exception(dt('The --chado_schema argument is required.'));
@@ -567,11 +569,12 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $table->addRows($rows);
     $table->render();
 
+    $offer_fix = !$options['no-fix'];
     $fix = $this->askOrRespectOptions(
       'Would you like us to update the descriptions of your chado cvs to match our expectations?',
       $options,
       'auto-fix',
-      TRUE
+      $offer_fix
     );
     if ($fix) {
       $this->updateChadoTermRecords('cv', 'cv_id', $solutions);
@@ -633,11 +636,12 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $table->addRows($rows);
     $table->render();
 
+    $offer_fix = !$options['no-fix'];
     $fix = $this->askOrRespectOptions(
       'Would you like us to update the non-critical db columns to match our expectations?',
       $options,
       'auto-fix',
-      TRUE
+      $offer_fix
     );
     if ($fix) {
       $this->updateChadoTermRecords('db', 'db_id', $solutions);
