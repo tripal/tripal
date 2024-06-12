@@ -444,9 +444,10 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $summary_cvterm = ' - ';
       $summary_dbxref = ' - ';
     }
+
     // CASE: There is only 1 cvterm with matching cv but no dbxref
     //       In this case the cvterm must be connected to the wrong dbxref.
-    elseif (count($cvterms) == 1 && $cv_matches && !$dbxrefs) {
+    if (count($cvterms) == 1 && $cv_matches && !$dbxrefs) {
       $summary_dbxref = ' - ';
       $summary_cvterm = sprintf($this->red_format, $cvterms[0]->cvterm_id);
 
@@ -455,13 +456,15 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // @todo document the error in the problems array.
       // @todo suggest a fix.
     }
+
     // CASE: There is only 1 dbxref with matching db but no cvterm
-    elseif (count($dbxrefs) == 1 && $db_matches && !$cvterms) {
+    if (count($dbxrefs) == 1 && $db_matches && !$cvterms) {
       $summary_cvterm = ' - ';
       $summary_dbxref = $dbxrefs[0]->dbxref_id;
     }
+
     // CASE: all match but are not connected.
-    elseif (count($cvterms) == 1 && $cv_matches && count($dbxrefs) == 1 && $db_matches) {
+    if (count($cvterms) == 1 && $cv_matches && count($dbxrefs) == 1 && $db_matches) {
       $summary_cvterm = sprintf($this->red_format, $cvterms[0]->cvterm_id);
       $summary_dbxref = $dbxrefs[0]->dbxref_id;
 
@@ -470,7 +473,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // @todo document the error in the problems array
       // @todo suggest fix.
     }
-    elseif ($db_matches) {
+
+    if ($db_matches && $summary_cvterm == ' ? ') {
       $single_dbx = $dbxrefs[0];
       // CASE: cvterm.name, dbxref.accession, dbxref.db match + are connected.
       //       only cvterm.cv is not matching and may need to be updated.
@@ -496,9 +500,11 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         //       a different cvterm.
 
         // CASE: dbxref.accession, dbxref.db match but there is no matching cvterm.
+
       }
     }
-    elseif ($cv_matches) {
+
+    if ($cv_matches && $summary_dbxref == ' ? ') {
       $single_cvt = $cvterms[0];
       // CASE: cvterm.name, cvterm.cv, and dbxref.accession match + are connected.
       //       only dbxref.db is not matching and may need to be updated.
