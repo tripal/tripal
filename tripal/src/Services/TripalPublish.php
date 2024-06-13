@@ -486,10 +486,10 @@ class TripalPublish {
           $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
         }
       }
-      // Trim any training spaces and remove double spaces. Double spaces
-      // can occur if a token replacment has no value but there are spaces
+      // Trim any trailing spaces and remove double spaces. Double spaces
+      // can occur if a token replacement has no value but there are spaces
       // around it.
-      $entity_title = trim(preg_replace('/\s\s/', ' ', $entity_title));
+      $entity_title = trim(preg_replace('/\s\s+/', ' ', $entity_title));
       $titles[] = $entity_title;
     }
     return $titles;
