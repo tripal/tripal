@@ -231,6 +231,17 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       }
 
       $this->output()->writeln('');
+
+      // Small differences between the expected and found chado.cvterm record.
+      if (array_key_exists('cvterm', $problems['warning'])) {
+        $this->chadoCheckTerms_reportProblem_eccentricCVTerm(
+          $problems['warning']['cvterm'],
+          $solutions['warning']['cvterm'],
+          $options
+        );
+      }
+
+      $this->output()->writeln('');
     }
   }
 
@@ -371,6 +382,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    */
   protected function chadoCheckTerms_checkTerm(array $term_info, array &$problems, array &$solutions) {
     $summary_cvterm = ' ? ';
+    $unique_cvterm = NULL;
     $summary_dbxref = ' ? ';
 
     // First check that cvterm.name, cvterm.cv, dbxref.accession
@@ -455,6 +467,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     if (count($cvterms) == 1 && $cv_matches && !$dbxrefs) {
       $summary_dbxref = ' - ';
       $summary_cvterm = sprintf($this->red_format, $first_cvterm->cvterm_id);
+      $unique_cvterm = $first_cvterm;
 
       // ERROR:
       // Cvterm must be connected to the wrong dbxref.
@@ -472,6 +485,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     if (count($cvterms) == 1 && $cv_matches && count($dbxrefs) == 1 && $db_matches) {
       $summary_cvterm = sprintf($this->red_format, $first_cvterm->cvterm_id);
       $summary_dbxref = $first_dbxref->dbxref_id;
+      $unique_cvterm = $first_cvterm;
 
       // ERROR:
       // Broken connection between cvterm + dbxref!
@@ -487,6 +501,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     if ($db_matches && $summary_cvterm == ' ? ' && array_key_exists($first_dbxref->dbxref_id, $cvterms)) {
       $summary_cvterm = sprintf($this->red_format, $cvterms[$first_dbxref->dbxref_id]->cvterm_id);
       $summary_dbxref = $first_dbxref->dbxref_id;
+      $unique_cvterm = $cvterms[$first_dbxref->dbxref_id];
 
       // ERROR:
       // cv doesn't match but the cvterm is connected to the right dbxref
@@ -536,6 +551,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       $summary_cvterm = $first_cvterm->cvterm_id;
       $summary_dbxref = sprintf($this->red_format, $dbxrefs[$first_cvterm->dbxref_id]);
+      $unique_cvterm = $first_cvterm;
 
       // ERROR:
       // db doesn't match but the dbxref is connected to a good cvterm.
@@ -548,6 +564,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     elseif ($cv_matches && $summary_dbxref == ' ? ') {
       $summary_cvterm = sprintf($this->red_format, $first_cvterm->cvterm_id);
       $summary_dbxref = ' - ';
+      $unique_cvterm = $first_cvterml;
 
       // ERROR:
       // cvterm is attached to the wrong dbxref!
@@ -582,6 +599,25 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
     if ($summary_dbxref == ' ? ') {
       $this->io()->error('We missed a case with the dbxref for ' . $term_info['label'] . '. These are the dbxrefs we have to work with: ' . print_r($dbxrefs, TRUE));
+    }
+
+    // Finally we can check the cvterm definition if we have found one!
+    if ($unique_cvterm) {
+      if (array_key_exists('description', $term_info) && ($unique_cvterm->definition !== $term_info['description'])) {
+
+        // WARNING:
+        // The term definition does not match what we expected.
+        // @see chadoCheckTerms_reportProblem_eccentricCVTerm()
+        $problems['warning']['cvterm'][$unique_cvterm->cvterm_id][] = [
+          'column' => 'cvterm.definition',
+          'property' => 'term.description',
+          'YOURS' => $unique_cvterm->definition,
+          'EXPECTED' => $term_info['description'],
+          'term-name' => $term_info['name'],
+          'term-accession' => $term_info['id'],
+        ];
+        $solutions['warning']['cvterm'][$unique_cvterm->cvterm_id]['definition'] = $term_info['description'];
+      }
     }
 
     return [$summary_cvterm, $summary_dbxref];
@@ -860,6 +896,76 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     if ($fix) {
       $this->updateChadoTermRecords('db', 'db_id', $solutions);
       $this->io()->success('ID Spaces have been updated to match our expectations.');
+    }
+  }
+
+  /**
+   * Reports warnings and potential solutions for the "cvterm" warning type.
+   *
+   * Trigger Example: Imagine there is a cvterm defined whose
+   *   1. definition in the YAML is different from in your chado instance
+   *
+   * @param array $problems
+   *  An array describing instances with this type of warning with the following format:
+   *    - [Existing cvterm_id]: an array of reports describing how this cvterm differs
+   *      in your chado instance from what is defined in the YAML.
+   *      Each report has the following structure:
+   *        - term-name: the name of the term in the YAML which must
+   *          match the cvterm in your chado instance.
+   *        - term-accession: the full id of the term in the YAML which must
+   *          match the connected dbxref in your database.
+   *        - column: the chado column showing a difference
+   *        - property: the yaml property being compared
+   *        - YOURS: the value in your chado instance
+   *        - THEIRS: the value in the YAML
+   * @param array $solutions
+   *  An array describing possible solutions with the following format:
+   *    - [Existing cvterm_id]: an array of columns in the cvterm table to update.
+   *      Each entry has the following structure:
+   *        - [column name]: [value in YAML]
+   *
+   * @return void
+   *   This function interacts through command-line input/output directly and
+   *   as such, does not need to return anything to the parent Drush command.
+   */
+  protected function chadoCheckTerms_reportProblem_eccentricCVTerm($problems, $solutions, $options) {
+
+    $this->io()->section('Small differences in Term entries.');
+    $num_detected = count($problems);
+    $this->output()->writeln("We have detected $num_detected Terms in your chado instance that differ from those defined in the YAML in small ways. More specifically:");
+
+    $table = new Table($this->output());
+    $table->setHeaders(['TERM NAME', 'TERM ACCESSION', 'PROPERTY', 'COLUMN', 'EXPECTED', 'YOURS']);
+    // Set the yours/expected columns to wrap at 50 characters each.
+    $table->setColumnMaxWidth(4, 50);
+    $table->setColumnMaxWidth(5, 50);
+
+    $rows = [];
+    foreach ($problems as $cvterm_id => $specific_issues) {
+      foreach ($specific_issues as $prob_deets) {
+        $rows[] = [
+          $prob_deets['term-name'],
+          $prob_deets['term-accession'],
+          $prob_deets['property'],
+          $prob_deets['column'],
+          $prob_deets['EXPECTED'],
+          $prob_deets['YOURS'],
+        ];
+      }
+    }
+    $table->addRows($rows);
+    $table->render();
+
+    $offer_fix = !$options['no-fix'];
+    $fix = $this->askOrRespectOptions(
+      'Would you like us to update the non-critical cvterm columns to match our expectations?',
+      $options,
+      'auto-fix',
+      $offer_fix
+    );
+    if ($fix) {
+      $this->updateChadoTermRecords('cvterm', 'cvterm_id', $solutions);
+      $this->io()->success('Terms have been updated to match our expectations.');
     }
   }
 }
