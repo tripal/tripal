@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - 4.x
-      - tv4g9-issue1888-drupal-10-3
+      - tv4g9-issue1897-remove-drupal-10-0-and-10-1
 
 jobs:
   push_to_registry:
@@ -20,23 +20,8 @@ jobs:
           - "13"
           - "16"
         drupal-version:
-          - "10.0.x-dev"
-          - "10.1.x-dev"
           - "10.2.x-dev"
           - "10.3.x-dev"
-        exclude:
-          - php-version: "8.3"
-            pgsql-version: "13"
-            drupal-version: "10.0.x-dev"
-          - php-version: "8.3"
-            pgsql-version: "13"
-            drupal-version: "10.1.x-dev"
-          - php-version: "8.3"
-            pgsql-version: "16"
-            drupal-version: "10.0.x-dev"
-          - php-version: "8.3"
-            pgsql-version: "16"
-            drupal-version: "10.1.x-dev"
     name: Docker Build (drupal${{ matrix.drupal-version }})
     steps:
       - uses: actions/checkout@v4
