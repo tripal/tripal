@@ -132,7 +132,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
           // ERROR:
           // The YAML-defined term includes an ID Space that was not defined in the ID Spaces section for this vocabulary.
-          // @ see chadoCheckTerms_reportProblem_missingDbYaml().
+          // @see chadoCheckTerms_reportProblem_missingDbYaml().
           $problems['error']['missingDbYaml'][$term_db][] = [
             'missing-db-name' => $term_db,
             'defined-dbs' => $defined_ispaces,
@@ -186,7 +186,18 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       if (array_key_exists('missingDbYaml', $problems['error'])) {
         $this->chadoCheckTerms_reportProblem_missingDbYaml(
           $problems['error']['missingDbYaml'],
-          $solutions['error']['missingDbYaml']
+          $solutions['error']['missingDbYaml'],
+          $options
+        );
+      }
+
+      // term
+      if (array_key_exists('term', $problems['error'])) {
+        $solutions['error']['term'] = (array_key_exists('term', $solutions['error'])) ? $solutions['error']['term'] : [];
+        $this->chadoCheckTerms_reportProblem_terms(
+          $problems['error']['term'],
+          $solutions['error']['term'],
+          $options
         );
       }
     }
@@ -415,6 +426,10 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
     $query->addField('cv', 'name', 'cv_name');
     $query->condition('cv.name', $term_info['cv_name']);
+    $query->join('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
+    $query->addField('dbx', 'accession', 'term_accession');
+    $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
+    $query->addField('db', 'name', 'term_idspace');
     $cvterms = $query->execute()->fetchAllAssoc('dbxref_id');
 
     // ... only looking for the matching cvterm.name.
@@ -424,6 +439,10 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         ->condition('cvt.name', $term_info['name']);
       $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
       $query->addField('cv', 'name', 'cv_name');
+      $query->join('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
+      $query->addField('dbx', 'accession', 'term_accession');
+      $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
+      $query->addField('db', 'name', 'term_idspace');
       $cvterms = $query->execute()->fetchAllAssoc('dbxref_id');
       $cv_matches = FALSE;
     }
@@ -471,7 +490,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // ERROR:
       // Cvterm must be connected to the wrong dbxref.
-      // @todo document the error in the problems array.
+      // @see chadoCheckTerms_reportProblem_terms()
+      $problems['error']['term'][ $term_info['id'] ][] = [
+        'term-name' => $term_info['name'],
+        'term-id' => $term_info['id'],
+        'category' => 'wrong_dbxref',
+        'message' => 'Wrong or Missing dbxref',
+        'error-column' => 'cvterm.dbxref_id',
+        'YOURS' => $unique_cvterm->term_idspace . ':' . $unique_cvterm->term_accession,
+        'EXPECTED' => $term_info['id'],
+      ];
       // @todo suggest a fix.
     }
 
@@ -489,7 +517,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
       // ERROR:
       // Broken connection between cvterm + dbxref!
-      // @todo document the error in the problems array
+      // @see chadoCheckTerms_reportProblem_terms()
+      $problems['error']['term'][ $term_info['id'] ][] = [
+        'term-name' => $term_info['name'],
+        'term-id' => $term_info['id'],
+        'category' => 'wrong_dbxref',
+        'message' => 'Broken Connection between cvterm + dbxref',
+        'error-column' => 'cvterm.dbxref_id',
+        'YOURS' => $unique_cvterm->term_idspace . ':' . $unique_cvterm->term_accession,
+        'EXPECTED' => $term_info['id'],
+      ];
       // @todo suggest fix.
     }
 
@@ -506,7 +543,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // ERROR:
       // cv doesn't match but the cvterm is connected to the right dbxref
       // so we are pretty sure this connection is valid.
-      // @todo document the error in the problems array
+      // @see chadoCheckTerms_reportProblem_terms()
+      $problems['error']['term'][$term_info['id']][] = [
+        'term-name' => $term_info['name'],
+        'term-id' => $term_info['id'],
+        'category' => 'wrong_cv',
+        'message' => 'Wrong cv but cvterm connected to right dbxref',
+        'error-column' => 'cvterm.cv_id',
+        'YOURS' => $unique_cvterm->cv_name,
+        'EXPECTED' => $term_info['cv_name'],
+      ];
       // @todo suggest fix.
     }
 
@@ -517,16 +563,13 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // the single perfect dbxref we found. If there are then that is a concern
       // but if not then it turns out this dbxref is without error.
       $query = $this->chado->select('1:dbxref', 'dbx')
-        ->fields('dbx', ['dbxref_id', 'accession'])
         ->condition('dbx.accession', $term_info['accession']);
       $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
-      $query->addField('db', 'name', 'db_name');
       $query->condition('db.name', $term_info['idspace']);
       $query->join('1:cvterm', 'cvt', 'cvt.dbxref_id = dbx.dbxref_id');
-      $query->addField('cvt', 'name', 'cvt_name');
       $query->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
-      $query->addField('cv', 'name', 'cv_name');
-      $connected_cvterms = $query->execute()->fetchAll();
+      $query->addExpression("cvt.name||' ('||cv.name||')'", 'Term');
+      $connected_cvterms = $query->execute()->fetchCol();
 
       // CASE: dbxref.accession, dbxref.db match but they are connected to
       //       a different cvterm.
@@ -536,7 +579,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
         // ERROR:
         // Dbxref is connected to other cvterms and not it's correct one!
-        // @todo document the error in the problems array
+        // @see chadoCheckTerms_reportProblem_terms()
+        $problems['error']['term'][$term_info['id']][] = [
+          'term-name' => $term_info['name'],
+          'term-id' => $term_info['id'],
+          'category' => 'wrong_cvterm',
+          'message' => 'Dbxref is connected to the wrong cvterm(s)',
+          'error-column' => 'dbxref>cvterm.dbxref_id',
+          'YOURS' => implode(', ', $connected_cvterms),
+          'EXPECTED' => $term_info['name'] . ' (' . $term_info['cv_name'] . ')',
+        ];
         // @todo suggest a fix.
       }
       else {
@@ -556,7 +608,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // ERROR:
       // db doesn't match but the dbxref is connected to a good cvterm.
       // so this connection might be valid...
-      // @todo document the error in the problems array
+      // @see chadoCheckTerms_reportProblem_terms()
+      $problems['error']['term'][$term_info['id']][] = [
+        'term-name' => $term_info['name'],
+        'term-id' => $term_info['id'],
+        'category' => 'wrong_db',
+        'message' => 'Wrong db but dbxref connected to right cvterm',
+        'error-column' => 'dbxref.db_id',
+        'YOURS' => $first_dbxref->db_name,
+        'EXPECTED' => $term_info['db_name'],
+      ];
       // @todo suggest fix.
     }
     // CASE: cvterm.name and cvterm.cv match but they are connected to
@@ -564,11 +625,20 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     elseif ($cv_matches && $summary_dbxref == ' ? ') {
       $summary_cvterm = sprintf($this->red_format, $first_cvterm->cvterm_id);
       $summary_dbxref = ' - ';
-      $unique_cvterm = $first_cvterml;
+      $unique_cvterm = $first_cvterm;
 
       // ERROR:
       // cvterm is attached to the wrong dbxref!
-      // @todo document the error in the problems array
+      // @see chadoCheckTerms_reportProblem_terms()
+      $problems['error']['term'][$term_info['id']][] = [
+        'term-name' => $term_info['name'],
+        'term-id' => $term_info['id'],
+        'category' => 'wrong_dbxref',
+        'message' => 'Dbxref is missing and cvterm is attached to wrong dbxref',
+        'error-column' => 'cvterm.dbxref_id',
+        'YOURS' => $unique_cvterm->term_idspace . ':' . $unique_cvterm->term_accession,
+        'EXPECTED' => $term_info['id'],
+      ];
       // @todo suggest a fix
     }
 
@@ -614,7 +684,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
           'YOURS' => $unique_cvterm->definition,
           'EXPECTED' => $term_info['description'],
           'term-name' => $term_info['name'],
-          'term-accession' => $term_info['id'],
+          'term-id' => $term_info['id'],
         ];
         $solutions['warning']['cvterm'][$unique_cvterm->cvterm_id]['definition'] = $term_info['description'];
       }
@@ -766,6 +836,60 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   }
 
   /**
+   * Reports errors and potential solutions for the "term" error type.
+   *
+   * Trigger Examples:
+   *   Imagine a term defined with a name of 'Location' and an id of 'NCIT:C25341'
+   *
+   * @param array $problems
+   *  An array describing instances with this type of error with the following format:
+   *    - [YAML Term ID]: an array of reports where each report has the
+   *      following structure:
+   *        - term-name:
+   *        - term-id:
+   *        - category:
+   *        - message:
+   *        - error-column
+   *        - YOURS
+   *        - EXPECTED
+   * @param array $solutions
+   *  There are currently no easy suggested solutions for this but the parameter
+   *  is here in case we decide to be more helpful later ;-p
+   *
+   * @return void
+   *   This function interacts through command-line input/output directly and
+   *   as such, does not need to return anything to the parent Drush command.
+   */
+  protected function chadoCheckTerms_reportProblem_terms($problems, $solutions, $options) {
+
+
+    $this->io()->section('Term (cvterm/dbxref Issues.');
+    $num_detected = count($problems);
+    $this->output()->writeln("We have detected $num_detected Term(s) with a key deviation from what is expected. Specifically:");
+
+    $table = new Table($this->output());
+    $table->setHeaders(['TERM', 'MESSAGE', 'COLUMN', 'EXPECTED', 'YOURS']);
+    // Set the yours/expected columns to wrap at 50 characters each.
+    $table->setColumnMaxWidth(4, 50);
+    $table->setColumnMaxWidth(5, 50);
+
+    $rows = [];
+    foreach ($problems as $id => $terms_with_issues) {
+      foreach ($terms_with_issues as $prob_deets) {
+        $rows[] = [
+          $prob_deets['term-name'] . ' (' . $prob_deets['term-id'],
+          $prob_deets['message'],
+          $prob_deets['error-column'],
+          $prob_deets['EXPECTED'],
+          $prob_deets['YOURS'],
+        ];
+      }
+    }
+    $table->addRows($rows);
+    $table->render();
+  }
+
+  /**
    * Reports warnings and potential solutions for the "cv" warning type.
    *
    * Trigger Example: Imagine there is a vocabulary defined whose
@@ -912,7 +1036,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *      Each report has the following structure:
    *        - term-name: the name of the term in the YAML which must
    *          match the cvterm in your chado instance.
-   *        - term-accession: the full id of the term in the YAML which must
+   *        - term-id: the full id of the term in the YAML which must
    *          match the connected dbxref in your database.
    *        - column: the chado column showing a difference
    *        - property: the yaml property being compared
@@ -945,7 +1069,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       foreach ($specific_issues as $prob_deets) {
         $rows[] = [
           $prob_deets['term-name'],
-          $prob_deets['term-accession'],
+          $prob_deets['term-id'],
           $prob_deets['property'],
           $prob_deets['column'],
           $prob_deets['EXPECTED'],
