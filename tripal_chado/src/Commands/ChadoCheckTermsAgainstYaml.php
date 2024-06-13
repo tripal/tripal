@@ -396,6 +396,11 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $unique_cvterm = NULL;
     $summary_dbxref = ' ? ';
 
+    // Do an extra trim on the yaml values just to make sure.
+    foreach($term_info as $key => $value) {
+      $term_info[$key] = trim($value);
+    }
+
     // First check that cvterm.name, cvterm.cv, dbxref.accession
     // and dbxref.db all match that which is expected.
     $query = $this->chado->select('1:cvterm', 'cvt')
@@ -548,7 +553,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         'term-name' => $term_info['name'],
         'term-id' => $term_info['id'],
         'category' => 'wrong_cv',
-        'message' => 'Wrong cv but cvterm connected to right dbxref',
+        'message' => 'Wrong cv (cvterm validated by dbxref)',
         'error-column' => 'cvterm.cv_id',
         'YOURS' => $unique_cvterm->cv_name,
         'EXPECTED' => $term_info['cv_name'],
@@ -877,7 +882,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     foreach ($problems as $id => $terms_with_issues) {
       foreach ($terms_with_issues as $prob_deets) {
         $rows[] = [
-          $prob_deets['term-name'] . ' (' . $prob_deets['term-id'],
+          $prob_deets['term-name'] . ' (' . $prob_deets['term-id'] . ')',
           $prob_deets['message'],
           $prob_deets['error-column'],
           $prob_deets['EXPECTED'],
