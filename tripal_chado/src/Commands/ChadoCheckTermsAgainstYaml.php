@@ -498,10 +498,6 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     // If we still don't know what to do with the cvterm...
     if ($db_matches && $summary_cvterm == ' ? ') {
 
-      // At this point we feel we have checked all the possibilities with the
-      // cvterms we selected earlier so they are likely false positives.
-      $summary_cvterm = ' - ';
-
       // Now we want to determine if there are any other cvterms connected to
       // the single perfect dbxref we found. If there are then that is a concern
       // but if not then it turns out this dbxref is without error.
@@ -567,6 +563,17 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     // If we never did find any dbxrefs then it is just missing.
     if ($summary_dbxref == ' ? ' && !$dbxrefs) {
       $summary_dbxref = ' - ';
+    }
+    // If we never did find any meaningful connections with the multiple
+    // dbxrefs we found then they were false positives.
+    if ($summary_dbxref == ' ? ' AND count($dbxrefs) > 1) {
+      $summary_dbxref = ' - ';
+    }
+    // At this point we feel we have checked all the possibilities with the
+    // cvterms we selected earlier so they are likely false positives
+    // if the cv didn't match.
+    if ($summary_cvterm == ' ? ' && !$cv_matches) {
+      $summary_cvterm = ' - ';
     }
 
     // Report missed cases.
