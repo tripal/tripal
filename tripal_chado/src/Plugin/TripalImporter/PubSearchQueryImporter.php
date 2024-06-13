@@ -396,7 +396,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     // print_r($publications);
 
 
-    // $this->chado->startTransaction();
+    $transaction_chado = $this->chado->startTransaction();
     try { 
 
       $this->logger->notice("Step  3 of 27: Check for already imported publications ...         ");
@@ -414,6 +414,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
       // $missing_publications_dbxref contains the accessions ()
       // $inserted_dbxref_ids in same order as $missing_publications_dbxref
+      print_r($missing_publications_dbxref);
+      // Insert publications - do we need to double check that they don't already exist?
+      $this->insertPublications($missing_publications_dbxref, $publications);
 
 
       
@@ -421,8 +424,86 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     }
     catch (\Exception $e) {
+      $transaction_chado->rollback();
       throw $e;
     }
+    
+  }
+
+  /** Inserts publications into the pub table */
+  function insertPublications($missing_publications_dbxref, $publications) {
+    // For each publication (structured array)
+    $type_ids = [];
+    $batch_size = 100;
+    $init_sql = "INSERT INTO {1:pub} (title, series_name, pyear, uniquename, type_id) ";
+    $init_sql .= "VALUES \n";
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    $total_missing_publications_dbxref = count($missing_publications_dbxref);
+    $pub_ids = [];
+    foreach ($missing_publications_dbxref as $accession) {
+      // Find the publication structure
+      $publication = $publications[$total];
+
+      // Process values to be used as values
+      $title = $publication['Title'];
+      $series_name = trim(explode('(', $publication['Journal Name'])[0]);
+      $pyear = $publication['Year'];
+      $uniquename = str_replace(',',';', $publication['Authors']) . $title . ' ' . $series_name . '; ' . $pyear;
+
+      $total++;
+      $i++;
+
+      $sql .= " (:title_$i, :series_name_$i, :pyear_$i, :uniquename_$i, :type_id_$i), ";
+      $args[":title_$i"] = $title;
+      $args[":series_name_$i"] = $series_name;
+      $args[":pyear_$i"] = $pyear;
+      $args[":uniquename_$i"] = $uniquename;
+
+      // Lookup type_id from $type_ids
+      $type_id = $type_ids[$publication['Publication Type'][0]];
+      if ($type_id == NULL) {
+        $results = $this->chado->query("SELECT * FROM {1:cvterm} WHERE name = :type_name", [
+          ':type_name' => $publication['Publication Type'][0]
+        ]);
+        foreach ($results as $row) {
+          $type_id = $row->cvterm_id;
+          // Keep in type_ids which is a temporary cache variable
+          $type_ids[$publication['Publication Type'][0]] = $row->cvterm_id;
+          
+        }
+      }
+      if ($type_id == NULL) {
+        throw new \Exception('Type ID for Publication Type: ' . $publication['Publication Type'][0] . ' could not be found in cvterm table');
+      }
+
+      $args[":type_id_$i"] = $type_id;
+
+      
+      if ($i == $batch_size or $total == $total_missing_publications_dbxref) {
+        $sql = rtrim($sql, ", ");
+        $sql = $init_sql . $sql . ' RETURNING pub_id';
+        $return = $this->chado->query($sql, $args);
+
+        // Add the ids inserted into the $dbxref_ids variable
+        foreach ($return as $return_id) {
+          $pub_ids[] = $return_id->pub_id;
+        }
+
+        $batch_num++;
+        // Now reset all of the variables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
+      }
+    }
+    print_r($pub_ids);
+    throw new \Exception('DEBUG');
+    return $pub_ids;
+
     
   }
 
