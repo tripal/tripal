@@ -65,23 +65,25 @@ class TripalEntityForm extends ContentEntityForm {
    */
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
-    $route_info = $this->entity->toUrl('unpublish-form');
-    $actions['unpublish'] = [
-      '#type' => 'link',
-      '#title' => $this->t('Unpublish'),
-      '#access' => $this->entity->access('administer tripal content'),
-      '#attributes' => [
-        'class' => ['button', 'button--danger', 'use-ajax'],
-        'data-dialog-type' => 'modal',
-        'data-dialog-options' => Json::encode([
-          'width' => 880,
-        ]),
-      ],
-      '#url' => $route_info,
-      '#attached' => [
-        'library' => ['core/drupal.dialog.ajax'],
-      ],
-    ];
+    if (!$this->entity->isNew() && $this->entity->hasLinkTemplate('unpublish-form')) {
+      $route_info = $this->entity->toUrl('unpublish-form');
+      $actions['unpublish'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Unpublish'),
+        '#access' => $this->entity->access('administer tripal content'),
+        '#attributes' => [
+          'class' => ['button', 'button--danger', 'use-ajax'],
+          'data-dialog-type' => 'modal',
+          'data-dialog-options' => Json::encode([
+            'width' => 880,
+          ]),
+        ],
+        '#url' => $route_info,
+        '#attached' => [
+          'library' => ['core/drupal.dialog.ajax'],
+        ],
+      ];
+    }
     return $actions;
   }
 }
