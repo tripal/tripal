@@ -318,6 +318,18 @@ tripal.tripalfield_collection.*:
                            type: integer
                            label: 'Weight'
                            nullable: false
+                         settings:
+                           type: mapping
+                           label: 'Settings'
+                           mapping:
+                             field_prefix:
+                               type: string
+                               label: 'Field prefix'
+                               nullable: true
+                             field_suffix:
+                               type: string
+                               label: 'Field suffix'
+                               nullable: true
                    form:
                      type: sequence
                      label: 'Edit'
