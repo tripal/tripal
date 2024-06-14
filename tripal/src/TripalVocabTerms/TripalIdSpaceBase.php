@@ -21,16 +21,18 @@ abstract class TripalIdSpaceBase extends TripalCollectionPluginBase implements T
    * {@inheritdoc}
    */
   public function setDefaultVocabulary($name) {
-    
+
     if (!is_string($name)) {
       return False;
-    } 
-    
+    }
+
     $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     $oldname = $this->getDefaultVocabulary();
     if ($oldname) {
       $vocab = $manager->loadCollection($oldname);
-      $vocab->removeIdSpace($this->getName());
+      if ($vocab) {
+        $vocab->removeIdSpace($this->getName());
+      }
     }
     if ($name) {
       $vocab = $manager->loadCollection($name);
