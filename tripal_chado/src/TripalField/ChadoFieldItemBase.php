@@ -17,6 +17,9 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  */
 abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
+  // The standard record identifier term for all fields.
+  protected static $record_id_term = 'SIO:000729';
+
   // A child class can use these static variables to indicate
   // that it needs a base table column selector in the form.
   protected static $select_base_column = FALSE;

@@ -73,7 +73,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     }
 
     $terms = [
-      'record_id' => 'SIO:000729',
+      'record_id' => self::$record_id_term,
     ];
     $max_lengths = [];
 
