@@ -814,7 +814,7 @@ vocabularies:
         url: 'cv/lookup/TCONTACT'
         idSpaces:
             -   name: 'TCONTACT'
-                description: "Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified."
+                description: "Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
                 urlPrefix: "cv/lookup/TCONTACT/{accession}"
 
     -   name: 'tripal_pub'
@@ -822,7 +822,7 @@ vocabularies:
         url: 'cv/lookup/TPUB'
         idSpaces:
             -   name: 'TPUB'
-                description: "Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified."
+                description: "Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
                 urlPrefix: "cv/lookup/TPUB/{accession}  "
         terms:
             -   id: 'TPUB:0000002'
@@ -860,7 +860,7 @@ vocabularies:
                 description: 'A title, often used along with a description.'
             -   id: 'hydra:PartialCollectionView'
                 name: 'PartialCollectionView'
-                description: 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the the next/previous properties to allow a client to retrieve all members of the collection.'
+                description: 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the next/previous properties to allow a client to retrieve all members of the collection.'
 
     -   name: 'schema'
         label: 'Schema.org. Schema.org is sponsored by Google, Microsoft, Yahoo and Yandex. The vocabularies are developed by an open community process.'

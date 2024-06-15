@@ -79,7 +79,6 @@ class ChadoStudyTypeDefault extends ChadoFieldItemBase {
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $entity_type_id = $field_definition->getTargetEntityTypeId();
-    $record_id_term = 'SIO:000729';
 
     // Base table
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
@@ -131,7 +130,7 @@ class ChadoStudyTypeDefault extends ChadoFieldItemBase {
     $properties = [];
 
     // Define the base table record id.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col,
@@ -161,7 +160,7 @@ class ChadoStudyTypeDefault extends ChadoFieldItemBase {
     // An intermediate linker table is used
     else {
       // Define the linker table that links the base table to the object table.
-      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'path' => $linker_table . '.' . $linker_pkey_col,

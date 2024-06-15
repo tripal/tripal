@@ -719,7 +719,7 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
  *  An array of options such as:
  *  - return_record: by default, the function will return the TRUE if the
  *   record
- *     was succesfully updated.  However, set this option to TRUE to return the
+ *     was successfully updated.  However, set this option to TRUE to return the
  *     record that was updated.  The returned record will have the fields
  *     provided but the primary key (if available for the table) will be added
  *     to the record.

@@ -77,8 +77,8 @@ class ChadoCustomTable {
   /**
    * Returns a ChadoConnection object with the correct schema set.
    *
-   * This is just a helpder function for this class to make sure the
-   * Chado schema is set as requested anytime the object is needec.
+   * This is just a helper function for this class to make sure the
+   * Chado schema is set as requested anytime the object is needed.
    *
    * @return \Drupal\tripal_chado\Database\ChadoConnection
    */

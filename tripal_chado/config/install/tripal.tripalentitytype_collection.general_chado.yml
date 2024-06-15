@@ -8,7 +8,7 @@ content_types:
         help_text: Use the organism page for an individual living system, such as animal, plant, bacteria or virus,
         category: General
         id: organism
-        title_format: "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]"
+        title_format: "<em>[organism_genus] [organism_species]</em> [organism_infraspecific_type] <em>[organism_infraspecific_name]</em>"
         url_format: "organism/[TripalEntity__entity_id]"
         synonyms:
             - bio_data_1
