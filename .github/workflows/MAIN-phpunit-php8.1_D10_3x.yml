@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - 4.x
-      - tv4g9-issue1888-drupal-10-3
+      - tv4g9-issue1897-remove-drupal-10-0-and-10-1
 jobs:
   running-tests:
     name: "Drupal 10.3: PHP 8.1"
