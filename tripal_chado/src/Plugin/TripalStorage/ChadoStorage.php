@@ -360,7 +360,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           foreach ($tables as $table_alias) {
 
             $num_found = $match->selectRecords($base_table, $table_alias);
-
             // In order for a set of records to be considered found it must
             // match all criteria, which means all ancillary tables must
             // return results.

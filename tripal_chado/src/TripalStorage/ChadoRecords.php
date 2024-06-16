@@ -1823,7 +1823,7 @@ class ChadoRecords  {
     // Get the Chado table for this given table alias.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
-    // Iterate through each item of the table and perform an insert.
+    // Iterate through each item of the table and perform a delete.
     $items = $this->getTableItems($base_table, $table_alias);
     foreach ($items as $delta => $record) {
 
