@@ -1,10 +1,11 @@
 name: 'Tripal Layout'
 type: module
 description: 'Auto generates layouts for Tripal entity types'
-core_version_requirement: ^9.4 || ^10
+core_version_requirement: ^10.2
+php: 8.1
 package: Tripal
 version: 4.0.alpha3
 dependencies:
   - tripal:tripal
-  - field_group
-  - field_group_table
+  - fields:field_group
+  - fields:field_group_table

@@ -1,7 +1,8 @@
 name: 'Tripal BioDB Task API'
 type: module
 description: 'Provides a database focused TASK API for Tripal.'
-core_version_requirement: ^9.4 || ^10
+core_version_requirement: ^10.2
+php: 8.1
 package: 'Tripal'
 version: 4.0.alpha3
 dependencies:
