@@ -560,7 +560,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // nothing to prevent that contact from being published. (Issue #1809)
     $publish->init('contact', 'chado_storage');
     $entities = $publish->publish();
-    $this->assertTrue(count(array_values($entities)) == 3,
+    $this->assertCount(3, $entities,
         'Failed to publish 3 contact entities.');
 
     $publish->init('project', 'chado_storage');
