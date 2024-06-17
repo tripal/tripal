@@ -483,7 +483,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // entity in those returned, but not the gorilla organism.
     $this->assertEquals('<em>Oryza species</em> subspecies <em>Japonica</em>', array_values($entities)[0],
       'The Oryza species subspecies Japonica organism should appear in the published list because it has new properties.');
-    $this->assertTrue(count(array_values($entities)) == 1,
+    $this->assertCount(1, array_values($entities),
       'There should only be one published entity for a single organism with new properties.');
 
     // Check that the property values got published.  The type_id should be
