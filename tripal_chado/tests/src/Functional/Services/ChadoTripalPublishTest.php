@@ -565,7 +565,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
     $publish->init('project', 'chado_storage');
     $entities = $publish->publish();
-    $this->assertTrue(count(array_values($entities)) == 2,
+    $this->assertCount(2, $entities,
       'Failed to publish 2 project entities.');
 
     // Make sure that the linked records are also published for each project.
