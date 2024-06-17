@@ -210,6 +210,28 @@ function tripal_chado_rebuild_chado_term_mappings() {
 function tripal_chado_rebuild() {
   tripal_chado_rebuild_views();
   tripal_chado_rebuild_chado_term_mappings();
+
+  # Rebuild the Custom Tables and Materialized views views.
+  $dir = \Drupal::service('extension.list.module')->getPath('tripal_chado');
+  $fileStorage = new FileStorage($dir);
+
+  $custom_tables_config = $fileStorage->read('config/install/views.view.chado_custom_tables');
+  $mviews_config = $fileStorage->read('config/install/views.view.chado_mviews');
+  
+  $storage = \Drupal::entityTypeManager()->getStorage('view');
+
+  // Reload the custom tables view.
+  $view = $storage->load('chado_custom_tables');
+  $view->delete();
+  $view = $storage->create($custom_tables_config);
+  $view->save();
+
+  // Reload the materialized view view.
+  $view = $storage->load('chado_mviews');
+  $view->delete();
+  $view = $storage->create($mviews_config);
+  $view->save();
+  
 }
 
 /**
