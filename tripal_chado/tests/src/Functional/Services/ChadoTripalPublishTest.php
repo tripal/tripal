@@ -198,9 +198,8 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         if (!in_array($key, $drupal_columns)) {
           $column_name = $field_name . '_' . $key;
         }
-        $this->assertTrue($record->$column_name == $val,
-          'The value for, "' . $column_name . '", is not correct: '
-            . $record->$column_name . ' (actual) != ' . $val . ' (expected)');
+        $this->assertEquals($val, $record->$column_name,
+          'The value for, "' . $column_name . '", is not correct what we expected.');
       }
     }
   }
