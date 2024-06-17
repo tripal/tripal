@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Xss;
 
 /**
@@ -89,6 +90,29 @@ class TripalEntityListBuilder extends EntityListBuilder {
     }
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\Core\Entity\EntityListBuilder::getDefaultOperations()
+   */
+  protected function getDefaultOperations(EntityInterface $entity) {
+    $operations = parent::getDefaultOperations($entity);
 
+    if ($entity->access('unpublish') && $entity->hasLinkTemplate('unpublish-form')) {
+      $operations['unpublish'] = [
+        'title' => $this->t('Unpublish'),
+        'weight' => 59,
+        'attributes' => [
+          'class' => ['use-ajax'],
+          'data-dialog-type' => 'modal',
+          'data-dialog-options' => Json::encode([
+            'width' => 880,
+          ]),
+        ],
+        'url' => $this->ensureDestination($entity->toUrl('unpublish-form')),
+      ];
+    }
+
+    return $operations;
+  }
 
 }

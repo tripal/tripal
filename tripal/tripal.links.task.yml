@@ -25,6 +25,13 @@ entity.tripal_entity.delete_form:
   route_name:  entity.tripal_entity.delete_form
   base_route:  entity.tripal_entity.canonical
   title: Delete
+  weight: 20
+
+# -- Provides an Unpublish task link on each Tripal content page.
+entity.tripal_entity.unpublish_form:
+  route_name:  entity.tripal_entity.unpublish_form
+  base_route:  entity.tripal_entity.canonical
+  title: Unpublish
   weight: 10
 
 ##
