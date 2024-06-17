@@ -181,9 +181,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $result = $select->execute();
     $records = $result->fetchAll();
 
-    $this->assertTrue(count($records) == $num_expected,
+    $this->assertCount($num_expected, $records,
         'The number of items expected for field "' . $field_name .'" with bundle "'
-        . $bundle . '" is not correct: ' . count($records) . ' != ' . $num_expected);
+        . $bundle . '" is not correct.');
 
     foreach ($records as $delta => $record) {
 
