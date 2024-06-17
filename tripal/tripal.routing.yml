@@ -187,6 +187,19 @@ tripal.content_type_field_check:
   requirements:
     _permission: 'administer tripal'
 
+# Adds an unpublished link to Tripal entity pages.
+entity.tripal_entity.unpublish_form:
+  path: 'bio_data/{tripal_entity}/unpublish'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalEntityUnpublishForm'
+    _title: 'Unpublish'
+  options:
+    parameters:
+      tripal_entity:
+        type: entity:tripal_entity
+  requirements:
+    _permission: 'administer tripal content'
+    
 ##
 # Controlled Vocabularies.
 ##

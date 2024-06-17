@@ -33,6 +33,7 @@ use Drupal\tripal\TripalField\TripalFieldItemBase;
  *       "add" = "Drupal\tripal\Form\TripalEntityForm",
  *       "edit" = "Drupal\tripal\Form\TripalEntityForm",
  *       "delete" = "Drupal\tripal\Form\TripalEntityDeleteForm",
+ *       "unpublish" = "Drupal\tripal\Form\TripalEntityUnpublishForm",
  *     },
  *     "access" = "Drupal\tripal\Access\TripalEntityAccessControlHandler",
  *     "route_provider" = {
@@ -52,6 +53,7 @@ use Drupal\tripal\TripalField\TripalFieldItemBase;
  *     "add-form" = "/bio_data/add/{tripal_entity_type}",
  *     "edit-form" = "/bio_data/{tripal_entity}/edit",
  *     "delete-form" = "/bio_data/{tripal_entity}/delete",
+ *     "unpublish-form" = "/bio_data/{tripal_entity}/unpublish",
  *     "collection" = "/admin/content/bio_data",
  *   },
  *   bundle_entity_type = "tripal_entity_type",
@@ -668,4 +670,30 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     return $violations;
   }
+
+  /**
+   * Performs a removal of the entity from Drupal.
+   *
+   * This function copies the code from the parent::delete() function.  It
+   * does not remove the record from the storage backend. The
+   * postDelete() function will be triggered.
+   */
+  public function unpublish() {
+    parent::delete();
+  }
+
+  /**
+   * Performs a total remove of the record from Drupal and the DB backend.
+   *
+   * This function copies the code from the parent::delete() function but
+   * then performs extra steps to delete the record in the database backend.
+   * The postDelete() function will also be triggered because it uses the
+   * parent::delete() function to delete the entity from Drupal.
+   */
+  public function delete() {
+    parent::delete();
+    // @todo: add in code to remove entity from the database backend.
+  }
+
+
 }
