@@ -1124,7 +1124,7 @@ class ChadoRecords  {
     }
 
     // If the values were set then return it, otherwise return NULL;
-    if ($items[$delta]['values'] == TRUE) {
+    if ($items[$delta]['has_values'] === TRUE) {
       return $items[$delta]['values'][$column_alias];
     }
 
