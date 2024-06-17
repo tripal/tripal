@@ -408,8 +408,8 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'comment' => 'Gorilla'
     ]);
     $entities = $publish->publish();
-    $this->assertTrue(array_values($entities)[0] == '<em>Gorilla gorilla</em> <em></em>',
-        'The title of Chado organism with missing tokens is incorrect after publishing: "' . array_values($entities)[0] . '" != "<em>Gorilla gorilla</em> <em></em>"');
+    $this->assertEquals('<em>Gorilla gorilla</em> <em></em>', array_values($entities)[0],
+        'The title of Chado organism with missing tokens is incorrect after publishing');
 
 
     $this->checkFieldItem('organism', 'organism_genus', 1,
