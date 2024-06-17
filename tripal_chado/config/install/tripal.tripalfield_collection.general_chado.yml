@@ -207,7 +207,6 @@ fields:
             default:
               region: content
               weight: 40
-
     -   name: organism_pub
         content_type: organism
         label: Publication
@@ -234,6 +233,57 @@ fields:
             default:
               region: content
               weight: 45
+
+    -   name: organism_image
+        content_type: organism
+        label: Organism Image
+        type: image
+        description: One or more images for the organism.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 
+            storage_plugin_settings: 
+        settings:
+            termIdSpace: IAO
+            termAccession: "0000101"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 50
+          form:
+            default:
+              region: content
+              weight: 50
+              
+    -   name: organism_pub
+        content_type: organism
+        label: Publication
+        type: chado_pub_type_default
+        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                linker_table: organism_pub
+                linker_fkey_column: pub_id
+        settings:
+            termIdSpace: TPUB
+            termAccession: "0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 55
+          form:
+            default:
+              region: content
+              weight: 55
 
     -   name: organism_dbxref
         content_type: organism
