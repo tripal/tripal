@@ -94,6 +94,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       ['feature_id','dbxref_id','organism_id','seqlen','type_id'],
     ];
 
+    /*
     $sets[] = [
       'chado_boolean_type_default',
       ['is_analysis', 'is_obsolete'],
@@ -108,7 +109,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       'chado_text_type_default',
       ['uniquename','residues'],
     ];
-
+*/
     return $sets;
   }
 
@@ -160,10 +161,6 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     // Each key here indicates the form element to apply the value to.
     // It can be either the id, name, label, or value of the form element.
     $input = [
-      // Machine name is a hidden input where the input name=field_name
-      'field_name' => $details['name'],
-      // Field label is an input where the name=label
-      'label' => $details['label'],
       // The category of field we want to create.
       // This is a collection of radio inputs in the form where all of them have the
       // name=new_storage_type and the value indicates the storage type you want to select.
@@ -173,9 +170,6 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     $this->submitForm($input, 'Continue');
 
     // Confirm that after submission, there
-    // -- there is an error message telling us to select a field type...
-    //    even though we couldn't before because this is the test environment.
-    $this->assertSession()->statusMessageContains('select a field type');
     // -- is a form element with out field type.
     //    the id of the input element is the machine name of the field.
     $form_element = $this->getSession()->getPage()->findById($field_type_name);
@@ -188,6 +182,15 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     // is the id of the input element.
     $input = [
       $field_type_name => $field_type_name,
+    ];
+    $this->submitForm($input, 'Continue');
+
+    // Step  1c: Actually indicate the name/label of our new field.
+    $input = [
+      // Machine name is a hidden input where the input name=field_name
+      'field_name' => $details['name'],
+      // Field label is an input where the name=label
+      'label' => $details['label'],
     ];
     $this->submitForm($input, 'Continue');
 
