@@ -86,8 +86,40 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       'term' => [
         'name' => 'sequence_feature',
         'definition' => 'Any extent of continuous biological sequence.',
-        'accession' =>
-          '0000110',
+        'accession' => '0000110',
+        ]
+      ],
+      'chado_id_space',
+      'chado_vocabulary'
+    );
+    $this->createTripalTerm([
+      'vocab_name' => 'local',
+      'id_space_name' => 'local',
+      'term' => [
+        'name' => 'is_analysis',
+        'accession' => 'is_analysis',
+        ]
+      ],
+      'chado_id_space',
+      'chado_vocabulary'
+    );
+    $this->createTripalTerm([
+      'vocab_name' => 'schema',
+      'id_space_name' => 'schema',
+      'term' => [
+        'name' => 'name',
+        'accession' => 'name',
+        ]
+      ],
+      'chado_id_space',
+      'chado_vocabulary'
+    );
+    $this->createTripalTerm([
+      'vocab_name' => 'edam',
+      'id_space_name' => 'data',
+      'term' => [
+        'name' => 'Identifier',
+        'accession' => '0842',
         ]
       ],
       'chado_id_space',
@@ -96,7 +128,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   }
 
   /**
-   * Data Provider: proivides a list of the basic fields to test.
+   * Data Provider: provides a list of the basic fields to test.
    */
   public function provideFieldsToTest() {
     $sets = [];
@@ -106,7 +138,6 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       ['feature_id','dbxref_id','organism_id','seqlen','type_id'],
     ];
 
-    /*
     $sets[] = [
       'chado_boolean_type_default',
       ['is_analysis', 'is_obsolete'],
@@ -121,7 +152,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       'chado_text_type_default',
       ['uniquename','residues'],
     ];
-*/
+
     return $sets;
   }
 
