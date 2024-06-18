@@ -121,7 +121,7 @@ vocabularies:
                 name: 'genome assembly'
                 description: ''
             -   id: 'operation:0362'
-                name: 'Genome annotation '
+                name: 'Genome annotation'
                 description: ''
             -   id: 'operation:2945'
                 name: 'Analysis'
@@ -818,7 +818,7 @@ vocabularies:
         idSpaces:
             -   name: 'TPUB'
                 description: "Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
-                urlPrefix: "cv/lookup/TPUB/{accession}  "
+                urlPrefix: "cv/lookup/TPUB/{accession}"
         terms:
             -   id: 'TPUB:0000002'
                 name: 'Publication'
