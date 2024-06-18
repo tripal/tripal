@@ -199,7 +199,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     );
     if ($show_errors) {
 
-      // missingDbYaml
+      // yamlDuplication
       if (array_key_exists('yamlDuplication', $problems['error'])) {
         $this->chadoCheckTerms_reportProblem_yamlDuplication(
           $problems['error']['yamlDuplication'],
