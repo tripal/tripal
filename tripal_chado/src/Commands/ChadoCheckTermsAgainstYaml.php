@@ -178,7 +178,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'Would you like more details regarding the errors we found?',
       $options,
       'auto-expand',
-      $has_errors
+      $has_errors,
+      TRUE
     );
     if ($show_errors) {
 
@@ -217,7 +218,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'Would you like more details regarding the warnings we found?',
       $options,
       'auto-expand',
-      $has_warnings
+      $has_warnings,
+      TRUE
     );
     if ($show_warnings) {
 
@@ -740,8 +742,13 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *  Indicates if there is any point asking the user or checking options. For
    *  example, when the point is to decide whether to show more detail, if there
    *  are no details recorded then there is no point continueing ;-p
+   * @param boolean $default
+   *  The default option when asking the user to confirm. It should be true
+   *  for non-destructive processes and false otherwise.
+   * @return boolean
+   *  Yes or no in response to the question posed by the message.
    */
-  private function askOrRespectOptions(string $ask_message, array $options, string $option_key, bool $worth_continuing) {
+  private function askOrRespectOptions(string $ask_message, array $options, string $option_key, bool $worth_continuing, bool $default) {
 
     if (!$worth_continuing) {
       return FALSE;
@@ -751,7 +758,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $response = TRUE;
     }
     else {
-      $response = $this->io()->confirm($ask_message);
+      $response = $this->io()->confirm($ask_message, $default);
     }
 
     return $response;
@@ -953,7 +960,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'Would you like us to update the descriptions of your chado cvs to match our expectations?',
       $options,
       'auto-fix',
-      $offer_fix
+      $offer_fix,
+      FALSE
     );
     if ($fix) {
       $this->updateChadoTermRecords('cv', 'cv_id', $solutions);
@@ -1020,7 +1028,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'Would you like us to update the non-critical db columns to match our expectations?',
       $options,
       'auto-fix',
-      $offer_fix
+      $offer_fix,
+      FALSE
     );
     if ($fix) {
       $this->updateChadoTermRecords('db', 'db_id', $solutions);
