@@ -139,6 +139,7 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
     $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     foreach ($values as $delta => $item) {
        $matches = [];
+       $values[$delta]['type_id'] = NULL;
        if (preg_match('/(.+?)\(([^\(]+?):(.+?)\)/', $item['term_autoc'], $matches)) {
          $termIdSpace = $matches[2];
          $termAccession = $matches[3];

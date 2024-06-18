@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
-use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalStringTypeFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalStringTypeFormatter;
 
 /**
  * Plugin implementation of default Chado string type formatter.
@@ -25,4 +25,5 @@ class ChadoStringFormatterDefault extends DefaultTripalStringTypeFormatter {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     return parent::viewElements($items, $langcode);
   }
+
 }

@@ -4,7 +4,7 @@ INSERT INTO db VALUES (3, 'dc', 'DCMI Metadata Terms', 'http://purl.org/dc/terms
 INSERT INTO db VALUES (17, 'PMID', 'PubMed', 'http://www.ncbi.nlm.nih.gov/pubmed/{accession}', 'http://www.ncbi.nlm.nih.gov/pubmed');
 INSERT INTO db VALUES (12, 'OGI', 'Ontology for genetic interval', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'http://purl.bioontology.org/ontology/OGI');
 INSERT INTO db VALUES (33, 'SIO', 'Semanticscience Integrated Ontology', 'http://semanticscience.org/resource/{db}_{accession}', 'http://sio.semanticscience.org/');
-INSERT INTO db VALUES (26, 'TCONTACT', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.', 'cv/lookup/TCONTACT/{accession}  ', 'cv/lookup/TCONTACT');
+INSERT INTO db VALUES (26, 'TCONTACT', 'Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology can be identified.', 'cv/lookup/TCONTACT/{accession}  ', 'cv/lookup/TCONTACT');
 INSERT INTO db VALUES (13, 'IAO', 'Information Artifact Ontology', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'https://github.com/information-artifact-ontology/IAO/');
 INSERT INTO db VALUES (4, 'data', 'Bioinformatics operations, data types, formats, identifiers and topics.', 'http://edamontology.org/{db}_{accession}', 'http://edamontology.org/page');
 INSERT INTO db VALUES (18, 'UO', 'Units of Measurement Ontology', 'http://purl.obolibrary.org/obo/UO_{accession}', 'http://purl.obolibrary.org/obo/uo');
@@ -20,7 +20,7 @@ INSERT INTO db VALUES (30, 'rdf', 'Resource Description Framework', 'http://www.
 INSERT INTO db VALUES (24, 'SO', 'The Sequence Ontology', 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}', 'http://www.sequenceontology.org');
 INSERT INTO db VALUES (10, 'OBCS', 'Ontology of Biological and Clinical Statistics', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'https://github.com/obcs/obcs');
 INSERT INTO db VALUES (20, 'NCBITaxon', 'NCBI organismal classification', 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={accession}', 'http://www.berkeleybop.org/ontologies/ncbitaxon/');
-INSERT INTO db VALUES (27, 'TPUB', 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.', 'cv/lookup/TPUB/{accession}  ', 'cv/lookup/TPUB');
+INSERT INTO db VALUES (27, 'TPUB', 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified.', 'cv/lookup/TPUB/{accession}  ', 'cv/lookup/TPUB');
 INSERT INTO db VALUES (21, 'rdfs', 'Resource Description Framework Schema', 'http://www.w3.org/2000/01/rdf-schema#{accession}', 'https://www.w3.org/TR/rdf-schema/');
 INSERT INTO db VALUES (25, 'TAXRANK', 'A vocabulary of taxonomic ranks (species, family, phylum, etc)', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'http://www.obofoundry.org/ontology/taxrank.html');
 INSERT INTO db VALUES (14, 'local', 'Terms created for this site', 'cv/lookup/{db}/{accession}', 'cv/lookup/local');

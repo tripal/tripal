@@ -192,7 +192,7 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   // Make sure we don't go over the max file upload size.
   $upload_max = \Drupal\Component\Utility\Bytes::toNumber(ini_get('upload_max_filesize'));
   if ($file_size > $upload_max) {
-    $message = t("Unfortunately, you can not upload this file as the size exceeds the the maximum file size allowed by this site: " . tripal_format_bytes($upload_max) . '. ');
+    $message = t("Unfortunately, you can not upload this file as the size exceeds the maximum file size allowed by this site: " . tripal_format_bytes($upload_max) . '. ');
 
     if ($user->hasPermission('administer tripal')) {
       $message .= t('You can manage the maximum file upload size by changing the upload_max_filesize in your php.ini file.');
@@ -207,7 +207,7 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
 
   $chunk_max = \Drupal\Component\Utility\Bytes::toNumber(ini_get('post_max_size'));
   if ($chunk_size > $chunk_max) {
-    $message = t("Unfortunately, you can not upload this file as the chunk size exceeds the the maximum file chunk size allowed by this site: " . tripal_format_bytes($chunk_max) . '. ');
+    $message = t("Unfortunately, you can not upload this file as the chunk size exceeds the maximum file chunk size allowed by this site: " . tripal_format_bytes($chunk_max) . '. ');
 
     if ($user->hasPermission('administer tripal')) {
       $message .= t('You can manage the maximum file chunk size by changing the post_max_size value in your php.ini file.');

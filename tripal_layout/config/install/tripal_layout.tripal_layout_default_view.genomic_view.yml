@@ -79,6 +79,7 @@ layouts:
             - gene_length 
             - gene_sequence 
             - gene_sequence_md5_checksum 
+            - gene_sequence_coordinates
         gene_properties_table:
           label: "Properties Table"
           weight: 0  

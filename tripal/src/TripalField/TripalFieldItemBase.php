@@ -13,6 +13,7 @@ use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\TypedData\DataDefinition;
 use \RuntimeException;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Defines the Tripal field item base class.
@@ -639,4 +640,35 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     return $prop_values;
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array{
+
+    return [];
+  }
+
+  /**
+   * A helper function to create an appropriate field name.
+   *
+   * This function can be used by a field's `discover()` method to generate
+   * an appropriate field name. It removes will always include the bundle
+   * type as the prefix, followed by an underscore, followed by extra text
+   * provided. It ensures that only alphanumeric values are present in the
+   * name and that it doesn't exceed 50 characters.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType TripalEntityType $bundle
+   *   The TripalEntityType object with information about the bundle.
+   * @param string $extra
+   *   Extra text to add to the field name after the bundle name.
+   * @return string
+   *   The generated field name.
+   */
+  public static function generateFieldName(TripalEntityType $bundle, string $extra) {
+    $field_name = strtolower($bundle->getID() . '_' . $extra);
+    $field_name = preg_replace('/[^\w]/', '_', $field_name);
+    $field_name = substr($field_name, 0, 50);
+    return $field_name;
+  }
 }
