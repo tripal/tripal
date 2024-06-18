@@ -105,7 +105,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
     // Cvterm table, to retrieve the name for the organism type
     $cvterm_schema_def = $chado->schema()->getTableDef('cvterm', ['format' => 'Drupal']);
-    $infraspecific_type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $infraspecific_type_term = $mapping->getColumnTermId('organism', 'type_id');
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Scientific name is built from several fields combined with space characters
