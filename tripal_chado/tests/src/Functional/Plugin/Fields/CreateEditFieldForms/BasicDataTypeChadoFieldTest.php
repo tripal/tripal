@@ -80,7 +80,19 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       ]],
       'chado_id_space', 'chado_vocabulary'
     );
-
+    $this->createTripalTerm([
+      'vocab_name' => 'SO',
+      'id_space_name' => 'SO',
+      'term' => [
+        'name' => 'sequence_feature',
+        'definition' => 'Any extent of continuous biological sequence.',
+        'accession' =>
+          '0000110',
+        ]
+      ],
+      'chado_id_space',
+      'chado_vocabulary'
+    );
   }
 
   /**
@@ -207,11 +219,18 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     foreach ($valid_options as $option) {
       $this->assertSession()->optionExists($base_col_select, $option);
     }
+    // Now fill out the remaining parts of this form.
+    // Each key here indicates the form element to apply the value to.
+    // It can be either the id, name, label, or value of the form element.
+    $input = [
+      $base_table_select => 'feature',
+      $base_col_select => $valid_options[0],
+      'description' => 'This is the help text for the field.',
+      'settings[field_term_fs][vocabulary_term]' => 'comment (schema:comment)',
+    ];
+    $this->submitForm($input, 'Save settings');
 
-    // @todo check the chado storage setting fields + fill out
-    // @todo set the cvterm.
-    // @todo submit the form to create the field
-    // @todo use $this->assertFieldExistsOnOverview() to confirm the field exists now.
-    // @debug print $this->getSession()->getPage()->getContent();
+    // Finally assert the field exists on the overview.
+    $this->assertFieldExistsOnOverview($details['label']);
   }
 }
