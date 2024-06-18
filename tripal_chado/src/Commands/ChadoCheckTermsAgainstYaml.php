@@ -452,7 +452,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $cv_matches = FALSE;
     }
 
-    // Also, indendantly select the dbxref...
+    // Also, independently select the dbxref...
     // ... assuming the dbxref.accession and dbxref.db match
     $db_matches = TRUE;
     $query = $this->chado->select('1:dbxref', 'dbx')
@@ -868,7 +868,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   protected function chadoCheckTerms_reportProblem_terms($problems, $solutions, $options) {
 
 
-    $this->io()->section('Term (cvterm/dbxref Issues.');
+    $this->io()->section('Term (cvterm/dbxref) Issues.');
     $num_detected = count($problems);
     $this->output()->writeln("We have detected $num_detected Term(s) with a key deviation from what is expected. Specifically:");
 
