@@ -96,6 +96,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       $summary_dbs = [];
       $summary_cvterm = NULL;
       $summary_dbxref = NULL;
+      $defined_terms = [];
 
       [$summary_cv, $existing_cv] = $this->chadoCheckTerms_checkVocab(
         $vocab_info,
@@ -121,6 +122,21 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         $term_info['idspace'] = $term_db;
         $term_info['accession'] = $term_accession;
         $term_info['cv_name'] = $vocab_info['name'];
+
+        // Check for duplication in the YAML definition itself
+        if (array_key_exists($summary_term, $defined_terms)) {
+          // ERROR:
+          // The YAML-defined term was defined more than once.
+          // @see chadoCheckTerms_reportProblem_yamlDuplication().
+          $problems['error']['yamlDuplication'][] = [
+            'name' => $term_info['name'],
+            'id' => $term_info['id'],
+          ];
+          // No solution for this one... instead the developer of the module needs to fix their YAML ;-p
+          $solutions['error']['yamlDuplication'] = [];
+
+        }
+        $defined_terms[$summary_term] = 1;
 
         // Check the term id space was defined in the id spaces block
         // Note: if a id space was defined but not found in the database
@@ -182,6 +198,15 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       TRUE
     );
     if ($show_errors) {
+
+      // missingDbYaml
+      if (array_key_exists('yamlDuplication', $problems['error'])) {
+        $this->chadoCheckTerms_reportProblem_yamlDuplication(
+          $problems['error']['yamlDuplication'],
+          $solutions['error']['yamlDuplication'],
+          $options
+        );
+      }
 
       // missingDbYaml
       if (array_key_exists('missingDbYaml', $problems['error'])) {
@@ -789,6 +814,43 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   }
 
   /**
+   * Reports errors and potential solutions for the "yamlDuplication" error type.
+   *
+   * Trigger Example: the term local:lineage is defined twice in
+   *   tripal.tripal_content_terms.chado_content_terms.yml
+   *
+   * @param array $problems
+   *  An array describing instances with this type of error with the following format:
+   *    - [YAML ID Space name]: an array of reports where a term had the ID Space
+   *      indicated by the key despite that ID Space not being defined in the YAML.
+   *      Each report has the following structure:
+   *        - name:
+   *        - id:
+   * @param array $solutions
+   *  There are currently no easy suggested solutions for this but the parameter
+   *  is here in case we decide to be more helpful later ;-p
+   *
+   * @return void
+   *   This function interacts through command-line input/output directly and
+   *   as such, does not need to return anything to the parent Drush command.
+   */
+  protected function chadoCheckTerms_reportProblem_yamlDuplication($problems, $solutions, $options) {
+
+    $this->io()->section('YAML Issues: Duplicated term definitions in the site YAML.');
+    $num_detected = count($problems);
+    $this->output()->writeln("We have detected $num_detected duplicated term definition(s) present in your YAML file. You will want to contact the developers to let them know the following output:");
+    $list = [];
+    foreach ($problems as $prob_deets) {
+      $list[] = sprintf(
+          "Term %s (%s) was defined more than once.",
+            $prob_deets['name'],
+            $prob_deets['id']
+          );
+    }
+    $this->io()->listing($list);
+  }
+
+  /**
    * Reports errors and potential solutions for the "missingDbYaml" error type.
    *
    * Trigger Example: Imagine there is a term defined whose id is DATUM:12345
@@ -799,7 +861,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *
    * @param array $problems
    *  An array describing instances with this type of error with the following format:
-   *    - [YAML ID Sapce name]: an array of reports where a term had the ID Space
+   *    - [YAML ID Space name]: an array of reports where a term had the ID Space
    *      indicated by the key despite that ID Space not being defined in the YAML.
    *      Each report has the following structure:
    *        - missing-db-name:
