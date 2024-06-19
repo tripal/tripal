@@ -20,7 +20,7 @@ INSERT INTO db VALUES (30, 'rdf', 'Resource Description Framework', 'http://www.
 INSERT INTO db VALUES (24, 'SO', 'The Sequence Ontology', 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}', 'http://www.sequenceontology.org');
 INSERT INTO db VALUES (10, 'OBCS', 'Ontology of Biological and Clinical Statistics', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'https://github.com/obcs/obcs');
 INSERT INTO db VALUES (20, 'NCBITaxon', 'NCBI organismal classification', 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={accession}', 'http://www.berkeleybop.org/ontologies/ncbitaxon/');
-INSERT INTO db VALUES (27, 'TPUB', 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified.', 'cv/lookup/TPUB/{accession}  ', 'cv/lookup/TPUB');
+INSERT INTO db VALUES (27, 'TPUB', 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified.', 'cv/lookup/TPUB/{accession}', 'cv/lookup/TPUB');
 INSERT INTO db VALUES (21, 'rdfs', 'Resource Description Framework Schema', 'http://www.w3.org/2000/01/rdf-schema#{accession}', 'https://www.w3.org/TR/rdf-schema/');
 INSERT INTO db VALUES (25, 'TAXRANK', 'A vocabulary of taxonomic ranks (species, family, phylum, etc)', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'http://www.obofoundry.org/ontology/taxrank.html');
 INSERT INTO db VALUES (14, 'local', 'Terms created for this site', 'cv/lookup/{db}/{accession}', 'cv/lookup/local');
