@@ -85,18 +85,18 @@ name: Affiliation
 
 [Term]
 id: TCONTACT:0000016
-name: Department
+name: Affiliated Department
 def: The department of an institution or organization.
 relationship: part_of TCONTACT:0000015 ! Affiliation
 
 [Term]
 id: TCONTACT:0000017
-name: Institution
+name: Affiliated Institution
 relationship: part_of TCONTACT:0000015 ! Affiliation
 
 [Term]
 id: TCONTACT:0000018
-name: Organization
+name: Affiliated Organization
 def: A generic term for any organization.
 relationship: part_of TCONTACT:0000015 ! Affiliation
 
