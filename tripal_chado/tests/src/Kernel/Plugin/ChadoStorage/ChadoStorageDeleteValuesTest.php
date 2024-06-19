@@ -116,19 +116,7 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
     $record_id1 = $found1['gene_name'][0]['record_id']['value']->getValue();
     $type_id = $found1['gene_type'][0]['type_id']['value']->getValue();
     $contact_id = $found1['gene_contact'][0]['linker_id']['value']->getValue();
-    $contact_name = $found1['gene_contact'][0]['contact_name']['value']->getValue();
 
-    $query = $this->chado_connection->select('1:feature_contact','fc');
-    $query->fields('fc');
-    $result = $query->execute()->fetchObject();
-
-    $query = $this->chado_connection->select('1:contact','c');
-    $query->fields('c');
-    $query->condition('contact_id', '20000');
-    $result = $query->execute()->fetchObject();
-    print_r([$record_id1, $name1, $contact_id, $contact_name]);
-
-    #print_r([$record_id1, $name1, $contact_id, $contact_name]);
     $name2 = $found2['gene_name'][0]['value']['value']->getValue();
     $record_id2 = $found2['gene_name'][0]['record_id']['value']->getValue();
 
@@ -138,14 +126,20 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
     $query1->fields('f');
     $query1->condition('feature_id', $record_id1);
     $result1 = $query1->execute()->fetchObject();
-    $this->assertTrue($result1->name == $name1,
+    $this->assertEquals($result1->name, $name1,
         'Could not find the first record in the database returned by findValues().');
+
+    // Make sure the contact link is gone, but not the contact.
+    $query = $this->chado_connection->select('1:feature_contact','fc');
+    $query->fields('fc');
+    $result = $query->execute()->fetchObject();
+    $this->assertIsObject($result, 'Missing the feature_contact record');
 
     $query2 = $this->chado_connection->select('1:feature','f');
     $query2->fields('f');
     $query2->condition('feature_id', $record_id2);
     $result2 = $query2->execute()->fetchObject();
-    $this->assertTrue($result2->name == $name2,
+    $this->assertEquals($result2->name, $name2,
         'Could not find the second record in the database returned by findValues().');
 
     // Now delete the first record record.
@@ -154,9 +148,8 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
     // Make sure the first record is gone but the second one is still there.
     $result1 = $query1->execute()->fetchObject();
     $result2 = $query2->execute()->fetchObject();
-    $this->assertTrue($result1 == NULL,
-        'Failed to delete the record.');
-    $this->assertTrue($result2->name == $name2,
+    $this->assertTrue($result1 == NULL, 'Failed to delete the record.');
+    $this->assertEquals($result2->name, $name2,
         'Could not find the second record in the database after the first was deleted.');
 
     // Make sure we get 49 matches this time.
@@ -169,9 +162,20 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
     $query->fields('cvt');
     $query->condition('cvterm_id', $type_id);
     $result = $query->execute()->fetchObject();
-    $this->assertTrue($result != NULL,
-        'Deleted a linked record that should not have been deleted.');
+    $this->assertIsObject($result,
+        'Deleted the cvterm record that should not have been deleted.');
 
-    // Make srue the contact link is gone, but not the contact.
+    // Make sure the contact link is gone, but not the contact.
+    $query = $this->chado_connection->select('1:feature_contact','fc');
+    $query->fields('fc');
+    $result = $query->execute()->fetchObject();
+    $this->assertFalse($result, 'Did not delete the feature_contact record');
+
+    // Make srue the contact record is still present.
+    $query = $this->chado_connection->select('1:contact','c');
+    $query->fields('c');
+    $query->condition('contact_id', $contact_id);
+    $result = $query->execute()->fetchObject();
+    $this->assertIsObject($result, 'Should not have deleted the contact record');
   }
 }
