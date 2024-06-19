@@ -148,7 +148,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    * @param string $name
    *   The name.
    *
-   * @return Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase|NULL
+   * @return \Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase|NULL
    *   The loaded collection plugin or NULL.
    */
   public function loadCollection($name) {
