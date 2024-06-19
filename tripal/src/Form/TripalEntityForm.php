@@ -66,6 +66,16 @@ class TripalEntityForm extends ContentEntityForm {
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
     if (!$this->entity->isNew() && $this->entity->hasLinkTemplate('unpublish-form')) {
+      $route_info = $this->entity->toUrl('canonical');
+      $actions['cancel'] = [
+        '#type' => 'link',
+        '#title' => $this->t('Cancel'),
+        '#access' => $this->entity->access('administer tripal content'),
+        '#attributes' => [
+          'class' => ['button'],
+        ],
+        '#url' => $route_info,
+      ];
       $route_info = $this->entity->toUrl('unpublish-form');
       $actions['unpublish'] = [
         '#type' => 'link',

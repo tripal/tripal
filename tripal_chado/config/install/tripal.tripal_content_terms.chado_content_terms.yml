@@ -121,7 +121,7 @@ vocabularies:
                 name: 'genome assembly'
                 description: ''
             -   id: 'operation:0362'
-                name: 'Genome annotation '
+                name: 'Genome annotation'
                 description: ''
             -   id: 'operation:2945'
                 name: 'Analysis'
@@ -150,9 +150,6 @@ vocabularies:
             -   id: 'EFO:0001728'
                 name: 'array manufacturer'
                 description: ''
-            -   id: 'EFO:0000269'
-                name: 'array design'
-                description: 'An instrument design which describes the design of the array.'
             -   id: 'EFO:0001736'
                 name: 'funder'
                 description: 'A person or organization that supports (sponsors) something through some kind of financial contribution.'
@@ -396,8 +393,6 @@ vocabularies:
             -   id: 'local:rank'
                 name: 'rank'
                 description: 'A taxonmic rank'
-            -   id: 'local:lineage'
-                name: 'lineage'
             -   id: 'local:lineage'
                 name: 'lineage'
             -   id: 'local:genetic_code'
@@ -823,7 +818,7 @@ vocabularies:
         idSpaces:
             -   name: 'TPUB'
                 description: "Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
-                urlPrefix: "cv/lookup/TPUB/{accession}  "
+                urlPrefix: "cv/lookup/TPUB/{accession}"
         terms:
             -   id: 'TPUB:0000002'
                 name: 'Publication'
