@@ -1,5 +1,5 @@
 # Run some PHPUnit tests
-name: Test Coverage on Drupal 10.1.x-dev + PHP 8.2
+name: Test Coverage on Drupal 10.3.x-dev + PHP 8.3
 on:
   workflow_dispatch:
   pull_request:
@@ -17,15 +17,15 @@ jobs:
       # Check out the repo
       - name: Checkout Repository
         uses: actions/checkout@v4
-      # Here we fully  build a docker using the current checked out code
+      # Here we fully build a docker using the current checked out code
       # to ensure we have not broken the install/build process.
       - name: Build the Docker
         run: |
           docker build --tag=tripaldocker:localdocker \
-            --build-arg drupalversion="10.1.x-dev" \
+            --build-arg drupalversion="10.3.x-dev" \
             --build-arg postgresqlversion="16" \
             --build-arg chadoschema='teacup' ./ \
-            --file tripaldocker/Dockerfile-php8.2
+            --file tripaldocker/Dockerfile-php8.3
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |

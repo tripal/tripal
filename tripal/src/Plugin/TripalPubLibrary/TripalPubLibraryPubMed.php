@@ -47,7 +47,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
           . 'they provide a valid API key. This is particularly useful in speeding up large publication imports. '
           . 'For more information on NCBI API keys, please ')
       . Link::fromTextAndUrl(t('see here'),
-          Url::fromUri('https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.Coming_in_December_2018_API_Key', [
+          Url::fromUri('https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.API_Keys', [
             'attributes' => [
               'target' => 'blank',
             ]]))->toString()

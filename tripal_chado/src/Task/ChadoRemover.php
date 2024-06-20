@@ -43,7 +43,7 @@ class ChadoRemover extends ChadoTaskBase {
    * ```
    *
    * @throws \Drupal\tripal_biodb\Exception\ParameterException
-   *   A descriptive exception is thrown in cas of invalid parameters.
+   *   A descriptive exception is thrown in case of invalid parameters.
    */
   public function validateParameters() :void {
     try {

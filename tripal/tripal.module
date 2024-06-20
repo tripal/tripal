@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
+use Drupal\Component\Utility\Xss;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 
 require_once 'src/api/tripal.api.php';
@@ -253,7 +254,7 @@ function tripal_theme_suggestions_tripal_entity(array $variables) {
 /**
  * Replacement for tripal_init.
  * Implements hook_preprocess_html()
- * @param $$variables
+ * @param &$variables
  *   An associative array containing:
  *    page: A render element representing the page.
  */
@@ -614,5 +615,50 @@ function tripal_form_field_config_edit_form_alter(&$form, \Drupal\Core\Form\Form
   if ($field->getTargetEntityTypeId() == 'tripal_entity') {
     $elements = TripalFieldItemBase::buildFieldTermForm($field, $form, $form_state);
     $form['settings'] = $form['settings'] + $elements;
+  }
+}
+
+/**
+ * Implements hook_preprocess_field for the title field.
+ *
+ * This is to permit HTML markup in the page title field, for
+ * example on an organism page, to display genus and species
+ * in italics.
+ *
+ */
+function tripal_preprocess_field(&$variables) {
+  if ($variables['element']['#field_name'] == 'title') {
+    foreach ($variables['items'] as $delta => $item) {
+      $value = $item['content']['#context']['value'];
+      // Convert strings into markup, this will cause HTML tags to be rendered.
+      if (is_string($value)) {
+        // We can configure which tags are allowed at /admin/tripal/config
+        $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
+        $tripal_allowed_tags = explode(' ', $tag_string ?? '');
+        $sanitized_value = Xss::filter($value, $tripal_allowed_tags);
+        $variables['items'][$delta]['content']['#context']['value'] = Drupal\Core\Render\Markup::create($sanitized_value);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_block for the page_title_block.
+ *
+ * This is to permit HTML markup in the page title block, for
+ * example on an organism page, to display genus and species
+ * in italics.
+ *
+ */
+function tripal_preprocess_block(&$variables) {
+  if ($variables['plugin_id'] == 'page_title_block') {
+    // Convert strings into markup, this will cause HTML tags to be rendered.
+    if (is_string($variables['content']['#title'])) {
+      // We can configure which tags are allowed at /admin/tripal/config
+      $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
+      $tripal_allowed_tags = explode(' ', $tag_string ?? '');
+      $sanitized_value = Xss::filter($variables['content']['#title'], $tripal_allowed_tags);
+      $variables['content']['#title'] = Drupal\Core\Render\Markup::create($sanitized_value);
+    }
   }
 }

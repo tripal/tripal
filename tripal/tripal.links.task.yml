@@ -25,27 +25,34 @@ entity.tripal_entity.delete_form:
   route_name:  entity.tripal_entity.delete_form
   base_route:  entity.tripal_entity.canonical
   title: Delete
+  weight: 20
+
+# -- Provides an Unpublish task link on each Tripal content page.
+entity.tripal_entity.unpublish_form:
+  route_name:  entity.tripal_entity.unpublish_form
+  base_route:  entity.tripal_entity.canonical
+  title: Unpublish
   weight: 10
 
 ##
 # Tripal Files
 ##
 
-# -- Provides a task link on in the Tripal Managed Files Admin for managing upload size.
+# -- Provides a task link in the Tripal Managed Files Admin for managing upload size.
 tripal.files_file_usage:
   route_name: tripal.files_file_usage
   title: 'Manage File Upload Size'
   base_route: tripal.files
   weight: 80
 
-# -- Provides a task link on in the Tripal Managed Files Admin for managing user quotas.
+# -- Provides a task link in the Tripal Managed Files Admin for managing user quotas.
 tripal.files_quota:
   route_name: tripal.files_quota
   title: 'Disk Usage Quotas'
   base_route: tripal.files
   weight: 90
 
-# -- Provides a task link on in the Tripal Managed Files Admin for reporting file usage.
+# -- Provides a task link in the Tripal Managed Files Admin for reporting file usage.
 tripal.files_usage:
   route_name: tripal.files_usage
   title: 'File Usage Reports'

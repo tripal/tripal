@@ -168,7 +168,7 @@ class TripalPublish {
 
     $this->setFieldInfo();
 
-    // Get the rquired field properties that will uniquely identify an entity.
+    // Get the required field properties that will uniquely identify an entity.
     // We only need to search on those properties.
     $this->required_types = $this->storage->getStoredTypes();
   }
@@ -296,7 +296,7 @@ class TripalPublish {
             'prop_types' => [],
             'instance' => $instance,
           ];
-          // Order the property types by key for eacy lookup.
+          // Order the property types by key for easy lookup.
           foreach ($prop_types as $prop_type) {
             $field_info['prop_types'][$prop_type->getKey()] = $prop_type;
           }
@@ -308,7 +308,7 @@ class TripalPublish {
   }
 
   /**
-   * Adds to the search values array the required proprty values.
+   * Adds to the search values array the required property values.
    *
    * @param array $seach_values
    */
@@ -476,12 +476,20 @@ class TripalPublish {
           $delta = 0;
           $field = $this->field_info[$field_name]['instance'];
           $main_prop = $field->mainPropertyName();
-          $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
-          if ($value !== NULL) {
-            $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
+          $value = '';
+          if (array_key_exists($delta, $match[$field_name])) {
+            $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
           }
+          if ($value === NULL) {
+            $value = '';
+          }
+          $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
         }
       }
+      // Trim any trailing spaces and remove double spaces. Double spaces
+      // can occur if a token replacement has no value but there are spaces
+      // around it.
+      $entity_title = trim(preg_replace('/\s\s+/', ' ', $entity_title));
       $titles[] = $entity_title;
     }
     return $titles;
@@ -490,7 +498,7 @@ class TripalPublish {
 
 
   /**
-   * Makes sure that we will not be adding any dupliate entities.
+   * Makes sure that we will not be adding any duplicate entities.
    *
    * @param array $matches
    *   The array of matches for each entity.
@@ -612,7 +620,7 @@ class TripalPublish {
   }
 
   /**
-   * Makes sure that we will not be adding any dupliate entities.
+   * Makes sure that we will not be adding any duplicate entities.
    *
    * @param string $field_name
    *   The name of the field
@@ -638,7 +646,7 @@ class TripalPublish {
     $items = [];
 
     $sql = "
-      SELECT entity_id FROM {" . $field_table . "}\n
+      SELECT entity_id, delta FROM {" . $field_table . "}\n
       WHERE bundle = :bundle\n
         AND entity_id IN (:entity_ids[])\n";
 
@@ -660,7 +668,11 @@ class TripalPublish {
         ];
         $results = $database->query($sql, $args);
         while ($result = $results->fetchAssoc()) {
-          $items[$result['entity_id']] = $result['entity_id'];
+          $entity_id = $result['entity_id'];
+          if (!array_key_exists($entity_id, $items)) {
+            $items[$entity_id] = [];
+          }
+          $items[$entity_id][$result['delta']] = TRUE;
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -677,7 +689,7 @@ class TripalPublish {
   /**
    * Counts the total items to insert for a field.
    *
-   * The matches array returned by the TripalStorage is orgnized by entity
+   * The matches array returned by the TripalStorage is organized by entity
    * but fields can have a cardinality > 1.  This function counts the number
    * of items for the given field.
    *
@@ -710,8 +722,11 @@ class TripalPublish {
    *   An associative array that maps entity titles to their keys.
    * @param array $existing
    *   An associative array of entities that already have an existing item for this field.
+   *
+   * @return int
+   *   The number of items inserted for the field.
    */
-  protected function insertFieldItems($field_name, $matches, $titles, $entities, $existing) {
+  protected function insertFieldItems($field_name, $matches, $titles, $entities, $existing, &$published) {
 
     $database = \Drupal::database();
     $field_table = 'tripal_entity__' . $field_name;
@@ -733,49 +748,60 @@ class TripalPublish {
     $init_sql = rtrim($init_sql, ", ");
     $init_sql .= ") VALUES\n";
 
+    $i = 0;
     $j = 0;
     $total = 0;
     $batch_num = 1;
     $sql = '';
     $args = [];
+    $num_inserted = 0;
 
-    // Iterate through the matches.
+
+    // Iterate through the matches. Each match corresponds to a single
+    // entity. The titles provided should be in order of the entities
+    // in the matches array.
     foreach ($matches as $match) {
-      $title = $titles[$total];
-      $entity_id = $entities[$title];
 
-      $num_delta = count(array_keys($match[$field_name]));
-      for ($delta = 0; $delta < $num_delta; $delta++) {
+      $title = $titles[$i];
+      $entity_id = $entities[$title];
+      $i++;
+
+      // Iterate through the "items" of each feild and insert a record value
+      // for each item.
+      $num_items = count(array_keys($match[$field_name]));
+      for ($delta = 0; $delta < $num_items; $delta++) {
         $j++;
         $total++;
 
         // No need to add items to those that are already published.
-        if (array_key_exists($entity_id, $existing)) {
-          continue;
-        }
+        if (!array_key_exists($entity_id, $existing) or
+            !array_key_exists($delta, $existing[$entity_id])) {
 
-        // Add items to those that are not already published.
-        $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
-        $args[":bundle_$j"] = $this->bundle;
-        $args[":deleted_$j"] = 0;
-        $args[":entity_id_$j"] = $entity_id;
-        $args[":revision_id_$j"] = 1;
-        $args[":langcode_$j"] = 'und';
-        $args[":delta_$j"] = $delta;
-        foreach (array_keys($this->required_types[$field_name]) as $key) {
-          $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
-          $sql .=  $placeholder . ', ';
-          $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+          $published[$entity_id] = $title;
+
+          // Add items to those that are not already published.
+          $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
+          $args[":bundle_$j"] = $this->bundle;
+          $args[":deleted_$j"] = 0;
+          $args[":entity_id_$j"] = $entity_id;
+          $args[":revision_id_$j"] = 1;
+          $args[":langcode_$j"] = 'und';
+          $args[":delta_$j"] = $delta;
+          foreach (array_keys($this->required_types[$field_name]) as $key) {
+            $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
+            $sql .=  $placeholder . ', ';
+            $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+          }
+          $sql = rtrim($sql, ", ");
+          $sql .= "),\n";
+          $num_inserted++;
         }
-        $sql = rtrim($sql, ", ");
-        $sql .= "),\n";
 
         // If we've reached the size of the batch then let's do the insert.
         if ($j == $batch_size or $total == $num_matches) {
           if (count($args) > 0) {
             $sql = rtrim($sql, ",\n");
             $sql = $init_sql . $sql;
-
             $database->query($sql, $args);
           }
           $this->setItemsHandled($batch_num);
@@ -788,6 +814,7 @@ class TripalPublish {
         }
       }
     }
+    return $num_inserted;
   }
 
   /**
@@ -879,18 +906,21 @@ class TripalPublish {
     }
 
     $total_items = 0;
+    $published_entities = [];
     foreach ($this->field_info as $field_name => $field_info) {
 
       $this->logger->notice("  Checking for published items for the field: $field_name...");
       $existing_field_items = $this->findFieldItems($field_name, $entities);
 
-      $num_field_items =  $this->countFieldMatches($field_name, $matches);
-      $this->logger->notice("  Publishing " . number_format($num_field_items) . " items for field: $field_name...");
-      $this->insertFieldItems($field_name, $matches, $titles, $entities, $existing_field_items);
-      $total_items += $num_field_items;
+      $num_inserted = $this->insertFieldItems($field_name, $matches, $titles,
+        $entities, $existing_field_items, $published_entities);
+
+      $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
+      $total_items += $num_inserted;
     }
-    $this->logger->notice("Published " .  number_format(count($new_matches)) . " new entities, and " . number_format($total_items) . " field values.");
+    $this->logger->notice("Published " .  number_format(count(array_keys($published_entities)))
+        . " new entities, and " . number_format($total_items) . " field values.");
     $this->logger->notice('Done');
-    return $entities;
+    return $published_entities;
   }
 }

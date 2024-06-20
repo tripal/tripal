@@ -121,7 +121,7 @@ vocabularies:
                 name: 'genome assembly'
                 description: ''
             -   id: 'operation:0362'
-                name: 'Genome annotation '
+                name: 'Genome annotation'
                 description: ''
             -   id: 'operation:2945'
                 name: 'Analysis'
@@ -150,9 +150,9 @@ vocabularies:
             -   id: 'EFO:0001728'
                 name: 'array manufacturer'
                 description: ''
-            -   id: 'EFO:0000269'
-                name: 'array design'
-                description: 'An instrument design which describes the design of the array.'
+            -   id: 'EFO:0001736'
+                name: 'funder'
+                description: 'A person or organization that supports (sponsors) something through some kind of financial contribution.'
 
     -   name: 'ero'
         label: 'The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).'
@@ -209,7 +209,7 @@ vocabularies:
                 description: 'A planned process with the objective to produce information about the material entity that is the evaluant, by physically examining it or its proxies.'
 
     -   name: 'ogi'
-        label: 'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific'
+        label: 'Ontology for genetic interval'
         url: 'http://purl.bioontology.org/ontology/OGI'
         idSpaces:
             -   name: 'OGI'
@@ -393,8 +393,6 @@ vocabularies:
             -   id: 'local:rank'
                 name: 'rank'
                 description: 'A taxonmic rank'
-            -   id: 'local:lineage'
-                name: 'lineage'
             -   id: 'local:lineage'
                 name: 'lineage'
             -   id: 'local:genetic_code'
@@ -692,6 +690,21 @@ vocabularies:
             -   id: 'NCIT:C164386'
                 name: 'Experimental Factor Value'
                 description: 'A specific type, time period, compound, dose, temperature, magnitude, quantity, element, aspect or other item in a variable manipulated by the experimentalist. (BRIDG)'
+            -   id: 'NCIT:C165210'
+                name: "Data Custodian"
+                description: "The person responsible for a specific data set."
+            -   id: 'NCIT:C69141'
+                name: "Curator"
+                description: "The person in charge of the care and superintendence of something, especially a collection."
+            -   id: 'NCIT:C43611'
+                name: 'License'
+                description: 'Official or legal permission to do or own a specified thing.'
+            -   id: 'NCIT:C41196'
+                name: 'Citation'
+                description: 'An extract or quotation from or reference to an authoritative source, e.g. a book or author, used, for example, to support an idea, theory, or argument.'
+            -   id: 'NCIT:C93448'
+                name: 'Research Organization'
+                description: 'An organization whose purpose is to support systemic, rigorous study and investigation into a particular field or fields.'
     -   name: 'ncbitaxon'
         label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'
         url: 'http://www.berkeleybop.org/ontologies/ncbitaxon/'
@@ -705,6 +718,20 @@ vocabularies:
             -   id: 'NCBITaxon:scientific_name'
                 name: 'scientific name'
 
+    -   name: 'AGRO'
+        label: 'Agronomy Ontology'
+        url: 'https://agroportal.lirmm.fr/ontologies/AGRO'
+        idSpaces:
+            -   name: 'AGRO'
+                description: 'Agronomy Ontology'
+                urlPrefix: 'http://purl.obolibrary.org/obo/{db}_{accession}'
+        terms:
+            -   id: 'AGRO:00000360'
+                name: 'experimental site'
+                description: 'Location where the experiment is implemented.'
+            -   id: 'AGRO:00000379'
+                name: 'data collector'
+                description: 'A person that has a role of collecting data related to the experiment.'
 
     -   name: 'rdfs'
         label: 'Resource Description Framework Schema'
@@ -782,7 +809,7 @@ vocabularies:
         url: 'cv/lookup/TCONTACT'
         idSpaces:
             -   name: 'TCONTACT'
-                description: "Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified."
+                description: "Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
                 urlPrefix: "cv/lookup/TCONTACT/{accession}"
 
     -   name: 'tripal_pub'
@@ -790,8 +817,8 @@ vocabularies:
         url: 'cv/lookup/TPUB'
         idSpaces:
             -   name: 'TPUB'
-                description: "Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified."
-                urlPrefix: "cv/lookup/TPUB/{accession}  "
+                description: "Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
+                urlPrefix: "cv/lookup/TPUB/{accession}"
         terms:
             -   id: 'TPUB:0000002'
                 name: 'Publication'
@@ -828,7 +855,7 @@ vocabularies:
                 description: 'A title, often used along with a description.'
             -   id: 'hydra:PartialCollectionView'
                 name: 'PartialCollectionView'
-                description: 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the the next/previous properties to allow a client to retrieve all members of the collection.'
+                description: 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the next/previous properties to allow a client to retrieve all members of the collection.'
 
     -   name: 'schema'
         label: 'Schema.org. Schema.org is sponsored by Google, Microsoft, Yahoo and Yandex. The vocabularies are developed by an open community process.'

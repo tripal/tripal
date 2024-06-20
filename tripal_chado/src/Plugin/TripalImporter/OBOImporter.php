@@ -799,7 +799,7 @@ class OBOImporter extends ChadoImporterBase {
   }
 
   /**
-   * Gets a controlled voabulary object.
+   * Gets a controlled vocabulary object.
    *
    * @param string $name
    *   The name of the vocabulary
@@ -2468,12 +2468,11 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     // Make sure there are CV records for all namespaces.
-    $message = t('Found the following namespaces: @namespaces.',
-      ['@namespaces' => implode(', ', array_keys($this->obo_namespaces))]);
     foreach ($this->obo_namespaces as $namespace => $cv) {
       $this->insertChadoCv($namespace);
     }
-    $this->logger->notice($message->getUntranslatedString());
+    $this->logger->notice('Found the following namespaces: @namespaces.',
+      ['@namespaces' => implode(', ', array_keys($this->obo_namespaces))]);
   }
 
   /**
