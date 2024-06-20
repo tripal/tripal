@@ -43,8 +43,8 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   protected function setUp() : void {
     parent::setUp();
 
-    // Installs up the chado with all the items added via the prepare.
-    // NOTE: This done not prepare Drupal so none of the TripalTerms we need are available.
+    // Installs chado with all the items added via the prepare.
+    // NOTE: This does not prepare Drupal, so none of the TripalTerms we need are available.
     $this->connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
     // Create the Organism Content Type
@@ -176,7 +176,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     }
 
     // Pages to access.
-    $manage_fields_path = 'admin/structure/bio_data/manage/' . $this->type . '/fields';
+    $manage_fields_path = '/admin/structure/bio_data/manage/' . $this->type . '/fields';
     $add_field_path = '/admin/structure/bio_data/manage/' . $this->type . '/fields/add-field';
 
     // Details of the field to create.
