@@ -209,7 +209,7 @@ vocabularies:
                 description: 'A planned process with the objective to produce information about the material entity that is the evaluant, by physically examining it or its proxies.'
 
     -   name: 'ogi'
-        label: 'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific'
+        label: 'Ontology for genetic interval'
         url: 'http://purl.bioontology.org/ontology/OGI'
         idSpaces:
             -   name: 'OGI'
