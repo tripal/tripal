@@ -20,8 +20,6 @@ services:
     class: Drupal\tripal_chado\Task\ChadoInstaller
   tripal_chado.integrator:
     class: Drupal\tripal_chado\Task\ChadoIntegrator
-  tripal_chado.upgrader:
-    class: Drupal\tripal_chado\Task\ChadoUpgrader
   tripal_chado.renamer:
     class: Drupal\tripal_chado\Task\ChadoRenamer
   tripal_chado.remover:
