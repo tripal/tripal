@@ -120,10 +120,10 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
     // "termAccession", "help_text", "category", "title_format",
     // "url_format", "hide_empty_field", "ajax_field".
     // Get the defaults for the storage setting for this field type.
+    $new_defs['settings'] = [];
     $new_defs['settings']['termIdSpace'] = '';
     $new_defs['settings']['termAccession'] = '';
     $default_storage_settings = $field_class::defaultFieldSettings();
-    $new_defs['settings'] = [];
     foreach ($default_storage_settings as $setting_name => $value) {
       $new_defs['settings'][$setting_name] = $value;
     }

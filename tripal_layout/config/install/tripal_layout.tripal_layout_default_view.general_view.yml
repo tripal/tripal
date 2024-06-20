@@ -36,6 +36,13 @@ layouts:
           open: false
           children: 
             - "organism_pub"
+        organism_images_details:
+          label: "Images"
+          weight: 40
+          show_empty: false
+          open: false
+          children:
+            - "organism_image"
       field_group_table:
         organism_details_table:
           label: "Details Table"

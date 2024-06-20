@@ -242,8 +242,9 @@ fields:
         cardinality: -1
         required: false
         storage_settings:
-            storage_plugin_id: 
+            storage_plugin_id: drupal_sql_storage
             storage_plugin_settings: 
+                base_table: organism
         settings:
             termIdSpace: IAO
             termAccession: "0000101"
