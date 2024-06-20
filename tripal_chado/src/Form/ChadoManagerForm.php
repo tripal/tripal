@@ -47,11 +47,6 @@ class ChadoManagerForm extends FormBase {
   public const DROP_TASK = 'remove';
 
   /**
-   * Upgrade Chado task identifier.
-   */
-  public const UPGRADE_TASK = 'upgrade';
-
-  /**
    * @} End of "defgroup chado_manager_form_tasks".
    */
 
@@ -79,10 +74,6 @@ class ChadoManagerForm extends FormBase {
 
         case static::CLONE_TASK:
           $form = $this->buildCloneForm($form, $form_state);
-          break;
-
-        case static::UPGRADE_TASK:
-          $form = $this->buildUpgradeForm($form, $form_state);
           break;
 
         case static::DROP_TASK:
@@ -279,22 +270,6 @@ class ChadoManagerForm extends FormBase {
           'data-chado-schema' => $schema_name,
         ],
       ];
-      $default_version = (float) ChadoInstaller::DEFAULT_CHADO_VERSION;
-      if ((float)$details['version'] < $default_version) {
-        // Upgrade.
-        $operations['upgrade_button'] = [
-          '#type' => 'button',
-          '#value' => $this->t(
-            'Upgrade to @default_version',
-            ['@default_version' => $default_version, ]
-          ),
-          '#attributes' => [
-            'class' => ['chadoTableButton'],
-            'data-chado-task' => static::UPGRADE_TASK,
-            'data-chado-schema' => $schema_name,
-          ],
-        ];
-      }
 
       $rows[$schema_name] = [
         $schema_name . ($default_chado == $schema_name ? $this->t(' (default)') : ''),
@@ -369,7 +344,6 @@ class ChadoManagerForm extends FormBase {
           $this->goBackForm($form, $form_state);
           break;
         }
-      case static::UPGRADE_TASK:
       case static::RENAME_TASK:
       case static::CLONE_TASK:
       default:
@@ -731,96 +705,4 @@ class ChadoManagerForm extends FormBase {
     // Go back.
     $this->goBackForm($form, $form_state);
   }
-
-  /**
-   * Builds upgrade schema form.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   */
-  public function buildUpgradeForm(array $form, FormStateInterface $form_state) {
-    $schema_name = $form_state->getValue('chado_schema');
-
-    $form['task'] = [
-      '#type' => 'item',
-      '#markup' => t(
-        '<h2>Upgrade "@schema_name" schema</h2>',
-        ['@schema_name' => $schema_name, ]
-      ),
-    ];
-
-    $form['chado_schema'] = [
-      '#type' => 'hidden',
-      '#name' => 'chado_schema',
-      '#value' => $schema_name,
-    ];
-
-    $form['cleanup'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Remove database objects and table columns not existing in the official Chado schema.'),
-      '#description' => t(
-        "Checking this box will perform a database cleanup. If you didn't customize your Chado schema, leave this checked. If you uncheck it, be aware that there are more chances the update process may fail du to database object dependencies related to non-chado objects."
-      ),
-      '#default_value' => TRUE,
-    ];
-
-    $form['sql_file'] = [
-      '#type' => 'textfield',
-      '#title' => t('Generate an update SQL file instead (optional)'),
-      '#required' => FALSE,
-      '#description' => t(
-        'If you specify a file, your schema will <strong>not</strong> be upgraded. You can leave this field empty if you want the upgrader to upgrade your schema. Otherwise, you can provide a file name relative to your Drupal public folder "files" (or private folder if set as default) or an absolute file name starting with "/". The target file must not exist. You can later execute that SQL file to mnually upgrade your schema and deal with issues (advanced users).'
-      ),
-      '#default_value' => '',
-    ];
-
-    $form['cancel'] = [
-      '#type' => 'submit',
-      '#name' => 'back',
-      '#value' => t('Cancel'),
-      '#submit' => ['::goBackForm'],
-      '#limit_validation_errors' => [],
-    ];
-
-    $form['submit'] = [
-      '#type' => 'submit',
-      '#name' => 'action',
-      '#value' => t('Upgrade'),
-      '#submit' => ['::submitUpgradeForm'],
-    ];
-
-    return $form;
-  }
-
-  /**
-   * Submit upgrade form.
-   *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   */
-  public function submitUpgradeForm(array &$form, FormStateInterface $form_state) {
-
-    $schema_name = $form_state->getValue('chado_schema');
-    $sql_file = $form_state->getValue('sql_file');
-    $cleanup = $form_state->getValue('cleanup');
-
-    $current_user = \Drupal::currentUser();
-    $args = [$schema_name, '1.3', $sql_file, $cleanup];
-
-    \Drupal::service('tripal.job')->create([
-      'job_name' => t('Upgrade Chado schema'),
-      'modulename' => 'tripal_chado',
-      'callback' => 'tripal_chado_upgrade_schema',
-      'arguments' => $args,
-      'uid' => $current_user->id(),
-    ]);
-
-    // Go back.
-    $this->goBackForm($form, $form_state);
-  }
-
 }
