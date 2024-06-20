@@ -1813,10 +1813,14 @@ class ChadoRecords  {
    * @param bool $graceful
    *   Set to TRUE to not throw an exception if valid conditions are not
    *   set. If TRUE then it skips the record rather than performs the delete.
+   * @param bool $no_pkey
+   *   Set to TRUE to remove the primary key from the conditions.
+   *   This is used to remove all linker table records linked to a
+   *   base table record.
    *
    * @throws \Exception
    */
-  public function deleteRecords(string $base_table, string $table_alias, bool $graceful = FALSE) {
+  public function deleteRecords(string $base_table, string $table_alias, bool $graceful = FALSE, bool $no_pkey = FALSE) {
 
     // Make sure all IDs are up to date.
     $this->setLinks($base_table);
@@ -1824,7 +1828,7 @@ class ChadoRecords  {
     // Get the Chado table for this given table alias.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
-    // Iterate through each item of the table and perform an insert.
+    // Iterate through each item of the table and perform a delete.
     $items = $this->getTableItems($base_table, $table_alias);
     foreach ($items as $delta => $record) {
 
@@ -1851,22 +1855,24 @@ class ChadoRecords  {
         continue;
       }
 
-
       $delete = $this->connection->delete('1:'. $chado_table);
       foreach ($record['conditions'] as $column_alias => $cond_value) {
         $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
-        $delete->condition($chado_column, $cond_value['value']);
+        // If a linker table, remove the primary key from the conditions.
+        if (!$no_pkey or $chado_column != $pkey) {
+          $delete->condition($chado_column, $cond_value['value']);
+        }
       }
 
       $this->field_debugger->reportQuery($delete, "Delete Query for $chado_table ($delta)");
 
       $rows_affected = $delete->execute();
-      if ($rows_affected == 0) {
+      if ($rows_affected == 0 and !$no_pkey) {
         // @debug print "\n" . strtr((string) $delete, $delete->arguments()) . "\n";
         throw new \Exception(t('Failed to delete a record in the Chado "@table" table. Record: @record',
             ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
       }
-      if ($rows_affected > 1) {
+      if ($rows_affected > 1 and !$no_pkey) {
         throw new \Exception(t('Incorrectly tried to delete multiple records in the Chado "@table" table. Record: @record',
             ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
       }

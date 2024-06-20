@@ -213,7 +213,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       foreach ($base_tables as $base_table) {
         $tables = $this->records->getAncillaryTables($base_table);
         foreach ($tables as $table_alias) {
-          $this->records->deleteRecords($base_table, $table_alias, TRUE);
+          $this->records->deleteRecords($base_table, $table_alias, TRUE, TRUE);
         }
       }
 
