@@ -101,7 +101,7 @@ INSERT INTO chado.cv VALUES (9, 'ero', 'The Eagle-I Research Resource Ontology m
 INSERT INTO chado.cv VALUES (10, 'GEO', 'Geographical Entity Ontology');
 INSERT INTO chado.cv VALUES (11, 'OBCS', 'Ontology of Biological and Clinical Statistics');
 INSERT INTO chado.cv VALUES (12, 'obi', 'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific');
-INSERT INTO chado.cv VALUES (13, 'ogi', 'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific');
+INSERT INTO chado.cv VALUES (13, 'ogi', 'Ontology for genetic interval');
 INSERT INTO chado.cv VALUES (14, 'IAO', 'Information Artifact Ontology');
 INSERT INTO chado.cv VALUES (1, 'null', 'No vocabulary');
 INSERT INTO chado.cv VALUES (2, 'local', 'Locally created terms');
@@ -150,7 +150,7 @@ INSERT INTO chado.db VALUES (15, 'local', 'Terms created for this site', 'cv/loo
 INSERT INTO chado.db VALUES (23, 'RO', 'Relationship Ontology (legacy)', 'cv/lookup/RO/{accession}', 'cv/lookup/RO');
 INSERT INTO chado.db VALUES (16, 'SBO', 'Systems Biology Ontology', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'http://www.ebi.ac.uk/sbo/main/');
 INSERT INTO chado.db VALUES (17, 'SWO', 'Bioinformatics operations, data types, formats, identifiers and topics', 'http://www.ebi.ac.uk/swo/{db}_{accession}', 'http://purl.obolibrary.org/obo/swo');
-INSERT INTO chado.db VALUES (27, 'TPUB', 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified.', 'cv/lookup/TPUB/{accession}  ', 'cv/lookup/TPUB');
+INSERT INTO chado.db VALUES (27, 'TPUB', 'Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology can be identified.', 'cv/lookup/TPUB/{accession}', 'cv/lookup/TPUB');
 INSERT INTO chado.db VALUES (24, 'SO', 'The Sequence Ontology', 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}', 'http://www.sequenceontology.org');
 INSERT INTO chado.db VALUES (18, 'PMID', 'PubMed', 'http://www.ncbi.nlm.nih.gov/pubmed/{accession}', 'http://www.ncbi.nlm.nih.gov/pubmed');
 INSERT INTO chado.db VALUES (30, 'sep', 'Sample processing and separation techniques.', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'http://psidev.info/index.php?q=node/312');
@@ -3679,7 +3679,7 @@ INSERT INTO chado.cvterm VALUES (28, 7, 'Gene tree', 'A phylogenetic tree that i
 INSERT INTO chado.cvterm VALUES (29, 7, 'Phylogenetic tree visualisation', 'A phylogenetic tree that is an estimate of the character''s phylogeny.', 29, 0, 0);
 INSERT INTO chado.cvterm VALUES (30, 7, 'Sequence visualisation', 'Visualise, format or render a molecular sequence or sequences such as a sequence alignment, possibly with sequence features or properties shown.', 30, 0, 0);
 INSERT INTO chado.cvterm VALUES (31, 7, 'genome assembly', '', 31, 0, 0);
-INSERT INTO chado.cvterm VALUES (32, 7, 'Genome annotation ', '', 32, 0, 0);
+INSERT INTO chado.cvterm VALUES (32, 7, 'Genome annotation', '', 32, 0, 0);
 INSERT INTO chado.cvterm VALUES (33, 7, 'Analysis', 'Apply analytical methods to existing data of a specific type.', 33, 0, 0);
 INSERT INTO chado.cvterm VALUES (34, 7, 'Sequence range', 'Specification of range(s) of sequence positions.', 34, 0, 0);
 INSERT INTO chado.cvterm VALUES (35, 8, 'instrument', 'An instrument is a device which provides a mechanical or electronic function.', 35, 0, 0);
