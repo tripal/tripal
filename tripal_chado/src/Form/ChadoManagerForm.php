@@ -81,6 +81,10 @@ class ChadoManagerForm extends FormBase {
           $form = $this->buildCloneForm($form, $form_state);
           break;
 
+        case static::APPLY_MIGRATIONS_TASK:
+          $form = $this->buildApplyMigrationsForm($form, $form_state);
+          break;
+
         case static::DROP_TASK:
           $form_state->set(
             'confirm_message',
@@ -725,5 +729,78 @@ class ChadoManagerForm extends FormBase {
 
     // Go back.
     $this->goBackForm($form, $form_state);
+  }
+
+  /**
+   * Builds apply migrations form.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   */
+  public function buildApplyMigrationsForm(array $form, FormStateInterface $form_state) {
+    $schema_name = $form_state->getValue('chado_schema');
+
+    $form['task'] = [
+      '#type' => 'item',
+      '#markup' => t(
+        '<h2>Apply Migrations to "@schema_name" schema</h2>',
+        ['@schema_name' => $schema_name, ]
+      ),
+    ];
+
+    $form['chado_schema'] = [
+      '#type' => 'hidden',
+      '#name' => 'chado_schema',
+      '#value' => $schema_name,
+    ];
+
+    $all_migrations = \Drupal\tripal_chado\Task\ChadoApplyMigrations::getAvailableMigrations();
+    $rows = [];
+    foreach ($all_migrations as $migration_info) {
+      $rows[] = [
+        $migration_info['version'],
+        $migration_info['description'],
+        '',
+        'Pending',
+        ''
+      ];
+    }
+    $form['migrations'] = [
+      '#type' => 'table',
+      '#multiple' => FALSE,
+      '#header' => ['Chado Version', 'Description', 'Applied On', 'Status', 'Operations'],
+      '#rows' => $rows,
+    ];
+
+    $form['cancel'] = [
+      '#type' => 'submit',
+      '#name' => 'back',
+      '#value' => t('Cancel'),
+      '#submit' => ['::goBackForm'],
+      '#limit_validation_errors' => [],
+    ];
+
+    $form['submit'] = [
+      '#type' => 'submit',
+      '#name' => 'action',
+      '#value' => t('Apply Migrations'),
+      '#submit' => ['::submitApplyMigrationsForm'],
+    ];
+
+    return $form;
+  }
+
+  /**
+   * Submits apply migrations form.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   */
+  public function submitApplyMigrationsForm(array $form, FormStateInterface $form_state) {
+
   }
 }
