@@ -6,6 +6,7 @@ use Drupal\tripal_chado\Task\ChadoTaskBase;
 use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\LockException;
 use Drupal\tripal_biodb\Exception\ParameterException;
+use Drupal\Component\Serialization\Yaml;
 
 /**
  * Applies Chado Migrations usually handled by Flyway.
@@ -34,6 +35,61 @@ class ChadoApplyMigrations extends ChadoTaskBase {
    * Default version.
    */
   public const BASELINE_CHADO_VERSION = '1.3';
+
+  public const MIGRATIONS_INFO_YAML = '/chado_schema/migrations/tripal_chado.chado_migrations.yml';
+
+  /**
+   * Gets the highest version number available in our migrations.
+   *
+   * @return string
+   *   The version of the latest migration. It will be a string of the form
+   *   1.3.3.005. If we are unable to get migrations or if there are not any
+   *   migrations then the version returned will be the basline version (i.e. 1.3).
+   */
+  public static function getHighestVersion() {
+
+    $migrations = self::getAvailableMigrations();
+    if (is_array($migrations) && count($migrations) > 1) {
+      $last_migration = end($migrations);
+
+      if (array_key_exists('version', $last_migration)) {
+        return $last_migration['version'];
+      }
+    }
+
+    return self::BASELINE_CHADO_VERSION;
+  }
+
+  /**
+   * Gets details for all the current migrations available.
+   *
+   * @return array
+   *   An array of the migrations available where each element is an array
+   *   with the keys filename, version, description.
+   */
+  public static function getAvailableMigrations() {
+    $migration_info = [];
+
+    $tripal_chado_path = \Drupal::service('extension.list.module')
+      ->getPath('tripal_chado');
+    $yaml_full_path = $tripal_chado_path . static::MIGRATIONS_INFO_YAML;
+
+    $yaml_raw = file_get_contents($yaml_full_path);
+    if ($yaml_raw) {
+      $yaml = YAML::decode($yaml_raw);
+      if (is_array($yaml) && array_key_exists('migrations', $yaml)) {
+        $migration_info = $yaml['migrations'];
+      }
+      else {
+        throw \Exception("Unable to decode the content of the $yaml_full_path YAML file and retrieve the 'migrations' key.");
+      }
+    }
+    else {
+      throw \Exception("Unable to retrieve the content of the $yaml_full_path YAML file which contains the migration info.");
+    }
+
+    return $migration_info;
+  }
 
   /**
    * Validate task parameters.
