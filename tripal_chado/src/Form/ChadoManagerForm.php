@@ -756,21 +756,23 @@ class ChadoManagerForm extends FormBase {
       '#value' => $schema_name,
     ];
 
-    $all_migrations = \Drupal\tripal_chado\Task\ChadoApplyMigrations::getAvailableMigrations();
+    $apply_migrations_task = \Drupal::service('tripal_chado.apply_migrations');
+    $apply_migrations_task->setParameters([
+      'input_schemas' => [ $schema_name ],
+    ]);
+    $all_migrations = $apply_migrations_task->checkMigrationStatus();
     $rows = [];
-    foreach ($all_migrations as $migration_info) {
+    foreach ($all_migrations as $migration) {
       $rows[] = [
-        $migration_info['version'],
-        $migration_info['description'],
-        '',
-        'Pending',
-        ''
+        $migration->version,
+        $migration->description,
+        $migration->applied_on,
+        $migration->status,
       ];
     }
     $form['migrations'] = [
       '#type' => 'table',
-      '#multiple' => FALSE,
-      '#header' => ['Chado Version', 'Description', 'Applied On', 'Status', 'Operations'],
+      '#header' => ['Chado Version', 'Description', 'Applied On', 'Status'],
       '#rows' => $rows,
     ];
 

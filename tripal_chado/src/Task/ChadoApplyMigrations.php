@@ -39,6 +39,23 @@ class ChadoApplyMigrations extends ChadoTaskBase {
   public const MIGRATIONS_INFO_YAML = '/chado_schema/migrations/tripal_chado.chado_migrations.yml';
 
   /**
+   * An array summarizing all available migrations and including the status
+   * of each migration for this schema.
+   *
+   * This variable is set by checkMigrationStatus().
+   *
+   * @var array
+   *  The key of this array is the migration version number and each element is
+   *  an object with the following keys:
+   *   - version
+   *   - description
+   *   - applied_on
+   *   - success
+   *   - status
+   */
+  public array $migration_status = [];
+
+  /**
    * Gets the highest version number available in our migrations.
    *
    * @return string
@@ -52,8 +69,8 @@ class ChadoApplyMigrations extends ChadoTaskBase {
     if (is_array($migrations) && count($migrations) > 1) {
       $last_migration = end($migrations);
 
-      if (array_key_exists('version', $last_migration)) {
-        return $last_migration['version'];
+      if (property_exists($last_migration, 'version')) {
+        return $last_migration->version;
       }
     }
 
@@ -88,7 +105,60 @@ class ChadoApplyMigrations extends ChadoTaskBase {
       throw \Exception("Unable to retrieve the content of the $yaml_full_path YAML file which contains the migration info.");
     }
 
-    return $migration_info;
+    // Now format it for easier consumption.
+    $formatted = [];
+    if ($migration_info) {
+      foreach ($migration_info as $result) {
+        $migration = new \StdClass();
+        $migration->version = $result['version'];
+        $migration->description = $result['description'];
+        $migration->filename = $result['filename'];
+
+        $formatted[ $result['version'] ] = $migration;
+      }
+
+    }
+
+    return $formatted;
+  }
+
+  /**
+   * Checks the status of this schema. Specifically, which migrations have been
+   * applied and which are still pending.
+   *
+   * @return void
+   */
+  public function checkMigrationStatus() {
+    $drupal_connection = \Drupal::service('database');
+    $schema_name = $this->inputSchemas[0];
+
+    // Get all the migration records for this chado installation.
+    $query = $drupal_connection->select('chado_migrations', 'm')
+      ->fields('m', ['version', 'applied_on', 'success']);
+    $query->join('chado_installations', 'i', 'i.install_id = m.install_id');
+    $query->condition('i.schema_name', $schema_name);
+    $applied_migrations = $query->execute()->fetchAllKeyed('version');
+
+    // Get the list of possible migrations (schema indifferent).
+    $all_migrations = self::getAvailableMigrations();
+    foreach ($all_migrations as $version => $migration) {
+
+      // Add details if the migration was applied.
+      if (array_key_exists($version, $applied_migrations)) {
+        $migration->applied_on = $applied_migrations[$version]['applied_on'];
+        $migration->success = $applied_migrations[$version]['success'];
+        $migration->status = $applied_migrations[$version]['success'];
+      }
+      else {
+        $migration->applied_on = '';
+        $migration->success = '';
+        $migration->status = 'Pending';
+      }
+
+      $all_migrations[$version] = $migration;
+    }
+
+    return $all_migrations;
   }
 
   /**
