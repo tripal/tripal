@@ -47,6 +47,11 @@ class ChadoManagerForm extends FormBase {
   public const DROP_TASK = 'remove';
 
   /**
+   * Apply Migrations task identifier.
+   */
+  public const APPLY_MIGRATIONS_TASK = 'apply_migrations';
+
+  /**
    * @} End of "defgroup chado_manager_form_tasks".
    */
 
@@ -113,6 +118,8 @@ class ChadoManagerForm extends FormBase {
 
     $tripal_dbx = \Drupal::service('tripal.dbx');
     $chado = new ChadoConnection();
+
+    $highest_chado_version = \Drupal\tripal_chado\Task\ChadoApplyMigrations::getHighestVersion();
 
     // Now that we support multiple chado instances, we need to list all the
     // currently installed ones here since they may be different versions.
@@ -261,15 +268,29 @@ class ChadoManagerForm extends FormBase {
         ],
       ];
       // Drop.
-      $operations['drop_button'] = [
-        '#type' => 'button',
-        '#value' => $this->t('Drop'),
-        '#attributes' => [
-          'class' => ['chadoTableButton'],
-          'data-chado-task' => static::DROP_TASK,
-          'data-chado-schema' => $schema_name,
-        ],
-      ];
+      if ($default_chado !== $schema_name) {
+        $operations['drop_button'] = [
+          '#type' => 'button',
+          '#value' => $this->t('Drop'),
+          '#attributes' => [
+            'class' => ['chadoTableButton'],
+            'data-chado-task' => static::DROP_TASK,
+            'data-chado-schema' => $schema_name,
+          ],
+        ];
+      }
+      // Apply Migrations
+      if ($details['version'] < $highest_chado_version) {
+        $operations['apply_migrations'] = [
+          '#type' => 'button',
+          '#value' => $this->t('Apply Migrations'),
+          '#attributes' => [
+            'class' => ['chadoTableButton'],
+            'data-chado-task' => static::APPLY_MIGRATIONS_TASK,
+            'data-chado-schema' => $schema_name,
+          ],
+        ];
+      }
 
       $rows[$schema_name] = [
         $schema_name . ($default_chado == $schema_name ? $this->t(' (default)') : ''),
