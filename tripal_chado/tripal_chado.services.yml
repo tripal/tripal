@@ -26,3 +26,5 @@ services:
     class: Drupal\tripal_chado\Task\ChadoRemover
   tripal_chado.preparer:
     class: Drupal\tripal_chado\Task\ChadoPreparer
+  tripal_chado.apply_migrations:
+    class: Drupal\tripal_chado\Task\ChadoApplyMigrations
