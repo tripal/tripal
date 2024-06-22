@@ -151,10 +151,6 @@ function tripal_chado_chado_migrations_schema() {
         'length' => 255,
         'not null' => TRUE,
       ],
-      'description' => [
-        'type' => 'text',
-        'not null' => FALSE,
-      ],
       'filename' => [
         'type' => 'text',
         'not null' => FALSE,
@@ -624,10 +620,6 @@ function tripal_chado_update_10406() {
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-      ],
-      'description' => [
-        'type' => 'text',
-        'not null' => FALSE,
       ],
       'filename' => [
         'type' => 'text',
