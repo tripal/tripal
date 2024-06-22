@@ -146,7 +146,7 @@ class CallablesJobTest extends TripalTestKernelBase {
     $this->assertEquals($details['callback'], $job->getCallback(),
       "Unable to retrieve the callback of the job we just created.");
     $this->assertEquals($details['arguments'], $job->getArguments(),
-      "Unable to retrieve the arguements of the job we just created.");
+      "Unable to retrieve the arguments of the job we just created.");
     $this->assertIsObject($job->getJob(),
       "Unable to return a job object from the job we just loaded.");
 
@@ -157,7 +157,7 @@ class CallablesJobTest extends TripalTestKernelBase {
     ob_start();
     $job->run();
     $output = ob_get_clean();
-    $this->assertStringContainsString('We were able to successfully run the job.',$output,
+    $this->assertStringContainsString('We were able to successfully run the job.', $output,
       "We did not recieve the expected output when the job was run.");
   }
 }
