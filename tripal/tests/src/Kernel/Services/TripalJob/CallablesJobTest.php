@@ -77,9 +77,28 @@ class CallablesJobTest extends TripalTestKernelBase {
 
     $sets[] = [
       'details' => [
-        'job_name' => 'Basic testing job with a simple callable.',
+        'job_name' => 'Basic testing job with a string-based static callable.',
         'modulename' => 'tripal',
         'callback' => '\Drupal\Tests\tripal\Kernel\Services\TripalJob\FakeClasses\callableClassForTripalJobs::myCallbackMethod',
+        'arguments' => [],
+      ],
+    ];
+
+    $sets[] = [
+      'details' => [
+        'job_name' => 'Basic testing job with a array-based static callable.',
+        'modulename' => 'tripal',
+        'callback' => [callableClassForTripalJobs::class, 'myCallbackMethod'],
+        'arguments' => [],
+      ],
+    ];
+
+    $sets[] = [
+      'details' => [
+        'job_name' => 'Basic testing job with function and includes.',
+        'modulename' => 'tripal',
+        'callback' => 'myFunctionCallback',
+        'includes' => ['tests/src/Kernel/Services/TripalJob/FakeClasses/single_include.php'],
         'arguments' => [],
       ],
     ];
@@ -88,18 +107,57 @@ class CallablesJobTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests the TripalJob::create() method can successfully create valid jobs.
+   * Tests the various valid callables in the job processes.
    *
    * @dataProvider provideValidJobs
    */
-  public function testTripalJob_create_valid($details) {
+  public function testTripalJob_validjobs($details) {
 
     // Add user to the job details since we can't do it in the data provider.
     $details['uid'] = $this->user->id();
+
+    // If files need to be included then add the current module path.
+    if (array_key_exists('includes', $details)) {
+      $tripal_path = \Drupal::service('extension.list.module')->getPath('tripal');
+      foreach ($details['includes'] as $k => $path) {
+        $details['includes'][$k] = $tripal_path . '/' . $path;
+      }
+    }
 
     // Now try to create the job.
     $job_id = \Drupal::service('tripal.job')->create($details);
     $this->assertIsNumeric($job_id,
       "Creating a TripalJob was not successful as we did not have a job_id returned.");
+
+    // Try to load it.
+    $job = new \Drupal\tripal\Services\TripalJob();
+    $job->load($job_id);
+    $this->assertIsObject($job, "Unableto retrieve the job we just created.");
+
+    // Use the getters to get all the details to check that it was loaded properly.
+    $this->assertEquals($job_id, $job->getJobID(),
+      "Unable to retrieve the job ID of the job we just created.");
+    $this->assertEquals($details['uid'], $job->getUID(),
+      "Unable to retrieve the user of the job we just created.");
+    $this->assertEquals($details['job_name'], $job->getJobName(),
+      "Unable to retrieve the name of the job we just created.");
+    $this->assertEquals($details['modulename'], $job->getModuleName(),
+      "Unable to retrieve the module name of the job we just created.");
+    $this->assertEquals($details['callback'], $job->getCallback(),
+      "Unable to retrieve the callback of the job we just created.");
+    $this->assertEquals($details['arguments'], $job->getArguments(),
+      "Unable to retrieve the arguements of the job we just created.");
+    $this->assertIsObject($job->getJob(),
+      "Unable to return a job object from the job we just loaded.");
+
+    // Now we try to run it!
+    // If something goes wrong then an exception will be thrown.
+    // We use output buffering so we can condirm the log message within the
+    // callback is printed.
+    ob_start();
+    $job->run();
+    $output = ob_get_clean();
+    $this->assertStringContainsString('We were able to successfully run the job.',$output,
+      "We did not recieve the expected output when the job was run.");
   }
 }
