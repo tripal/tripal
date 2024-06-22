@@ -120,8 +120,11 @@ class TripalJob {
     // Unserialize the includes.
     $this->job->includes = unserialize($this->job->includes);
 
-    // Unserialize the callback.
-    $this->job->callback = unserialize($this->job->callback);
+    // Unserialize the callback if it was serialized in the first place.
+    $unserialized_callback = @unserialize($this->job->callback);
+    if (is_array($unserialized_callback)) {
+      $this->job->callback = $unserialized_callback;
+    }
 
     // Arguments for jobs used to be stored as plain string with a double colon
     // separating them.  But as of Tripal v2.0 the arguments are stored as
@@ -232,6 +235,11 @@ class TripalJob {
       $args = serialize($arguments);
     }
 
+    // Only serialize the callback if it was an array.
+    if (is_array($details['callback'])) {
+      $details['callback'] = serialize($details['callback']);
+    }
+
     try {
       // Before inserting a new record, and if ignore_duplicate is TRUE then
       // check to see if the job already exists.
@@ -258,7 +266,7 @@ class TripalJob {
         ->fields([
           'job_name' => $details['job_name'],
           'modulename' => $details['modulename'],
-          'callback' => serialize($details['callback']),
+          'callback' => $details['callback'],
           'status' => 'Waiting',
           'submit_date' => time(),
           'uid' => $details['uid'],
