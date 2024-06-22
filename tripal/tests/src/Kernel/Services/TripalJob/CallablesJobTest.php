@@ -7,12 +7,12 @@ use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal\Kernel\Services\TripalJob\FakeClasses\callableClassForTripalJobs;
 
 /**
- * Focused on testing the create() method.
+ * Focused on testing callables as the callback.
  *
  * @group Tripal
  * @group TripalJobs
  */
-class CreateJobTest extends TripalTestKernelBase {
+class CallablesJobTest extends TripalTestKernelBase {
   use UserCreationTrait;
 
   /**
