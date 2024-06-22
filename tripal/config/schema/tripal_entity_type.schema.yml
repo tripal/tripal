@@ -32,3 +32,9 @@ tripal.content_type.*:
     ajax_field:
       type: boolean
       label: 'AJAX Field Loading'
+    third_party_settings:
+      type: mapping
+      mapping:
+        tripal:
+          type: mapping
+          label: "Tripal Third-party settings"
