@@ -120,6 +120,9 @@ class TripalJob {
     // Unserialize the includes.
     $this->job->includes = unserialize($this->job->includes);
 
+    // Unserialize the callback.
+    $this->job->callback = unserialize($this->job->callback);
+
     // Arguments for jobs used to be stored as plain string with a double colon
     // separating them.  But as of Tripal v2.0 the arguments are stored as
     // a serialized array.  To be backwards compatible, we should check for
@@ -255,7 +258,7 @@ class TripalJob {
         ->fields([
           'job_name' => $details['job_name'],
           'modulename' => $details['modulename'],
-          'callback' => $details['callback'],
+          'callback' => serialize($details['callback']),
           'status' => 'Waiting',
           'submit_date' => time(),
           'uid' => $details['uid'],
@@ -380,7 +383,7 @@ class TripalJob {
       // to see if the callback is Tv3 compatible or older.  If older
       // we want to still support it and pass the job_id.
       // Only do this if the callback is a simple function, not a callable.
-      if (function_exists($callback)) {
+      if (!is_array($callback) && function_exists($callback)) {
         $ref = new \ReflectionFunction($callback);
         $refparams = $ref->getParameters();
         if (count($refparams) > 0) {
