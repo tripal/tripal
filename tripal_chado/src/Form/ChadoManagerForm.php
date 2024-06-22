@@ -804,5 +804,20 @@ class ChadoManagerForm extends FormBase {
    */
   public function submitApplyMigrationsForm(array $form, FormStateInterface $form_state) {
 
+    $schema_name = $form_state->getValue('chado_schema');
+
+    $current_user = \Drupal::currentUser();
+    $args = [$schema_name];
+
+    \Drupal::service('tripal.job')->create([
+      'job_name' => t("Apply Migrations to $schema_name schema"),
+      'modulename' => 'tripal_chado',
+      'callback' => '\Drupal\tripal_chado\Task\ChadoApplyMigrations::runTripalJob',
+      'arguments' => $args,
+      'uid' => $current_user->id()
+    ]);
+
+    // Go back.
+    $this->goBackForm($form, $form_state);
   }
 }

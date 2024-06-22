@@ -56,6 +56,16 @@ class ChadoApplyMigrations extends ChadoTaskBase {
   public array $migration_status = [];
 
   /**
+   * A callable function to provide to tripal jobs as the callback.
+   *
+   * @param string $schema_name
+   *   The schema to apply all pending migrations to.
+   */
+  public static function runTripalJob($schema_name) {
+
+  }
+
+  /**
    * Gets the highest version number available in our migrations.
    *
    * @return string
