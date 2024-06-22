@@ -208,7 +208,7 @@ class TripalJob {
         }
       }
     }
-    if (!function_exists($details['callback'])) {
+    if (!is_callable($details['callback'])) {
       throw new \Exception("Must provide a valid callback function. You provided " . $details['callback'] . ".");
     }
     if (!is_numeric($details['uid'])) {
@@ -379,16 +379,24 @@ class TripalJob {
       // only accepted a $job_id as the final argument.  So, we need
       // to see if the callback is Tv3 compatible or older.  If older
       // we want to still support it and pass the job_id.
-      $ref = new \ReflectionFunction($callback);
-      $refparams = $ref->getParameters();
-      if (count($refparams) > 0) {
-        $lastparam = $refparams[count($refparams) - 1];
-        if ($lastparam->getName() == 'job_id') {
-          $arguments[] = $this->job->job_id;
+      // Only do this if the callback is a simple function, not a callable.
+      if (function_exists($callback)) {
+        $ref = new \ReflectionFunction($callback);
+        $refparams = $ref->getParameters();
+        if (count($refparams) > 0) {
+          $lastparam = $refparams[count($refparams) - 1];
+          if ($lastparam->getName() == 'job_id') {
+            $arguments[] = $this->job->job_id;
+          }
+          else {
+            $arguments[] = $this;
+          }
         }
-        else {
-          $arguments[] = $this;
-        }
+      }
+      // If it's a callable then we know it's not Tripal 3 focused and
+      // can just pass the job object happily.
+      else {
+        $arguments[] = $this;
       }
 
       // Launch the job.
