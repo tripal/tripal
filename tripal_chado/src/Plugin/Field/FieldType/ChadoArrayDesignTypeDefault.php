@@ -39,7 +39,6 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $storage_settings = parent::defaultStorageSettings();
-    $storage_settings['storage_plugin_settings']['base_table'] = '';
     $storage_settings['storage_plugin_settings']['linking_method'] = '';
     $storage_settings['storage_plugin_settings']['linker_table'] = '';
     $storage_settings['storage_plugin_settings']['linker_fkey_column'] = '';
