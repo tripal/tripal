@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use \Drupal\tripal\Services\TripalPublish;
 use Drupal\tripal\Services\TripalJob;
 
 /**
@@ -131,7 +132,7 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     $values = ["schema_name" => $this->testSchemaName];
     $bundle = 'organism';
     $datastore = 'chado_storage';
-    tripal_publish($bundle, $datastore, $values);
+    TripalPublish::runTripalJob($bundle, $datastore, $values);
 
     // confirm the entities are added.
     $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
@@ -158,7 +159,7 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     $values = ["schema_name" => $this->testSchemaName];
     $datastore = 'chado_storage';
     $bundle = 'project';
-    tripal_publish($bundle, $datastore, $values);
+    TripalPublish::runTripalJob($bundle, $datastore, $values);
 
     // confirm the entities are added.
     $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'project']);
@@ -167,7 +168,7 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
 
     // Submit the Tripal job by calling the callback directly.
     $bundle = 'contact';
-    tripal_publish($bundle, $datastore, $values);
+    TripalPublish::runTripalJob($bundle, $datastore, $values);
 
     // confirm the entities are added. Chado defines a default "null" contact, which
     // may also get published, so expect 4 instead of 3. (Issue #1809)
