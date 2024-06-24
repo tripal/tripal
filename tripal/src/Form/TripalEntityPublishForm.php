@@ -171,7 +171,7 @@ class TripalEntityPublishForm extends FormBase {
     \Drupal::service('tripal.job')->create([
       'job_name' => $job_name,
       'modulename' => 'tripal',
-      'callback' => 'tripal_publish',
+      'callback' => [\Drupal\tripal\Services\TripalPublish::class ,'runTripalJob'],
       'arguments' => $job_args,
       'uid' => $current_user->id(),
     ]);
