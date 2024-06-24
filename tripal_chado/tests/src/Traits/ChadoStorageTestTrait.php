@@ -695,6 +695,7 @@ trait ChadoStorageTestTrait {
             'storage_plugin_id' => 'chado_storage',
             'storage_plugin_settings' => [
               'base_table' => $field_details['base_table'],
+              'object_table' => array_key_exists('object_table', $field_details) ? $field_details['object_table'] : NULL,
             ],
         ]);
       $fieldConfig_mock->method('getLabel')

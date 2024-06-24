@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Symfony\Component\HttpKernel\DependencyInjection\AddAnnotatedClassesToCachePass;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element\Button;
 
 
 /**
@@ -203,9 +204,9 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   will be set in the StoragePropertyValue object.
    *
    * @return array
-   *   @todo fix this return value...
-   *   Array of all \Drupal\tripal\TripalStorage\StoragePropertyValue objects
-   *   that match.
+   *   An array of records that were found.  Each record array is the
+   *   same format as the $values argument but with all value objects set
+   *   where values were found.
    */
   public function findValues($values);
 
