@@ -226,6 +226,11 @@ class TripalJobController extends ControllerBase{
     // Get the submitter info.
     $submitter = \Drupal\user\Entity\User::load($job->getUID());
 
+    // If the callback is an array then formatting can make it more readable.
+    $display_callback = $job->getCallback();
+    if (is_array($display_callback)) {
+      $display_callback = $display_callback[0] . '::' . $display_callback[1];
+    }
 
     // Build the render array for the table.
     $content = [];
@@ -258,7 +263,7 @@ class TripalJobController extends ControllerBase{
         ],
         [
           ['header' => TRUE, 'data' => 'Callback function'],
-          $job->getCallback()
+          $display_callback
         ],
         [
           ['header' => TRUE, 'data' => 'Progress'],
