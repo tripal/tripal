@@ -34,6 +34,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   // Chado connection
   private $chado = NULL;
   private $db_id = NULL;
+  private $cvterm_lookups = NULL;
 
   /**
    * @see TripalImporter::form()
@@ -364,7 +365,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       return;
     }
 
-    print_r($criteria);
+    // print_r($criteria);
 
     // Initialize chado variable (used in other helper functions within this class)
     $chado = $this->getChadoConnection();
@@ -381,17 +382,19 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     if ($db_id == NULL) {
       throw new \Exception("Could not find a db_id for this remote database. A db record must exist in the db table that matches description " . $criteria['remote_db']);
     }
-    $this->logger->notice("🗸 Found db_id: " . $this->db_id);
+    $this->logger->notice("               🗸 Found db_id: " . $this->db_id);
 
     // Run a pull from the remote database and return publications in an array
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
     $this->logger->notice("Step  2 of 27: Retrieving publication data from remote database ...");
     $publications = $plugin->run($query_id); // max of 10 since limit was not set @TODO
+    
     // Wouldn't publications end up causing an issue memory wise? 
     // @TODO: Remove the raw value
 
-    $this->logger->notice("🗸 Found publications: " . count($publications));
+    $this->logger->notice("               🗸 Found publications: " . count($publications));
+    
     // $publications = $plugin->retrieve($criteria, 5, 0);
     // print_r($publications);
 
@@ -402,32 +405,279 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $this->logger->notice("Step  3 of 27: Check for already imported publications ...         ");
       $missing_publications_dbxref = $this->findMissingPublicationsDbxref($publications);
       $missing_publications_dbxref_count = count($missing_publications_dbxref);
-      $this->logger->notice("🗸 Missing publications to be inserted: " . $missing_publications_dbxref_count);
+      $this->logger->notice("               🗸 Missing publications to be inserted: " . $missing_publications_dbxref_count);
+
+
+      // Filter publications to only contains the one we need for inserting data
+      $this->logger->notice("Step  4 of 27: Check for already imported publications ...         ");
+      $publications = $this->filterOnlyMissingPublications($publications, $missing_publications_dbxref);
+      $this->logger->notice("               🗸 Filtered: " . count($publications));
 
       // Insert missingPublicationsDbxref
-      $this->logger->notice("Step  4 of 27: Insert new publication dbxrefs ...                ");
+      $this->logger->notice("Step  5 of 27: Insert new publication dbxrefs ...                ");
       $inserted_dbxref_ids = [];
       if ($missing_publications_dbxref_count > 0) {
         $inserted_dbxref_ids = $this->insertMissingPublicationsDbxref($missing_publications_dbxref);
-        $this->logger->notice("🗸 Inserted: " . count($inserted_dbxref_ids));
+        $this->logger->notice("               🗸 Inserted: " . count($inserted_dbxref_ids));
       }
 
       // $missing_publications_dbxref contains the accessions ()
       // $inserted_dbxref_ids in same order as $missing_publications_dbxref
-      print_r($missing_publications_dbxref);
+      // print_r($missing_publications_dbxref);
       // Insert publications - do we need to double check that they don't already exist?
-      $this->insertPublications($missing_publications_dbxref, $publications);
 
+      $this->logger->notice("Step  6 of 27: Insert new publications ...                       ");
+      $inserted_pub_ids = [];
+      $inserted_pub_ids = $this->insertPublications($missing_publications_dbxref, $publications);
+      $this->logger->notice("               🗸 Inserted: " . count($inserted_pub_ids));
 
+      $this->logger->notice("Step  7 of 27: CVTERMs lookup and caching ...            ");
+      $this->cachePublicationCvterms();
+      $this->logger->notice("               🗸 Cached cvterms: " . count($this->cvterm_lookups));  
+
+      $this->logger->notice("Step  8 of 27: Insert new publications properties ...            ");
+      $pub_props_count = $this->insertPubProps($inserted_pub_ids, $missing_publications_dbxref, $publications);
+      $this->logger->notice("               🗸 Inserted: " . $pub_props_count);  
+
+      $this->logger->notice("Step  9 of 27: Insert new pub_dbxrefs ...                        ");
+      $inserted_pub_dbxref_ids = [];
+      $inserted_pub_dbxref_ids = $this->insertPubDbxrefs($inserted_pub_ids, $inserted_dbxref_ids);
+      $this->logger->notice("               🗸 Inserted: " . count($inserted_pub_dbxref_ids));
       
-      
-
+      // DEBUG SQL STATEMENTS TO RETURN EMPTY FOR TESTING
+      // DELETE FROM chado.pubprop;
+      // DELETE FROM chado.pub_dbxref;
+      // DELETE FROM chado.pub;
+      // DELETE FROM chado.dbxref WHERE db_id = 17;
+      throw new \Exception('DEBUG');
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
       throw $e;
     }
     
+  }
+
+  function cachePublicationCvterms() {
+    $this->cvterm_lookups = [];
+    // $props
+    $cvterm_names = [
+      'Title',
+      'Volume Title',
+      'Volume',
+      'Series Name',
+      'Issue',
+      'Year',
+      'Pages',
+      // 'Mini Ref',
+      // 'Uniquename',
+      'Citation',
+      // 'Publication Title',
+      'Authors',
+      'Journal Name',
+      'Journal Abbreviation',
+      'Elocation',
+      'Media Code',
+      'Conference Name',
+      'Keywords',
+      'Series Name',
+      'pISSN',
+      'Publication Date',
+      'Journal Code',
+      'Journal Alias',
+      'Journal Country',
+      'Published Location',
+      'Publication Model',
+      'Language Abbr',
+      'Alias',
+      'Publication Dbxref',
+      'Copyright',
+      'Abstract',
+      'Notes',
+      'Citation',
+      'Language',
+      'URL',
+      'eISSN',
+      'DOI',
+      'ISSN',
+      'Publication Code',
+      'Comments',
+      'Publisher',
+      'Media Alias',
+      'Original Title',
+    ];
+    // echo "CVTERMS COUNT: " . count($cvterm_names) . "\n";
+
+    foreach ($cvterm_names as $cvterm_name) {
+      $sql = "SELECT * FROM {1:cvterm} WHERE name = :name";
+      $args = [
+        ':name' => $cvterm_name
+      ];
+      $result = $this->chado->query($sql, $args);
+      $cvterm_id = NULL;
+      foreach ($result as $row) {
+        $cvterm_id = $row->cvterm_id;
+      }
+      // echo $cvterm_name . " => " . $cvterm_id . "\n";
+      if ($cvterm_id != NULL && $cvterm_id != "") {
+        $this->cvterm_lookups[$cvterm_name] = $cvterm_id;
+      }
+      else {
+        throw new \Exception('[FATAL] CVTERM ' . $cvterm_name . ' could not be found in database.');
+      }
+    }
+    // print_r($this->cvterm_lookups);
+  }
+
+  function insertPubProps($inserted_pub_ids, $missing_publications_dbxref, &$publications) {
+    $batch_size = 100;
+    $init_sql = "INSERT INTO {1:pubprop} (pub_id, type_id, value) ";
+    $init_sql .= "VALUES \n";
+    $i = 0;
+    $total = 0;
+    $prop_count = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    $total_publications = count($publications); // may not need this
+    $missing_cvterms = []; // will keep track of keys that do not have cvterms, helpful for continuous debugging
+    $unprocessed_array_keys = []; //  keys that are arrays that we did not process, helpful for continuous debugging
+    foreach ($publications as $publication) {
+      // Get pub id from inserted_pub_ids
+      $pub_id = $inserted_pub_ids[$total];
+
+      $total++;
+
+      // DEBUGGING PURPOSES WHILE CONSULTING STEPHEN
+      // if ($total == 1) {
+      //   print_r($publication);
+      // }
+
+      // Generate Uniquename which is a special field that isn't in the publication array
+      $title = $publication['Title'];
+      $series_name = trim(explode('(', $publication['Journal Name'])[0]);
+      $pyear = $publication['Year'];
+      // @TODO - ASK STEPHEN about what to do when Authors is missing.
+      $uniquename = str_replace(',',';', @$publication['Authors']) . $title . ' ' . $series_name . '; ' . $pyear;
+      $publication['Uniquename'] = $uniquename;
+      // Old code: tripal_pub_get_publication_array (TRIPAL 3)
+
+      // Go through each publication array keys => values
+      foreach ($publication as $key => $value) {
+        // Check if the $key also exists in the list of cached cvterms
+        // This key is the cvterm name
+        if (isset($this->cvterm_lookups[$key])) {
+          $add_to_insert = true;
+          if (is_array($value)) {
+            $add_to_insert = false;
+            if ($key == 'Language') {
+              if (isset($value[0])) {
+                $value = $value[0]; // select the first element
+                $add_to_insert = true;
+              }
+            }
+            else {
+              $unprocessed_array_keys[$key] = true;
+              // echo "Publication[$key] is an array of values - DEBUG - determine how to process it\n";
+            }
+          }
+
+          if ($add_to_insert) {
+            $i++;
+            echo "ADD TO INSERT $i\n";
+            $prop_count++; // keep count of inserted prop (return this just for details)
+            $sql .= " (:pub_id_$i, :type_id_$i, :value_$i), ";
+            $args[":pub_id_$i"] = $pub_id;
+            $args[":type_id_$i"] = $this->cvterm_lookups[$key];
+            $args[":value_$i"] = $value;
+            
+            if ($i == $batch_size) {
+              $sql = rtrim($sql, ", ");
+              $sql = $init_sql . $sql;
+              // echo $sql . "\n";
+              // print_r($args);
+              // echo "\n";
+              $this->chado->query($sql, $args);
+
+              $batch_num++;
+              // Now reset all of the variables for the next batch.
+              $sql = '';
+              $i = 0;
+              $args = [];
+            }
+          }
+        }
+        else {
+          $missing_cvterms[$key] = true;
+          // echo "Publication[$key] does not have a matching cvterm so ignoring it.\n";
+        }
+      }
+
+    }
+    if ($sql != '') {
+      $sql = rtrim($sql, ", ");
+      $sql = $init_sql . $sql;
+      $this->chado->query($sql, $args);
+      // echo $sql . "\n";
+      // print_r($args);
+      // echo "\n";
+    }
+
+    if (count($missing_cvterms) > 0) {
+      echo "[!]   Overall missing CVTERMS for this set of publications: " . implode(',', array_keys($missing_cvterms)) . "\n";
+    }
+    if (count($unprocessed_array_keys) > 0) {
+      echo "[!]   Unprocessed publication keys that are arrays: " . implode(',', array_keys($unprocessed_array_keys)) . "\n";
+    }    
+
+    return $prop_count;
+
+  }
+
+  function insertPubDbxrefs($inserted_pub_ids, $inserted_dbxref_ids) {
+    $batch_size = 100;
+    $init_sql = "INSERT INTO {1:pub_dbxref} (pub_id, dbxref_id, is_current) ";
+    $init_sql .= "VALUES \n";
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    $total_inserted_pub_ids = count($inserted_pub_ids);
+    $pub_dbxref_ids = [];
+    foreach ($inserted_pub_ids as $pub_id) {
+      $dbxref_id = $inserted_dbxref_ids[$total];
+
+      $total++;
+      $i++;
+
+      $sql .= " (:pub_id_$i, :dbxref_id_$i, :is_current_$i), ";
+      $args[":pub_id_$i"] = $pub_id;
+      $args[":dbxref_id_$i"] = $dbxref_id;
+      $args[":is_current_$i"] = TRUE;
+
+
+      
+      if ($i == $batch_size or $total == $total_inserted_pub_ids) {
+        $sql = rtrim($sql, ", ");
+        $sql = $init_sql . $sql . ' RETURNING pub_dbxref_id';
+        // echo "INSERTION\n";
+        $return = $this->chado->query($sql, $args);
+
+        // Add the ids inserted into the $dbxref_ids variable
+        foreach ($return as $return_id) {
+          $pub_dbxref_ids[] = $return_id->pub_dbxref_id;
+        }
+
+        $batch_num++;
+        // Now reset all of the variables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
+      }
+    }
+    // print_r($pub_dbxref_ids);
+    return $pub_dbxref_ids;    
   }
 
   /** Inserts publications into the pub table */
@@ -446,13 +696,15 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $pub_ids = [];
     foreach ($missing_publications_dbxref as $accession) {
       // Find the publication structure
+      
       $publication = $publications[$total];
+      // print_r($publication);
 
       // Process values to be used as values
       $title = $publication['Title'];
       $series_name = trim(explode('(', $publication['Journal Name'])[0]);
       $pyear = $publication['Year'];
-      $uniquename = str_replace(',',';', $publication['Authors']) . $title . ' ' . $series_name . '; ' . $pyear;
+      $uniquename = str_replace(',',';', @$publication['Authors']) . $title . ' ' . $series_name . '; ' . $pyear;
 
       $total++;
       $i++;
@@ -464,7 +716,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $args[":uniquename_$i"] = $uniquename;
 
       // Lookup type_id from $type_ids
-      $type_id = $type_ids[$publication['Publication Type'][0]];
+      $type_id = @$type_ids[$publication['Publication Type'][0]];
       if ($type_id == NULL) {
         $results = $this->chado->query("SELECT * FROM {1:cvterm} WHERE name = :type_name", [
           ':type_name' => $publication['Publication Type'][0]
@@ -500,11 +752,23 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $args = [];
       }
     }
-    print_r($pub_ids);
-    throw new \Exception('DEBUG');
+    // print_r($pub_ids);
     return $pub_ids;
+  }
 
-    
+  /**
+   * This filters all publications and returns only the publications (structures) that
+   * are missing.
+   */
+  function filterOnlyMissingPublications($publications, $missing_publications_dbxref) {
+    $publications_filtered = [];
+    foreach ($publications as $publication) {
+      $dbxref = $publication['Publication Dbxref'];
+      if (in_array($dbxref, $missing_publications_dbxref)) {
+        $publications_filtered[] = $publication;
+      }
+    }
+    return $publications_filtered;
   }
 
   /**
