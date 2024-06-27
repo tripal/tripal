@@ -255,6 +255,7 @@ SELECT
       '#default_value' => $default_comment,
     ];
 
+    // When adding, allow user to set the mview as locked or not locked.
     if ($action == 'Add') {
       $form['locked'] = [
         '#type' => 'select',
@@ -265,6 +266,13 @@ SELECT
           True => t('Yes'),
         ],
         '#default_value' => False, // Set the default value to not locked
+      ];
+    }
+    // When editing, still keep track of the locked value for submission.
+    else {
+      $form['locked'] = [
+        '#type' => 'value',
+        '#value' => $mview_is_locked,
       ];
     }
 
