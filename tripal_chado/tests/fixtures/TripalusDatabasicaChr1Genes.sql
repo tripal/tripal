@@ -4408,3 +4408,5 @@ INSERT INTO chado.featureprop VALUES (100071, 10639, 10000, '1', 0);
 INSERT INTO chado.featureprop VALUES (100072, 10642, 10000, '1', 0);
 INSERT INTO chado.featureprop VALUES (100073, 10646, 10000, '0', 0);
 INSERT INTO chado.featureprop VALUES (100074, 10652, 10000, '1', 0);
+INSERT INTO chado.contact VALUES (20000, NULL, 'Me', 'Myself and I');
+INSERT INTO chado.feature_contact VALUES (20000, 10001, 20000);

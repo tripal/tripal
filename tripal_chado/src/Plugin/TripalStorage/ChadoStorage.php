@@ -279,11 +279,39 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function deleteValues($values) : bool {
 
+    // Setup field debugging.
     $this->field_debugger->printHeader('Delete');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::deleteValues');
-    $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
 
-    return FALSE;
+    // Build the ChadoRecords object.
+    $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
+    $this->buildChadoRecords($values, TRUE);
+
+    $transaction_chado = $this->connection->startTransaction();
+    try {
+
+      // Iterate through each base table.
+      $base_tables = $this->records->getBaseTables();
+      foreach ($base_tables as $base_table) {
+
+        // First iterate through the ancillary tables and remove depenedent
+        // records.
+        $tables = $this->records->getAncillaryTablesWithCond($base_table);
+        foreach ($tables as $table) {
+          $this->records->deleteRecords($base_table, $table);
+        }
+
+        // Second, delete the record in the base talbe.
+        $this->records->deleteRecords($base_table, $base_table);
+      }
+
+    }
+    catch (\Exception $e) {
+      $transaction_chado->rollback();
+      throw new \Exception($e);
+    }
+
+    return TRUE;
   }
 
   /**
@@ -1107,6 +1135,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       if (array_key_exists($table_alias, $aliases)) {
         $chado_table = $aliases[$table_alias];
       }
+
       // If the base table is not the same as the root table then
       // we should add the field name to the colun alias. Otherwise
       // we may have conflicts if mutiple fields use the same alias.
