@@ -39,11 +39,15 @@ class ChadoMviewForm extends FormBase {
     $default_comment = '';
     $default_sql_query = '';
     $default_chado_schema = $chado->getSchemaName();
+    $mview_is_locked = 'FALSE';
 
     // If this is an edit then set the form defaults differently.
     if (strcmp($action, 'Edit') == 0) {
       $mviews = \Drupal::service('tripal_chado.materialized_views');
       $mview = $mviews->loadById($mview_id);
+      
+      // Get the locked status of this mview (from the parent table).
+      $mview_is_locked = $mview->isLocked();
 
       // set the default values.  If there is a value set in the
       // form_state then let's use that, otherwise, we'll pull
@@ -78,6 +82,12 @@ class ChadoMviewForm extends FormBase {
       }
     }
 
+    // Emit a warning if this table is locked, explaining why the submit button
+    // is disabled.
+    if ($action == 'Edit' && $mview_is_locked) {
+      $messenger = \Drupal::service('messenger');
+      $messenger->addWarning('This materialized view is locked and therefore cannot be edited.');
+    }
 
     // Build the form
     $form['action'] = [
@@ -245,6 +255,27 @@ SELECT
       '#default_value' => $default_comment,
     ];
 
+    // When adding, allow user to set the mview as locked or not locked.
+    if ($action == 'Add') {
+      $form['locked'] = [
+        '#type' => 'select',
+        '#title' => t('Locked'),
+        '#description' => t('Decide whether this materialized view should be locked or not. This will also set the custom table to be locked as well'),
+        '#options' => [
+          False => t('No'),
+          True => t('Yes'),
+        ],
+        '#default_value' => False, // Set the default value to not locked
+      ];
+    }
+    // When editing, still keep track of the locked value for submission.
+    else {
+      $form['locked'] = [
+        '#type' => 'value',
+        '#value' => $mview_is_locked,
+      ];
+    }
+
 
     if ($action == 'Edit') {
       $value = 'Save';
@@ -257,6 +288,7 @@ SELECT
       '#type' => 'submit',
       '#value' => t($value),
       '#executes_submit_callback' => TRUE,
+      '#disabled' => $mview_is_locked == 'TRUE' ? TRUE : FALSE,
     ];
 
     $form['cancel'] = [
@@ -289,6 +321,18 @@ SELECT
     foreach ($errors as $error) {
       $form_state->setErrorByName('schema', $error);
     }
+
+// When adding a new materialized view, make sure that it is not an existing 
+// materialized view.  We check for uniqueness by combining table name and 
+// schema, as some sites may have more than one instance of Chado installed,
+    if ($action == 'Add') {
+      $table = $schema_arr['table'];
+
+      $mviews = \Drupal::service('tripal_chado.materialized_views');
+      if ($mviews->loadByName($table, $chado_schema)) {
+        $form_state->setErrorByName('schema', 'A materialized view based on that table in this schema already exists. Please choose a different table or schema, or edit the existing one.');
+      }
+    }
   }
 
   /**
@@ -303,6 +347,7 @@ SELECT
     $force_drop = $values['force_drop'];
     $comment = $values['comment'];
     $sql_query = $values['sql_query'];
+    $locked = $values['locked'];
 
     $mviews = \Drupal::service('tripal_chado.materialized_views');
 
@@ -328,6 +373,7 @@ SELECT
       $mview = $mviews->create($schema_arr['table'], $chado_schema);
       $mview->setComment($comment);
       $mview->setSqlQuery($sql_query);
+      $mview->setLocked($locked);
       $success = $mview->setTableSchema($schema_arr);
       if ($success) {
         \Drupal::messenger()->addMessage(t("The materialized view has been added."), 'status');
