@@ -121,7 +121,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $default_base_table = $entity_type_chado_base_table;
     }
     // If no base table has been set in the content type, then let's see
-    // if the field has one hardcoded in it's settings.
+    // if the field has one hardcoded in its settings.
     else {
       $storage_settings = $this->getSetting('storage_plugin_settings');
       $storage_settings_base_table = $storage_settings['base_table'] ?? '';

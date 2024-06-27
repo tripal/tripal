@@ -32,7 +32,10 @@ class TripalEntityDeleteForm extends ContentEntityDeleteForm {
    * {@inheritdoc}
    */
   public function getDescription() {
-    return $this->t('This action is not fully implemented in Tripal v4. It currently functions as an"unpublish".');
+    return $this->t('This action will unpublish this page from the site and '
+        . 'remove it from the underlying data storage system. To keep '
+        . 'this item in the data store but remove it from the site, '
+        . 'please choose the "unpublish" option instead.');
   }
 
 }

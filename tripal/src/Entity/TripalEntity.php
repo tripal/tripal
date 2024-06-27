@@ -692,7 +692,26 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function delete() {
     parent::delete();
-    // @todo: add in code to remove entity from the database backend.
+
+    // Create a values array appropriate for `deleteValues()`
+    list($values, $tripal_storages) = TripalEntity::getValuesArray($this);
+
+    // Call the deleteValues() function for each storage type.
+    $delete_success = False;
+    foreach ($values as $tsid => $tsid_values) {
+      try {
+        $delete_success = $tripal_storages[$tsid]->deleteValues($tsid_values);
+        if ($delete_success) {
+          $values[$tsid] = $tsid_values;
+        }
+      }
+      catch (\Exception $e) {
+        \Drupal::logger('tripal')->notice($e->getMessage());
+        \Drupal::messenger()->addError('Cannot delete the entity. See the recent ' .
+            'logs for more details or contact the site administrator if you cannot ' .
+            'view the logs.');
+      }
+    }
   }
 
 
