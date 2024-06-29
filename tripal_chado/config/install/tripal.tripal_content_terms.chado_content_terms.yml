@@ -811,6 +811,19 @@ vocabularies:
             -   name: 'TCONTACT'
                 description: "Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology can be identified."
                 urlPrefix: "cv/lookup/TCONTACT/{accession}"
+        terms:
+            -   id: 'TCONTACT:0000004'
+                name: 'Organization'
+                description: 'A generic term for any organization.'
+            -   id: 'TCONTACT:0000009'
+                name: 'Department'
+                description: 'The department of a larger organization.'
+            -   id: 'TCONTACT:0000016'
+                name: 'Affiliated Department'
+                description: 'The department of the institution or organization that the contact is affiliated with.'
+            -   id: 'TCONTACT:0000018'
+                name: 'Affiliated Organization'
+                description: 'The formal group of people the contact is affiliated with. Organizations differ from institutions by being more focused on people coming together for a specific purpose; where as, institutions usually refer to physical locations of a particular corporation.'
 
     -   name: 'tripal_pub'
         label: 'Tripal Publication Ontology'
