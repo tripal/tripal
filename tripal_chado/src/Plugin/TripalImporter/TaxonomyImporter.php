@@ -17,9 +17,6 @@ use Drupal\Core\Url;
  *    id = "chado_taxonomy_loader",
  *    label = @Translation("Taxonomy Loader"),
  *    description = @Translation("Import a Taxonomy into Chado"),
- *    file_types = {"gff","gff3"},
- *    upload_description = @Translation("Please provide the Taxonomy file."),
- *    upload_title = @Translation("Taxonomy File"),
  *    use_analysis = False,
  *    require_analysis = False,
  *    button_text = @Translation("Import Taxonomy"),
@@ -36,19 +33,12 @@ class TaxonomyImporter extends ChadoImporterBase {
    * is needed when checking to see if an organism has already been
    * loaded.
    */
-  private $all_orgs = [];
+  protected $all_orgs = [];
 
   /**
-   * The record from the Chado phylotree table that refers to this
-   * Taxonomic tree.
+   * ID of the NCBITaxon database in Chado
    */
-  private $phylotree = NULL;
-
-  /**
-   * The temporary tree array used by the Tripal Phylotree API for
-   * importing a new tree.
-   */
-  private $tree = NULL;
+  protected $ncbitaxon_db_id = NULL;
 
   /**
    * @see TripalImporter::form()
@@ -62,19 +52,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       '#type' => 'fieldset',
       '#title' => 'INSTRUCTIONS',
       '#description' => t('This form is used to import species from the NCBI
-        Taxonomy database into this site. Alternatively, it can import details
-        about organisms from the NCBI Taxonomy database for organisms that
-        already exist on this site.  This loader will also construct
-        the taxonomic tree for the species loaded.'),
-    ];
-
-    // No space before 'Taxonomy Tree' for backwards compatibility.
-    $form['tree_name'] = [
-      '#type' => 'textfield',
-      '#title' => t('Tree Name'),
-      '#description' => t('If a tree with this name exists, it will be rebuilt,
-        otherwise a new tree will be created with this name.'),
-      '#default_value' => \Drupal::state()->get('site_name', '') . 'Taxonomy Tree',
+        Taxonomy database into this site.'),
     ];
 
     $form['ncbi_api_key'] = [
@@ -103,11 +81,11 @@ class TaxonomyImporter extends ChadoImporterBase {
 
     $form['taxonomy_ids'] = [
       '#type' => 'textarea',
-      '#title' => 'NCBI Taxonomy ID',
+      '#title' => 'NCBI Taxonomy IDs',
       '#description' => t('Please provide a list of NCBI taxonomy IDs separated
         by spaces, tabs or new lines.
-        The information about these organisms will be downloaded and new organism
-        records will be added to this site.'),
+        The information about these organisms will be downloaded, and organism
+        records will be added or updated.'),
     ];
 
     $form['import_existing'] = [
@@ -116,20 +94,8 @@ class TaxonomyImporter extends ChadoImporterBase {
       '#description' => t('The NCBI Taxonomic Importer examines the organisms
         currently present in this site\'s database, and queries NCBI for the
         taxonomic details.  If the importer is able to match the
-        genus and species with NCBI, the species details will be imported,
-        and a page containing the taxonomic tree will be created.'),
+        genus and species with NCBI, the species details will be imported.'),
       '#default_value' => 1,
-    ];
-
-    $form['root_taxon'] = [
-      '#type' => 'textfield',
-      '#title' => t('(Optional) Root Taxon'),
-      '#description' => t('An optional top level taxon for this tree.
-        For NCBI lineage, the top level is "cellular organisms". Specify
-        a taxon here to use as the tree root, for example at the order
-        or family level. This can also be used to generate a tree using
-        a subset of the site\'s organisms.'),
-      '#default_value' => '',
     ];
 
     return $form;
@@ -147,6 +113,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $taxonomy_ids = $form_state_values['taxonomy_ids'];
 
     // make sure that we have numeric values, one per line.
+    $tax_ids = [];
     if ($taxonomy_ids) {
       $tax_ids = preg_split("/[\s\n\t\r]+/", $taxonomy_ids);
       $bad_ids = [];
@@ -162,121 +129,71 @@ class TaxonomyImporter extends ChadoImporterBase {
         );
       }
     }
+    if (count($tax_ids) < 1) {
+      $form_state->setErrorByName('taxonomy_ids', t('No taxonomy IDs were specified'), []);
+    }
   }
 
   /**
    * Performs the import.
    */
   public function run() {
-    global $site_name;
 
     $chado = $this->getChadoConnection();
 
-    // TRIPAL 4 - Could not find a genetic_code record even after importing TAXRANK - Ask Stephen
-    $genetic_code_cvterm = chado_get_cvterm([
-      'name' => 'genetic_code',
-      'cv_id' => ['name' => 'local'],
-    ], [], $this->chado_schema_main);
-
-    // If genetic code cvterm not found, try to create it in local CV
-    // This cvterm is used in code further down in code
-    if(!isset($genetic_code_cvterm)) {
-      chado_insert_cvterm([
-        'name' => 'genetic_code',
-        'cv_name' => 'local'
-      ], [], $this->chado_schema_main);
-    }
-
-
     $arguments = $this->arguments['run_args'];
-    $tree_name = $arguments['tree_name'];
     $taxonomy_ids = $arguments['taxonomy_ids'];
-    $root_taxon = $arguments['root_taxon'];
     $import_existing = $arguments['import_existing'];
 
     // Get the list of all organisms as we'll need this to lookup existing
     // organisms. Include lookup of NCBI taxid, if present.
-    $sql_common = "
-    , (SELECT X.accession FROM {1:dbxref} X
+    $sql = "
+      SELECT O.*, CVT.name AS type,
+      (SELECT X.accession FROM {1:dbxref} X
         LEFT JOIN {1:organism_dbxref} OD ON OD.dbxref_id = X.dbxref_id
         LEFT JOIN {1:db} DB ON X.db_id = DB.db_id
         WHERE OD.organism_id = O.organism_id
-        AND DB.name = 'NCBITaxon') AS ncbitaxid
-    , (SELECT OP.value from {1:organismprop} OP WHERE
+        AND DB.name = 'NCBITaxon') AS ncbitaxid,
+      (SELECT OP.value from {1:organismprop} OP WHERE
         type_id = (SELECT cvterm_id FROM {1:cvterm} WHERE name = 'lineage'
         AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = 'local'))
         AND OP.organism_id = O.organism_id) AS lineage
+      FROM {1:organism} O
+        LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
+      ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
     ";
-    // We have standardized Tripal 4 to use 1.3, we don't need to check if it's higher than 1.2
-    // if (chado_get_version(FALSE, FALSE, $this->chado_schema_main) > 1.2) {
-      $sql = "
-        SELECT O.*, CVT.name AS type
-        $sql_common
-        FROM {1:organism} O
-          LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
-        ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
-      ";
-    // }
-    // else {
-      // $sql = "
-      //   SELECT O.*, '' AS type
-      //   $sql_common
-      //   FROM {1:organism} O
-      //   ORDER BY O.genus, O.species
-      // ";
-    // }
     $results = $chado->query($sql);
+
     while ($item = $results->fetchObject()) {
-      // If $root_taxon is specified, and lineage is already stored in chado,
-      // then we can filter out undesired organisms here when processing a
-      // sub-tree, and avoid an unnecessary query to NCBI later.
-      if (($root_taxon) and ($item->lineage) and !preg_match("/$root_taxon/i", $item->lineage)) {
-        continue;
-      }
       $this->all_orgs[] = $item;
     }
 
-    // Get the phylotree object.
-    $this->logger->notice('Initializing Tree...');
-    $this->phylotree = $this->initTree($tree_name);
-    $this->logger->notice('Rebuilding Tree...');
-    $this->tree = $this->rebuildTree($root_taxon);
-
-    // Clean out the phylonodes for this tree in the event this is a reload.
-    chado_delete_record('phylonode', ['phylotree_id' => $this->phylotree->phylotree_id], NULL, $this->chado_schema_main);
-
-    // Get the taxonomy IDs provided by the user (if any).
+    // Get the taxonomy IDs provided by the user,
+    // separated by spaces, tabs, or newlines.
     $tax_ids = [];
     if ($taxonomy_ids) {
       $tax_ids = preg_split("/[\s\n\t\r]+/", $taxonomy_ids);
     }
 
     // Set the number of items to handle.
-    if ($taxonomy_ids and $import_existing) {
-      $this->setTotalItems(count($this->all_orgs) + count($tax_ids));
+    $n_to_import = count($tax_ids);
+    if ($import_existing) {
+      $n_to_import += count($this->all_orgs);
     }
-    if ($taxonomy_ids and !$import_existing) {
-      $this->setTotalItems(count($tax_ids));
-    }
-    if (!$taxonomy_ids and $import_existing) {
-      $this->setTotalItems(count($this->all_orgs));
-    }
+    $this->setTotalItems($n_to_import);
     $this->setItemsHandled(0);
 
-    // If the user wants to import new taxonomy IDs then do that.
-    if ($taxonomy_ids) {
-      $this->logger->notice('Importing Taxonomy IDs...');
+    // Import from NCBI.
+    $this->logger->notice('Importing Taxonomy IDs...');
 
-      foreach ($tax_ids as $tax_id) {
-        $start = microtime(TRUE);
-        $tax_id = trim($tax_id);
-        $result = $this->importRecord($tax_id, $root_taxon);
+    foreach ($tax_ids as $tax_id) {
+      $start = microtime(TRUE);
+      $tax_id = trim($tax_id);
+      $result = $this->importRecord($tax_id);
 
-        // Only addItemsHandled if the importRecord was a success.
-        if ($result) {
-          $this->addItemsHandled(1);
-        }
-
+      // Only addItemsHandled if the importRecord was a success.
+      if ($result) {
+        $this->addItemsHandled(1);
       }
     }
 
@@ -298,229 +215,12 @@ class TaxonomyImporter extends ChadoImporterBase {
     if (property_exists($this, 'job')) {
       $options['message_opts']['job'] = $this->job;
     }
-
-    // This importer imports only species (taxonomy) trees.
-    $options['leaf_type'] = 'taxonomy';
-
-    // Now import the tree.
-    chado_phylogeny_import_tree($this->tree, $this->phylotree, $options, [], NULL, $this->chado_schema_main);
-  }
-
-
-  /**
-   * Create the taxonomic tree in Chado.
-   *
-   * If the tree already exists it will not be recreated.
-   *
-   * @throws Exception
-   * @return
-   *   Returns the phylotree object.
-   */
-  private function initTree($tree_name = NULL) {
-    // Add the taxonomy tree record into the phylotree table. If the tree
-    // already exists then don't insert it again.
-    if (!$tree_name) {
-      $site_name = \Drupal::state()->get('site_name');
-      $tree_name = $site_name . 'Taxonomy Tree';
-    }
-    $phylotree = chado_select_record('phylotree', ['*'], ['name' => $tree_name], NULL, $this->chado_schema_main);
-    if (count($phylotree) == 0) {
-      // Add the taxonomic tree.
-      $phylotree = [
-        'name' => $tree_name,
-        'description' => 'A phylogenetic tree based on taxonomic rank.',
-        'leaf_type' => 'taxonomy',
-        'tree_file' => '/dev/null',
-        'format' => 'taxonomy',
-        'no_load' => TRUE,
-      ];
-      $errors = [];
-      $warnings = [];
-      $success = chado_insert_phylotree($phylotree, $errors, $warnings, $this->chado_schema_main);
-      if (!$success) {
-        throw new \Exception("Cannot add the Taxonomy Tree record.");
-      }
-      $phylotree = (object) $phylotree;
-    }
-    else {
-      $phylotree = $phylotree[0];
-    }
-    return $phylotree;
-  }
-
-
-  /**
-   * Iterates through all existing organisms and rebuilds the taxonomy tree.
-   *
-   * The phloytree API doesn't support adding nodes to existing trees, only
-   * importing whole trees. So, we must rebuild the tree using the current
-   * organisms and then we can add to it.
-   *
-   */
-  private function rebuildTree($root_taxon = NULL) {
-    $chado = $this->getChadoConnection();
-    $lineage_nodes[] = [];
-
-    // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
-    $rank_cvterm = chado_get_cvterm([
-      'name' => 'rank',
-      // 'cv_id' => ['name' => 'local'], // TRIPAL 3
-      'cv_id' => ['name' => 'local'],
-    ], [], $this->chado_schema_main);
-    if (!isset($rank_cvterm)) {
-      throw new \Exception("Could not find TAXRANK vocabulary and thus rank cvterm. Please load the vocabulary.");
-    }
-
-    // The taxonomic tree must have a root, so create that first.
-    $tree = [
-      'name' => 'root',
-      'depth' => 0,
-      'is_root' => 1,
-      'is_leaf' => 0,
-      'is_internal' => 0,
-      'left_index' => 0,
-      'right_index' => 0,
-      'branch_set' => [],
-    ];
-
-    $total = count($this->all_orgs);
-    $j = 1;
-    foreach ($this->all_orgs as $organism) {
-      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
-      //$this->logMessage("- " . ($j++) . " of $total. Adding @organism", array('@organism' => $sci_name));
-
-      // First get the phylonode record for this organism.
-      $sql = "
-        SELECT P.*
-        FROM {1:phylonode} P
-          INNER JOIN {1:phylonode_organism} PO on PO.phylonode_id = P.phylonode_id
-        WHERE P.phylotree_id = :phylotree_id AND PO.organism_id = :organism_id
-      ";
-      $args = [
-        ':phylotree_id' => $this->phylotree->phylotree_id,
-        ':organism_id' => $organism->organism_id,
-      ];
-      $result = $chado->query($sql, $args);
-      if (!$result) { // POSSIBLE BUG: MIGHT BE A BUG???
-        continue;
-      }
-      $phylonode = $result->fetchObject(); // POSSIBLE BUG: Why would we fetch if the result is empty? based on the previous if empty clause
-
-      // Next get the lineage for this organism.
-      $lineageprop = $this->getProperty($organism->organism_id, 'lineage');
-      if (!$lineageprop) {
-        continue;
-      }
-      $lineage = $lineageprop->value;
-
-      // If a root taxon is specified, remove everything above it in
-      // the lineage. This taxon will then become the tree root.
-      if ($root_taxon) {
-        $lineage = preg_replace("/^.*($root_taxon)/i", '$1', $lineage);
-      }
-      $lineage_depth = preg_split('/;\s*/', $lineage);
-
-      // Now rebuild the tree by first creating the nodes for the full
-      // lineage and then adding the organism as a leaf node.
-      $parent = $tree;
-      $i = 1;
-      $lineage_good = TRUE;
-      foreach ($lineage_depth as $child) {
-        // We need to find the node in the phylotree for this level of the
-        // lineage, but there's a lot of repeats and we don't want to keep
-        // doing the same queries over and over, so we store the nodes
-        // we've already seen in the $lineage_nodes array for fast lookup.
-        if (array_key_exists($child, $lineage_nodes)) {
-          $phylonode = $lineage_nodes[$child];
-          if (!$phylonode) {
-            $lineage_good = FALSE;
-            continue;
-          }
-        }
-        else {
-          $values = [
-            'phylotree_id' => $this->phylotree->phylotree_id,
-            'label' => $child,
-          ];
-          $columns = ['*'];
-          $phylonode = chado_select_record('phylonode', $columns, $values, NULL, $this->chado_schema_main);
-          if (count($phylonode) == 0) {
-            $lineage_nodes[$child] = NULL;
-            $lineage_good = FALSE;
-            continue;
-          }
-          $phylonode = $phylonode[0];
-          $lineage_nodes[$child] = $phylonode;
-
-          $values = [
-            'phylonode_id' => $phylonode->phylonode_id,
-            'type_id' => $rank_cvterm->cvterm_id,
-          ];
-          $columns = ['*'];
-          $phylonodeprop = chado_select_record('phylonodeprop', $columns, $values, NULL, $this->chado_schema_main);
-        }
-        $name = $child;
-        // $node_rank = (string) $child->Rank; // Removed because it's unused
-        $node = [
-          'name' => $name,
-          'depth' => $i,
-          'is_root' => 0,
-          'is_leaf' => 0,
-          'is_internal' => 1,
-          'left_index' => 0,
-          'right_index' => 0,
-          'parent' => $parent,
-          'branch_set' => [],
-          'parent' => $parent['name'],
-          'properties' => [
-            $rank_cvterm->cvterm_id => $phylonodeprop[0]->value,
-          ],
-        ];
-        $parent = $node;
-        $this->addTaxonomyNode($tree, $node, $lineage_depth);
-        $i++;
-      } // end foreach ($lineage_depth as $child) { ...
-
-      // If $stop is set then we had problems setting the lineage so
-      // skip adding the leaf node below.
-      if (!$lineage_good) {
-        continue;
-      }
-
-      $rank_type = 'species';
-      if (property_exists($organism, 'type_id') and $organism->type_id) {
-        $rank_type = $organism->type;
-      }
-
-      // Now add in the leaf node
-      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
-      $node = [
-        'name' => $sci_name,
-        'depth' => $i,
-        'is_root' => 0,
-        'is_leaf' => 1,
-        'is_internal' => 0,
-        'left_index' => 0,
-        'right_index' => 0,
-        'parent' => $parent['name'],
-        'organism_id' => $organism->organism_id,
-        'properties' => [
-          $rank_cvterm->cvterm_id => $rank_type,
-        ],
-      ];
-      $this->addTaxonomyNode($tree, $node, $lineage_depth);
-
-      // Set the indices for the tree.
-      chado_assign_phylogeny_tree_indices($tree);
-    }
-
-    return $tree;
   }
 
   /**
    * Imports details from NCBI Taxonomy for organisms that already exist.
    */
-  private function updateExisting($root_taxon = NULL) {
+  protected function updateExisting($root_taxon = NULL) {
 
     $total = count($this->all_orgs);
     $omitted_organisms = [];
@@ -609,7 +309,7 @@ class TaxonomyImporter extends ChadoImporterBase {
 
       // There are various valid reasons an organism may not have an
       // NCBI taxonomy ID, however if this ID is missing, then this
-      // organism will be absent in the tree.
+      // organism will be absent in any phylotrees.
       if ($taxid) {
         $result = $this->importRecord($taxid, $root_taxon, $organism);
         if ($result) {
@@ -638,7 +338,7 @@ class TaxonomyImporter extends ChadoImporterBase {
    * @param $sci_name
    *   The scientific name for the organism as returned by NCBI
    */
-  private function findOrganism($taxid, $sci_name) {
+  protected function findOrganism($taxid, $sci_name) {
     $organism = NULL;
 
     // First check the taxid to see if it's present and associated with an
@@ -691,7 +391,7 @@ class TaxonomyImporter extends ChadoImporterBase {
    * @param $rank
    *   The rank of the organism as provied by NCBI Taxonomy.
    */
-  private function addOrganism($sci_name, $rank) {
+  protected function addOrganism($sci_name, $rank) {
     $chado = $this->getChadoConnection();
     $organism = NULL;
     $matches = [];
@@ -699,12 +399,10 @@ class TaxonomyImporter extends ChadoImporterBase {
     $species = '';
     $infra = '';
     $values = [];
-    // Checks for Chado 1.3 infraspecific nomenclature columns in organism table.
-    $infra_available = chado_column_exists('organism', 'infraspecific_name', $this->chado_schema_main);
 
     // Check if the scientific name has an infraspecific part or is just
     // a species name.
-    if ($infra_available and preg_match('/^(.+?)\s+(.+?)\s+(.+)$/', $sci_name, $matches)) {
+    if (preg_match('/^(.+?)\s+(.+?)\s+(.+)$/', $sci_name, $matches)) {
       $genus = $matches[1];
       $species = $matches[2];
       $full_infra = $matches[3];
@@ -727,8 +425,6 @@ class TaxonomyImporter extends ChadoImporterBase {
         'type_id' => $type->cvterm_id,
         'infraspecific_name' => $infra,
       ];
-      // $organism = chado_insert_record('organism', $values);
-      // $organism = (object) $organism;
       $organism_id = $chado->insert('1:organism')
         ->fields($values)
         ->execute();
@@ -747,11 +443,9 @@ class TaxonomyImporter extends ChadoImporterBase {
           'genus' => $genus,
           'species' => $species,
           'abbreviation' => $genus[0] . '. ' . $species,
+          'type_id' => NULL,
+          'infraspecific_name' => NULL,
         ];
-        if ($infra_available) {
-          $values['type_id'] = NULL;
-          $values['infraspecific_name'] = NULL;
-        }
         // $organism = chado_insert_record('organism', $values);
         // $organism = (object) $organism;
         $organism_id = $chado->insert('1:organism')
@@ -783,15 +477,8 @@ class TaxonomyImporter extends ChadoImporterBase {
    *   The organism object to which this taxonomy belongs.  If the organism
    *   is NULL then it will be created.
    */
-  private function importRecord($taxid, $root_taxon = NULL, $organism = NULL) {
+  protected function importRecord($taxid, $root_taxon = NULL, $organism = NULL) {
     $adds_organism = $organism ? FALSE : TRUE;
-
-    // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
-    $rank_cvterm = chado_get_cvterm([
-      'name' => 'rank',
-      // 'cv_id' => ['name' => 'local'], // TRIPAL 3
-      'cv_id' => ['name' => 'local'],
-    ], [], $this->chado_schema_main);
 
     // Get the details for this taxonomy.
     $fetch_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" .
@@ -941,68 +628,6 @@ class TaxonomyImporter extends ChadoImporterBase {
           $name_ranks[$type]++;
         }
       }
-
-      // If a root taxon is specified, remove everything above it in
-      // the lineage. This taxon will then become the tree root.
-      if ($root_taxon) {
-        $lineage = preg_replace("/^.*($root_taxon)/i", '$1', $lineage);
-      }
-
-      // Generate a nested array structure that can be used for importing the tree.
-      $lineage_depth = preg_split('/;\s*/', $lineage);
-      $parent = $this->tree;
-      $i = 1;
-      $passed_root = $root_taxon?0:1;
-      foreach ($taxon->LineageEx->children() as $child) {
-        $tid = (string) $child->TaxID;
-        $name = (string) $child->ScientificName;
-        $node_rank = (string) $child->Rank;
-        // If $root_taxon is defined, skip higher ranks until it is seen.
-        if (($root_taxon) and ($name == $root_taxon)) {
-          $passed_root = 1;
-        }
-        if (!$passed_root) {
-          continue;
-        }
-        $node = [
-          'name' => $name,
-          'depth' => $i,
-          'is_root' => 0,
-          'is_leaf' => 0,
-          'is_internal' => 1,
-          'left_index' => 0,
-          'right_index' => 0,
-          'parent' => $parent,
-          'branch_set' => [],
-          'parent' => $parent['name'],
-          'properties' => [
-            $rank_cvterm->cvterm_id => $node_rank,
-          ],
-        ];
-        $parent = $node;
-        $this->addTaxonomyNode($this->tree, $node, $lineage_depth);
-        $i++;
-      }
-      // Now add in the leaf node
-      $node = [
-        'name' => $sci_name,
-        'depth' => $i,
-        'is_root' => 0,
-        'is_leaf' => 1,
-        'is_internal' => 0,
-        'left_index' => 0,
-        'right_index' => 0,
-        'parent' => $parent['name'],
-        'organism_id' => $organism->organism_id,
-        'properties' => [
-          $rank_cvterm->cvterm_id => $rank,
-        ],
-      ];
-      $this->addTaxonomyNode($this->tree, $node, $lineage_depth);
-
-      // Set the indices for the tree.
-      chado_assign_phylogeny_tree_indices($this->tree);
-      return TRUE;
     }
     else {
       $this->logger->warning("Error contacting NCBI to look up taxid @taxid",
@@ -1010,44 +635,6 @@ class TaxonomyImporter extends ChadoImporterBase {
       );
       return FALSE;
     }
-  }
-
-  /**
-   *
-   */
-  private function addTaxonomyNode(&$tree, $node, $lineage_depth) {
-
-    // Get the branch set for the tree root.
-    $branch_set = &$tree['branch_set'];
-
-    // Iterate through the tree up until the depth where this node will
-    // be placed.
-    $node_depth = $node['depth'];
-    for ($i = 1; $i <= $node_depth; $i++) {
-      // Iterate through any existing nodes in the branch set to see if
-      // the node name matches the correct name for the lineage at this
-      // depth. If it matches then it is inside of this branch set that
-      // we will place the node.
-      // Skip if branch_set is NULL, this can be the case if we are
-      // processing the first subspecies for a given species which had
-      // been defined earlier.
-      if ($branch_set) {
-        for ($j = 0; $j < count($branch_set); $j++) {
-          // If this node already exists in the tree then return.
-          if ($branch_set[$j]['name'] == $node['name'] and
-            $branch_set[$j]['depth'] == $node['depth']) {
-            return;
-          }
-          // Otherwise, set the branch to be the current branch and continue.
-          if (isset($branch_set[$j]['name']) and ($branch_set[$j]['name'] == $lineage_depth[$i - 1])) {
-            $branch_set = &$branch_set[$j]['branch_set'];
-            break;
-          }
-        }
-      }
-    }
-    // Add the node to the last branch set.  This should be where this node goes.
-    $branch_set[] = $node;
   }
 
   /**
@@ -1065,7 +652,7 @@ class TaxonomyImporter extends ChadoImporterBase {
    * @return
    *   The property object.
    */
-  private function getProperty($organism_id, $term_name, $rank = 0) {
+  protected function getProperty($organism_id, $term_name, $rank = 0) {
     $record = [
       'table' => 'organism',
       'id' => $organism_id,
@@ -1092,7 +679,8 @@ class TaxonomyImporter extends ChadoImporterBase {
    *   The order for this property. The first instance of this term for
    *   this organism should be zero. Defaults to zero.
    */
-  private function addProperty($organism_id, $term_name, $value, $rank = 0) {
+  protected function addProperty($organism_id, $term_name, $value, $rank = 0) {
+$t1 = microtime(true); print "CP31 Add property \"$term_name\" => \"$value\"\n"; //@@@
     if (!$value) {
       return;
     }
@@ -1112,6 +700,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       chado_delete_property($record, $property, $this->chado_schema_main);
     }
     chado_insert_property($record, $property, [], $this->chado_schema_main);
+$t2 = microtime(true); printf("Took %0.3f\n", $t2-$t1); //@@@
   }
 
   /**
@@ -1119,17 +708,27 @@ class TaxonomyImporter extends ChadoImporterBase {
    * @param unknown $organism_id
    * @param unknown $taxId
    */
-  private function addDbxref($organism_id, $taxId) {
+  protected function addDbxref($organism_id, $taxId) {
     $chado = $this->getChadoConnection();
-    $db = chado_get_db(['name' => 'NCBITaxon'], [], $this->chado_schema_main);
+
+    // Lookup the NCBITaxon db_id only once the first time this is called
+    if (!$this->ncbitaxon_db_id) {
+      $query = $chado->select('1:db', 'd');
+      $query->fields('d', ['db_id']);
+      $query->condition('d.name', 'NCBITaxon', '=');
+      $results = $query->execute();
+      $this->ncbitaxon_db_id = $results->fetchObject()->db_id;
+    }
+
     $values = [
-      'db_id' => $db->db_id,
+      'db_id' => $this->ncbitaxon_db_id,
       'accession' => $taxId,
     ];
     $dbxref = chado_insert_dbxref($values, [], $this->chado_schema_main);
+    $dbxref_id = $dbxref->dbxref_id;
 
     $values = [
-      'dbxref_id' => $dbxref->dbxref_id,
+      'dbxref_id' => $dbxref_id,
       'organism_id' => $organism_id,
     ];
 
