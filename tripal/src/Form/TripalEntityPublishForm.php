@@ -63,6 +63,14 @@ class TripalEntityPublishForm extends FormBase {
         'wrapper' => 'storage-options'
       ],
     ];
+
+    // If there is only one datastore available, set it as the default.
+    if (count($datastores) == 1) {
+      $datastore = array_key_first($datastores);
+      $form_state->setValue('datastore', $datastore);
+      $form['datastore']['#default_value'] = $datastore;
+    }
+
     $form['storage-options'] = [
       '#type' => 'details',
       '#description' => 'Please select a storage backend for additional options.',
@@ -171,7 +179,7 @@ class TripalEntityPublishForm extends FormBase {
     \Drupal::service('tripal.job')->create([
       'job_name' => $job_name,
       'modulename' => 'tripal',
-      'callback' => 'tripal_publish',
+      'callback' => [\Drupal\tripal\Services\TripalPublish::class ,'runTripalJob'],
       'arguments' => $job_args,
       'uid' => $current_user->id(),
     ]);

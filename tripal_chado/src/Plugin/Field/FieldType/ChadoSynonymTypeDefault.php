@@ -72,13 +72,20 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
    *   The form state of the (entire) configuration form.
    */
   public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
-    $settings = $form_state->getValue('settings');
+    // For Drupal ≥10.2 our values are now in the subform
+    $drupal_10_2 = $form_state->getValue(['field_storage']);
+    if ($drupal_10_2) {
+      $settings = $form_state->getValue(['field_storage', 'subform', 'settings']);
+    }
+    else {
+      $settings = $form_state->getValue(['settings']);
+    }
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }
 
     // Check if a corresponding synonym table exists for the base table.
-    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+    $base_table = $settings['storage_plugin_settings']['base_table'];
     $linker_table = $base_table . '_synonym';
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
@@ -88,12 +95,15 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
           'The selected base table cannot support synonyms.');
     }
     else {
-      $chado = \Drupal::service('tripal_chado.database');
-      $schema = $chado->schema();
-      $linker_table_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
       $linker_fkey_column = array_keys($linker_table_def['foreign keys'][$base_table]['columns'])[0];
-      $form_state->setvalue(['settings', 'storage_plugin_settings', 'linker_table'], $linker_table);
-      $form_state->setvalue(['settings', 'storage_plugin_settings', 'linker_fkey_column'], $linker_fkey_column);
+      if ($drupal_10_2) {
+        $form_state->setvalue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'linker_table'], $linker_table);
+        $form_state->setvalue(['field_storage', 'subform', 'settings', 'storage_plugin_settings', 'linker_fkey_column'], $linker_fkey_column);
+      }
+      else {
+        $form_state->setvalue(['settings', 'storage_plugin_settings', 'linker_table'], $linker_table);
+        $form_state->setvalue(['settings', 'storage_plugin_settings', 'linker_fkey_column'], $linker_fkey_column);
+      }
     }
   }
 
@@ -106,10 +116,9 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
 
     // Get the settings for this field.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-
     $base_table = $storage_settings['base_table'];
-    $linker_table = $storage_settings['linker_table'];
-    $linker_fkey_column = $storage_settings['linker_fkey_column'];
+    $linker_table = $storage_settings['linker_table'] ?? '';
+    $linker_fkey_column = $storage_settings['linker_fkey_column'] ?? '';
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
@@ -137,7 +146,6 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
     $syn_name_len = $synonym_table_def['fields']['name']['size'];
     $syn_type_id_term = $mapping->getColumnTermId('synonym', 'type_id');
     $syn_type_name_len = $cvterm_table_def['fields']['name']['size'];
-
 
     // Synonym linker table fields
     $linker_fkey_id_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column);
@@ -214,7 +222,6 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
       'as' => 'synonym_type',
       'drupal_store' => FALSE,
     ]);
-
 
     return $properties;
   }
