@@ -4467,34 +4467,6 @@ ALTER SEQUENCE public.tripal_import_import_id_seq OWNED BY public.tripal_import.
 
 
 
-CREATE TABLE IF NOT EXISTS public.tripal_pub_library_query
-(
-    pub_library_query_id integer NOT NULL DEFAULT nextval('tripal_pub_library_query_pub_library_query_id_seq'::regclass),
-    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    criteria text COLLATE pg_catalog."default" NOT NULL,
-    disabled bigint DEFAULT 0,
-    do_contact bigint DEFAULT 0,
-    CONSTRAINT tripal_pub_library_query____pkey PRIMARY KEY (pub_library_query_id),
-    CONSTRAINT tripal_pub_library_query_disabled_check CHECK (disabled >= 0),
-    CONSTRAINT tripal_pub_library_query_do_contact_check CHECK (do_contact >= 0)
-)
-
-TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS public.tripal_pub_library_query
-    OWNER to drupal;
-
-COMMENT ON COLUMN public.tripal_pub_library_query.criteria
-    IS 'Contains a serialized PHP array containing the search criteria';
--- Index: tripal_pub_library_query__name__idx
-
--- DROP INDEX IF EXISTS public.tripal_pub_library_query__name__idx;
-
-CREATE INDEX IF NOT EXISTS tripal_pub_library_query__name__idx
-    ON public.tripal_pub_library_query USING btree
-    (name COLLATE pg_catalog."default" ASC NULLS LAST);
-
-
 CREATE TABLE public.tripal_jobs (
     job_id integer NOT NULL,
     uid bigint NOT NULL,
