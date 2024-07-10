@@ -634,7 +634,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     if ($cv_matches && $summary_dbxref == ' ? ' && array_key_exists($first_cvterm->dbxref_id, $dbxrefs)) {
 
       $summary_cvterm = $first_cvterm->cvterm_id;
-      $summary_dbxref = sprintf($this->red_format, $dbxrefs[$first_cvterm->dbxref_id]);
+      $summary_dbxref = sprintf($this->red_format, $dbxrefs[$first_cvterm->dbxref_id]->dbxref_id);
       $unique_cvterm = $first_cvterm;
 
       // ERROR:
