@@ -648,7 +648,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         'message' => 'Wrong db but dbxref connected to right cvterm',
         'error-column' => 'dbxref.db_id',
         'YOURS' => $first_dbxref->db_name,
-        'EXPECTED' => $term_info['db_name'],
+        'EXPECTED' => $term_info['idspace'],
       ];
       // @todo suggest fix.
     }
