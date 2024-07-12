@@ -1161,7 +1161,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'Would you like us to update the non-critical cvterm columns to match our expectations?',
       $options,
       'auto-fix',
-      $offer_fix
+      $offer_fix,
+      FALSE
     );
     if ($fix) {
       $this->updateChadoTermRecords('cvterm', 'cvterm_id', $solutions);
