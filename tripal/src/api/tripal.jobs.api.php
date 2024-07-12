@@ -87,6 +87,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
                         $priority = 10, $includes = [], $ignore_duplicate = FALSE) {
 
+
   try {
     $job_id = \Drupal::service('tripal.job')->create([
       'job_name' => $job_name,
@@ -409,8 +410,13 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
     // Run the job
     $callback = $job->getCallback();
 
+    $display_callback = $callback;
+    if (is_array($callback)) {
+      $display_callback = $callback[0] . '::' . $callback[1];
+    }
+
     print date('Y-m-d H:i:s') . ": Job ID " . $job_id . ".\n";
-    print date('Y-m-d H:i:s') . ": Calling: $callback(" . implode(", ", $string_args) . ")\n";
+    print date('Y-m-d H:i:s') . ": Calling: $display_callback(" . implode(", ", $string_args) . ")\n";
     try {
       $job->run();
     }
@@ -528,6 +534,12 @@ function tripal_get_active_jobs($modulename = NULL) {
   $jobs = [];
   while ($job = $results->fetchobject()) {
     $job->arguments = unserialize($job->arguments);
+
+    $unserialized_callback = @unserialize($this->job->callback);
+    if (is_array($unserialized_callback)) {
+      $this->job->callback = $unserialized_callback;
+    }
+
     $jobs[] = $job;
   }
   return $jobs;

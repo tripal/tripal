@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use \Drupal\tripal\Services\TripalPublish;
 use Drupal\tripal\Services\TripalJob;
 
 /**
@@ -115,14 +116,14 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     // Publish the test content entities and confirm that they have been created.
     // Submit the Tripal jobs by calling the callback directly.
     $bundle = 'project';
-    tripal_publish($bundle, $datastore, $publish_options);
+    TripalPublish::runTripalJob($bundle, $datastore, $publish_options);
     $project_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
 
     $this->assertCount(3, $project_entities,
       "We expected there to be the same number of project entities as we inserted.");
 
     $bundle = 'analysis';
-    tripal_publish($bundle, $datastore, $publish_options);
+    TripalPublish::runTripalJob($bundle, $datastore, $publish_options);
     $analysis_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
     $this->assertCount(3, $analysis_entities,
       "We expected there to be the same number of analysis entities as we inserted.");
@@ -206,14 +207,14 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
 
     // Publish the (null and) test contact and arraydesign entities and confirm that they have been created.
     $bundle = 'contact';
-    tripal_publish($bundle, $datastore, $publish_options);
+    TripalPublish::runTripalJob($bundle, $datastore, $publish_options);
     $contact_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
     // Expect 2 here instead of 1 because the null contact will also be published - Issue #1809
     $this->assertCount(2, $contact_entities,
       "We expected there to be the same number of $bundle entities as we inserted plus one.");
 
     $bundle = 'array_design';  // not the same as the table name
-    tripal_publish($bundle, $datastore, $publish_options);
+    TripalPublish::runTripalJob($bundle, $datastore, $publish_options);
     $arraydesign_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
     $this->assertCount(1, $arraydesign_entities,
       "We expected there to be the same number of $bundle entities as we inserted.");

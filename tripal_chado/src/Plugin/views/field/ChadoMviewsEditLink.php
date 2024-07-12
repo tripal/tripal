@@ -10,7 +10,7 @@ use Drupal\views\ResultRow;
 use Drupal\Core\Render\Markup;
 
 /**
- * Field handler to present a link to delete a chado custom table.
+ * Field handler to present a link to edit a chado custom table.
  *
  * @ingroup views_field_handlers
  *
