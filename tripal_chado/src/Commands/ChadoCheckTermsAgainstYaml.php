@@ -51,13 +51,6 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
     $this->chado_schema = $options['chado_schema'];
 
-    // We're going to use symphony tables to summarize what this command finds.
-    // The headers are: YAML Term, CD, DB, CVTERM, DBXREF
-    // Each row will be a term and each cell will either be an existing id
-    // or use the ` - ` string to indicate that it isn't found.
-    // @see chadoCheckTerms_printSummaryTable() to see how it will be printed.
-    $summary_rows = [];
-
     // We are also going to keep track of the issues so we can offer to fix them
     // in some cases.
     $problems = [
@@ -68,6 +61,31 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'error' => [],
       'warning' => [],
     ];
+
+    // We're going to use symphony tables to summarize what this command finds.
+    // The headers are: YAML Term, CD, DB, CVTERM, DBXREF
+    // Each row will be a term and each cell will either be an existing id
+    // or use the ` - ` string to indicate that it isn't found.
+    // @see chadoCheckTerms_printSummaryTable() to see how it will be printed.
+    $summary_rows = [];
+
+    $this->chadoCheckTerms_findProblems($problems, $solutions, $summary_rows, $options);
+    $this->chadoCheckTerms_reportProblems($problems, $solutions, $summary_rows, $options);
+  }
+
+  /**
+   * Checks all YAML specifications and compares to current chado state.
+   *
+   * @param array $problems
+   *   Array containing details for either errors or warnings
+   * @param array $solutions
+   *   Array containing possible solutions for either errors or warnings
+   * @param array $summary_rows
+   *   Infomation for the output table
+   * @param array $options
+   *   Options from drush command line
+   **/
+  protected function chadoCheckTerms_findProblems(&$problems, &$solutions, &$summary_rows, $options) {
 
     $this->chado = \Drupal::service('tripal_chado.database');
     $this->chado->setSchemaName($options['chado_schema']);
@@ -180,8 +198,23 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         ];
       }
     }
+  }
 
-    // Finally tell the user the summary state of things.
+  /**
+   * Reports to user the status of chado as determined by chadoCheckTerms_findProblems.
+   *
+   * @param array $problems
+   *   Array containing details for either errors or warnings
+   * @param array $solutions
+   *   Array containing possible solutions for either errors or warnings
+   * @param array $summary_rows
+   *   Infomation for the output table
+   * @param array $options
+   *   Options from drush command line
+   **/
+  protected function chadoCheckTerms_reportProblems($problems, $solutions, $summary_rows, $options) {
+
+    // Tell the user the summary state of things.
     $this->chadoCheckTerms_printSummaryTable($summary_rows);
 
     // Now we can start reporting more detail if they want.
