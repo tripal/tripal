@@ -44,6 +44,11 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     if (!$options['chado_schema']) {
       throw new \Exception(dt('The --chado_schema argument is required.'));
     }
+
+    if (!\Drupal::service('tripal.dbx')->schemaExists($options['chado_schema'])) {
+      throw new \Exception(dt('The specified chado schema "@schema" does not exist.',
+        ['@schema' => $options['chado_schema']]));
+    }
     $this->chado_schema = $options['chado_schema'];
 
     // We're going to use symphony tables to summarize what this command finds.
