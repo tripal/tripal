@@ -15,11 +15,11 @@ use Drupal\Core\Url;
  *
  *  @TripalImporter(
  *    id = "chado_taxonomy_loader",
- *    label = @Translation("Taxonomy Loader"),
- *    description = @Translation("Import a Taxonomy into Chado"),
+ *    label = @Translation("NCBI Taxonomy Loader"),
+ *    description = @Translation("Import organisms by NCBI Taxonomy ID into Chado"),
  *    use_analysis = False,
  *    require_analysis = False,
- *    button_text = @Translation("Import Taxonomy"),
+ *    button_text = @Translation("Import Organisms"),
  *    file_upload = FALSE,
  *    file_local = FALSE,
  *    file_remote = FALSE,
@@ -95,7 +95,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         currently present in this site\'s database, and queries NCBI for the
         taxonomic details.  If the importer is able to match the
         genus and species with NCBI, the species details will be imported.'),
-      '#default_value' => 1,
+      '#default_value' => 0,
     ];
 
     return $form;
@@ -105,7 +105,6 @@ class TaxonomyImporter extends ChadoImporterBase {
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-    global $user;
 
     $form_state_values = $form_state->getValues();
 
@@ -129,8 +128,9 @@ class TaxonomyImporter extends ChadoImporterBase {
         );
       }
     }
-    if (count($tax_ids) < 1) {
-      $form_state->setErrorByName('taxonomy_ids', t('No taxonomy IDs were specified'), []);
+    if ((count($tax_ids) < 1) and (!$import_existing)) {
+      $form_state->setErrorByName('taxonomy_ids',
+        t('No taxonomy IDs were specified, and "Import details for existing species" was not checked'), []);
     }
   }
 
@@ -176,31 +176,32 @@ class TaxonomyImporter extends ChadoImporterBase {
     }
 
     // Set the number of items to handle.
-    $n_to_import = count($tax_ids);
-    if ($import_existing) {
-      $n_to_import += count($this->all_orgs);
-    }
-    $this->setTotalItems($n_to_import);
+    $n_new = count($tax_ids);
+    $n_existing = $import_existing?count($this->all_orgs):0;
+    $this->setTotalItems($n_new + $n_existing);
     $this->setItemsHandled(0);
 
-    // Import from NCBI.
-    $this->logger->notice('Importing Taxonomy IDs...');
-
-    foreach ($tax_ids as $tax_id) {
-      $start = microtime(TRUE);
-      $tax_id = trim($tax_id);
-      $result = $this->importRecord($tax_id);
-
-      // Only addItemsHandled if the importRecord was a success.
-      if ($result) {
-        $this->addItemsHandled(1);
-      }
+    // If the user wants to update existing records,
+    // then do that before importing any new records.
+    if ($import_existing) {
+      $this->logger->notice('Updating @n_existing Existing Organisms...', ['@n_existing' => $n_existing]);
+      $this->updateExisting();
     }
 
-    // If the user wants to update existing records then do that.
-    if ($import_existing) {
-      $this->logger->notice('Updating Existing...');
-      $this->updateExisting($root_taxon);
+    // Import new organisms from NCBI, if specified.
+    if ($n_new) {
+      $this->logger->notice('Importing @n_new Taxonomy IDs...', ['@n_new' => $n_new]);
+
+      foreach ($tax_ids as $tax_id) {
+        $start = microtime(TRUE);
+        $tax_id = trim($tax_id);
+        $result = $this->importRecord($tax_id);
+
+        // Only addItemsHandled if the importRecord was a success.
+        if ($result) {
+          $this->addItemsHandled(1);
+        }
+      }
     }
 
     // These are options for the tripal_report_error function. We do not
@@ -680,7 +681,6 @@ class TaxonomyImporter extends ChadoImporterBase {
    *   this organism should be zero. Defaults to zero.
    */
   protected function addProperty($organism_id, $term_name, $value, $rank = 0) {
-$t1 = microtime(true); print "CP31 Add property \"$term_name\" => \"$value\"\n"; //@@@
     if (!$value) {
       return;
     }
@@ -700,7 +700,6 @@ $t1 = microtime(true); print "CP31 Add property \"$term_name\" => \"$value\"\n";
       chado_delete_property($record, $property, $this->chado_schema_main);
     }
     chado_insert_property($record, $property, [], $this->chado_schema_main);
-$t2 = microtime(true); printf("Took %0.3f\n", $t2-$t1); //@@@
   }
 
   /**
