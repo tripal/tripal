@@ -543,49 +543,6 @@ class TreeGenerator extends ChadoImporterBase {
     $branch_set[] = $node;
   }
 
-  /**
-   * Retrieves the lineage property for a given organism.
-   *
-   * @param $organism_id
-   *   The organism ID to which the property is added.
-   * @param $rank
-   *   The order for this property. The first instance of this term for
-   *   this organism should be zero. Defaults to zero.
-   *
-   * @return string
-   *   The semicolon-delimited organism lineage, or empty string if no lineage present.
-   */
-  protected function getLineage($organism_id, $rank = 0) : string {
-    $chado = $this->getChadoConnection();
-
-    // Store the cvterm_id for lineage so later queries are more efficient.
-    if (!$this->lineage_cvterm_id) {
-      $query = $chado->select('1:cvterm', 't');
-      $query->leftJoin('1:cv', 'cv', 't.cv_id = cv.cv_id');
-      $query->fields('t', ['cvterm_id']);
-      $query->condition('t.name', 'lineage', '=');
-      $query->condition('cv.name', 'local', '=');
-      $results = $query->execute();
-      $this->lineage_cvterm_id = $results->fetchObject()->cvterm_id;
-    }
-
-    $lquery = $chado->select('1:organismprop', 'op');
-    $lquery->fields('op', ['value', 'rank']);
-    $lquery->condition('op.organism_id', $organism_id, '=');
-    $lquery->condition('op.type_id', $this->lineage_cvterm_id, '=');
-    $lresults = $lquery->execute();
-    $lineage_obj = $lresults->fetchObject();
-    $lineage = '';
-    if ($lineage_obj) {
-      // rank is not used, but display a warning if a mismatch is observed.
-      if ($lineage_obj->rank != $rank) {
-        $this->logger->warning('The lineage rank for organism_id @organism_id of @lrank did not match expected rank @rank',
-          ['@organism_id' => $organism_id, '@lrank' => $lineage_obj->rank, '@rank' => $rank]);
-      }
-      $lineage = $lineage_obj->value;
-    }
-    return $lineage;
-  }
 
   /**
    * Removes any part of a lineage above an optional root taxon,
