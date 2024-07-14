@@ -113,6 +113,7 @@ class TaxonomyImporter extends ChadoImporterBase {
 
     // make sure that we have numeric values, one per line.
     $tax_ids = [];
+    $taxonomy_ids = trim($taxonomy_ids);
     if ($taxonomy_ids) {
       $tax_ids = preg_split("/[\s\n\t\r]+/", $taxonomy_ids);
       $bad_ids = [];
@@ -142,7 +143,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $chado = $this->getChadoConnection();
 
     $arguments = $this->arguments['run_args'];
-    $taxonomy_ids = $arguments['taxonomy_ids'];
+    $taxonomy_ids = trim($arguments['taxonomy_ids']);
     $import_existing = $arguments['import_existing'];
 
     // Get the list of all organisms as we'll need this to lookup existing
@@ -533,6 +534,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       $parent = (string) $taxon->ParentTaxId;
       $rank = (string) $taxon->Rank;
       $lineage = (string) $taxon->Lineage;
+      $lineageex = $this->parseLineageEx($taxon->LineageEx);
 
       // If an alternate root node taxon is specified, check for its
       // presence in the lineage. If absent, this organism will not be
@@ -560,7 +562,6 @@ class TaxonomyImporter extends ChadoImporterBase {
           $sci_name = $chado_name;
         }
       }
-      //$this->logMessage(' - Importing @sci_name', array('@sci_name' => $sci_name));
 
       // If we don't have an organism record provided then see if there
       // is one provided by Chado, if not, then try to add one.
@@ -590,6 +591,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       $this->addProperty($organism->organism_id, 'mitochondrial_genetic_code', $mito_genetic_code);
       $this->addProperty($organism->organism_id, 'genetic_code_name', $genetic_code_name);
       $this->addProperty($organism->organism_id, 'lineage', $lineage);
+      $this->addProperty($organism->organism_id, 'lineageex', $lineageex);
       $this->addProperty($organism->organism_id, 'genetic_code', $genetic_code);
 
       $name_ranks = [];
@@ -644,6 +646,29 @@ class TaxonomyImporter extends ChadoImporterBase {
   }
 
   /**
+   * Generates a lineage including rank from the NCBI xml.
+   *
+   * @param SimpleXMLElement $lineageexobj
+   *
+   * @return string
+   *   semicolon-delimited similar to lineage, but with internal
+   *   colon-delimited fields rank:taxid:scientificname
+   **/
+  private function parseLineageEx ($lineageexobj) : string {
+    $lineageex = '';
+    $lineage_parts = [];
+    if (property_exists($lineageexobj, 'Taxon')) {
+      foreach ($lineageexobj->Taxon as $lineage_element) {
+        $lineage_parts[] = $lineage_element->Rank
+                         . ':' . $lineage_element->TaxId
+                         . ':' . $lineage_element->ScientificName;
+      }
+      $lineageex = implode(';', $lineage_parts);
+    }
+    return $lineageex;
+  }
+
+  /**
    * Retrieves a property for a given organism.
    *
    * @param $organism_id
@@ -690,6 +715,10 @@ class TaxonomyImporter extends ChadoImporterBase {
       return;
     }
 
+    // @to-do This message can be removed when Chado Buddy method is available,
+    // it is just here because adding properties is so incredibly slow right now.
+    $this->logger->notice('Adding property @property to organism_id @organism_id',
+                          ['@property' => $term_name, '@organism_id' => $organism_id]);
     $record = [
       'table' => 'organism',
       'id' => $organism_id,
