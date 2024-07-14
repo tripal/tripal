@@ -50,11 +50,6 @@ class TreeGenerator extends ChadoImporterBase {
    */
   protected $rank_cvterm_id = NULL;
 
-  /**
-   * CV term id for local:lineage
-   */
-  protected $lineage_cvterm_id = NULL;
-
 
   /**
    * @see TripalImporter::form()
@@ -129,7 +124,11 @@ class TreeGenerator extends ChadoImporterBase {
       (SELECT OP.value from {1:organismprop} OP WHERE
         type_id = (SELECT cvterm_id FROM {1:cvterm} WHERE name = 'lineage'
         AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = 'local'))
-        AND OP.organism_id = O.organism_id) AS lineage
+        AND OP.organism_id = O.organism_id) AS lineage,
+      (SELECT OP.value from {1:organismprop} OP WHERE
+        type_id = (SELECT cvterm_id FROM {1:cvterm} WHERE name = 'lineageex'
+        AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = 'local'))
+        AND OP.organism_id = O.organism_id) AS lineageex
       FROM {1:organism} O
         LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
       ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
@@ -266,7 +265,6 @@ class TreeGenerator extends ChadoImporterBase {
     $chado = $this->getChadoConnection();
     $lineage_nodes[] = [];
 
-//@@@ maybe no longer needed
     // Get the "local:rank" cvterm.
     if (!$this->rank_cvterm_id) {
       $query = $chado->select('1:cvterm', 't');
@@ -314,13 +312,19 @@ class TreeGenerator extends ChadoImporterBase {
       $phylonode = $result->fetchObject();
 
       // Next get the lineage for this organism. If missing, we cannot
-      // add this organism to the tree.
-      $lineage_elements = $this->trimLineage($organism->lineage, $root_taxon);
+      // add this organism to the tree. lineageex if available includes
+      // ranks for each element.
+      $lineage = $organism->lineageex;
+      if (!$lineage) {
+        $lineage = $organism->lineage;
+      }
+      $lineage_elements = $this->trimLineage($lineage, $root_taxon);
       if (!$lineage_elements) {
         continue;
       }
       // Omit if not part of root taxon.
-      if ($root_taxon and !in_array($root_taxon, $lineage_elements)) {
+      if ($root_taxon and !in_array($root_taxon, $lineage_elements)
+          and !preg_grep('/:'.$root_taxon.'$/', $lineage_elements)) {
         continue;
       }
 
@@ -365,7 +369,6 @@ class TreeGenerator extends ChadoImporterBase {
           $phylonodeprop = chado_select_record('phylonodeprop', $columns, $values, NULL, $this->chado_schema_main);
         }
         $name = $element;
-        // $node_rank = (string) $element->Rank; // Removed because it's unused
         $node = [
           'name' => $name,
           'depth' => $i,
@@ -377,11 +380,10 @@ class TreeGenerator extends ChadoImporterBase {
           'parent' => $parent,
           'branch_set' => [],
           'parent' => $parent['name'],
-//@@@ not using properties any more?
-//          'properties' => [
-//            $rank_cvterm_id => $phylonodeprop[0]->value,
-//          ],
         ];
+        if ($phylonodeprop) {
+          $node['properties'] = [$this->rank_cvterm_id => $phylonodeprop[0]->value];
+        }
         $parent = $node;
         $this->addTaxonomyNode($tree, $node, $lineage_elements);
         $i++;
@@ -393,9 +395,9 @@ class TreeGenerator extends ChadoImporterBase {
         continue;
       }
 
-      $rank_type = 'species';
-      if (property_exists($organism, 'type_id') and $organism->type_id) {
-        $rank_type = $organism->type;
+      $leaf_rank = 'species';
+      if (property_exists($organism, 'type_id') and $organism->type_id and ($organism->type != 'no_rank')) {
+        $leaf_rank = $organism->type;
       }
 
       // Now add in the leaf node, which is the organism.
@@ -410,9 +412,9 @@ class TreeGenerator extends ChadoImporterBase {
         'right_index' => 0,
         'parent' => $parent['name'],
         'organism_id' => $organism->organism_id,
-//        'properties' => [
-//          $rank_cvterm_id => $rank_type,
-//        ],
+        'properties' => [
+          $this->rank_cvterm_id => $leaf_rank,
+        ],
       ];
       $this->addTaxonomyNode($tree, $node, $lineage_elements);
 
@@ -442,26 +444,38 @@ class TreeGenerator extends ChadoImporterBase {
 
     if (property_exists($organism, 'lineage') and $organism->lineage) {
 
-      $rank = $organism->type; //@@@ not used?
-      $lineage = $organism->lineage;
+      $leaf_rank = $organism->type;
+      if (!$leaf_rank or ($leaf_rank = 'no_rank')) {
+        $leaf_rank = 'species';
+      }
+      $lineage = $organism->lineageex ?? $organism->lineage;
       $lineage_elements = $this->trimLineage($lineage, $root_taxon);
 
       // If a root node taxon was specified, check for its
       // presence in the lineage. If absent, this organism will
       // not be included in the tree, which is indicated by status=2.
-      if ($root_taxon and !in_array($root_taxon, $lineage_elements)) {
+      if ($root_taxon and !in_array($root_taxon, $lineage_elements) 
+          and !preg_grep('/:'.$root_taxon.'$/', $lineage_elements)) {
         return 2;
       }
 
       $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
-      $this->logger->notice(' - Importing @sci_name', array('@sci_name' => $sci_name)); //@@@ was commented out
+      // $this->logger->notice(' - Importing @sci_name', array('@sci_name' => $sci_name));
 
       // Generate a nested array structure that can be used for importing the tree.
       $parent = $this->tree;
       $i = 1;
       foreach ($lineage_elements as $element) {
+        // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
+        $subelements = explode(':', $element, 3);
+        $node_rank = NULL;
+        $node_name = $subelements[0];
+        if (count($subelements) == 3) {
+          $node_rank = $subelements[0];
+          $node_name = $subelements[2];
+        }
         $node = [
-          'name' => $element,
+          'name' => $node_name,
           'depth' => $i,
           'is_root' => 0,
           'is_leaf' => 0,
@@ -470,11 +484,13 @@ class TreeGenerator extends ChadoImporterBase {
           'right_index' => 0,
           'parent' => $parent,
           'branch_set' => [],
-          'parent' => $parent['name'],
-//          'properties' => [
-//            $rank_cvterm_id => $node_rank,
-//          ],
+          'parent' => $parent['name']
         ];
+        if ($node_rank) {
+          $node['properties'] = [
+            $this->rank_cvterm_id => $node_rank,
+          ];
+        }
         $parent = $node;
         $this->addTaxonomyNode($this->tree, $node, $lineage_elements);
         $i++;
@@ -490,9 +506,9 @@ class TreeGenerator extends ChadoImporterBase {
         'right_index' => 0,
         'parent' => $parent['name'],
         'organism_id' => $organism->organism_id,
-//        'properties' => [
-//          $rank_cvterm_id => $rank,
-//        ],
+        'properties' => [
+          $this->rank_cvterm_id => $leaf_rank,
+        ],
       ];
       $this->addTaxonomyNode($this->tree, $node, $lineage_elements);
 
@@ -549,7 +565,8 @@ class TreeGenerator extends ChadoImporterBase {
    * and returns the resulting lineage as an array.
    *
    * @param string $lineage
-   *   The semicolon-delimited taxonomic lineage
+   *   The semicolon-delimited taxonomic lineage.
+   *   If is lineageex it has colon-delimited parts.
    * @param string $root_taxon
    *   The root taxon, e.g. a family, or NULL.
    *
@@ -563,8 +580,13 @@ class TreeGenerator extends ChadoImporterBase {
     // If a root taxon is specified, remove everything above it in
     // the lineage. This root_taxon will then become the tree root.
     if ($root_taxon) {
+      // Look for the lineageex element, if present
+      $matched_root_taxon = preg_grep('/:'.$root_taxon.'$/', $lineage_elements);
+      if (count($matched_root_taxon) != 0) {
+        $root_taxon = reset($matched_root_taxon);
+      }
       $index = array_search($root_taxon, $lineage_elements);
-      if ($index) {
+      if ($index !== FALSE) {
         $lineage_elements = array_slice($lineage_elements, $index, NULL);
       }
     }
