@@ -458,6 +458,11 @@ class TaxonomyImporter extends ChadoImporterBase {
         ->execute()
         ->fetchObject();
       }
+      else {
+        $this->logger->error('Organism does not have a species designation, cannot add "@sci_name"',
+          ['@sci_name' => $sci_name]
+        );
+      }
     }
     if ($organism) {
       $organism->is_new = TRUE;
