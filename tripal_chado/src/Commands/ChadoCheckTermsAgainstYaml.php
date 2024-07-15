@@ -723,7 +723,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
     // If we never did find any meaningful connections with the multiple
     // dbxrefs we found then they were false positives.
-    if ($summary_dbxref == ' ? ' AND count($dbxrefs) > 1) {
+    if ($summary_dbxref == ' ? ' AND count($dbxrefs) >= 1) {
       $summary_dbxref = ' - ';
     }
     // At this point we feel we have checked all the possibilities with the
