@@ -335,12 +335,20 @@ class TreeGenerator extends ChadoImporterBase {
       $i = 1;
       $lineage_good = TRUE;
       foreach ($lineage_elements as $element) {
+        // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
+        $subelements = explode(':', $element, 3);
+        $node_rank = NULL;
+        $node_name = $subelements[0];
+        if (count($subelements) == 3) {
+          $node_rank = $subelements[0];
+          $node_name = $subelements[2];
+        }
         // We need to find the node in the phylotree for this level of the
         // lineage, but there's a lot of repeats and we don't want to keep
         // doing the same queries over and over, so we store the nodes
         // we've already seen in the $lineage_nodes array for fast lookup.
         if (array_key_exists($element, $lineage_nodes)) {
-          $phylonode = $lineage_nodes[$element];
+          $phylonode = $lineage_nodes[$node_name];
           if (!$phylonode) {
             $lineage_good = FALSE;
             continue;
@@ -349,17 +357,17 @@ class TreeGenerator extends ChadoImporterBase {
         else {
           $values = [
             'phylotree_id' => $this->phylotree->phylotree_id,
-            'label' => $element,
+            'label' => $node_name,
           ];
           $columns = ['*'];
           $phylonode = chado_select_record('phylonode', $columns, $values, NULL, $this->chado_schema_main);
           if (count($phylonode) == 0) {
-            $lineage_nodes[$element] = NULL;
+            $lineage_nodes[$node_name] = NULL;
             $lineage_good = FALSE;
             continue;
           }
           $phylonode = $phylonode[0];
-          $lineage_nodes[$element] = $phylonode;
+          $lineage_nodes[$node_name] = $phylonode;
 
           $values = [
             'phylonode_id' => $phylonode->phylonode_id,
@@ -368,9 +376,17 @@ class TreeGenerator extends ChadoImporterBase {
           $columns = ['*'];
           $phylonodeprop = chado_select_record('phylonodeprop', $columns, $values, NULL, $this->chado_schema_main);
         }
-        $name = $element;
+        // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
+        $subelements = explode(':', $element, 3);
+        $node_rank = NULL;
+        $node_name = $subelements[0];
+        if (count($subelements) == 3) {
+          $node_rank = $subelements[0];
+          $node_name = $subelements[2];
+        }
+
         $node = [
-          'name' => $name,
+          'name' => $node_name,
           'depth' => $i,
           'is_root' => 0,
           'is_leaf' => 0,
@@ -448,7 +464,10 @@ class TreeGenerator extends ChadoImporterBase {
       if (!$leaf_rank or ($leaf_rank = 'no_rank')) {
         $leaf_rank = 'species';
       }
-      $lineage = $organism->lineageex ?? $organism->lineage;
+      $lineage = $organism->lineageex;
+      if (!$lineage) {
+        $lineage = $organism->lineage;
+      }
       $lineage_elements = $this->trimLineage($lineage, $root_taxon);
 
       // If a root node taxon was specified, check for its
@@ -474,6 +493,7 @@ class TreeGenerator extends ChadoImporterBase {
           $node_rank = $subelements[0];
           $node_name = $subelements[2];
         }
+print "CPX1 node_name=$node_name\n"; //@@@
         $node = [
           'name' => $node_name,
           'depth' => $i,
@@ -548,6 +568,10 @@ class TreeGenerator extends ChadoImporterBase {
             return;
           }
           // Otherwise, set the branch to be the current branch and continue.
+if ($i > count($lineage_elements)) {
+  print "i=$i count lineage_elements="; print count($lineage_elements); print "\n"; //@@@
+  var_dump($lineage_elements); 
+}
           if (isset($branch_set[$j]['name']) and ($branch_set[$j]['name'] == $lineage_elements[$i - 1])) {
             $branch_set = &$branch_set[$j]['branch_set'];
             break;
@@ -587,7 +611,7 @@ class TreeGenerator extends ChadoImporterBase {
       }
       $index = array_search($root_taxon, $lineage_elements);
       if ($index !== FALSE) {
-        $lineage_elements = array_slice($lineage_elements, $index, NULL);
+        $lineage_elements = array_slice($lineage_elements, $index, NULL, FALSE);
       }
     }
     return $lineage_elements;
