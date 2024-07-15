@@ -383,26 +383,6 @@ function tripal_chado_update_10401() {
 }
 
 /**
- * Updates missing mapping of CV terms to some chado table columns
- */
-function tripal_chado_update_10402() {
-  try {
-    $messenger = \Drupal::messenger();
-
-    $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
-    ChadoTermMapping::refreshMapping($id);
-    $messenger->addMessage('Reloaded Chado content terms');
-
-    $id = 'config/install/tripal_chado.chado_term_mapping.core_mapping';
-    ChadoTermMapping::refreshMapping($id);
-    $messenger->addMessage('Reloaded Chado term mapping');
-  }
-  catch (\Exception $e) {
-    throw new UpdateException('Could not reload Chado terms and mappings: ' . $e->getMessage());
-  }
-}
-
-/**
  * Updates entity_id properties added to linking fields in PR 1782
  * Note: tripal_chado_update_10403 has been renumbered to
  * tripal_chado_update_10405 by PR 1865
@@ -543,5 +523,26 @@ function tripal_chado_update_10405() {
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not add entity id to fields: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Updates missing mapping of CV terms to some chado table columns.
+ * Same as former 10402 but adding one additional term local:lineageex for PR#TBD
+ */
+function tripal_chado_update_10406() {
+  try {
+    $messenger = \Drupal::messenger();
+
+    $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
+    ChadoTermMapping::refreshMapping($id);
+    $messenger->addMessage('Reloaded Chado content terms');
+
+    $id = 'config/install/tripal_chado.chado_term_mapping.core_mapping';
+    ChadoTermMapping::refreshMapping($id);
+    $messenger->addMessage('Reloaded Chado term mapping');
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not reload Chado terms and mappings: ' . $e->getMessage());
   }
 }
