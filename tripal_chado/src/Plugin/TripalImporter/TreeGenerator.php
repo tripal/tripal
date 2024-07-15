@@ -493,7 +493,6 @@ class TreeGenerator extends ChadoImporterBase {
           $node_rank = $subelements[0];
           $node_name = $subelements[2];
         }
-print "CPX1 node_name=$node_name\n"; //@@@
         $node = [
           'name' => $node_name,
           'depth' => $i,
@@ -568,11 +567,8 @@ print "CPX1 node_name=$node_name\n"; //@@@
             return;
           }
           // Otherwise, set the branch to be the current branch and continue.
-if ($i > count($lineage_elements)) {
-  print "i=$i count lineage_elements="; print count($lineage_elements); print "\n"; //@@@
-  var_dump($lineage_elements); 
-}
-          if (isset($branch_set[$j]['name']) and ($branch_set[$j]['name'] == $lineage_elements[$i - 1])) {
+          if (isset($branch_set[$j]['name']) and isset($lineage_elements[$i - 1])
+              and ($branch_set[$j]['name'] == $lineage_elements[$i - 1])) {
             $branch_set = &$branch_set[$j]['branch_set'];
             break;
           }
