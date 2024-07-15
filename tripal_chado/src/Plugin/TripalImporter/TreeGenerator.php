@@ -16,7 +16,7 @@ use Drupal\Core\Url;
  *  @TripalImporter(
  *    id = "chado_tree_generator",
  *    label = @Translation("Taxonomy Tree Generator"),
- *    description = @Translation("Generate a taxonomy tree from organism stored in Chado"),
+ *    description = @Translation("Generate a taxonomy tree from organisms stored in Chado"),
  *    use_analysis = False,
  *    require_analysis = False,
  *    button_text = @Translation("Generate Taxonomy Tree"),
