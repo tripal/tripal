@@ -529,9 +529,9 @@ function tripal_chado_update_10405() {
 
 /**
  * Updates missing mapping of CV terms to some chado table columns.
- * Same as former 10402 but adding a new cvterm local:lineageex for PR#TBD
  */
 function tripal_chado_update_10406() {
+  // Same as former 10402 but adding a new cvterm local:lineageex for PR#TBD
   try {
     $messenger = \Drupal::messenger();
 
