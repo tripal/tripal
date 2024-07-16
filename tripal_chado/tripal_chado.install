@@ -7,6 +7,7 @@
 use \Drupal\Core\Database\Database;
 use \Drupal\Core\Utility\UpdateException;
 use \Drupal\tripal_chado\Entity\ChadoTermMapping;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
  * Implements hook_install().
@@ -528,11 +529,29 @@ function tripal_chado_update_10405() {
 
 /**
  * Updates missing mapping of CV terms to some chado table columns.
- * Same as former 10402 but adding one additional term local:lineageex for PR#TBD
+ * Same as former 10402 but adding a new cvterm local:lineageex for PR#TBD
  */
 function tripal_chado_update_10406() {
   try {
     $messenger = \Drupal::messenger();
+
+    // create the local:lineageex term for PR#TBD if it does not exist
+    $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $idspace_obj = $manager->loadCollection('local');
+    if (!is_object($idspace_obj)) {
+      throw new UpdateException('Could not load local idspace');
+    }
+    $term = $idspace_obj->getTerm('lineageex');
+    if (!$term) {
+      $term = new TripalTerm([
+        'idSpace' => 'local',
+        'accession' => 'lineageex',
+        'vocabulary' => 'local',
+        'name' => 'lineageex',
+        'definition' => 'NCBI Extended Taxonomic Lineage',
+      ]);
+      $idspace_obj->saveTerm($term);
+    }
 
     $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
     ChadoTermMapping::refreshMapping($id);
