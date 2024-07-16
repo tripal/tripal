@@ -14,23 +14,23 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  */
 class TaxonomyImporterFormTest extends ChadoTestKernelBase {
 
-	protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'stark';
 
-	protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
+  protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
 
   protected $connection;
 
-	/**
-   * {@inheritdoc}
-   */
+  /**
+    * {@inheritdoc}
+    */
   protected function setUp(): void {
     parent::setUp();
 
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
-		// Open connection to Chado
-		$this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    // Open connection to Chado
+    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
     // Ensure we can access file_managed related functionality from Drupal.
     // ... users need access to system.action config?
@@ -43,13 +43,13 @@ class TaxonomyImporterFormTest extends ChadoTestKernelBase {
 
   }
 
-	/**
-   * Tests focusing on the importer form.
-   */
+  /**
+    * Tests focusing on the importer form.
+    */
   public function testImporterForm() {
 
-		$plugin_id = 'chado_taxonomy_loader';
-    $importer_label = 'Taxonomy Loader';
+    $plugin_id = 'chado_taxonomy_loader';
+    $importer_label = 'NCBI Taxonomy Loader';
 
     // Build the form using the Drupal form builder.
     $form = \Drupal::formBuilder()->getForm(
@@ -81,6 +81,6 @@ class TaxonomyImporterFormTest extends ChadoTestKernelBase {
     //$this->assertArrayHasKey('instructions', $form,
     //  "The form should include an instructions form element.");
 
-	}
+  }
 
 }
