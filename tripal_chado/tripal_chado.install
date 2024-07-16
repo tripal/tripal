@@ -543,6 +543,7 @@ function tripal_chado_update_10406() {
     }
     $term = $idspace_obj->getTerm('lineageex');
     if (!$term) {
+      $messenger->addMessage('Adding lineageex term');
       $term = new TripalTerm([
         'idSpace' => 'local',
         'accession' => 'lineageex',
