@@ -44,12 +44,8 @@ class TripalTestTextTypeItem extends TripalFieldItemBase {
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array {
 
-    // Initialize with an empty field list.
-    $field_list = [];
-
-    // Create a valid field.
-    $field_list[] = [
-      'name' => self::generateFieldName($bundle, 'test_field'),
+    $base_field = [
+      'name' => self::generateFieldName($bundle, 'test_field', 0),
       'content_type' => $bundle->getID(),
       'label' => 'Test',
       'type' => self::$id,
@@ -82,40 +78,24 @@ class TripalTestTextTypeItem extends TripalFieldItemBase {
       ],
     ];
 
+    // Initialize with an empty field list.
+    $field_list = [];
+
+    // Create a valid field.
+    $field_list[] = $base_field;
+
+    // The same field but with a long name including spaces and unicode that
+    // will be truncated to 32 characters: 'organism__test_field_but_with__0'
+    $field_2 = $base_field;
+    $field_2['name'] = self::generateFieldName($bundle, '🙈test field_but with_a very_very long_name', 0);
+    $field_list[] = $field_2;
+
     // Create an invalid field.
-    $field_list[] = [
-      'name' => self::generateFieldName($bundle, 'test_field2'),
-      'content_type' => $bundle->getID(),
-      'label' => 'Test',
-      'type' => 'this_type_does_not_exist',
-      'description' => 'A test field',
-      'cardinality' => 1,
-      'required' => TRUE,
-      'storage_settings' => [
-        'storage_plugin_id' => 'drupal_sql_storage',
-        'storage_plugin_settings' => [],
-        'max_length' => 255,
-      ],
-      'settings' => [
-        'termIdSpace' => 'OBI',
-        'termAccession' => '0100026'
-      ],
-      'display' => [
-        'view' => [
-          'default' => [
-            'region' => 'content',
-            'label' => 'above',
-            'weight' => 10,
-          ],
-        ],
-        'form' => [
-          'default' => [
-            'region' => 'content',
-            'weight' => 10
-          ],
-        ],
-      ],
-    ];
+    $field_3 = $base_field;
+    $field_3['name'] = self::generateFieldName($bundle, 'test_field3', 0);
+    $field_3['type'] = 'this_type_does_not_exist';
+    $field_list[] = $field_3;
+
     return $field_list;
   }
 }

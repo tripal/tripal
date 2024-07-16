@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldItemBase;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
@@ -663,19 +664,27 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * an appropriate field name. It removes will always include the bundle
    * type as the prefix, followed by an underscore, followed by extra text
    * provided. It ensures that only alphanumeric values are present in the
-   * name and that it doesn't exceed 50 characters.
+   * name and that it doesn't exceed Drupal's maximum length.
    *
    * @param \Drupal\tripal\Entity\TripalEntityType TripalEntityType $bundle
    *   The TripalEntityType object with information about the bundle.
    * @param string $extra
    *   Extra text to add to the field name after the bundle name.
+   * @param int $cvterm_id
+   *   The cvterm_id value, used if we need to truncate a long name
    * @return string
    *   The generated field name.
    */
-  public static function generateFieldName(TripalEntityType $bundle, string $extra) {
+  public static function generateFieldName(TripalEntityType $bundle, string $extra, int $cvterm_id) {
+    $max_length = FieldStorageConfig::NAME_MAX_LENGTH;
     $field_name = strtolower($bundle->getID() . '_' . $extra);
-    $field_name = preg_replace('/[^\w]/', '_', $field_name);
-    $field_name = substr($field_name, 0, 50);
+    $field_name = preg_replace('/[^\w]/u', '_', $field_name);
+    // If name is longer than Drupal allows, truncate and include the
+    // cvterm_id as a suffix to guarantee uniqueness.
+    if (mb_strlen($field_name) > $max_length) {
+      $truncate_to = $max_length - strlen($cvterm_id) - 1;
+      $field_name = mb_substr($field_name, 0, $truncate_to) . '_' . $cvterm_id;
+    }
     return $field_name;
   }
 }
