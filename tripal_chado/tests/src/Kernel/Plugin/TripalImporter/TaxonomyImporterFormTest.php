@@ -21,8 +21,8 @@ class TaxonomyImporterFormTest extends ChadoTestKernelBase {
   protected $connection;
 
   /**
-    * {@inheritdoc}
-    */
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
 
@@ -44,8 +44,8 @@ class TaxonomyImporterFormTest extends ChadoTestKernelBase {
   }
 
   /**
-    * Tests focusing on the importer form.
-    */
+   * Tests focusing on the importer form.
+   */
   public function testImporterForm() {
 
     $plugin_id = 'chado_taxonomy_loader';
@@ -80,7 +80,6 @@ class TaxonomyImporterFormTest extends ChadoTestKernelBase {
     // We should also have our importer-specific form elements added to the form!
     //$this->assertArrayHasKey('instructions', $form,
     //  "The form should include an instructions form element.");
-
   }
 
 }
