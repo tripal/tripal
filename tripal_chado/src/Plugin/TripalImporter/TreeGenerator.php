@@ -113,6 +113,17 @@ class TreeGenerator extends ChadoImporterBase {
     $tree_name = $arguments['tree_name'];
     $root_taxon = $arguments['root_taxon'];
 
+    // Get the "local:rank" cvterm.
+    if (!$this->rank_cvterm_id) {
+      $query = $chado->select('1:cvterm', 't');
+      $query->leftJoin('1:cv', 'cv', 't.cv_id = cv.cv_id');
+      $query->fields('t', ['cvterm_id']);
+      $query->condition('t.name', 'rank', '=');
+      $query->condition('cv.name', 'local', '=');
+      $results = $query->execute();
+      $this->rank_cvterm_id = $results->fetchObject()->cvterm_id;
+    }
+
     // Get the list of all organisms.
     $sql = "
       SELECT O.*, CVT.name AS type,
@@ -260,21 +271,13 @@ class TreeGenerator extends ChadoImporterBase {
    * importing whole trees. So, we must rebuild the tree using the current
    * organisms.
    *
+   * @param string $root_taxon
+   *   If specified, this taxon is the root of the tree, and any
+   *   organisms not part of this taxon are excluded from the tree.
    */
   protected function rebuildTree($root_taxon = NULL) {
     $chado = $this->getChadoConnection();
     $lineage_nodes[] = [];
-
-    // Get the "local:rank" cvterm.
-    if (!$this->rank_cvterm_id) {
-      $query = $chado->select('1:cvterm', 't');
-      $query->leftJoin('1:cv', 'cv', 't.cv_id = cv.cv_id');
-      $query->fields('t', ['cvterm_id']);
-      $query->condition('t.name', 'rank', '=');
-      $query->condition('cv.name', 'local', '=');
-      $results = $query->execute();
-      $this->rank_cvterm_id = $results->fetchObject()->cvterm_id;
-    }
 
     // The taxonomic tree must have a root, so create that first.
     $tree = [
@@ -294,22 +297,10 @@ class TreeGenerator extends ChadoImporterBase {
       $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
       //$this->logMessage("- " . ($j++) . " of $total. Adding @organism", array('@organism' => $sci_name));
 
-      // First get the phylonode record for this organism.
-      $sql = "
-        SELECT P.*
-        FROM {1:phylonode} P
-          INNER JOIN {1:phylonode_organism} PO on PO.phylonode_id = P.phylonode_id
-        WHERE P.phylotree_id = :phylotree_id AND PO.organism_id = :organism_id
-      ";
-      $args = [
-        ':phylotree_id' => $this->phylotree->phylotree_id,
-        ':organism_id' => $organism->organism_id,
-      ];
-      $result = $chado->query($sql, $args);
-      if (!$result) {
+      $phylonode = $this->getPhylonode($this->phylotree->phylotree_id, $organism->organism_id);
+      if (!$phylonode) {
         continue;
       }
-      $phylonode = $result->fetchObject();
 
       // Next get the lineage for this organism. If missing, we cannot
       // add this organism to the tree. lineageex if available includes
@@ -322,6 +313,7 @@ class TreeGenerator extends ChadoImporterBase {
       if (!$lineage_elements) {
         continue;
       }
+
       // Omit if not part of root taxon.
       if ($root_taxon and !in_array($root_taxon, $lineage_elements)
           and !preg_grep('/:'.$root_taxon.'$/', $lineage_elements)) {
@@ -335,6 +327,7 @@ class TreeGenerator extends ChadoImporterBase {
       $i = 1;
       $lineage_good = TRUE;
       foreach ($lineage_elements as $element) {
+
         // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
         $subelements = explode(':', $element, 3);
         $node_rank = NULL;
@@ -343,11 +336,12 @@ class TreeGenerator extends ChadoImporterBase {
           $node_rank = $subelements[0];
           $node_name = $subelements[2];
         }
+
         // We need to find the node in the phylotree for this level of the
         // lineage, but there's a lot of repeats and we don't want to keep
         // doing the same queries over and over, so we store the nodes
         // we've already seen in the $lineage_nodes array for fast lookup.
-        if (array_key_exists($element, $lineage_nodes)) {
+        if (array_key_exists($node_name, $lineage_nodes)) {
           $phylonode = $lineage_nodes[$node_name];
           if (!$phylonode) {
             $lineage_good = FALSE;
@@ -355,12 +349,12 @@ class TreeGenerator extends ChadoImporterBase {
           }
         }
         else {
-          $values = [
+          $node_values = [
             'phylotree_id' => $this->phylotree->phylotree_id,
             'label' => $node_name,
           ];
           $columns = ['*'];
-          $phylonode = chado_select_record('phylonode', $columns, $values, NULL, $this->chado_schema_main);
+          $phylonode = chado_select_record('phylonode', $columns, $node_values, NULL, $this->chado_schema_main);
           if (count($phylonode) == 0) {
             $lineage_nodes[$node_name] = NULL;
             $lineage_good = FALSE;
@@ -369,20 +363,12 @@ class TreeGenerator extends ChadoImporterBase {
           $phylonode = $phylonode[0];
           $lineage_nodes[$node_name] = $phylonode;
 
-          $values = [
+          $prop_values = [
             'phylonode_id' => $phylonode->phylonode_id,
             'type_id' => $this->rank_cvterm_id,
           ];
           $columns = ['*'];
-          $phylonodeprop = chado_select_record('phylonodeprop', $columns, $values, NULL, $this->chado_schema_main);
-        }
-        // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
-        $subelements = explode(':', $element, 3);
-        $node_rank = NULL;
-        $node_name = $subelements[0];
-        if (count($subelements) == 3) {
-          $node_rank = $subelements[0];
-          $node_name = $subelements[2];
+          $phylonodeprop = chado_select_record('phylonodeprop', $columns, $prop_values, NULL, $this->chado_schema_main);
         }
 
         $node = [
@@ -439,6 +425,38 @@ class TreeGenerator extends ChadoImporterBase {
     }
 
     return $tree;
+  }
+
+  /**
+   * Retrieves a phylonode in a phylotree for an organism
+   *
+   * @param int $phylotree_id
+   *   The phylotree to query
+   * @param int $organism_id
+   *   The organism to query
+   *
+   * @return object
+   *   A phylonode object, or NULL if no match.
+   **/
+  protected function getPhylonode(int $phylotree_id, int $organism_id) [
+    $chado = $this->getChadoConnection();
+
+    $sql = "
+      SELECT P.*
+      FROM {1:phylonode} P
+        INNER JOIN {1:phylonode_organism} PO on PO.phylonode_id = P.phylonode_id
+      WHERE P.phylotree_id = :phylotree_id AND PO.organism_id = :organism_id
+    ";
+    $args = [
+      ':phylotree_id' => $phylotree_id,
+      ':organism_id' => $organism_id,
+    ];
+    $result = $chado->query($sql, $args);
+    if (!$result) {
+      return NULL;
+    }
+    $phylonode = $result->fetchObject();
+    return $phylonode;
   }
 
   /**
