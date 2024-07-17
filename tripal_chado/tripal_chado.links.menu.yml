@@ -49,31 +49,3 @@ tripal_chado.chado_prepare_form:
   parent: tripal_chado.storage
   weight: 60
   
-
-tripal.data_loaders.publication_loaders:
-  route_name: tripal.data_loaders.publication_loaders
-  title: 'Publication Loaders'
-  description: "Create, edit, run, delete publication loaders"
-  parent: tripal.data_loaders
-  weight: 90
-
-tripal.data_loaders.publication_loaders.manage_publication_search_queries:
-  route_name: tripal.data_loaders.publication_loaders.manage_publication_search_queries
-  title: 'Pub Search Queries'
-  description: 'Create, add, delete publication search queries'
-  parent: tripal.data_loaders.publication_loaders
-  weight: 40
-
-tripal.data_loaders.publication_loaders.run_publication_search_query:
-  route_name: tripal.data_loaders.publication_loaders.run_publication_search_query
-  title: 'Run Pub Search Query (NOT IMPLEMENTED)'
-  description: 'Run publication search query (import)'
-  parent: tripal.data_loaders.publication_loaders
-  weight: 50
-
-tripal.data_loaders.publication_loaders.import_publication_file:
-  route_name: tripal.data_loaders.publication_loaders.import_publication_file
-  title: 'Import Publication File (NOT IMPLEMENTED)'
-  description: 'Use this form if you need to upload a publication file to be imported into the database'
-  parent: tripal.data_loaders.publication_loaders
-  weight: 60
