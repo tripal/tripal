@@ -476,15 +476,17 @@ class TreeGenerator extends ChadoImporterBase {
     $chado = $this->getChadoConnection();
     $adds_organism = $organism ? FALSE : TRUE;
 
-    if (property_exists($organism, 'lineage') and $organism->lineage) {
+    $lineage = $organism->lineage ?? NULL;
+    $lineageex = $organism->lineageex ?? NULL;
+    if ($lineage or $lineageex) {
 
       $leaf_rank = $organism->type;
       if (!$leaf_rank or ($leaf_rank = 'no_rank')) {
         $leaf_rank = 'species';
       }
-      $lineage = $organism->lineageex;
-      if (!$lineage) {
-        $lineage = $organism->lineage;
+      // use the more informative ex version if available
+      if ($lineageex) {
+        $lineage = $lineageex;
       }
       $lineage_elements = $this->trimLineage($lineage, $root_taxon);
 

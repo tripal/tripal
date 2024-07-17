@@ -83,7 +83,6 @@ class TreeGeneratorTest extends ChadoTestBrowserBase {
     $this->assertEquals(1, $results_object->c1,
         'A phylotree named Test Taxonomy Tree should have been created but was not.');
 
-//@@@ to-do this is failing:
     // Check if phylonode organism was created
     $results = $chado->query("SELECT count(*) as c2 FROM {1:phylonode_organism}");
     $results_object = $results->fetchObject();
@@ -124,7 +123,7 @@ class TreeGeneratorTest extends ChadoTestBrowserBase {
     // This should be excluded because we specified a root_taxon
     $results = $chado->query("SELECT count(*) as c8 FROM {1:phylonodeprop} WHERE value='kingdom'");
     $results_object = $results->fetchObject();
-    $this->assertEqual(0, $results_object->c8,
+    $this->assertEquals(0, $results_object->c8,
         'Phylonodeprop kingdom should not exist.');
 
   }
