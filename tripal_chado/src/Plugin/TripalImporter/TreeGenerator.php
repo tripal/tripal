@@ -337,38 +337,10 @@ class TreeGenerator extends ChadoImporterBase {
           $node_name = $subelements[2];
         }
 
-        // We need to find the node in the phylotree for this level of the
-        // lineage, but there's a lot of repeats and we don't want to keep
-        // doing the same queries over and over, so we store the nodes
-        // we've already seen in the $lineage_nodes array for fast lookup.
-        if (array_key_exists($node_name, $lineage_nodes)) {
-          $phylonode = $lineage_nodes[$node_name];
-          if (!$phylonode) {
-            $lineage_good = FALSE;
-            continue;
-          }
-        }
-        else {
-          $node_values = [
-            'phylotree_id' => $this->phylotree->phylotree_id,
-            'label' => $node_name,
-          ];
-          $columns = ['*'];
-          $phylonode = chado_select_record('phylonode', $columns, $node_values, NULL, $this->chado_schema_main);
-          if (count($phylonode) == 0) {
-            $lineage_nodes[$node_name] = NULL;
-            $lineage_good = FALSE;
-            continue;
-          }
-          $phylonode = $phylonode[0];
-          $lineage_nodes[$node_name] = $phylonode;
-
-          $prop_values = [
-            'phylonode_id' => $phylonode->phylonode_id,
-            'type_id' => $this->rank_cvterm_id,
-          ];
-          $columns = ['*'];
-          $phylonodeprop = chado_select_record('phylonodeprop', $columns, $prop_values, NULL, $this->chado_schema_main);
+        // Stores the retrieved node in $lineage_nodes and returns properties
+        $phylonodeprop = $this->queryPhylonode($this->phylotree->phylotree_id, $node_name, $lineage_good, $lineage_nodes);
+        if (!$lineage_good) {
+          continue;
         }
 
         $node = [
@@ -389,7 +361,7 @@ class TreeGenerator extends ChadoImporterBase {
         $parent = $node;
         $this->addTaxonomyNode($tree, $node, $lineage_elements);
         $i++;
-      } // end foreach ($lineage_elements as $element) { ...
+      }
 
       // If $stop is set then we had problems setting the lineage so
       // skip adding the leaf node below.
@@ -425,6 +397,48 @@ class TreeGenerator extends ChadoImporterBase {
     }
 
     return $tree;
+  }
+
+  /**
+   * Called by rebuildTree(), selects a phylonode and its properties.
+   *
+   * We need to find the node in the phylotree for this level of the
+   * lineage, but there are a lot of repeats and we don't want to keep
+   * doing the same queries over and over, so we store the nodes
+   * we've already seen in the $lineage_nodes array for fast lookup.
+   *
+   **/
+  protected function queryPhylonode(int $phylotree_id, string $node_name, bool &$lineage_good, array &$lineage_nodes) {
+    if (array_key_exists($node_name, $lineage_nodes)) {
+      $phylonode = $lineage_nodes[$node_name];
+      if (!$phylonode) {
+        $lineage_good = FALSE;
+      }
+    }
+    else {
+      $node_values = [
+        'phylotree_id' => $phylotree_id,
+        'label' => $node_name,
+      ];
+      $columns = ['*'];
+      $phylonode = chado_select_record('phylonode', $columns, $node_values, NULL, $this->chado_schema_main);
+      if (count($phylonode) == 0) {
+        $lineage_nodes[$node_name] = NULL;
+        $lineage_good = FALSE;
+      }
+      else {
+        $phylonode = $phylonode[0];
+        $lineage_nodes[$node_name] = $phylonode;
+
+        $prop_values = [
+          'phylonode_id' => $phylonode->phylonode_id,
+          'type_id' => $this->rank_cvterm_id,
+        ];
+        $columns = ['*'];
+        $phylonodeprop = chado_select_record('phylonodeprop', $columns, $prop_values, NULL, $this->chado_schema_main);
+        return $phylonodeprop;
+      }
+    }
   }
 
   /**
