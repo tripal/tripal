@@ -17,7 +17,6 @@ use Drupal\Core\Url;
  *  )
  */
 class TripalPubLibraryPubmed extends TripalPubLibraryBase {
-
   public function formSubmit($form, &$form_state) {
     // DUMMY function from inheritance so it had to be kept.
     // The form_submit function which is called by TripalPubLibrary
@@ -61,6 +60,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       //to-do add ajax callback to populate?
       '#size' => 20,
     ];
+
     $form['pub_library']['days'] = [
       '#title' => t('Days since record modified'),
       '#type' => 'textfield',
@@ -72,16 +72,32 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
   }
 
   public function formValidate($form, &$form_state) {
-    // @TODO
+    // @TODO - Perform any form validations necessary with the form data
   }
 
 
   /**
    * More documentation can be found in TripalPubLibraryInterface
-   * @TODO - This will need to retrieve the publications AND save to CHADO
    */
   public function run(int $query_id) {
-    
+    // public connection is already defined due to dependency injection happening on TripalPubLibraryBase
+    $row = $this->public->select('tripal_pub_library_query', 'tpi')
+    ->fields('tpi')
+    ->condition('pub_library_query_id', $query_id, '=')
+    ->execute()
+    ->fetchObject();
+    // Get the criteria column which has serialized data, so unserialize it into $query variable
+    $query = unserialize($row->criteria);
+    // @TODO Run a unit test to see if this works correctly
+    // Go through all results until pubs is empty
+    $page_results = $this->retrieve($query);
+    // print_r($page_results);
+    // print_r(count($page_results['pubs']));
+    $publications = [];
+    if (count($page_results['pubs']) != 0) {
+      $publications = array_merge($publications, $page_results['pubs']);
+    }
+    return $publications; // @TODO I might need to change this to a structured array
   }
 
   /**
@@ -120,7 +136,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  public function remoteSearchPMID($search_array, $num_to_retrieve, $page) {
+  public function remoteSearchPMID($search_array, $num_to_retrieve, $page, $row_mode = 1) {
     // convert the terms list provided by the caller into a string with words
     // separated by a '+' symbol.
     $num_criteria = $search_array['num_criteria'];
@@ -499,7 +515,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     // @TODO refer to T3 tripal_chado module, tripal_chado.pub.api.inc
     // $pub['Citation'] = chado_pub_create_citation($pub);
   
-    $pub['raw'] = $pub_xml;
+    // $pub['raw'] = $pub_xml;
     return $pub;
   }
 
