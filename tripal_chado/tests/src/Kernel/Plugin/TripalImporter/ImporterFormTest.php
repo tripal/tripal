@@ -20,11 +20,26 @@ class ImporterFormTest extends ChadoTestKernelBase {
   protected $connection;
 
   protected $forms_to_test = [
-    ['plugin_id' => 'chado_fasta_loader', 'importer_label' => 'Chado FASTA File Loader', 'requires_analysis' => TRUE],
-    ['plugin_id' => 'chado_gff3_loader', 'importer_label' => 'Chado GFF3 File Loader'],
-    ['plugin_id' => 'chado_obo_loader', 'importer_label' => 'OBO Vocabulary Loader'],
-    ['plugin_id' => 'chado_taxonomy_loader', 'importer_label' => 'NCBI Taxonomy Loader'],
-    ['plugin_id' => 'chado_tree_generator', 'importer_label' => 'Taxonomy Tree Generator'],
+    ['plugin_id' => 'chado_fasta_loader',
+     'importer_label' => 'Chado FASTA File Loader',
+     'requires_analysis' => TRUE,
+    ],
+    ['plugin_id' => 'chado_gff3_loader',
+     'importer_label' => 'Chado GFF3 File Loader',
+     'requires_analysis' => TRUE,
+    ],
+    ['plugin_id' => 'chado_obo_loader',
+     'importer_label' => 'OBO Vocabulary Loader',
+     'requires_instructions' => TRUE,
+    ],
+    ['plugin_id' => 'chado_taxonomy_loader',
+     'importer_label' => 'NCBI Taxonomy Loader',
+     'requires_instructions' => TRUE,
+    ],
+    ['plugin_id' => 'chado_tree_generator',
+     'importer_label' => 'Taxonomy Tree Generator',
+     'requires_instructions' => TRUE,
+    ],
   ];
 
   /**
@@ -60,6 +75,7 @@ class ImporterFormTest extends ChadoTestKernelBase {
       $plugin_id = $form_to_test['plugin_id'];
       $importer_label = $form_to_test['importer_label'];
       $requires_analysis = $form_to_test['requires_analysis'] ?? FALSE;
+      $requires_instructions = $form_to_test['requires_instructions'] ?? FALSE;
 
       // Build the form using the Drupal form builder.
       $form = \Drupal::formBuilder()->getForm(
@@ -77,12 +93,12 @@ class ImporterFormTest extends ChadoTestKernelBase {
       $this->assertArrayHasKey('#title', $form,
         "The \"$plugin_id\" form should have a title set.");
       $this->assertEquals($importer_label, $form['#title'],
-        "The \"$plugin_id\" title should match the label annotated for our plugin.");
+        "The \"$plugin_id\" form title should match the label annotated for our plugin.");
       // the plugin_id stored in a value form element.
       $this->assertArrayHasKey('importer_plugin_id', $form,
         "The \"$plugin_id\" form should have an element to save the plugin_id.");
       $this->assertEquals($plugin_id, $form['importer_plugin_id']['#value'],
-        "The \"$plugin_id\" importer_plugin_id[#value] should be set to our plugin_id.");
+        "The \"$plugin_id\" form importer_plugin_id[#value] should be set to our plugin_id.");
       // a submit button.
       $this->assertArrayHasKey('button', $form,
         "The \"$plugin_id\" form should have a submit button since we indicated a specific importer.");
@@ -90,16 +106,18 @@ class ImporterFormTest extends ChadoTestKernelBase {
       // Check if this importer does or does not require an analysis.
       if ($requires_analysis) {
         $this->assertArrayHasKey('analysis_id', $form,
-        "The form should include an analysis element, yet one does not exist.");
+        "The \"$plugin_id\" form should include an analysis element, yet one does not exist.");
       }
       else {
-        $this->assertArrayHasKey('analysis_id', $form,
-        "The form should not include an analysis element, yet one exists.");
+        $this->assertArrayNotHasKey('analysis_id', $form,
+        "The \"$plugin_id\" form should not include an analysis element, yet one exists.");
       }
 
       // We should also have our importer-specific form elements added to the form!
-      //$this->assertArrayHasKey('instructions', $form,
-      //  "The \"$plugin_id\" form should include an instructions form element.");
+      if ($requires_instructions) {
+        $this->assertArrayHasKey('instructions', $form,
+          "The \"$plugin_id\" form should include an instructions form element.");
+      }
     }
   }
 
