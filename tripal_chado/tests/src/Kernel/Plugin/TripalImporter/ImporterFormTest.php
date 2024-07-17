@@ -20,6 +20,9 @@ class ImporterFormTest extends ChadoTestKernelBase {
   protected $connection;
 
   protected $forms_to_test = [
+    ['plugin_id' => 'chado_fasta_loader', 'importer_label' => 'Chado FASTA File Loader', 'requires_analysis' => TRUE],
+    ['plugin_id' => 'chado_gff3_loader', 'importer_label' => 'Chado GFF3 File Loader'],
+    ['plugin_id' => 'chado_obo_loader', 'importer_label' => 'OBO Vocabulary Loader'],
     ['plugin_id' => 'chado_taxonomy_loader', 'importer_label' => 'NCBI Taxonomy Loader'],
     ['plugin_id' => 'chado_tree_generator', 'importer_label' => 'Taxonomy Tree Generator'],
   ];
@@ -44,6 +47,7 @@ class ImporterFormTest extends ChadoTestKernelBase {
     // ... Finally the file module + tables itself.
     $this->installEntitySchema('file');
     $this->installSchema('file', ['file_usage']);
+    $this->installSchema('tripal_chado', ['tripal_cv_obo']);
 
   }
 
@@ -55,6 +59,7 @@ class ImporterFormTest extends ChadoTestKernelBase {
     foreach ($this->forms_to_test as $form_to_test) {
       $plugin_id = $form_to_test['plugin_id'];
       $importer_label = $form_to_test['importer_label'];
+      $requires_analysis = $form_to_test['requires_analysis'] ?? FALSE;
 
       // Build the form using the Drupal form builder.
       $form = \Drupal::formBuilder()->getForm(
@@ -81,6 +86,16 @@ class ImporterFormTest extends ChadoTestKernelBase {
       // a submit button.
       $this->assertArrayHasKey('button', $form,
         "The \"$plugin_id\" form should have a submit button since we indicated a specific importer.");
+
+      // Check if this importer does or does not require an analysis.
+      if ($requires_analysis) {
+        $this->assertArrayHasKey('analysis_id', $form,
+        "The form should include an analysis element, yet one does not exist.");
+      }
+      else {
+        $this->assertArrayHasKey('analysis_id', $form,
+        "The form should not include an analysis element, yet one exists.");
+      }
 
       // We should also have our importer-specific form elements added to the form!
       //$this->assertArrayHasKey('instructions', $form,
