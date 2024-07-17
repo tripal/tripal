@@ -559,6 +559,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $pyear = $publication['Year'];
       // @TODO - ASK STEPHEN about what to do when Authors is missing.
       $uniquename = str_replace(',',';', @$publication['Authors']) . $title . ' ' . $series_name . '; ' . $pyear;
+      // @TODO - NEW - SUGGESTED BY STEPHEN - Set the uniquename as the citation 
       $publication['Uniquename'] = $uniquename;
       // Old code: tripal_pub_get_publication_array (TRIPAL 3)
 
