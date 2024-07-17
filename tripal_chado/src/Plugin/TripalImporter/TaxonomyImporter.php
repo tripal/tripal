@@ -21,8 +21,6 @@ use Drupal\Core\Url;
  *    require_analysis = False,
  *    button_text = @Translation("Import Organisms"),
  *    file_upload = FALSE,
- *    upload_title = @Translation("not used"),
- *    upload_description = @Translation("not used"),
  *    file_local = FALSE,
  *    file_remote = FALSE,
  *    file_required = FALSE,
