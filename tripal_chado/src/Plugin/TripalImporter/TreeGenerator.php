@@ -438,7 +438,7 @@ class TreeGenerator extends ChadoImporterBase {
    * @return object
    *   A phylonode object, or NULL if no match.
    **/
-  protected function getPhylonode(int $phylotree_id, int $organism_id) [
+  protected function getPhylonode(int $phylotree_id, int $organism_id) {
     $chado = $this->getChadoConnection();
 
     $sql = "
