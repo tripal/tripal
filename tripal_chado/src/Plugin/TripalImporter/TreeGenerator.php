@@ -168,6 +168,7 @@ class TreeGenerator extends ChadoImporterBase {
     if ($number_valid < 1) {
       $this->logger->error('There are no qualifying organisms with a taxonomic lineage, a tree cannot'
                          . ' be generated. You may need to run the NCBI Taxonomy Importer first.');
+      $this->removeTree($tree_name);
       return;
     }
 
@@ -276,6 +277,16 @@ class TreeGenerator extends ChadoImporterBase {
     return $phylotree;
   }
 
+  /**
+   * Removes the chado.phylotree record.
+   * Used when tree generation is cancelled due to lack of any valid organisms.
+   */
+  protected function removeTree($tree_name) {
+    $phylotree = chado_select_record('phylotree', ['*'], ['name' => $tree_name], NULL, $this->chado_schema_main);
+    if ($phylotree) {
+      chado_delete_phylotree($phylotree[0]->phylotree_id, $this->chado_schema_main);
+    }
+  }
 
   /**
    * Iterates through all existing organisms and builds the taxonomy tree.
@@ -307,76 +318,10 @@ class TreeGenerator extends ChadoImporterBase {
     $total = count($this->all_orgs);
     $j = 1;
     foreach ($this->all_orgs as $organism) {
-      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
-      //$this->logMessage("- " . ($j++) . " of $total. Adding @organism", array('@organism' => $sci_name));
 
-      $phylonode = $this->getPhylonode($this->phylotree->phylotree_id, $organism->organism_id);
-      if (!$phylonode) {
-        continue;
-      }
+      $this->rebuildTreeOrganismLineage($organism, $root_taxon, $lineage_good);
 
-      // Next get the lineage for this organism. If missing, we cannot
-      // add this organism to the tree. lineageex if available includes
-      // ranks for each element.
-      $lineage = $organism->lineageex;
-      if (!$lineage) {
-        $lineage = $organism->lineage;
-      }
-      $lineage_elements = $this->trimLineage($lineage, $root_taxon);
-      if (!$lineage_elements) {
-        continue;
-      }
-
-      // Omit if not part of root taxon.
-      if ($root_taxon and !in_array($root_taxon, $lineage_elements)
-          and !preg_grep('/:'.$root_taxon.'$/', $lineage_elements)) {
-        continue;
-      }
-
-      // Now rebuild the branch for this organism by first creating
-      // the nodes for the full lineage, and finally adding the
-      // organism as a leaf node.
-      $parent = $tree;
-      $i = 1;
-      $lineage_good = TRUE;
-      foreach ($lineage_elements as $element) {
-
-        // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
-        $subelements = explode(':', $element, 3);
-        $node_rank = NULL;
-        $node_name = $subelements[0];
-        if (count($subelements) == 3) {
-          $node_rank = $subelements[0];
-          $node_name = $subelements[2];
-        }
-
-        // Stores the retrieved node in $lineage_nodes and returns properties
-        $phylonodeprop = $this->queryPhylonode($this->phylotree->phylotree_id, $node_name, $lineage_good, $lineage_nodes);
-        if (!$lineage_good) {
-          continue;
-        }
-
-        $node = [
-          'name' => $node_name,
-          'depth' => $i,
-          'is_root' => 0,
-          'is_leaf' => 0,
-          'is_internal' => 1,
-          'left_index' => 0,
-          'right_index' => 0,
-          'parent' => $parent,
-          'branch_set' => [],
-          'parent' => $parent['name'],
-        ];
-        if ($phylonodeprop) {
-          $node['properties'] = [$this->rank_cvterm_id => $phylonodeprop[0]->value];
-        }
-        $parent = $node;
-        $this->addTaxonomyNode($tree, $node, $lineage_elements);
-        $i++;
-      }
-
-      // If $stop is set then we had problems setting the lineage so
+      // If $lineage_good is not set then we had problems setting the lineage so
       // skip adding the leaf node below.
       if (!$lineage_good) {
         continue;
@@ -413,7 +358,82 @@ class TreeGenerator extends ChadoImporterBase {
   }
 
   /**
-   * Called by rebuildTree(), selects a phylonode and its properties.
+   * Called by rebuildTree(), adds lineage nodes for one organism.
+   *
+   **/
+  protected function rebuildTreeOrganismLineage($organism, $root_taxon, &$lineage_good) {
+    $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
+    //$this->logMessage("- " . ($j++) . " of $total. Adding @organism", array('@organism' => $sci_name));
+
+    $phylonode = $this->getPhylonode($this->phylotree->phylotree_id, $organism->organism_id);
+    if (!$phylonode) {
+      return;
+    }
+
+    // Next get the lineage for this organism. If missing, we cannot
+    // add this organism to the tree. lineageex if available includes
+    // ranks for each element.
+    $lineage = $organism->lineageex;
+    if (!$lineage) {
+      $lineage = $organism->lineage;
+    }
+    $lineage_elements = $this->trimLineage($lineage, $root_taxon);
+    if (!$lineage_elements) {
+      return;
+    }
+
+    // Omit if not part of root taxon.
+    if ($root_taxon and !in_array($root_taxon, $lineage_elements)
+        and !preg_grep('/:'.$root_taxon.'$/', $lineage_elements)) {
+      return;
+    }
+
+    // Now rebuild the branch for this organism by first creating
+    // the nodes for the full lineage, and finally adding the
+    // organism as a leaf node.
+    $parent = $tree;
+    $i = 1;
+    $lineage_good = TRUE;
+    foreach ($lineage_elements as $element) {
+
+      // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
+      $subelements = explode(':', $element, 3);
+      $node_rank = NULL;
+      $node_name = $subelements[0];
+      if (count($subelements) == 3) {
+        $node_rank = $subelements[0];
+        $node_name = $subelements[2];
+      }
+
+      // Stores the retrieved node in $lineage_nodes and returns properties
+      $phylonodeprop = $this->queryPhylonode($this->phylotree->phylotree_id, $node_name, $lineage_good, $lineage_nodes);
+      if (!$lineage_good) {
+        continue;
+      }
+
+      $node = [
+        'name' => $node_name,
+        'depth' => $i,
+        'is_root' => 0,
+        'is_leaf' => 0,
+        'is_internal' => 1,
+        'left_index' => 0,
+        'right_index' => 0,
+        'parent' => $parent,
+        'branch_set' => [],
+        'parent' => $parent['name'],
+      ];
+      if ($phylonodeprop) {
+        $node['properties'] = [$this->rank_cvterm_id => $phylonodeprop[0]->value];
+      }
+      $parent = $node;
+      $this->addTaxonomyNode($tree, $node, $lineage_elements);
+      $i++;
+    }
+  }
+
+  /**
+   * Called by rebuildTreeOrganismLineage(), selects a phylonode and its properties.
    *
    * We need to find the node in the phylotree for this level of the
    * lineage, but there are a lot of repeats and we don't want to keep
