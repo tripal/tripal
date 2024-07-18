@@ -149,6 +149,15 @@ class TreeGenerator extends ChadoImporterBase {
       $this->all_orgs[] = $item;
     }
 
+    // Retrieve lineage information
+    $this->logger->notice('Retrieving lineages...');
+    $number_valid = $this->retrieveLineage($root_taxon);
+    if ($number_valid < 1) {
+      $this->logger->error('There are no qualifying organisms with a taxonomic lineage, a tree cannot'
+                         . ' be generated. You may need to run the NCBI Taxonomy Importer first.');
+      return;
+    }
+
     // Get the phylotree object.
     $this->logger->notice('Initializing Tree...');
     $this->phylotree = $this->initTree($tree_name);
@@ -161,10 +170,6 @@ class TreeGenerator extends ChadoImporterBase {
     // Set the number of items to handle.
     $this->setTotalItems(count($this->all_orgs));
     $this->setItemsHandled(0);
-
-    // Update existing records
-    $this->logger->notice('Retrieving lineages...');
-    $this->retrieveLineage($root_taxon);
 
     // These are options for the tripal_report_error function. We do not
     // want to log messages to the watchdog but we do for the job and to
@@ -196,12 +201,14 @@ class TreeGenerator extends ChadoImporterBase {
     $total = count($this->all_orgs);
     $omitted_organisms = [];
     $outside_root_taxon = 0;
+    $number_valid = 0;
 
     foreach ($this->all_orgs as $organism) {
       $status = $this->addOrganismNode($organism, $root_taxon);
       // 1=added, 2=not within root_taxon, 3=no lineage available
       if ($status == 1) {
         $this->addItemsHandled(1);
+        $number_valid++;
       }
       elseif ($status == 2) {
         $outside_root_taxon++;
@@ -212,17 +219,23 @@ class TreeGenerator extends ChadoImporterBase {
         $omitted_organisms[] = $message;
       }
     }
-    if ($outside_root_taxon) {
-      $this->logger->notice('@count organisms were outside the specified root taxon "@root_taxon"'
-                          . ' and have not been included in the tree.',
-        ['@count' => $outside_root_taxon, '@root_taxon' => $root_taxon]);
+
+    // We do not need to display these message if there are no valid organisms,
+    // because tree generation will be cancelled.
+    if ($number_valid) {
+      if ($outside_root_taxon) {
+        $this->logger->notice('@count organisms were outside the specified root taxon "@root_taxon"'
+                            . ' and have not been included in the tree.',
+          ['@count' => $outside_root_taxon, '@root_taxon' => $root_taxon]);
+      }
+      if (count($omitted_organisms)) {
+        $omitted_list = implode('", "', $omitted_organisms);
+        $this->logger->warning('The following @count organisms do not have a taxonomic lineage stored in Chado,'
+                             . ' and have not been included in the tree: "@omitted_list"',
+          ['@count' => count($omitted_organisms), '@omitted_list' => $omitted_list]);
+      }
     }
-    if (count($omitted_organisms)) {
-      $omitted_list = implode('", "', $omitted_organisms);
-      $this->logger->warning('The following @count organisms do not have a taxonomic lineage stored in Chado,'
-                           . ' and have not been included in the tree: "@omitted_list"',
-        ['@count' => count($omitted_organisms), '@omitted_list' => $omitted_list]);
-    }
+    return $number_valid;
   }
 
 

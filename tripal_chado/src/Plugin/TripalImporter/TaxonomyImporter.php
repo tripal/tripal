@@ -325,8 +325,8 @@ class TaxonomyImporter extends ChadoImporterBase {
     }
     if (count($omitted_organisms)) {
       $omitted_list = implode('", "', $omitted_organisms);
-      $this->logger->warning('The following @count organisms do not have an NCBI taxonomy ID,'
-                           . ' and have not been included in the tree: "@omitted_list"',
+      $this->logger->warning('The following @count existing organisms do not have an'
+                           . ' NCBI taxonomy ID, and have not been updated: "@omitted_list"',
         ['@count' => count($omitted_organisms), '@omitted_list' => $omitted_list]
       );
     }
