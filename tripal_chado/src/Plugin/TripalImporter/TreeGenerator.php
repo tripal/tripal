@@ -149,15 +149,6 @@ class TreeGenerator extends ChadoImporterBase {
       $this->all_orgs[] = $item;
     }
 
-    // Retrieve lineage information
-    $this->logger->notice('Retrieving lineages...');
-    $number_valid = $this->retrieveLineage($root_taxon);
-    if ($number_valid < 1) {
-      $this->logger->error('There are no qualifying organisms with a taxonomic lineage, a tree cannot'
-                         . ' be generated. You may need to run the NCBI Taxonomy Importer first.');
-      return;
-    }
-
     // Get the phylotree object.
     $this->logger->notice('Initializing Tree...');
     $this->phylotree = $this->initTree($tree_name);
@@ -170,6 +161,15 @@ class TreeGenerator extends ChadoImporterBase {
     // Set the number of items to handle.
     $this->setTotalItems(count($this->all_orgs));
     $this->setItemsHandled(0);
+
+    // Retrieve lineage information
+    $this->logger->notice('Retrieving lineages...');
+    $number_valid = $this->retrieveLineage($root_taxon);
+    if ($number_valid < 1) {
+      $this->logger->error('There are no qualifying organisms with a taxonomic lineage, a tree cannot'
+                         . ' be generated. You may need to run the NCBI Taxonomy Importer first.');
+      return;
+    }
 
     // These are options for the tripal_report_error function. We do not
     // want to log messages to the watchdog but we do for the job and to
