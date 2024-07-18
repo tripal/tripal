@@ -508,7 +508,7 @@ class TreeGenerator extends ChadoImporterBase {
     if ($lineage or $lineageex) {
 
       $leaf_rank = $organism->type;
-      if (!$leaf_rank or ($leaf_rank = 'no_rank')) {
+      if (!$leaf_rank or ($leaf_rank == 'no_rank')) {
         $leaf_rank = 'species';
       }
       // use the more informative ex version if available
