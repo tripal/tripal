@@ -43,23 +43,23 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
   }
 
-	/**
+  /**
    * Tests focusing on the ChadoBuddy Plugin Manager.
    */
   public function testChadoBuddyManager() {
 
     // Test the ChadoBuddy Plugin Manager.
-		// --Ensure we can instantiate the plugin manager.
-		$type = \Drupal::service('tripal_chado.chado_buddy');
-		// Note: If the plugin manager is not found you will get a ServiceNotFoundException.
-		$this->assertIsObject($type, 'An chado buddy plugin service object was not returned.');
+    // --Ensure we can instantiate the plugin manager.
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    // Note: If the plugin manager is not found you will get a ServiceNotFoundException.
+    $this->assertIsObject($type, 'An chado buddy plugin service object was not returned.');
 
-		// --Use the plugin manager to get a list of available implementations.
-		$plugin_definitions = $type->getDefinitions();
-		$this->assertIsArray(
-			$plugin_definitions,
-			'Implementations of the chado buddy plugin should be returned in an array.'
-		);
+    // --Use the plugin manager to get a list of available implementations.
+    $plugin_definitions = $type->getDefinitions();
+    $this->assertIsArray(
+      $plugin_definitions,
+      'Implementations of the chado buddy plugin should be returned in an array.'
+    );
 
     // --Use the plugin manager to create an instance.
     $instance = $type->createInstance('chado_cvterm_buddy', []);
@@ -69,7 +69,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       "The chado connection should have been set by the plugin manager but the value is NOT AN OBJECT.");
     $this->assertInstanceOf(ChadoConnection::class, $instance->connection,
       "The chado connection should have been set by the plugin manager but the value is NOT A CHADOCONNECTION OBJECT.");
-	}
+  }
 
   /**
    * Tests focused on basic getter/setters.
