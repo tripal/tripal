@@ -20,7 +20,7 @@ class ChadoBuddyRecord {
   protected string $base_table;
 
   /**
-   * The name of the chado schema this record from retrieved from.
+   * The name of the chado schema this record was retrieved from.
    * @var string
    */
   protected string $schema_name;
