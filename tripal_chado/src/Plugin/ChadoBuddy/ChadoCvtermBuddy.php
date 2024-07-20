@@ -37,7 +37,30 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *     encountered then an exception will be thrown.
    */
   public function getCv(array $identifiers, array $options = []) {
+    $query = $this->connection->select('1:cv', 'cv');
+    foreach ($identifiers as $key => $value) {
+      $query->condition('cv.'.$key, $value, '=');
+    }
+    $query->fields('cv', ['cv_id', 'name', 'definition']);
+    $results = $query->execute();
+    $buddies = [];
+    while ($values = $results->fetchAssoc()) {
+      $new_record = new ChadoBuddyRecord();
+//        $new_record->schema_name = $this->connection->???;
+//        $new_record->base_table = 'cv';
+      $new_record->setValues($values);
+      $buddies[] = $new_record;
+    }
 
+    if (count($buddies) > 1) {
+      return $buddies;
+    }
+    elseif (count($buddies) == 1) {
+      return $buddies[0];
+    }
+    else {
+      return FALSE;
+    }
   }
 
   /**

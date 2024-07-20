@@ -23,15 +23,22 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
    */
   public function testCvMethods() {
 
-    $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-    );
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $instance = $type->createInstance('chado_cvterm_buddy', []);
 
     // TEST: if there is no record then it should return false when we try to get it.
+    $chado_buddy_records = $instance->getCv(['name' => 'nowaydoesthisexist']);
+    $this->assertFalse($chado_buddy_records, 'We retrieved a CV when one does not exist');
 
-    // TEST: We should be able to insert a record if it doesn't exist.
+    // TEST: We should be able to retrieve an existing CV record.
+    $chado_buddy_records = $instance->getCv(['name' => 'local']);
+    $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing CV "local"');
 
-    // TEST: We should be able to update an existing record.
+    // TEST: We should be able to insert a CV record if it doesn't exist.
+
+    // TEST: We should not be able to insert a CV record if it does exist.
+
+    // TEST: We should be able to update an existing CV record.
 
     // TEST: Upsert should insert a record that doesn't exist.
 
