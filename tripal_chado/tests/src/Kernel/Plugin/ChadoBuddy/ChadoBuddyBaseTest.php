@@ -77,7 +77,7 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
   public function testChadoBuddyGetterSetters() {
 
     $type = \Drupal::service('tripal_chado.chado_buddy');
-    $this->assertIsObject($type, 'An chado buddy plugin service object was not returned.');
+    $this->assertIsObject($type, 'A chado buddy plugin service object was not returned.');
     $instance = $type->createInstance('chado_cvterm_buddy', []);
     $this->assertIsObject($instance,
       "We did not have an object created when trying to create an ChadoBuddy instance.");
