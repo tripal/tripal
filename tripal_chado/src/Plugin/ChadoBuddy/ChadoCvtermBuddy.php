@@ -38,7 +38,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getCv(array $identifiers, array $options = []) {
-    if (!$values)) {
+    if (!$identifiers) {
       throw new ChadoBuddyException("ChadoBuddy getCv error, no values were specified\n");
     }
     $query = $this->connection->select('1:cv', 'cv');
@@ -120,7 +120,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertCv(array $values, array $options = []) {
-    if (!$values)) {
+    if (!$values) {
       throw new ChadoBuddyException("ChadoBuddy insertCv error, no values were specified\n");
     }
 
@@ -193,10 +193,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   be thrown if an error is encountered.
    */
   public function updateCv(array $values, array $conditions, array $options = []) {
-    if (!$values)) {
+    if (!$values) {
       throw new ChadoBuddyException("ChadoBuddy updateCv error, no values were specified\n");
     }
-    if (!$conditions)) {
+    if (!$conditions) {
       throw new ChadoBuddyException("ChadoBuddy updateCv error, no conditions were specified\n");
     }
     $existing_record = $this->getCv($conditions, $options);
@@ -279,7 +279,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertCv(array $values, array $options = []) {
-    if (!$values)) {
+    if (!$values) {
       throw new ChadoBuddyException("ChadoBuddy upsertCv error, no values were specified\n");
     }
     $existing_record = $this->getCv($values, $options);
