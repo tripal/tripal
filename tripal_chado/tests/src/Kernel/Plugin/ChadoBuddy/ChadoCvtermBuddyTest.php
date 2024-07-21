@@ -141,5 +141,10 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
 
     // TEST: we should be able to get the two records created above.
 
+    // TEST: associate a cvterm with a base table.
+    $status = $instance->associateCvterm('feature', 1, $chado_buddy_records);
+    $this->assertIsBool($status, 'We did not retrieve a boolean when associating a cvterm with the base table "feature"');
+    $this->assertTrue($status, 'We did not retrieve TRUE when associating a cvterm with the base table "feature"');
+
   }
 }

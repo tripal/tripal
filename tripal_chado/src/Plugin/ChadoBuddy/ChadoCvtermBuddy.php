@@ -382,10 +382,12 @@ $dbxref_id = $query->execute()->fetchField();
    * @param array $values
    *   An associative array of the values for the final record (i.e what you
    *   want to update the record to be) including:
+   *     - cvterm_id
    *     - cv_id
    *     - cv_name
    *     - name
    *     - definition
+   *     - dbxref_id
    *     - term_accession
    *     - term_idspace
    *     - is_obsolete
@@ -401,12 +403,74 @@ $dbxref_id = $query->execute()->fetchField();
    *   returned if no record was found to update and a ChadoBuddyException will be thrown
    *   if an error is encountered.
    */
-  public function updateCvterm() {
+  public function updateCvterm(array $values, array $conditions, array $options = []) {
+    if (!$values) {
+      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, no values were specified\n");
+    }
+    if (!$conditions) {
+      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, no conditions were specified\n");
+    }
+    $existing_record = $this->getCvterm($conditions, $options);
+    if (!$existing_record) {
+      return FALSE;
+    }
+    if (is_array($existing_record)) {
+      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
+    }
+    // If the dbxref is being changed, then we will optionally delete
+    // the old one, then create a new one.
+    $existing_values = $existing_record->getValues();
+    $update_dbxref = FALSE;
+    if (array_key_exists('term_idspace', $values) and ($values['term_idspace'] != $existing_values['term_idspace'])) {
+      $update_dbxref = TRUE;
+    }
+    if (array_key_exists('term_accession', $values) and ($values['term_accession'] != $existing_values['term_accession'])) {
+      $update_dbxref = TRUE;
+    }
+    if ($update_dbxref) {
+      // @@@ update here once dbxref buddy is done
+    }
 
+    // Update query will only be based on the cvterm_id, which we get from the retrieved record.
+    $cvtern_id = $existing_record->getValue('cvterm_id');
+    // We do not support changing the cvterm_id.
+    if (array_key_exists('cvterm_id', $values)) {
+      unset($values['cvterm_id']);
+    }
+    // Create a subset of the passed $values for just the cvterm table.
+    $term_values = [];
+    foreach ($this->cvterm_required as $key => $required) {
+      if ($required and !array_key_exists($key, $values)) {
+        throw new ChadoBuddyException("ChadoBuddy updateCvterm error, required column \"$key\" was not specified");
+      }
+      if (array_key_exists($key, $values)) {
+        $term_values[$key] = $values[$key];
+      }
+    }
+    $query = $this->connection->update('1:cvterm');
+    $query->condition('cvterm_id', $cvterm_id, '=');
+    $query->fields($term_values);
+    try {
+      $results = $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy updateCvterm error '.$e->getMessage());
+    }
+    $existing_record = $this->getCvterm($values, $options);
+
+    // These are unlikely cases, but you never know.
+    if (!$existing_record) {
+      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, did not retrieve the record just updated\n".print_r($values, TRUE));
+    }
+    if (is_array($existing_record)) {
+      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the record just updated\n".print_r($values, TRUE));
+    }
+
+    return $existing_record;
   }
 
   /**
-   * Insert a controlled vocabulary if it doesn't yet exist OR update it if does.
+   * Insert a controlled vocabulary if it doesn't yet exist OR update it if it does.
    *
    * @param array $values
    *   An associative array of the values for the final record including:
@@ -439,14 +503,16 @@ $dbxref_id = $query->execute()->fetchField();
   }
 
   /**
-   * Insert a controlled vocabulary term if it doesn't yet exist OR update it if does.
+   * Insert a controlled vocabulary term if it doesn't yet exist OR update it if it does.
    *
    * @param array $values
    *   An associative array of the values for the final record including:
+   *     - cvterm_id
    *     - cv_id
    *     - cv_name
    *     - name
    *     - definition
+   *     - dbxref_id
    *     - term_accession
    *     - term_idspace
    *     - is_obsolete
@@ -459,13 +525,27 @@ $dbxref_id = $query->execute()->fetchField();
    *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertCvterm(array $values, array $options = []) {
-
+    if (!$values) {
+      throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, no values were specified\n");
+    }
+    $existing_record = $this->getCvtern($values, $options);
+    if ($existing_record) {
+      if (is_array($existing_record)) {
+        throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, more than one record matched the specified values\n".print_r($values, TRUE));
+      }
+      $conditions = ['cvterm_id' => $existing_record->getValue('cvterm_id')];
+      $new_record = $this->updateCv($values, $conditions, $options);
+    }
+    else {
+      $new_record = $this->insertCvterm($values, $options);
+    }
+    return $new_record;
   }
 
   /**
    * Add a record to a controlled vocabulary term linking table (ie: feature_cvterm).
    *
-   * @param string $basetable
+   * @param string $base_table
    *   The base table for which the cvterm should be associated. Thus to associate
    *   a cvterm with a feature the basetable=feature and cvterm_id is added to the
    *   feature_cvterm table.
@@ -477,11 +557,28 @@ $dbxref_id = $query->execute()->fetchField();
    *   None supported yet. Here for consistency.
    *
    * @return bool
-   *   Returns true if successful, and throws a ChadoBuddyException if an error is
+   *   Returns TRUE if successful, and throws a ChadoBuddyException if an error is
    *   encountered. Both the cvterm and the chado record indicated by $record_id
    *   MUST ALREADY EXIST.
    */
-  public function associateCvterm(string $basetable, int $record_id, ChadoBuddyRecord $cvterm, array $options = []) {
+  public function associateCvterm(string $base_table, int $record_id, ChadoBuddyRecord $cvterm, array $options = []) {
+    // Get primary key of the base table
+$t1 = microtime(TRUE);
+    $schema = $this->connection->schema(); //@@@ wrong
+    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = $base_table_def['primary key'];
+$t2 = microtime(TRUE);
+print "CPX1 time=".($t2-$t1)."\n";
 
+    try {
+      $query = $this->connection->insert('1:'.$basetable);
+      $query->fields(['cvterm_id' => $cvterm->getValue('cvterm_id'),
+                      $base_pkey_col => $record_id]);
+      $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy associateCvterm error '.$e->getMessage());
+    }
+    return TRUE;
   }
 }
