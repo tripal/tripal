@@ -51,6 +51,7 @@ class ChadoBuddyRecord {
    *
    * @param string $key
    *   A key for the $values associative array.
+   *
    * @param mixed $value
    *   The value to be stored.
    */
@@ -63,6 +64,7 @@ class ChadoBuddyRecord {
    * a chado table record.
    *
    * @return array
+   *   The array of key value pairs.
    */
   public function getValues() {
     return $this->values;
@@ -73,6 +75,7 @@ class ChadoBuddyRecord {
    *
    * @param string $key
    *   A key for the $values associative array.
+   *
    * @param array $options
    *   Associative array of options.
    *   The only supported option is 'strict'. If the key does not
@@ -80,7 +83,10 @@ class ChadoBuddyRecord {
    *   If FALSE, return NULL. Defaults to TRUE.
    *
    * @return mixed
+   *   The value corresponding to the key, or NULL if key is absent.
+   *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   When the specified key is not present and strict is set to TRUE.
    */
   public function getValue(string $key, array $options = []) {
     $strict = $options['strict'] ?? TRUE;
