@@ -145,3 +145,13 @@ CREATE TABLE chadoprop (
     rank integer DEFAULT 0 NOT NULL
 );
 
+CREATE TABLE feature_dbxref (
+    feature_dbxref_id bigint NOT NULL,
+    feature_id bigint NOT NULL,
+    dbxref_id bigint NOT NULL,
+    is_current boolean DEFAULT true NOT NULL
+);
+CREATE INDEX feature_dbxref_idx1 ON feature_dbxref USING btree (feature_id);
+CREATE INDEX feature_dbxref_idx2 ON feature_dbxref USING btree (dbxref_id);
+COMMENT ON TABLE feature_dbxref IS 'Links a feature to dbxrefs.';
+COMMENT ON COLUMN feature_dbxref.is_current IS 'True if this secondary dbxref is the most up to date accession in the corresponding db. Retired accessions should set this field to false';
