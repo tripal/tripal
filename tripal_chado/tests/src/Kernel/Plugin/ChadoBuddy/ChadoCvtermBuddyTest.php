@@ -38,40 +38,41 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
 
     // TEST: if there is no record then it should return false when we try to get it.
     $chado_buddy_records = $instance->getCv(['name' => 'nowaydoesthisexist']);
-    $this->assertFalse($chado_buddy_records, 'We retrieved a CV when one does not exist');
+    $this->assertFalse($chado_buddy_records, 'We did not retrieve FALSE for a CV that does not exist');
 
     // TEST: We should be able to retrieve an existing CV record. Dummy chado has 'test_cv', 'CV for testing'
     $chado_buddy_records = $instance->getCv(['name' => 'test_cv']);
-    $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing CV "local"');
+    $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing CV "test_cv"');
     $values = $chado_buddy_records->getValues();
-    $this->assertIsArray($values, 'We did not retrieve an array of values for the existing CV "local"');
-    $this->assertEquals(3, count($values), 'The values array is of unexpected size for the existing CV "local"');
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the existing CV "test_cv"');
+    $this->assertEquals(3, count($values), 'The values array is of unexpected size for the existing CV "test_cv"');
 
     // TEST: We should be able to insert a CV record if it doesn't exist.
-    $chado_buddy_records = $instance->insertCv(['name' => 'newCv000001', 'definition' => 'definition000001']);
-    $this->assertIsObject($chado_buddy_records, 'We did not insert a new CV "newCv000001"');
+    $chado_buddy_records = $instance->insertCv(['name' => 'newCv001', 'definition' => 'def001']);
+    $this->assertIsObject($chado_buddy_records, 'We did not insert a new CV "newCv001"');
     $values = $chado_buddy_records->getValues();
-    $this->assertIsArray($values, 'We did not retrieve an array of values for the new CV "newCv000001"');
-    $this->assertEquals(3, count($values), 'The values array is of unexpected size for the new CV "newCv000001"');
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the new CV "newCv001"');
+    $this->assertEquals(3, count($values), 'The values array is of unexpected size for the new CV "newCv001"');
     $cv_id = $chado_buddy_records->getValue('cv_id');
-    $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new CV "newCv000001"');
-
-    // TEST: We should not be able to insert a CV record if it does exist.
-    $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
-    $chado_buddy_records = $instance->insertCv(['name' => 'newCv000001', 'definition' => 'definition000001']);
+    $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new CV "newCv001"');
 
     // TEST: We should be able to update an existing CV record.
-//not written yet    $chado_buddy_records = $instance->upsertCv(['name' => 'newCv000001', 'definition' => 'definition000002']);
-//    $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing CV "newCv000001"');
-//    $values = $chado_buddy_records->getValues();
-//    $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted CV "newCv000001"');
-//    $this->assertEquals('definition000002', $values['definition'], 'The CV definition was not updated for CV "newCv000001"');
+    $chado_buddy_records = $instance->updateCv(['name' => 'newCv002', 'definition' => 'def002'], ['name' => 'newCv001']);
+    $this->assertIsObject($chado_buddy_records, 'We did not update an existing CV "newCv001"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the updateed CV "newCv001"');
+    $this->assertEquals('newCv002', $values['name'], 'The CV name was not updated for CV "newCv001"');
+    $this->assertEquals('def002', $values['definition'], 'The CV definition was not updated for CV "newCv001"');
 
     // TEST: Upsert should insert a record that doesn't exist.
 
     // TEST: Upsert should update a record that does exist.
 
     // TEST: we should be able to get the two records created above.
+
+    // TEST: We should not be able to insert a CV record if it does exist. Run last because this causes an exception.
+    $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
+    $chado_buddy_records = $instance->insertCv(['name' => 'test_cv', 'definition' => 'def003']);
 
   }
 

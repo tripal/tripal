@@ -43,7 +43,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
       $query->condition('cv.'.$key, $value, '=');
     }
     $query->fields('cv', ['cv_id', 'name', 'definition']);
-    $results = $query->execute();
+    try {
+      $results = $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy getCv error '.$e->getMessage());
+    }
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
@@ -126,10 +131,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
 
     // These are unlikely cases, but you never know.
     if (!$existing_record) {
-      throw new ChadoBuddyException("ChadoBuddy error, did not retrieve the record just added\n".print_r($values, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy insertCv error, did not retrieve the record just added\n".print_r($values, TRUE));
     }
     if (is_array($existing_record)) {
-      throw new ChadoBuddyException("ChadoBuddy error, more than one record matched the record just added\n".print_r($values, TRUE));
+      throw new ChadoBuddyException("ChadoBuddy insertCv error, more than one record matched the record just added\n".print_r($values, TRUE));
     }
 
     return $existing_record;
@@ -154,7 +159,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @return ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
    *   exception will be thrown if an error is encountered. If the record
-   *   already exists then an error will be thrown... if this is not the desired
+   *   already exists then an error will be thrown. If this is not the desired
    *   behaviour then use the upsert version of this method.
    */
   public function insertCvterm(array $values, array $options = []) {
@@ -178,11 +183,43 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
-   *   returned if no record was found to update and an exception will be thrown
-   *   if an error is encountered.
+   *   returned if no record was found to update and a ChadoBuddyException will
+   *   be thrown if an error is encountered.
    */
   public function updateCv(array $values, array $conditions, array $options = []) {
+    $existing_record = $this->getCv($conditions, $options);
+    if (!$existing_record) {
+      return FALSE;
+    }
+    if (is_array($existing_record)) {
+      throw new ChadoBuddyException("ChadoBuddy error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
+    }
+    // Update query will only be based on the cv_id, which we get from the retrieved record.
+    $cv_id = $existing_record->getValue('cv_id');
+    // We do not support changing the cv_id.
+    if (array_key_exists('cv_id', $values)) {
+      unset($values['cv_id']);
+    }
+    $query = $this->connection->update('1:cv');
+    $query->condition('cv_id', $cv_id, '=');
+    $query->fields($values);
+    try {
+      $results = $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy updateCv error '.$e->getMessage());
+    }
+    $existing_record = $this->getCv($values, $options);
 
+    // These are unlikely cases, but you never know.
+    if (!$existing_record) {
+      throw new ChadoBuddyException("ChadoBuddy updateCv error, did not retrieve the record just updated\n".print_r($values, TRUE));
+    }
+    if (is_array($existing_record)) {
+      throw new ChadoBuddyException("ChadoBuddy updateCv error, more than one record matched the record just updated\n".print_r($values, TRUE));
+    }
+
+    return $existing_record;
   }
 
   /**
