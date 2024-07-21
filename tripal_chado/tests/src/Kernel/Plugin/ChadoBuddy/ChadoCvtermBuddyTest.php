@@ -115,16 +115,23 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing Cvterm "test_cvterm"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the existing Cvterm "test_cvterm"');
-    $this->assertEquals(8, count($values), 'The values array is of unexpected size for the existing Cvterm "test_cvterm"');
+    $this->assertEquals(10, count($values), 'The values array is of unexpected size for the existing Cvterm "test_cvterm"');
 
     // TEST: We should be able to retrieve an existing Cvterm record by its dbxref accession.
     $chado_buddy_records = $instance->getCvterm(['term_accession' => 'test_dbxref']);
     $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing Cvterm with dbxref "test_dbxref"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the existing Cvterm with dbxref "test_dbxref"');
-    $this->assertEquals(8, count($values), 'The values array is of unexpected size for the existing Cvterm with dbxref "test_dbxref"');
+    $this->assertEquals(10, count($values), 'The values array is of unexpected size for the existing Cvterm with dbxref "test_dbxref"');
 
-    // TEST: We should be able to insert a record if it doesn't exist.
+    // TEST: We should be able to insert a Cvterm record if it doesn't exist.
+    $chado_buddy_records = $instance->insertCvterm(['name' => 'newCvterm001', 'definition' => 'def001', 'cv_name' => 'test_cv']);
+    $this->assertIsObject($chado_buddy_records, 'We did not insert a new Cvterm "newCvterm001"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the new Cvterm "newCvterm001"');
+    $this->assertEquals(10, count($values), 'The values array is of unexpected size for the new Cvterm "newCvterm001"');
+    $cv_id = $chado_buddy_records->getValue('cv_id');
+    $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new Cvterm "newCvterm001"');
 
     // TEST: We should be able to update an existing record.
 
