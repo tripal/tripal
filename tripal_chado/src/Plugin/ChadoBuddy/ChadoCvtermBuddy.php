@@ -35,9 +35,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   If the select values return multiple records, then we return an array
    *     of ChadoBuddyRecords describing the results.
    *   If there are no results then we return FALSE and if an error is
-   *     encountered then an exception will be thrown.
+   *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getCv(array $identifiers, array $options = []) {
+    if (!$values)) {
+      throw new ChadoBuddyException("ChadoBuddy getCv error, no values were specified\n");
+    }
     $query = $this->connection->select('1:cv', 'cv');
     foreach ($identifiers as $key => $value) {
       $query->condition('cv.'.$key, $value, '=');
@@ -52,7 +55,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
-//      Not public variables so this won't work:
+//      Not public variables so this won't work currently:
 //      $new_record->schema_name = $this->connection->getSchemaName();
 //      $new_record->base_table = 'cv';
       $new_record->setValues($values);
@@ -93,7 +96,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   If the select values return multiple records, then we return an array
    *     of ChadoBuddyRecords describing the results.
    *   If there are no results then we return FALSE and if an error is
-   *     encountered then an exception will be thrown.
+   *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getCvterm(array $identifiers, array $options = []) {
 
@@ -117,6 +120,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertCv(array $values, array $options = []) {
+    if (!$values)) {
+      throw new ChadoBuddyException("ChadoBuddy insertCv error, no values were specified\n");
+    }
 
     try {
       $query = $this->connection->insert('1:cv');
@@ -172,7 +178,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @param array $values
    *   An associative array of the values for the final record (i.e what you
    *   want to update the record to be) including:
-   *     - cv_id
+   *     - cv_id (only used for $conditions)
    *     - name
    *     - definition
    * @param array $conditions
@@ -187,6 +193,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   be thrown if an error is encountered.
    */
   public function updateCv(array $values, array $conditions, array $options = []) {
+    if (!$values)) {
+      throw new ChadoBuddyException("ChadoBuddy updateCv error, no values were specified\n");
+    }
+    if (!$conditions)) {
+      throw new ChadoBuddyException("ChadoBuddy updateCv error, no conditions were specified\n");
+    }
     $existing_record = $this->getCv($conditions, $options);
     if (!$existing_record) {
       return FALSE;
@@ -244,7 +256,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
-   *   returned if no record was found to update and an exception will be thrown
+   *   returned if no record was found to update and a ChadoBuddyException will be thrown
    *   if an error is encountered.
    */
   public function updateCvterm() {
@@ -264,10 +276,24 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *
    * @return ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success, and
-   *   an exception will be thrown if an error is encountered.
+   *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertCv(array $values, array $options = []) {
-
+    if (!$values)) {
+      throw new ChadoBuddyException("ChadoBuddy upsertCv error, no values were specified\n");
+    }
+    $existing_record = $this->getCv($values, $options);
+    if ($existing_record) {
+      if (is_array($existing_record)) {
+        throw new ChadoBuddyException("ChadoBuddy upsertCv error, more than one record matched the specified values\n".print_r($values, TRUE));
+      }
+      $conditions = ['cv_id' => $existing_record->getValue('cv_id')];
+      $new_record = $this->updateCv($values, $conditions, $options);
+    }
+    else {
+      $new_record = $this->insertCv($values, $options);
+    }
+    return $new_record;
   }
 
   /**
@@ -288,7 +314,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *
    * @return ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success, and
-   *   an exception will be thrown if an error is encountered.
+   *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertCvterm(array $values, array $options = []) {
 
@@ -309,7 +335,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   None supported yet. Here for consistency.
    *
    * @return bool
-   *   Returns true if successful, and throws an exception if an error is
+   *   Returns true if successful, and throws a ChadoBuddyException if an error is
    *   encountered. Both the cvterm and the chado record indicated by $record_id
    *   MUST ALREADY EXIST.
    */
