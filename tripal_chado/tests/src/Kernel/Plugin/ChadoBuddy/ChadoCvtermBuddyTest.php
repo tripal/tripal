@@ -13,9 +13,19 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
+  protected ChadoConnection $connection;
+
   protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
 
-  protected ChadoConnection $connection;
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    // Open connection to a test Chado
+    $this->connection = $this->getTestSchema(ChadoTestKernelBase::INIT_DUMMY);
+  }
 
   /**
    * Tests the getCv(), insertCv(), updateCv(), upsertCv() methods.
@@ -30,8 +40,8 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $chado_buddy_records = $instance->getCv(['name' => 'nowaydoesthisexist']);
     $this->assertFalse($chado_buddy_records, 'We retrieved a CV when one does not exist');
 
-    // TEST: We should be able to retrieve an existing CV record.
-    $chado_buddy_records = $instance->getCv(['name' => 'local']);
+    // TEST: We should be able to retrieve an existing CV record. Dummy chado has 'test_cv', 'CV for testing'
+    $chado_buddy_records = $instance->getCv(['name' => 'test_cv']);
     $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing CV "local"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the existing CV "local"');
@@ -44,7 +54,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertIsArray($values, 'We did not retrieve an array of values for the new CV "newCv000001"');
     $this->assertEquals(3, count($values), 'The values array is of unexpected size for the new CV "newCv000001"');
     $cv_id = $chado_buddy_records->getValue('cv_id');
-    $this->assertIsInt($cv_id, 'We did not retrieve an integer cv_id for the new CV "newCv000001"');
+    $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new CV "newCv000001"');
 
     // TEST: We should not be able to insert a CV record if it does exist.
     $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
