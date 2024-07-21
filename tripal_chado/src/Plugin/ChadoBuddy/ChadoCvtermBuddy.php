@@ -18,6 +18,23 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
 
   /**
+   * Keys are the column aliases for each table alias and column
+   * for the cvterm buddy
+   * @var array
+   *
+   */
+  protected array $cvterm_mapping = [
+    'cvterm_id' => 't.cvterm_id',
+    'name' => 't.name',
+    'definition' => 't.definition',
+    'is_obsolete' => 't.is_obsolete',
+    'is_relationshiptype' => 't.is_relationshiptype',
+    'cv_name' => 'cv.name',
+    'term_accession' => 'x.accession',
+    'term_idspace' => 'db.name',
+  ];
+
+  /**
    * Retrieves a controlled vocabulary.
    *
    * @param array $identifiers
@@ -39,7 +56,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    */
   public function getCv(array $identifiers, array $options = []) {
     if (!$identifiers) {
-      throw new ChadoBuddyException("ChadoBuddy getCv error, no values were specified\n");
+      throw new ChadoBuddyException("ChadoBuddy getCv error, no select values were specified\n");
     }
     $query = $this->connection->select('1:cv', 'cv');
     foreach ($identifiers as $key => $value) {
@@ -79,7 +96,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @param array $identifiers
    *   An array where the key is a column in chado and the value describes the
    *   cvterm you want to select. Valid keys include:
-   *     - cv_id
+   *     - cvterm_id
    *     - cv_name
    *     - name
    *     - definition
@@ -99,7 +116,49 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getCvterm(array $identifiers, array $options = []) {
+    if (!$identifiers) {
+      throw new ChadoBuddyException("ChadoBuddy getCvterm error, no select values were specified\n");
+    }
+    $query = $this->connection->select('1:cvterm', 't');
+    // Return the joined fields aliased to the unique names
+    // as listed in this function's header
+    foreach ($this->cvterm_mapping as $key => $mapping) {
+      $parts = explode('.', $mapping);
+      $query->addField($parts[0], $parts[1], $key);
+    }
+    $query->leftJoin('1:cv', 'cv', 't.cv_id = cv.cv_id');
+    $query->leftJoin('1:dbxref', 'x', 't.dbxref_id = x.dbxref_id');
+    $query->leftJoin('1:db', 'db', 'x.db_id = db.db_id');
+    foreach ($identifiers as $key => $value) {
+      if (array_key_exists($key, $this->cvterm_mapping)) {
+        $query->condition($this->cvterm_mapping[$key], $value, '=');
+      }
+      else {
+        throw new ChadoBuddyException("ChadoBuddy getCvterm error, invalid key \"$key\"\n");
+      }
+    }
+    try {
+      $results = $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy getCvterm error '.$e->getMessage());
+    }
+    $buddies = [];
+    while ($values = $results->fetchAssoc()) {
+      $new_record = new ChadoBuddyRecord();
+      $new_record->setValues($values);
+      $buddies[] = $new_record;
+    }
 
+    if (count($buddies) > 1) {
+      return $buddies;
+    }
+    elseif (count($buddies) == 1) {
+      return $buddies[0];
+    }
+    else {
+      return FALSE;
+    }
   }
 
   /**

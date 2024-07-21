@@ -103,11 +103,26 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
    */
   public function testCvtermMethods() {
 
-    $this->markTestIncomplete(
-          'This test has not been implemented yet.'
-    );
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $instance = $type->createInstance('chado_cvterm_buddy', []);
 
     // TEST: if there is no record then it should return false when we try to get it.
+    $chado_buddy_records = $instance->getCvterm(['name' => 'nowaydoesthisexist']);
+    $this->assertFalse($chado_buddy_records, 'We did not retrieve FALSE for a Cvterm that does not exist');
+
+    // TEST: We should be able to retrieve an existing Cvterm record. Dummy chado has 'test_cvterm', 'CV term for testing', 1
+    $chado_buddy_records = $instance->getCvterm(['name' => 'test_cvterm']);
+    $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing Cvterm "test_cvterm"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the existing Cvterm "test_cvterm"');
+    $this->assertEquals(8, count($values), 'The values array is of unexpected size for the existing Cvterm "test_cvterm"');
+
+    // TEST: We should be able to retrieve an existing Cvterm record by its dbxref accession.
+    $chado_buddy_records = $instance->getCvterm(['term_accession' => 'test_dbxref']);
+    $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing Cvterm with dbxref "test_dbxref"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the existing Cvterm with dbxref "test_dbxref"');
+    $this->assertEquals(8, count($values), 'The values array is of unexpected size for the existing Cvterm with dbxref "test_dbxref"');
 
     // TEST: We should be able to insert a record if it doesn't exist.
 
