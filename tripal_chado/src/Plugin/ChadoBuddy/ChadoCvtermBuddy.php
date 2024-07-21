@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
 /**
@@ -46,8 +47,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
-//        $new_record->schema_name = $this->connection->???;
-//        $new_record->base_table = 'cv';
+//      Not public variables so this won't work:
+//      $new_record->schema_name = $this->connection->getSchemaName();
+//      $new_record->base_table = 'cv';
       $new_record->setValues($values);
       $buddies[] = $new_record;
     }
@@ -106,11 +108,31 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @return ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
    *   exception will be thrown if an error is encountered. If the record
-   *   already exists then an error will be thrown... if this is not the desired
+   *   already exists then an error will be thrown. If this is not the desired
    *   behaviour then use the upsert version of this method.
    */
   public function insertCv(array $values, array $options = []) {
 
+    try {
+      $query = $this->connection->insert('1:cv');
+      $query->fields($values);
+      $success = $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy error '.$e->getMessage());
+    }
+
+    $existing_record = $this->getCv($values, $options);
+
+    // These are unlikely cases, but you never know.
+    if (!$existing_record) {
+      throw new ChadoBuddyException("ChadoBuddy error, did not retrieve the record just added\n".print_r($values, TRUE));
+    }
+    if (is_array($existing_record)) {
+      throw new ChadoBuddyException("ChadoBuddy error, more than one record matched the record just added\n".print_r($values, TRUE));
+    }
+
+    return $existing_record;
   }
 
   /**
