@@ -64,7 +64,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals('newCv002', $values['name'], 'The CV name was not updated for CV "newCv001"');
     $this->assertEquals('def002', $values['definition'], 'The CV definition was not updated for CV "newCv001"');
 
-    // TEST: Upsert should insert a record that doesn't exist.
+    // TEST: Upsert should insert a CV record that doesn't exist.
     $chado_buddy_records = $instance->upsertCv(['name' => 'newCv003', 'definition' => 'def003']);
     $this->assertIsObject($chado_buddy_records, 'We did not upsert a new CV "newCv003"');
     $values = $chado_buddy_records->getValues();
@@ -73,7 +73,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $cv_id = $chado_buddy_records->getValue('cv_id');
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new CV "newCv003"');
 
-    // TEST: Upsert should update a record that does exist.
+    // TEST: Upsert should update a CV record that does exist.
     $chado_buddy_records = $instance->upsertCv(['name' => 'newCv003', 'definition' => 'def003']);
     $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing CV "newCv003"');
     $values = $chado_buddy_records->getValues();
@@ -134,7 +134,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $cv_id = $chado_buddy_records->getValue('cv_id');
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new Cvterm "newCvterm001"');
 
-    // TEST: We should be able to update an existing record.
+    // TEST: We should be able to update an existing Cvterm record.
     $chado_buddy_records = $instance->updateCvterm(['name' => 'newCvterm002', 'definition' => 'def002'], ['name' => 'newCvterm001']);
     $this->assertIsObject($chado_buddy_records, 'We did not update an existing Cvterm "newCvterm001"');
     $values = $chado_buddy_records->getValues();
@@ -142,7 +142,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals('newCvterm002', $values['name'], 'The Cvterm name was not updated for Cvterm "newCvterm001"');
     $this->assertEquals('def002', $values['definition'], 'The Cvterm definition was not updated for Cvterm "newCvterm001"');
 
-    // TEST: Upsert should insert a record that doesn't exist.
+    // TEST: Upsert should insert a Cvterm record that doesn't exist.
     $chado_buddy_records = $instance->upsertCvterm(['name' => 'newCvterm003', 'definition' => 'def003']);
     $this->assertIsObject($chado_buddy_records, 'We did not upsert a new Cvterm "newCvterm003"');
     $values = $chado_buddy_records->getValues();
@@ -151,7 +151,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $cvterm_id = $chado_buddy_records->getValue('cvterm_id');
     $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the new Cvterm "newCvterm003"');
 
-    // TEST: Upsert should update a record that does exist.
+    // TEST: Upsert should update a Cvterm record that does exist.
     $chado_buddy_records = $instance->upsertCvterm(['name' => 'newCvterm003', 'definition' => 'def003']);
     $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing Cvterm "newCvterm003"');
     $values = $chado_buddy_records->getValues();
