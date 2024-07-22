@@ -18,8 +18,8 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
 
   /**
-   * Keys are the column aliases for each table alias and column
-   * for the cvterm buddy
+   * Keys are the column aliases, and values are the
+   * table aliases and columns for the cvterm buddy.
    * @var array
    *
    */
@@ -35,6 +35,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     'term_accession' => 'x.accession',
     'term_idspace' => 'db.name',
   ];
+
   /**
    * Whether a column value is required for the cvterm table.
    * For performance reasons this is pre-populated.
