@@ -277,13 +277,23 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
 
     // Make sure we see a properly truncated field name with
     // spaces and unicode character replaced with underscores
-    $this->assertTrue(array_key_exists('organism__test_field_but_with__0', $discovered_fields['new']), "Missing the 'organism__test_field_but_with__0' key in the 'new' array returned by the discover() function.");
+    $this->assertTrue(array_key_exists('organism__test_field_but_with__1', $discovered_fields['new']), "Missing the 'organism__test_field_but_with__1' key in the 'new' array returned by the discover() function.");
+
+    // Same as above, but cvterm_id was not passed. The field name should
+    // end with a unique id
+    $found = FALSE;
+    foreach ($discovered_fields['new'] as $field) {
+      if (preg_match('/^organism__test_fie_[0-9a-f]{13}$/', $field['name'])) {
+        $found = TRUE;
+      }
+    }
+    $this->assertTrue($found, "Missing the 'organism__test_fie_[0-9a-f]{13}' key in the 'new' array returned by the discover() function.");
 
     // Make sure we have an invalid field. We don't need to test every
     // case where a field may be invalid. That happens above. We just need to
     // make sure that if a field is invalid that it is listed in the invalid
     // section with the reason included.
-    $this->assertTrue(array_key_exists('organism_test_field3', $discovered_fields['invalid']), "The 'organism_test_field3' key should be in the 'invalid' array returned by the discover() function.");
+    $this->assertTrue(array_key_exists('organism_test_field4', $discovered_fields['invalid']), "The 'organism_test_field4' key should be in the 'invalid' array returned by the discover() function.");
 
     // Now add the valid field to the content type. and check to make sure
     // it is listed as `existing` afterwards when discover() is called again.

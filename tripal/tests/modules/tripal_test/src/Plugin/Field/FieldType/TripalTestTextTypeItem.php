@@ -85,16 +85,22 @@ class TripalTestTextTypeItem extends TripalFieldItemBase {
     $field_list[] = $base_field;
 
     // The same field but with a long name including spaces and unicode that
-    // will be truncated to 32 characters: 'organism__test_field_but_with__0'
+    // will be truncated to 32 characters: 'organism__test_field_but_with__1'
+    // cvterm_id is passed and should appear at the end of the field name
     $field_2 = $base_field;
-    $field_2['name'] = self::generateFieldName($bundle, '🙈test field_but with_a very_very long_name', 0);
+    $field_2['name'] = self::generateFieldName($bundle, '🙈test field_but with_a very_very long_name', 1);
     $field_list[] = $field_2;
 
-    // Create an invalid field.
+    // The same except cvterm_id is not passed, a random unique id should be appended
     $field_3 = $base_field;
-    $field_3['name'] = self::generateFieldName($bundle, 'test_field3', 0);
-    $field_3['type'] = 'this_type_does_not_exist';
+    $field_3['name'] = self::generateFieldName($bundle, '🙈test field_but with_a very_very long_name');
     $field_list[] = $field_3;
+
+    // Create an invalid field.
+    $field_4 = $base_field;
+    $field_4['name'] = self::generateFieldName($bundle, 'test_field4', 0);
+    $field_4['type'] = 'this_type_does_not_exist';
+    $field_list[] = $field_4;
 
     return $field_list;
   }

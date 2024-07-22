@@ -671,17 +671,24 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @param string $extra
    *   Extra text to add to the field name after the bundle name.
    * @param int $cvterm_id
-   *   The cvterm_id value, used if we need to truncate a long name
+   *   The cvterm_id value, only used when we need to truncate a long name.
+   *   You may leave this set to the default of zero if the cvterm_id is
+   *   not readily available, in which case a random unique ID is used,
+   *   however we recommend using the actual cvterm_id if it is available.
+   *
    * @return string
    *   The generated field name.
    */
-  public static function generateFieldName(TripalEntityType $bundle, string $extra, int $cvterm_id) {
+  public static function generateFieldName(TripalEntityType $bundle, string $extra, int $cvterm_id = 0) {
     $max_length = FieldStorageConfig::NAME_MAX_LENGTH;
     $field_name = strtolower($bundle->getID() . '_' . $extra);
     $field_name = preg_replace('/[^\w]/u', '_', $field_name);
     // If name is longer than Drupal allows, truncate and include the
     // cvterm_id as a suffix to guarantee uniqueness.
     if (mb_strlen($field_name) > $max_length) {
+      if (!$cvterm_id) {
+        $cvterm_id = uniqid();
+      }
       $truncate_to = $max_length - strlen($cvterm_id) - 1;
       $field_name = mb_substr($field_name, 0, $truncate_to) . '_' . $cvterm_id;
     }
