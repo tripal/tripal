@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
 /**
@@ -13,6 +14,36 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
  * )
  */
 class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
+
+  /**
+   * Keys are the column aliases, and values are the
+   * table aliases and columns for the dbxref buddy.
+   * @var array
+   *
+   */
+  protected array $dbxref_mapping = [
+    'dbxref_id' => 'x.dbxref_id',
+    'accession' => 'x.accession',
+    'version' => 'x.version',
+    'description' => 'x.description',
+    'db_id' => 'db.db_id',
+    'db_name' => 'db.name',
+    'urlprefix' => 'db.urlprefix',
+    'url' => 'db.url',
+  ];
+
+  /**
+   * Whether a column value is required for the dbxref table.
+   * For performance reasons this is pre-populated.
+   * @var array
+   *
+   */
+  protected array $dbxref_required = [
+    'db_id' => TRUE,
+    'accession' => TRUE,
+    'version' => FALSE,
+    'description' => FALSE,
+  ];
 
   /**
    * Retrieves a chado database.
@@ -32,10 +63,39 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   If the select values return multiple records, then we return an array
    *     of ChadoBuddyRecords describing the results.
    *   If there are no results then we return FALSE and if an error is
-   *     encountered then an exception will be thrown.
+   *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getDb(array $identifiers, array $options = []) {
+    if (!$identifiers) {
+      throw new ChadoBuddyException("ChadoBuddy GetDb error, no select values were specified\n");
+    }
+    $query = $this->connection->select('1:db', 'db');
+    foreach ($identifiers as $key => $value) {
+      $query->condition('db.'.$key, $value, '=');
+    }
+    $query->fields('db', ['db_id', 'name', 'description', 'urlprefix', 'url']);
+    try {
+      $results = $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy GetDb error '.$e->getMessage());
+    }
+    $buddies = [];
+    while ($values = $results->fetchAssoc()) {
+      $new_record = new ChadoBuddyRecord();
+      $new_record->setValues($values);
+      $buddies[] = $new_record;
+    }
 
+    if (count($buddies) > 1) {
+      return $buddies;
+    }
+    elseif (count($buddies) == 1) {
+      return $buddies[0];
+    }
+    else {
+      return FALSE;
+    }
   }
 
   /**
@@ -44,12 +104,14 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @param array $identifiers
    *   An array where the key is a column in chado and the value describes the
    *   dbxref you want to select. Valid keys include:
+   *     - dbxref_id
+   *     - accession
+   *     - version
+   *     - description
    *     - db_id
    *     - db_name
-   *     - accession
-   *     - idspace
-   *     - version
-   *     - dbxref_id
+   *     - urlprefix
+   *     - url
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -59,21 +121,61 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   If the select values return multiple records, then we return an array
    *     of ChadoBuddyRecords describing the results.
    *   If there are no results then we return FALSE and if an error is
-   *     encountered then an exception will be thrown.
+   *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getDbxref(array $identifiers, array $options = []) {
+    if (!$identifiers) {
+      throw new ChadoBuddyException("ChadoBuddy getDbxref error, no select values were specified\n");
+    }
+    $query = $this->connection->select('1:dbxref', 'x');
+    // Return the joined fields aliased to the unique names
+    // as listed in this function's header
+    foreach ($this->dbxref_mapping as $key => $mapping) {
+      $parts = explode('.', $mapping);
+      $query->addField($parts[0], $parts[1], $key);
+    }
+    $query->leftJoin('1:db', 'db', 'x.db_id = db.db_id');
+    foreach ($identifiers as $key => $value) {
+      if (array_key_exists($key, $this->dbxref_mapping)) {
+        $query->condition($this->dbxref_mapping[$key], $value, '=');
+      }
+      else {
+        throw new ChadoBuddyException("ChadoBuddy getDbxref error, invalid key \"$key\"\n");
+      }
+    }
+    try {
+      $results = $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy getDbxref error '.$e->getMessage());
+    }
+    $buddies = [];
+    while ($values = $results->fetchAssoc()) {
+      $new_record = new ChadoBuddyRecord();
+      $new_record->setValues($values);
+      $buddies[] = $new_record;
+    }
 
+    if (count($buddies) > 1) {
+      return $buddies;
+    }
+    elseif (count($buddies) == 1) {
+      return $buddies[0];
+    }
+    else {
+      return FALSE;
+    }
   }
 
   /**
    * Generates a URL for a database reference (e.g. the reference for a cvterm).
    *
-   * If the URL and URL prefix are provided for the database record of a cvterm
-   * then a URL can be created for the term.  By default, the db.name and
-   * dbxref.accession are concatenated and appended to the end of the
-   * db.urlprefix. But Tripal supports the use of {db} and {accession} tokens
-   * when if present in the db.urlprefix string will be replaced with the db.name
-   * and dbxref.accession respectively.
+   * If the URL prefix is provided for the database record of a cvterm,
+   * then a URL can be created for the term. By default, the db name and
+   * dbxref accession are concatenated and appended to the end of the
+   * urlprefix. But Tripal supports the use of {db} and {accession} tokens
+   * in the db.urlprefix string. If present, they will be replaced with the
+   * db name and dbxref accession, respectively.
    *
    * @param ChadoBuddyRecord $dbxref
    *   A dbxref object retrieved by getDbxref().
@@ -82,11 +184,32 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @return string
    *   A string containing the URL. If this database doesn't have a URL prefix,
-   *   then the built in version for your Tripal site will be used. An exception
+   *   then the built in version for your Tripal site will be used. A ChadoBuddyException
    *   is thrown if an error is encountered.
    */
   public function getDbxrefUrl(ChadoBuddyRecord $dbxref, array $options = []) {
+// almost the same as getUrl() in tripal/src/TripalVocabTerms/TripalTerm.php
+    $db = $dbxref->getValue('db');
+    $accession = $dbxref->getValue('accession');
+    $urlprefix = $dbxref->getValue('urlprefix');
+    if (!$urlprefix) {
+      $urlprefix = '????????'; //@@@
+    }
 
+    $url = $urlprefix;
+    $substituted = FALSE;
+    if (preg_match('/\{db\}/', $url)) {
+      $url = preg_replace('/\{db\}/', $db, $url);
+      $substituted = TRUE;
+    }
+    if (preg_match('/\{accession\}/', $url)) {
+      $url = preg_replace('/\{accession\}/', $accession, $url);
+      $substituted = TRUE;
+    }
+    if (!$substituted) {
+      $url .= $db . ':' . $accession;
+    }
+    return $url;
   }
 
   /**
@@ -111,7 +234,31 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertDb(array $values, array $options = []) {
+    if (!$values) {
+      throw new ChadoBuddyException("ChadoBuddy insertDb error, no values were specified\n");
+    }
 
+    try {
+      $query = $this->connection->insert('1:db');
+      $query->fields($values);
+      $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy insertDb error '.$e->getMessage());
+    }
+
+    // Retrieve the newly inserted record.
+    $existing_record = $this->getDb($values, $options);
+
+    // These are unlikely cases, but you never know.
+    if (!$existing_record) {
+      throw new ChadoBuddyException("ChadoBuddy insertDb error, did not retrieve the record just added\n".print_r($values, TRUE));
+    }
+    if (is_array($existing_record)) {
+      throw new ChadoBuddyException("ChadoBuddy insertDb error, more than one record matched the record just added\n".print_r($values, TRUE));
+    }
+
+    return $existing_record;
   }
 
   /**
@@ -120,6 +267,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @param $values
    *   An associative array of the values to be inserted including:
    *    - db_id: the database_id of the database the reference is from.
+   *    - db_name: may be used in place of db_id if that is not available.
    *    - accession: the accession.
    *    - version: (Optional) The version of the database reference.
    *    - description: (Optional) A description of the database reference.
@@ -133,7 +281,54 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertDbxref(array $values, array $options = []) {
+    if (!$values) {
+      throw new ChadoBuddyException("ChadoBuddy insertCvterm error, no values were specified\n");
+    }
 
+    // If db_name specified but not db_id, lookup db_id
+    if (!array_key_exists('db_id', $values) or !$values['db_id']) {
+      if (!array_key_exists('db_name', $values) or !$values['db_name']) {
+        throw new ChadoBuddyException("ChadoBuddy insertDbxref error, neither db_id nor db_name were specified\n");
+      }
+      $existing_record = $this->getDb(['name' => $values['db_name']]);
+      if (!$existing_record or is_array($existing_record)) {
+        throw new ChadoBuddyException("ChadoBuddy insertDbxref error, invalid db_name \"$db_name\" was specified\n");
+      }
+      $values['db_id'] = $existing_record->getValue('db_id');
+    }
+    unset($values['db_name']);
+
+    try {
+      $query = $this->connection->insert('1:dbxref');
+      // Create a subset of the passed $values for just the dbxref table.
+      $dbxref_values = [];
+      foreach ($this->dbxref_required as $key => $required) {
+        if ($required and !array_key_exists($key, $values)) {
+          throw new ChadoBuddyException("ChadoBuddy insertDbxref error, required column \"$key\" was not specified");
+        }
+        if (array_key_exists($key, $values)) {
+          $dbxref_values[$key] = $values[$key];
+        }
+      }
+      $query->fields($dbxref_values);
+      $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy insertDbxref error '.$e->getMessage());
+    }
+
+    // Retrieve the newly inserted record.
+    $existing_record = $this->getDbxref($dbxref_values, $options);
+
+    // These are unlikely cases, but you never know.
+    if (!$existing_record) {
+      throw new ChadoBuddyException("ChadoBuddy insertDbxref error, did not retrieve the record just added\n".print_r($term_values, TRUE));
+    }
+    if (is_array($existing_record)) {
+      throw new ChadoBuddyException("ChadoBuddy insertDbxref error, more than one record matched the record just added\n".print_r($term_values, TRUE));
+    }
+
+    return $existing_record;
   }
 
   /**
@@ -157,7 +352,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
-   *   returned if no record was found to update and an exception will be thrown
+   *   returned if no record was found to update and a ChadoBuddyException will be thrown
    *   if an error is encountered.
    */
   public function updateDb(array $values, array $conditions, array $options = []) {
@@ -182,7 +377,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
-   *   returned if no record was found to update and an exception will be thrown
+   *   returned if no record was found to update and a ChadoBuddyException will be thrown
    *   if an error is encountered.
    */
   public function updateDbxref() {
@@ -206,7 +401,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @return ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success, and
-   *   an exception will be thrown if an error is encountered.
+   *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertDb(array $values, array $options = []) {
 
@@ -226,7 +421,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @return ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success, and
-   *   an exception will be thrown if an error is encountered.
+   *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertDbxref(array $values, array $options = []) {
 
@@ -246,7 +441,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @param $options
    *   None supported yet. Here for consistency.
    * @return bool
-   *   Returns true if successful, and throws an exception if an error is
+   *   Returns true if successful, and throws a ChadoBuddyException if an error is
    *   encountered. Both the dbxref and the chado record indicated by $record_id
    *   MUST ALREADY EXIST.
    */
