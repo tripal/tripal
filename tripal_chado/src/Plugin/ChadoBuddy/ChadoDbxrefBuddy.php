@@ -191,11 +191,11 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    */
   public function getDbxrefUrl(ChadoBuddyRecord $dbxref, array $options = []) {
 // almost the same as getUrl() in tripal/src/TripalVocabTerms/TripalTerm.php
-    $db = $dbxref->getValue('db');
+    $db = $dbxref->getValue('db_name');
     $accession = $dbxref->getValue('accession');
     $urlprefix = $dbxref->getValue('urlprefix');
     if (!$urlprefix) {
-      $urlprefix = "cv/lookup/$db/$accession";
+      $urlprefix = 'cv/lookup/{db}/{accession}';
     }
 
     $url = $urlprefix;
@@ -448,6 +448,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       if (array_key_exists($key, $values)) {
         $term_values[$key] = $values[$key];
       }
+    }
+    if (!$term_values) {
+      throw new ChadoBuddyException("ChadoBuddy updateDbxref error, no dbxref values were specified\n");
     }
     $query = $this->connection->update('1:dbxref');
     $query->condition('dbxref_id', $dbxref_id, '=');

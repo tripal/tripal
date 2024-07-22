@@ -432,7 +432,7 @@ $dbxref_id = $query->execute()->fetchField();
     }
 
     // Update query will only be based on the cvterm_id, which we get from the retrieved record.
-    $cvtern_id = $existing_record->getValue('cvterm_id');
+    $cvterm_id = $existing_record->getValue('cvterm_id');
     // We do not support changing the cvterm_id.
     if (array_key_exists('cvterm_id', $values)) {
       unset($values['cvterm_id']);

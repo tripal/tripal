@@ -131,6 +131,8 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the new Cvterm "newCvterm001"');
     $this->assertEquals(10, count($values), 'The values array is of unexpected size for the new Cvterm "newCvterm001"');
+    $cvterm_id = $chado_buddy_records->getValue('cvterm_id');
+    $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the new Cvterm "newCvterm001"');
     $cv_id = $chado_buddy_records->getValue('cv_id');
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new Cvterm "newCvterm001"');
 
@@ -143,7 +145,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals('def002', $values['definition'], 'The Cvterm definition was not updated for Cvterm "newCvterm001"');
 
     // TEST: Upsert should insert a Cvterm record that doesn't exist.
-    $chado_buddy_records = $instance->upsertCvterm(['name' => 'newCvterm003', 'definition' => 'def003']);
+    $chado_buddy_records = $instance->upsertCvterm(['name' => 'newCvterm003', 'definition' => 'def003', 'cv_name' => 'test_cv']);
     $this->assertIsObject($chado_buddy_records, 'We did not upsert a new Cvterm "newCvterm003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the new Cvterm "newCvterm003"');
