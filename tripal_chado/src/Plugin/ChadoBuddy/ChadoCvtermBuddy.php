@@ -543,7 +543,7 @@ $dbxref_id = $query->execute()->fetchField();
   }
 
   /**
-   * Add a record to a controlled vocabulary term linking table (ie: feature_cvterm).
+   * Add a record to a controlled vocabulary term linking table (e.g. feature_cvterm).
    *
    * @param string $base_table
    *   The base table for which the cvterm should be associated. Thus to associate
@@ -554,7 +554,25 @@ $dbxref_id = $query->execute()->fetchField();
    * @param ChadoBuddyRecord $cvterm
    *   A cvterm object returned by any of the *Cvterm() in this service.
    * @param $options
-   *   None supported yet. Here for consistency.
+   *   'pkey': Looking up the primary key for the base table is costly. If it is
+   *           known, then pass it in as this option for better performance.
+   *   Also pass in any other columns used in the linking table, some of which may
+   *   have a NOT NULL constraint. See the table below for a list of which of
+   *   the following may be required: 'pub_id', 'is_not', 'rank', 'cvterm_type_id'.
+   *
+   *   Chado 1.3 defines these columns in the various linking tables:
+   *   ^ table                       ^ pub_id   ^ is_not      ^ rank        ^ cvterm_type_id ^
+   *   | analysis_cvterm             | -absent  | has default | has default | -absent        |
+   *   | cell_line_cvterm            | not null | -absent     | has default | -absent        |
+   *   | environment_cvterm          | -absent  | -absent     | -absent     | -absent        |
+   *   | expression_cvterm           | -absent  | -absent     | has default | not null       |
+   *   | feature_cvterm              | not null | has default | has default | -absent        |
+   *   | library_cvterm              | not null | -absent     | -absent     | -absent        |
+   *   | organism_cvterm             | not null | -absent     | has default | -absent        |
+   *   | phenotype_comparison_cvterm | not null | -absent     | has default | -absent        |
+   *   | phenotype_cvterm            | -absent  | -absent     | has default | -absent        |
+   *   | stock_cvterm                | not null | has default | has default | -absent        |
+   *   | stock_relationship_cvterm   | yes null | -absent     | -absent     | -absent        |
    *
    * @return bool
    *   Returns TRUE if successful, and throws a ChadoBuddyException if an error is
@@ -562,23 +580,34 @@ $dbxref_id = $query->execute()->fetchField();
    *   MUST ALREADY EXIST.
    */
   public function associateCvterm(string $base_table, int $record_id, ChadoBuddyRecord $cvterm, array $options = []) {
-    // Get primary key of the base table
-$t1 = microtime(TRUE);
-    $schema = $this->connection->schema(); //@@@ wrong
-    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_table_def['primary key'];
-$t2 = microtime(TRUE);
-print "CPX1 time=".($t2-$t1)."\n";
+    $linking_table = $base_table . '_cvterm';
 
+    // Get the primary key of the base table
+    $base_pkey_col = $options['pkey'] ?? NULL;
+    if (!$base_pkey_col) {
+      $schema = $this->connection->schema();
+      $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+      $base_pkey_col = $base_table_def['primary key'];
+    }
+    $fields = [
+      'cvterm_id' => $cvterm->getValue('cvterm_id'),
+      $base_pkey_col => $record_id,
+    ];
+    // Add in any of the other columns for the linking table.
+    foreach ($options as $key => $value) {
+      if ($key != 'pkey') {
+        $fields[$key] = $value;
+      }
+    }
     try {
-      $query = $this->connection->insert('1:'.$basetable);
-      $query->fields(['cvterm_id' => $cvterm->getValue('cvterm_id'),
-                      $base_pkey_col => $record_id]);
+      $query = $this->connection->insert('1:'.$linking_table);
+      $query->fields($fields);
       $query->execute();
     }
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy associateCvterm error '.$e->getMessage());
     }
+
     return TRUE;
   }
 }
