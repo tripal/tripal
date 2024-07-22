@@ -60,7 +60,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $chado_buddy_records = $instance->updateCv(['name' => 'newCv002', 'definition' => 'def002'], ['name' => 'newCv001']);
     $this->assertIsObject($chado_buddy_records, 'We did not update an existing CV "newCv001"');
     $values = $chado_buddy_records->getValues();
-    $this->assertIsArray($values, 'We did not retrieve an array of values for the updateed CV "newCv001"');
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the updated CV "newCv001"');
     $this->assertEquals('newCv002', $values['name'], 'The CV name was not updated for CV "newCv001"');
     $this->assertEquals('def002', $values['definition'], 'The CV definition was not updated for CV "newCv001"');
 
@@ -85,13 +85,14 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     // TEST: we should be able to get the two records created above.
     foreach (['newCv002', 'newCv003'] as $cv_name) {
       $chado_buddy_records = $instance->getCv(['name' => $cv_name]);
-      $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing CV "'.$cv_name.'"');
+      $this->assertIsObject($chado_buddy_records, "We did not retrieve the existing CV \"$cv_name\"");
       $values = $chado_buddy_records->getValues();
-      $this->assertIsArray($values, 'We did not retrieve an array of values for the existing CV "'.$cv_name.'"');
-      $this->assertEquals(3, count($values), 'The values array is of unexpected size for the existing CV "'.$cv_name.'"');
+      $this->assertIsArray($values, "We did not retrieve an array of values for the existing CV \"$cv_name\"");
+      $this->assertEquals(3, count($values), "The values array is of unexpected size for the existing CV \"$cv_name\"");
     }
 
-    // TEST: We should not be able to insert a CV record if it does exist. Run last because this causes an exception.
+    // TEST: We should not be able to insert a CV record if it does exist.
+    // Run last because this causes an exception.
     $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
     $chado_buddy_records = $instance->insertCv(['name' => 'test_cv', 'definition' => 'def003']);
 
@@ -134,15 +135,43 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new Cvterm "newCvterm001"');
 
     // TEST: We should be able to update an existing record.
+    $chado_buddy_records = $instance->updateCvterm(['name' => 'newCvterm002', 'definition' => 'def002'], ['name' => 'newCvterm001']);
+    $this->assertIsObject($chado_buddy_records, 'We did not update an existing Cvterm "newCvterm001"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the updated CV "newCvterm001"');
+    $this->assertEquals('newCvterm002', $values['name'], 'The Cvterm name was not updated for Cvterm "newCvterm001"');
+    $this->assertEquals('def002', $values['definition'], 'The Cvterm definition was not updated for Cvterm "newCvterm001"');
 
     // TEST: Upsert should insert a record that doesn't exist.
+    $chado_buddy_records = $instance->upsertCvterm(['name' => 'newCvterm003', 'definition' => 'def003']);
+    $this->assertIsObject($chado_buddy_records, 'We did not upsert a new Cvterm "newCvterm003"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the new Cvterm "newCvterm003"');
+    $this->assertEquals(10, count($values), 'The values array is of unexpected size for the new Cvterm "newCvterm003"');
+    $cvterm_id = $chado_buddy_records->getValue('cvterm_id');
+    $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the new Cvterm "newCvterm003"');
 
     // TEST: Upsert should update a record that does exist.
+    $chado_buddy_records = $instance->upsertCvterm(['name' => 'newCvterm003', 'definition' => 'def003']);
+    $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing Cvterm "newCvterm003"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted Cvterm "newCvterm003"');
+    $this->assertEquals(10, count($values), 'The values array is of unexpected size for the upserted Cvterm "newCvterm003"');
+    $cvterm_id = $chado_buddy_records->getValue('cvterm_id');
+    $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the upserted Cvterm "newCvterm003"');
 
     // TEST: we should be able to get the two records created above.
+    foreach (['newCvterm002', 'newCvterm003'] as $cvterm_name) {
+      $chado_buddy_records = $instance->getCvterm(['name' => $cvterm_name]);
+      $this->assertIsObject($chado_buddy_records, "We did not retrieve the existing Cvterm \"$cvterm_name\"");
+      $values = $chado_buddy_records->getValues();
+      $this->assertIsArray($values, "We did not retrieve an array of values for the existing Cvterm \"$cvterm_name\"");
+      $this->assertEquals(10, count($values), "The values array is of unexpected size for the existing Cvterm \"$cvterm_name\"");
+    }
 
     // TEST: associate a cvterm with a base table.
-    // The test chado won't be able to automatically look up the primary key so we have to pass it in.
+    // The minimal test environment won't be able to automatically look up
+    // the primary key for the feature table, so we have to pass 'pkey' in.
     $base_table = 'feature';
     $linking_table = $base_table . '_cvterm';
     $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records, ['pkey' => $base_table . '_id']);
