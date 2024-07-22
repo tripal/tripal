@@ -418,8 +418,7 @@ $dbxref_id = $query->execute()->fetchField();
     if (is_array($existing_record)) {
       throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
-    // If the dbxref is being changed, then we will optionally delete
-    // the old one, then create a new one.
+    // If the dbxref is being changed, then do this first.
     $existing_values = $existing_record->getValues();
     $update_dbxref = FALSE;
     if (array_key_exists('term_idspace', $values) and ($values['term_idspace'] != $existing_values['term_idspace'])) {
@@ -441,9 +440,7 @@ $dbxref_id = $query->execute()->fetchField();
     // Create a subset of the passed $values for just the cvterm table.
     $term_values = [];
     foreach ($this->cvterm_required as $key => $required) {
-      if ($required and !array_key_exists($key, $values)) {
-        throw new ChadoBuddyException("ChadoBuddy updateCvterm error, required column \"$key\" was not specified");
-      }
+      // We don't check required columns for an update, only for an insert.
       if (array_key_exists($key, $values)) {
         $term_values[$key] = $values[$key];
       }
@@ -529,13 +526,13 @@ $dbxref_id = $query->execute()->fetchField();
     if (!$values) {
       throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, no values were specified\n");
     }
-    $existing_record = $this->getCvtern($values, $options);
+    $existing_record = $this->getCvterm($values, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       $conditions = ['cvterm_id' => $existing_record->getValue('cvterm_id')];
-      $new_record = $this->updateCv($values, $conditions, $options);
+      $new_record = $this->updateCvterm($values, $conditions, $options);
     }
     else {
       $new_record = $this->insertCvterm($values, $options);
