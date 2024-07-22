@@ -674,7 +674,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    *   The cvterm_id value, only used when we need to truncate a long name.
    *   You may leave this set to the default of zero if the cvterm_id is
    *   not readily available, in which case a random unique ID is used,
-   *   however we recommend using the actual cvterm_id if it is available.
+   *   however we recommend using the actual cvterm_id if it is available
+   *   so that the field name generated is predictable and reproducible.
    *
    * @return string
    *   The generated field name.
