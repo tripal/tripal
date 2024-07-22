@@ -142,10 +142,21 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     // TEST: we should be able to get the two records created above.
 
     // TEST: associate a cvterm with a base table.
-    // The test chado won't be able to look up the primary key so we have to pass it in.
-    $status = $instance->associateCvterm('feature', 1, $chado_buddy_records, ['pkey' => 'feature_id']);
-    $this->assertIsBool($status, 'We did not retrieve a boolean when associating a cvterm with the base table "feature"');
-    $this->assertTrue($status, 'We did not retrieve TRUE when associating a cvterm with the base table "feature"');
-
+    // The test chado won't be able to automatically look up the primary key so we have to pass it in.
+    $base_table = 'feature';
+    $linking_table = $base_table . '_cvterm';
+    $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records, ['pkey' => $base_table . '_id']);
+    $this->assertIsBool($status, "We did not retrieve a boolean when associating a cvterm with the base table \"$base_table\"");
+    $this->assertTrue($status, "We did not retrieve TRUE when associating a cvterm with the base table \"$base_table\"");
+    $query = $this->connection->select('1:' . $linking_table, 'lt')
+      ->fields('lt', ['cvterm_id'])
+      ->execute();
+    $results = $query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the \"$linking_table\" table");
+    $this->assertCount(1, $results, "There should only be a single \"$linking_table\" record inserted");
+    $expected_cvterm_id = $chado_buddy_records->getValue('cvterm_id');
+    $retrieved_cvterm_id = $results[0]->cvterm_id;
+    $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
+      "We did not get the cvterm_id from \"$linking_table\" that should have been set by associateCvterm");
   }
 }
