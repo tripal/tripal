@@ -185,5 +185,24 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     $url = $instance->getDbxrefUrl($chado_buddy_records);
     $this->assertIsString($url, 'We did not receive a string from getDbxrefUrl without urlprefix');
     $this->assertEquals('cv/lookup/newDb004/newDbxref004', $url, "Incorrect url for a DB without urlprefix");
+
+    // TEST: associate a dbxref with a base table.
+    // The minimal test environment won't be able to automatically look up
+    // the primary key for the feature table, so we have to pass 'pkey' in.
+    $base_table = 'feature';
+    $linking_table = $base_table . '_dbxref';
+    $status = $instance->associateDbxref($base_table, 1, $chado_buddy_records, ['pkey' => $base_table . '_id']);
+    $this->assertIsBool($status, "We did not retrieve a boolean when associating a dbxref with the base table \"$base_table\"");
+    $this->assertTrue($status, "We did not retrieve TRUE when associating a dbxref with the base table \"$base_table\"");
+    $query = $this->connection->select('1:' . $linking_table, 'lt')
+      ->fields('lt', ['dbxref_id'])
+      ->execute();
+    $results = $query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the \"$linking_table\" table");
+    $this->assertCount(1, $results, "There should only be a single \"$linking_table\" record inserted");
+    $expected_dbxref_id = $chado_buddy_records->getValue('dbxref_id');
+    $retrieved_dbxref_id = $results[0]->dbxref_id;
+    $this->assertEquals($expected_dbxref_id, $retrieved_dbxref_id,
+      "We did not get the dbxref_id from \"$linking_table\" that should have been set by associateDbxref");
   }
 }

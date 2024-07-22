@@ -548,7 +548,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   /**
    * Add a record to a database reference linking table (ie: feature_dbxref).
    *
-   * @param string $basetable
+   * @param string $base_table
    *   The base table for which the dbxref should be associated. Thus to associate
    *   a dbxref with a feature the basetable=feature and dbxref_id is added to the
    *   feature_dbxref table.
@@ -567,7 +567,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   encountered. Both the dbxref and the chado record indicated by $record_id
    *   MUST ALREADY EXIST.
    */
-  public function associateDbxref(string $basetable, int $record_id, ChadoBuddyRecord $dbxref, array $options = []) {
+  public function associateDbxref(string $base_table, int $record_id, ChadoBuddyRecord $dbxref, array $options = []) {
     $linking_table = $base_table . '_dbxref';
 
     // Get the primary key of the base table
@@ -578,7 +578,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $base_pkey_col = $base_table_def['primary key'];
     }
     $fields = [
-      'dbxref_id' => $cvterm->getValue('dbxref_id'),
+      'dbxref_id' => $dbxref->getValue('dbxref_id'),
       $base_pkey_col => $record_id,
     ];
     // Add in any of the other columns for the linking table.
