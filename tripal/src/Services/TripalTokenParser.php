@@ -55,6 +55,7 @@ class TripalTokenParser {
     /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
     $token_parser = \Drupal::service('tripal.token_parser');
     $token_parser->initParser($bundle);
+    $token_parser->clearValues();
 
     // Iterate through each field to add it's property values to the token parser.
     foreach ($entity_values as $field_name => $field_values) {
@@ -98,6 +99,15 @@ class TripalTokenParser {
    */
   public function getValues() {
     return $this->values;
+  }
+
+  /**
+   * Empties the values saved for each token.
+   *
+   * This should be done between replacing tokens for different entities.
+   */
+  public function clearValues() {
+    $this->values = [];
   }
 
   /**
@@ -165,6 +175,9 @@ class TripalTokenParser {
         $this->fields[$field_name] = $field;
       }
     }
+
+    // Ensure there is no bleed through of values from previous substitutions.
+    $this->clearValues();
   }
 
   /**
@@ -224,11 +237,14 @@ class TripalTokenParser {
           $field = $this->fields[$token];
           $key = $field->mainPropertyName();
           if (array_key_exists($token, $this->values)) {
-            $value = $this->values[$token][$key];
+            $value = @$this->values[$token][$key];
             if (!is_null($value)) {
               $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
             }
           }
+          // If we get here then this is a field related token but we don't
+          // have a value. As such, we will replace it with an empty string.
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", '',  $replaced[$index]));
         }
       }
     }

@@ -265,8 +265,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     foreach ($field_defs as $field_name => $field_def) {
       /** @var \Drupal\Core\Field\FieldItemList $items **/
       $items = $this->get($field_name);
+      $values[$field_name] = [];
       /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem  $item **/
       foreach ($items as $delta => $item) {
+        $values[$field_name][$delta] = [];
         /** @var \Drupal\Core\TypedData\TypedDataInterface $prop **/
         $props = $item->getProperties();
         if (is_array($props)) {
