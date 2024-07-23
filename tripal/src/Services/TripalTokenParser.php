@@ -35,6 +35,55 @@ class TripalTokenParser {
   protected $values = [];
 
   /**
+   * Uses this tokenparser to get the title of an entity based on its
+   * bundle title format and the fields values in the entity.
+   *
+   * @param TripalEntityType $bundle
+   *  The bundle for the entity whose title we want to generate.
+   * @param array $entity_values
+   *  The field values for the entity whom we want to generate the title for.
+   *  This is a nested array with the first keys being field names. Within each
+   *  array for a given field the keys are delta and the values are an array of
+   *  the property names => values for that field delta.
+   *
+   * @return string
+   *  The title format string with all the tokens replaced.
+   */
+  public static function getEntityTitle(TripalEntityType $bundle, array $entity_values) {
+
+    // Initialize the Tripal token parser service.
+    /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
+    $token_parser = \Drupal::service('tripal.token_parser');
+    $token_parser->initParser($bundle);
+
+    // Iterate through each field to add it's property values to the token parser.
+    foreach ($entity_values as $field_name => $field_values) {
+      // We currently only support single value fields so check for that here.
+      if (sizeof($field_values) == 1) {
+        // Grab the first and only delta for this field.
+        $item = $field_values[0];
+        // Iterate through the properties and add each to the token parser.
+        foreach ($item as $property_name => $property_value) {
+          $token_parser->addFieldValue(
+            $field_name,
+            $property_name,
+            $property_value
+          );
+        }
+      }
+    }
+
+    // Now that the token parser is set up, we can get the title by replacing
+    // the tokens in the title format.
+    $title = $bundle->getTitleFormat();
+    $replaced = $token_parser->replaceTokens([$title]);
+
+    // Since this is a single entity, we return the only title.
+    // Replace tokens returns an array to handle recursive situations.
+    return $replaced[0];
+  }
+
+  /**
    * Returns bundle object given to the parser.
    *
    * @return \Drupal\tripal\Entity\TripalEntityType
