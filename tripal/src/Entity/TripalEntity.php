@@ -253,7 +253,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * Retrieves the values of the current entity as a nested array.
    *
-   * @return void
+   * @return array
+   *  This is a nested array with the first keys being field names. Within each
+   *  array for a given field the keys are delta and the values are an array of
+   *  the property names => values for that field delta.
    */
   public function getFieldValues() {
     $values = [];
