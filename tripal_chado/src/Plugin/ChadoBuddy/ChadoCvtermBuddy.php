@@ -612,7 +612,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * out extra non-applicable fields that the Cvterm function here may have.
    */
   protected function upsertDbxref(array $values, array $conditions, array $options = []) {
-    if (!$this->dbxref_instance) {
+    if (!isset($this->dbxref_instance)) {
       $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
       $this->dbxref_instance = $buddy_service->createInstance('chado_dbxref_buddy', []);
     }
@@ -621,7 +621,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     $valid_fields = ['dbxref_id', 'db_id', 'accession', 'version', 'description'];
     $dbxref_values = [];
     $dbxref_conditions = [];
-    for ($valid_fields as $field) {
+    foreach ($valid_fields as $field) {
       if (array_key_exists($field, $values)) {
         $dbxref_values[$field] = $values[$field];
       }

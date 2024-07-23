@@ -21,13 +21,28 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @var array
    *
    */
+  protected array $db_mapping = [
+    'db_id' => 'db.db_id',
+    'db_name' => 'db.name',
+    'db_description' => 'db.description',
+    'urlprefix' => 'db.urlprefix',
+    'url' => 'db.url',
+  ];
+
+  /**
+   * Keys are the column aliases, and values are the
+   * table aliases and columns for the dbxref buddy.
+   * @var array
+   *
+   */
   protected array $dbxref_mapping = [
     'dbxref_id' => 'x.dbxref_id',
     'accession' => 'x.accession',
     'version' => 'x.version',
-    'description' => 'x.description',
+    'dbxref_description' => 'x.description',
     'db_id' => 'db.db_id',
     'db_name' => 'db.name',
+    'db_description' => 'db.description',
     'urlprefix' => 'db.urlprefix',
     'url' => 'db.url',
   ];
@@ -52,8 +67,10 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   An array where the key is a column in the chado.db table and the value
    *   describes the db you want to select. Valid keys include:
    *     - db_id
-   *     - name
-   *     - description
+   *     - db_name
+   *     - db_description
+   *     - urlprefix
+   *     - url
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -66,14 +83,20 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getDb(array $identifiers, array $options = []) {
-    if (!$identifiers) {
-      throw new ChadoBuddyException("ChadoBuddy GetDb error, no select values were specified\n");
-    }
+    $this->validateInput($identifiers, $this->db_mapping, 'getDb');
+
     $query = $this->connection->select('1:db', 'db');
     foreach ($identifiers as $key => $value) {
-      $query->condition('db.'.$key, $value, '=');
+      $mapping = $this->db_mapping[$key];
+      $parts = explode('.', $mapping);
+      $query->condition($parts[0].'.'.$parts[1], $value, '=');
     }
-    $query->fields('db', ['db_id', 'name', 'description', 'urlprefix', 'url']);
+    // Return the joined fields aliased to the unique names
+    // as listed in this function's header
+    foreach ($this->db_mapping as $key => $mapping) {
+      $parts = explode('.', $mapping);
+      $query->addField($parts[0], $parts[1], $key);
+    }
     try {
       $results = $query->execute();
     }
@@ -107,9 +130,10 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - dbxref_id
    *     - accession
    *     - version
-   *     - description
+   *     - dbxref_description
    *     - db_id
    *     - db_name
+   *     - db_description
    *     - urlprefix
    *     - url
    * @param array $options (Optional)
@@ -124,9 +148,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getDbxref(array $identifiers, array $options = []) {
-    if (!$identifiers) {
-      throw new ChadoBuddyException("ChadoBuddy getDbxref error, no select values were specified\n");
-    }
+    $this->validateInput($identifiers, $this->dbxref_mapping, 'getDbxref');
+
     $query = $this->connection->select('1:dbxref', 'x');
     // Return the joined fields aliased to the unique names
     // as listed in this function's header
@@ -136,12 +159,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     }
     $query->leftJoin('1:db', 'db', 'x.db_id = db.db_id');
     foreach ($identifiers as $key => $value) {
-      if (array_key_exists($key, $this->dbxref_mapping)) {
-        $query->condition($this->dbxref_mapping[$key], $value, '=');
-      }
-      else {
-        throw new ChadoBuddyException("ChadoBuddy getDbxref error, invalid key \"$key\"\n");
-      }
+      $query->condition($this->dbxref_mapping[$key], $value, '=');
     }
     try {
       $results = $query->execute();
@@ -236,13 +254,15 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertDb(array $values, array $options = []) {
-    if (!$values) {
-      throw new ChadoBuddyException("ChadoBuddy insertDb error, no values were specified\n");
-    }
+    $this->validateInput($values, $this->db_mapping, 'insertDb');
 
     try {
       $query = $this->connection->insert('1:db');
-      $query->fields($values);
+      foreach ($values as $key => $value) {
+        $mapping = $this->db_mapping[$key];
+        $parts = explode('.', $mapping);
+        $query->addField($parts[0], $parts[1], $value);
+      }
       $query->execute();
     }
     catch (\Exception $e) {
@@ -283,35 +303,25 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertDbxref(array $values, array $options = []) {
-    if (!$values) {
-      throw new ChadoBuddyException("ChadoBuddy insertDbxref error, no values were specified\n");
-    }
+    $this->validateInput($values, $this->dbxref_mapping, 'insertDbxref');
 
-    // If db_name specified but not db_id, lookup db_id
+    // If db_name specified, but not db_id, lookup db_id
     if (!array_key_exists('db_id', $values) or !$values['db_id']) {
       if (!array_key_exists('db_name', $values) or !$values['db_name']) {
         throw new ChadoBuddyException("ChadoBuddy insertDbxref error, neither db_id nor db_name were specified\n");
       }
-      $existing_record = $this->getDb(['name' => $values['db_name']]);
+      $existing_record = $this->getDb(['db_name' => $values['db_name']]);
       if (!$existing_record or is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy insertDbxref error, invalid db_name \"$db_name\" was specified\n");
       }
       $values['db_id'] = $existing_record->getValue('db_id');
+      unset($values['db_name']);
     }
-    unset($values['db_name']);
 
     try {
       $query = $this->connection->insert('1:dbxref');
       // Create a subset of the passed $values for just the dbxref table.
-      $dbxref_values = [];
-      foreach ($this->dbxref_required as $key => $required) {
-        if ($required and !array_key_exists($key, $values)) {
-          throw new ChadoBuddyException("ChadoBuddy insertDbxref error, required column \"$key\" was not specified");
-        }
-        if (array_key_exists($key, $values)) {
-          $dbxref_values[$key] = $values[$key];
-        }
-      }
+      $dbxref_values = $this->validateInput($values, $this->db_mapping, 'insertDbxref', TRUE);
       $query->fields($dbxref_values);
       $query->execute();
     }
@@ -358,12 +368,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   if an error is encountered.
    */
   public function updateDb(array $values, array $conditions, array $options = []) {
-   if (!$values) {
-      throw new ChadoBuddyException("ChadoBuddy updateDb error, no values were specified\n");
-    }
-    if (!$conditions) {
-      throw new ChadoBuddyException("ChadoBuddy updateDb error, no conditions were specified\n");
-    }
+    $this->validateInput($values, $this->db_mapping, 'updateDb');
+    $this->validateInput($conditions, $this->db_mapping, 'updateDb');
     $existing_record = $this->getDb($conditions, $options);
     if (!$existing_record) {
       return FALSE;
@@ -421,12 +427,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   if an error is encountered.
    */
   public function updateDbxref(array $values, array $conditions, array $options = []) {
-    if (!$values) {
-      throw new ChadoBuddyException("ChadoBuddy updateDbxref error, no values were specified\n");
-    }
-    if (!$conditions) {
-      throw new ChadoBuddyException("ChadoBuddy updateDbxref error, no conditions were specified\n");
-    }
+    $this->validateInput($values, $this->dbxref_mapping, 'updateDbxref');
+    $this->validateInput($conditions, $this->dbxref_mapping, 'updateDbxref');
+
     $existing_record = $this->getDbxref($conditions, $options);
     if (!$existing_record) {
       return FALSE;
@@ -435,23 +438,14 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       throw new ChadoBuddyException("ChadoBuddy updateDbxref error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
 
-   // Update query will only be based on the cvterm_id, which we get from the retrieved record.
+    // Update query will only be based on the cvterm_id, which we get from the retrieved record.
     $dbxref_id = $existing_record->getValue('dbxref_id');
     // We do not support changing the dbxref_id.
     if (array_key_exists('dbxref_id', $values)) {
       unset($values['dbxref_id']);
     }
     // Create a subset of the passed $values for just the dbxref table.
-    $term_values = [];
-    foreach ($this->dbxref_required as $key => $required) {
-      // We don't check required columns for an update, only for an insert.
-      if (array_key_exists($key, $values)) {
-        $term_values[$key] = $values[$key];
-      }
-    }
-    if (!$term_values) {
-      throw new ChadoBuddyException("ChadoBuddy updateDbxref error, no dbxref values were specified\n");
-    }
+    $term_values = $this->validateInput($values, $this->db_mapping, 'updateDbxref', TRUE);
     $query = $this->connection->update('1:dbxref');
     $query->condition('dbxref_id', $dbxref_id, '=');
     $query->fields($term_values);
@@ -494,9 +488,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertDb(array $values, array $options = []) {
-    if (!$values) {
-      throw new ChadoBuddyException("ChadoBuddy upsertDb error, no values were specified\n");
-    }
+    $this->validateInput($values, $this->db_mapping, 'upsertDb');
     $existing_record = $this->getDb($values, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
@@ -528,9 +520,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertDbxref(array $values, array $options = []) {
-    if (!$values) {
-      throw new ChadoBuddyException("ChadoBuddy upsertDbxref error, no values were specified\n");
-    }
+    $this->validateInput($values, $this->dbxref_mapping, 'upsertDbxref');
     $existing_record = $this->getDbxref($values, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
@@ -597,5 +587,26 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     }
 
     return TRUE;
+  }
+
+  protected function validateInput(array $uservalues, array $validvalues, string $function_name, bool $return = FALSE) {
+//    if (!$uservalues) {
+//      throw new ChadoBuddyException("ChadoBuddy $function_name error, no $mode values were specified\n");
+//    }
+    $subset = [];
+    foreach ($uservalues as $key => $value) {
+      if (!array_key_exists($key, $validvalues)) {
+        if (!$return) {
+          throw new ChadoBuddyException("ChadoBuddy $function_name error, value \"$key\" is not valid for for this function\n");
+        }
+      }
+      else {
+        $subset[] = [$key => $value];
+      }
+    }
+    if (!$subset) {
+      throw new ChadoBuddyException("ChadoBuddy $function_name error, no valid values were specified\n");
+    }
+    return $subset;
   }
 }
