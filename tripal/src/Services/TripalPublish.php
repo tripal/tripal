@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Services;
 
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
+use \Drupal\tripal\Services\TripalTokenParser;
 use \Drupal\tripal\Services\TripalJob;
 
 class TripalPublish {
@@ -497,30 +498,21 @@ class TripalPublish {
     $titles = [];
     $title_format = $this->entity_type->getTitleFormat();
 
-    // Iterate through the results and build the bulk SQL statements that
-    // will publish the records.
+    // Iterate through each match we are checking for an existing entity for.
     foreach ($matches as $match) {
-      $entity_title = $title_format;
-      foreach ($match as $field_name => $deltas) {
-        if (preg_match("/\[$field_name\]/", $title_format)) {
-
-          // There should only be one delta for the fields that
-          // are used for title formats so default this to 0.
-          $delta = 0;
-          $field = $this->field_info[$field_name]['instance'];
-          $main_prop = $field->mainPropertyName();
-          $value = '';
-          if (array_key_exists($delta, $match[$field_name])) {
-            $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
+      // Collapse match array to follow the format expected by getEntityTitle.
+      $entity_values = [];
+      foreach ($match as $field_name => $field_items) {
+        foreach($field_items as $delta => $properties) {
+          foreach ($properties as $property_name => $prop_deets) {
+            $entity_values[$field_name][$delta][$property_name] = $prop_deets['value']->getValue();
           }
-          if ($value === NULL) {
-            $value = '';
-          }
-          $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
         }
       }
-      // Trim any trailing spaces.
-      $entity_title = trim($entity_title);
+
+      // Now that we've gotten the values out of the property value objects,
+      // we can use the token parser to get the title!
+      $entity_title = TripalTokenParser::getEntityTitle($this->entity_type, $entity_values);
       $titles[] = $entity_title;
     }
     return $titles;
