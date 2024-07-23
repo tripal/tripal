@@ -52,6 +52,11 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
   ];
 
   /**
+   * Cache the dbxref instance here
+   */
+  protected object $dbxref_instance;
+
+  /**
    * Retrieves a controlled vocabulary.
    *
    * @param array $identifiers
@@ -238,6 +243,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *     - dbxref_id
    *     - term_accession (required unless dbxref_id specified)
    *     - term_idspace (required unless dbxref_id specified)
+   *     - db_id (can be used in place of term_idspace)
    *     - is_obsolete
    *     - is_relationshiptype
    * @param $options (Optional)
@@ -267,18 +273,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     }
     unset($values['cv_name']);
 
-    // Insert dbxref if one was not specified.
+    // Insert a new dbxref if an existing one was not specified.
     if (!array_key_exists('dbxref_id', $values) or !$values['dbxref_id']) {
-// @@@ Need to write dbxref buddy! To allow testing, generate a bogus dbxref
-$n = rand(1,1000000000);
-$query = $this->connection->insert('1:dbxref');
-$query->fields(['db_id' => 1, 'accession' => $n]);
-$query->execute();
-$query = $this->connection->select('1:dbxref', 'x');
-$query->condition('x.accession', $n, '=');
-$query->fields('x', ['dbxref_id']);
-$dbxref_id = $query->execute()->fetchField();
-      $values['dbxref_id'] = $dbxref_id;
+      $dbxref_record = $this->upsertDbxref($values, $values, $options);
+      $values['dbxref_id'] = $dbxref_record->getValue('dbxref_id');
     }
 
     // Insert cvterm
@@ -418,17 +416,17 @@ $dbxref_id = $query->execute()->fetchField();
     if (is_array($existing_record)) {
       throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
-    // If the dbxref is being changed, then do this first.
+    // Only update the dbxref if it is being changed.
     $existing_values = $existing_record->getValues();
     $update_dbxref = FALSE;
-    if (array_key_exists('term_idspace', $values) and ($values['term_idspace'] != $existing_values['term_idspace'])) {
-      $update_dbxref = TRUE;
-    }
-    if (array_key_exists('term_accession', $values) and ($values['term_accession'] != $existing_values['term_accession'])) {
-      $update_dbxref = TRUE;
+    $check_fields = ['term_idspace', 'db_id', 'term_accession', 'version', 'description'];
+    foreach ($check_fields as $field) {
+      if (array_key_exists($field, $values) and ($values[$field] != $existing_values[$field])) {
+        $update_dbxref = TRUE;
+      }
     }
     if ($update_dbxref) {
-      // @@@ update here once dbxref buddy is done
+      $dbxref_record = $this->upsertDbxref($values, $conditions, $options);
     }
 
     // Update query will only be based on the cvterm_id, which we get from the retrieved record.
@@ -607,5 +605,32 @@ $dbxref_id = $query->execute()->fetchField();
     }
 
     return TRUE;
+  }
+
+  /**
+   * A helper function to add or update a dbxref for a cvterm, this will filter
+   * out extra non-applicable fields that the Cvterm function here may have.
+   */
+  protected function upsertDbxref(array $values, array $conditions, array $options = []) {
+    if (!$this->dbxref_instance) {
+      $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+      $this->dbxref_instance = $buddy_service->createInstance('chado_dbxref_buddy', []);
+    }
+
+    // Only use fields valid for the dbxref table, omit those from cvterm.
+    $valid_fields = ['dbxref_id', 'db_id', 'accession', 'version', 'description'];
+    $dbxref_values = [];
+    $dbxref_conditions = [];
+    for ($valid_fields as $field) {
+      if (array_key_exists($field, $values)) {
+        $dbxref_values[$field] = $values[$field];
+      }
+      if (array_key_exists($field, $conditions)) {
+        $dbxref_conditions[$field] = $conditions[$field];
+      }
+    }
+
+    $record = $this->dbxref_instance->upsertDbxref($dbxref_values, $dbxref_conditions, $options);
+    return $record;
   }
 }
