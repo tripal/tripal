@@ -241,10 +241,11 @@ class TripalTokenParser {
             if (!is_null($value)) {
               $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
             }
+            // If the value is empty or null then we remove the token.
+            $replaced[$index] = trim(preg_replace("/\[$token\]/", '',  $replaced[$index]));
           }
-          // If we get here then this is a field related token but we don't
-          // have a value. As such, we will replace it with an empty string.
-          $replaced[$index] = trim(preg_replace("/\[$token\]/", '',  $replaced[$index]));
+          // If we get here then this is a field related token but the token
+          // value wasn't set with addFieldValue() method.
         }
       }
     }
