@@ -3,8 +3,9 @@
 namespace Drupal\tripal_chado\ChadoBuddy;
 
 use Drupal\Component\Plugin\PluginBase;
-use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
 /**
@@ -70,9 +71,11 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
           throw new ChadoBuddyException("ChadoBuddy $calling_function error, value \"$key\" is not valid for for this function\n");
         }
       }
-      $mapping = $validvalues[$key];  // e.g. 'db_name' => 'db.name'
-      $parts = explode('.', $mapping);
-      $subset[$parts[1]] = $value;
+      else {
+        $mapping = $validvalues[$key];  // e.g. 'db_name' => 'db.name'
+        $parts = explode('.', $mapping);
+        $subset[$parts[1]] = $value;
+      }
     }
     if (!$subset) {
       $calling_function = debug_backtrace()[1]['function'];

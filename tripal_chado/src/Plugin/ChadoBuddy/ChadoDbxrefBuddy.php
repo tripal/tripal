@@ -144,7 +144,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getDbxref(array $identifiers, array $options = []) {
-    $mapping = array_merge($this->dbxref_mapping, $this->db_mapping);
+    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping);
     $this->validateInput($identifiers, $mapping);
 
     $query = $this->connection->select('1:dbxref', 'x');
@@ -296,7 +296,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertDbxref(array $values, array $options = []) {
-    $mapping = array_merge($this->dbxref_mapping, $this->db_mapping);
+    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping);
     $this->validateInput($values, $mapping);
 
     // If db_name specified, but not db_id, lookup db_id
@@ -421,7 +421,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   if an error is encountered.
    */
   public function updateDbxref(array $values, array $conditions, array $options = []) {
-    $mapping = array_merge($this->dbxref_mapping, $this->db_mapping);
+    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping);
     $this->validateInput($values, $mapping);
     $this->validateInput($conditions, $mapping);
 
@@ -515,7 +515,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertDbxref(array $values, array $options = []) {
-    $mapping = array_merge($this->dbxref_mapping, $this->db_mapping);
+    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping);
     $this->validateInput($values, $mapping);
     $existing_record = $this->getDbxref($values, $options);
     if ($existing_record) {
