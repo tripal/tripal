@@ -59,7 +59,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   /**
    * Retrieves a chado database.
    *
-   * @param array $identifiers
+   * @param array $conditions
    *   An array where the key is a column in the chado.db table and the value
    *   describes the db you want to select. Valid keys include:
    *     - db_id
@@ -78,11 +78,11 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   If there are no results then we return FALSE and if an error is
    *     encountered then a ChadoBuddyException will be thrown.
    */
-  public function getDb(array $identifiers, array $options = []) {
-    $this->validateInput($identifiers, $this->db_mapping);
+  public function getDb(array $conditions, array $options = []) {
+    $this->validateInput($conditions, $this->db_mapping);
 
     $query = $this->connection->select('1:db', 'db');
-    foreach ($identifiers as $key => $value) {
+    foreach ($conditions as $key => $value) {
       $mapping = $this->db_mapping[$key];
       $parts = explode('.', $mapping);
       $query->condition($parts[0].'.'.$parts[1], $value, '=');
@@ -120,7 +120,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   /**
    * Retrieves a chado database reference.
    *
-   * @param array $identifiers
+   * @param array $conditions
    *   An array where the key is a column in chado and the value describes the
    *   dbxref you want to select. Valid keys include:
    *     - dbxref_id
@@ -143,9 +143,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   If there are no results then we return FALSE and if an error is
    *     encountered then a ChadoBuddyException will be thrown.
    */
-  public function getDbxref(array $identifiers, array $options = []) {
+  public function getDbxref(array $conditions, array $options = []) {
     $mapping = array_merge($this->db_mapping, $this->dbxref_mapping);
-    $this->validateInput($identifiers, $mapping);
+    $this->validateInput($conditions, $mapping);
 
     $query = $this->connection->select('1:dbxref', 'x');
     // Return the joined fields aliased to the unique names
@@ -155,7 +155,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $query->addField($parts[0], $parts[1], $key);
     }
     $query->leftJoin('1:db', 'db', 'x.db_id = db.db_id');
-    foreach ($identifiers as $key => $value) {
+    foreach ($conditions as $key => $value) {
       $query->condition($mapping[$key], $value, '=');
     }
     try {

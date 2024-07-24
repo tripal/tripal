@@ -96,7 +96,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
   /**
    * Retrieves a controlled vocabulary.
    *
-   * @param array $identifiers
+   * @param array $conditions
    *   An array where the key is a column in chado and the value describes the
    *   cv you want to select. Valid keys include:
    *     - cv_id
@@ -113,12 +113,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   If there are no results then we return FALSE and if an error is
    *     encountered then a ChadoBuddyException will be thrown.
    */
-  public function getCv(array $identifiers, array $options = []) {
-    $this->validateInput($identifiers, $this->cv_mapping);
+  public function getCv(array $conditions, array $options = []) {
+    $this->validateInput($conditions, $this->cv_mapping);
 
     $query = $this->connection->select('1:cv', 'cv');
 
-    foreach ($identifiers as $key => $value) {
+    foreach ($conditions as $key => $value) {
       $mapping = $this->cv_mapping[$key];
       $parts = explode('.', $mapping);
       $query->condition($parts[0].'.'.$parts[1], $value, '=');
@@ -159,7 +159,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
   /**
    * Retrieves a controlled vocabulary term.
    *
-   * @param array $identifiers
+   * @param array $conditions
    *   An array where the key is a column in chado and the value describes the
    *   cvterm you want to select. Valid keys include:
    *     - cvterm_id
@@ -190,9 +190,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   If there are no results then we return FALSE and if an error is
    *     encountered then a ChadoBuddyException will be thrown.
    */
-  public function getCvterm(array $identifiers, array $options = []) {
+  public function getCvterm(array $conditions, array $options = []) {
     $mapping = array_merge($this->db_mapping, $this->dbxref_mapping, $this->cv_mapping, $this->cvterm_mapping);
-    $this->validateInput($identifiers, $mapping);
+    $this->validateInput($conditions, $mapping);
 
     $query = $this->connection->select('1:cvterm', 't');
     // Return the joined fields aliased to the unique names
@@ -204,7 +204,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     $query->leftJoin('1:cv', 'cv', 't.cv_id = cv.cv_id');
     $query->leftJoin('1:dbxref', 'x', 't.dbxref_id = x.dbxref_id');
     $query->leftJoin('1:db', 'db', 'x.db_id = db.db_id');
-    foreach ($identifiers as $key => $value) {
+    foreach ($conditions as $key => $value) {
       $query->condition($mapping[$key], $value, '=');
     }
     try {
