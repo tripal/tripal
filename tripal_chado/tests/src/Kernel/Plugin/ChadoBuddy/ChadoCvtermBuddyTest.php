@@ -191,5 +191,11 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $retrieved_cvterm_id = $results[0]->cvterm_id;
     $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
       "We did not get the cvterm_id from \"$linking_table\" that should have been set by associateCvterm");
+
+    // TEST: We should not be able to insert a Cvterm if it does exist.
+    // Run last because this causes an exception.
+    $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
+    $chado_buddy_records = $instance->insertCvterm(['cvterm_name' => 'newCvterm001', 'cvterm_definition' => 'def001',
+      'cv_name' => 'test_cv', 'db_name' => 'test db', 'accession' => 'newAcc001']);
   }
 }
