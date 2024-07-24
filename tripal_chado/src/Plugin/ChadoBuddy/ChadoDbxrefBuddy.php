@@ -265,13 +265,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     // Retrieve the newly inserted record.
     $existing_record = $this->getDb($values, $options);
 
-    // These are unlikely cases, but you never know.
-    if (!$existing_record) {
-      throw new ChadoBuddyException("ChadoBuddy insertDb error, did not retrieve the record just added\n".print_r($values, TRUE));
-    }
-    if (is_array($existing_record)) {
-      throw new ChadoBuddyException("ChadoBuddy insertDb error, more than one record matched the record just added\n".print_r($values, TRUE));
-    }
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($existing_record, $values);
 
     return $existing_record;
   }
@@ -326,13 +321,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     // Retrieve the newly inserted record.
     $existing_record = $this->getDbxref($dbxref_values, $options);
 
-    // These are unlikely cases, but you never know.
-    if (!$existing_record) {
-      throw new ChadoBuddyException("ChadoBuddy insertDbxref error, did not retrieve the record just added\n".print_r($term_values, TRUE));
-    }
-    if (is_array($existing_record)) {
-      throw new ChadoBuddyException("ChadoBuddy insertDbxref error, more than one record matched the record just added\n".print_r($term_values, TRUE));
-    }
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($existing_record, $values);
 
     return $existing_record;
   }
@@ -388,13 +378,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     }
     $existing_record = $this->getDb($values, $options);
 
-    // These are unlikely cases, but you never know.
-    if (!$existing_record) {
-      throw new ChadoBuddyException("ChadoBuddy updateDb error, did not retrieve the record just updated\n".print_r($values, TRUE));
-    }
-    if (is_array($existing_record)) {
-      throw new ChadoBuddyException("ChadoBuddy updateDb error, more than one record matched the record just updated\n".print_r($values, TRUE));
-    }
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($existing_record, $values);
 
     return $existing_record;
   }
@@ -452,13 +437,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     }
     $existing_record = $this->getDbxref($values, $options);
 
-    // These are unlikely cases, but you never know.
-    if (!$existing_record) {
-      throw new ChadoBuddyException("ChadoBuddy updateDbxref error, did not retrieve the record just updated\n".print_r($values, TRUE));
-    }
-    if (is_array($existing_record)) {
-      throw new ChadoBuddyException("ChadoBuddy updateDbxref error, more than one record matched the record just updated\n".print_r($values, TRUE));
-    }
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($existing_record, $values);
 
     return $existing_record;
   }

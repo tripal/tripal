@@ -49,7 +49,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * or to generate a valid array subset.
    *
    * @param array $uservalues
-   *   An associative array to be validated
+   *   An associative array to be validated.
    * @param array $validvalues
    *   An associative array listing all valid keys, and the
    *   values are un-aliased database table alias and table
@@ -57,7 +57,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * @param bool $filter
    *   Set to TRUE if we want to return a subset of the passed
    *   $uservalues containing only keys from $validvalues.
-   *   If FALSE, then an exception is thrown for invalid keys.
+   *   If FALSE, then a ChadoBuddyException is thrown for invalid keys.
    *
    * @return array
    *   The filtered set of $uservalues
@@ -68,7 +68,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
       if (!array_key_exists($key, $validvalues)) {
         if (!$filter) {
           $calling_function = debug_backtrace()[1]['function'];
-          throw new ChadoBuddyException("ChadoBuddy $calling_function error, value \"$key\" is not valid for for this function\n");
+          throw new ChadoBuddyException("ChadoBuddy $calling_function error, value \"$key\" is not valid for for this function.");
         }
       }
       else {
@@ -79,9 +79,35 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     }
     if (!$subset) {
       $calling_function = debug_backtrace()[1]['function'];
-      throw new ChadoBuddyException("ChadoBuddy $calling_function error, no valid values were specified\n");
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, no valid values were specified.");
     }
     return $subset;
+  }
+
+  /**
+   * Used to validate results from a buddy function,
+   * to ensure there is exactly one record present.
+   *
+   * @param mixed $output_records
+   *   To be valid, must be an array, and contain exactly one element.
+   * @param array $values
+   *   Pass query values to print if exception is thrown.
+   *
+   * @throws ChadoBuddyException if not exactly one record.
+   */
+  protected function validateOutput($output_records, array $values) {
+    // These are unlikely cases, but you never know.
+    if (!$output_records) {
+      $calling_function = debug_backtrace()[1]['function'];
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, did not retrieve the expected record\n"
+                                   . print_r($values, TRUE));
+    }
+    if (is_array($output_records)) {
+      $calling_function = debug_backtrace()[1]['function'];
+      $n = count($output_records);
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, more than one record ($n) was retrieved, only one was expected\n"
+                                   . print_r($values, TRUE));
+    }
   }
 
 }
