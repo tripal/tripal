@@ -133,7 +133,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy getCv error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy getCv database error '.$e->getMessage());
     }
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
@@ -164,16 +164,21 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   cvterm you want to select. Valid keys include:
    *     - cvterm_id
    *     - cv_id
-   *     - cv_name
-   *     - cv_name
-   *     - cvterm_name
-   *     - cv_definition
-   *     - cvterm_definition
    *     - dbxref_id
-   *     - accession
-   *     - db_name
+   *     - cvterm_name
+   *     - cvterm_definition
    *     - is_obsolete
    *     - is_relationshiptype
+   *     - cv_name
+   *     - cv_definition
+   *     - db_id
+   *     - accession
+   *     - version
+   *     - dbxref_description
+   *     - db_name
+   *     - db_description
+   *     - urlprefix
+   *     - url
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -206,7 +211,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy getCvterm error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy getCvterm database error '.$e->getMessage());
     }
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
@@ -232,8 +237,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @param $values
    *   An associative array of the values to be inserted including:
    *     - cv_id
-   *     - name
-   *     - definition
+   *     - cv_name
+   *     - cv_definition
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -252,7 +257,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy insertCv error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy insertCv database error '.$e->getMessage());
     }
 
     // Retrieve the newly inserted record.
@@ -270,16 +275,23 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *
    * @param $values
    *   An associative array of the values to be inserted including:
-   *     - cv_id
-   *     - cv_name (either cv_id or cv_name required)
-   *     - name (required)
-   *     - definition
+   *     - cvterm_id
+   *     - cv_id (either cv_id or cv_name required)
    *     - dbxref_id
-   *     - term_accession (required unless dbxref_id specified)
-   *     - term_idspace (required unless dbxref_id specified)
-   *     - db_id (can be used in place of term_idspace)
+   *     - cvterm_name (required)
+   *     - cvterm_definition
    *     - is_obsolete
    *     - is_relationshiptype
+   *     - cv_name
+   *     - cv_definition
+   *     - db_id (db_id or db_name required unless dbxref_id specified)
+   *     - accession (required unless dbxref_id specified)
+   *     - version
+   *     - dbxref_description
+   *     - db_name (can be used in place of db_id)
+   *     - db_description
+   *     - urlprefix
+   *     - url
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -314,14 +326,14 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
 
     // Insert cvterm
     try {
-      $query = $this->connection->insert('1:cvterm');
       // Create a subset of the passed $values for just the cvterm table.
       $cvterm_values = $this->validateInput($values, $this->cvterm_mapping, TRUE);
+      $query = $this->connection->insert('1:cvterm');
       $query->fields($cvterm_values);
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy insertCvterm error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy insertCvterm database error '.$e->getMessage());
     }
 
     // Retrieve the newly inserted record.
@@ -340,8 +352,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   An associative array of the values for the final record (i.e what you
    *   want to update the record to be) including:
    *     - cv_id (only used for $conditions)
-   *     - name
-   *     - definition
+   *     - cv_name
+   *     - cv_definition
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -376,7 +388,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy updateCv error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy updateCv database error '.$e->getMessage());
     }
     $existing_record = $this->getCv($values, $options);
 
@@ -394,14 +406,21 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   want to update the record to be) including:
    *     - cvterm_id
    *     - cv_id
-   *     - cv_name
-   *     - name
-   *     - definition
    *     - dbxref_id
-   *     - term_accession
-   *     - term_idspace
+   *     - cvterm_name
+   *     - cvterm_definition
    *     - is_obsolete
    *     - is_relationshiptype
+   *     - cv_name
+   *     - cv_definition
+   *     - db_id
+   *     - accession
+   *     - version
+   *     - dbxref_description
+   *     - db_name
+   *     - db_description
+   *     - urlprefix
+   *     - url
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -446,12 +465,6 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     }
     // Create a subset of the passed $values for just the cvterm table.
     $term_values = $this->validateInput($values, $this->cvterm_mapping, TRUE);
-//    foreach ($this->cvterm_required as $key => $required) {
-//      // We don't check required columns for an update, only for an insert.
-//      if (array_key_exists($key, $values)) {
-//        $term_values[$key] = $values[$key];
-//      }
-//    }
     $query = $this->connection->update('1:cvterm');
     $query->condition('cvterm_id', $cvterm_id, '=');
     $query->fields($term_values);
@@ -459,7 +472,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy updateCvterm error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy updateCvterm database error '.$e->getMessage());
     }
     $existing_record = $this->getCvterm($values, $options);
 
@@ -475,8 +488,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @param array $values
    *   An associative array of the values for the final record including:
    *     - cv_id
-   *     - name
-   *     - definition
+   *     - cv_name
+   *     - cv_definition
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -507,14 +520,21 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   An associative array of the values for the final record including:
    *     - cvterm_id
    *     - cv_id
-   *     - cv_name
-   *     - name
-   *     - definition
    *     - dbxref_id
-   *     - term_accession
-   *     - term_idspace
+   *     - cvterm_name
+   *     - cvterm_definition
    *     - is_obsolete
    *     - is_relationshiptype
+   *     - cv_name
+   *     - cv_definition
+   *     - db_id
+   *     - accession
+   *     - version
+   *     - dbxref_description
+   *     - db_name
+   *     - db_description
+   *     - urlprefix
+   *     - url
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -602,7 +622,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy associateCvterm error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy associateCvterm database error '.$e->getMessage());
     }
 
     return TRUE;

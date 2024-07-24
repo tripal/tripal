@@ -47,33 +47,37 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   /**
    * Used to validate input arrays to various buddy functions,
    * or to generate a valid array subset.
+   * The output has the column aliases de-aliased to the
+   * actual chado column names, e.g. ['db_name' => 'db.name']
+   * indicates that the alias 'db_name' corresponds to the
+   * column 'name' in the 'db' table.
    *
-   * @param array $uservalues
+   * @param array $user_values
    *   An associative array to be validated.
-   * @param array $validvalues
+   * @param array $valid_values
    *   An associative array listing all valid keys, and the
    *   values are un-aliased database table alias and table
-   *   column. For example 'db_name' => 'db.name'
+   *   column as described above.
    * @param bool $filter
    *   Set to TRUE if we want to return a subset of the passed
    *   $uservalues containing only keys from $validvalues.
    *   If FALSE, then a ChadoBuddyException is thrown for invalid keys.
    *
    * @return array
-   *   The filtered set of $uservalues
+   *   A filtered subset of $user_values
    */
-  protected function validateInput(array $uservalues, array $validvalues, bool $filter = FALSE) {
+  protected function validateInput(array $user_values, array $valid_values, bool $filter = FALSE) {
     $subset = [];
-    foreach ($uservalues as $key => $value) {
-      if (!array_key_exists($key, $validvalues)) {
+    foreach ($user_values as $key => $value) {
+      if (!array_key_exists($key, $valid_values)) {
         if (!$filter) {
           $calling_function = debug_backtrace()[1]['function'];
           throw new ChadoBuddyException("ChadoBuddy $calling_function error, value \"$key\" is not valid for for this function.");
         }
       }
       else {
-        $mapping = $validvalues[$key];  // e.g. 'db_name' => 'db.name'
-        $parts = explode('.', $mapping);
+        $mapping = $valid_values[$key];  // e.g. 'db_name' => 'db.name'
+        $parts = explode('.', $mapping);  // Remove table name or alias before period
         $subset[$parts[1]] = $value;
       }
     }
@@ -89,7 +93,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * to ensure there is exactly one record present.
    *
    * @param mixed $output_records
-   *   To be valid, must be an array, and contain exactly one element.
+   *   Might be FALSE, a ChadoBuddyRecord, or an array with multiple records.
+   *   To be valid, must be exactly one ChadoBuddyRecord.
    * @param array $values
    *   Pass query values to print if exception is thrown.
    *

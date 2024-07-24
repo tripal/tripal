@@ -97,7 +97,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy GetDb error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy GetDb database error '.$e->getMessage());
     }
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
@@ -124,10 +124,10 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   An array where the key is a column in chado and the value describes the
    *   dbxref you want to select. Valid keys include:
    *     - dbxref_id
+   *     - db_id
    *     - accession
    *     - version
    *     - dbxref_description
-   *     - db_id
    *     - db_name
    *     - db_description
    *     - urlprefix
@@ -162,7 +162,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy getDbxref error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy getDbxref database error '.$e->getMessage());
     }
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
@@ -234,13 +234,14 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @param $values
    *   An associative array of the values of the db (those to be inserted):
-   *   - name: The name of the database. This name is usually used as the prefix
-   *     for CV term accessions.
-   *   - description: (Optional) A description of the database.  By default no
-   *     description is required.
-   *   - url: (Optional) The URL for the database.
-   *   - urlprefix: (Optional) The URL that is to be used as a prefix when
-   *     constructing a link to a database term.
+   *     - db_id
+   *     - db_name: The name of the database. This name is usually used as the prefix
+   *       for CV term accessions.
+   *     - db_description: (Optional) A description of the database.  By default no
+   *       description is required.
+   *     - url: (Optional) The URL for the database.
+   *     - urlprefix: (Optional) The URL that is to be used as a prefix when
+   *       constructing a link to a database term.
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -259,7 +260,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy insertDb error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy insertDb database error '.$e->getMessage());
     }
 
     // Retrieve the newly inserted record.
@@ -276,11 +277,15 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @param $values
    *   An associative array of the values to be inserted including:
-   *    - db_id: the database_id of the database the reference is from.
-   *    - db_name: may be used in place of db_id if that is not available.
-   *    - accession: the accession.
-   *    - version: (Optional) The version of the database reference.
-   *    - description: (Optional) A description of the database reference.
+   *     - dbxref_id
+   *     - db_id: the database_id of the database the reference is from.
+   *     - accession: the accession.
+   *     - version: (Optional) The version of the database reference.
+   *     - dbxref_description
+   *     - db_name: may be used in place of db_id if that is not available.
+   *     - db_description: (Optional) A description of the database reference.
+   *     - urlprefix
+   *     - url
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -315,7 +320,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy insertDbxref error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy insertDbxref database error '.$e->getMessage());
     }
 
     // Retrieve the newly inserted record.
@@ -333,13 +338,14 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @param array $values
    *   An associative array of the values for the final record (i.e what you
    *   want to update the record to be) including:
-   *   - name: The name of the database. This name is usually used as the prefix
-   *     for CV term accessions.
-   *   - description: (Optional) A description of the database.  By default no
-   *     description is required.
-   *   - url: (Optional) The URL for the database.
-   *   - urlprefix: (Optional) The URL that is to be used as a prefix when
-   *     constructing a link to a database term.
+   *     - db_id
+   *     - db_name: The name of the database. This name is usually used as the prefix
+   *       for CV term accessions.
+   *     - description: (Optional) A description of the database.  By default no
+   *       description is required.
+   *     - url: (Optional) The URL for the database.
+   *     - urlprefix: (Optional) The URL that is to be used as a prefix when
+   *       constructing a link to a database term.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -374,7 +380,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy updateDb error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy updateDb database error '.$e->getMessage());
     }
     $existing_record = $this->getDb($values, $options);
 
@@ -390,10 +396,15 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @param array $values
    *   An associative array of the values for the final record (i.e what you
    *   want to update the record to be) including:
-   *    - db_id: the database_id of the database the reference is from.
-   *    - accession: the accession.
-   *    - version: (Optional) The version of the database reference.
-   *    - description: (Optional) A description of the database reference.
+   *     - dbxref_id
+   *     - db_id: the database_id of the database the reference is from.
+   *     - accession: the accession.
+   *     - version: (Optional) The version of the database reference.
+   *     - dbxref_description
+   *     - db_name: may be used in place of db_id if that is not available.
+   *     - db_description: (Optional) A description of the database reference.
+   *     - urlprefix
+   *     - url
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -433,7 +444,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy updateDbxref error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy updateDbxref database error '.$e->getMessage());
     }
     $existing_record = $this->getDbxref($values, $options);
 
@@ -448,13 +459,14 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @param array $values
    *   An associative array of the values for the final record including:
-   *   - name: The name of the database. This name is usually used as the prefix
-   *     for CV term accessions.
-   *   - description: (Optional) A description of the database.  By default no
-   *     description is required.
-   *   - url: (Optional) The URL for the database.
-   *   - urlprefix: (Optional) The URL that is to be used as a prefix when
-   *     constructing a link to a database term.
+   *     - db_id
+   *     - db_name: The name of the database. This name is usually used as the prefix
+   *       for CV term accessions.
+   *     - db_description: (Optional) A description of the database.  By default no
+   *       description is required.
+   *     - url: (Optional) The URL for the database.
+   *     - urlprefix: (Optional) The URL that is to be used as a prefix when
+   *       constructing a link to a database term.
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -483,10 +495,15 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @param array $values
    *   An associative array of the values for the final record including:
-   *    - db_id: the database_id of the database the reference is from.
-   *    - accession: the accession.
-   *    - version: (Optional) The version of the database reference.
-   *    - description: (Optional) A description of the database reference.
+   *     - dbxref_id
+   *     - db_id: the database_id of the database the reference is from.
+   *     - accession: the accession.
+   *     - version: (Optional) The version of the database reference.
+   *     - dbxref_description
+   *     - db_name: may be used in place of db_id if that is not available.
+   *     - db_description: (Optional) A description of the database reference.
+   *     - urlprefix
+   *     - url
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -559,7 +576,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy associateDbxref error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy associateDbxref database error '.$e->getMessage());
     }
 
     return TRUE;
