@@ -174,7 +174,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $vocabulary = NULL;
     $debug = $field->getSetting('debug');
 
-    // IF this field is not a TripalField then we want to add a small
+    // If this field is not a TripalField then we want to add a small
     // tag to the field so that we know in the validate we need to add
     // a setting for the cv term for this field.
     if (!is_subclass_of($field, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
@@ -203,9 +203,16 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     ];
 
     $default_vocabulary_term = '';
-    // For Drupal ~10.2 our values are now in the subform
+    // For Drupal ≥10.2 our values are now in the subform
     $vocabulary_term = $form_state->getValue(['field_storage', 'subform', 'settings', 'field_term_fs', 'vocabulary_term'])
         ?? $form_state->getValue(['settings', 'field_term_fs', 'vocabulary_term']);
+
+    // The term may already be set as the default in the
+    // form, but is not yet present in the form state.
+    if (!$vocabulary_term) {
+      $vocabulary_term = $form['settings']['field_term_fs']['vocabulary_term']['#default_value'] ?? NULL;
+    }
+
     if ($vocabulary_term) {
       $default_vocabulary_term = $vocabulary_term;
     }

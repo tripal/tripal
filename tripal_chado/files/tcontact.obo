@@ -21,6 +21,7 @@ is_a: TCONTACT:0000001 ! Contact Type
 [Term]
 id: TCONTACT:0000004
 name: Organization
+def: A generic term for any organization.
 is_a: TCONTACT:0000001 ! Contact Type
 
 [Term]
@@ -46,6 +47,7 @@ is_a: TCONTACT:0000001 ! Contact Type
 [Term]
 id: TCONTACT:0000009
 name: Department
+def: The department of a larger organization.
 is_a: TCONTACT:0000001 ! Contact Type
 
 [Term]
@@ -85,19 +87,20 @@ name: Affiliation
 
 [Term]
 id: TCONTACT:0000016
-name: Department
-def: The department of an institution or organization.
+name: Affiliated Department
+def: The department of the institution or organization that the contact is affiliated with.
 relationship: part_of TCONTACT:0000015 ! Affiliation
 
 [Term]
 id: TCONTACT:0000017
-name: Institution
+name: Affiliated Institution
+def: The employer (e.g. company, university, corporation) that the contact is affiliated with.
 relationship: part_of TCONTACT:0000015 ! Affiliation
 
 [Term]
 id: TCONTACT:0000018
-name: Organization
-def: A generic term for any organization.
+name: Affiliated Organization
+def: The formal group of people the contact is affiliated with. Organizations differ from institutions by being more focused on people coming together for a specific purpose; where as, institutions usually refer to physical locations of a particular corporation.
 relationship: part_of TCONTACT:0000015 ! Affiliation
 
 [Term]

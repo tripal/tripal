@@ -3,3 +3,7 @@ services:
     class: \Drupal\tripal_chado\Commands\ChadoManageCommands
     tags:
       - { name: drush.command }
+  tripal_chado.chadochecktermsagainstyaml:
+    class: \Drupal\tripal_chado\Commands\ChadoCheckTermsAgainstYaml
+    tags:
+      - { name: drush.command }
