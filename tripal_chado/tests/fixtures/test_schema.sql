@@ -176,7 +176,7 @@ CREATE INDEX feature_cvterm_idx1 ON feature_cvterm (feature_id);
 CREATE INDEX feature_cvterm_idx2 ON feature_cvterm (cvterm_id);
 
 CREATE TABLE featureprop (
-  featureprop_id bigint NOT NULL,
+  featureprop_id bigserial NOT NULL,
   primary key (featureprop_id),
   feature_id bigint NOT NULL,
   foreign key (feature_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
