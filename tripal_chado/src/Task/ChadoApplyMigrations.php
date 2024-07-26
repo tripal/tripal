@@ -37,6 +37,7 @@ class ChadoApplyMigrations extends ChadoTaskBase {
   public const BASELINE_CHADO_VERSION = '1.3';
 
   public const MIGRATIONS_INFO_YAML = '/chado_schema/migrations/tripal_chado.chado_migrations.yml';
+  public const MIGRATION_DIR = '/chado_schema/migrations/';
 
   /**
    * An array summarizing all available migrations and including the status
@@ -61,8 +62,18 @@ class ChadoApplyMigrations extends ChadoTaskBase {
    * @param string $schema_name
    *   The schema to apply all pending migrations to.
    */
-  public static function runTripalJob($schema_name) {
-
+  public static function runTripalJob(string $schema_name) {
+    $installer = \Drupal::service('tripal_chado.apply_migrations');
+    $installer->setParameters([
+      'input_schemas' => [$schema_name],
+    ]);
+    if (!$installer->performTask()) {
+      \Drupal::logger('tripal_chado')->error(
+        "Failed to apply migrations to the Chado schema '"
+        . $schema_name
+        . "'. See previous log messages for details."
+      );
+    }
   }
 
   /**
@@ -255,8 +266,31 @@ class ChadoApplyMigrations extends ChadoTaskBase {
 
     try
     {
-      $target_schema = $this->inputSchemas[0];
-      $tripal_dbx = \Drupal::service('tripal.dbx');
+      // The schema to apply migrations to is the first input schema.
+      $target_schema = $this->parameters['input_schemas'][0];
+
+      // We will use ChadoConnection to apply the migration file.
+      $chado_connection = \Drupal::service('tripal_chado.database');
+
+      // We need the path to tripal_chado to get absolute paths to
+      // the migration files.
+      $path = \Drupal::service('extension.list.module')->getPath('tripal_chado') . static::MIGRATION_DIR;
+
+      // Now for each migration, in order...
+      $migrations = self::getAvailableMigrations();
+      foreach ($migrations as $migration) {
+
+        // Get the absolute path to this specific migration.
+        $migration_file = $path . $migration->filename;
+        // @todo log this print "Processing '$migration_file' by subbing in '$target_schema'\n";
+        $success = $chado_connection->executeSqlFile(
+          $migration_file,
+          ['chado' => $target_schema]
+        );
+        // @todo if success then update the migration table.
+        // @todo if fail also update the migration table.
+      }
+      // @todo Only mark the task successfull if no migrations failed.
       $task_success = TRUE;
     }
     catch (\Exception $e) {
