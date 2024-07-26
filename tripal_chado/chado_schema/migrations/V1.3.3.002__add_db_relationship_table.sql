@@ -1,19 +1,19 @@
-create table db_relationship (
+create table chado.db_relationship (
     db_relationship_id bigserial not null,
     type_id bigint not null,
     subject_id bigint not null,
     object_id bigint not null,
     primary key (db_relationship_id),
-    foreign key (type_id) references db (db_id) on delete cascade INITIALLY DEFERRED,
-    foreign key (subject_id) references db (db_id) on delete cascade INITIALLY DEFERRED,
-    foreign key (object_id) references db (db_id) on delete cascade INITIALLY DEFERRED,
+    foreign key (type_id) references chado.db (db_id) on delete cascade INITIALLY DEFERRED,
+    foreign key (subject_id) references chado.db (db_id) on delete cascade INITIALLY DEFERRED,
+    foreign key (object_id) references chado.db (db_id) on delete cascade INITIALLY DEFERRED,
     constraint db_relationship_c1 unique (subject_id,object_id,type_id)
 );
-create index db_relationship_idx1 on db_relationship USING btree (type_id);
-create index db_relationship_idx2 on db_relationship USING btree (subject_id);
-create index db_relationship_idx3 on db_relationship USING btree (object_id);
+create index db_relationship_idx1 on chado.db_relationship USING btree (type_id);
+create index db_relationship_idx2 on chado.db_relationship USING btree (subject_id);
+create index db_relationship_idx3 on chado.db_relationship USING btree (object_id);
 
-COMMENT ON TABLE db_relationship IS 'Specifies relationships between databases.  This is
+COMMENT ON TABLE chado.db_relationship IS 'Specifies relationships between databases.  This is
 particularly useful for ontologies that use multiple prefix IDs for its vocabularies. For example,
 the EDAM ontology uses the prefixes "data", "format", "operation" and others. Each of these would
 have a record in the db table.  An "EDAM" record could be added for the entire ontology to the
