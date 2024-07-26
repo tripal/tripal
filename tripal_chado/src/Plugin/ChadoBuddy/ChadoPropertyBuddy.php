@@ -52,12 +52,20 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
   protected array $property_mapping = [
     'base_table' => 'x.for_validation_only',
     'pkey' => 'x.for_validation_only',
+    'fkey' => 'x.for_validation_only',
     'property_table' => 'x.for_validation_only',
+    'cvterm' => 'x.for_validation_only',
     'pkey_id' => 'p.pkey',
+    'fkey_id' => 'p.fkey',
     'type_id' => 'p.type_id',
     'value' => 'p.value',
     'rank' => 'p.rank',
   ];
+
+  /**
+   * Cache the cvterm instance here
+   */
+  protected object $cvterm_instance;
 
 
   /**
@@ -66,10 +74,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    * @param array $conditions
    *   An array where the key is a column in the chado.db table and the value
    *   describes the db you want to select. Valid keys include:
-   *     - base_table - e.g. 'feature', this is always required
-   *     - pkey - optional primary key column name, this will vary for
+   *     - base_table - (required) chado base table, e.g. 'feature'
+   *     - pkey - (optional) property table primary key column name, this will vary for
    *              different base tables, e.g. 'featureprop_id'.
    *              If omitted, then the standard default is generated
+   *     - fkey - (optional) base table primary key column name,
+   *              e.g. feature_id. If omitted, then '_id' is appended
+   *              to the base table name
    *     - pkey_id - (required) integer value for the base table
    *                 primary key e.g. feature_id
    *     - type_id - foreign key to cvterm_id
@@ -90,8 +101,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     $mapping = $this->property_mapping;
     $this->validateInput($conditions, $mapping);
 
+    if (!isset($this->dbxref_instance)) {
+      $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+      $this->cvterm_instance = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    }
+
     // Convert generic pkey and pkey_id to actual names for this property table.
-    list($property_table, $pkey) = $this->translatePkey($mapping, $conditions);
+    list($property_table, $pkey, $fkey) = $this->translatePkey($mapping, $conditions);
 
     $query = $this->connection->select('1:'.$property_table, 'p');
 
@@ -110,10 +126,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       $results = $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy getCv database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy getProperty database error '.$e->getMessage());
     }
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
+      // convert the type_id to a Cvterm buddy so we get all linked columns
+      $record = $this->cvterm_instance->getCvterm(['cvterm_id' => $values['type_id']], $options);
+      $values['cvterm'] = $record;
       $new_record = new ChadoBuddyRecord();
       $new_record->setValues($values);
       $buddies[] = $new_record;
@@ -135,11 +154,16 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *
    * @param $values
    *   An associative array of the values of the db (those to be inserted):
-   *     - base_table
-   *     - pkey
-   *     - pkey_id
-   *     - term
-   *     - value
+   *     - base_table - e.g. 'feature', this is always required
+   *     - pkey - (optional) property table primary key column name, this will vary for
+   *              different base tables, e.g. 'featureprop_id'.
+   *              If omitted, then the standard default is generated
+   *     - pkey_id - (required) integer value for the base table
+   *                 primary key e.g. feature_id
+   *     - cvterm - (required) a chado Cvterm buddy specifying the term
+   *     - type_id - integer, can be used in place of cvterm if you have it
+   *     - value - the value of the property
+   *     - rank - optional rank of the property
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -150,8 +174,54 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertProperty(array $values, array $options = []) {
-    $fields = $this->validateInput($values, $this->property_mapping);
+    $mapping = $this->property_mapping;
+    $fields = $this->validateInput($values, $mapping);
 
+    // Convert generic pkey and pkey_id to actual names for this property table.
+    $original_values = $values;
+    list($property_table, $pkey, $fkey) = $this->translatePkey($mapping, $values);
+
+    if (array_key_exists('type_id', $values)) {
+      $type_id = $values['type_id'];
+    }
+    elseif (array_key_exists('cvterm', $values)) {
+      $type_id = $values['cvterm']->getValue('cvterm_id');
+      unset($values['cvterm']);
+      $values['type_id'] = $type_id;
+    }
+    else {
+      throw new ChadoBuddyException('ChadoBuddy insertProperty error, neither cvterm nor type_id were specified');
+    }
+
+    // Convert the pkey_id and fkey_id to actual column name
+    if (array_key_exists('pkey_id', $values)) {
+      $values[$pkey] = $values['pkey_id'];
+      unset($values['pkey_id']);
+    }
+    if (array_key_exists('fkey_id', $values)) {
+      $values[$fkey] = $values['fkey_id'];
+      unset($values['fkey_id']);
+    }
+
+    // Insert the property record
+    try {
+      // Create a subset of the passed $values for just the property table.
+//      $cvterm_values = $this->validateInput($values, $mapping, TRUE);
+      $query = $this->connection->insert('1:'.$property_table);
+      $query->fields($values);
+      $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy insertCvterm database error '.$e->getMessage());
+    }
+
+    // Retrieve the newly inserted record.
+    $existing_record = $this->getProperty($original_values, $options);
+
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($existing_record, $values);
+
+    return $existing_record;
   }
 
   /**
