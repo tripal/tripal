@@ -183,7 +183,7 @@ CREATE TABLE featureprop (
   type_id bigint NOT NULL,
   foreign key (type_id) references cvterm (cvterm_id) on delete cascade INITIALLY DEFERRED,
   value text,
-  rank integer DEFAULT 0 NOT NULL
+  rank integer DEFAULT 0 NOT NULL,
   CONSTRAINT featureprop_c1 UNIQUE (feature_id,type_id,rank)
 );
 CREATE INDEX featureprop_idx1 ON featureprop (feature_id);
