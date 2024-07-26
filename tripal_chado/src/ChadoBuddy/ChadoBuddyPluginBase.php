@@ -115,4 +115,59 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     }
   }
 
+  /**
+   * Property buddy helper function to unalias the pkey and pkey_id conditions
+   * to actual table column names based on the base_table.
+   *
+   * @param array $mapping
+   *   Configuration settings for the buddy function. Keys are keys for
+   *   the options passed to the function, values are chado table aliases
+   *   and column name, e.g. 'type_id' => 'p.type_id'
+   * @param array $conditions
+   *   The associative array of table conditions passed to a buddy function.
+   * @return array
+   *   Array of two strings, [0] the name of the chado property table, and
+   *   [1] the primary key column name for this table
+   *
+   */
+  protected function translatePkey(array &$mapping, array &$conditions): array {
+
+    // Retrieve required option 'base_table'
+    if (!array_key_exists('base_table', $conditions) or !$conditions['base_table']) {
+      $calling_function = debug_backtrace()[1]['function'];
+      throw new ChadoBuddyException('ChadoBuddy $calling_function error, condition "base_table" was not defined');
+    }
+    $base_table = $conditions['base_table'];
+    unset($conditions['base_table']);
+
+    // All chado property tables follow this standard naming
+    // convention, but it can be overridden if necessary.
+    $property_table = $base_table . 'prop';
+    if (array_key_exists('property_table', $conditions)) {
+      if ($conditions['property_table']) {
+        $property_table = $conditions['property_table'];
+      }
+      unset($conditions['property_table']);
+    }
+
+    // All chado property table primary keys follow this standard
+    // naming convention, but it can be overridden if necessary.
+    $pkey = $property_table . '_id';
+    if (array_key_exists('pkey', $conditions)) {
+      if ($conditions['pkey']) {
+        $pkey = $conditions['pkey'];
+      }
+      unset($conditions['pkey']);
+    }
+
+    // update mapping placeholder to reflect the actual column name
+    $mapping['pkey_id'] = 'p.' . $pkey;
+
+    // Remove all validation placeholders
+    unset($mapping['base_table']);
+    unset($mapping['pkey']);
+    unset($mapping['property_table']);
+
+    return [$property_table, $pkey];
+  }
 }
