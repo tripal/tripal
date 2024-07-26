@@ -50,10 +50,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *
    */
   protected array $property_mapping = [
-    'property_id' => 'x.property_id',
-    'base_table' => 'x.x',
-    'pkey' => 'y.y',
-    'pkey_id' => 'z.z',
+    'base_table' => 'x.for_validation_only',
+    'pkey' => 'x.for_validation_only',
+    'property_table' => 'x.for_validation_only',
+    'pkey_id' => 'p.pkey',
+    'type_id' => 'p.type_id',
+    'value' => 'p.value',
+    'rank' => 'p.rank',
   ];
 
 
@@ -63,9 +66,15 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    * @param array $conditions
    *   An array where the key is a column in the chado.db table and the value
    *   describes the db you want to select. Valid keys include:
-   *     - base_table
-   *     - pkey
-   *     - pkey_id
+   *     - base_table - e.g. 'feature', this is always required
+   *     - pkey - optional primary key column name, this will vary for
+   *              different base tables, e.g. 'featureprop_id'.
+   *              If omitted, then the standard default is generated
+   *     - pkey_id - (required) integer value for the base table
+   *                 primary key e.g. feature_id
+   *     - type_id - foreign key to cvterm_id
+   *     - value - the value of the property
+   *     - rank - optional rank of the property
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -78,8 +87,47 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getProperty(array $conditions, array $options = []) {
-    $this->validateInput($conditions, $this->property_mapping);
+    $mapping = $this->property_mapping;
+    $this->validateInput($conditions, $mapping);
 
+    // Convert generic pkey and pkey_id to actual names for this property table.
+    list($property_table, $pkey) = $this->translatePkey($mapping, $conditions);
+
+    $query = $this->connection->select('1:'.$property_table, 'p');
+
+    foreach ($conditions as $key => $value) {
+      $map = $mapping[$key];
+      $parts = explode('.', $map);
+      $query->condition($parts[0].'.'.$parts[1], $value, '=');
+    }
+    // Return the joined fields aliased to the unique names
+    // as listed in this function's header
+    foreach ($mapping as $key => $map) {
+      $parts = explode('.', $map);
+      $query->addField($parts[0], $parts[1], $key);
+    }
+    try {
+      $results = $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy getCv database error '.$e->getMessage());
+    }
+    $buddies = [];
+    while ($values = $results->fetchAssoc()) {
+      $new_record = new ChadoBuddyRecord();
+      $new_record->setValues($values);
+      $buddies[] = $new_record;
+    }
+
+    if (count($buddies) > 1) {
+      return $buddies;
+    }
+    elseif (count($buddies) == 1) {
+      return $buddies[0];
+    }
+    else {
+      return FALSE;
+    }
   }
 
   /**

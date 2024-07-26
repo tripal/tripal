@@ -30,7 +30,7 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
   /**
    * Tests the getProperty(), insertProperty(), updateProperty(), deleteProperty() methods.
    */
-  public function testCvMethods() {
+  public function testPropertyMethods() {
 
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $instance = $type->createInstance('chado_property_buddy', []);
