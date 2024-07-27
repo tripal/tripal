@@ -69,6 +69,7 @@ class ChadoManagerForm extends FormBase {
     // Get values from state.
     $schema_name = $form_state->getValue('chado_schema');
     $task = $form_state->getValue('task');
+    $install_id = $form_state->getValue('install_id');
 
     $confirm = $form_state->getValue('confirm');
     if ($schema_name && $task) {
@@ -139,6 +140,11 @@ class ChadoManagerForm extends FormBase {
     $form['task'] = [
       '#type' => 'hidden',
       '#name' => 'task',
+      '#default_value' => '',
+    ];
+    $form['install_id'] = [
+      '#type' => 'hidden',
+      '#name' => 'install_id',
       '#default_value' => '',
     ];
 
@@ -284,7 +290,7 @@ class ChadoManagerForm extends FormBase {
         ];
       }
       // Apply Migrations
-      if ($details['version'] < $highest_chado_version) {
+      if ($details['version'] < $highest_chado_version && $details['integration']) {
         $operations['apply_migrations'] = [
           '#type' => 'button',
           '#value' => $this->t('Apply Migrations'),
@@ -292,6 +298,7 @@ class ChadoManagerForm extends FormBase {
             'class' => ['chadoTableButton'],
             'data-chado-task' => static::APPLY_MIGRATIONS_TASK,
             'data-chado-schema' => $schema_name,
+            'data-chado-installid' => $details['integration']['install_id'],
           ],
         ];
       }
@@ -332,6 +339,8 @@ class ChadoManagerForm extends FormBase {
     $form['#prefix'] = '<div id="tripal_chado_manage_form">';
     $form['#suffix'] = '</div>';
 
+    // @debug dpm($form, 'form');
+
     return $form;
   }
 
@@ -339,6 +348,8 @@ class ChadoManagerForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // @debug dpm($form_state->getValues(), 'Values @ start');
+
     // Get values from form first and then from state.
     $schema_name =
       $form_state->getValue('chado_schema')
@@ -351,6 +362,12 @@ class ChadoManagerForm extends FormBase {
       ?: $form_state->get('task')
     ;
     $form_state->set('task', $task);
+
+    $install_id =
+      $form_state->getValue('install_id')
+      ?: $form_state->get('install_id')
+    ;
+    $form_state->set('install_id', $install_id);
 
     $confirm = $form_state->getValue('confirm');
 
@@ -375,6 +392,7 @@ class ChadoManagerForm extends FormBase {
         // A second form page should be provided.
         $form_state->setRebuild(TRUE);
     }
+    // @debug dpm($form_state->getValues(), 'Values @ end');
   }
 
   /**
@@ -741,6 +759,9 @@ class ChadoManagerForm extends FormBase {
    */
   public function buildApplyMigrationsForm(array $form, FormStateInterface $form_state) {
     $schema_name = $form_state->getValue('chado_schema');
+    $install_id = $form_state->getValue('install_id');
+    // @debug dpm($schema_name, 'schema');
+    // @debug dpm($install_id, 'install ID');
 
     $form['task'] = [
       '#type' => 'item',
@@ -754,6 +775,12 @@ class ChadoManagerForm extends FormBase {
       '#type' => 'hidden',
       '#name' => 'chado_schema',
       '#value' => $schema_name,
+    ];
+
+    $form['install_id'] = [
+      '#type' => 'hidden',
+      '#name' => 'install_id',
+      '#value' => $install_id,
     ];
 
     $apply_migrations_task = \Drupal::service('tripal_chado.apply_migrations');
@@ -805,9 +832,10 @@ class ChadoManagerForm extends FormBase {
   public function submitApplyMigrationsForm(array $form, FormStateInterface $form_state) {
 
     $schema_name = $form_state->getValue('chado_schema');
+    $install_id = $form_state->getValue('install_id');
 
     $current_user = \Drupal::currentUser();
-    $args = [$schema_name];
+    $args = [$schema_name, $install_id];
 
     \Drupal::service('tripal.job')->create([
       'job_name' => t("Apply Migrations to $schema_name schema"),

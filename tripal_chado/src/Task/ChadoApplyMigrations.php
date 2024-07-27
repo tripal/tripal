@@ -7,6 +7,8 @@ use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\LockException;
 use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\Component\Serialization\Yaml;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal\Services\TripalJob;
 
 /**
  * Applies Chado Migrations usually handled by Flyway.
@@ -56,18 +58,25 @@ class ChadoApplyMigrations extends ChadoTaskBase {
    */
   public array $migration_status = [];
 
+  public ChadoConnection $chado_connection;
+  public $drupal_connection;
+  protected TripalJob $job;
+  public $install_id;
+
   /**
    * A callable function to provide to tripal jobs as the callback.
    *
    * @param string $schema_name
    *   The schema to apply all pending migrations to.
    */
-  public static function runTripalJob(string $schema_name) {
-    $installer = \Drupal::service('tripal_chado.apply_migrations');
-    $installer->setParameters([
+  public static function runTripalJob(string $schema_name, int $install_id, TripalJob $job) {
+    $migrator = \Drupal::service('tripal_chado.apply_migrations');
+    $migrator->setParameters([
       'input_schemas' => [$schema_name],
     ]);
-    if (!$installer->performTask()) {
+    $migrator->install_id = $install_id;
+    $migrator->job = $job;
+    if (!$migrator->performTask()) {
       \Drupal::logger('tripal_chado')->error(
         "Failed to apply migrations to the Chado schema '"
         . $schema_name
@@ -144,17 +153,44 @@ class ChadoApplyMigrations extends ChadoTaskBase {
   }
 
   /**
+   * Saves the status of the current migration to the database.
+   *
+   * @param object $migration
+   * @param bool $status
+   * @return void
+   */
+  public function reportMigrationStatus(object $migration, bool $status) {
+
+    $current_date = \Drupal::time()->getRequestTime();
+
+    $short_status = 0;
+    if ($status) {
+      $short_status = 1;
+    }
+
+    $this->drupal_connection->insert('chado_migrations')
+      ->fields([
+        'install_id' => $this->job->getJobID(),
+        'version' => $migration->version,
+        'filename' => $migration->filename,
+        'applied_on' => $current_date,
+        'success' => $short_status,
+      ])
+      ->execute();
+  }
+
+  /**
    * Checks the status of this schema. Specifically, which migrations have been
    * applied and which are still pending.
    *
    * @return void
    */
   public function checkMigrationStatus() {
-    $drupal_connection = \Drupal::service('database');
+    $this->drupal_connection = \Drupal::service('database');
     $schema_name = $this->inputSchemas[0];
 
     // Get all the migration records for this chado installation.
-    $query = $drupal_connection->select('chado_migrations', 'm')
+    $query = $this->drupal_connection->select('chado_migrations', 'm')
       ->fields('m', ['version', 'applied_on', 'success']);
     $query->join('chado_installations', 'i', 'i.install_id = m.install_id');
     $query->condition('i.schema_name', $schema_name);
@@ -168,7 +204,13 @@ class ChadoApplyMigrations extends ChadoTaskBase {
       if (array_key_exists($version, $applied_migrations)) {
         $migration->applied_on = $applied_migrations[$version]['applied_on'];
         $migration->success = $applied_migrations[$version]['success'];
-        $migration->status = $applied_migrations[$version]['success'];
+
+        if ($applied_migrations[$version]['success'] === 't') {
+          $migration->status = 'Success';
+        }
+        else {
+          $migration->status = 'Failed';
+        }
       }
       else {
         $migration->applied_on = '';
@@ -270,25 +312,43 @@ class ChadoApplyMigrations extends ChadoTaskBase {
       $target_schema = $this->parameters['input_schemas'][0];
 
       // We will use ChadoConnection to apply the migration file.
-      $chado_connection = \Drupal::service('tripal_chado.database');
+      $this->chado_connection = \Drupal::service('tripal_chado.database');
 
       // We need the path to tripal_chado to get absolute paths to
       // the migration files.
       $path = \Drupal::service('extension.list.module')->getPath('tripal_chado') . static::MIGRATION_DIR;
 
       // Now for each migration, in order...
-      $migrations = self::getAvailableMigrations();
+      $migrations = $this->checkMigrationStatus();
       foreach ($migrations as $migration) {
 
-        // Get the absolute path to this specific migration.
-        $migration_file = $path . $migration->filename;
-        // @todo log this print "Processing '$migration_file' by subbing in '$target_schema'\n";
-        $success = $chado_connection->executeSqlFile(
-          $migration_file,
-          ['chado' => $target_schema]
-        );
-        // @todo if success then update the migration table.
-        // @todo if fail also update the migration table.
+        if ($migration->success !== 't') {
+          // Get the absolute path to this specific migration.
+          $migration_file = $path . $migration->filename;
+          // Apply the migration.
+          $this->logger->notice("Applying '$migration_file' to schema '$target_schema'");
+          $exception_message = 'No exception thrown.';
+          try {
+            $success = $this->chado_connection->executeSqlFile(
+              $migration_file,
+              ['chado' => $target_schema]
+            );
+          }
+          catch (\Exception $e) {
+            $success = FALSE;
+            $exception_message = $e->getMessage();
+          }
+
+          // Report on progress.
+          if ($success) {
+            $this->reportMigrationStatus($migration, TRUE);
+          }
+          else {
+            $this->reportMigrationStatus($migration, FALSE);
+            $migration_name = $migration->version . '(' . $migration->description . ')';
+            $this->logger->error("Error encountered. Unable to apply $migration_name ($migration_file) to $target_schema. Exception Message: $exception_message.");
+          }
+        }
       }
       // @todo Only mark the task successfull if no migrations failed.
       $task_success = TRUE;

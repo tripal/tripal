@@ -144,6 +144,7 @@ function tripal_chado_chado_migrations_schema() {
       ],
       'install_id' => [
         'type' => 'int',
+        'description' => 'The install_id of the schema this migration was applied to.',
         'not null' => TRUE,
       ],
       'version' => [
