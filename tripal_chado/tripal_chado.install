@@ -142,9 +142,14 @@ function tripal_chado_chado_migrations_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ],
+      'job_id' => [
+        'type' => 'int',
+        'description' => 'The job_id of the TripalJob this migration was applied during.',
+        'not null' => TRUE,
+      ],
       'install_id' => [
         'type' => 'int',
-        'description' => 'The install_id of the schema this migration was applied to.',
+        'description' => 'The install_id of the Tripal-managed chado installation/schema this migration was applied to.',
         'not null' => TRUE,
       ],
       'version' => [
