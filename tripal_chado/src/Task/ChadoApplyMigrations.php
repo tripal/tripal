@@ -272,14 +272,15 @@ class ChadoApplyMigrations extends ChadoTaskBase {
    */
   public function checkMigrationStatus() {
     $this->drupal_connection = \Drupal::service('database');
-    $schema_name = $this->inputSchemas[0];
+    $schema_name = $this->parameters['input_schemas'][0];
 
     // Get all the migration records for this chado installation.
     $query = $this->drupal_connection->select('chado_migrations', 'm')
       ->fields('m', ['version', 'applied_on', 'success']);
     $query->join('chado_installations', 'i', 'i.install_id = m.install_id');
+    $query->fields('i', ['install_id']);
     $query->condition('i.schema_name', $schema_name);
-    $applied_migrations = $query->execute()->fetchAllKeyed('version');
+    $applied_migrations = $query->execute()->fetchAllAssoc('version');
 
     // Get the list of possible migrations (schema indifferent).
     $all_migrations = self::getAvailableMigrations();
@@ -289,11 +290,11 @@ class ChadoApplyMigrations extends ChadoTaskBase {
 
       // Add details if the migration was applied.
       if (array_key_exists($version, $applied_migrations)) {
-        $migration->applied_on = $applied_migrations[$version]['applied_on'];
-        $migration->success = $applied_migrations[$version]['success'];
-        $migration->install_id = $applied_migrations[$version]['install_id'];
+        $migration->applied_on = $applied_migrations[$version]->applied_on;
+        $migration->success = $applied_migrations[$version]->success;
+        $migration->install_id = $applied_migrations[$version]->install_id;
 
-        if ($applied_migrations[$version]['success'] === 1) {
+        if ($applied_migrations[$version]->success == 1) {
           $migration->status = 'Successful';
         }
         else {
