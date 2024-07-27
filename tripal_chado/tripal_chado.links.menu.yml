@@ -19,19 +19,19 @@ tripal_chado.chado_custom_tables:
   title: 'Chado Custom Tables'
   description: 'Manage Chado Custom Tables'
   parent: tripal_chado.storage
-  weight: 30  
-  
+  weight: 30
+
 tripal_chado.chado_mviews:
   route_name: tripal_chado.chado_mviews
   title: 'Chado Materialized Views'
   description: 'Manage Chado Materialized Views'
   parent: tripal_chado.storage
-  weight: 40 
-  
+  weight: 40
+
 tripal_chado.chado_manager_form:
   route_name: tripal_chado.chado_manager_form
-  title: 'Chado Schemas'
-  description: 'Manages Chado schemas (clone, upgrade, rename, remove) and their integration with Tripal.'
+  title: 'Manage Chado Schemas'
+  description: 'Manages Chado schemas (clone, upgrade, rename, remove, apply migrations) and their integration with Tripal.'
   parent: tripal_chado.storage
   weight: 50
 
@@ -41,14 +41,14 @@ entity.chado_term_mapping.collection:
   description: 'Configure how terms are mapped to columns in Chado'
   route_name: entity.chado_term_mapping.collection
   weight: 50
-  
+
 tripal_chado.chado_prepare_form:
   route_name: tripal_chado.chado_prepare_form
   title: 'Prepare Chado'
   description: 'Prepares Drupal to use Chado.'
   parent: tripal_chado.storage
   weight: 60
-  
+
 
 tripal.data_loaders.publication_loaders:
   route_name: tripal.data_loaders.publication_loaders
