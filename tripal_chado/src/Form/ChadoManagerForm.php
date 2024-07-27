@@ -795,7 +795,7 @@ class ChadoManagerForm extends FormBase {
       $rows[] = [
         $migration->version,
         $migration->description,
-        $migration->applied_on,
+        \Drupal::service('date.formatter')->format($migration->applied_on, 'medium'),
         $migration->status,
       ];
     }
