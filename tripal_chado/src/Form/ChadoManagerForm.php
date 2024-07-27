@@ -131,6 +131,8 @@ class ChadoManagerForm extends FormBase {
     $rows = [];
     $instances = $chado->getAvailableInstances();
 
+    // These elements are set by the following js library based on the
+    // data attribute set on the button pressed.
     $form['#attached']['library'][] = 'tripal_chado/tripal_chado.chado_table';
     $form['chado_schema'] = [
       '#type' => 'hidden',
@@ -298,7 +300,7 @@ class ChadoManagerForm extends FormBase {
             'class' => ['chadoTableButton'],
             'data-chado-task' => static::APPLY_MIGRATIONS_TASK,
             'data-chado-schema' => $schema_name,
-            'data-chado-installid' => $details['integration']['install_id'],
+            'data-chado-install-id' => $details['integration']['install_id'],
           ],
         ];
       }
