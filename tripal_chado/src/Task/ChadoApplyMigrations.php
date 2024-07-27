@@ -256,7 +256,19 @@ class ChadoApplyMigrations extends ChadoTaskBase {
    * Checks the status of this schema. Specifically, which migrations have been
    * applied and which are still pending.
    *
-   * @return void
+   * @return array
+   *  The key of this array is the migration version number and each element is
+   *  an object with the following keys:
+   *   - version: a string of the form '1.3.3.002'.
+   *   - install_id: the ID of the chado installation as managed by tripal.
+   *   - schema_name: the name of the schema the status applies to.
+   *   - description: a short description of the migration.
+   *   - applied_on: the date the migration was applied on.
+   *   - success: an integer indicating the success of applying the migration.
+   *       If successful, it will be '1' and otherwise, '0'. If the migration
+   *       has not been attempted then this will be NULL.
+   *   - status: a string indicating the status. It will be one of "Pending",
+   *       "Successful", or "Failed".
    */
   public function checkMigrationStatus() {
     $this->drupal_connection = \Drupal::service('database');
@@ -273,12 +285,15 @@ class ChadoApplyMigrations extends ChadoTaskBase {
     $all_migrations = self::getAvailableMigrations();
     foreach ($all_migrations as $version => $migration) {
 
+      $migration->schema_name = $schema_name;
+
       // Add details if the migration was applied.
       if (array_key_exists($version, $applied_migrations)) {
         $migration->applied_on = $applied_migrations[$version]['applied_on'];
         $migration->success = $applied_migrations[$version]['success'];
+        $migration->install_id = $applied_migrations[$version]['install_id'];
 
-        if ($applied_migrations[$version]['success'] === 't') {
+        if ($applied_migrations[$version]['success'] === 1) {
           $migration->status = 'Successful';
         }
         else {
@@ -286,7 +301,8 @@ class ChadoApplyMigrations extends ChadoTaskBase {
         }
       }
       else {
-        $migration->applied_on = '';
+        $migration->install_id = NULL;
+        $migration->applied_on = NULL;
         $migration->success = NULL;
         $migration->status = 'Pending';
       }
