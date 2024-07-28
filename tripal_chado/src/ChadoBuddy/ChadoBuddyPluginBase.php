@@ -78,7 +78,9 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
       else {
         $mapping = $valid_values[$key];  // e.g. 'db_name' => 'db.name'
         $parts = explode('.', $mapping);  // Remove table name or alias before period
-        $subset[$parts[1]] = $value;
+        if ($parts[1] != 'for_validation_only') {
+          $subset[$parts[1]] = $value;
+        }
       }
     }
     if (!$subset) {
@@ -126,9 +128,11 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * @param array $conditions
    *   The associative array of table conditions passed to a buddy function.
    * @return array
-   *   Array of three strings, [0] the name of the chado property table,
-   *   [1] the primary key column name for this table, and
-   *   [2] the foreign key to the base table.
+   *   Array of four strings,
+   *   [0] the name of the chado base table,
+   *   [1] the name of the chado property table,
+   *   [2] the primary key column name for this table, and
+   *   [3] the foreign key to the base table.
    *
    */
   protected function translatePkey(array &$mapping, array &$conditions): array {
@@ -181,6 +185,6 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     unset($mapping['property_table']);
     unset($mapping['cvterm']);
 
-    return [$property_table, $pkey, $fkey];
+    return [$base_table, $property_table, $pkey, $fkey];
   }
 }

@@ -29,6 +29,7 @@ CREATE TABLE dbxref (
 );
 
 INSERT INTO dbxref (db_id, accession) VALUES (1, 'test_dbxref');
+INSERT INTO dbxref (db_id, accession) VALUES (2, 'test_dbxref2');
 
 CREATE TABLE cv (
   cv_id serial,
@@ -54,6 +55,7 @@ CREATE TABLE cvterm (
 );
 
 INSERT INTO cvterm (cv_id, name, definition, dbxref_id) VALUES (1, 'test_cvterm', 'CV term for testing', 1);
+INSERT INTO cvterm (cv_id, name, definition, dbxref_id) VALUES (2, 'test_cvterm2', 'CV term 2 for testing', 2);
 
 CREATE TABLE organism (
   organism_id serial,
