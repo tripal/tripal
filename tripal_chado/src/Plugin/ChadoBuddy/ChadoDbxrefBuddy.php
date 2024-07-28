@@ -102,6 +102,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
+      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setBaseTable('db');
       $new_record->setValues($values);
       $buddies[] = $new_record;
     }
@@ -167,6 +169,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
+      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setBaseTable('dbxref');
       $new_record->setValues($values);
       $buddies[] = $new_record;
     }

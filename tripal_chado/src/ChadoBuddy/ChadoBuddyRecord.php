@@ -36,6 +36,46 @@ class ChadoBuddyRecord {
 
 
   /**
+   * Sets the value of the base table.
+   *
+   * @param string $value
+   *   The table name to be stored.
+   */
+  public function setBaseTable(string $value) {
+    $this->base_table = $value;
+  }
+
+  /**
+   * Returns the name of the base table.
+   *
+   * @return string
+   *   The base table name.
+   */
+  public function getBaseTable() {
+    return $this->base_table;
+  }
+
+  /**
+   * Sets the value of the schema name.
+   *
+   * @param string $value
+   *   The schema name to be stored.
+   */
+  public function setSchemaName(string $value) {
+    $this->schema_name = $value;
+  }
+
+  /**
+   * Returns the value of the schema name.
+   *
+   * @return string
+   *   The schema name.
+   */
+  public function getSchemaName() {
+    return $this->schema_name;
+  }
+
+  /**
    * Sets the associative array with values looked up from
    * a chado table record.
    *

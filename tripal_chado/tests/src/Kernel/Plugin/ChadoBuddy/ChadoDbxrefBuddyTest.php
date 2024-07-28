@@ -44,8 +44,12 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     $chado_buddy_records = $instance->getDb(['db_name' => 'test db']);
     $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing DB "test db"');
     $values = $chado_buddy_records->getValues();
+    $base_table = $chado_buddy_records->getBaseTable();
+    $schema_name = $chado_buddy_records->getSchemaName();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the existing DB "test db"');
     $this->assertEquals(5, count($values), 'The values array is of unexpected size for the existing DB "test db"');
+    $this->assertEquals('db', $base_table, 'The base table is incorrect for the existing DB "test db"');
+    $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing DB "test db"');
 
     // TEST: We should be able to insert a DB record if it doesn't exist.
     $chado_buddy_records = $instance->insertDb(['db_name' => 'newDb001', 'db_description' => 'desc001']);
@@ -117,8 +121,12 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     $chado_buddy_records = $instance->getDbxref(['accession' => 'test_dbxref']);
     $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing Dbxref "test_dbxref"');
     $values = $chado_buddy_records->getValues();
+    $base_table = $chado_buddy_records->getBaseTable();
+    $schema_name = $chado_buddy_records->getSchemaName();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the existing Dbxref "test_dbxref"');
     $this->assertEquals(9, count($values), 'The values array is of unexpected size for the existing Dbxref "test_dbxref"');
+    $this->assertEquals('dbxref', $base_table, 'The base table is incorrect for the existing Dbxref "test_dbxref"');
+    $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing Dbxref "test_dbxref"');
 
     // TEST: We should be able to insert a Dbxref record if it doesn't exist.
     $chado_buddy_records = $instance->insertDbxref(['accession' => 'newDbxref001', 'db_name' => 'test db']);
