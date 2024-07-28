@@ -792,10 +792,14 @@ class ChadoManagerForm extends FormBase {
     $all_migrations = $apply_migrations_task->checkMigrationStatus();
     $rows = [];
     foreach ($all_migrations as $migration) {
+      $formatted_date = '';
+      if ($migration->applied_on) {
+        $formatted_date = \Drupal::service('date.formatter')->format($migration->applied_on, 'medium');
+      }
       $rows[] = [
         $migration->version,
         $migration->description,
-        \Drupal::service('date.formatter')->format($migration->applied_on, 'medium'),
+        $formatted_date,
         $migration->status,
       ];
     }
