@@ -108,6 +108,12 @@ class ChadoApplyMigrations extends ChadoTaskBase {
   protected int $install_id;
 
   /**
+   * The cvterm_id for the chado_properties:version term.
+   * @var int
+   */
+  protected int $version_cvterm_id;
+
+  /**
    * Sets the Tripal job that the migrations are being applied during.
    *
    * @param TripalJob $job
@@ -250,7 +256,7 @@ class ChadoApplyMigrations extends ChadoTaskBase {
       $short_status = 1;
     }
 
-    // Update the migration records
+    // Always update the migration records
     $this->drupal_connection->insert('chado_migrations')
       ->fields([
         'job_id' => $this->job_id,
@@ -262,15 +268,37 @@ class ChadoApplyMigrations extends ChadoTaskBase {
       ])
       ->execute();
 
-    // Update this chado installations version.
-    $this->chado_connection->setSchemaName($migration->schema_name);
-    $this->chado_connection->update('1:chadoprop')
-      ->fields(['
-        version' => $migration->version,
-        'updated' => $current_date,
-      ])
-      ->condition('install_id', $this->install_id)
-      ->execute();
+    // Only update versions and what-not if the migration was successful.
+    if ($short_status == 1) {
+    // Update the chado installation table version.
+      $this->drupal_connection->update('chado_installations')
+        ->fields([
+          'version' => $migration->version,
+          'updated' => $current_date,
+        ])
+        ->condition('install_id', $this->install_id)
+        ->execute();
+
+      // We need the chado_properties:version term to update the version.
+      $this->chado_connection->setSchemaName($migration->schema_name);
+      if (empty($this->version_cvterm_id)) {
+        $result = $this->chado_connection->select('1:cvterm', 'cvt')
+          ->fields('cvt', ['cvterm_id']);
+        $result->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+        $result->condition('cv.name', 'chado_properties');
+        $result->condition('cvt.name', 'version');
+        $result = $result->execute();
+        $this->version_cvterm_id = $result->fetchField();
+      }
+
+      // Update this chado installations version.
+      $this->chado_connection->update('1:chadoprop')
+        ->fields([
+          'value' => $migration->version,
+        ])
+        ->condition('type_id', $this->version_cvterm_id)
+        ->execute();
+    }
   }
 
   /**
