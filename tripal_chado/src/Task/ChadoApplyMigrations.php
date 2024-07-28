@@ -228,6 +228,16 @@ class ChadoApplyMigrations extends ChadoTaskBase {
    * Saves the status of the current migration to the database.
    *
    * @param object $migration
+   *   - version: a string of the form '1.3.3.002'.
+   *   - install_id: the ID of the chado installation as managed by tripal.
+   *   - schema_name: the name of the schema the status applies to.
+   *   - description: a short description of the migration.
+   *   - applied_on: the date the migration was applied on.
+   *   - success: an integer indicating the success of applying the migration.
+   *       If successful, it will be '1' and otherwise, '0'. If the migration
+   *       has not been attempted then this will be NULL.
+   *   - status: a string indicating the status. It will be one of "Pending",
+   *       "Successful", or "Failed".
    * @param bool $status
    * @return void
    */
@@ -240,6 +250,7 @@ class ChadoApplyMigrations extends ChadoTaskBase {
       $short_status = 1;
     }
 
+    // Update the migration records
     $this->drupal_connection->insert('chado_migrations')
       ->fields([
         'job_id' => $this->job_id,
@@ -249,6 +260,16 @@ class ChadoApplyMigrations extends ChadoTaskBase {
         'applied_on' => $current_date,
         'success' => $short_status,
       ])
+      ->execute();
+
+    // Update this chado installations version.
+    $this->chado_connection->setSchemaName($migration->schema_name);
+    $this->chado_connection->update('1:chadoprop')
+      ->fields(['
+        version' => $migration->version,
+        'updated' => $current_date,
+      ])
+      ->condition('install_id', $this->install_id)
       ->execute();
   }
 
