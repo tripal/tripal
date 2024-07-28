@@ -44,8 +44,12 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $chado_buddy_records = $instance->getCv(['cv_name' => 'test_cv']);
     $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing CV "test_cv"');
     $values = $chado_buddy_records->getValues();
+    $base_table = $chado_buddy_records->getBaseTable();
+    $schema_name = $chado_buddy_records->getSchemaName();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the existing CV "test_cv"');
     $this->assertEquals(3, count($values), 'The values array is of unexpected size for the existing CV "test_cv"');
+    $this->assertEquals('cv', $base_table, 'The base table is incorrect for the existing CV "test_cv"');
+    $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing CV "test_cv"');
 
     // TEST: We should be able to insert a CV record if it doesn't exist.
     $chado_buddy_records = $instance->insertCv(['cv_name' => 'newCv001', 'cv_definition' => 'def001']);
@@ -115,8 +119,12 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $chado_buddy_records = $instance->getCvterm(['cvterm_name' => 'test_cvterm']);
     $this->assertIsObject($chado_buddy_records, 'We did not retrieve the existing Cvterm "test_cvterm"');
     $values = $chado_buddy_records->getValues();
+    $base_table = $chado_buddy_records->getBaseTable();
+    $schema_name = $chado_buddy_records->getSchemaName();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the existing Cvterm "test_cvterm"');
     $this->assertEquals(17, count($values), 'The values array is of unexpected size for the existing Cvterm "test_cvterm"');
+    $this->assertEquals('cvterm', $base_table, 'The base table is incorrect for the existing Cvterm "test_cvterm"');
+    $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing Cvterm "test_cvterm"');
 
     // TEST: We should be able to retrieve an existing Cvterm record by its dbxref accession.
     $chado_buddy_records = $instance->getCvterm(['accession' => 'test_dbxref']);
