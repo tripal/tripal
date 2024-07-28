@@ -138,9 +138,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
-//      Not public variables so this won't work currently:
-//      $new_record->schema_name = $this->connection->getSchemaName();
-//      $new_record->base_table = 'cv';
+      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setBaseTable('cv');
       $new_record->setValues($values);
       $buddies[] = $new_record;
     }
@@ -216,6 +215,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
       $new_record = new ChadoBuddyRecord();
+      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setBaseTable('cvterm');
       $new_record->setValues($values);
       $buddies[] = $new_record;
     }
