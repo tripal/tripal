@@ -124,6 +124,7 @@ class ChadoManagerForm extends FormBase {
     $tripal_dbx = \Drupal::service('tripal.dbx');
     $chado = new ChadoConnection();
 
+    // @todo this should be specific to each schema.
     $highest_chado_version = \Drupal\tripal_chado\Task\ChadoApplyMigrations::getHighestVersion();
 
     // Now that we support multiple chado instances, we need to list all the
@@ -296,6 +297,18 @@ class ChadoManagerForm extends FormBase {
         $operations['apply_migrations'] = [
           '#type' => 'button',
           '#value' => $this->t('Apply Migrations'),
+          '#attributes' => [
+            'class' => ['chadoTableButton'],
+            'data-chado-task' => static::APPLY_MIGRATIONS_TASK,
+            'data-chado-schema' => $schema_name,
+            'data-chado-install-id' => $details['integration']['install_id'],
+          ],
+        ];
+      }
+      if ($details['version'] == $highest_chado_version && $details['integration']) {
+        $operations['view_migrations'] = [
+          '#type' => 'button',
+          '#value' => $this->t('View Migrations'),
           '#attributes' => [
             'class' => ['chadoTableButton'],
             'data-chado-task' => static::APPLY_MIGRATIONS_TASK,
