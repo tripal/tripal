@@ -356,7 +356,7 @@ $values['fkey'] = $fkey;
    * @param array $values
    *   Copy to this array.
    **/
-  protected function copyConditions(array &conditions, array &$values) {
+  protected function copyConditions(array &$conditions, array &$values) {
     // copy base table and pkey stuff from conditions to values,
     // so that they don't need to be included twice
     foreach (['base_table', 'pkey', 'fkey', 'fkey_id'] as $key) {
