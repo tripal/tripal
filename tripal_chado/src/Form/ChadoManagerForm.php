@@ -804,6 +804,7 @@ class ChadoManagerForm extends FormBase {
     ]);
     $all_migrations = $apply_migrations_task->checkMigrationStatus();
     $rows = [];
+    $pending_migrations = 0;
     foreach ($all_migrations as $migration) {
       $formatted_date = '';
       if ($migration->applied_on) {
@@ -815,6 +816,10 @@ class ChadoManagerForm extends FormBase {
         $formatted_date,
         $migration->status,
       ];
+
+      if ($migration->status !== 'Successful') {
+        $pending_migrations++;
+      }
     }
     $form['migrations'] = [
       '#type' => 'table',
@@ -825,7 +830,7 @@ class ChadoManagerForm extends FormBase {
     $form['cancel'] = [
       '#type' => 'submit',
       '#name' => 'back',
-      '#value' => t('Cancel'),
+      '#value' => t('Back'),
       '#submit' => ['::goBackForm'],
       '#limit_validation_errors' => [],
     ];
@@ -836,6 +841,9 @@ class ChadoManagerForm extends FormBase {
       '#value' => t('Apply Migrations'),
       '#submit' => ['::submitApplyMigrationsForm'],
     ];
+    if ($pending_migrations === 0) {
+      $form['submit']['#disabled'] = TRUE;
+    }
 
     return $form;
   }
