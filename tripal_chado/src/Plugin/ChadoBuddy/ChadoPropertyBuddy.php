@@ -133,6 +133,8 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       // convert the type_id to a Cvterm buddy so we get all linked columns
       $record = $this->cvterm_instance->getCvterm(['cvterm_id' => $values['type_id']], $options);
       $values['cvterm'] = $record;
+$values['pkey'] = $pkey;
+$values['fkey'] = $fkey;
       $new_record = new ChadoBuddyRecord();
       $new_record->setSchemaName($this->connection->getSchemaName());
       $new_record->setBaseTable($base_table);
@@ -263,30 +265,14 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
     // copy base table and pkey stuff from conditions so that they
     // don't need to be included twice
-    foreach (['base_table', 'pkey', 'pkey_id', 'fkey', 'fkey_id'] as $key) {
-      if (array_key_exists($key, $conditions)) {
-        $values[$key] = $conditions[$key];
-      }
-    }
-#print "CP1 values"; var_dump($values); //@@@
+    $this->copyConditions($conditions, $values);
     $mapping = $this->property_mapping;
     $original_values = $values;
     $unaliased_values = $this->validateInput($values, $mapping);
-#print "CP1a unaliased_values"; var_dump($unaliased_values); //@@@
 
     // Convert generic pkey and pkey_id to actual names for this property table.
     list($base_table, $property_table, $pkey, $fkey) = $this->translatePkey($mapping, $conditions);
-#print "CP1b base_table=$base_table property_table=$property_table pkey=\"$pkey\" fkey=\"$fkey\"\n"; //@@@
     $pkey_id = $existing_record->getValue('pkey_id');
-
-#    // Remove validation placeholders
-#print "CP2 unaliased_values"; var_dump($unaliased_values); //@@@
-#    foreach ($unaliased_values as $key => $value) {
-#      if (preg_match('/for_validation_only/', $value)) {
-#        unset($unaliased_values[$key]);
-#print "CP3 remove $key $value\n"; //@@@
-#      }
-#    }
 
     // Convert the pkey_id and fkey_id to actual column name
     if (array_key_exists('pkey', $unaliased_values)) {
@@ -298,11 +284,9 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       unset($unaliased_values['fkey']);
     }
 
-#print "CP3 unaliased_values"; var_dump($unaliased_values); //@@@
     $query = $this->connection->update('1:' . $property_table);
     $query->condition($pkey, $pkey_id, '=');
     $query->fields($unaliased_values);
-#print (string) $query . "\n"; //@@@
     try {
       $results = $query->execute();
     }
@@ -342,27 +326,48 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
   public function upsertProperty(array $values, array $options = []) {
     $mapping = $this->property_mapping;
     $this->validateInput($values, $mapping);
+    $original_values = $values;
     $existing_record = $this->getProperty($values, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertProperty error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       // Convert generic pkey and pkey_id to actual names for this property table.
-      list($base_table, $property_table, $pkey, $fkey) = $this->translatePkey($mapping, $conditions);
-      $conditions = [$pkey => $existing_record->getValue('pkey_id')];
+      list($base_table, $property_table, $pkey, $fkey) = $this->translatePkey($mapping, $values);
+      $existing_values = $existing_record->getValues();
+      $conditions = ['pkey_id' => $existing_values['pkey_id'], 'pkey' => $existing_values['pkey'], 'base_table' => $existing_record->getBaseTable()];
       // copy base table and pkey stuff from conditions so that they
       // don't need to be included twice
-      foreach (['base_table', 'pkey', 'fkey', 'fkey_id'] as $key) {
-        if (array_key_exists($key, $conditions)) {
-          $values[$key] = $conditions[$key];
-        }
-      }
-      $new_record = $this->updateProperty($values, $conditions, $options);
+      $this->copyConditions($existing_values, $original_values);
+      $new_record = $this->updateProperty($original_values, $conditions, $options);
     }
     else {
-      $new_record = $this->insertProperty($values, $options);
+      $new_record = $this->insertProperty($original_values, $options);
     }
     return $new_record;
+  }
+
+  /**
+   * Helper function to copy base table and pkey stuff from conditions to values,
+   * so that they don't need to be included twice for update functions.
+   *
+   * @param array $conditions
+   *   Copy from this array.
+   * @param array $values
+   *   Copy to this array.
+   **/
+  protected function copyConditions(array &conditions, array &$values) {
+    // copy base table and pkey stuff from conditions to values,
+    // so that they don't need to be included twice
+    foreach (['base_table', 'pkey', 'fkey', 'fkey_id'] as $key) {
+      if (array_key_exists($key, $conditions)) {
+        if (array_key_exists($key, $values) and ($conditions[$key] != $values[$key])) {
+          $calling_function = debug_backtrace()[1]['function'];
+          throw new ChadoBuddyException("ChadoBuddy $calling_function error, the new value for \"$key\" differs from the existing value");
+        }
+        $values[$key] = $conditions[$key];
+      }
+    }
   }
 
 }
