@@ -81,7 +81,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - fkey - (optional) base table primary key column name,
    *              e.g. feature_id. If omitted, then '_id' is appended
    *              to the base table name
-   *     - pkey_id - (required) integer value for the base table
+   *     - fkey_id - (required) integer value for the base table
    *                 primary key e.g. feature_id
    *     - type_id - foreign key to cvterm_id
    *     - value - the value of the property
@@ -133,8 +133,8 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       // convert the type_id to a Cvterm buddy so we get all linked columns
       $record = $this->cvterm_instance->getCvterm(['cvterm_id' => $values['type_id']], $options);
       $values['cvterm'] = $record;
-$values['pkey'] = $pkey;
-$values['fkey'] = $fkey;
+      $values['pkey'] = $pkey;
+      $values['fkey'] = $fkey;
       $new_record = new ChadoBuddyRecord();
       $new_record->setSchemaName($this->connection->getSchemaName());
       $new_record->setBaseTable($base_table);
@@ -151,6 +151,69 @@ $values['fkey'] = $fkey;
     else {
       return FALSE;
     }
+  }
+
+  /**
+   * Deletes a chado property or multiple properties.
+   *
+   * @param array $conditions
+   *   An array where the key is a column in the chado.db table and the value
+   *   describes the db you want to select. Valid keys include:
+   *     - base_table - (required) chado base table, e.g. 'feature'
+   *     - pkey - (optional) property table primary key column name, this will vary for
+   *              different base tables, e.g. 'featureprop_id'.
+   *              If omitted, then the standard default is generated
+   *     - fkey - (optional) base table primary key column name,
+   *              e.g. feature_id. If omitted, then '_id' is appended
+   *              to the base table name
+   *     - fkey_id - (required) integer value for the base table
+   *                 primary key e.g. feature_id
+   *     - type_id - foreign key to cvterm_id
+   *     - value - the value of the property
+   *     - rank - optional rank of the property
+   * @param array $options (Optional)
+   *   None supported yet. Here for consistency.
+   *
+   * @return int
+   *   If the select values return a single record then we return the
+   *     ChadoBuddyRecord describing the chado record.
+   *   If the select values return multiple records, then we return an array
+   *     of ChadoBuddyRecords describing the results.
+   *   If there are no results then we return FALSE and if an error is
+   *     encountered then a ChadoBuddyException will be thrown.
+   */
+  public function deleteProperty(array $conditions, array $options = []) {
+    $mapping = $this->property_mapping;
+    $this->validateInput($conditions, $mapping);
+
+    // Convert generic pkey and pkey_id to actual names for this property table.
+    $original_conditions = $conditions;
+    list($base_table, $property_table, $pkey, $fkey) = $this->translatePkey($mapping, $conditions);
+
+    $existing_records = $this->getProperty($original_conditions, $options);
+    $pkey_ids = [];
+    if ($existing_records) {
+      if (is_array($existing_records)) {
+        foreach ($existing_records as $record) {
+          $pkey_ids[] = $record->getValue('pkey_id');
+        }
+      }
+      else {
+        $pkey_ids[] = $existing_records->getValue('pkey_id');
+      }
+
+      $query = $this->connection->delete('1:'.$property_table);
+      $pkey_column = preg_replace('/^.*\./', '', $mapping['pkey_id']);
+      $query->condition($pkey_column, $pkey_ids, 'IN');
+      try {
+        $results = $query->execute();
+      }
+      catch (\Exception $e) {
+        throw new ChadoBuddyException('ChadoBuddy deleteProperty database error '.$e->getMessage());
+      }
+    }
+
+    return count($pkey_ids);
   }
 
   /**

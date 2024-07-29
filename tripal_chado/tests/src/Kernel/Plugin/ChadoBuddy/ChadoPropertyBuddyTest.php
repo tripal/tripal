@@ -90,5 +90,10 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
       $this->assertIsArray($values, "We did not retrieve an array of values for the existing property \"$property_value\"");
       $this->assertEquals(8, count($values), "The values array is of unexpected size for the existing property \"$property_value\"");
     }
+
+    // TEST: we should be able to delete a record
+    $num_deleted = $instance->deleteProperty(['base_table' => 'feature', 'value' => 'prop002'], []);
+    $this->assertTrue(is_numeric($num_deleted), 'We did not retrieve an integer from deleteProperty');
+    $this->assertEquals(1, $num_deleted, "We did not delete exactly one property record \"prop002\"");
   }
 }

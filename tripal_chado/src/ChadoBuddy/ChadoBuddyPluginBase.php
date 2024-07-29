@@ -140,7 +140,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     // Retrieve required option 'base_table'
     if (!array_key_exists('base_table', $conditions) or !$conditions['base_table']) {
       $calling_function = debug_backtrace()[1]['function'];
-      throw new ChadoBuddyException('ChadoBuddy $calling_function error, condition "base_table" was not defined');
+var_dump($conditions); //@@@
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, condition \"base_table\" was not defined");
     }
     $base_table = $conditions['base_table'];
     unset($conditions['base_table']);
