@@ -45,6 +45,62 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
+   * Retrieve a list of table columns for one or more chado tables.
+   * Schema information is cached for better performance.
+   *
+   * @param array $chado_tables
+   *   One or more chado table namess.
+   * @param bool $required_only
+   *   If TRUE, only return columns that 1. have a NOT NULL
+   *   constraint, and 2. do not have a default value.
+   *
+   * @return array
+   *   An array of table+dot+column name, e.g. for 'db' table:
+   *   ['db.db_id', 'db.name', 'db.description', 'db.urlprefix', 'db.url']
+   **/
+  protected function getTableColumns(array $chado_tables, bool $required_only = FALSE) {
+    $columns = [];
+    $chado_tables = [];
+    $schema_name = $this->connection->getSchemaName();
+    $cache_updated = FALSE;
+
+    // Get cached columns if available
+    $cache_id = $schema_name . '_buddy_table_columns';
+    if ($cache = \Drupal::cache()->get($cache_id)) {
+      $chado_tables = $cache->data;
+    }
+
+    foreach ($chado_tables as $chado_table) {
+      if (!array_key_exists($chado_table, $chado_tables)) {
+        $cache_updated = TRUE;
+        $chado_tables[$chado_table] = [];
+        $table_schema = $this->connection->schema()->getTableDef($table_name, ['format' => 'drupal']);
+        foreach ($table_schema_def['fields'] as $field) {
+          $required = FALSE;
+          if ($field['not null'] and !array_key_exists('default', $field)) {
+            $required = TRUE;
+          }
+          $chado_tables[$chado_table][$field] = $required;
+        }
+      }
+
+      // Lookup all or just required columns, depending on $required_only setting
+      foreach ($chado_tables[$chado_table] as $column => $required) {
+        if (!$required_only or $required) {
+          $columns[] = $chado_table . '.' . $column;
+        }
+      }
+    }
+
+    // If updated, cache the new values, specifying expiration in 1 hour.
+    if ($cache_updated) {
+      \Drupal::cache()->set($cache_id, $chado_tables, \Drupal::time()->getRequestTime() + (3600));
+    }
+
+    return $columns;
+  }
+
+  /**
    * Used to validate input arrays to various buddy functions,
    * or to generate a valid array subset.
    * The output has the column aliases de-aliased to the
@@ -93,10 +149,11 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * to ensure there is exactly one record present.
    *
    * @param mixed $output_records
-   *   Might be FALSE, a ChadoBuddyRecord, or an array with multiple records.
-   *   To be valid, must be exactly one ChadoBuddyRecord.
+   *   This can be either FALSE, a ChadoBuddyRecord, or an array
+   *   with multiple records. To be valid, it must be exactly
+   *   one ChadoBuddyRecord.
    * @param array $values
-   *   Pass query values to print if exception is thrown.
+   *   Pass query values to print if an exception is thrown.
    *
    * @throws ChadoBuddyException if not exactly one record.
    */
