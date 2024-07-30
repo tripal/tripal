@@ -41,6 +41,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *     of ChadoBuddyRecords describing the results.
    *   If there are no results then we return FALSE and if an error is
    *     encountered then a ChadoBuddyException will be thrown.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function getCv(array $conditions, array $options = []) {
     $valid_tables = ['cv'];
@@ -123,6 +125,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *     of ChadoBuddyRecords describing the results.
    *   If there are no results then we return FALSE and if an error is
    *     encountered then a ChadoBuddyException will be thrown.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function getCvterm(array $conditions, array $options = []) {
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
@@ -189,6 +193,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   exception will be thrown if an error is encountered. If the record
    *   already exists then an error will be thrown. If this is not the desired
    *   behaviour then use the upsert version of this method.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function insertCv(array $values, array $options = []) {
     $valid_tables = ['cv'];
@@ -246,6 +252,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   exception will be thrown if an error is encountered. If the record
    *   already exists then an error will be thrown. If this is not the desired
    *   behaviour then use the upsert version of this method.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function insertCvterm(array $values, array $options = []) {
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
@@ -317,6 +325,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
    *   returned if no record was found to update and a ChadoBuddyException will
    *   be thrown if an error is encountered.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function updateCv(array $values, array $conditions, array $options = []) {
     $valid_tables = ['cv'];
@@ -389,6 +399,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
    *   returned if no record was found to update and a ChadoBuddyException will be thrown
    *   if an error is encountered.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function updateCvterm(array $values, array $conditions, array $options = []) {
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
@@ -456,6 +468,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @return ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success, and
    *   a ChadoBuddyException will be thrown if an error is encountered.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function upsertCv(array $values, array $options = []) {
     $valid_tables = ['cv'];
@@ -506,6 +520,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @return ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success, and
    *   a ChadoBuddyException will be thrown if an error is encountered.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function upsertCvterm(array $values, array $options = []) {
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
@@ -562,6 +578,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   Returns TRUE if successful, and throws a ChadoBuddyException if an error is
    *   encountered. Both the cvterm and the chado record indicated by $record_id
    *   MUST ALREADY EXIST.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function associateCvterm(string $base_table, int $record_id, ChadoBuddyRecord $cvterm, array $options = []) {
     $linking_table = $base_table . '_cvterm';
@@ -598,6 +616,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
   /**
    * A helper function to add or update a dbxref for a cvterm, this will filter
    * out extra non-applicable fields that the Cvterm function here may have.
+   * @todo inject dependency
    */
   protected function upsertDbxref(array $values, array $conditions, array $options = []) {
     if (!isset($this->dbxref_instance)) {

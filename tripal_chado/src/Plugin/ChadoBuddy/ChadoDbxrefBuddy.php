@@ -36,6 +36,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     of ChadoBuddyRecords describing the results.
    *   If there are no results then we return FALSE and if an error is
    *     encountered then a ChadoBuddyException will be thrown.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function getDb(array $conditions, array $options = []) {
     $valid_tables = ['db'];
@@ -107,6 +109,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     of ChadoBuddyRecords describing the results.
    *   If there are no results then we return FALSE and if an error is
    *     encountered then a ChadoBuddyException will be thrown.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function getDbxref(array $conditions, array $options = []) {
     $valid_tables = ['db', 'dbxref'];
@@ -177,7 +181,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   then the built in version for your Tripal site will be used.
    *   A ChadoBuddyException is thrown if an error is encountered.
    *
-   *   @to-do the built in page for cv/lookup is not yet implemented for Tripal 4
+   * @todo the built in page for cv/lookup is not yet implemented for Tripal 4
    */
   public function getDbxrefUrl(ChadoBuddyRecord $dbxref, array $options = []) {
 // almost the same as getUrl() in tripal/src/TripalVocabTerms/TripalTerm.php
@@ -225,6 +229,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   exception will be thrown if an error is encountered. If the record
    *   already exists then an error will be thrown... if this is not the desired
    *   behaviour then use the upsert version of this method.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function insertDb(array $values, array $options = []) {
     $valid_tables = ['db'];
@@ -273,7 +279,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   already exists then an error will be thrown... if this is not the desired
    *   behaviour then use the upsert version of this method.
    *
-   * @throws ChadoBuddyException
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function insertDbxref(array $values, array $options = []) {
     $valid_tables = ['db', 'dbxref'];
@@ -343,8 +349,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
-   *   returned if no record was found to update and a ChadoBuddyException will be thrown
-   *   if an error is encountered.
+   *   returned if no record was found to update.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function updateDb(array $values, array $conditions, array $options = []) {
     $valid_tables = ['db'];
@@ -412,6 +419,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
    *   returned if no record was found to update and a ChadoBuddyException will be thrown
    *   if an error is encountered.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function updateDbxref(array $values, array $conditions, array $options = []) {
     $valid_tables = ['db', 'dbxref'];
@@ -473,6 +482,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @return ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success, and
    *   a ChadoBuddyException will be thrown if an error is encountered.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function upsertDb(array $values, array $options = []) {
     $valid_tables = ['db'];
@@ -513,6 +524,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @return ChadoBuddyRecord
    *   The inserted/updated ChadoBuddyRecord will be returned on success, and
    *   a ChadoBuddyException will be thrown if an error is encountered.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function upsertDbxref(array $values, array $options = []) {
     $valid_tables = ['db', 'dbxref'];
@@ -554,6 +567,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   Returns true if successful, and throws a ChadoBuddyException if an error is
    *   encountered. Both the dbxref and the chado record indicated by $record_id
    *   MUST ALREADY EXIST.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    */
   public function associateDbxref(string $base_table, int $record_id, ChadoBuddyRecord $dbxref, array $options = []) {
     $linking_table = $base_table . '_dbxref';
