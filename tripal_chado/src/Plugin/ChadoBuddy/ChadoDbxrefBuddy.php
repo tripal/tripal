@@ -16,57 +16,16 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
 
   /**
-   * Keys are the column aliases, and values are the
-   * table aliases and columns for the dbxref buddy.
-   * @var array
-   *
-   */
-  protected array $db_mapping = [
-    'db_id' => 'db.db_id',
-    'db_name' => 'db.name',
-    'db_description' => 'db.description',
-    'urlprefix' => 'db.urlprefix',
-    'url' => 'db.url',
-  ];
-
-  /**
-   * Keys are the column aliases, and values are the
-   * table aliases and columns for the dbxref buddy.
-   * @var array
-   *
-   */
-  protected array $dbxref_mapping = [
-    'dbxref_id' => 'x.dbxref_id',
-    'db_id' => 'x.db_id',
-    'accession' => 'x.accession',
-    'version' => 'x.version',
-    'dbxref_description' => 'x.description',
-  ];
-
-  /**
-   * Whether a column value is required for the dbxref table.
-   * For performance reasons this is pre-populated.
-   * @var array
-   *
-   */
-  protected array $dbxref_required = [
-    'db_id' => TRUE,
-    'accession' => TRUE,
-    'version' => FALSE,
-    'description' => FALSE,
-  ];
-
-  /**
-   * Retrieves a chado database.
+   * Retrieves a chado database record.
    *
    * @param array $conditions
-   *   An array where the key is a column in the chado.db table and the value
-   *   describes the db you want to select. Valid keys include:
-   *     - db_id
-   *     - db_name
-   *     - db_description
-   *     - urlprefix
-   *     - url
+   *   An array where the key is a chado table name+dot+column name.
+   *   Valid keys include:
+   *     - db.db_id
+   *     - db.name
+   *     - db.description
+   *     - db.urlprefix
+   *     - db.url
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -79,19 +38,20 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getDb(array $conditions, array $options = []) {
-    $this->validateInput($conditions, $this->db_mapping);
+    $valid_tables = ['db'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($conditions, $valid_columns);
 
     $query = $this->connection->select('1:db', 'db');
-    foreach ($conditions as $key => $value) {
-      $mapping = $this->db_mapping[$key];
-      $parts = explode('.', $mapping);
-      $query->condition($parts[0].'.'.$parts[1], $value, '=');
-    }
     // Return the joined fields aliased to the unique names
     // as listed in this function's header
-    foreach ($this->db_mapping as $key => $map) {
-      $parts = explode('.', $map);
-      $query->addField($parts[0], $parts[1], $key);
+    foreach ($valid_columns as $key) {
+      $parts = explode('.', $key);
+      $query->addField($parts[0], $parts[1], $this->makeAlias($key));
+    }
+    // Conditions are not aliased
+    foreach ($conditions as $key => $value) {
+      $query->condition($key, $value, '=');
     }
     try {
       $results = $query->execute();
@@ -104,7 +64,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $new_record = new ChadoBuddyRecord();
       $new_record->setSchemaName($this->connection->getSchemaName());
       $new_record->setBaseTable('db');
-      $new_record->setValues($values);
+      foreach ($values as $key => $value) {
+        $new_record->setValue($this->unmakeAlias($key), $value);
+      }
       $buddies[] = $new_record;
     }
 
@@ -125,15 +87,16 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    * @param array $conditions
    *   An array where the key is a column in chado and the value describes the
    *   dbxref you want to select. Valid keys include:
-   *     - dbxref_id
-   *     - db_id
-   *     - accession
-   *     - version
-   *     - dbxref_description
-   *     - db_name
-   *     - db_description
-   *     - urlprefix
-   *     - url
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id
+   *     - dbxref.description
+   *     - dbxref.accession
+   *     - dbxref.version
+   *     - db.db_id
+   *     - db.name
+   *     - db.description
+   *     - db.urlprefix
+   *     - db.url
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -146,20 +109,26 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getDbxref(array $conditions, array $options = []) {
-    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping);
-    $this->validateInput($conditions, $mapping);
+    $valid_tables = ['db', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($conditions, $valid_columns);
 
-    $query = $this->connection->select('1:dbxref', 'x');
+    $query = $this->connection->select('1:dbxref', 'dbxref');
+
     // Return the joined fields aliased to the unique names
     // as listed in this function's header
-    foreach ($mapping as $key => $map) {
-      $parts = explode('.', $map);
-      $query->addField($parts[0], $parts[1], $key);
+    foreach ($valid_columns as $key) {
+      $parts = explode('.', $key);
+      $query->addField($parts[0], $parts[1], $this->makeAlias($key));
     }
-    $query->leftJoin('1:db', 'db', 'x.db_id = db.db_id');
+
+    $query->leftJoin('1:db', 'db', 'dbxref.db_id = db.db_id');
+
+    // Conditions are not aliased
     foreach ($conditions as $key => $value) {
-      $query->condition($mapping[$key], $value, '=');
+      $query->condition($key, $value, '=');
     }
+
     try {
       $results = $query->execute();
     }
@@ -171,7 +140,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $new_record = new ChadoBuddyRecord();
       $new_record->setSchemaName($this->connection->getSchemaName());
       $new_record->setBaseTable('dbxref');
-      $new_record->setValues($values);
+      foreach ($values as $key => $value) {
+        $new_record->setValue($this->unmakeAlias($key), $value);
+      }
       $buddies[] = $new_record;
     }
 
@@ -210,9 +181,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    */
   public function getDbxrefUrl(ChadoBuddyRecord $dbxref, array $options = []) {
 // almost the same as getUrl() in tripal/src/TripalVocabTerms/TripalTerm.php
-    $db = $dbxref->getValue('db_name');
-    $accession = $dbxref->getValue('accession');
-    $urlprefix = $dbxref->getValue('urlprefix');
+    $db = $dbxref->getValue('db.name');
+    $accession = $dbxref->getValue('dbxref.accession');
+    $urlprefix = $dbxref->getValue('db.urlprefix');
     if (!$urlprefix) {
       $urlprefix = 'cv/lookup/{db}/{accession}';
     }
@@ -238,13 +209,13 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @param $values
    *   An associative array of the values of the db (those to be inserted):
-   *     - db_id
-   *     - db_name: The name of the database. This name is usually used as the prefix
+   *     - db.db_id: not valid for an insert.
+   *     - db.name: The name of the database. This name is usually used as the prefix
    *       for CV term accessions.
-   *     - db_description: (Optional) A description of the database.  By default no
+   *     - db.description: (Optional) A description of the database. By default no
    *       description is required.
-   *     - url: (Optional) The URL for the database.
-   *     - urlprefix: (Optional) The URL that is to be used as a prefix when
+   *     - db.url: (Optional) The URL for the database.
+   *     - db.urlprefix: (Optional) The URL that is to be used as a prefix when
    *       constructing a link to a database term.
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
@@ -256,11 +227,13 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertDb(array $values, array $options = []) {
-    $fields = $this->validateInput($values, $this->db_mapping);
+    $valid_tables = ['db'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
 
     try {
       $query = $this->connection->insert('1:db');
-      $query->fields($fields);
+      $query->fields($this->removeTablePrefix($values));
       $query->execute();
     }
     catch (\Exception $e) {
@@ -277,19 +250,20 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   }
 
   /**
-   * Add a database reference.
+   * Add a database cross reference.
+   * The database must already exist. If necessary first create it with insertDb().
    *
    * @param $values
    *   An associative array of the values to be inserted including:
-   *     - dbxref_id
-   *     - db_id: the database_id of the database the reference is from.
-   *     - accession: the accession.
-   *     - version: (Optional) The version of the database reference.
-   *     - dbxref_description
-   *     - db_name: may be used in place of db_id if that is not available.
-   *     - db_description: (Optional) A description of the database reference.
-   *     - urlprefix
-   *     - url
+   *     - dbxref.dbxref_id: not valid for an insert.
+   *     - dbxref.db_id or db.db_id: (Required) the database_id of the database the reference is to.
+   *     - dbxref.description: (Optional) description.
+   *     - dbxref.accession: (Requried) the accession.
+   *     - dbxref.version: (Optional) The version of the database reference.
+   *     - db.name: may be used in place of db.db_id or dbxref.db_id if that is not available.
+   *     - db.description: valid, but has no effect for this function.
+   *     - db.urlprefix: valid, but has no effect for this function.
+   *     - db.url: valid, but has no effect for this function.
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -298,29 +272,38 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   exception will be thrown if an error is encountered. If the record
    *   already exists then an error will be thrown... if this is not the desired
    *   behaviour then use the upsert version of this method.
+   *
+   * @throws ChadoBuddyException
    */
   public function insertDbxref(array $values, array $options = []) {
-    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping);
-    $this->validateInput($values, $mapping);
+    $valid_tables = ['db', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
 
-    // If db_name specified, but not db_id, lookup db_id
-    if (!array_key_exists('db_id', $values) or !$values['db_id']) {
-      if (!array_key_exists('db_name', $values) or !$values['db_name']) {
-        throw new ChadoBuddyException("ChadoBuddy insertDbxref error, neither db_id nor db_name were specified\n");
+    // Can use db.db_id in place of dbxref.db_id
+    if (array_key_exists('db.db_id', $values) and !array_key_exists('dbxref.db_id', $values)) {
+      $values['dbxref.db_id'] = $values['db.db_id'];
+      unset($values['db.db_id']);
+    }
+
+    // If db.name specified, but not db.db_id, then lookup db.db_id
+    if (!array_key_exists('dbxref.db_id', $values) or !$values['dbxref.db_id']) {
+      if (!array_key_exists('db.name', $values) or !$values['db.name']) {
+        throw new ChadoBuddyException("ChadoBuddy insertDbxref error, neither db.db_id, dbxref.db_id, nor db.name were specified\n");
       }
-      $existing_record = $this->getDb(['db_name' => $values['db_name']]);
+      $existing_record = $this->getDb(['db.name' => $values['db.name']], $options);
       if (!$existing_record or is_array($existing_record)) {
-        throw new ChadoBuddyException("ChadoBuddy insertDbxref error, invalid db_name \"$db_name\" was specified\n");
+        throw new ChadoBuddyException("ChadoBuddy insertDbxref error, invalid db.name \"".$values['db.name']."\" was specified\n");
       }
-      $values['db_id'] = $existing_record->getValue('db_id');
-      unset($values['db_name']);
+      $values['dbxref.db_id'] = $existing_record->getValue('db.db_id');
+      unset($values['db.name']);
     }
 
     try {
       $query = $this->connection->insert('1:dbxref');
       // Create a subset of the passed $values for just the dbxref table.
-      $dbxref_values = $this->validateInput($values, $this->dbxref_mapping, TRUE);
-      $query->fields($dbxref_values);
+      $dbxref_values = $this->subsetInput($values, ['dbxref']);
+      $query->fields($this->removeTablePrefix($dbxref_values));
       $query->execute();
     }
     catch (\Exception $e) {
@@ -338,17 +321,19 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
 
   /**
    * Updates an existing database.
+   * Generally use either the db.db_id or db.name in the $conditions array
+   * to select the existing record. db.db_id in the $values array will be ignored.
    *
    * @param array $values
    *   An associative array of the values for the final record (i.e what you
    *   want to update the record to be) including:
-   *     - db_id
-   *     - db_name: The name of the database. This name is usually used as the prefix
+   *     - db.db_id: primary key for db table.
+   *     - db.name: The name of the database. This name is usually used as the prefix
    *       for CV term accessions.
-   *     - description: (Optional) A description of the database.  By default no
+   *     - db.description: (Optional) A description of the database. By default no
    *       description is required.
-   *     - url: (Optional) The URL for the database.
-   *     - urlprefix: (Optional) The URL that is to be used as a prefix when
+   *     - db.url: (Optional) The URL for the database.
+   *     - db.urlprefix: (Optional) The URL that is to be used as a prefix when
    *       constructing a link to a database term.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
@@ -362,8 +347,11 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   if an error is encountered.
    */
   public function updateDb(array $values, array $conditions, array $options = []) {
-    $unaliased_values = $this->validateInput($values, $this->db_mapping);
-    $this->validateInput($conditions, $this->db_mapping);
+    $valid_tables = ['db'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($conditions, $valid_columns);
+    $this->validateInput($values, $valid_columns);
+
     $existing_record = $this->getDb($conditions, $options);
     if (!$existing_record) {
       return FALSE;
@@ -371,15 +359,16 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     if (is_array($existing_record)) {
       throw new ChadoBuddyException("ChadoBuddy updateDb error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
-    // Update query will only be based on the db_id, which we get from the retrieved record.
-    $db_id = $existing_record->getValue('db_id');
+    // Update query will only be based on the db.db_id, which we
+    // can get from the retrieved record.
+    $db_id = $existing_record->getValue('db.db_id');
     // We do not support changing the db_id.
-    if (array_key_exists('db_id', $unaliased_values)) {
-      unset($unaliased_values['db_id']);
+    if (array_key_exists('db.db_id', $values)) {
+      unset($values['db.db_id']);
     }
     $query = $this->connection->update('1:db');
     $query->condition('db_id', $db_id, '=');
-    $query->fields($unaliased_values);
+    $query->fields($this->removeTablePrefix($values));
     try {
       $results = $query->execute();
     }
@@ -397,18 +386,22 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   /**
    * Updates an existing database reference.
    *
+   * Generally use either dbxref.dbxref_id or a combination of dbxref.db_id and
+   * dbxref.accession in the $conditions to select the existing record.
+   * dbxref.dbxref_id in the $values array will be ignored.
+   *
    * @param array $values
    *   An associative array of the values for the final record (i.e what you
    *   want to update the record to be) including:
-   *     - dbxref_id
-   *     - db_id: the database_id of the database the reference is from.
-   *     - accession: the accession.
-   *     - version: (Optional) The version of the database reference.
-   *     - dbxref_description
-   *     - db_name: may be used in place of db_id if that is not available.
-   *     - db_description: (Optional) A description of the database reference.
-   *     - urlprefix
-   *     - url
+   *     - dbxref.dbxref_id: the primary key of the dbxref table.
+   *     - dbxref.db_id or db.db_id: The database_id of the database the reference is to.
+   *     - dbxref.description: Description.
+   *     - dbxref.accession: The accession.
+   *     - dbxref.version: The version of the database reference.
+   *     - db.name: may be used in place of db.db_id or dbxref.db_id if that is not available.
+   *     - db.description: valid, but has no effect for this function.
+   *     - db.urlprefix: valid, but has no effect for this function.
+   *     - db.url: valid, but has no effect for this function.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -421,9 +414,10 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   if an error is encountered.
    */
   public function updateDbxref(array $values, array $conditions, array $options = []) {
-    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping);
-    $this->validateInput($values, $mapping);
-    $this->validateInput($conditions, $mapping);
+    $valid_tables = ['db', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+    $this->validateInput($conditions, $valid_columns);
 
     $existing_record = $this->getDbxref($conditions, $options);
     if (!$existing_record) {
@@ -433,17 +427,19 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       throw new ChadoBuddyException("ChadoBuddy updateDbxref error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
 
-    // Update query will only be based on the cvterm_id, which we get from the retrieved record.
-    $dbxref_id = $existing_record->getValue('dbxref_id');
+    // Update query will only be based on the dbxref_id, which we
+    // can get from the retrieved record.
+    $dbxref_id = $existing_record->getValue('dbxref.dbxref_id');
     // We do not support changing the dbxref_id.
-    if (array_key_exists('dbxref_id', $values)) {
-      unset($values['dbxref_id']);
+    if (array_key_exists('dbxref.dbxref_id', $values)) {
+      unset($values['dbxref.dbxref_id']);
     }
-    // Create a subset of the passed $values for just the dbxref table.
-    $dbxref_values = $this->validateInput($values, $this->dbxref_mapping, TRUE);
+
     $query = $this->connection->update('1:dbxref');
     $query->condition('dbxref_id', $dbxref_id, '=');
-    $query->fields($dbxref_values);
+    // Create a subset of the passed $values for just the dbxref table.
+    $dbxref_values = $this->subsetInput($values, ['dbxref']);
+    $query->fields($this->removeTablePrefix($dbxref_values));
     try {
       $results = $query->execute();
     }
@@ -463,13 +459,13 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @param array $values
    *   An associative array of the values for the final record including:
-   *     - db_id
-   *     - db_name: The name of the database. This name is usually used as the prefix
+   *     - db.db_id: primary key for db table.
+   *     - db.name: The name of the database. This name is usually used as the prefix
    *       for CV term accessions.
-   *     - db_description: (Optional) A description of the database.  By default no
+   *     - db.description: (Optional) A description of the database. By default no
    *       description is required.
-   *     - url: (Optional) The URL for the database.
-   *     - urlprefix: (Optional) The URL that is to be used as a prefix when
+   *     - db.url: (Optional) The URL for the database.
+   *     - db.urlprefix: (Optional) The URL that is to be used as a prefix when
    *       constructing a link to a database term.
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
@@ -479,13 +475,16 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertDb(array $values, array $options = []) {
-    $this->validateInput($values, $this->db_mapping);
+    $valid_tables = ['db'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+
     $existing_record = $this->getDb($values, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertDb error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
-      $conditions = ['db_id' => $existing_record->getValue('db_id')];
+      $conditions = ['db.db_id' => $existing_record->getValue('db.db_id')];
       $new_record = $this->updateDb($values, $conditions, $options);
     }
     else {
@@ -499,15 +498,15 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *
    * @param array $values
    *   An associative array of the values for the final record including:
-   *     - dbxref_id
-   *     - db_id: the database_id of the database the reference is from.
-   *     - accession: the accession.
-   *     - version: (Optional) The version of the database reference.
-   *     - dbxref_description
-   *     - db_name: may be used in place of db_id if that is not available.
-   *     - db_description: (Optional) A description of the database reference.
-   *     - urlprefix
-   *     - url
+   *     - dbxref.dbxref_id: the primary key of the dbxref table.
+   *     - dbxref.db_id or db.db_id: The database_id of the database the reference is to.
+   *     - dbxref.description: Description.
+   *     - dbxref.accession: The accession.
+   *     - dbxref.version: The version of the database reference.
+   *     - db.name: may be used in place of db.db_id or dbxref.db_id if that is not available.
+   *     - db.description: valid, but has no effect for this function.
+   *     - db.urlprefix: valid, but has no effect for this function.
+   *     - db.url: valid, but has no effect for this function.
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -516,14 +515,16 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertDbxref(array $values, array $options = []) {
-    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping);
-    $this->validateInput($values, $mapping);
+    $valid_tables = ['db', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+
     $existing_record = $this->getDbxref($values, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertDbxref error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
-      $conditions = ['dbxref_id' => $existing_record->getValue('dbxref_id')];
+      $conditions = ['dbxref.dbxref_id' => $existing_record->getValue('dbxref.dbxref_id')];
       $new_record = $this->updateDbxref($values, $conditions, $options);
     }
     else {
@@ -564,8 +565,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
       $base_pkey_col = $base_table_def['primary key'];
     }
+
     $fields = [
-      'dbxref_id' => $dbxref->getValue('dbxref_id'),
+      'dbxref_id' => $dbxref->getValue('dbxref.dbxref_id'),
       $base_pkey_col => $record_id,
     ];
     // Add in any of the other columns for the linking table.
@@ -576,7 +578,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     }
     try {
       $query = $this->connection->insert('1:'.$linking_table);
-      $query->fields($fields);
+      $query->fields($this->removeTablePrefix($fields));
       $query->execute();
     }
     catch (\Exception $e) {

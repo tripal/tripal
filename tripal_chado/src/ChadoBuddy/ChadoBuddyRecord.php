@@ -96,7 +96,7 @@ class ChadoBuddyRecord {
    *   The value to be stored.
    */
   public function setValue(string $key, $value) {
-    $this->value[$key] = $value;
+    $this->values[$key] = $value;
   }
 
   /**

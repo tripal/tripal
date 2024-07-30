@@ -60,81 +60,123 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    **/
   protected function getTableColumns(array $chado_tables, bool $required_only = FALSE) {
     $columns = [];
-    $chado_tables = [];
+    $cached_tables = [];
     $schema_name = $this->connection->getSchemaName();
     $cache_updated = FALSE;
 
     // Get cached columns if available
     $cache_id = $schema_name . '_buddy_table_columns';
     if ($cache = \Drupal::cache()->get($cache_id)) {
-      $chado_tables = $cache->data;
+      $cached_tables = $cache->data;
     }
-
     foreach ($chado_tables as $chado_table) {
       if (!array_key_exists($chado_table, $chado_tables)) {
         $cache_updated = TRUE;
-        $chado_tables[$chado_table] = [];
-        $table_schema = $this->connection->schema()->getTableDef($table_name, ['format' => 'drupal']);
-        foreach ($table_schema_def['fields'] as $field) {
+        $cached_tables[$chado_table] = [];
+        $table_schema = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
+        foreach ($table_schema['fields'] as $field_name => $field_schema) {
           $required = FALSE;
-          if ($field['not null'] and !array_key_exists('default', $field)) {
+          if ($field_schema['not null'] and !array_key_exists('default', $field_schema) and $field_schema['type'] != 'serial') {
             $required = TRUE;
           }
-          $chado_tables[$chado_table][$field] = $required;
+          $cached_tables[$chado_table][$field_name] = $required;
         }
       }
 
       // Lookup all or just required columns, depending on $required_only setting
-      foreach ($chado_tables[$chado_table] as $column => $required) {
+      foreach ($cached_tables[$chado_table] as $column => $required) {
         if (!$required_only or $required) {
           $columns[] = $chado_table . '.' . $column;
         }
       }
     }
 
-    // If updated, cache the new values, specifying expiration in 1 hour.
+    // If $cached_tables was updated, cache the new version, specifying expiration in 1 hour.
     if ($cache_updated) {
-      \Drupal::cache()->set($cache_id, $chado_tables, \Drupal::time()->getRequestTime() + (3600));
+      \Drupal::cache()->set($cache_id, $cached_tables, \Drupal::time()->getRequestTime() + (3600));
     }
 
     return $columns;
   }
 
   /**
+   *
+   **/
+  protected function makeAlias(string $name): string {
+    // Replace the period with a double underscore
+    return preg_replace('/\./', '__', $name, 1);
+  }
+
+  /**
+   *
+   **/
+  protected function unmakeAlias(string $name): string {
+    // Replace the first double underscore with a period
+    return preg_replace('/__/', '.', $name, 1);
+  }
+
+  /**
+   * Removes the table prefix from $values keys so that
+   * they can be used directly in an INSERT.
+   * The prefix is anything up to and including the first period.
+   **/
+  protected function removeTablePrefix(array $values): array {
+    $new_values = [];
+    foreach ($values as $key => $value) {
+      $new_key = preg_replace('/^[^\.]*\./', '', $key);
+      $new_values[$new_key] = $value;
+    }
+    return $new_values;
+  }
+
+  /**
    * Used to validate input arrays to various buddy functions,
    * or to generate a valid array subset.
-   * The output has the column aliases de-aliased to the
-   * actual chado column names, e.g. ['db_name' => 'db.name']
-   * indicates that the alias 'db_name' corresponds to the
-   * column 'name' in the 'db' table.
    *
    * @param array $user_values
-   *   An associative array to be validated.
+   *   An associative array to be validated. Keys are
+   *   table+dot+column name, values are for that table+column.
    * @param array $valid_values
-   *   An associative array listing all valid keys, and the
-   *   values are un-aliased database table alias and table
-   *   column as described above.
-   * @param bool $filter
-   *   Set to TRUE if we want to return a subset of the passed
-   *   $uservalues containing only keys from $validvalues.
-   *   If FALSE, then a ChadoBuddyException is thrown for invalid keys.
+   *   An array listing all valid keys for $user_values.
+   *
+   * @throws ChadoBuddyException
+   */
+  protected function validateInput(array $user_values, array $valid_values) {
+    if (!$user_values) {
+      $calling_function = debug_backtrace()[1]['function'];
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, no values were specified.");
+    }
+    foreach ($user_values as $key => $value) {
+      if (!in_array($key, $valid_values)) {
+        $calling_function = debug_backtrace()[1]['function'];
+        throw new ChadoBuddyException("ChadoBuddy $calling_function error, the key \"$key\" is not valid for for this function.");
+      }
+    }
+  }
+
+  /**
+   * Used to return a subset of values applicable to a
+   * single chado table, e.g. remove db table columns when
+   * inserting a new dbxref.
+   *
+   * @param array $user_values
+   *   An associative array to be filtered. Keys are
+   *   table+dot+column name, values are for that table+column.
+   * @param array $valid_tables
+   *   An array listing which tables should have keys returned.
    *
    * @return array
-   *   A filtered subset of $user_values
+   *   The subset of passed $user_values with table prefixes
+   *   present in the $valid_tables array.
+   *
+   * @throws ChadoBuddyException
    */
-  protected function validateInput(array $user_values, array $valid_values, bool $filter = FALSE) {
+  protected function subsetInput(array $user_values, array $valid_tables) {
     $subset = [];
     foreach ($user_values as $key => $value) {
-      if (!array_key_exists($key, $valid_values)) {
-        if (!$filter) {
-          $calling_function = debug_backtrace()[1]['function'];
-          throw new ChadoBuddyException("ChadoBuddy $calling_function error, value \"$key\" is not valid for for this function.");
-        }
-      }
-      else {
-        $mapping = $valid_values[$key];  // e.g. 'db_name' => 'db.name'
-        $parts = explode('.', $mapping);  // Remove table name or alias before period
-        $subset[$parts[1]] = $value;
+      $parts = explode('.', $key, 2);
+      if (in_array($parts[0], $valid_tables)) {
+        $subset[$key] = $value;
       }
     }
     if (!$subset) {

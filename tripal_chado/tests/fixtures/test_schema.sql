@@ -145,32 +145,3 @@ CREATE TABLE chadoprop (
     rank integer DEFAULT 0 NOT NULL
 );
 
-CREATE TABLE feature_dbxref (
-  feature_dbxref_id bigserial not null,
-  primary key (feature_dbxref_id),
-  feature_id bigint not null,
-  foreign key (feature_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
-  dbxref_id bigint not null,
-  foreign key (dbxref_id) references dbxref (dbxref_id) on delete cascade INITIALLY DEFERRED,
-  is_current boolean not null default 'true',
-  CONSTRAINT feature_dbxref_c1 UNIQUE (feature_id,dbxref_id)
-);
-CREATE INDEX feature_dbxref_idx1 ON feature_dbxref USING btree (feature_id);
-CREATE INDEX feature_dbxref_idx2 ON feature_dbxref USING btree (dbxref_id);
-COMMENT ON TABLE feature_dbxref IS 'Links a feature to dbxrefs.';
-COMMENT ON COLUMN feature_dbxref.is_current IS 'True if this secondary dbxref is the most up to date accession in the corresponding db. Retired accessions should set this field to false';
-
-CREATE TABLE feature_cvterm (
-  feature_cvterm_id bigserial not null,
-  primary key (feature_cvterm_id),
-  feature_id bigint not null,
-  foreign key (feature_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
-  cvterm_id bigint not null,
-  foreign key (cvterm_id) references cvterm (cvterm_id) on delete cascade INITIALLY DEFERRED,
-  -- Mising column: pub_id bigint not null,
-  is_not boolean not null default false,
-  rank int not null default 0,
-  CONSTRAINT feature_cvterm_c1 UNIQUE (feature_id,cvterm_id,rank)
-);
-CREATE INDEX feature_cvterm_idx1 ON feature_cvterm (feature_id);
-CREATE INDEX feature_cvterm_idx2 ON feature_cvterm (cvterm_id);
