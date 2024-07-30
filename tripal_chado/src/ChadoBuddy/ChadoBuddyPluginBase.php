@@ -51,12 +51,15 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * @param array $chado_tables
    *   One or more chado table namess.
    * @param bool $required_only
-   *   If TRUE, only return columns that 1. have a NOT NULL
-   *   constraint, and 2. do not have a default value.
+   *   If TRUE, only return columns that [1]: have a NOT NULL
+   *   constraint, and [2]: do not have a default value and
+   *   are not serial (i.e. a primary key is not required)
    *
    * @return array
    *   An array of table+dot+column name, e.g. for 'db' table:
    *   ['db.db_id', 'db.name', 'db.description', 'db.urlprefix', 'db.url']
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    **/
   protected function getTableColumns(array $chado_tables, bool $required_only = FALSE) {
     $columns = [];
@@ -104,18 +107,30 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
+   * Replace the first period with a double underscore
+   * This makes the string valid as a table column alias.
    *
+   * @param string $name
+   *   table name+dot+table column
+   *
+   * @return string
+   *   The first period is replaced with double underscore.
    **/
   protected function makeAlias(string $name): string {
-    // Replace the period with a double underscore
     return preg_replace('/\./', '__', $name, 1);
   }
 
   /**
+   * Replace the first double underscore with a period.
+   * This reverts the change made by the makeAlias() function.
    *
+   * @param string $name
+   *   table name+__+table column
+   *
+   * @return string
+   *   The first __ is replaced with a period.
    **/
   protected function unmakeAlias(string $name): string {
-    // Replace the first double underscore with a period
     return preg_replace('/__/', '.', $name, 1);
   }
 
@@ -123,6 +138,12 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * Removes the table prefix from $values keys so that
    * they can be used directly in an INSERT.
    * The prefix is anything up to and including the first period.
+   *
+   * @param array $values
+   *   Associative array where keys are table name+dot+table column.
+   *
+   * @return array
+   *   The keys have had the table name prefix removed, values are unchanged.
    **/
   protected function removeTablePrefix(array $values): array {
     $new_values = [];
@@ -134,16 +155,17 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
-   * Used to validate input arrays to various buddy functions,
-   * or to generate a valid array subset.
+   * Used to validate input arrays to various buddy functions.
    *
    * @param array $user_values
    *   An associative array to be validated. Keys are
-   *   table+dot+column name, values are for that table+column.
+   *   table+dot+column name, values are the database table values.
    * @param array $valid_values
    *   An array listing all valid keys for $user_values.
    *
-   * @throws ChadoBuddyException
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If $user_values array is empty.
+   *   If a key in $user_values is not in $valid_values.
    */
   protected function validateInput(array $user_values, array $valid_values) {
     if (!$user_values) {
@@ -173,7 +195,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   The subset of passed $user_values with table prefixes
    *   present in the $valid_tables array.
    *
-   * @throws ChadoBuddyException
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If after subsetting there is nothing left.
    */
   protected function subsetInput(array $user_values, array $valid_tables) {
     $subset = [];
@@ -201,7 +224,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * @param array $values
    *   Pass query values to print if an exception is thrown.
    *
-   * @throws ChadoBuddyException if not exactly one record.
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If not exactly one record is present.
    */
   protected function validateOutput($output_records, array $values) {
     // These are unlikely cases, but you never know.
