@@ -455,7 +455,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   }
 
   /**
-   * Insert a database if it doesn't yet exist OR update it if does.
+   * Insert a database if it doesn't yet exist OR update it if it does.
    *
    * @param array $values
    *   An associative array of the values for the final record including:
@@ -494,7 +494,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   }
 
   /**
-   * Insert a database reference if it doesn't yet exist OR update it if does.
+   * Insert a database reference if it doesn't yet exist OR update it if it does.
    *
    * @param array $values
    *   An associative array of the values for the final record including:

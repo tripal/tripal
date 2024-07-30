@@ -74,6 +74,10 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
         $cache_updated = TRUE;
         $cached_tables[$chado_table] = [];
         $table_schema = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
+        if (!array_key_exists('fields', $table_schema)) {
+          $calling_function = debug_backtrace()[1]['function'];
+          throw new ChadoBuddyException("ChadoBuddy $calling_function error, invalid table \"$chado_table\" passed to getTableColumns()");
+        }
         foreach ($table_schema['fields'] as $field_name => $field_schema) {
           $required = FALSE;
           if ($field_schema['not null'] and !array_key_exists('default', $field_schema) and $field_schema['type'] != 'serial') {

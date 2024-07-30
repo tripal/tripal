@@ -18,77 +18,6 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
 
   /**
-   * Keys are the column aliases, and values are the
-   * table aliases and columns for the dbxref buddy.
-   * @var array
-   *
-   */
-  protected array $db_mapping = [
-    'db_id' => 'db.db_id',
-    'db_name' => 'db.name',
-    'db_description' => 'db.description',
-    'urlprefix' => 'db.urlprefix',
-    'url' => 'db.url',
-  ];
-
-  /**
-   * Keys are the column aliases, and values are the
-   * table aliases and columns for the dbxref buddy.
-   * @var array
-   *
-   */
-  protected array $dbxref_mapping = [
-    'dbxref_id' => 'x.dbxref_id',
-    'db_id' => 'x.db_id',
-    'accession' => 'x.accession',
-    'version' => 'x.version',
-    'dbxref_description' => 'x.description',
-  ];
-
-  /**
-   * Keys are the column aliases, and values are the
-   * table aliases and columns for the cvterm buddy.
-   * @var array
-   *
-   */
-  protected array $cv_mapping = [
-    'cv_id' => 'cv.cv_id',
-    'cv_name' => 'cv.name',
-    'cv_definition' => 'cv.definition',
-  ];
-
-  /**
-   * Keys are the column aliases, and values are the
-   * table aliases and columns for the cvterm buddy.
-   * @var array
-   *
-   */
-  protected array $cvterm_mapping = [
-    'cvterm_id' => 't.cvterm_id',
-    'cv_id' => 't.cv_id',
-    'dbxref_id' => 't.dbxref_id',
-    'cvterm_name' => 't.name',
-    'cvterm_definition' => 't.definition',
-    'is_obsolete' => 't.is_obsolete',
-    'is_relationshiptype' => 't.is_relationshiptype',
-  ];
-
-  /**
-   * Whether a column value is required for the cvterm table.
-   * For performance reasons this is pre-populated.
-   * @var array
-   *
-   */
-  protected array $cvterm_required = [
-    'cv_id' => TRUE,
-    'dbxref_id' => TRUE,
-    'cvterm_name' => TRUE,
-    'cvterm_definition' => FALSE,
-    'is_obsolete' => FALSE,
-    'is_relationshiptype' => FALSE,
-  ];
-
-  /**
    * Cache the dbxref instance here
    */
   protected object $dbxref_instance;
@@ -99,9 +28,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @param array $conditions
    *   An array where the key is a column in chado and the value describes the
    *   cv you want to select. Valid keys include:
-   *     - cv_id
-   *     - cv_name
-   *     - cv_definition
+   *     - cv.cv_id
+   *     - cv.name
+   *     - cv.definition
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -114,21 +43,23 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getCv(array $conditions, array $options = []) {
-    $this->validateInput($conditions, $this->cv_mapping);
+    $valid_tables = ['cv'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($conditions, $valid_columns);
 
     $query = $this->connection->select('1:cv', 'cv');
 
-    foreach ($conditions as $key => $value) {
-      $mapping = $this->cv_mapping[$key];
-      $parts = explode('.', $mapping);
-      $query->condition($parts[0].'.'.$parts[1], $value, '=');
-    }
     // Return the joined fields aliased to the unique names
     // as listed in this function's header
-    foreach ($this->cv_mapping as $key => $map) {
-      $parts = explode('.', $map);
-      $query->addField($parts[0], $parts[1], $key);
+    foreach ($valid_columns as $key) {
+      $parts = explode('.', $key);
+      $query->addField($parts[0], $parts[1], $this->makeAlias($key));
     }
+    // Conditions are not aliased
+    foreach ($conditions as $key => $value) {
+      $query->condition($key, $value, '=');
+    }
+
     try {
       $results = $query->execute();
     }
@@ -140,7 +71,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
       $new_record = new ChadoBuddyRecord();
       $new_record->setSchemaName($this->connection->getSchemaName());
       $new_record->setBaseTable('cv');
-      $new_record->setValues($values);
+      foreach ($values as $key => $value) {
+        $new_record->setValue($this->unmakeAlias($key), $value);
+      }
       $buddies[] = $new_record;
     }
 
@@ -161,23 +94,25 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @param array $conditions
    *   An array where the key is a column in chado and the value describes the
    *   cvterm you want to select. Valid keys include:
-   *     - cvterm_id
-   *     - cv_id
-   *     - dbxref_id
-   *     - cvterm_name
-   *     - cvterm_definition
-   *     - is_obsolete
-   *     - is_relationshiptype
-   *     - cv_name
-   *     - cv_definition
-   *     - db_id
-   *     - accession
-   *     - version
-   *     - dbxref_description
-   *     - db_name
-   *     - db_description
-   *     - urlprefix
-   *     - url
+   *     - cv.cv_id
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id
+   *     - cvterm.cv_id
+   *     - cvterm.name
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id
+   *     - dbxref.description
+   *     - dbxref.accession
+   *     - dbxref.version
+   *     - db.db_id
+   *     - db.name
+   *     - db.description
+   *     - db.urlprefix
+   *     - db.url
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -190,22 +125,26 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *     encountered then a ChadoBuddyException will be thrown.
    */
   public function getCvterm(array $conditions, array $options = []) {
-    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping, $this->cv_mapping, $this->cvterm_mapping);
-    $this->validateInput($conditions, $mapping);
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($conditions, $valid_columns);
 
-    $query = $this->connection->select('1:cvterm', 't');
+    $query = $this->connection->select('1:cvterm', 'cvterm');
+
     // Return the joined fields aliased to the unique names
     // as listed in this function's header
-    foreach ($mapping as $key => $map) {
-      $parts = explode('.', $map);
-      $query->addField($parts[0], $parts[1], $key);
+    foreach ($valid_columns as $key) {
+      $parts = explode('.', $key);
+      $query->addField($parts[0], $parts[1], $this->makeAlias($key));
     }
-    $query->leftJoin('1:cv', 'cv', 't.cv_id = cv.cv_id');
-    $query->leftJoin('1:dbxref', 'x', 't.dbxref_id = x.dbxref_id');
-    $query->leftJoin('1:db', 'db', 'x.db_id = db.db_id');
+    $query->leftJoin('1:cv', 'cv', 'cvterm.cv_id = cv.cv_id');
+    $query->leftJoin('1:dbxref', 'dbxref', 'cvterm.dbxref_id = dbxref.dbxref_id');
+    $query->leftJoin('1:db', 'db', 'dbxref.db_id = db.db_id');
+    // Conditions are not aliased
     foreach ($conditions as $key => $value) {
-      $query->condition($mapping[$key], $value, '=');
+      $query->condition($key, $value, '=');
     }
+
     try {
       $results = $query->execute();
     }
@@ -217,7 +156,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
       $new_record = new ChadoBuddyRecord();
       $new_record->setSchemaName($this->connection->getSchemaName());
       $new_record->setBaseTable('cvterm');
-      $new_record->setValues($values);
+      foreach ($values as $key => $value) {
+        $new_record->setValue($this->unmakeAlias($key), $value);
+      }
       $buddies[] = $new_record;
     }
 
@@ -237,9 +178,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *
    * @param $values
    *   An associative array of the values to be inserted including:
-   *     - cv_id
-   *     - cv_name
-   *     - cv_definition
+   *     - cv.cv_id
+   *     - cv.name
+   *     - cv.definition
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -250,11 +191,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertCv(array $values, array $options = []) {
-    $fields = $this->validateInput($values, $this->cv_mapping);
+    $valid_tables = ['cv'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
 
     try {
       $query = $this->connection->insert('1:cv');
-      $query->fields($fields);
+      $query->fields($this->removeTablePrefix($values));
       $query->execute();
     }
     catch (\Exception $e) {
@@ -276,23 +219,25 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *
    * @param $values
    *   An associative array of the values to be inserted including:
-   *     - cvterm_id
-   *     - cv_id (either cv_id or cv_name required)
-   *     - dbxref_id
-   *     - cvterm_name (required)
-   *     - cvterm_definition
-   *     - is_obsolete
-   *     - is_relationshiptype
-   *     - cv_name
-   *     - cv_definition
-   *     - db_id (db_id or db_name required unless dbxref_id specified)
-   *     - accession (required unless dbxref_id specified)
-   *     - version
-   *     - dbxref_description
-   *     - db_name (can be used in place of db_id)
-   *     - db_description
-   *     - urlprefix
-   *     - url
+   *     - cv.cv_id (either cv_id, cvterm.cv_id, or cv_name required)
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id: Not valid for an insert.
+   *     - cvterm.cv_id
+   *     - cvterm.name: Required.
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id: Required if generating a dbxref record.
+   *     - dbxref.description: Optional
+   *     - dbxref.accession: Required if generating a dbxref record.
+   *     - dbxref.version: Optional
+   *     - db.db_id: Can be used in place of dbxref.db_id
+   *     - db.name: valid, but has no effect for this function.
+   *     - db.description: valid, but has no effect for this function.
+   *     - db.urlprefix: valid, but has no effect for this function.
+   *     - db.url: valid, but has no effect for this function.
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -303,34 +248,41 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   behaviour then use the upsert version of this method.
    */
   public function insertCvterm(array $values, array $options = []) {
-    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping, $this->cv_mapping, $this->cvterm_mapping);
-    $this->validateInput($values, $mapping);
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
 
-    // If cv_name specified but not cv_id, lookup cv_id
-    if (!array_key_exists('cv_id', $values) or !$values['cv_id']) {
-      if (!array_key_exists('cv_name', $values) or !$values['cv_name']) {
-        throw new ChadoBuddyException("ChadoBuddy insertCvterm error, neither cv_id nor cv_name were specified\n");
+    // There should be values sufficient to retrieve a cvterm.cv_id
+    if (!array_key_exists('cvterm.cv_id', $values) or !$values['cvterm.cv_id']) {
+      if (!array_key_exists('cv.cv_id', $values) or !$values['cv.cv_id']) {
+        $cv_values = $this->subsetInput($values, ['cv']);
+        $cv_record = $this->getCv($cv_values);
+        $this->validateOutput($cv_record, $values);
+        $values['cvterm.cv_id'] = $cv_record->getValue('cv.cv_id');
       }
-      $existing_record = $this->getCv(['cv_name' => $values['cv_name']]);
-      if (!$existing_record or is_array($existing_record)) {
-        throw new ChadoBuddyException("ChadoBuddy insertCvterm error, invalid cv_name \"$cv_name\" was specified\n");
+      else {
+        $values['cvterm.cv_id'] = $values['cv.cv_id'];
       }
-      $values['cv_id'] = $existing_record->getValue('cv_id');
     }
-    unset($values['cv_name']);
 
     // Insert a new dbxref if an existing one was not specified.
-    if (!array_key_exists('dbxref_id', $values) or !$values['dbxref_id']) {
-      $dbxref_record = $this->upsertDbxref($values, $values, $options);
-      $values['dbxref_id'] = $dbxref_record->getValue('dbxref_id');
+    if (!array_key_exists('cvterm.dbxref_id', $values) or !$values['cvterm.dbxref_id']) {
+      if (!array_key_exists('dbxref.dbxref_id', $values) or !$values['dbxref.dbxref_id']) {
+        $dbxref_record = $this->upsertDbxref($values, $values, $options);
+        $values['cvterm.dbxref_id'] = $dbxref_record->getValue('dbxref.dbxref_id');
+      }
+      else {
+        $values['cvterm.dbxref_id'] = $values['dbxref.dbxref_id'];
+      }
     }
 
     // Insert cvterm
+    $query = $this->connection->insert('1:cvterm');
+
+    // Create a subset of the passed $values for just the cvterm table.
+    $cvterm_values = $this->subsetInput($values, ['cvterm']);
+    $query->fields($this->removeTablePrefix($cvterm_values));
     try {
-      // Create a subset of the passed $values for just the cvterm table.
-      $cvterm_values = $this->validateInput($values, $this->cvterm_mapping, TRUE);
-      $query = $this->connection->insert('1:cvterm');
-      $query->fields($cvterm_values);
       $query->execute();
     }
     catch (\Exception $e) {
@@ -338,7 +290,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     }
 
     // Retrieve the newly inserted record.
-    $existing_record = $this->getCvterm($values, $options);
+    $existing_record = $this->getCvterm($cvterm_values, $options);
 
     // Validate that exactly one record was obtained.
     $this->validateOutput($existing_record, $values);
@@ -352,9 +304,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @param array $values
    *   An associative array of the values for the final record (i.e what you
    *   want to update the record to be) including:
-   *     - cv_id (only used for $conditions)
-   *     - cv_name
-   *     - cv_definition
+   *     - cv.cv_id (only used for $conditions)
+   *     - cv.name
+   *     - cv.definition
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -367,8 +319,11 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   be thrown if an error is encountered.
    */
   public function updateCv(array $values, array $conditions, array $options = []) {
-    $unaliased_values = $this->validateInput($values, $this->cv_mapping);
-    $this->validateInput($conditions, $this->cv_mapping);
+    $valid_tables = ['cv'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($conditions, $valid_columns);
+    $this->validateInput($values, $valid_columns);
+
     $existing_record = $this->getCv($conditions, $options);
     if (!$existing_record) {
       return FALSE;
@@ -376,15 +331,15 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     if (is_array($existing_record)) {
       throw new ChadoBuddyException("ChadoBuddy updateCv error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
-    // Update query will only be based on the cv_id, which we get from the retrieved record.
-    $cv_id = $existing_record->getValue('cv_id');
+    // Update query will only be based on the cv.cv_id, which we get from the retrieved record.
+    $cv_id = $existing_record->getValue('cv.cv_id');
     // We do not support changing the cv_id.
-    if (array_key_exists('cv_id', $unaliased_values)) {
-      unset($unaliased_values['cv_id']);
+    if (array_key_exists('cv.cv_id', $values)) {
+      unset($values['cv.cv_id']);
     }
     $query = $this->connection->update('1:cv');
     $query->condition('cv_id', $cv_id, '=');
-    $query->fields($unaliased_values);
+    $query->fields($this->removeTablePrefix($values));
     try {
       $results = $query->execute();
     }
@@ -405,23 +360,25 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    * @param array $values
    *   An associative array of the values for the final record (i.e what you
    *   want to update the record to be) including:
-   *     - cvterm_id
-   *     - cv_id
-   *     - dbxref_id
-   *     - cvterm_name
-   *     - cvterm_definition
-   *     - is_obsolete
-   *     - is_relationshiptype
-   *     - cv_name
-   *     - cv_definition
-   *     - db_id
-   *     - accession
-   *     - version
-   *     - dbxref_description
-   *     - db_name
-   *     - db_description
-   *     - urlprefix
-   *     - url
+   *     - cv.cv_id (either cv_id, cvterm.cv_id, or cv_name required)
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id: Not valid for an insert.
+   *     - cvterm.cv_id
+   *     - cvterm.name: Required.
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id: Required if generating a dbxref record.
+   *     - dbxref.description: Optional
+   *     - dbxref.accession: Required if generating a dbxref record.
+   *     - dbxref.version: Optional
+   *     - db.db_id: Can be used in place of dbxref.db_id
+   *     - db.name: valid, but has no effect for this function.
+   *     - db.description: valid, but has no effect for this function.
+   *     - db.urlprefix: valid, but has no effect for this function.
+   *     - db.url: valid, but has no effect for this function.
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -434,9 +391,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   if an error is encountered.
    */
   public function updateCvterm(array $values, array $conditions, array $options = []) {
-    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping, $this->cv_mapping, $this->cvterm_mapping);
-    $this->validateInput($values, $mapping);
-    $this->validateInput($conditions, $mapping);
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+    $this->validateInput($conditions, $valid_columns);
 
     $existing_record = $this->getCvterm($conditions, $options);
     if (!$existing_record) {
@@ -448,27 +406,28 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     // Only update the dbxref if it is being changed.
     $existing_values = $existing_record->getValues();
     $update_dbxref = FALSE;
-    $check_fields = ['db_name', 'db_id', 'accession', 'version', 'dbxref_description'];
+    $check_fields = ['db.db_name', 'db.db_id', 'dbxref.db_id', 'dbxref.accession', 'dbxref.version', 'dbxref.description'];
     foreach ($check_fields as $field) {
       if (array_key_exists($field, $values) and ($values[$field] != $existing_values[$field])) {
         $update_dbxref = TRUE;
       }
     }
     if ($update_dbxref) {
-      $dbxref_record = $this->upsertDbxref($values, $conditions, $options);
+      $dbxref_record = $this->upsertDbxref($this->subsetInput($values, ['db', 'dbxref']),
+                                           $this->subsetInput($conditions, ['db', 'dbxref']), $options);
     }
 
     // Update query will only be based on the cvterm_id, which we get from the retrieved record.
-    $cvterm_id = $existing_record->getValue('cvterm_id');
+    $cvterm_id = $existing_values['cvterm.cvterm_id'];
     // We do not support changing the cvterm_id.
-    if (array_key_exists('cvterm_id', $values)) {
-      unset($values['cvterm_id']);
+    if (array_key_exists('cvterm.cvterm_id', $values)) {
+      unset($values['cvterm.cvterm_id']);
     }
-    // Create a subset of the passed $values for just the cvterm table.
-    $term_values = $this->validateInput($values, $this->cvterm_mapping, TRUE);
     $query = $this->connection->update('1:cvterm');
     $query->condition('cvterm_id', $cvterm_id, '=');
-    $query->fields($term_values);
+    // Create a subset of the passed $values for just the cvterm table.
+    $term_values = $this->subsetInput($values, ['cvterm']);
+    $query->fields($this->removeTablePrefix($term_values));
     try {
       $results = $query->execute();
     }
@@ -488,9 +447,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *
    * @param array $values
    *   An associative array of the values for the final record including:
-   *     - cv_id
-   *     - cv_name
-   *     - cv_definition
+   *     - cv.cv_id
+   *     - cv.name
+   *     - cv.definition
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -499,13 +458,16 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertCv(array $values, array $options = []) {
-    $this->validateInput($values, $this->cv_mapping);
+    $valid_tables = ['cv'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+
     $existing_record = $this->getCv($values, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertCv error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
-      $conditions = ['cv_id' => $existing_record->getValue('cv_id')];
+      $conditions = ['cv.cv_id' => $existing_record->getValue('cv.cv_id')];
       $new_record = $this->updateCv($values, $conditions, $options);
     }
     else {
@@ -519,23 +481,25 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *
    * @param array $values
    *   An associative array of the values for the final record including:
-   *     - cvterm_id
-   *     - cv_id
-   *     - dbxref_id
-   *     - cvterm_name
-   *     - cvterm_definition
-   *     - is_obsolete
-   *     - is_relationshiptype
-   *     - cv_name
-   *     - cv_definition
-   *     - db_id
-   *     - accession
-   *     - version
-   *     - dbxref_description
-   *     - db_name
-   *     - db_description
-   *     - urlprefix
-   *     - url
+   *     - cv.cv_id (either cv_id, cvterm.cv_id, or cv_name required)
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id: Not valid for an insert.
+   *     - cvterm.cv_id
+   *     - cvterm.name: Required.
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id: Required if generating a dbxref record.
+   *     - dbxref.description: Optional
+   *     - dbxref.accession: Required if generating a dbxref record.
+   *     - dbxref.version: Optional
+   *     - db.db_id: Can be used in place of dbxref.db_id
+   *     - db.name: valid, but has no effect for this function.
+   *     - db.description: valid, but has no effect for this function.
+   *     - db.urlprefix: valid, but has no effect for this function.
+   *     - db.url: valid, but has no effect for this function.
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -544,14 +508,16 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
    *   a ChadoBuddyException will be thrown if an error is encountered.
    */
   public function upsertCvterm(array $values, array $options = []) {
-    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping, $this->cv_mapping, $this->cvterm_mapping);
-    $this->validateInput($values, $mapping);
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+
     $existing_record = $this->getCvterm($values, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
-      $conditions = ['cvterm_id' => $existing_record->getValue('cvterm_id')];
+      $conditions = ['cvterm.cvterm_id' => $existing_record->getValue('cvterm.cvterm_id')];
       $new_record = $this->updateCvterm($values, $conditions, $options);
     }
     else {
@@ -608,7 +574,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
       $base_pkey_col = $base_table_def['primary key'];
     }
     $fields = [
-      'cvterm_id' => $cvterm->getValue('cvterm_id'),
+      'cvterm_id' => $cvterm->getValue('cvterm.cvterm_id'),
       $base_pkey_col => $record_id,
     ];
     // Add in any of the other columns for the linking table.
@@ -640,17 +606,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
     }
 
     // Remove fields not valid for the dbxref table
-    $mapping = array_merge($this->db_mapping, $this->dbxref_mapping);
-    $dbxref_values = [];
-    $dbxref_conditions = [];
-    foreach ($mapping as $key => $map) {
-      if (array_key_exists($key, $values)) {
-        $dbxref_values[$key] = $values[$key];
-      }
-      if (array_key_exists($key, $conditions)) {
-        $dbxref_conditions[$key] = $conditions[$key];
-      }
-    }
+    $dbxref_values = $this->subsetInput($values, ['db', 'dbxref']);
+    $dbxref_conditions = $this->subsetInput($conditions, ['db', 'dbxref']);
     $record = $this->dbxref_instance->upsertDbxref($dbxref_values, $dbxref_conditions, $options);
     return $record;
   }
