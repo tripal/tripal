@@ -100,7 +100,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     $comment_term = $mapping->getColumnTermId($object_table, 'comment') ?: 'schema:description';
 
     // Other columns specific to this object table
-    $comment_term = $mapping->getColumnTermId($object_table, 'comment');
+    $comment_term = $mapping->getColumnTermId($object_table, 'comment') ?: 'schema:description';
 
     // Cvterm table, to retrieve the name for the organism type
     $cvterm_schema_def = $chado->schema()->getTableDef('cvterm', ['format' => 'Drupal']);

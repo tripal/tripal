@@ -112,8 +112,8 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $type_table_def = $schema->getTableDef($type_table, ['format' => 'Drupal']);
       $type_pkey_col = $type_table_def['primary key'];
       $type_fkey_col = array_keys($type_table_def['foreign keys'][$base_table]['columns'])[0];
-      $link_term = $mapping->getColumnTermId($type_table, $type_fkey_col);
-      $value_term = $mapping->getColumnTermId($type_table, 'value');
+      $link_term = $mapping->getColumnTermId($type_table, $type_fkey_col) ?: self::$record_id_term;
+      $value_term = $mapping->getColumnTermId($type_table, 'value') ?: 'NCIT:C25712';
 
       // (e.g., analysisprop.analysisprop_id)
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', self::$record_id_term, [
