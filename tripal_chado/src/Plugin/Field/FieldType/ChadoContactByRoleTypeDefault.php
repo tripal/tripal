@@ -113,7 +113,7 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     //    - right table foreign key
     $terms['linker_right'] = $mappingObj->getColumnTermId($linker_table, $linker_fkey_column) ?: self::$record_id_term;
     //    - linking type
-    $terms['linker_type_id'] = $mappingObj->getColumnTermId($linker_table, 'type_id') ?: 'schema:AdditionalType';
+    $terms['linker_type_id'] = $mappingObj->getColumnTermId($linker_table, 'type_id') ?: 'schema:additionalType';
     if (empty($terms['linker_type_id'])) {
       $terms['linker_type_id'] = $terms['contact_type'];
     }
