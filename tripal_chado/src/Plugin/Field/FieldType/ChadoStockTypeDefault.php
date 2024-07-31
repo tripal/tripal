@@ -98,7 +98,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
 
     // Columns from linked tables
     $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession') ?: 'data:2091';
-    $db_term = $mapping->getColumnTermId('db', 'name');
+    $db_term = $mapping->getColumnTermId('db', 'name') ?: 'ERO:0001716';
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
     $stock_type_term = $mapping->getColumnTermId('cvterm', 'name') ?: 'schema:additionalType';
     $stock_type_len = $cvterm_schema_def['fields']['name']['size'];
