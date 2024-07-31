@@ -91,29 +91,29 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     $object_table = self::$object_table;
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
-    $name_term = $mapping->getColumnTermId($object_table, 'name');
-    $uniquename_term = $mapping->getColumnTermId($object_table, 'uniquename');  // text
-    $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
-    $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete');  // boolean
+    $name_term = $mapping->getColumnTermId($object_table, 'name') ?: 'schema:name';
+    $uniquename_term = $mapping->getColumnTermId($object_table, 'uniquename') ?: 'data:0842';  // text
+    $description_term = $mapping->getColumnTermId($object_table, 'description') ?: 'schema:description';  // text
+    $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete') ?: 'local:is_obsolete';  // boolean
 
     // Columns from linked tables
-    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
+    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession') ?: 'data:2091';
     $db_term = $mapping->getColumnTermId('db', 'name');
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $stock_type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $stock_type_term = $mapping->getColumnTermId('cvterm', 'name') ?: 'schema:additionalType';
     $stock_type_len = $cvterm_schema_def['fields']['name']['size'];
-    $infraspecific_type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $infraspecific_type_term = $mapping->getColumnTermId('cvterm', 'name') ?: 'local:infraspecific_type';
     $infraspecific_type_len = $cvterm_schema_def['fields']['name']['size'];
     $organism_schema_def = $schema->getTableDef('organism', ['format' => 'Drupal']);
-    $genus_term = $mapping->getColumnTermId('organism', 'genus');
+    $genus_term = $mapping->getColumnTermId('organism', 'genus') ?: 'TAXRANK:0000005';
     $genus_len = $organism_schema_def['fields']['genus']['size'];
-    $species_term = $mapping->getColumnTermId('organism', 'species');
+    $species_term = $mapping->getColumnTermId('organism', 'species') ?: 'TAXRANK:0000006';
     $species_len = $organism_schema_def['fields']['species']['size'];
-    $infraspecific_name_term = $mapping->getColumnTermId('organism', 'infraspecific_name');
+    $infraspecific_name_term = $mapping->getColumnTermId('organism', 'infraspecific_name') ?: 'TAXRANK:0000045';
     $infraspecific_name_len = $organism_schema_def['fields']['infraspecific_name']['size'];
-    $abbreviation_term = $mapping->getColumnTermId('organism', 'abbreviation');
+    $abbreviation_term = $mapping->getColumnTermId('organism', 'abbreviation') ?: 'local:abbreviation';
     $abbreviation_len = $organism_schema_def['fields']['abbreviation']['size'];
-    $common_name_term = $mapping->getColumnTermId('organism', 'common_name');
+    $common_name_term = $mapping->getColumnTermId('organism', 'common_name') ?: 'NCBITaxon:common_name';
     $common_name_len = $organism_schema_def['fields']['common_name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
@@ -125,15 +125,15 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col);
-      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column);
+      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col) ?: self::$record_id_term;
+      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column) ?: self::$record_id_term;
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
-          $term = $mapping->getColumnTermId($linker_table, $column);
+          $term = $mapping->getColumnTermId($linker_table, $column) ?: 'NCIT:C25712';
           if ($term) {
             $extra_linker_columns[$column] = $term;
           }
@@ -141,7 +141,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
       }
     }
     else {
-      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column);
+      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column) ?: self::$record_id_term;
     }
 
     $properties = [];
