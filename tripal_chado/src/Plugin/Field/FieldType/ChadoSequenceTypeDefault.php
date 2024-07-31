@@ -61,9 +61,9 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-    $residues_term = $mapping->getColumnTermId('feature', 'residues');
-    $seqlen_term = $mapping->getColumnTermId('feature', 'seqlen');
-    $md5checksum_term = $mapping->getColumnTermId('feature', 'md5checksum');
+    $residues_term = $mapping->getColumnTermId('feature', 'residues') ?: 'data:2044';
+    $seqlen_term = $mapping->getColumnTermId('feature', 'seqlen') ?: 'data:1249';
+    $md5checksum_term = $mapping->getColumnTermId('feature', 'md5checksum') ?: 'data:2190';
 
     // Return the properties for this field.
     $properties = [];
