@@ -3,6 +3,8 @@
 namespace Drupal\tripal_chado\ChadoBuddy;
 
 use Drupal\Component\Plugin\PluginBase;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
@@ -11,7 +13,7 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 /**
  * Base class for chado_buddy plugins.
  */
-abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInterface {
+abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
   /**
    * Provides the TripalDBX connection to chado that this ChadoBuddy should act upon.
@@ -19,6 +21,29 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *
    */
   public ChadoConnection $connection;
+
+ /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static function
+   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
+   * this method is used to determine the parameters to pass to the contructor.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('tripal_chado.database')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -45,42 +70,165 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
-   * Used to validate input arrays to various buddy functions,
-   * or to generate a valid array subset.
-   * The output has the column aliases de-aliased to the
-   * actual chado column names, e.g. ['db_name' => 'db.name']
-   * indicates that the alias 'db_name' corresponds to the
-   * column 'name' in the 'db' table.
+   * Retrieve a list of table columns for one or more chado tables.
+   * Schema information is cached for better performance.
    *
-   * @param array $user_values
-   *   An associative array to be validated.
-   * @param array $valid_values
-   *   An associative array listing all valid keys, and the
-   *   values are un-aliased database table alias and table
-   *   column as described above.
-   * @param bool $filter
-   *   Set to TRUE if we want to return a subset of the passed
-   *   $uservalues containing only keys from $validvalues.
-   *   If FALSE, then a ChadoBuddyException is thrown for invalid keys.
+   * @param array $chado_tables
+   *   One or more chado table namess.
+   * @param bool $required_only
+   *   If TRUE, only return columns that [1]: have a NOT NULL
+   *   constraint, and [2]: do not have a default value and
+   *   are not serial (i.e. a primary key is not required)
    *
    * @return array
-   *   A filtered subset of $user_values
-   */
-  protected function validateInput(array $user_values, array $valid_values, bool $filter = FALSE) {
-    $subset = [];
-    foreach ($user_values as $key => $value) {
-      if (!array_key_exists($key, $valid_values)) {
-        if (!$filter) {
+   *   An array of table+dot+column name, e.g. for 'db' table:
+   *   ['db.db_id', 'db.name', 'db.description', 'db.urlprefix', 'db.url']
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   **/
+  protected function getTableColumns(array $chado_tables, bool $required_only = FALSE) {
+    $columns = [];
+    $cached_tables = [];
+    $schema_name = $this->connection->getSchemaName();
+    $cache_updated = FALSE;
+
+    // Get cached columns if available
+    $cache_id = $schema_name . '_buddy_table_columns';
+    if ($cache = \Drupal::cache()->get($cache_id)) {
+      $cached_tables = $cache->data;
+    }
+    foreach ($chado_tables as $chado_table) {
+      if (!array_key_exists($chado_table, $chado_tables)) {
+        $cache_updated = TRUE;
+        $cached_tables[$chado_table] = [];
+        $table_schema = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
+        if (!array_key_exists('fields', $table_schema)) {
           $calling_function = debug_backtrace()[1]['function'];
-          throw new ChadoBuddyException("ChadoBuddy $calling_function error, value \"$key\" is not valid for for this function.");
+          throw new ChadoBuddyException("ChadoBuddy $calling_function error, invalid table \"$chado_table\" passed to getTableColumns()");
+        }
+        foreach ($table_schema['fields'] as $field_name => $field_schema) {
+          $required = FALSE;
+          if ($field_schema['not null'] and !array_key_exists('default', $field_schema) and $field_schema['type'] != 'serial') {
+            $required = TRUE;
+          }
+          $cached_tables[$chado_table][$field_name] = $required;
         }
       }
-      else {
-        $mapping = $valid_values[$key];  // e.g. 'db_name' => 'db.name'
-        $parts = explode('.', $mapping);  // Remove table name or alias before period
-        if ($parts[1] != 'for_validation_only') {
-          $subset[$parts[1]] = $value;
+
+      // Lookup all or just required columns, depending on $required_only setting
+      foreach ($cached_tables[$chado_table] as $column => $required) {
+        if (!$required_only or $required) {
+          $columns[] = $chado_table . '.' . $column;
         }
+      }
+    }
+
+    // If $cached_tables was updated, cache the new version, specifying expiration in 1 hour.
+    if ($cache_updated) {
+      \Drupal::cache()->set($cache_id, $cached_tables, \Drupal::time()->getRequestTime() + (3600));
+    }
+
+    return $columns;
+  }
+
+  /**
+   * Replace the first period with a double underscore
+   * This makes the string valid as a table column alias.
+   *
+   * @param string $name
+   *   table name+dot+table column
+   *
+   * @return string
+   *   The first period is replaced with double underscore.
+   **/
+  protected function makeAlias(string $name): string {
+    return preg_replace('/\./', '__', $name, 1);
+  }
+
+  /**
+   * Replace the first double underscore with a period.
+   * This reverts the change made by the makeAlias() function.
+   *
+   * @param string $name
+   *   table name+__+table column
+   *
+   * @return string
+   *   The first __ is replaced with a period.
+   **/
+  protected function unmakeAlias(string $name): string {
+    return preg_replace('/__/', '.', $name, 1);
+  }
+
+  /**
+   * Removes the table prefix from $values keys so that
+   * they can be used directly in an INSERT.
+   * The prefix is anything up to and including the first period.
+   *
+   * @param array $values
+   *   Associative array where keys are table name+dot+table column.
+   *
+   * @return array
+   *   The keys have had the table name prefix removed, values are unchanged.
+   **/
+  protected function removeTablePrefix(array $values): array {
+    $new_values = [];
+    foreach ($values as $key => $value) {
+      $new_key = preg_replace('/^[^\.]*\./', '', $key);
+      $new_values[$new_key] = $value;
+    }
+    return $new_values;
+  }
+
+  /**
+   * Used to validate input arrays to various buddy functions.
+   *
+   * @param array $user_values
+   *   An associative array to be validated. Keys are
+   *   table+dot+column name, values are the database table values.
+   * @param array $valid_values
+   *   An array listing all valid keys for $user_values.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If $user_values array is empty.
+   *   If a key in $user_values is not in $valid_values.
+   */
+  protected function validateInput(array $user_values, array $valid_values) {
+    if (!$user_values) {
+      $calling_function = debug_backtrace()[1]['function'];
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, no values were specified.");
+    }
+    foreach ($user_values as $key => $value) {
+      if (!in_array($key, $valid_values)) {
+        $calling_function = debug_backtrace()[1]['function'];
+        throw new ChadoBuddyException("ChadoBuddy $calling_function error, the key \"$key\" is not valid for for this function.");
+      }
+    }
+  }
+
+  /**
+   * Used to return a subset of values applicable to a
+   * single chado table, e.g. remove db table columns when
+   * inserting a new dbxref.
+   *
+   * @param array $user_values
+   *   An associative array to be filtered. Keys are
+   *   table+dot+column name, values are for that table+column.
+   * @param array $valid_tables
+   *   An array listing which tables should have keys returned.
+   *
+   * @return array
+   *   The subset of passed $user_values with table prefixes
+   *   present in the $valid_tables array.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If after subsetting there is nothing left.
+   */
+  protected function subsetInput(array $user_values, array $valid_tables) {
+    $subset = [];
+    foreach ($user_values as $key => $value) {
+      $parts = explode('.', $key, 2);
+      if (in_array($parts[0], $valid_tables)) {
+        $subset[$key] = $value;
       }
     }
     if (!$subset) {
@@ -95,12 +243,14 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * to ensure there is exactly one record present.
    *
    * @param mixed $output_records
-   *   Might be FALSE, a ChadoBuddyRecord, or an array with multiple records.
-   *   To be valid, must be exactly one ChadoBuddyRecord.
+   *   This can be either FALSE, a ChadoBuddyRecord, or an array
+   *   with multiple records. To be valid, it must be exactly
+   *   one ChadoBuddyRecord.
    * @param array $values
-   *   Pass query values to print if exception is thrown.
+   *   Pass query values to print if an exception is thrown.
    *
-   * @throws ChadoBuddyException if not exactly one record.
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If not exactly one record is present.
    */
   protected function validateOutput($output_records, array $values) {
     // These are unlikely cases, but you never know.
@@ -117,75 +267,4 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     }
   }
 
-  /**
-   * Property buddy helper function to unalias the pkey and pkey_id conditions
-   * to actual table column names based on the base_table.
-   *
-   * @param array $mapping
-   *   Configuration settings for the buddy function. Keys are keys for
-   *   the options passed to the function, values are chado table aliases
-   *   and column name, e.g. 'type_id' => 'p.type_id'
-   * @param array $conditions
-   *   The associative array of table conditions passed to a buddy function.
-   * @return array
-   *   Array of four strings,
-   *   [0] the name of the chado base table,
-   *   [1] the name of the chado property table,
-   *   [2] the primary key column name for this table, and
-   *   [3] the foreign key to the base table.
-   *
-   */
-  protected function translatePkey(array &$mapping, array &$conditions): array {
-
-    // Retrieve required option 'base_table'
-    if (!array_key_exists('base_table', $conditions) or !$conditions['base_table']) {
-      $calling_function = debug_backtrace()[1]['function'];
-var_dump($conditions); //@@@
-      throw new ChadoBuddyException("ChadoBuddy $calling_function error, condition \"base_table\" was not defined");
-    }
-    $base_table = $conditions['base_table'];
-    unset($conditions['base_table']);
-
-    // All chado property tables follow this standard naming
-    // convention, but it can be overridden if necessary.
-    $property_table = $base_table . 'prop';
-    if (array_key_exists('property_table', $conditions)) {
-      if ($conditions['property_table']) {
-        $property_table = $conditions['property_table'];
-      }
-      unset($conditions['property_table']);
-    }
-
-    // All chado property table primary keys follow this standard
-    // naming convention, but it can be overridden if necessary.
-    $pkey = $property_table . '_id';
-    if (array_key_exists('pkey', $conditions)) {
-      if ($conditions['pkey']) {
-        $pkey = $conditions['pkey'];
-      }
-      unset($conditions['pkey']);
-    }
-
-    // Foreign key for the base table, it can be overridden if necessary.
-    $fkey = $base_table . '_id';
-    if (array_key_exists('fkey', $conditions)) {
-      if ($conditions['fkey']) {
-        $fkey = $conditions['fkey'];
-      }
-      unset($conditions['fkey']);
-    }
-
-    // update mapping placeholder to reflect the actual column name
-    $mapping['pkey_id'] = 'p.' . $pkey;
-    $mapping['fkey_id'] = 'p.' . $fkey;
-
-    // Remove all validation placeholders
-    unset($mapping['base_table']);
-    unset($mapping['pkey']);
-    unset($mapping['fkey']);
-    unset($mapping['property_table']);
-    unset($mapping['cvterm']);
-
-    return [$base_table, $property_table, $pkey, $fkey];
-  }
 }

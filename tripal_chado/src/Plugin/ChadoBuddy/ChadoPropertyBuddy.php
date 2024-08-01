@@ -2,7 +2,12 @@
 
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
+use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
@@ -16,51 +21,9 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
   /**
-   * Keys are the column aliases, and values are the
-   * table aliases and columns for the Property buddy.
-   * @var array
-   *
+   * Used to store the manager so we can access the Cvterm buddy
    */
-  protected array $db_mapping = [
-    'db_id' => 'db.db_id',
-    'db_name' => 'db.name',
-    'db_description' => 'db.description',
-    'urlprefix' => 'db.urlprefix',
-    'url' => 'db.url',
-  ];
-
-  /**
-   * Keys are the column aliases, and values are the
-   * table aliases and columns for the Property buddy.
-   * @var array
-   *
-   */
-  protected array $Property_mapping = [
-    'Property_id' => 'x.Property_id',
-    'db_id' => 'x.db_id',
-    'accession' => 'x.accession',
-    'version' => 'x.version',
-    'Property_description' => 'x.description',
-  ];
-
-  /**
-   * Keys are the column aliases, and values are the
-   * table aliases and columns for the Property buddy.
-   * @var array
-   *
-   */
-  protected array $property_mapping = [
-    'base_table' => 'x.for_validation_only',
-    'pkey' => 'x.for_validation_only',
-    'fkey' => 'x.for_validation_only',
-    'property_table' => 'x.for_validation_only',
-    'cvterm' => 'x.for_validation_only',
-    'pkey_id' => 'p.pkey',
-    'fkey_id' => 'p.fkey',
-    'type_id' => 'p.type_id',
-    'value' => 'p.value',
-    'rank' => 'p.rank',
-  ];
+  protected object $buddy_manager;
 
   /**
    * Cache the cvterm instance here
@@ -68,14 +31,58 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
   protected object $cvterm_instance;
 
 
+ /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * We are injecting an additional dependency here, the
+   * ChadoBuddyPluginManager, so that this buddy can have
+   * access to the Dbxref buddy.
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static function
+   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
+   * this method is used to determine the parameters to pass to the contructor.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('tripal_chado.database'),
+      $container->get('tripal_chado.chado_buddy')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition,
+                              ChadoConnection $connection, ChadoBuddyPluginManager $buddy_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
+    $this->buddy_manager = $buddy_manager;
+  }
+
   /**
    * Retrieves a chado property.
    *
+   * @param string $base_table
+   *   The base table for which the property should be associated. Thus to associate
+   *   a property with a feature the basetable=feature and a record is added to the
+   *   featureprop table.
+   * @param int $record_id
+   *   The primary key of the basetable to associate the property with.
    * @param array $conditions
-   *   An array where the key is a column in the chado.db table and the value
-   *   describes the db you want to select. Valid keys include:
+   *   An array where the key is a table+dot+column to describe the
+   *   name of the property table and the column desired. Examples
+   *   here are for the project table:
    *     - base_table - (required) chado base table, e.g. 'feature'
-   *     - pkey - (optional) property table primary key column name, this will vary for
+   *     - projectprop.projectprop_id - (optional) property table primary key column name, this will vary for
    *              different base tables, e.g. 'featureprop_id'.
    *              If omitted, then the standard default is generated
    *     - fkey - (optional) base table primary key column name,
@@ -86,7 +93,29 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - type_id - foreign key to cvterm_id
    *     - value - the value of the property
    *     - rank - optional rank of the property
+
+   *     - cv.cv_id
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id
+   *     - cvterm.cv_id
+   *     - cvterm.name
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id
+   *     - dbxref.description
+   *     - dbxref.accession
+   *     - dbxref.version
+   *     - db.db_id
+   *     - db.name
+   *     - db.description
+   *     - db.urlprefix
+   *     - db.url
    * @param array $options (Optional)
+   *     - property_table - if the default of $base_table . 'prop' needs to be changed
+   *     - fkey - if the default of $base_table . '_id' needs to be changed
    *   None supported yet. Here for consistency.
    *
    * @return bool|array|ChadoBuddyRecord
@@ -97,31 +126,37 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   If there are no results then we return FALSE and if an error is
    *     encountered then a ChadoBuddyException will be thrown.
    */
-  public function getProperty(array $conditions, array $options = []) {
-    $mapping = $this->property_mapping;
-    $this->validateInput($conditions, $mapping);
+  public function getProperty(string $base_table, int $record_id, array $conditions, array $options = []) {
+    $property_table = $options['property_table'] ?? $base_table . 'prop';
+    $fkey = $options['fkey'] ?? $base_table . '_id';
+
+    $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($conditions, $valid_columns);
 
     if (!isset($this->cvterm_instance)) {
-      $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
-      $this->cvterm_instance = $buddy_service->createInstance('chado_cvterm_buddy', []);
+      $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
     }
 
-    // Convert generic pkey and pkey_id to actual names for this property table.
-    list($base_table, $property_table, $pkey, $fkey) = $this->translatePkey($mapping, $conditions);
+    $query = $this->connection->select('1:' . $property_table, $property_table);
+    $query->leftJoin('1:' . $base_table, $base_table, $base_table . '.' . $fkey . ' = ' . $property_table . '.' . $fkey);
+    $query->leftJoin('1:cvterm', 'cvterm', 'cvterm.cvterm_id = ' . $property_table . '.type_id');
+    $query->leftJoin('1:cv', 'cv', 'cv.cv_id = cvterm.cv_id');
+    $query->leftJoin('1:dbxref', 'dbxref', 'dbxref.dbxref_id = cvterm.dbxref_id');
+    $query->leftJoin('1:db', 'db', 'db.db_id = dbxref.db_id');
 
-    $query = $this->connection->select('1:'.$property_table, 'p');
-
-    foreach ($conditions as $key => $value) {
-      $map = $mapping[$key];
-      $parts = explode('.', $map);
-      $query->condition($parts[0].'.'.$parts[1], $value, '=');
-    }
     // Return the joined fields aliased to the unique names
     // as listed in this function's header
-    foreach ($mapping as $key => $map) {
-      $parts = explode('.', $map);
-      $query->addField($parts[0], $parts[1], $key);
+    foreach ($valid_columns as $key) {
+      $parts = explode('.', $key);
+      $query->addField($parts[0], $parts[1], $this->makeAlias($key));
     }
+    // Conditions are not aliased
+    $query->condition($property_table . '.' . $fkey, $record_id, '=');
+    foreach ($conditions as $key => $value) {
+      $query->condition($key, $value, '=');
+    }
+
     try {
       $results = $query->execute();
     }
@@ -130,15 +165,12 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     }
     $buddies = [];
     while ($values = $results->fetchAssoc()) {
-      // convert the type_id to a Cvterm buddy so we get all linked columns
-      $record = $this->cvterm_instance->getCvterm(['cvterm_id' => $values['type_id']], $options);
-      $values['cvterm'] = $record;
-      $values['pkey'] = $pkey;
-      $values['fkey'] = $fkey;
       $new_record = new ChadoBuddyRecord();
       $new_record->setSchemaName($this->connection->getSchemaName());
       $new_record->setBaseTable($base_table);
-      $new_record->setValues($values);
+      foreach ($values as $key => $value) {
+        $new_record->setValue($this->unmakeAlias($key), $value);
+      }
       $buddies[] = $new_record;
     }
 
@@ -182,29 +214,29 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   If there are no results then we return FALSE and if an error is
    *     encountered then a ChadoBuddyException will be thrown.
    */
-  public function deleteProperty(array $conditions, array $options = []) {
-    $mapping = $this->property_mapping;
-    $this->validateInput($conditions, $mapping);
+  public function deleteProperty(string $base_table, int $record_id, array $conditions, array $options = []) {
+    $property_table = $options['property_table'] ?? $base_table . 'prop';
+    $fkey = $options['fkey'] ?? $base_table . '_id';
+    $pkey = $options['pkey'] ?? $property_table . '_id';
 
-    // Convert generic pkey and pkey_id to actual names for this property table.
-    $original_conditions = $conditions;
-    list($base_table, $property_table, $pkey, $fkey) = $this->translatePkey($mapping, $conditions);
+    $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($conditions, $valid_columns);
 
-    $existing_records = $this->getProperty($original_conditions, $options);
+    $existing_records = $this->getProperty($base_table, $record_id, $conditions, $options);
     $pkey_ids = [];
     if ($existing_records) {
       if (is_array($existing_records)) {
         foreach ($existing_records as $record) {
-          $pkey_ids[] = $record->getValue('pkey_id');
+          $pkey_ids[] = $record->getValue("$property_table.$pkey");
         }
       }
       else {
-        $pkey_ids[] = $existing_records->getValue('pkey_id');
+        $pkey_ids[] = $existing_records->getValue("$property_table.$pkey");
       }
 
-      $query = $this->connection->delete('1:'.$property_table);
-      $pkey_column = preg_replace('/^.*\./', '', $mapping['pkey_id']);
-      $query->condition($pkey_column, $pkey_ids, 'IN');
+      $query = $this->connection->delete('1:' . $property_table);
+      $query->condition($pkey, $pkey_ids, 'IN');
       try {
         $results = $query->execute();
       }
@@ -240,50 +272,42 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   already exists then an error will be thrown... if this is not the desired
    *   behaviour then use the upsert version of this method.
    */
-  public function insertProperty(array $values, array $options = []) {
-    $mapping = $this->property_mapping;
-    $fields = $this->validateInput($values, $mapping);
+  public function insertProperty(string $base_table, int $record_id, array $values, array $options = []) {
+    $property_table = $options['property_table'] ?? $base_table . 'prop';
+    $fkey = $options['fkey'] ?? $base_table . '_id';
 
-    // Convert generic pkey and pkey_id to actual names for this property table.
-    $original_values = $values;
-    list($base_table, $property_table, $pkey, $fkey) = $this->translatePkey($mapping, $values);
+    $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
 
-    if (array_key_exists('type_id', $values)) {
-      $type_id = $values['type_id'];
+    if (array_key_exists("$property_table.type_id", $values)) {
+      $type_id = $values["$property_table.type_id"];
     }
     elseif (array_key_exists('cvterm', $values)) {
       $type_id = $values['cvterm']->getValue('cvterm_id');
       unset($values['cvterm']);
-      $values['type_id'] = $type_id;
+      $values["$property_table.type_id"] = $type_id;
     }
     else {
       throw new ChadoBuddyException('ChadoBuddy insertProperty error, neither cvterm nor type_id were specified');
     }
 
-    // Convert the pkey_id and fkey_id to actual column name
-    if (array_key_exists('pkey_id', $values)) {
-      $values[$pkey] = $values['pkey_id'];
-      unset($values['pkey_id']);
-    }
-    if (array_key_exists('fkey_id', $values)) {
-      $values[$fkey] = $values['fkey_id'];
-      unset($values['fkey_id']);
-    }
-
     // Insert the property record
+    $query = $this->connection->insert('1:' . $property_table);
+    $property_values = $this->subsetInput($values, [$property_table]);
+    if (!array_key_exists($fkey, $property_values)) {
+      $property_values[$fkey] = $record_id;
+    }
+    $query->fields($this->removeTablePrefix($property_values));
     try {
-      // Create a subset of the passed $values for just the property table.
-//      $cvterm_values = $this->validateInput($values, $mapping, TRUE);
-      $query = $this->connection->insert('1:'.$property_table);
-      $query->fields($values);
       $query->execute();
     }
     catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy insertCvterm database error '.$e->getMessage());
+      throw new ChadoBuddyException('ChadoBuddy insertProperty database error '.$e->getMessage());
     }
 
     // Retrieve the newly inserted record.
-    $existing_record = $this->getProperty($original_values, $options);
+    $existing_record = $this->getProperty($base_table, $record_id, $values, $options);
 
     // Validate that exactly one record was obtained.
     $this->validateOutput($existing_record, $values);
@@ -292,7 +316,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
   }
 
   /**
-   * Updates an existing database reference.
+   * Updates an existing property.
    *
    * @param array $values
    *   An associative array of the values for the final record (i.e what you
@@ -317,8 +341,17 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   returned if no record was found to update and a ChadoBuddyException will be thrown
    *   if an error is encountered.
    */
-  public function updateProperty(array $values, array $conditions, array $options = []) {
-    $existing_record = $this->getProperty($conditions, $options);
+  public function updateProperty(string $base_table, int $record_id, array $values, array $conditions, array $options = []) {
+    $property_table = $options['property_table'] ?? $base_table . 'prop';
+    $fkey = $options['fkey'] ?? $base_table . '_id';
+    $pkey = $options['pkey'] ?? $property_table . '_id';
+
+    $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+    $this->validateInput($conditions, $valid_columns);
+
+    $existing_record = $this->getProperty($base_table, $record_id, $conditions, $options);
     if (!$existing_record) {
       return FALSE;
     }
@@ -326,37 +359,19 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       throw new ChadoBuddyException("ChadoBuddy updateProperty error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
 
-    // copy base table and pkey stuff from conditions so that they
-    // don't need to be included twice
-    $this->copyConditions($conditions, $values);
-    $mapping = $this->property_mapping;
-    $original_values = $values;
-    $unaliased_values = $this->validateInput($values, $mapping);
-
-    // Convert generic pkey and pkey_id to actual names for this property table.
-    list($base_table, $property_table, $pkey, $fkey) = $this->translatePkey($mapping, $conditions);
-    $pkey_id = $existing_record->getValue('pkey_id');
-
-    // Convert the pkey_id and fkey_id to actual column name
-    if (array_key_exists('pkey', $unaliased_values)) {
-      $unaliased_values[$pkey] = $unaliased_values['pkey'];
-      unset($unaliased_values['pkey']);
-    }
-    if (array_key_exists('fkey', $unaliased_values)) {
-      $unaliased_values[$fkey] = $unaliased_values['fkey'];
-      unset($unaliased_values['fkey']);
-    }
-
     $query = $this->connection->update('1:' . $property_table);
-    $query->condition($pkey, $pkey_id, '=');
-    $query->fields($unaliased_values);
+    // We can now reduce conditions to just the property table primary key
+    $query->condition("$property_table.$pkey", $existing_record->getValue("$property_table.$pkey"), '=');
+    $property_values = $this->subsetInput($values, [$property_table]);
+    $query->fields($this->removeTablePrefix($property_values));
     try {
       $results = $query->execute();
     }
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy updateProperty database error '.$e->getMessage());
     }
-    $existing_record = $this->getProperty(['pkey_id' => $pkey_id, 'base_table' => $base_table, 'pkey' => $pkey, 'fkey' => $fkey], $options);
+    $pkey_conditions = ["$property_table.$pkey" => $existing_record->getValue("$property_table.$pkey")];
+    $existing_record = $this->getProperty($base_table, $record_id, $pkey_conditions, $options);
 
     // Validate that exactly one record was obtained.
     $this->validateOutput($existing_record, $values);
@@ -366,7 +381,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
   }
 
   /**
-   * Insert a database reference if it doesn't yet exist OR update it if does.
+   * Insert a property if it doesn't yet exist OR update it if does.
    *
    * @param array $values
    *   An associative array of the values for the final record including:
@@ -386,26 +401,25 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *   The inserted/updated ChadoBuddyRecord will be returned on success, and
    *   a ChadoBuddyException will be thrown if an error is encountered.
    */
-  public function upsertProperty(array $values, array $options = []) {
-    $mapping = $this->property_mapping;
-    $this->validateInput($values, $mapping);
-    $original_values = $values;
-    $existing_record = $this->getProperty($values, $options);
+  public function upsertProperty(string $base_table, int $record_id, array $values, array $options = []) {
+    $property_table = $options['property_table'] ?? $base_table . 'prop';
+    $fkey = $options['fkey'] ?? $base_table . '_id';
+    $pkey = $options['pkey'] ?? $property_table . '_id';
+
+    $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+
+    $existing_record = $this->getProperty($base_table, $record_id, $values, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertProperty error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
-      // Convert generic pkey and pkey_id to actual names for this property table.
-      list($base_table, $property_table, $pkey, $fkey) = $this->translatePkey($mapping, $values);
-      $existing_values = $existing_record->getValues();
-      $conditions = ['pkey_id' => $existing_values['pkey_id'], 'pkey' => $existing_values['pkey'], 'base_table' => $existing_record->getBaseTable()];
-      // copy base table and pkey stuff from conditions so that they
-      // don't need to be included twice
-      $this->copyConditions($existing_values, $original_values);
-      $new_record = $this->updateProperty($original_values, $conditions, $options);
+      $conditions = ["$property_table.$pkey" => $existing_record->getValue("$property_table.$pkey")];
+      $new_record = $this->updateProperty($base_table, $record_id, $values, $conditions, $options);
     }
     else {
-      $new_record = $this->insertProperty($original_values, $options);
+      $new_record = $this->insertProperty($base_table, $record_id, $values, $options);
     }
     return $new_record;
   }

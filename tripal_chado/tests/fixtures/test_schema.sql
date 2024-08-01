@@ -29,7 +29,6 @@ CREATE TABLE dbxref (
 );
 
 INSERT INTO dbxref (db_id, accession) VALUES (1, 'test_dbxref');
-INSERT INTO dbxref (db_id, accession) VALUES (2, 'test_dbxref2');
 
 CREATE TABLE cv (
   cv_id serial,
@@ -55,7 +54,6 @@ CREATE TABLE cvterm (
 );
 
 INSERT INTO cvterm (cv_id, name, definition, dbxref_id) VALUES (1, 'test_cvterm', 'CV term for testing', 1);
-INSERT INTO cvterm (cv_id, name, definition, dbxref_id) VALUES (2, 'test_cvterm2', 'CV term 2 for testing', 2);
 
 CREATE TABLE organism (
   organism_id serial,
@@ -147,48 +145,3 @@ CREATE TABLE chadoprop (
     rank integer DEFAULT 0 NOT NULL
 );
 
-CREATE TABLE feature_dbxref (
-  feature_dbxref_id bigserial not null,
-  primary key (feature_dbxref_id),
-  feature_id bigint not null,
-  foreign key (feature_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
-  dbxref_id bigint not null,
-  foreign key (dbxref_id) references dbxref (dbxref_id) on delete cascade INITIALLY DEFERRED,
-  is_current boolean not null default 'true',
-  CONSTRAINT feature_dbxref_c1 UNIQUE (feature_id,dbxref_id)
-);
-CREATE INDEX feature_dbxref_idx1 ON feature_dbxref USING btree (feature_id);
-CREATE INDEX feature_dbxref_idx2 ON feature_dbxref USING btree (dbxref_id);
-COMMENT ON TABLE feature_dbxref IS 'Links a feature to dbxrefs.';
-COMMENT ON COLUMN feature_dbxref.is_current IS 'True if this secondary dbxref is the most up to date accession in the corresponding db. Retired accessions should set this field to false';
-
-CREATE TABLE feature_cvterm (
-  feature_cvterm_id bigserial NOT NULL,
-  primary key (feature_cvterm_id),
-  feature_id bigint NOT NULL,
-  foreign key (feature_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
-  cvterm_id bigint NOT NULL,
-  foreign key (cvterm_id) references cvterm (cvterm_id) on delete cascade INITIALLY DEFERRED,
-  -- Mising column: pub_id bigint not null,
-  is_not boolean NOT NULL DEFAULT FALSE,
-  rank integer NOT NULL DEFAULT 0,
-  CONSTRAINT feature_cvterm_c1 UNIQUE (feature_id,cvterm_id,rank)
-);
-CREATE INDEX feature_cvterm_idx1 ON feature_cvterm (feature_id);
-CREATE INDEX feature_cvterm_idx2 ON feature_cvterm (cvterm_id);
-
-CREATE TABLE featureprop (
-  featureprop_id bigserial NOT NULL,
-  primary key (featureprop_id),
-  feature_id bigint NOT NULL,
-  foreign key (feature_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
-  type_id bigint NOT NULL,
-  foreign key (type_id) references cvterm (cvterm_id) on delete cascade INITIALLY DEFERRED,
-  value text,
-  rank integer DEFAULT 0 NOT NULL,
-  CONSTRAINT featureprop_c1 UNIQUE (feature_id,type_id,rank)
-);
-CREATE INDEX featureprop_idx1 ON featureprop (feature_id);
-CREATE INDEX featureprop_idx2 ON featureprop (type_id);
-
-COMMENT ON TABLE featureprop IS 'A feature can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible.';

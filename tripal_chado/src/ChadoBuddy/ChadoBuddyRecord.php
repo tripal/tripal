@@ -28,8 +28,10 @@ class ChadoBuddyRecord {
   protected string $schema_name;
 
   /**
-   * An associative array where the keys are chado table column
-   * names and the values are chado table record values.
+   * An associative array where the keys are chado table
+   * +dot+column name. The values are chado table record values.
+   * e.g. ['cvterm.name' => 'DNA']
+   *
    * @var array
    */
   protected array $values;
@@ -96,7 +98,7 @@ class ChadoBuddyRecord {
    *   The value to be stored.
    */
   public function setValue(string $key, $value) {
-    $this->value[$key] = $value;
+    $this->values[$key] = $value;
   }
 
   /**
@@ -126,7 +128,7 @@ class ChadoBuddyRecord {
    *   The value corresponding to the key, or NULL if key is absent.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   When the specified key is not present and strict is set to TRUE.
+   *   When the specified key is not present and strict is set to TRUE (default).
    */
   public function getValue(string $key, array $options = []) {
     $strict = $options['strict'] ?? TRUE;
