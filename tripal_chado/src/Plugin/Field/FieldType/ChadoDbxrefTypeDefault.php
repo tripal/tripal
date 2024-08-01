@@ -90,22 +90,22 @@ class ChadoDbxrefTypeDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
-    $db_term = $mapping->getColumnTermId($object_table, 'db_id');
-    $accession_term = $mapping->getColumnTermId($object_table, 'accession');
+    $db_term = $mapping->getColumnTermId($object_table, 'db_id') ?: 'ERO:0001716';
+    $accession_term = $mapping->getColumnTermId($object_table, 'accession') ?: 'data:2091';
     $accession_len = $object_schema_def['fields']['accession']['size'];
-    $version_term = $mapping->getColumnTermId($object_table, 'version');
+    $version_term = $mapping->getColumnTermId($object_table, 'version') ?: 'IAO:0000129';
     $version_len = $object_schema_def['fields']['version']['size'];
-    $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
+    $description_term = $mapping->getColumnTermId($object_table, 'description') ?: 'schema:description';  // text
 
     // Columns from linked tables
     $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
-    $db_name_term = $mapping->getColumnTermId('db', 'name');
+    $db_name_term = $mapping->getColumnTermId('db', 'name') ?: 'ERO:0001716';
     $db_name_len = $db_schema_def['fields']['name']['size'];
-    $db_description_term = $mapping->getColumnTermId('db', 'description');
+    $db_description_term = $mapping->getColumnTermId('db', 'description') ?: 'schema:description';
     $db_description_len = $db_schema_def['fields']['description']['size'];
-    $db_urlprefix_term = $mapping->getColumnTermId('db', 'urlprefix');
+    $db_urlprefix_term = $mapping->getColumnTermId('db', 'urlprefix') ?: 'schema:ItemPage';
     $db_urlprefix_len = $db_schema_def['fields']['urlprefix']['size'];
-    $db_url_term = $mapping->getColumnTermId('db', 'url');
+    $db_url_term = $mapping->getColumnTermId('db', 'url') ?: 'schema:url';
     $db_url_len = $db_schema_def['fields']['url']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
@@ -117,15 +117,15 @@ class ChadoDbxrefTypeDefault extends ChadoFieldItemBase {
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col);
-      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column);
+      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col) ?: self::$record_id_term;
+      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column) ?: self::$record_id_term;
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
-          $term = $mapping->getColumnTermId($linker_table, $column);
+          $term = $mapping->getColumnTermId($linker_table, $column) ?: 'NCIT:C25712';
           if ($term) {
             $extra_linker_columns[$column] = $term;
           }
@@ -133,7 +133,7 @@ class ChadoDbxrefTypeDefault extends ChadoFieldItemBase {
       }
     }
     else {
-      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column);
+      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column) ?: self::$record_id_term;
     }
 
     $properties = [];
