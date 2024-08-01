@@ -2,7 +2,12 @@
 
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
+use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
@@ -15,12 +20,58 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
  *   description = @Translation("Provides helper methods for managing chado cvs and cvterms.")
  * )
  */
-class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
+class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements
+  ChadoBuddyInterface
+  ,
+  ContainerFactoryPluginInterface
+  {
+
+  /**
+   * Used to store the manager so we can access the Dbxref buddy
+   */
+  protected object $buddy_manager;
 
   /**
    * Cache the dbxref instance here
    */
   protected object $dbxref_instance;
+
+ /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * We are injecting an additional dependency here, the
+   * ChadoBuddyPluginManager, so that this buddy can have
+   * access to the Dbxref buddy.
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static function
+   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
+   * this method is used to determine the parameters to pass to the contructor.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('tripal_chado.database'),
+      $container->get('tripal_chado.chado_buddy')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition,
+                              ChadoConnection $connection, ChadoBuddyPluginManager $buddy_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
+    $this->buddy_manager = $buddy_manager;
+  }
 
   /**
    * Retrieves a controlled vocabulary.
@@ -618,17 +669,18 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase {
   /**
    * A helper function to add or update a dbxref for a cvterm, this will filter
    * out extra non-applicable fields that the Cvterm function here may have.
-   * @todo inject dependency
    */
   protected function upsertDbxref(array $values, array $conditions, array $options = []) {
+    // Use the buddy manager dependency to create a Dbxref buddy instance
     if (!isset($this->dbxref_instance)) {
-      $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
-      $this->dbxref_instance = $buddy_service->createInstance('chado_dbxref_buddy', []);
+      $this->dbxref_instance = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     }
 
     // Remove fields not valid for the dbxref table
     $dbxref_values = $this->subsetInput($values, ['db', 'dbxref']);
     $dbxref_conditions = $this->subsetInput($conditions, ['db', 'dbxref']);
+
+    // Call the Dbxref buddy to perform the upsert
     $record = $this->dbxref_instance->upsertDbxref($dbxref_values, $dbxref_conditions, $options);
     return $record;
   }

@@ -3,6 +3,8 @@
 namespace Drupal\tripal_chado\ChadoBuddy;
 
 use Drupal\Component\Plugin\PluginBase;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
@@ -11,7 +13,7 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 /**
  * Base class for chado_buddy plugins.
  */
-abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInterface {
+abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
   /**
    * Provides the TripalDBX connection to chado that this ChadoBuddy should act upon.
@@ -19,6 +21,29 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *
    */
   public ChadoConnection $connection;
+
+ /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static function
+   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
+   * this method is used to determine the parameters to pass to the contructor.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('tripal_chado.database')
+    );
+  }
 
   /**
    * {@inheritdoc}
