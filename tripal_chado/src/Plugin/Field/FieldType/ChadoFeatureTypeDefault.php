@@ -95,33 +95,33 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
-    $name_term = $mapping->getColumnTermId($object_table, 'name');
+    $name_term = $mapping->getColumnTermId($object_table, 'name') ?: 'schema:name';
     $name_len = $object_schema_def['fields']['name']['size'];
-    $uniquename_term = $mapping->getColumnTermId($object_table, 'uniquename'); // text
+    $uniquename_term = $mapping->getColumnTermId($object_table, 'uniquename') ?: 'data:0842'; // text
     // residues is not implemented in this field since it can be millions of characters long
-    $seqlen_term = $mapping->getColumnTermId($object_table, 'seqlen');
-    $md5checksum_term = $mapping->getColumnTermId($object_table, 'md5checksum');
+    $seqlen_term = $mapping->getColumnTermId($object_table, 'seqlen') ?: 'data:1249';
+    $md5checksum_term = $mapping->getColumnTermId($object_table, 'md5checksum') ?: 'data:2190';
     $md5checksum_len = $object_schema_def['fields']['md5checksum']['size'];
-    $is_analysis_term = $mapping->getColumnTermId($object_table, 'is_analysis'); // boolean
-    $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete'); // boolean
+    $is_analysis_term = $mapping->getColumnTermId($object_table, 'is_analysis') ?: 'local:is_analysis'; // boolean
+    $is_obsolete_term = $mapping->getColumnTermId($object_table, 'is_obsolete') ?: 'local:is_obsolete'; // boolean
     // @todo timeaccessioned, timelastmodified not yet implemented
 
     // Columns from linked tables
-    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
-    $db_term = $mapping->getColumnTermId('db', 'name');
+    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession') ?: 'data:2091';
+    $db_term = $mapping->getColumnTermId('db', 'name') ?: 'ERO:0001716';
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $type_term = $mapping->getColumnTermId('cvterm', 'name') ?: 'schema:additionalType';
     $type_len = $cvterm_schema_def['fields']['name']['size'];
     $organism_schema_def = $schema->getTableDef('organism', ['format' => 'Drupal']);
-    $genus_term = $mapping->getColumnTermId('organism', 'genus');
+    $genus_term = $mapping->getColumnTermId('organism', 'genus') ?: 'TAXRANK:0000005';
     $genus_len = $organism_schema_def['fields']['genus']['size'];
-    $species_term = $mapping->getColumnTermId('organism', 'species');
+    $species_term = $mapping->getColumnTermId('organism', 'species') ?: 'TAXRANK:0000006';
     $species_len = $organism_schema_def['fields']['species']['size'];
-    $infraspecific_name_term = $mapping->getColumnTermId('organism', 'infraspecific_name');
+    $infraspecific_name_term = $mapping->getColumnTermId('organism', 'infraspecific_name') ?: 'TAXRANK:0000045';
     $infraspecific_name_len = $organism_schema_def['fields']['infraspecific_name']['size'];
-    $abbreviation_term = $mapping->getColumnTermId('organism', 'abbreviation');
+    $abbreviation_term = $mapping->getColumnTermId('organism', 'abbreviation') ?: 'local:abbreviation';
     $abbreviation_len = $organism_schema_def['fields']['abbreviation']['size'];
-    $common_name_term = $mapping->getColumnTermId('organism', 'common_name');
+    $common_name_term = $mapping->getColumnTermId('organism', 'common_name') ?: 'TAXRANK:0000045';
     $common_name_len = $organism_schema_def['fields']['common_name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
@@ -133,15 +133,15 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col);
-      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column);
+      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col) ?: self::$record_id_term;
+      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column) ?: self::$record_id_term;
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
-          $term = $mapping->getColumnTermId($linker_table, $column);
+          $term = $mapping->getColumnTermId($linker_table, $column) ?: 'NCIT:C25712';
           if ($term) {
             $extra_linker_columns[$column] = $term;
           }
@@ -149,7 +149,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       }
     }
     else {
-      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column);
+      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column) ?: self::$record_id_term;
     }
 
     $properties = [];
