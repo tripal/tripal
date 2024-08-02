@@ -102,9 +102,11 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
 
     // TEST: We should be able to insert a property record even if the cvterm doesn't exist.
     // This tests a use case for an importer, both term and dbxref are automatically created.
+    // This needs the opt-in flag 'create_cvterm'
     $chado_buddy_records = $instance->insertProperty('project', 1, ['projectprop.value' => 'prop005',
                                                      'db.name' => 'local', 'cv.name' => 'local',
-                                                     'cvterm.name' => 'name005', 'dbxref.accession' => 'acc005'], []);
+                                                     'cvterm.name' => 'name005', 'dbxref.accession' => 'acc005'],
+                                                     ['create_cvterm' => TRUE]);
     $this->assertIsObject($chado_buddy_records, 'We did not insert a new property+cvterm "prop005"');
     $values = $chado_buddy_records->getValues();
     $base_table = $chado_buddy_records->getBaseTable();
