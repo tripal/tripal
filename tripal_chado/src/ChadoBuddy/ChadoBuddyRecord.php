@@ -15,8 +15,11 @@ class ChadoBuddyRecord {
   /**
    * The base chado table that this record was retrieved from.
    *
-   * This is the table that would be the FROM in the query rather then
-   * any tables included via joins.
+   * In this context, the base table is the core table for this buddy.
+   * For example, the base table would be cvterm for the CvtermBuddy.
+   * A more complex example is for the PropertyBuddy, where the
+   * base table is feature for a property buddy adding properties
+   * to the featureprop table.
    * @var string
    */
   protected string $base_table;
