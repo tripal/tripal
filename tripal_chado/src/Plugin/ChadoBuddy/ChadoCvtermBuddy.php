@@ -297,7 +297,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
    * @param $options (Optional)
-   *   None supported yet. Here for consistency.
+   *     - create_dbxref - set to FALSE (default TRUE) if you do not
+   *         want to automatically create a dbxref if one does not
+   *         already exist.
    *
    * @return ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
@@ -326,11 +328,17 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements
       }
     }
 
-    // Insert a new dbxref if an existing one was not specified.
+    // Insert a new dbxref if an existing one was not specified, unless not desired.
     if (!array_key_exists('cvterm.dbxref_id', $values) or !$values['cvterm.dbxref_id']) {
       if (!array_key_exists('dbxref.dbxref_id', $values) or !$values['dbxref.dbxref_id']) {
-        $dbxref_record = $this->upsertDbxref($values, $values, $options);
-        $values['cvterm.dbxref_id'] = $dbxref_record->getValue('dbxref.dbxref_id');
+        if (array_key_exists('create_dbxref', $options) and !$options['create_dbxref']) {
+          throw new ChadoBuddyException('ChadoBuddy insertCvterm error, dbxref.dbxref_id was'
+                                       . ' not specified and create_dbxref is set to FALSE');
+        }
+        else {
+          $dbxref_record = $this->upsertDbxref($values, $values, $options);
+          $values['cvterm.dbxref_id'] = $dbxref_record->getValue('dbxref.dbxref_id');
+        }
       }
       else {
         $values['cvterm.dbxref_id'] = $values['dbxref.dbxref_id'];
