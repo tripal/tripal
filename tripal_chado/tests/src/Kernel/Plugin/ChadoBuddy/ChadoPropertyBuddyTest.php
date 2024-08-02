@@ -99,5 +99,27 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
     $num_deleted = $instance->deleteProperty('project', 1, ['projectprop.value' => 'prop002'], []);
     $this->assertTrue(is_numeric($num_deleted), 'We did not retrieve an integer from deleteProperty');
     $this->assertEquals(1, $num_deleted, "We did not delete exactly one property record \"prop002\"");
+
+    // TEST: We should be able to insert a property record even if the cvterm doesn't exist.
+    // This tests a use case for an importer, both term and dbxref are automatically created.
+    $chado_buddy_records = $instance->insertProperty('project', 1, ['projectprop.value' => 'prop005',
+                                                     'db.name' => 'local', 'cv.name' => 'local',
+                                                     'cvterm.name' => 'name005', 'dbxref.accession' => 'acc005'], []);
+    $this->assertIsObject($chado_buddy_records, 'We did not insert a new property+cvterm "prop005"');
+    $values = $chado_buddy_records->getValues();
+    $base_table = $chado_buddy_records->getBaseTable();
+    $schema_name = $chado_buddy_records->getSchemaName();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the new property "prop005"');
+    $this->assertEquals(28, count($values), 'The values array is of unexpected size for the new property "prop005"');
+    $pkey_id = $chado_buddy_records->getValue('projectprop.projectprop_id');
+    $this->assertTrue(is_numeric($pkey_id), 'We did not retrieve an integer pkey_id for the new property "prop005"');
+    $this->assertEquals('project', $base_table, 'The base table is incorrect for the new property "prop005"');
+    $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the new property "prop005"');
+    $this->assertEquals('local', $values['db.name'], 'The DB name is incorrect for the new property "prop005"');
+    $this->assertEquals('local', $values['cv.name'], 'The CV name is incorrect for the new property "prop005"');
+    $this->assertEquals('acc005', $values['dbxref.accession'], 'The dbxref accession is incorrect for the new property "prop005"');
+    $this->assertEquals('name005', $values['cvterm.name'], 'The dbxref accession is incorrect for the new property "prop005"');
+
+
   }
 }
