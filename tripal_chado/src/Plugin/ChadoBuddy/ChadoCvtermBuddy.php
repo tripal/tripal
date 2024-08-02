@@ -529,12 +529,16 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements
     $valid_columns = $this->getTableColumns($valid_tables);
     $this->validateInput($values, $valid_columns);
 
-    $existing_record = $this->getCv($values, $options);
+    // For upsert, the query conditions are a subset consisting of
+    // only the columns that are part of a unique constraint.
+    $key_columns = $this->getTableColumns($valid_tables, 'unique');
+    $conditions = $this->makeUpsertConditions($values, $key_columns);
+
+    $existing_record = $this->getCv($conditions, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertCv error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
-      $conditions = ['cv.cv_id' => $existing_record->getValue('cv.cv_id')];
       $new_record = $this->updateCv($values, $conditions, $options);
     }
     else {
@@ -581,12 +585,16 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements
     $valid_columns = $this->getTableColumns($valid_tables);
     $this->validateInput($values, $valid_columns);
 
-    $existing_record = $this->getCvterm($values, $options);
+    // For upsert, the query conditions are a subset consisting of
+    // only the columns that are part of a unique constraint.
+    $key_columns = $this->getTableColumns($valid_tables, 'unique');
+    $conditions = $this->makeUpsertConditions($values, $key_columns);
+
+    $existing_record = $this->getCvterm($conditions, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
-      $conditions = ['cvterm.cvterm_id' => $existing_record->getValue('cvterm.cvterm_id')];
       $new_record = $this->updateCvterm($values, $conditions, $options);
     }
     else {
