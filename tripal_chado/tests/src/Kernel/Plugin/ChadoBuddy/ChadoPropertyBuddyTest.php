@@ -75,17 +75,19 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
     $cvterm_id = $chado_buddy_records->getValue('projectprop.type_id');
     $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer projectprop.type_id for the new property "prop003"');
 
-    // TEST: Upsert should update a Property record that does exist.
-    $chado_buddy_records = $instance->upsertProperty('project', 1, ['projectprop.type_id' => 1, 'projectprop.value' => 'prop003', 'projectprop.rank' => 5], []);
+    // TEST: Upsert should update a Property record that does exist. Value is not in a unique constraint, so will be updated.
+    $chado_buddy_records = $instance->upsertProperty('project', 1, ['projectprop.type_id' => 1, 'projectprop.value' => 'prop004', 'projectprop.rank' => 5], []);
     $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing Property "prop003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted property "prop003"');
     $this->assertEquals(28, count($values), 'The values array is of unexpected size for the upserted property "prop003"');
     $cvterm_id = $chado_buddy_records->getValue('projectprop.projectprop_id');
     $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer pkey_id for the upserted property "prop003"');
+    $value = $chado_buddy_records->getValue('projectprop.value');
+    $this->assertEquals('prop004', $value, 'The value was not updated for the upserted property "prop003"');
 
     // TEST: we should be able to get the two records created above.
-    foreach (['prop002', 'prop003'] as $property_value) {
+    foreach (['prop002', 'prop004'] as $property_value) {
       $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.value' => $property_value], []);
       $this->assertIsObject($chado_buddy_records, "We did not retrieve the existing property \"$property_value\"");
       $values = $chado_buddy_records->getValues();

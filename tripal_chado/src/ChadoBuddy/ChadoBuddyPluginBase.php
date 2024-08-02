@@ -253,8 +253,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     foreach ($user_values as $key => $value) {
       if (!in_array($key, $valid_values)) {
         $calling_function = debug_backtrace()[1]['function'];
-        throw new ChadoBuddyException("ChadoBuddy $calling_function error, the key \"$key\""
-                                      . " is not valid for for this function.");
+        throw new ChadoBuddyException("ChadoBuddy $calling_function error, the key \"$key\" is not"
+          . " valid for this function. Valid keys are: " . implode(', ', $valid_values));
       }
     }
   }

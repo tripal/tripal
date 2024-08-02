@@ -410,12 +410,16 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     $valid_columns = $this->getTableColumns($valid_tables);
     $this->validateInput($values, $valid_columns);
 
-    $existing_record = $this->getProperty($base_table, $record_id, $values, $options);
+    // For upsert, the query conditions are a subset consisting of
+    // only the columns that are part of a unique constraint.
+    $key_columns = $this->getTableColumns($valid_tables, 'unique');
+    $conditions = $this->makeUpsertConditions($values, $key_columns);
+
+    $existing_record = $this->getProperty($base_table, $record_id, $conditions, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertProperty error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
-      $conditions = ["$property_table.$pkey" => $existing_record->getValue("$property_table.$pkey")];
       $new_record = $this->updateProperty($base_table, $record_id, $values, $conditions, $options);
     }
     else {
