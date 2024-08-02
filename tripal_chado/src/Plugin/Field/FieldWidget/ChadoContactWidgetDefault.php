@@ -14,7 +14,8 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   label = @Translation("Chado Contact Widget"),
  *   description = @Translation("The default contact widget."),
  *   field_types = {
- *     "chado_contact_type_default"
+ *     "chado_contact_type_default",
+ *     "chado_contact_by_role_type_default"
  *   }
  * )
  */

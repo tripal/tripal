@@ -105,35 +105,9 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
       $cached_tables = $cache->data;
     }
     foreach ($chado_tables as $chado_table) {
-      if (!array_key_exists($chado_table, $chado_tables)) {
+      if (!array_key_exists($chado_table, $cached_tables)) {
         $cache_updated = TRUE;
-        $cached_tables[$chado_table] = [];
-        $table_schema = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
-        if (!array_key_exists('fields', $table_schema)) {
-          $calling_function = debug_backtrace()[1]['function'];
-          throw new ChadoBuddyException("ChadoBuddy $calling_function error, invalid table"
-                                       . " \"$chado_table\" passed to getTableColumns()");
-        }
-
-        // Obtain a list of the columns that are present in any unique key
-        $in_unique_constraint = [];
-        if (array_key_exists('unique keys', $table_schema)) {
-          foreach ($table_schema['unique keys'] as $key => $constraint_columns) {
-            foreach (explode(', ', $constraint_columns) as $column) {
-              $in_unique_constraint[$column] = TRUE;
-            }
-          }
-        }
-
-        foreach ($table_schema['fields'] as $field_name => $field_schema) {
-          $is_required = ($field_schema['not null']
-                          and !array_key_exists('default', $field_schema)
-                          and $field_schema['type'] != 'serial');
-          $is_in_constraint = $in_unique_constraint[$field_name] ?? FALSE;
-          $cached_tables[$chado_table]['all'][$field_name] = TRUE;
-          $cached_tables[$chado_table]['required'][$field_name] = $is_required;
-          $cached_tables[$chado_table]['unique'][$field_name] = $is_in_constraint;
-        }
+        $this->addTableToCache($chado_table, $cached_tables);
       }
 
       // Lookup all or requested subset of columns, depending on $filter setting
@@ -159,6 +133,44 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     }
 
     return $columns;
+  }
+
+  /**
+   * Add a chado table to the cache, used only by getTableColumns()
+   *
+   * @param string $chado_table
+   *   Name of the table to add
+   * @param array $cached_tables
+   *   Schema information will be inserted in this array
+   */
+  private function addTableToCache(string $chado_table, array &$cached_tables) {
+    $cached_tables[$chado_table] = [];
+    $table_schema = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
+    if (!array_key_exists('fields', $table_schema)) {
+      $calling_function = debug_backtrace()[2]['function'];  // two levels up
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, invalid table"
+                                   . " \"$chado_table\" passed to getTableColumns()");
+    }
+
+    // Obtain a list of the columns that are present in any unique key
+    $in_unique_constraint = [];
+    if (array_key_exists('unique keys', $table_schema)) {
+      foreach ($table_schema['unique keys'] as $key => $constraint_columns) {
+        foreach (explode(', ', $constraint_columns) as $column) {
+          $in_unique_constraint[$column] = TRUE;
+        }
+      }
+    }
+
+    foreach ($table_schema['fields'] as $field_name => $field_schema) {
+      $is_required = ($field_schema['not null']
+                      and !array_key_exists('default', $field_schema)
+                      and $field_schema['type'] != 'serial');
+      $is_in_constraint = $in_unique_constraint[$field_name] ?? FALSE;
+      $cached_tables[$chado_table]['all'][$field_name] = TRUE;
+      $cached_tables[$chado_table]['required'][$field_name] = $is_required;
+      $cached_tables[$chado_table]['unique'][$field_name] = $is_in_constraint;
+    }
   }
 
   /**
