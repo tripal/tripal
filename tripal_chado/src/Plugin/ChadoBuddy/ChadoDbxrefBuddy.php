@@ -296,7 +296,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       unset($values['db.db_id']);
     }
 
-    // If db.name specified, but not db.db_id, then lookup db.db_id
+    // If db.name specified, but not db.db_id or dbxref.db_id, then lookup db.db_id
     if (!array_key_exists('dbxref.db_id', $values) or !$values['dbxref.db_id']) {
       if (!array_key_exists('db.name', $values) or !$values['db.name']) {
         throw new ChadoBuddyException("ChadoBuddy insertDbxref error, neither db.db_id, dbxref.db_id, nor db.name were specified\n");
@@ -495,12 +495,16 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $valid_columns = $this->getTableColumns($valid_tables);
     $this->validateInput($values, $valid_columns);
 
-    $existing_record = $this->getDb($values, $options);
+    // For upsert, the query conditions are a subset consisting of
+    // only the columns that are part of a unique constraint.
+    $key_columns = $this->getTableColumns($valid_tables, 'unique');
+    $conditions = $this->makeUpsertConditions($values, $key_columns);
+
+    $existing_record = $this->getDb($conditions, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertDb error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
-      $conditions = ['db.db_id' => $existing_record->getValue('db.db_id')];
       $new_record = $this->updateDb($values, $conditions, $options);
     }
     else {
@@ -537,12 +541,16 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $valid_columns = $this->getTableColumns($valid_tables);
     $this->validateInput($values, $valid_columns);
 
-    $existing_record = $this->getDbxref($values, $options);
+    // For upsert, the query conditions are a subset consisting of
+    // only the columns that are part of a unique constraint.
+    $key_columns = $this->getTableColumns($valid_tables, 'unique');
+    $conditions = $this->makeUpsertConditions($values, $key_columns);
+
+    $existing_record = $this->getDbxref($conditions, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertDbxref error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
-      $conditions = ['dbxref.dbxref_id' => $existing_record->getValue('dbxref.dbxref_id')];
       $new_record = $this->updateDbxref($values, $conditions, $options);
     }
     else {

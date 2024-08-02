@@ -67,15 +67,17 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new CV "newCv003"');
 
     // TEST: Upsert should update a CV record that does exist.
-    $chado_buddy_records = $instance->upsertCv(['cv.name' => 'newCv003', 'cv.definition' => 'def003']);
+    // Conditions should not include definition
+    $chado_buddy_records = $instance->upsertCv(['cv.name' => 'newCv003', 'cv.definition' => 'def004']);
     $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing CV "newCv003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted CV "newCv003"');
     $this->assertEquals(3, count($values), 'The values array is of unexpected size for the upserted CV "newCv003"');
     $cv_id = $chado_buddy_records->getValue('cv.cv_id');
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the upserted CV "newCv003"');
+    $this->assertEquals('def004', $values['cv.definition'], 'The CV definition was not updated for the upserted CV "newDb003"');
 
-    // TEST: we should be able to get the two records created above.
+    // TEST: we should be able to get the two records created above. Will also catch if upsert did an insert instead of update.
     foreach (['newCv002', 'newCv003'] as $cv_name) {
       $chado_buddy_records = $instance->getCv(['cv.name' => $cv_name]);
       $this->assertIsObject($chado_buddy_records, "We did not retrieve the existing CV \"$cv_name\"");
@@ -137,17 +139,24 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(20, count($values), 'The values array is of unexpected size for the new Cvterm "newCvterm003"');
     $cvterm_id = $chado_buddy_records->getValue('cvterm.cvterm_id');
     $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the new Cvterm "newCvterm003"');
+    $this->assertEquals(0, $values['cvterm.is_obsolete'], 'The Cvterm is_obsolete value was not set to its default value for the new Cvterm "newCvterm003"');
 
     // TEST: Upsert should update a Cvterm record that does exist.
-    $chado_buddy_records = $instance->upsertCvterm(['cvterm.name' => 'newCvterm003', 'cvterm.definition' => 'def003']);
+    // Conditions should not include definition or is_relationshiptype.
+    // Note that is_obsolete is part of a unique constraint and is an integer, as is is_relationshiptype
+    $chado_buddy_records = $instance->upsertCvterm(['cvterm.name' => 'newCvterm003', 'cvterm.definition' => 'def004',
+                                                    'cvterm.is_obsolete' => 0, 'cvterm.is_relationshiptype' => 1]);
     $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing Cvterm "newCvterm003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted Cvterm "newCvterm003"');
     $this->assertEquals(20, count($values), 'The values array is of unexpected size for the upserted Cvterm "newCvterm003"');
     $cvterm_id = $chado_buddy_records->getValue('cvterm.cvterm_id');
     $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the upserted Cvterm "newCvterm003"');
+    $this->assertEquals('def004', $values['cvterm.definition'], 'The Cvterm definition was not updated for the upserted Cvterm "newCvterm003"');
+    $this->assertEquals(0, $values['cvterm.is_obsolete'], 'The Cvterm is_obsolete value was incorrectly updated for the upserted Cvterm "newCvterm003"');
+    $this->assertEquals(1, $values['cvterm.is_relationshiptype'], 'The Cvterm is_relationshiptype value was not updated for the upserted Cvterm "newCvterm003"');
 
-    // TEST: we should be able to get the two records created above.
+    // TEST: we should be able to get the two records created above. Will also catch if upsert did an insert instead of update.
     foreach (['newCvterm002', 'newCvterm003'] as $cvterm_name) {
       $chado_buddy_records = $instance->getCvterm(['cvterm.name' => $cvterm_name]);
       $this->assertIsObject($chado_buddy_records, "We did not retrieve the existing Cvterm \"$cvterm_name\"");

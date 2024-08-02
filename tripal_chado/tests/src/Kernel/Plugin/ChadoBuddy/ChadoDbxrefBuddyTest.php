@@ -70,15 +70,20 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     $this->assertTrue(is_numeric($db_id), 'We did not retrieve an integer db_id for the new DB "newDb003"');
 
     // TEST: Upsert should update a record that does exist.
-    $chado_buddy_records = $instance->upsertDb(['db.name' => 'newDb003', 'db.description' => 'desc003']);
+    // Conditions should not include description, url, or urlprefix
+    $chado_buddy_records = $instance->upsertDb(['db.name' => 'newDb003', 'db.description' => 'desc004',
+                                                'db.urlprefix' => 'pre004', 'db.url' => 'url004']);
     $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing DB "newDb003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted DB "newDb003"');
     $this->assertEquals(5, count($values), 'The values array is of unexpected size for the upserted DB "newDb003"');
     $db_id = $chado_buddy_records->getValue('db.db_id');
     $this->assertTrue(is_numeric($db_id), 'We did not retrieve an integer db.db_id for the upserted DB "newDb003"');
+    $this->assertEquals('desc004', $values['db.description'], 'The DB description was not updated for the upserted DB "newDb003"');
+    $this->assertEquals('pre004', $values['db.urlprefix'], 'The DB urlprefix was not updated for the upserted DB "newDb003"');
+    $this->assertEquals('url004', $values['db.url'], 'The DB url was not updated for the upserted DB "newDb003"');
 
-    // TEST: we should be able to get the two records created above.
+    // TEST: we should be able to get the two records created above. Will also catch if upsert did an insert instead of update.
     foreach (['newDb002', 'newDb003'] as $db_name) {
       $chado_buddy_records = $instance->getDb(['db.name' => $db_name]);
       $this->assertIsObject($chado_buddy_records, "We did not retrieve the existing DB \"$db_name\"");
@@ -138,13 +143,16 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     $this->assertTrue(is_numeric($dbxref_id), 'We did not retrieve an integer dbxref_id for the new Dbxref "newDbxref003"');
 
     // TEST: Upsert should update a Dbxref record that does exist.
-    $chado_buddy_records = $instance->upsertDbxref(['dbxref.accession' => 'newDbxref003', 'db.db_id' => $db_id]);
+    // Conditions should not include description, but would include version.
+    $chado_buddy_records = $instance->upsertDbxref(['dbxref.accession' => 'newDbxref003', 'dbxref.dbxref_id' => $dbxref_id,
+                                                    'dbxref.description' => 'desc004']);
     $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing Dbxref "newDbxref003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted Dbxref "newDbxref003"');
     $this->assertEquals(10, count($values), 'The values array is of unexpected size for the upserted Dbxref "newDbxref003"');
     $dbxref_id = $chado_buddy_records->getValue('dbxref.dbxref_id');
     $this->assertTrue(is_numeric($dbxref_id), 'We did not retrieve an integer dbxref_id for the upserted Dbxref "newDbxref003"');
+    $this->assertEquals('desc004', $values['dbxref.description'], 'The Dbxref description was not updated for the upserted Dbxref "newDbxref003"');
 
     // TEST: we should be able to get the two records created above.
     foreach (['newDbxref002', 'newDbxref003'] as $dbxref_accession) {
