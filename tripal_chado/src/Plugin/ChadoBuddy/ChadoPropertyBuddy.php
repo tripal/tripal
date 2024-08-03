@@ -355,12 +355,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       }
       // Call the Cvterm buddy to perform the insert.
       $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm']);
-      $cvterm_record = $this->cvterm_instance->insertCvterm($cvterm_values, $options);
+      $cvterm_record = $this->cvterm_instance->upsertCvterm($cvterm_values, $options);
       $type_id = $cvterm_record->getValue('cvterm.cvterm_id');
       $values["$property_table.type_id"] = $type_id;
     }
     else {
-      throw new ChadoBuddyException('ChadoBuddy insertProperty error, neither cvterm nor type_id were specified');
+      throw new ChadoBuddyException('ChadoBuddy insertProperty error, neither cvterm nor type_id'
+                                   . ' were specified and create_cvterm option is not enabled');
     }
 
     // Insert the property record
