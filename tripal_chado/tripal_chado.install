@@ -541,7 +541,7 @@ function tripal_chado_update_10406() {
     $cvterm_buddy->upsertCvterm(['cvterm.name' => 'lineageex',
                                  'cv.name' => 'local',
                                  'dbxref.accession' => 'lineageex',
-                                 'db.name' = 'local'], []);
+                                 'db.name' => 'local'], []);
 
     $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
     ChadoTermMapping::refreshMapping($id);
