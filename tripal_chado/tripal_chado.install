@@ -531,28 +531,17 @@ function tripal_chado_update_10405() {
  * Updates missing mapping of CV terms to some chado table columns.
  */
 function tripal_chado_update_10406() {
-  // Same as former 10402 but adding a new cvterm local:lineageex for PR#TBD
+  // Same as former 10402 but adding a new cvterm local:lineageex for PR#1927
   try {
     $messenger = \Drupal::messenger();
 
-    // create the local:lineageex term for PR#TBD if it does not exist
-    $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idspace_obj = $manager->loadCollection('local');
-    if (!is_object($idspace_obj)) {
-      throw new UpdateException('Could not load local idspace');
-    }
-    $term = $idspace_obj->getTerm('lineageex');
-    if (!$term) {
-      $messenger->addMessage('Adding lineageex term');
-      $term = new TripalTerm([
-        'idSpace' => 'local',
-        'accession' => 'lineageex',
-        'vocabulary' => 'local',
-        'name' => 'lineageex',
-        'definition' => 'NCBI Extended Taxonomic Lineage',
-      ]);
-      $idspace_obj->saveTerm($term);
-    }
+    // create the local:lineageex term for PR#1927 if it does not exist
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $cvterm_buddy->upsertCvterm(['cvterm.name' => 'lineageex',
+                                 'cv.name' => 'local',
+                                 'dbxref.accession' => 'lineageex',
+                                 'db.name' = 'local'], []);
 
     $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
     ChadoTermMapping::refreshMapping($id);
