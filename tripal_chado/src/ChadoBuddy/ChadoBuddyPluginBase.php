@@ -336,8 +336,10 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
 
   /**
    * Used to return a count of how many buddy records were returned
-   * from a buddy function. We use this because the result can be
-   * FALSE, a single ChadoBuddyRecord, or an array of ChadoBuddyRecords.
+   * from a buddy function. We provide helper function this because
+   * the result can be FALSE, a single ChadoBuddyRecord, or an array
+   * of ChadoBuddyRecords. We don't accept an empty array, because
+   * no buddy function will ever return that.
    *
    * @param mixed $buddies
    *   Boolean, object, or array as described above.
@@ -348,7 +350,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If some other type of value is passed than the cases described above.
    */
-  protected function countBuddies(mixed $buddies) {
+  public function countBuddies(mixed $buddies) {
     $count = NULL;
     if ($buddies === FALSE) {
       $count = 0;
@@ -356,7 +358,6 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     elseif (is_object($buddies) and ($buddies instanceof ChadoBuddyRecord)) {
       $count = 1;
     }
-    // We don't support an empty array because no buddy function will return that.
     elseif (is_array($buddies) and (count($buddies) >= 1) and ($buddies[0] instanceof ChadoBuddyRecord)) {
       $count = count($buddies);
     }
