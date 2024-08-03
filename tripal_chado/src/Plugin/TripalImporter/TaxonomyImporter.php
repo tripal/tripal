@@ -9,6 +9,11 @@ use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 
 /**
  * Taxonomy Importer implementation of the TripalImporterBase.
@@ -26,7 +31,7 @@ use Drupal\Core\Url;
  *    file_required = FALSE,
  *  )
  */
-class TaxonomyImporter extends ChadoImporterBase {
+class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
   /**
    * Holds the list of all organisms currently in Chado. This list
@@ -39,6 +44,60 @@ class TaxonomyImporter extends ChadoImporterBase {
    * ID of the NCBITaxon database in Chado
    */
   protected $ncbitaxon_db_id = NULL;
+
+  /**
+   * Used to store the manager so we can access the Cvterm buddy
+   */
+  protected object $buddy_manager;
+
+  /**
+   * Cache the dbxref buddy instance here
+   */
+  protected object $dbxref_buddy;
+
+  /**
+   * Cache the property buddy instance here
+   */
+  protected object $property_buddy;
+
+  /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * We are injecting an additional dependency here, the
+   * ChadoBuddyPluginManager, so that this buddy can have
+   * access to the Dbxref buddy.
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static function
+   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
+   * this method is used to determine the parameters to pass to the contructor.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('tripal_chado.database'),
+      $container->get('tripal_chado.chado_buddy')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition,
+                              ChadoConnection $connection, ChadoBuddyPluginManager $buddy_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
+    $this->buddy_manager = $buddy_manager;
+    $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
+    $this->property_buddy = $this->buddy_manager->createInstance('chado_property_buddy', []);
+  }
 
   /**
    * @see TripalImporter::form()
@@ -669,34 +728,6 @@ class TaxonomyImporter extends ChadoImporterBase {
   }
 
   /**
-   * Retrieves a property for a given organism.
-   *
-   * @param $organism_id
-   *   The organism ID to which the property is added.
-   * @param $term_name
-   *   The name of the organism property term.  This term must be
-   *   present in the 'local' cv.
-   * @param $rank
-   *   The order for this property. The first instance of this term for
-   *   this organism should be zero. Defaults to zero.
-   *
-   * @return
-   *   The property object.
-   */
-  protected function getProperty($organism_id, $term_name, $rank = 0) {
-    $record = [
-      'table' => 'organism',
-      'id' => $organism_id,
-    ];
-    $property = [
-      'type_name' => $term_name,
-      'cv_name' => 'local',
-      'rank' => $rank,
-    ];
-    return chado_get_property($record, $property, $this->chado_schema_main);
-  }
-
-  /**
    * Adds a property to an organism node.
    *
    * @param $organism_id
@@ -715,25 +746,19 @@ class TaxonomyImporter extends ChadoImporterBase {
       return;
     }
 
-    // @to-do This message can be removed when Chado Buddy method is available,
-    // it is just here because adding properties is so incredibly slow right now.
-    $this->logger->notice('Adding property @property to organism_id @organism_id',
-                          ['@property' => $term_name, '@organism_id' => $organism_id]);
-    $record = [
-      'table' => 'organism',
-      'id' => $organism_id,
+    $values = [
+      'db.name' => 'local',
+      'dbxref.accession' => $term_name,
+      'cv.name' => 'local',
+      'cvterm.name' => $term_name,
+      'organismprop.value' => $value,
+      'organismprop.rank' => $rank,
     ];
-    $property = [
-      'type_name' => $term_name,
-      'cv_name' => 'local',
-      'value' => $value,
-    ];
-
-    // Delete all properties of this type if the rank is zero.
-    if ($rank == 0) {
-      chado_delete_property($record, $property, $this->chado_schema_main);
-    }
-    chado_insert_property($record, $property, [], $this->chado_schema_main);
+    $options = ['create_cvterm' => TRUE];
+    // n.b. in Tripal 3 there was code to first delete all properties of
+    // this type if the rank is zero. With an upsert option, this should
+    // no longer be necessary, but noting it here because you never know.
+    $record = $this->property_buddy->upsertProperty('organism', $organism_id, $values, $options);
   }
 
   /**
@@ -742,35 +767,18 @@ class TaxonomyImporter extends ChadoImporterBase {
    * @param unknown $taxId
    */
   protected function addDbxref($organism_id, $taxId) {
-    $chado = $this->getChadoConnection();
-
-    // Lookup the NCBITaxon db_id only once the first time this is called
-    if (!$this->ncbitaxon_db_id) {
-      $query = $chado->select('1:db', 'd');
-      $query->fields('d', ['db_id']);
-      $query->condition('d.name', 'NCBITaxon', '=');
-      $results = $query->execute();
-      $this->ncbitaxon_db_id = $results->fetchObject()->db_id;
-    }
 
     $values = [
-      'db_id' => $this->ncbitaxon_db_id,
-      'accession' => $taxId,
+      'db.name' => 'NCBITaxon',
+      'dbxref.accession' => $taxId,
     ];
-    $dbxref = chado_insert_dbxref($values, [], $this->chado_schema_main);
-    $dbxref_id = $dbxref->dbxref_id;
-
-    $values = [
-      'dbxref_id' => $dbxref_id,
-      'organism_id' => $organism_id,
+    // Pass primary key name for better efficiency so that the
+    // buddy does not need to look it up.
+    $options = [
+      'pkey' => 'organism_id',
     ];
-
-    if (!chado_select_record('organism_dbxref', ['organism_dbxref_id'], $values, NULL, $this->chado_schema_main)) {
-      // chado_insert_record('organism_dbxref', $values);
-      $chado->insert('1:organism_dbxref')
-      ->fields($values)
-      ->execute();
-    }
+    $dbxref_record = $this->dbxref_buddy->upsertDbxref($values, []);
+    $success = $this->dbxref_buddy->associateDbxref('organism', $organism_id, $dbxref_record, $options);
   }
 
   /**
