@@ -42,7 +42,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
 
     // TEST: We should be able to insert a DB record if it doesn't exist.
     $chado_buddy_records = $instance->insertDb(['db.name' => 'newDb001', 'db.description' => 'desc001']);
-    $this->assertIsObject($chado_buddy_records, 'We did not insert a new DB "newDb001"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not insert a new DB "newDb001"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the new DB "newDb001"');
     $this->assertEquals(5, count($values), 'The values array is of unexpected size for the new DB "newDb001"');
@@ -52,7 +53,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     // TEST: We should be able to update an existing DB record.
     $chado_buddy_records = $instance->updateDb(['db.name' => 'newDb002', 'db.description' => 'desc002', 'db.urlprefix' => 'https://tripal.org/{db}/{accession}'],
                                                ['db.name' => 'newDb001']);
-    $this->assertIsObject($chado_buddy_records, 'We did not update an existing DB "newDb001"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not update an existing DB "newDb001"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the updated DB "newDb001"');
     $this->assertEquals('newDb002', $values['db.name'], 'The DB name was not updated for DB "newDb001"');
@@ -62,7 +64,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
 
     // TEST: Upsert should insert a record that doesn't exist.
     $chado_buddy_records = $instance->upsertDb(['db.name' => 'newDb003', 'db.description' => 'desc003']);
-    $this->assertIsObject($chado_buddy_records, 'We did not upsert a new DB "newDb003"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not upsert a new DB "newDb003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the new DB "newDb003"');
     $this->assertEquals(5, count($values), 'The values array is of unexpected size for the new DB "newDb003"');
@@ -73,7 +76,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     // Conditions should not include description, url, or urlprefix
     $chado_buddy_records = $instance->upsertDb(['db.name' => 'newDb003', 'db.description' => 'desc004',
                                                 'db.urlprefix' => 'pre004', 'db.url' => 'url004']);
-    $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing DB "newDb003"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not upsert an existing DB "newDb003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted DB "newDb003"');
     $this->assertEquals(5, count($values), 'The values array is of unexpected size for the upserted DB "newDb003"');
@@ -86,7 +90,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     // TEST: we should be able to get the two records created above. Will also catch if upsert did an insert instead of update.
     foreach (['newDb002', 'newDb003'] as $db_name) {
       $chado_buddy_records = $instance->getDb(['db.name' => $db_name]);
-      $this->assertIsObject($chado_buddy_records, "We did not retrieve the existing DB \"$db_name\"");
+      $num = $instance->countBuddies($chado_buddy_records);
+      $this->assertEquals(1, $num, "We did not retrieve the existing DB \"$db_name\"");
       $values = $chado_buddy_records->getValues();
       $base_table = $chado_buddy_records->getBaseTable();
       $schema_name = $chado_buddy_records->getSchemaName();
@@ -117,7 +122,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
 
     // TEST: We should be able to insert a Dbxref record if it doesn't exist.
     $chado_buddy_records = $instance->insertDbxref(['dbxref.accession' => 'newDbxref001', 'db.name' => 'local']);
-    $this->assertIsObject($chado_buddy_records, 'We did not insert a new Dbxref "newDbxref001"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not insert a new Dbxref "newDbxref001"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the new Dbxref "newDbxref001"');
     $this->assertEquals(10, count($values), 'The values array is of unexpected size for the new Dbxref "newDbxref001"');
@@ -128,14 +134,16 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
 
     // TEST: We should be able to update an existing Dbxref record without including db.db_id.
     $chado_buddy_records = $instance->updateDbxref(['dbxref.accession' => 'newDbxref002'], ['dbxref.accession' => 'newDbxref001']);
-    $this->assertIsObject($chado_buddy_records, 'We did not update an existing Dbxref "newDbxref001"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not update an existing Dbxref "newDbxref001"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the updated DB "newDbxref001"');
     $this->assertEquals('newDbxref002', $values['dbxref.accession'], 'The Dbxref accession was not updated for Dbxref "newDbxref001"');
 
     // TEST: Upsert should insert a Dbxref record that doesn't exist.
     $chado_buddy_records = $instance->upsertDbxref(['dbxref.accession' => 'newDbxref003', 'db.name' => 'local']);
-    $this->assertIsObject($chado_buddy_records, 'We did not upsert a new Dbxref "newDbxref003"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not upsert a new Dbxref "newDbxref003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the new Dbxref "newDbxref003"');
     $this->assertEquals(10, count($values), 'The values array is of unexpected size for the new Dbxref "newDbxref003"');
@@ -146,7 +154,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     // Conditions should not include description, but would include version.
     $chado_buddy_records = $instance->upsertDbxref(['dbxref.accession' => 'newDbxref003', 'dbxref.dbxref_id' => $dbxref_id,
                                                     'dbxref.description' => 'desc004']);
-    $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing Dbxref "newDbxref003"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not upsert an existing Dbxref "newDbxref003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted Dbxref "newDbxref003"');
     $this->assertEquals(10, count($values), 'The values array is of unexpected size for the upserted Dbxref "newDbxref003"');
@@ -157,7 +166,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     // TEST: we should be able to get the two records created above.
     foreach (['newDbxref002', 'newDbxref003'] as $dbxref_accession) {
       $chado_buddy_records = $instance->getDbxref(['dbxref.accession' => $dbxref_accession]);
-      $this->assertIsObject($chado_buddy_records, "We did not retrieve the existing Dbxref \"$dbxref_accession\"");
+      $num = $instance->countBuddies($chado_buddy_records);
+      $this->assertEquals(1, $num, "We did not retrieve the existing Dbxref \"$dbxref_accession\"");
       $values = $chado_buddy_records->getValues();
       $schema_name = $chado_buddy_records->getSchemaName();
       $base_table = $chado_buddy_records->getBaseTable();
@@ -181,7 +191,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     $db_buddy_records = $instance->updateDb(['db.urlprefix' => ''], ['db.name' => 'newDb004']);
     $this->assertIsObject($db_buddy_records, "We did not remove the urlprefix");
     $chado_buddy_records = $instance->getDbxref(['dbxref.accession' => 'newDbxref004']);
-    $this->assertIsObject($chado_buddy_records, "We did not retrieve the dbxref \"newDbxref004\"");
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, "We did not retrieve the dbxref \"newDbxref004\"");
     $urlprefix = $chado_buddy_records->getValue('db.urlprefix');
     $this->assertEquals('', $urlprefix, "Removed urlprefix is not an empty string");
     $url = $instance->getDbxrefUrl($chado_buddy_records);
