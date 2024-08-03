@@ -92,14 +92,14 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
     $terms['object_pkey'] = $terms['record_id'];
     //    - name
-    $terms['name'] = $mappingObj->getColumnTermId($object_table, 'name');
+    $terms['name'] = $mappingObj->getColumnTermId($object_table, 'name') ?: 'schema:name';
     $max_lengths['name'] = $object_schema_def['fields']['name']['size'];
     //    - description
-    $terms['description'] = $mappingObj->getColumnTermId($object_table, 'description');
+    $terms['description'] = $mappingObj->getColumnTermId($object_table, 'description') ?: 'schema:description';
     $max_lengths['description'] = $object_schema_def['fields']['description']['size'];
     //    - contact type
     $cvterm_schema_def = $schemaObj->getTableDef('cvterm', ['format' => 'Drupal']);
-    $terms['contact_type'] = $mappingObj->getColumnTermId('cvterm', 'name');
+    $terms['contact_type'] = $mappingObj->getColumnTermId('cvterm', 'name') ?: 'schema:additionalType';
     $max_lengths['contact_type'] = $cvterm_schema_def['fields']['name']['size'];
     // C) LINKING TABLE.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
@@ -109,19 +109,16 @@ class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
     $terms['linker_pkey'] = $terms['record_id'];
     //    - left table foreign key
     $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-    $terms['linker_left'] = $mappingObj->getColumnTermId($linker_table, $linker_left_col);
+    $terms['linker_left'] = $mappingObj->getColumnTermId($linker_table, $linker_left_col) ?: self::$record_id_term;
     //    - right table foreign key
-    $terms['linker_right'] = $mappingObj->getColumnTermId($linker_table, $linker_fkey_column);
+    $terms['linker_right'] = $mappingObj->getColumnTermId($linker_table, $linker_fkey_column) ?: self::$record_id_term;
     //    - linking type
-    $terms['linker_type_id'] = $mappingObj->getColumnTermId($linker_table, 'type_id');
+    $terms['linker_type_id'] = $mappingObj->getColumnTermId($linker_table, 'type_id') ?: 'schema:additionalType';
     if (empty($terms['linker_type_id'])) {
       $terms['linker_type_id'] = $terms['contact_type'];
     }
     //    - rank
-    $terms['linker_rank'] = $mappingObj->getColumnTermId($linker_table, 'rank');
-    if (empty($terms['linker_rank'])) {
-      $terms['linker_rank'] = 'OBCS:0000117';
-    }
+    $terms['linker_rank'] = $mappingObj->getColumnTermId($linker_table, 'rank') ?: 'OBCS:0000117';
 
     // We need to create a table alias for our linker table in order to ensure
     // contact links with other roles are not combined.

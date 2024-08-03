@@ -75,10 +75,10 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-    $link_term = $mapping->getColumnTermId($prop_table, $prop_fk_col);
-    $value_term = $mapping->getColumnTermId($prop_table, 'value');
-    $rank_term = $mapping->getColumnTermId($prop_table, 'rank');
-    $type_id_term = $mapping->getColumnTermId($prop_table, 'type_id');
+    $link_term = $mapping->getColumnTermId($prop_table, $prop_fk_col) ?: self::$record_id_term;
+    $value_term = $mapping->getColumnTermId($prop_table, 'value') ?: 'NCIT:C25712';
+    $rank_term = $mapping->getColumnTermId($prop_table, 'rank') ?: 'OBCS:0000117';
+    $type_id_term = $mapping->getColumnTermId($prop_table, 'type_id') ?: 'schema:additionalType';
 
     // We need to create a table alias for our prop table in order to ensure
     // values of other property types are not combined.
