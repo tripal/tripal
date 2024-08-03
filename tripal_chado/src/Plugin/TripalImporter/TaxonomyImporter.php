@@ -46,17 +46,17 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   protected $ncbitaxon_db_id = NULL;
 
   /**
-   * Used to store the manager so we can access the Cvterm buddy
+   * Used to store the manager so we can create various buddies
    */
   protected object $buddy_manager;
 
   /**
-   * Cache the dbxref buddy instance here
+   * Provide the dbxref buddy instance
    */
   protected object $dbxref_buddy;
 
   /**
-   * Cache the property buddy instance here
+   * Provide the property buddy instance
    */
   protected object $property_buddy;
 
@@ -64,8 +64,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * Implements ContainerFactoryPluginInterface->create().
    *
    * We are injecting an additional dependency here, the
-   * ChadoBuddyPluginManager, so that this buddy can have
-   * access to the Dbxref buddy.
+   * ChadoBuddyPluginManager.
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
    * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
