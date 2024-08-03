@@ -20,19 +20,15 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
  *   description = @Translation("Provides helper methods for managing chado cvs and cvterms.")
  * )
  */
-class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements
-  ChadoBuddyInterface
-  ,
-  ContainerFactoryPluginInterface
-  {
+class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
   /**
-   * Used to store the manager so we can access the Dbxref buddy
+   * Used to store the manager so we can create a buddy
    */
   protected object $buddy_manager;
 
   /**
-   * Cache the dbxref instance here
+   * Provide the dbxref instance
    */
   protected object $dbxref_instance;
 
