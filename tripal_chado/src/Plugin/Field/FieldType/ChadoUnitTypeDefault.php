@@ -70,8 +70,8 @@ class ChadoUnitTypeDefault extends ChadoFieldItemBase {
 
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-    $unittype_id_term = $mapping->getColumnTermId('featuremap', 'unittype_id');
-    $cv_name_term = $mapping->getColumnTermId('cvterm', 'name');
+    $unittype_id_term = $mapping->getColumnTermId('featuremap', 'unittype_id') ?: 'UO:0000000';
+    $cv_name_term = $mapping->getColumnTermId('cvterm', 'name') ?: 'schema:name';
 
     $properties = [];
 
