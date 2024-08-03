@@ -46,7 +46,8 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
 
     // TEST: We should be able to insert a property record if it doesn't exist.
     $chado_buddy_records = $instance->insertProperty('project', 1, ['projectprop.type_id' => 1, 'projectprop.value' => 'prop001'], []);
-    $this->assertIsObject($chado_buddy_records, 'We did not insert a new property "prop001"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not insert a new property "prop001"');
     $values = $chado_buddy_records->getValues();
     $base_table = $chado_buddy_records->getBaseTable();
     $schema_name = $chado_buddy_records->getSchemaName();
@@ -60,7 +61,8 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
     // TEST: We should be able to update an existing property record.
     $chado_buddy_records = $instance->updateProperty('project', 1, ['projectprop.type_id' => 2, 'projectprop.value' => 'prop002'],
                                                      ['projectprop.projectprop_id' => 1], []);
-    $this->assertIsObject($chado_buddy_records, 'We did not update an existing property "prop001"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not update an existing property "prop001"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the updated property "prop001"');
     $this->assertEquals('prop002', $values['projectprop.value'], 'The property value was not updated for property "prop001"');
@@ -68,7 +70,8 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
 
     // TEST: Upsert should insert a Property record that doesn't exist.
     $chado_buddy_records = $instance->upsertProperty('project', 1, ['projectprop.type_id' => 1, 'projectprop.value' => 'prop003', 'projectprop.rank' => 5], []);
-    $this->assertIsObject($chado_buddy_records, 'We did not upsert a new property "prop003"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not upsert a new property "prop003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the new property "prop003"');
     $this->assertEquals(28, count($values), 'The values array is of unexpected size for the new property "prop003"');
@@ -77,7 +80,8 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
 
     // TEST: Upsert should update a Property record that does exist. Value is not in a unique constraint, so will be updated.
     $chado_buddy_records = $instance->upsertProperty('project', 1, ['projectprop.type_id' => 1, 'projectprop.value' => 'prop004', 'projectprop.rank' => 5], []);
-    $this->assertIsObject($chado_buddy_records, 'We did not upsert an existing Property "prop003"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not upsert an existing Property "prop003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted property "prop003"');
     $this->assertEquals(28, count($values), 'The values array is of unexpected size for the upserted property "prop003"');
@@ -89,7 +93,8 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
     // TEST: we should be able to get the two records created above.
     foreach (['prop002', 'prop004'] as $property_value) {
       $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.value' => $property_value], []);
-      $this->assertIsObject($chado_buddy_records, "We did not retrieve the existing property \"$property_value\"");
+      $num = $instance->countBuddies($chado_buddy_records);
+      $this->assertEquals(1, $num, "We did not retrieve the existing property \"$property_value\"");
       $values = $chado_buddy_records->getValues();
       $this->assertIsArray($values, "We did not retrieve an array of values for the existing property \"$property_value\"");
       $this->assertEquals(28, count($values), "The values array is of unexpected size for the existing property \"$property_value\"");
@@ -107,7 +112,8 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
                                                      'db.name' => 'local', 'cv.name' => 'local',
                                                      'cvterm.name' => 'name005', 'dbxref.accession' => 'acc005'],
                                                      ['create_cvterm' => TRUE]);
-    $this->assertIsObject($chado_buddy_records, 'We did not insert a new property+cvterm "prop005"');
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not insert a new property+cvterm "prop005"');
     $values = $chado_buddy_records->getValues();
     $base_table = $chado_buddy_records->getBaseTable();
     $schema_name = $chado_buddy_records->getSchemaName();
