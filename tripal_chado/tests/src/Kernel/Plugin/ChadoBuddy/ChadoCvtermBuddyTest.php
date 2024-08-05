@@ -100,7 +100,8 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(0, $num, "We received case insensitive results for getCv when we should not have");
 
     // TEST: case insensitive override should work
-    $chado_buddy_records = $instance->getCv(['cv.name' => 'NEWcv003'], ['case_insensitive' => TRUE]);
+    $chado_buddy_records = $instance->getCv(['cv.name' => 'NEWcv003'],
+                                            ['case_insensitive' => ['cv.name']]);
     $num = $instance->countBuddies($chado_buddy_records);
     $this->assertEquals(1, $num, "We did not receive case insensitive results for getCv when we should have");
 
@@ -193,7 +194,8 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(0, $num, "We received case insensitive results for getCvterm when we should not have");
 
     // TEST: case insensitive override should work
-    $chado_buddy_records = $instance->getCvterm(['db.name' => 'LOCAL', 'cv.name' => 'Local', 'cvterm.name' => 'NEWCvTerm003'], ['case_insensitive' => TRUE]);
+    $chado_buddy_records = $instance->getCvterm(['db.name' => 'LOCAL', 'cv.name' => 'Local', 'cvterm.name' => 'NEWCvTerm003'],
+                                                ['case_insensitive' => ['db.name', 'cv.name', 'cvterm.name']]);
     $num = $instance->countBuddies($chado_buddy_records);
     $this->assertEquals(1, $num, "We did not receive case insensitive results for getCvterm when we should have");
 
