@@ -245,6 +245,46 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
+   * Adds the conditions to the database query.
+   * Implements case insensitive queries if requested.
+   *
+   * @param object $query
+   *   Associative array where keys are table name+dot+table column.
+   * @param array $conditions
+   *   Associative array of conditions to add to the query.
+   * @param object $options
+   *   Associative array of options as passed to the calling buddy function.
+   *   The option 'case_insensitive' can contain a single key string, or an
+   *   array of multiple keys for which a case insensitive query is desired.
+   *
+   **/
+  protected function addConditions(object &$query, array $conditions, array $options) {
+    // Obtain a list of case insensitive columns, can be empty.
+    $insensitive_columns = [];
+    if (array_key_exists('case_insensitive', $options)) {
+      if (is_array($options['case_insensitive'])) {
+        $insensitive_columns = $options['case_insensitive'];
+      }
+      else {
+        $insensitive_columns[] = $options['case_insensitive'];
+      }
+    }
+
+    // Conditions are not aliased
+    $n = 0;
+    foreach ($conditions as $key => $value) {
+      if (in_array($key, $insensitive_columns)) {
+        $query->where('LOWER('.$key.') = LOWER(:value'.$n.')',
+                      [':value'.$n => $value]);
+        $n++;
+      }
+      else {
+        $query->condition($key, $value, '=');
+      }
+    }
+  }
+
+  /**
    * Used to validate input arrays to various buddy functions.
    *
    * @param array $user_values
