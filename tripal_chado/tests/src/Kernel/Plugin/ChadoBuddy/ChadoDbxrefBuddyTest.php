@@ -28,8 +28,7 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the getDb(), insertDb(), updateDb(), upsertDb() methods.
-   * Focuses on those expected to work ;-)
+   * Tests the xxxDb() methods.
    */
   public function testDbMethods() {
 
@@ -108,8 +107,7 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the getDbxref(), insertDbxref(), updateDbxref(), upsertDbxref() methods.
-   * Focuses on those expected to work ;-)
+   * Tests the xxxDbxref() methods.
    */
   public function testDbxrefMethods() {
 
