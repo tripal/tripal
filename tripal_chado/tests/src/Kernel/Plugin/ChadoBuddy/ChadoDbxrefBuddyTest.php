@@ -106,7 +106,7 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(0, $num, "We received case insensitive results for getDb when we should not have");
 
     // TEST: case insensitive override should work
-    $chado_buddy_records = $instance->getDb(['db.name' => 'NEWdb003'], ['case_insensitive' => TRUE]);
+    $chado_buddy_records = $instance->getDb(['db.name' => 'NEWdb003'], ['case_insensitive' => 'db.name']);
     $num = $instance->countBuddies($chado_buddy_records);
     $this->assertEquals(1, $num, "We did not receive case insensitive results for getDb when we should have");
 
@@ -191,7 +191,8 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(0, $num, "We received case insensitive results for getDbxref when we should not have");
 
     // TEST: case insensitive override should work
-    $chado_buddy_records = $instance->getDbxref(['db.name' => 'Local', 'dbxref.accession' => 'NEWdbXREF003'], ['case_insensitive' => TRUE]);
+    $chado_buddy_records = $instance->getDbxref(['db.name' => 'Local', 'dbxref.accession' => 'NEWdbXREF003'],
+                                                ['case_insensitive' => ['db.name', 'dbxref.accession']]);
     $num = $instance->countBuddies($chado_buddy_records);
     $this->assertEquals(1, $num, "We did not receive case insensitive results for getDbxref when we should have");
 
