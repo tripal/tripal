@@ -827,12 +827,10 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
     if ($is_prop_type) {
       if(array_key_exists(strtolower($type), $this->featureprop_cvterm_lookup)) {
-print "CP01 prop cached $type\n";
         return $this->featureprop_cvterm_lookup[strtolower($type)];
       }
     }
     elseif (array_key_exists(strtolower($type), $this->feature_cvterm_lookup)) {
-print "CP02 feat cached $type\n";
       return $this->feature_cvterm_lookup[strtolower($type)];
     }
 
@@ -840,13 +838,17 @@ print "CP02 feat cached $type\n";
       'cvterm.cv_id' => $cv_buddy_record->getValue('cv.cv_id'),
       'cvterm.name' => $type,
     ];
-    $cvterm_record = $this->cvterm_buddy->getCvterm($conditions, []);
+    // The GFF3 importer has had case insensitivity incorporated
+    // since Tripal 3 for this query.
+    $options = ['case_insensitive' => 'cvterm.name'];
+    $cvterm_record = $this->cvterm_buddy->getCvterm($conditions, $options);
     if (!$cvterm_record) {
+      $options = ['case_insensitive' => 'cvtermsynonym.synonym'];
       $conditions = [
         'cvterm.cv_id' => $cv_buddy_record->getValue('cv.cv_id'),
         'cvtermsynonym.synonym' => $type,
       ];
-      $cvterm_record = $this->cvterm_buddy->getCvterm($conditions, []);
+      $cvterm_record = $this->cvterm_buddy->getCvtermSynonym($conditions, $options);
     }
 
     // If the term couldn't be found and it's a property term, then
@@ -854,10 +856,12 @@ print "CP02 feat cached $type\n";
     if ($this->cvterm_buddy->countBuddies($cvterm_record) == 1) {
       $cvterm_id = $cvterm_record->getValue('cvterm.cvterm_id');
     }
+    elseif ($this->cvterm_buddy->countBuddies($cvterm_record) > 1) {
+      throw new \Exception(t('Error, more than one cvterm record matched %type', ['%type' => $type]));
+    }
     else {
       $this->logger->notice("Inserting the term \"@term\" in vocabulary \"@vocab\".",
                             ['@term' => $type, '@vocab' => $cv_buddy_record->getValue('cv.name')]);
-print "print CP11 Inserting $type in ".$cv_buddy_record->getValue('cv.name')."\n"; //@@@
       $values = [
         'db.name' => 'local',
         'dbxref.accession' => $type,
@@ -874,12 +878,10 @@ print "print CP11 Inserting $type in ".$cv_buddy_record->getValue('cv.name')."\n
     // Cache the result for future use, under both the canonical name and
     // by synonym. (these will be the same if not a synonym)
     if ($is_prop_type) {
-print "CP21 caching $type\n"; //@@@
       $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id;
       $this->featureprop_cvterm_lookup[strtolower($cvterm_record->getValue('cvterm.name'))] = $cvterm_id;
     }
     else {
-print "CP22 caching $type\n"; //@@@
       $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id;
       $this->feature_cvterm_lookup[strtolower($cvterm_record->getValue('cvterm.name'))] = $cvterm_id;
     }
