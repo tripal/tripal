@@ -151,6 +151,101 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cvterm.definition
    *     - cvterm.is_obsolete
    *     - cvterm.is_relationshiptype
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id
+   *     - dbxref.description
+   *     - dbxref.accession
+   *     - dbxref.version
+   *     - db.db_id
+   *     - db.name
+   *     - db.description
+   *     - db.urlprefix
+   *     - db.url
+   * @param array $options (Optional)
+   *   Associative array of options.
+   *     - 'case_insensitive' - a single key, or an array of keys
+   *                            to query case insensitively.
+   *     - 'synonyms' - set to true to enable synonym query,
+   *                    used internally be getCvtermSynonym()
+   *
+   * @return bool|array|ChadoBuddyRecord
+   *   If the select values return a single record then we return the
+   *     ChadoBuddyRecord describing the chado record.
+   *   If the select values return multiple records, then we return an array
+   *     of ChadoBuddyRecords describing the results.
+   *   If there are no results then we return FALSE.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function getCvterm(array $conditions, array $options = []) {
+    $synonyms_enabled = $options['synonyms'] ?? FALSE;
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
+    if ($synonyms_enabled) {
+      $valid_tables[] = 'cvtermsynonym';
+    }
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($conditions, $valid_columns);
+
+    $query = $this->connection->select('1:cvterm', 'cvterm');
+
+    // Return the joined fields aliased to the unique names
+    // as listed in this function's header
+    foreach ($valid_columns as $key) {
+      $parts = explode('.', $key);
+      $query->addField($parts[0], $parts[1], $this->makeAlias($key));
+    }
+    $query->leftJoin('1:cv', 'cv', 'cvterm.cv_id = cv.cv_id');
+    $query->leftJoin('1:dbxref', 'dbxref', 'cvterm.dbxref_id = dbxref.dbxref_id');
+    $query->leftJoin('1:db', 'db', 'dbxref.db_id = db.db_id');
+    if ($synonyms_enabled) {
+      $query->leftJoin('1:cvtermsynonym', 'cvtermsynonym', 'cvterm.cvterm_id = cvtermsynonym.cvterm_id');
+    }
+    $this->addConditions($query, $conditions, $options);
+
+    try {
+      $results = $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy getCvterm database error '.$e->getMessage());
+    }
+    $buddies = [];
+    while ($values = $results->fetchAssoc()) {
+      $new_record = new ChadoBuddyRecord();
+      $new_record->setSchemaName($this->connection->getSchemaName());
+      $new_record->setBaseTable('cvterm');
+      foreach ($values as $key => $value) {
+        $new_record->setValue($this->unmakeAlias($key), $value);
+      }
+      $buddies[] = $new_record;
+    }
+
+    if (count($buddies) > 1) {
+      return $buddies;
+    }
+    elseif (count($buddies) == 1) {
+      return $buddies[0];
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Retrieves a controlled vocabulary term.
+   *
+   * @param array $conditions
+   *   An array where the key is a column in chado and the value describes the
+   *   cvterm you want to select. Valid keys include:
+   *     - cv.cv_id
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id
+   *     - cvterm.cv_id
+   *     - cvterm.name
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
    *     - cvtermsynonym.cvtermsynonym_id
    *     - cvtermsynonym.cvterm_id
    *     - cvtermsynonym.synonym
@@ -180,51 +275,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
    */
-  public function getCvterm(array $conditions, array $options = []) {
-    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'cvtermsynonym'];
-    $valid_columns = $this->getTableColumns($valid_tables);
-    $this->validateInput($conditions, $valid_columns);
-
-    $query = $this->connection->select('1:cvterm', 'cvterm');
-
-    // Return the joined fields aliased to the unique names
-    // as listed in this function's header
-    foreach ($valid_columns as $key) {
-      $parts = explode('.', $key);
-      $query->addField($parts[0], $parts[1], $this->makeAlias($key));
-    }
-    $query->leftJoin('1:cv', 'cv', 'cvterm.cv_id = cv.cv_id');
-    $query->leftJoin('1:dbxref', 'dbxref', 'cvterm.dbxref_id = dbxref.dbxref_id');
-    $query->leftJoin('1:db', 'db', 'dbxref.db_id = db.db_id');
-    $query->leftJoin('1:cvtermsynonym', 'cvtermsynonym', 'cvterm.cvterm_id = cvtermsynonym.cvterm_id');
-    $this->addConditions($query, $conditions, $options);
-
-    try {
-      $results = $query->execute();
-    }
-    catch (\Exception $e) {
-      throw new ChadoBuddyException('ChadoBuddy getCvterm database error '.$e->getMessage());
-    }
-    $buddies = [];
-    while ($values = $results->fetchAssoc()) {
-      $new_record = new ChadoBuddyRecord();
-      $new_record->setSchemaName($this->connection->getSchemaName());
-      $new_record->setBaseTable('cvterm');
-      foreach ($values as $key => $value) {
-        $new_record->setValue($this->unmakeAlias($key), $value);
-      }
-      $buddies[] = $new_record;
-    }
-
-    if (count($buddies) > 1) {
-      return $buddies;
-    }
-    elseif (count($buddies) == 1) {
-      return $buddies[0];
-    }
-    else {
-      return FALSE;
-    }
+  public function getCvtermSynonym(array $conditions, array $options = []) {
+    $options['synonyms'] = TRUE;
+    return $this->getCvterm($conditions, $options);
   }
 
   /**
@@ -439,7 +492,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     }
 
     // Retrieve the newly inserted record.
-    $existing_record = $this->getCvterm($cvtermsynonym_values, $options);
+    $existing_record = $this->getCvtermSynonym($cvtermsynonym_values, $options);
 
     // Validate that exactly one record was obtained.
     $this->validateOutput($existing_record, $values);
@@ -643,7 +696,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
-    $existing_record = $this->getCvterm($conditions, $options);
+    $existing_record = $this->getCvtermSynonym($conditions, $options);
     if (!$existing_record) {
       return FALSE;
     }
@@ -668,7 +721,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy updateCvtermSynonym database error '.$e->getMessage());
     }
-    $existing_record = $this->getCvterm($synonym_values, $options);
+    $existing_record = $this->getCvtermSynonym($synonym_values, $options);
 
     // Validate that exactly one record was obtained.
     $this->validateOutput($existing_record, $values);
@@ -820,7 +873,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $key_columns = $this->getTableColumns($valid_tables, 'unique');
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
-    $existing_record = $this->getCvterm($conditions, $options);
+    $existing_record = $this->getCvtermSynonym($conditions, $options);
     if ($existing_record) {
       if (is_array($existing_record)) {
         throw new ChadoBuddyException("ChadoBuddy upsertCvtermSynonym error, more than one record matched the specified values\n".print_r($values, TRUE));

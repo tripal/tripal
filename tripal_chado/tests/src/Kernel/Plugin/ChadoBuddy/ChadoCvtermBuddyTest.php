@@ -131,7 +131,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(1, $num, 'We did not insert a new Cvterm "newCvterm001"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the new Cvterm "newCvterm001"');
-    $this->assertEquals(24, count($values), 'The values array is of unexpected size for the new Cvterm "newCvterm001"');
+    $this->assertEquals(20, count($values), 'The values array is of unexpected size for the new Cvterm "newCvterm001"');
     $cvterm_id = $chado_buddy_records->getValue('cvterm.cvterm_id');
     $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the new Cvterm "newCvterm001"');
     $cv_id = $chado_buddy_records->getValue('cv.cv_id');
@@ -153,7 +153,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(1, $num, 'We did not upsert a new Cvterm "newCvterm003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the new Cvterm "newCvterm003"');
-    $this->assertEquals(24, count($values), 'The values array is of unexpected size for the new Cvterm "newCvterm003"');
+    $this->assertEquals(20, count($values), 'The values array is of unexpected size for the new Cvterm "newCvterm003"');
     $cvterm_id = $chado_buddy_records->getValue('cvterm.cvterm_id');
     $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the new Cvterm "newCvterm003"');
     $this->assertEquals(0, $values['cvterm.is_obsolete'], 'The Cvterm is_obsolete value was not set to its default value for the new Cvterm "newCvterm003"');
@@ -167,7 +167,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(1, $num, 'We did not upsert an existing Cvterm "newCvterm003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted Cvterm "newCvterm003"');
-    $this->assertEquals(24, count($values), 'The values array is of unexpected size for the upserted Cvterm "newCvterm003"');
+    $this->assertEquals(20, count($values), 'The values array is of unexpected size for the upserted Cvterm "newCvterm003"');
     $cvterm_id = $chado_buddy_records->getValue('cvterm.cvterm_id');
     $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the upserted Cvterm "newCvterm003"');
     $this->assertEquals('def004', $values['cvterm.definition'], 'The Cvterm definition was not updated for the upserted Cvterm "newCvterm003"');
@@ -183,7 +183,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
       $base_table = $chado_buddy_records->getBaseTable();
       $schema_name = $chado_buddy_records->getSchemaName();
       $this->assertIsArray($values, "We did not retrieve an array of values for the existing Cvterm \"$cvterm_name\"");
-      $this->assertEquals(24, count($values), "The values array is of unexpected size for the existing Cvterm \"$cvterm_name\"");
+      $this->assertEquals(20, count($values), "The values array is of unexpected size for the existing Cvterm \"$cvterm_name\"");
       $this->assertEquals('cvterm', $base_table, 'The base table is incorrect for the existing Cvterm \"$cvterm_name\"');
       $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing Cvterm \"$cvterm_name\"');
     }
@@ -205,7 +205,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(1, $num, 'We did not retrieve the existing Cvterm with dbxref "newAcc003"');
     $values = $chado_buddy_records->getValues();
     $this->assertIsArray($values, 'We did not retrieve an array of values for the existing Cvterm with dbxref "newAcc003"');
-    $this->assertEquals(24, count($values), 'The values array is of unexpected size for the existing Cvterm with dbxref "newAcc003"');
+    $this->assertEquals(20, count($values), 'The values array is of unexpected size for the existing Cvterm with dbxref "newAcc003"');
 
     // TEST: associate a cvterm with a base table.
     // The minimal test environment won't be able to automatically look up
@@ -271,7 +271,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
       'We did not update the type_id for the upserted Cvterm with synonym "syn006"');
 
     // TEST: We should be able to retrieve this synonym
-    $chado_buddy_records = $instance->getCvterm(['cv.name' => 'local', 'cvtermsynonym.synonym' => 'syn006']);
+    $chado_buddy_records = $instance->getCvtermSynonym(['cv.name' => 'local', 'cvtermsynonym.synonym' => 'syn006']);
     $num = $instance->countBuddies($chado_buddy_records);
     $this->assertEquals(1, $num, 'We did not retrieve the existing Cvterm with synonym "syn006"');
     $values = $chado_buddy_records->getValues();
