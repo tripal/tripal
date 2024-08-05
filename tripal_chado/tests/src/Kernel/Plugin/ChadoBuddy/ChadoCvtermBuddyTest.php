@@ -94,6 +94,16 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
       $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing CV \"$cv_name\"');
     }
 
+    // TEST: query should be case sensitive
+    $chado_buddy_records = $instance->getCv(['cv.name' => 'NEWcv003'], []);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(0, $num, "We received case insensitive results for getCv when we should not have");
+
+    // TEST: case insensitive override should work
+    $chado_buddy_records = $instance->getCv(['cv.name' => 'NEWcv003'], ['case_insensitive' => TRUE]);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, "We did not receive case insensitive results for getCv when we should have");
+
     // TEST: We should not be able to insert a CV record if it does exist.
     // Run last because this causes an exception.
     $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
@@ -176,6 +186,16 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
       $this->assertEquals('cvterm', $base_table, 'The base table is incorrect for the existing Cvterm \"$cvterm_name\"');
       $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing Cvterm \"$cvterm_name\"');
     }
+
+    // TEST: query should be case sensitive
+    $chado_buddy_records = $instance->getCvterm(['db.name' => 'LOCAL', 'cv.name' => 'Local', 'cvterm.name' => 'NEWCvTerm003'], []);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(0, $num, "We received case insensitive results for getCvterm when we should not have");
+
+    // TEST: case insensitive override should work
+    $chado_buddy_records = $instance->getCvterm(['db.name' => 'LOCAL', 'cv.name' => 'Local', 'cvterm.name' => 'NEWCvTerm003'], ['case_insensitive' => TRUE]);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, "We did not receive case insensitive results for getCvterm when we should have");
 
     // TEST: We should be able to retrieve an existing Cvterm record by its dbxref accession.
     $chado_buddy_records = $instance->getCvterm(['dbxref.accession' => 'newAcc003']);
