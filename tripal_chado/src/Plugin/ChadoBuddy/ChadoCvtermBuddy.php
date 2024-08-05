@@ -152,6 +152,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cvterm.definition
    *     - cvterm.is_obsolete
    *     - cvterm.is_relationshiptype
+   *     - cvtermsynonym.cvtermsynonym_id
+   *     - cvtermsynonym.cvterm_id
+   *     - cvtermsynonym.synonym
+   *     - cvtermsynonym.type_id
    *     - dbxref.dbxref_id
    *     - dbxref.db_id
    *     - dbxref.description
@@ -176,7 +180,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   If an error is encountered.
    */
   public function getCvterm(array $conditions, array $options = []) {
-    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'cvtermsynonym'];
     $valid_columns = $this->getTableColumns($valid_tables);
     $this->validateInput($conditions, $valid_columns);
 
@@ -191,6 +195,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $query->leftJoin('1:cv', 'cv', 'cvterm.cv_id = cv.cv_id');
     $query->leftJoin('1:dbxref', 'dbxref', 'cvterm.dbxref_id = dbxref.dbxref_id');
     $query->leftJoin('1:db', 'db', 'dbxref.db_id = db.db_id');
+    $query->leftJoin('1:cvtermsynonym', 'cvtermsynonym', 'cvterm.cvterm_id = cvtermsynonym.cvterm_id');
     // Conditions are not aliased
     foreach ($conditions as $key => $value) {
       $query->condition($key, $value, '=');
@@ -364,6 +369,87 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   }
 
   /**
+   * Add a controlled vocabulary term synonym. The existing Cvterm
+   * must already exist.
+   *
+   * @param $values
+   *   An associative array of the values to be inserted including:
+   *     - cv.cv_id (either cv_id, cvterm.cv_id, or cv_name required)
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id: Not valid for an insert.
+   *     - cvterm.cv_id
+   *     - cvterm.name: Required.
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - cvtermsynonym.cvtermsynonym_id
+   *     - cvtermsynonym.cvterm_id
+   *     - cvtermsynonym.synonym
+   *     - cvtermsynonym.type_id
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id: Required if generating a dbxref record.
+   *     - dbxref.description: Optional
+   *     - dbxref.accession: Required if generating a dbxref record.
+   *     - dbxref.version: Optional
+   *     - db.db_id: Can be used in place of dbxref.db_id
+   *     - db.name: valid, but has no effect for this function.
+   *     - db.description: valid, but has no effect for this function.
+   *     - db.urlprefix: valid, but has no effect for this function.
+   *     - db.url: valid, but has no effect for this function.
+   * @param $options (Optional)
+   *   None supported yet. Here for consistency.
+   *
+   * @return ChadoBuddyRecord
+   *   The inserted ChadoBuddyRecord will be returned on success and an
+   *   exception will be thrown if an error is encountered. If the record
+   *   already exists then an error will be thrown. If this is not the desired
+   *   behaviour then use the upsert version of this method.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function insertCvtermSynonym(array $values, array $options = []) {
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'cvtermsynonym'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+
+    // There should be values sufficient to retrieve a cvterm.cvterm_id
+    if (!array_key_exists('cvtermsynonym.cvterm_id', $values) or !$values['cvtermsynonym.cvterm_id']) {
+      if (!array_key_exists('cvterm.cvterm_id', $values) or !$values['cvterm.cvterm_id']) {
+        $cvterm_values = $this->subsetInput($values, ['cv', 'cvterm']);
+        $cvterm_record = $this->getCvterm($cvterm_values);
+        $this->validateOutput($cvterm_record, $values);
+        $values['cvtermsynonym.cvterm_id'] = $cvterm_record->getValue('cvterm.cvterm_id');
+      }
+      else {
+        $values['cvtermsynonym.cvterm_id'] = $values['cvterm.cvterm_id'];
+      }
+    }
+
+    // Insert synonym
+    $query = $this->connection->insert('1:cvtermsynonym');
+
+    // Create a subset of the passed $values for just the cvterm table.
+    $cvtermsynonym_values = $this->subsetInput($values, ['cvtermsynonym']);
+    $query->fields($this->removeTablePrefix($cvtermsynonym_values));
+    try {
+      $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy insertCvtermSynonym database error '.$e->getMessage());
+    }
+
+    // Retrieve the newly inserted record.
+    $existing_record = $this->getCvterm($cvtermsynonym_values, $options);
+
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($existing_record, $values);
+
+    return $existing_record;
+  }
+
+  /**
    * Updates an existing controlled vocabulary.
    *
    * @param array $values
@@ -512,6 +598,87 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   }
 
   /**
+   * Updates an existing controlled vocabulary term synonym.
+   *
+   * @param array $values
+   *   An associative array of the values for the final record (i.e what you
+   *   want to update the record to be) including:
+   *     - cv.cv_id (either cv_id, cvterm.cv_id, or cv_name required)
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id: Not valid for an insert.
+   *     - cvterm.cv_id
+   *     - cvterm.name: Required.
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - cvtermsynonym.cvtermsynonym_id
+   *     - cvtermsynonym.cvterm_id
+   *     - cvtermsynonym.synonym
+   *     - cvtermsynonym.type_id
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id: Required if generating a dbxref record.
+   *     - dbxref.description: Optional
+   *     - dbxref.accession: Required if generating a dbxref record.
+   *     - dbxref.version: Optional
+   *     - db.db_id: Can be used in place of dbxref.db_id
+   *     - db.name: valid, but has no effect for this function.
+   *     - db.description: valid, but has no effect for this function.
+   *     - db.urlprefix: valid, but has no effect for this function.
+   *     - db.url: valid, but has no effect for this function.
+   * @param array $conditions
+   *   An associative array of the conditions to find the record to update.
+   *   The same keys are supported as those indicated for the $values.
+   * @param array $options (Optional)
+   *   None supported yet. Here for consistency.
+   *
+   * @return bool|ChadoBuddyRecord
+   *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
+   *   returned if no record was found to update.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function updateCvtermSynonym(array $values, array $conditions, array $options = []) {
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'cvtermsynonym'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+    $this->validateInput($conditions, $valid_columns);
+
+    $existing_record = $this->getCvterm($conditions, $options);
+    if (!$existing_record) {
+      return FALSE;
+    }
+    if (is_array($existing_record)) {
+      throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
+    }
+    // This function will only update the cvtermsynonym table
+    // Update query will only be based on the cvtermsynonym_id, which we get from the retrieved record.
+    $cvtermsynonym_id = $existing_record->getValue('cvtermsynonym.cvtermsynonym_id');
+    // We do not support changing the cvtermsynonym_id.
+    if (array_key_exists('cvterm.cvtermsynonym_id', $values)) {
+      unset($values['cvterm.cvtermsynonym_id']);
+    }
+    $query = $this->connection->update('1:cvtermsynonym');
+    $query->condition('cvtermsynonym_id', $cvtermsynonym_id, '=');
+    // Create a subset of the passed $values for just the cvtermsynonym table.
+    $synonym_values = $this->subsetInput($values, ['cvtermsynonym']);
+    $query->fields($this->removeTablePrefix($synonym_values));
+    try {
+      $results = $query->execute();
+    }
+    catch (\Exception $e) {
+      throw new ChadoBuddyException('ChadoBuddy updateCvtermSynonym database error '.$e->getMessage());
+    }
+    $existing_record = $this->getCvterm($synonym_values, $options);
+
+    // Validate that exactly one record was obtained.
+    $this->validateOutput($existing_record, $values);
+
+    return $existing_record;
+  }
+
+  /**
    * Insert a controlled vocabulary if it doesn't yet exist OR update it if it does.
    *
    * @param array $values
@@ -603,6 +770,67 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     }
     else {
       $new_record = $this->insertCvterm($values, $options);
+    }
+    return $new_record;
+  }
+
+  /**
+   * Insert a controlled vocabulary term synonym if it doesn't yet exist
+   * OR update it if it does.
+   *
+   * @param array $values
+   *   An associative array of the values for the final record including:
+   *     - cv.cv_id (either cv_id, cvterm.cv_id, or cv_name required)
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id: Not valid for an insert.
+   *     - cvterm.cv_id
+   *     - cvterm.name: Required.
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - cvtermsynonym.cvtermsynonym_id
+   *     - cvtermsynonym.cvterm_id
+   *     - cvtermsynonym.synonym
+   *     - cvtermsynonym.type_id
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id: Required if generating a dbxref record.
+   *     - dbxref.description: Optional
+   *     - dbxref.accession: Required if generating a dbxref record.
+   *     - dbxref.version: Optional
+   *     - db.db_id: Can be used in place of dbxref.db_id
+   *     - db.name: valid, but has no effect for this function.
+   *     - db.description: valid, but has no effect for this function.
+   *     - db.urlprefix: valid, but has no effect for this function.
+   *     - db.url: valid, but has no effect for this function.
+   * @param array $options (Optional)
+   *   None supported yet. Here for consistency.
+   *
+   * @return ChadoBuddyRecord
+   *   The inserted/updated ChadoBuddyRecord will be returned on success.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function upsertCvtermSynonym(array $values, array $options = []) {
+    $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'cvtermsynonym'];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $this->validateInput($values, $valid_columns);
+
+    // For upsert, the query conditions are a subset consisting of
+    // only the columns that are part of a unique constraint.
+    $key_columns = $this->getTableColumns($valid_tables, 'unique');
+    $conditions = $this->makeUpsertConditions($values, $key_columns);
+
+    $existing_record = $this->getCvterm($conditions, $options);
+    if ($existing_record) {
+      if (is_array($existing_record)) {
+        throw new ChadoBuddyException("ChadoBuddy upsertCvtermSynonym error, more than one record matched the specified values\n".print_r($values, TRUE));
+      }
+      $new_record = $this->updateCvtermSynonym($values, $conditions, $options);
+    }
+    else {
+      $new_record = $this->insertCvtermSynonym($values, $options);
     }
     return $new_record;
   }
