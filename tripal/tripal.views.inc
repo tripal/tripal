@@ -9,7 +9,8 @@ function tripal_views_data() {
   $data = [];
   // Job Management System.
   tripal_views_data_jobs($data);
-
+  // Pub Search Queries
+  tripal_views_pub_search_queries($data);
   return $data;
 }
 
@@ -300,4 +301,114 @@ function tripal_views_data_jobs(&$data) {
       'id' => 'numeric',
     ],
   ];
+}
+
+/**
+ * Provides the data array for the tripal pub search queries
+ *
+ * @param $data
+ *   Previously generated tripal views data array
+ * return
+ *   $data array with pub library query management system described
+ *
+ * @ingroup tripal
+ */
+function tripal_views_pub_search_queries(&$data) {
+  $data['tripal_pub_library_query'] = [];
+  $data['tripal_pub_library_query']['table'] = [];
+  $data['tripal_pub_library_query']['table']['group'] = t('Pub Search Queries');
+  // $data['pub_search_queries']['table']['provider'] = 'tripal';
+  $data['tripal_pub_library_query']['table']['base'] = [
+    'field' => 'pub_library_query_id',
+    'title' => t('Pub Library Query'),
+    'help' => t('Pub Library Query Management system for Tripal.'),
+    'weight' => 10,
+  ];
+
+  $data['tripal_pub_library_query']['pub_library_query_id'] = [
+    'title' => t('Pub Library Query ID'),
+    'help' => t('The query primary key.'),
+    'field' => [
+      'id' => 'numeric',
+    ],
+    'filter' => [
+      'id' => 'numeric',
+    ],
+    'sort' => [
+      'id' => 'standard'
+    ],
+    'argument' => [
+      'id' => 'numeric',
+    ],
+  ];
+
+  $data['tripal_pub_library_query']['name'] = [
+    'title' => t('Name'),
+    'help' => t('The pub query name'),
+    'field' => [
+      'id' => 'standard',
+    ],
+    'sort' => [
+      'id' => 'standard'
+    ],
+    'filter' => [
+      'id' => 'string',
+    ],
+    'argument' => [
+      'id' => 'string',
+    ],
+  ];
+
+  $data['tripal_pub_library_query']['criteria'] = [
+    'title' => t('Criteria'),
+    'help' => t('The pub query criteria'),
+    'field' => [
+      'id' => 'criteria',
+    ],
+    'sort' => [
+      'id' => 'standard'
+    ],
+    'filter' => [
+      'id' => 'string',
+    ],
+    'argument' => [
+      'id' => 'string',
+    ],
+  ];
+
+  $data['tripal_pub_library_query']['disabled'] = [
+    'title' => t('Disabled'),
+    'help' => t('Disabled option'),
+    'field' => [
+      'id' => 'disabled',
+    ],
+    'filter' => [
+      'id' => 'boolean',
+    ],
+    'sort' => [
+      'id' => 'standard'
+    ],
+    'argument' => [
+      'id' => 'string',
+    ],
+  ];
+
+  $data['tripal_pub_library_query']['do_contact'] = [
+    'title' => t('Do Contact'),
+    'help' => t('Do Contact option'),
+    'field' => [
+      'id' => 'do_contact',
+    ],
+    'filter' => [
+      'id' => 'boolean',
+    ],
+    'sort' => [
+      'id' => 'standard'
+    ],
+    'argument' => [
+      'id' => 'string',
+    ],
+  ];
+
+  return $data;
 }
