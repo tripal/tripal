@@ -361,12 +361,10 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     // get the list of organisms
     $organisms = chado_get_organism_select_options(FALSE, TRUE);
 
-    // get the sequence ontology CV ID
-    $cv_results = $chado->select('1:cv', 'cv')
-      ->fields('cv')
-      ->condition('name', 'sequence')
-      ->execute();
-    $cv_id = $cv_results->fetchObject()->cv_id;
+    // get the sequence ontology CV id
+    $conditions = ['cv.name' => 'sequence'];
+    $cvterm_record = $this->cvterm_buddy->getCvterm($conditions, []);
+    $sequence_cv_id = $cvterm_record->getValue('cvterm.cvterm_id');
 
     $form['organism_id'] = [
       '#title' => t('Existing Organism'),
@@ -385,7 +383,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
        for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $sequence_cv_id],
     ];
 
     $form['proteins'] = [
@@ -464,7 +462,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
        in the GFF file. This must be a valid Sequence Ontology (SO) term. If the matches in the GFF3 file
        use specific match types (e.g. cDNA_match, EST_match, etc.) then this can be left blank. "),
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $sequence_cv_id],
     ];
 
     $form['targets']['create_target'] = [
@@ -623,41 +621,20 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     }
 
     // Get the feature property CV object
-    $this->feature_prop_cv = $chado->select('1:cv','cv')
-    ->fields('cv')
-    ->condition('name', 'local')
-    ->execute()
-    ->fetchObject();
-
-    $num_found = $chado->select('1:cv','cv')
-    ->fields('cv')
-    ->condition('name', 'local')
-    ->countQuery()
-    ->execute()
-    ->fetchField();
-
-
-    if ($num_found == 0) {
-      throw new \Exception(t("Cannot find the 'local' ontology'"));
+    $conditions = ['cv.name' => 'local'];
+    $cv_record = $this->cvterm_buddy->getCv($conditions, []);
+    if ($this->cvterm_buddy->countBuddies($cv_record) != 1) {
+      throw new \Exception(t("Cannot find the 'local' ontology (feature property CV)"));
     }
+    $this->feature_prop_cv = $cv_record;
 
-    // Get the sequence CV object.
-    $this->feature_cv = $chado->select('1:cv','cv')
-    ->fields('cv')
-    ->condition('name', 'sequence')
-    ->execute()
-    ->fetchObject();
-
-    $num_found = $chado->select('1:cv', 'cv')
-    ->fields('cv')
-    ->condition('name', 'sequence')
-    ->countQuery()
-    ->execute()
-    ->fetchField();
-
-    if ($num_found == 0) {
-      throw new \Exception(t("Cannot find the 'sequence' ontology'"));
+    // Get the sequence CV object
+    $conditions = ['cv.name' => 'sequence'];
+    $cv_record = $this->cvterm_buddy->getCv($conditions, []);
+    if ($this->cvterm_buddy->countBuddies($cv_record) != 1) {
+      throw new \Exception(t("Cannot find the 'sequence' ontology (feature CV)"));
     }
+    $this->feature_cv = $cv_record;
 
     // Get the organism object.
     $this->organism = $chado->select('1:organism','o')
@@ -841,65 +818,70 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    * @ingroup gff3_loader
    */
   private function getTypeID($type, $is_prop_type) {
-    $chado = $this->getChadoConnection();
 
-    $cv = $this->feature_cv;
+    // Retrieve the appropriate cv buddy record
+    $cv_buddy_record = $this->feature_cv;
     if ($is_prop_type) {
-      $cv = $this->feature_prop_cv;
+      $cv_buddy_record = $this->feature_prop_cv;
     }
 
     if ($is_prop_type) {
       if(array_key_exists(strtolower($type), $this->featureprop_cvterm_lookup)) {
+print "CP01 prop cached $type\n";
         return $this->featureprop_cvterm_lookup[strtolower($type)];
       }
     }
     elseif (array_key_exists(strtolower($type), $this->feature_cvterm_lookup)) {
+print "CP02 feat cached $type\n";
       return $this->feature_cvterm_lookup[strtolower($type)];
     }
 
-    $sel_cvterm_sql = "
-      SELECT CVT.cvterm_id, CVT.name, CVTS.synonym
-      FROM {1:cvterm} CVT
-        LEFT JOIN {1:cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-      WHERE CVT.cv_id = :cv_id and
-       (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
-    ";
+    $conditions = [
+      'cvterm.cv_id' => $cv_buddy_record->getValue('cv.cv_id'),
+      'cvterm.name' => $type,
+    ];
+    $cvterm_record = $this->cvterm_buddy->getCvterm($conditions, []);
+    if (!$cvterm_record) {
+      $conditions = [
+        'cvterm.cv_id' => $cv_buddy_record->getValue('cv.cv_id'),
+        'cvtermsynonym.synonym' => $type,
+      ];
+      $cvterm_record = $this->cvterm_buddy->getCvterm($conditions, []);
+    }
 
-    $result = $chado->query($sel_cvterm_sql, [
-      ':cv_id' => $cv->cv_id,
-      ':name' => $type,
-      ':synonym' => $type,
-    ]);
-    $cvterm_match = $result->fetchObject();
-
-
-    // If the term couldn't be found and it's a property term then insert it
-    // as a local term.
-    if ($cvterm_match) {
-      $cvterm_id = $cvterm_match->cvterm_id
+    // If the term couldn't be found and it's a property term, then
+    // insert it as a local term.
+    if ($this->cvterm_buddy->countBuddies($cvterm_record) == 1) {
+      $cvterm_id = $cvterm_record->getValue('cvterm.cvterm_id');
     }
     else {
       $this->logger->notice("Inserting the term \"@term\" in vocabulary \"@vocab\".",
-                            ['@term' => $type, '@vocab' => $cv->name]);
-      $term = [
-        'id' => "local:$type",
-        'name' => $type,
-        'is_obsolete' => 0,
-        'cv_name' => $cv->name,
-        'db_name' => 'local',
-        'is_relationshiptype' => 0,
+                            ['@term' => $type, '@vocab' => $cv_buddy_record->getValue('cv.name')]);
+print "print CP11 Inserting $type in ".$cv_buddy_record->getValue('cv.name')."\n"; //@@@
+      $values = [
+        'db.name' => 'local',
+        'dbxref.accession' => $type,
+        'cv.name' => $cv_buddy_record->getValue('cv.name'),
+        'cvterm.name' => $type,
+        'cvterm.is_obsolete' => 0,
+        'cvterm.is_relationshiptype' => 0,
       ];
-      $cvterm_record = $this->insert_cvterm($term, ['update_existing' => FALSE]);
+      $options = ['create_dbxref' => TRUE];
+      $cvterm_record = $this->cvterm_buddy->insertCvterm($values, $options);
       $cvterm_id = $cvterm_record->getValue('cvterm.cvterm_id');
     }
 
+    // Cache the result for future use, under both the canonical name and
+    // by synonym. (these will be the same if not a synonym)
     if ($is_prop_type) {
+print "CP21 caching $type\n"; //@@@
       $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id;
-      $this->featureprop_cvterm_lookup[strtolower($cvterm_match->name)] = $cvterm_id;
+      $this->featureprop_cvterm_lookup[strtolower($cvterm_record->getValue('cvterm.name'))] = $cvterm_id;
     }
     else {
+print "CP22 caching $type\n"; //@@@
       $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id;
-      $this->feature_cvterm_lookup[strtolower($cvterm_match->name)] = $cvterm_id;
+      $this->feature_cvterm_lookup[strtolower($cvterm_record->getValue('cvterm.name'))] = $cvterm_id;
     }
     return $cvterm_id;
   }
@@ -908,83 +890,33 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    * Makes sure Chado is ready with the necessary synonym type records.
    */
   private function prepSynonyms() {
-    $chado = $this->getChadoConnection();
+
     // make sure we have a 'synonym_type' vocabulary
-    $select = ['name' => 'synonym_type'];
-    // $results = chado_select_record('cv', ['*'], $select, NULL, $this->chado_schema_main);
-    $results_query = $chado->select('1:cv', 'cv')
-      ->fields('cv')
-      ->condition('name', 'synonym_type');
-    $results = $results_query->execute()->fetchObject();
-    $results_count = $results_query->countQuery()->execute()->fetchField();
-
-
-    if ($results_count == 0) {
-      // insert the 'synonym_type' vocabulary
-      $this->logger->notice("Inserting the synonym_type vocabulary.");
-      $values = [
-          'name' => 'synonym_type',
-          'definition' => 'vocabulary for synonym types',
-      ];
-      $success = $chado->insert('1:cv')
-        ->fields($values)
-        ->execute();
-
-      if (!$success) {
-        $this->logger->warning("Failed to add the synonyms type vocabulary.");
-        return 0;
-      }
-      // now that we've added the cv we need to get the record
-      // $results = chado_select_record('cv', ['*'], $select, NULL, $this->chado_schema_main);
-      $results_query = $chado->select('1:cv', 'cv')
-        ->fields('cv')
-        ->condition('name', 'synonym_type');
-      $results = $results_query->execute()->fetchObject();
-      $results_count = $results_query->countQuery()->execute()->fetchField();
-      if ($results_count > 0) {
-        $syncv = $results;
-      }
-    }
-    else {
-      $syncv = $results;
-    }
-
-    // get the 'exact' cvterm, which is the type of synonym we're adding
-    $db_record = $this->cvterm_buddy->getCv(['name' => 'synonym_type'], []);
-    if (!db_record) {
-      $this->logger->warning('Controlled vocabulary "synonym_type" could not be found');
+    $values = [
+      'cv.name' => 'synonym_type',
+    ];
+    $synonym_type_record = $this->cvterm_buddy->upsertCv($values, []);
+    if ($this->cvterm_buddy->countBuddies($synonym_type_record) != 1) {
+      $this->logger->error('Failed to add the "synonym_type" vocabulary.');
       return 0;
     }
+    $syncv = $synonym_type_record->getValue('cv.cv_id');
 
-    $conditions = [
+    // get or insert the 'exact' cvterm, which is the type of synonym we're adding
+    $values = [
       'db.name' => 'synonym_type',
       'dbxref.accession' => 'exact',
-      'cvterm.name' => 'exact',
       'cv.name' => 'synonym_type',
-    ]
-    $syntype = $this->cvterm_buddy->getCvterm($conditions, []);
-    $result_count = $this->cvterm_buddy->countRecords($syntype);
-
-    if ($result_count == 0) {
-      $this->logger->notice('Inserting the "synonym_type:exact" term');
-      $term = [
-        'name' => 'exact',
-        'id' => "synonym_type:exact",
-        'definition' => '',
-        'is_obsolete' => 0,
-        'cv_name' => $syncv->name,
-        'is_relationshiptype' => 0,
-      ];
-      $syntype = $this->insert_cvterm($term, ['update_existing' => TRUE]);
-      if (!$syntype) {
-        $this->logger->warning('Cannot add synonym type: "synonym_type:exact"');
-        return 0;
-      }
+      'cvterm.name' => 'exact',
+      'cvterm.is_obsolete' => 0,
+      'cvterm.is_relationshiptype' => 0,
+    ];
+    $exact_term_record = $this->cvterm_buddy->upsertCvterm($values, []);
+    if ($this->cvterm_buddy->countBuddies($exact_term_record) != 1) {
+      $this->logger->error('Failed to add the "synonym_type:exact" term.');
+      return 0;
     }
-    else {
-      $syntype = $result;
-    }
-    $this->exact_syn_id = $syntype->getValue('cvterm.cvterm_id');
+    $this->exact_syn_id = $exact_term_record->getValue('cvterm.cvterm_id');
   }
 
   /**
@@ -1037,73 +969,33 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    * Makes sure Chado is ready with the necessary DB records.
    */
   private function prepDBs() {
-    $chado = $this->getChadoConnection();
     // Get the list of database records that are needed by this GFF file. If
-    // they do not exist then add them.
+    // they do not exist, then add them.
     foreach (array_keys($this->db_lookup) as $dbname) {
-      // First look for the database name if it doesn't exist then create one.
-      // first check for the fully qualified URI (e.g. DB:<dbname>. If that
-      // can't be found then look for the name as is.  If it still can't be found
-      // the create the database
-      $values = ['name' => "DB:$dbname"];
-      // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
-      $db_query = $chado->select('1:db','db')
-        ->fields('db')
-        ->condition('name', "DB:$dbname");
-      $db_count = $db_query->countQuery()->execute()->fetchField();
-      $db = $db_query->execute()->fetchObject();
-      if ($db_count == 0) {
-        $values = ['name' => "$dbname"];
-        // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
-        $db_query = $chado->select('1:db', 'db')
-          ->fields('db')
-          ->condition('name', "$dbname");
-        $db_count = $db_query->countQuery()->execute()->fetchField();
-        $db = $db_query->execute()->fetchObject();
+      // First check for the fully qualified URI (e.g. DB:<dbname>. If that
+      // can't be found, then look for the name as is. If it still can't be
+      // found, then create the database.
+      $db_record = $this->dbxref_buddy->getDb(['db.name' => 'DB:' . $dbname], []);
+      if (!$db_record) {
+        $db_record = $this->dbxref_buddy->getDb(['db.name' => $dbname], []);
       }
-
-      if ($db_count == 0) {
+      if (!$db_record) {
         $this->logger->notice("Inserting the database \"@dbname\".",
                               ['@dbname' => $dbname]);
         $values = [
-          'name' => $dbname,
-          'description' => 'Added automatically by the Tripal GFF loader.',
+          'db.name' => $dbname,
+          'db.description' => 'Added automatically by the Tripal GFF loader.',
         ];
-        // // @todo convert api call
-        // $success = chado_insert_record('db', $values, array(
-        //   'skip_validation' => TRUE,
-        // ), $this->chado_schema_main);
-        // print_r("DB NAME:" . $dbname . "\n");
-        $debug_dbs = $chado->query("SELECT * FROM {1:db} ORDER BY db_id ASC");
-        // while ($obj = $debug_dbs->fetchObject()) {
-        //   print_r($obj);
-        //   print_r("\n");
-        // }
-        // $debug_db_serial = $chado->query("SELECT currval(pg_get_serial_sequence('" . $chado->getSchemaName() . ".db', 'db_id'));");
-        // while($obj = $debug_db_serial->fetchObject()) {
-        //   print_r($obj);
-        //   print_r("\n");
-        // }
-        $success = $chado->insert('1:db')
-          ->fields($values)
-          ->execute();
-        if ($success) {
-          $values = ['name' => "$dbname"];
-          // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
-          $db_query = $chado->select('1:db', 'db')
-            ->fields('db')
-            ->condition('name', "$dbname");
-          $db = $db_query->execute()->fetchObject();
-        }
-        else {
-          $this->logger->warning('Cannot find or add the database "@dbname".',
-            ['@dbname' => $dbname]
-          );
-          return 0;
-        }
+        $db_record = $this->dbxref_buddy->insertDb($values, []);
       }
-
-      $this->db_lookup[$dbname] = $db->db_id;
+      if ($this->dbxref_buddy->countBuddies($db_record) != 1) {
+        $this->logger->error('Cannot find or add the database "@dbname".',
+          ['@dbname' => $dbname]
+        );
+        return 0;
+      }
+      $db_id = $db_record->getValue('db.db_id');
+      $this->db_lookup[$dbname] = $db_id;
     }
   }
 
@@ -1727,7 +1619,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
     // We want to make sure the Ontology_term attribute dbxrefs are
     // also easily looked up... but we do not want to create them
-    // if they do not exist the presence of the 'cvterm' key will
+    // if they do not exist. the presence of the 'cvterm' key will
     // tell the loadDbxrefs() function to not create the term.
     foreach ($gff_feature['terms'] as $index => $info) {
       if (!array_key_exists($info['db'], $this->db_lookup)) {
@@ -3408,6 +3300,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    *       It's not clear if this makes any difference, though.
    */
   function insert_cvterm($term, $options = []) {
+print "DEPRECATED\n";
     $definition = $term['definition'] ?? '';
 
     // This will get a vocab or create it if it is not found
@@ -3453,7 +3346,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     if (!$cvterm_record) {
       $cvterm_record = $this->cvterm_buddy->insertCvterm($values, []);
     }
-    elseif (($options['update_existing'] ?? FALSE) {
+    elseif ($options['update_existing'] ?? FALSE) {
       $cvterm_record = $this->cvterm_buddy->upsertCvterm($values, []);
     }
     //if ($idspace) {
