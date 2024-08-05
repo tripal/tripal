@@ -151,11 +151,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       $parts = explode('.', $key);
       $query->addField($parts[0], $parts[1], $this->makeAlias($key));
     }
-    // Conditions are not aliased
-    $query->condition($property_table . '.' . $fkey, $record_id, '=');
-    foreach ($conditions as $key => $value) {
-      $query->condition($key, $value, '=');
-    }
+    $this->addConditions($query, $conditions, $options);
 
     try {
       $results = $query->execute();
