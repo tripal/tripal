@@ -28,8 +28,7 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the getDb(), insertDb(), updateDb(), upsertDb() methods.
-   * Focuses on those expected to work ;-)
+   * Tests the xxxDb() methods.
    */
   public function testDbMethods() {
 
@@ -101,6 +100,16 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
       $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing DB \"$db_name\"');
     }
 
+    // TEST: query should be case sensitive
+    $chado_buddy_records = $instance->getDb(['db.name' => 'NEWdb003'], []);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(0, $num, "We received case insensitive results for getDb when we should not have");
+
+    // TEST: case insensitive override should work
+    $chado_buddy_records = $instance->getDb(['db.name' => 'NEWdb003'], ['case_insensitive' => 'db.name']);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, "We did not receive case insensitive results for getDb when we should have");
+
     // TEST: We should not be able to insert a DB record if it does exist.
     // Run last because this causes an exception.
     $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
@@ -108,8 +117,7 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the getDbxref(), insertDbxref(), updateDbxref(), upsertDbxref() methods.
-   * Focuses on those expected to work ;-)
+   * Tests the xxxDbxref() methods.
    */
   public function testDbxrefMethods() {
 
@@ -176,6 +184,17 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
       $this->assertEquals('dbxref', $base_table, 'The base table is incorrect for the existing Dbxref \"$dbxref_accession\"');
       $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing Dbxref \"$dbxref_accession\"');
     }
+
+    // TEST: query should be case sensitive
+    $chado_buddy_records = $instance->getDbxref(['db.name' => 'Local', 'dbxref.accession' => 'NEWdbXREF003'], []);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(0, $num, "We received case insensitive results for getDbxref when we should not have");
+
+    // TEST: case insensitive override should work
+    $chado_buddy_records = $instance->getDbxref(['db.name' => 'Local', 'dbxref.accession' => 'NEWdbXREF003'],
+                                                ['case_insensitive' => ['db.name', 'dbxref.accession']]);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, "We did not receive case insensitive results for getDbxref when we should have");
 
     // TEST: We should be able to get a URL from a dbxref that has a urlprefix.
     $db_buddy = $instance->insertDb(['db.name' => 'newDb004', 'db.description' => 'desc004', 'db.urlprefix' => 'https://tripal.org/{db}/{accession}']);

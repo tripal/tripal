@@ -28,8 +28,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the getCv(), insertCv(), updateCv(), upsertCv() methods.
-   * Focuses on those expected to work ;-)
+   * Tests the xxxCv() methods.
    */
   public function testCvMethods() {
 
@@ -95,6 +94,17 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
       $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing CV \"$cv_name\"');
     }
 
+    // TEST: query should be case sensitive
+    $chado_buddy_records = $instance->getCv(['cv.name' => 'NEWcv003'], []);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(0, $num, "We received case insensitive results for getCv when we should not have");
+
+    // TEST: case insensitive override should work
+    $chado_buddy_records = $instance->getCv(['cv.name' => 'NEWcv003'],
+                                            ['case_insensitive' => ['cv.name']]);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, "We did not receive case insensitive results for getCv when we should have");
+
     // TEST: We should not be able to insert a CV record if it does exist.
     // Run last because this causes an exception.
     $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
@@ -103,8 +113,7 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the getCvterm(), insertCvterm(), updateCvterm(), upsertCvterm() methods.
-   * Focuses on those expected to work ;-)
+   * Tests the xxxCvterm() methods.
    */
   public function testCvtermMethods() {
 
@@ -179,6 +188,17 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
       $this->assertTrue(str_contains($schema_name, '_test_chado_'), 'The schema is incorrect for the existing Cvterm \"$cvterm_name\"');
     }
 
+    // TEST: query should be case sensitive
+    $chado_buddy_records = $instance->getCvterm(['db.name' => 'LOCAL', 'cv.name' => 'Local', 'cvterm.name' => 'NEWCvTerm003'], []);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(0, $num, "We received case insensitive results for getCvterm when we should not have");
+
+    // TEST: case insensitive override should work
+    $chado_buddy_records = $instance->getCvterm(['db.name' => 'LOCAL', 'cv.name' => 'Local', 'cvterm.name' => 'NEWCvTerm003'],
+                                                ['case_insensitive' => ['db.name', 'cv.name', 'cvterm.name']]);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, "We did not receive case insensitive results for getCvterm when we should have");
+
     // TEST: We should be able to retrieve an existing Cvterm record by its dbxref accession.
     $chado_buddy_records = $instance->getCvterm(['dbxref.accession' => 'newAcc003']);
     $num = $instance->countBuddies($chado_buddy_records);
@@ -208,6 +228,58 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $retrieved_cvterm_id = $results[0]->cvterm_id;
     $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
       "We did not get the cvterm_id from \"$linking_table\" that should have been set by associateCvterm");
+
+    // TEST: We should be able to create a synonym.
+    $chado_buddy_records = $instance->insertCvtermSynonym(['cv.name' => 'local', 'cvterm.cvterm_id' => $expected_cvterm_id,
+                                                           'cvtermsynonym.synonym' => 'syn005', 'cvtermsynonym.type_id' => 5]);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not retrieve the existing Cvterm with synonym "syn005"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the existing Cvterm with synonym "syn005"');
+    $this->assertEquals(24, count($values), 'The values array is of unexpected size for the existing Cvterm with synonym "syn005"');
+    $retrieved_cvterm_id = $chado_buddy_records->getValue('cvterm.cvterm_id');
+    $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
+      'We did not get the correct cvterm_id for the existing Cvterm with synonym "syn005"');
+
+    // TEST: We should be able to update this synonym and change its name
+    $chado_buddy_records = $instance->updateCvtermSynonym(['cvtermsynonym.synonym' => 'syn006', 'cvtermsynonym.type_id' => 6],
+                                                          ['cvtermsynonym.synonym' => 'syn005'], []);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not upsert the existing Cvterm with synonym "syn005"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the updated Cvterm with synonym "syn005"');
+    $this->assertEquals(24, count($values), 'The values array is of unexpected size for the updated Cvterm with synonym "syn005"');
+    $retrieved_cvterm_id = $chado_buddy_records->getValue('cvterm.cvterm_id');
+    $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
+      'We did not get the correct cvterm_id for the dated Cvterm with synonym "syn005"');
+    $this->assertEquals('syn006', $values['cvtermsynonym.synonym'],
+      'We did not update the synonym name for the updated Cvterm with synonym "syn005"');
+    $this->assertEquals(6, $values['cvtermsynonym.type_id'],
+      'We did not update the type_id for the updated Cvterm with synonym "syn005"');
+
+    // TEST: We should be able to upsert this synonym
+    $chado_buddy_records = $instance->upsertCvtermSynonym(['cv.name' => 'local', 'cvtermsynonym.synonym' => 'syn006', 'cvtermsynonym.type_id' => 7], []);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not upsert the existing Cvterm with synonym "syn006"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the upserted Cvterm with synonym "syn006"');
+    $this->assertEquals(24, count($values), 'The values array is of unexpected size for the upserted Cvterm with synonym "syn006"');
+    $retrieved_cvterm_id = $chado_buddy_records->getValue('cvterm.cvterm_id');
+    $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
+      'We did not get the correct cvterm_id for the upserted Cvterm with synonym "syn006"');
+    $this->assertEquals(7, $values['cvtermsynonym.type_id'],
+      'We did not update the type_id for the upserted Cvterm with synonym "syn006"');
+
+    // TEST: We should be able to retrieve this synonym
+    $chado_buddy_records = $instance->getCvtermSynonym(['cv.name' => 'local', 'cvtermsynonym.synonym' => 'syn006']);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not retrieve the existing Cvterm with synonym "syn006"');
+    $values = $chado_buddy_records->getValues();
+    $this->assertIsArray($values, 'We did not retrieve an array of values for the existing Cvterm with synonym "syn006"');
+    $this->assertEquals(24, count($values), 'The values array is of unexpected size for the existing Cvterm with synonym "syn006"');
+    $retrieved_cvterm_id = $chado_buddy_records->getValue('cvterm.cvterm_id');
+    $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
+      'We did not get the correct cvterm_id for the existing Cvterm with synonym "syn006"');
 
     // TEST: We should not be able to insert a Cvterm if it does exist.
     // Run last because this causes an exception.

@@ -27,7 +27,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.urlprefix
    *     - db.url
    * @param array $options (Optional)
-   *   None supported yet. Here for consistency.
+   *   Associative array of options.
+   *     - 'case_insensitive' - a single key, or an array of keys
+   *                            to query case insensitively.
    *
    * @return bool|array|ChadoBuddyRecord
    *   If the select values return a single record then we return the
@@ -51,10 +53,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $parts = explode('.', $key);
       $query->addField($parts[0], $parts[1], $this->makeAlias($key));
     }
-    // Conditions are not aliased
-    foreach ($conditions as $key => $value) {
-      $query->condition($key, $value, '=');
-    }
+    $this->addConditions($query, $conditions, $options);
+
     try {
       $results = $query->execute();
     }
@@ -100,7 +100,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.urlprefix
    *     - db.url
    * @param array $options (Optional)
-   *   None supported yet. Here for consistency.
+   *   Associative array of options.
+   *     - 'case_insensitive' - a single key, or an array of keys
+   *                            to query case insensitively.
    *
    * @return bool|array|ChadoBuddyRecord
    *   If the select values return a single record then we return the
@@ -127,11 +129,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     }
 
     $query->leftJoin('1:db', 'db', 'dbxref.db_id = db.db_id');
-
-    // Conditions are not aliased
-    foreach ($conditions as $key => $value) {
-      $query->condition($key, $value, '=');
-    }
+    $this->addConditions($query, $conditions, $options);
 
     try {
       $results = $query->execute();
