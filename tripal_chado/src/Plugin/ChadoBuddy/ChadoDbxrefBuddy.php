@@ -26,6 +26,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $options (Optional)
    *   Associative array of options.
    *     - 'case_insensitive' - a single key, or an array of keys
@@ -44,6 +46,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   public function getDb(array $conditions, array $options = []) {
     $valid_tables = ['db'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
     $query = $this->connection->select('1:db', 'db');
@@ -99,6 +102,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $options (Optional)
    *   Associative array of options.
    *     - 'case_insensitive' - a single key, or an array of keys
@@ -117,6 +122,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   public function getDbxref(array $conditions, array $options = []) {
     $valid_tables = ['db', 'dbxref'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
     $query = $this->connection->select('1:dbxref', 'dbxref');
@@ -221,6 +227,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.url: (Optional) The URL for the database.
    *     - db.urlprefix: (Optional) The URL that is to be used as a prefix when
    *       constructing a link to a database term.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -236,6 +244,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   public function insertDb(array $values, array $options = []) {
     $valid_tables = ['db'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     try {
@@ -271,6 +280,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -286,6 +297,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   public function insertDbxref(array $values, array $options = []) {
     $valid_tables = ['db', 'dbxref'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     // Can use db.db_id in place of dbxref.db_id
@@ -343,6 +355,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.url: (Optional) The URL for the database.
    *     - db.urlprefix: (Optional) The URL that is to be used as a prefix when
    *       constructing a link to a database term.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -359,6 +373,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   public function updateDb(array $values, array $conditions, array $options = []) {
     $valid_tables = ['db'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
     $this->validateInput($values, $valid_columns);
 
@@ -412,6 +428,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -428,6 +446,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   public function updateDbxref(array $values, array $conditions, array $options = []) {
     $valid_tables = ['db', 'dbxref'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
@@ -479,6 +499,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.url: (Optional) The URL for the database.
    *     - db.urlprefix: (Optional) The URL that is to be used as a prefix when
    *       constructing a link to a database term.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -491,6 +513,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   public function upsertDb(array $values, array $options = []) {
     $valid_tables = ['db'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     // For upsert, the query conditions are a subset consisting of
@@ -525,6 +548,8 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -537,6 +562,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
   public function upsertDbxref(array $values, array $options = []) {
     $valid_tables = ['db', 'dbxref'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     // For upsert, the query conditions are a subset consisting of

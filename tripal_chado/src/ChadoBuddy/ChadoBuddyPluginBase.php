@@ -312,6 +312,30 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
   }
 
   /**
+   * Used to dereference a ChadoBuddyRecord in the $values
+   * array into its component values.
+   *
+   * @param array $values
+   *   An associative array to be validated. Keys are
+   *   table+dot+column name, values are the database table values.
+   *   The special case value of 'buddy_record' => ChadoBuddyRecord
+   *   will have its component values appended to the values.
+   *   In the case of a duplicated key, the one in $values
+   *   takes precedence over the one inside the ChadoBuddyRecord.
+   *
+   * @return array
+   *   Merged associative array of values
+   */
+  protected function dereferenceBuddyRecord(array $values) {
+    if (array_key_exists('buddy_record', $values)) {
+      $record_values = $values['buddy_record']->getValues();
+      $values = array_merge($record_values, $values);
+      unset($values['buddy_record']);
+    }
+    return $values;
+  }
+
+  /**
    * Used to return a subset of values applicable to a
    * single chado table, e.g. remove db table columns when
    * inserting a new dbxref.

@@ -78,6 +78,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $options (Optional)
    *   Associative array of options.
    *     - 'case_insensitive' - a single key, or an array of keys
@@ -96,6 +98,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function getCv(array $conditions, array $options = []) {
     $valid_tables = ['cv'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
     $query = $this->connection->select('1:cv', 'cv');
@@ -161,6 +164,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description
    *     - db.urlprefix
    *     - db.url
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $options (Optional)
    *   Associative array of options.
    *     - 'case_insensitive' - a single key, or an array of keys
@@ -185,6 +190,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $valid_tables[] = 'cvtermsynonym';
     }
     $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
     $query = $this->connection->select('1:cvterm', 'cvterm');
@@ -260,6 +266,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description
    *     - db.urlprefix
    *     - db.url
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $options (Optional)
    *   Associative array of options.
    *     - 'case_insensitive' - a single key, or an array of keys
@@ -288,6 +296,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -303,6 +313,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function insertCv(array $values, array $options = []) {
     $valid_tables = ['cv'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     try {
@@ -348,6 +359,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param $options (Optional)
    *     - create_dbxref - set to FALSE (default TRUE) if you do not
    *         want to automatically create a dbxref if one does not
@@ -365,6 +378,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function insertCvterm(array $values, array $options = []) {
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     // There should be values sufficient to retrieve a cvterm.cv_id
@@ -448,6 +462,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -463,6 +479,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function insertCvtermSynonym(array $values, array $options = []) {
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'cvtermsynonym'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     // There should be values sufficient to retrieve a cvterm.cvterm_id
@@ -509,6 +526,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.cv_id (only used for $conditions)
    *     - cv.name
    *     - cv.definition
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -525,8 +544,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function updateCv(array $values, array $conditions, array $options = []) {
     $valid_tables = ['cv'];
     $valid_columns = $this->getTableColumns($valid_tables);
-    $this->validateInput($conditions, $valid_columns);
+    $values = $this->dereferenceBuddyRecord($values);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($values, $valid_columns);
+    $this->validateInput($conditions, $valid_columns);
 
     $existing_record = $this->getCv($conditions, $options);
     if (!$existing_record) {
@@ -583,6 +604,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -599,6 +622,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function updateCvterm(array $values, array $conditions, array $options = []) {
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
@@ -677,6 +702,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
    *   The same keys are supported as those indicated for the $values.
@@ -693,6 +720,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function updateCvtermSynonym(array $values, array $conditions, array $options = []) {
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'cvtermsynonym'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
@@ -737,6 +766,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - cv.cv_id
    *     - cv.name
    *     - cv.definition
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -749,6 +780,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function upsertCv(array $values, array $options = []) {
     $valid_tables = ['cv'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     // For upsert, the query conditions are a subset consisting of
@@ -793,6 +825,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -805,6 +839,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function upsertCvterm(array $values, array $options = []) {
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     // For upsert, the query conditions are a subset consisting of
@@ -854,6 +889,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - db.description: valid, but has no effect for this function.
    *     - db.urlprefix: valid, but has no effect for this function.
    *     - db.url: valid, but has no effect for this function.
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    * @param array $options (Optional)
    *   None supported yet. Here for consistency.
    *
@@ -866,6 +903,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
   public function upsertCvtermSynonym(array $values, array $options = []) {
     $valid_tables = ['cv', 'cvterm', 'db', 'dbxref', 'cvtermsynonym'];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     // For upsert, the query conditions are a subset consisting of
