@@ -363,8 +363,8 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
     // get the sequence ontology CV id
     $conditions = ['cv.name' => 'sequence'];
-    $cvterm_record = $this->cvterm_buddy->getCvterm($conditions, []);
-    $sequence_cv_id = $cvterm_record->getValue('cvterm.cvterm_id');
+    $cv_record = $this->cvterm_buddy->getCv($conditions, []);
+    $sequence_cv_id = $cv_record->getValue('cv.cv_id');
 
     $form['organism_id'] = [
       '#title' => t('Existing Organism'),
