@@ -369,10 +369,10 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     // Insert the property record
     $query = $this->connection->insert('1:' . $property_table);
     $property_values = $this->subsetInput($values, [$property_table]);
-    if (!array_key_exists($fkey, $property_values)) {
-      $property_values[$fkey] = $record_id;
-    }
-    $query->fields($this->removeTablePrefix($property_values));
+    $fields = $this->removeTablePrefix($property_values);
+    // The $record_id parameter is required for insert
+    $fields[$fkey] = $record_id;
+    $query->fields($fields);
     try {
       $query->execute();
     }
@@ -381,7 +381,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     }
 
     // Retrieve the newly inserted record.
-    $existing_record = $this->getProperty($base_table, $record_id, $values, $options);
+    $existing_record = $this->getProperty($base_table, $record_id, $property_values, $options);
 
     // Validate that exactly one record was obtained.
     $this->validateOutput($existing_record, $values);
