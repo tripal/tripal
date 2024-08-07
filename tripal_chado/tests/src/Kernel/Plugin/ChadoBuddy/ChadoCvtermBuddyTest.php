@@ -105,6 +105,12 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $num = $instance->countBuddies($chado_buddy_records);
     $this->assertEquals(1, $num, "We did not receive case insensitive results for getCv when we should have");
 
+    // TEST: we can pass values as a ChadoBuddyRecord
+    $values = ['buddy_record' => $chado_buddy_records];
+    $chado_buddy_records = $instance->getCv($values, []);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, "We did not receive the Cv when querying using a ChadoBuddyRecord");
+
     // TEST: We should not be able to insert a CV record if it does exist.
     // Run last because this causes an exception.
     $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
