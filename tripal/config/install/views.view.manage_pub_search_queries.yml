@@ -6,6 +6,8 @@ dependencies:
   module:
     - tripal
     - user
+_core:
+  default_config_hash: _E1_O1oLo39mGKB45jyriip-fw8MDBKiJMCvGB8CKho
 id: manage_pub_search_queries
 label: 'Manage Pub Search Queries'
 module: views
@@ -130,8 +132,8 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-        criteria_1:
-          id: criteria_1
+        criteria:
+          id: criteria
           table: tripal_pub_library_query
           field: criteria
           relationship: none
@@ -179,9 +181,8 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-          data_element: Database
-        criteria:
-          id: criteria
+        criteria_1:
+          id: criteria_1
           table: tripal_pub_library_query
           field: criteria
           relationship: none
@@ -229,7 +230,6 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-          data_element: 'Search String'
         disabled:
           id: disabled
           table: tripal_pub_library_query

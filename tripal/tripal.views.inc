@@ -361,7 +361,7 @@ function tripal_views_pub_search_queries(&$data) {
 
   $data['tripal_pub_library_query']['criteria'] = [
     'title' => t('Criteria'),
-    'help' => t('The pub query criteria'),
+    'help' => t("The pub query criteria - label must be either 'database' or 'search string'."),
     'field' => [
       'id' => 'criteria',
     ],
@@ -375,6 +375,41 @@ function tripal_views_pub_search_queries(&$data) {
       'id' => 'string',
     ],
   ];
+
+  // $data['tripal_pub_library_query']['criteriasearchstring'] = [
+  //   'title' => t('Criteria - Search String'),
+  //   'help' => t('The pub query criteria search string'),
+  //   'field' => [
+  //     'id' => 'criteria',
+  //   ],
+  //   'sort' => [
+  //     'id' => 'standard'
+  //   ],
+  //   'filter' => [
+  //     'id' => 'string',
+  //   ],
+  //   'argument' => [
+  //     'id' => 'string',
+  //   ],
+  // ];
+
+  // $data['tripal_pub_library_query']['criteriadatabase'] = [
+  //   'title' => t('Criteria - Database'),
+  //   'help' => t('The pub query criteria database'),
+  //   'field' => [
+  //     'id' => 'criteria',
+  //   ],
+  //   'sort' => [
+  //     'id' => 'standard'
+  //   ],
+  //   'filter' => [
+  //     'id' => 'string',
+  //   ],
+  //   'argument' => [
+  //     'id' => 'string',
+  //   ],
+  // ];
+
 
   $data['tripal_pub_library_query']['disabled'] = [
     'title' => t('Disabled'),

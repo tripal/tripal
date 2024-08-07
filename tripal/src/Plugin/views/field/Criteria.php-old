@@ -16,6 +16,8 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class Criteria extends FieldPluginBase {
 
+
+
   /**
    * {@inheritdoc}
    */
@@ -34,7 +36,7 @@ class Criteria extends FieldPluginBase {
   public function defineOptions() {
     $options = parent::defineOptions();
 
-    //$options['data_element'] = ['default' => []];
+    $options['data_element'] = ['default' => []];
 
     return $options;
   }  
@@ -44,16 +46,16 @@ class Criteria extends FieldPluginBase {
    */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
-    // $form['data_element'] = [
-    //   '#type' => 'select',
-    //   '#title' => $this->t('Data element'),
-    //   '#description' => $this->t('Element within criteria column to return'),
-    //   '#options' => [
-    //     'Search String' => 'Search String',
-    //     'Database' => 'Database'
-    //   ],
-    //   '#default_value' => $this->options['data_element'],
-    // ];
+    $form['data_element'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Data element'),
+      '#description' => $this->t('Element within criteria column to return'),
+      '#options' => [
+        'Search String' => 'Search String',
+        'Database' => 'Database'
+      ],
+      '#default_value' => $this->options['data_element'],
+    ];
   }
 
   /**
@@ -66,16 +68,7 @@ class Criteria extends FieldPluginBase {
     $criteria_column_array = unserialize($value);
 
     $output = "";
-    // $data_element = $this->options['data_element'];
-    $label = strtolower($this->options['label']);
-    $data_element = NULL;
-    if (strpos($label,'database') !== FALSE) {
-      $data_element = 'Database';
-    }
-    else if (strpos($label, 'search string') !== FALSE) {
-      $data_element = 'Search String';
-    }
-
+    $data_element = $this->options['data_element'];
 
     switch ($data_element) {
       case 'Search String': 
@@ -90,7 +83,7 @@ class Criteria extends FieldPluginBase {
         $output .= $db_string;
         break;
       default:
-        $output .= "Label must either contain string 'database' or 'search string' for this field to display correctly";
+        $output .= "A data element was not selected for this field, please configure the field options for this element.";
     }
   
     // To retrieve a value of an additional field, just use the construction as
