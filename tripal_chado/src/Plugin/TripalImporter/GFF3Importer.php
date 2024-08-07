@@ -12,7 +12,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
-use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
+
 /**
  * GFF3 Importer implementation of the TripalImporterBase.
  *
@@ -819,7 +819,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    */
   private function getTypeID($type, $is_prop_type) {
 
-    // Retrieve the appropriate cv buddy record
+    // Retrieve the appropriate cv buddy record for this property type
     $cv_buddy_record = $this->feature_cv;
     if ($is_prop_type) {
       $cv_buddy_record = $this->feature_prop_cv;
@@ -843,16 +843,14 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $options = ['case_insensitive' => 'cvterm.name'];
     $cvterm_record = $this->cvterm_buddy->getCvterm($conditions, $options);
     if (!$cvterm_record) {
-      $options = ['case_insensitive' => 'cvtermsynonym.synonym'];
       $conditions = [
         'cvterm.cv_id' => $cv_buddy_record->getValue('cv.cv_id'),
         'cvtermsynonym.synonym' => $type,
       ];
+      $options = ['case_insensitive' => 'cvtermsynonym.synonym'];
       $cvterm_record = $this->cvterm_buddy->getCvtermSynonym($conditions, $options);
     }
 
-    // If the term couldn't be found and it's a property term, then
-    // insert it as a local term.
     if ($this->cvterm_buddy->countBuddies($cvterm_record) == 1) {
       $cvterm_id = $cvterm_record->getValue('cvterm.cvterm_id');
     }
@@ -860,6 +858,8 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       throw new \Exception(t('Error, more than one cvterm record matched %type', ['%type' => $type]));
     }
     else {
+      // If the term couldn't be found and it's a property term, then
+      // insert it as a local term.
       $this->logger->notice("Inserting the term \"@term\" in vocabulary \"@vocab\".",
                             ['@term' => $type, '@vocab' => $cv_buddy_record->getValue('cv.name')]);
       $values = [
@@ -875,15 +875,16 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $cvterm_id = $cvterm_record->getValue('cvterm.cvterm_id');
     }
 
-    // Cache the result for future use, under both the canonical name and
-    // by synonym. (these will be the same if not a synonym)
+    // Cache the result for future use, under both the canonical name ($cvterm_name)
+    // and also by synonym ($type). These will be the same if not a synonym.
+    $cvterm_name = $cvterm_record->getValue('cvterm.name');
     if ($is_prop_type) {
+      $this->featureprop_cvterm_lookup[strtolower($cvterm_name)] = $cvterm_id;
       $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id;
-      $this->featureprop_cvterm_lookup[strtolower($cvterm_record->getValue('cvterm.name'))] = $cvterm_id;
     }
     else {
+      $this->feature_cvterm_lookup[strtolower($cvterm_name)] = $cvterm_id;
       $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id;
-      $this->feature_cvterm_lookup[strtolower($cvterm_record->getValue('cvterm.name'))] = $cvterm_id;
     }
     return $cvterm_id;
   }
@@ -3302,6 +3303,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    *       It's not clear if this makes any difference, though.
    */
   function insert_cvterm($term, $options = []) {
+    $this->logger->error("insert_cvterm is DEPRECATED");
 print "DEPRECATED\n";
     $definition = $term['definition'] ?? '';
 
