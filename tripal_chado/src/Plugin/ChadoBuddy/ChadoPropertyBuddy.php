@@ -109,6 +109,8 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    *
    * @param array $options (Optional)
    *     - property_table - if the default of $base_table . 'prop' needs to be changed
@@ -132,6 +134,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
     $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
     if (!isset($this->cvterm_instance)) {
@@ -219,6 +222,8 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    *
    * @param array $options (Optional)
    *     - property_table - if the default of $base_table . 'prop' needs to be changed
@@ -243,6 +248,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
     $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
 
     $existing_records = $this->getProperty($base_table, $record_id, $conditions, $options);
@@ -308,6 +314,8 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    *
    * @param array $options (Optional)
    *     - property_table - if the default of $base_table . 'prop' needs to be changed
@@ -332,32 +340,30 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
     $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
-    if (array_key_exists("$property_table.type_id", $values)) {
-      $type_id = $values["$property_table.type_id"];
-    }
-    elseif (array_key_exists('cvterm', $values)) {
-      $type_id = $values['cvterm']->getValue('cvterm_id');
-      unset($values['cvterm']);
-      $values["$property_table.type_id"] = $type_id;
-    }
-    elseif ($options['create_cvterm'] ?? FALSE) {
-      // If a term was not passed, we can create it if the required fields were included.
-      // For safety, this is an opt-in setting.
-      // Use the buddy manager dependency to create a Cvterm buddy instance
-      if (!isset($this->cvterm_instance)) {
-        $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
+    if (!array_key_exists("$property_table.type_id", $values)) {
+      if (array_key_exists('cvterm.cvterm_id', $values)) {
+        $values["$property_table.type_id"] = $values['cvterm.cvterm_id'];
       }
-      // Call the Cvterm buddy to perform the insert.
-      $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm']);
-      $cvterm_record = $this->cvterm_instance->upsertCvterm($cvterm_values, $options);
-      $type_id = $cvterm_record->getValue('cvterm.cvterm_id');
-      $values["$property_table.type_id"] = $type_id;
-    }
-    else {
-      throw new ChadoBuddyException('ChadoBuddy insertProperty error, neither cvterm nor type_id'
-                                   . ' were specified and create_cvterm option is not enabled');
+      elseif ($options['create_cvterm'] ?? FALSE) {
+        // If a term was not passed, we can create it if the required fields were included.
+        // For safety, this is an opt-in setting.
+        // Use the buddy manager dependency to create a Cvterm buddy instance
+        if (!isset($this->cvterm_instance)) {
+          $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
+        }
+        // Call the Cvterm buddy to perform the insert.
+        $cvterm_values = $this->subsetInput($values, ['db', 'dbxref', 'cv', 'cvterm']);
+        $cvterm_record = $this->cvterm_instance->upsertCvterm($cvterm_values, $options);
+        $type_id = $cvterm_record->getValue('cvterm.cvterm_id');
+        $values["$property_table.type_id"] = $type_id;
+      }
+      else {
+        throw new ChadoBuddyException("ChadoBuddy insertProperty error, neither cvterm.cvterm_id nor $property_table.type_id"
+                                     . " were specified and create_cvterm option is not enabled");
+      }
     }
 
     // Insert the property record
@@ -422,6 +428,8 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    *
    * @param array $conditions
    *   An associative array of the conditions to find the record to update.
@@ -449,6 +457,8 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
     $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
@@ -519,6 +529,8 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - db.description
    *     - db.urlprefix
    *     - db.url
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
    *
    * @param array $options (Optional)
    *     - property_table - if the default of $base_table . 'prop' needs to be changed
@@ -542,11 +554,15 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
     $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
     $valid_columns = $this->getTableColumns($valid_tables);
+    $values = $this->dereferenceBuddyRecord($values);
     $this->validateInput($values, $valid_columns);
 
     // For upsert, the query conditions are a subset consisting of
     // only the columns that are part of a unique constraint.
     $key_columns = $this->getTableColumns($valid_tables, 'unique');
+    // If cvterm.cvterm_id was supplied instead of $property_table.type_id,
+    // it needs to also be included in the conditions
+    $key_columns[] = 'cvterm.cvterm_id';
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
     $existing_record = $this->getProperty($base_table, $record_id, $conditions, $options);
