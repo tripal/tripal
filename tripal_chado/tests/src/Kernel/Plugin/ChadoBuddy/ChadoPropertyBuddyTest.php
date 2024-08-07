@@ -128,6 +128,10 @@ class ChadoPropertyBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals('acc005', $values['dbxref.accession'], 'The dbxref accession is incorrect for the new property "prop005"');
     $this->assertEquals('name005', $values['cvterm.name'], 'The dbxref accession is incorrect for the new property "prop005"');
 
+    // TEST: we can pass cvterm.cvterm_id instead of projectprop.type_id for an upsert
+    $chado_buddy_records = $instance->upsertProperty('project', 1, ['cvterm.cvterm_id' => 2, 'projectprop.value' => 'prop006'], []);
+    $num = $instance->countBuddies($chado_buddy_records);
+    $this->assertEquals(1, $num, 'We did not upsert a new property "prop006"');
 
   }
 }
