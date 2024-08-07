@@ -185,98 +185,6 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
   }
 
   /**
-   * Deletes a chado property or multiple properties.
-   *
-   * @param string $base_table
-   *   The base table for which the property should be associated. Thus to associate
-   *   a property with a feature, the basetable=feature and a record is added to the
-   *   featureprop table.
-   * @param int $record_id
-   *   The primary key of the basetable to that the property is associated with.
-   * @param array $conditions
-   *   An array where the key is a table+dot+column to describe the
-   *   name of the property table and the column desired. Examples
-   *   here are for the project table:
-   *     - projectprop.projectprop_id - (optional) property table primary key value
-   *     - projectprop.project_id - (optional) base table primary key value
-   *     - projectprop.type_id - a foreign key to cvterm_id
-   *     - projectprop.value - the value of the property
-   *     - projectprop.rank - optional rank of the property
-   *     - and possibly other columns for some property tables
-   *     - cv.cv_id
-   *     - cv.name
-   *     - cv.definition
-   *     - cvterm.cvterm_id
-   *     - cvterm.cv_id
-   *     - cvterm.name
-   *     - cvterm.definition
-   *     - cvterm.is_obsolete
-   *     - cvterm.is_relationshiptype
-   *     - dbxref.dbxref_id
-   *     - dbxref.db_id
-   *     - dbxref.description
-   *     - dbxref.accession
-   *     - dbxref.version
-   *     - db.db_id
-   *     - db.name
-   *     - db.description
-   *     - db.urlprefix
-   *     - db.url
-   *     - buddy_record = a ChadoBuddyRecord can be used
-   *       in place of or in addition to other keys
-   *
-   * @param array $options (Optional)
-   *     - property_table - if the default of $base_table . 'prop' needs to be changed
-   *     - fkey - if the default of $base_table . '_id' needs to be changed
-   *     - pkey - if the default of $property_table . '_id' needs to be changed
-   *
-   * @return int
-   *   If the select values return a single record then we return the
-   *     ChadoBuddyRecord describing the chado record.
-   *   If the select values return multiple records, then we return an array
-   *     of ChadoBuddyRecords describing the results.
-   *   If there are no results then we return FALSE and if an error is
-   *     encountered then a ChadoBuddyException will be thrown.
-   *
-   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If an error is encountered.
-   */
-  public function deleteProperty(string $base_table, int $record_id, array $conditions, array $options = []) {
-    $property_table = $options['property_table'] ?? $base_table . 'prop';
-    $fkey = $options['fkey'] ?? $base_table . '_id';
-    $pkey = $options['pkey'] ?? $property_table . '_id';
-
-    $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
-    $valid_columns = $this->getTableColumns($valid_tables);
-    $conditions = $this->dereferenceBuddyRecord($conditions);
-    $this->validateInput($conditions, $valid_columns);
-
-    $existing_records = $this->getProperty($base_table, $record_id, $conditions, $options);
-    $pkey_ids = [];
-    if ($existing_records) {
-      if (is_array($existing_records)) {
-        foreach ($existing_records as $record) {
-          $pkey_ids[] = $record->getValue("$property_table.$pkey");
-        }
-      }
-      else {
-        $pkey_ids[] = $existing_records->getValue("$property_table.$pkey");
-      }
-
-      $query = $this->connection->delete('1:' . $property_table);
-      $query->condition($pkey, $pkey_ids, 'IN');
-      try {
-        $results = $query->execute();
-      }
-      catch (\Exception $e) {
-        throw new ChadoBuddyException('ChadoBuddy deleteProperty database error '.$e->getMessage());
-      }
-    }
-
-    return count($pkey_ids);
-  }
-
-  /**
    * Adds a new property linked to the specified base table and record
    *
    * @param string $base_table
@@ -576,6 +484,106 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       $new_record = $this->insertProperty($base_table, $record_id, $values, $options);
     }
     return $new_record;
+  }
+
+  /**
+   * Deletes a chado property or multiple properties.
+   *
+   * @param string $base_table
+   *   The base table for which the property should be associated. Thus to associate
+   *   a property with a feature, the basetable=feature and a record is added to the
+   *   featureprop table.
+   * @param int $record_id
+   *   The primary key of the basetable to that the property is associated with.
+   * @param array $conditions
+   *   An array where the key is a table+dot+column to describe the
+   *   name of the property table and the column desired. Examples
+   *   here are for the project table:
+   *     - projectprop.projectprop_id - (optional) property table primary key value
+   *     - projectprop.project_id - (optional) base table primary key value
+   *     - projectprop.type_id - a foreign key to cvterm_id
+   *     - projectprop.value - the value of the property
+   *     - projectprop.rank - optional rank of the property
+   *     - and possibly other columns for some property tables
+   *     - cv.cv_id
+   *     - cv.name
+   *     - cv.definition
+   *     - cvterm.cvterm_id
+   *     - cvterm.cv_id
+   *     - cvterm.name
+   *     - cvterm.definition
+   *     - cvterm.is_obsolete
+   *     - cvterm.is_relationshiptype
+   *     - dbxref.dbxref_id
+   *     - dbxref.db_id
+   *     - dbxref.description
+   *     - dbxref.accession
+   *     - dbxref.version
+   *     - db.db_id
+   *     - db.name
+   *     - db.description
+   *     - db.urlprefix
+   *     - db.url
+   *     - buddy_record = a ChadoBuddyRecord can be used
+   *       in place of or in addition to other keys
+   *
+   * @param array $options (Optional)
+   *     - property_table - if the default of $base_table . 'prop' needs to be changed
+   *     - fkey - if the default of $base_table . '_id' needs to be changed
+   *     - pkey - if the default of $property_table . '_id' needs to be changed
+   *     - max_delete - specifies the maximum number of properties that can be deleted.
+   *       Default 1, set to -1 for unlimited. If limit exceeded, a
+   *       ChadoBuddyException is thrown.
+   *
+   * @return int
+   *   If the select values return a single record then we return the
+   *     ChadoBuddyRecord describing the chado record.
+   *   If the select values return multiple records, then we return an array
+   *     of ChadoBuddyRecords describing the results.
+   *   If there are no results then we return FALSE and if an error is
+   *     encountered then a ChadoBuddyException will be thrown.
+   *
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If an error is encountered.
+   */
+  public function deleteProperty(string $base_table, int $record_id, array $conditions, array $options = []) {
+    $property_table = $options['property_table'] ?? $base_table . 'prop';
+    $fkey = $options['fkey'] ?? $base_table . '_id';
+    $pkey = $options['pkey'] ?? $property_table . '_id';
+
+    $valid_tables = ['cvterm', 'cv', 'dbxref', 'db', $base_table, $property_table];
+    $valid_columns = $this->getTableColumns($valid_tables);
+    $conditions = $this->dereferenceBuddyRecord($conditions);
+    $this->validateInput($conditions, $valid_columns);
+
+    $existing_records = $this->getProperty($base_table, $record_id, $conditions, $options);
+    $pkey_ids = [];
+    if ($existing_records) {
+      if (is_array($existing_records)) {
+        foreach ($existing_records as $record) {
+          $pkey_ids[] = $record->getValue("$property_table.$pkey");
+        }
+      }
+      else {
+        $pkey_ids[] = $existing_records->getValue("$property_table.$pkey");
+      }
+
+      $max_delete = $options['max_delete'] ?? 1;
+      if ((count($pkey_ids) > $max_delete) and ($max_delete != -1)) {
+        throw new ChadoBuddyException('ChadoBuddy deleteProperty cannot delete '
+          . count($pkey_ids) . ' records, max_delete is set to ' . $max_delete);
+      }
+      $query = $this->connection->delete('1:' . $property_table);
+      $query->condition($pkey, $pkey_ids, 'IN');
+      try {
+        $results = $query->execute();
+      }
+      catch (\Exception $e) {
+        throw new ChadoBuddyException('ChadoBuddy deleteProperty database error '.$e->getMessage());
+      }
+    }
+
+    return count($pkey_ids);
   }
 
 }
