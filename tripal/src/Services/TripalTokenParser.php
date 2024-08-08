@@ -89,7 +89,7 @@ class TripalTokenParser {
    *
    * @return \Drupal\tripal\Entity\TripalEntityType
    */
-  public function getBunde() {
+  public function getBundle() {
     return $this->bundle;
   }
 

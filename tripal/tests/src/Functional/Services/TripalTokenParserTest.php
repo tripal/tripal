@@ -7,6 +7,7 @@ use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use Drupal\Core\Test\FunctionalTestSetupTrait;
 use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use \Drupal\tripal\Services\TripalTokenParser;
 
 /**
  * Tests the basic functions of the TripalContentTypes Service.
@@ -414,11 +415,11 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
     /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
     $token_parser = \Drupal::service('tripal.token_parser');
     $token_parser->initParser($organism);
-    $this->assertTrue($token_parser->getBunde()->getId() === 'organism', "The tripal token parser didn't set the bundle properly.");
+    $this->assertTrue($token_parser->getBundle()->getId() === 'organism', "The tripal token parser didn't set the bundle properly.");
     $this->assertTrue(is_null($token_parser->getEntity()), "The tripal token parser should have a null entity.");
     $field_names = $token_parser->getFieldNames();
 
-    // Mkae sure all of the fields are present in the token parser.
+    // Make sure all of the fields are present in the token parser.
     // This ensures that the bundle was found and it was able to
     // create instances of all the fields attached to it.
     $this->assertTrue(in_array('organism_genus', $field_names), 'The tripal token parser is missing the organism_genus field.');
@@ -514,5 +515,10 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
     $this->assertTrue($replaced[1] == 'Organism', 'The [TripalEntityType__label] token is not being replaced.');
     $this->assertTrue($replaced[2] == '1', 'The [TripalEntity__entity_id] token is not being replaced.');
 
+    // Test the getFieldValues() function directly
+    $field_values = $token_parser->getFieldValues();
+    print "CP1: field_values=";var_dump($field_values); //@@@
+    // Test the getEntityTitle() function directly
+    
   }
 }
