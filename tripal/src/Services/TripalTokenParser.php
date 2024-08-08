@@ -222,30 +222,33 @@ class TripalTokenParser {
         // Look for values for bundle or entity related tokens.
         if ($token === 'TripalBundle__bundle_id') {
           $value = $this->bundle->getID();
-          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value, $replaced[$index]));
         }
         elseif ($token == 'TripalEntityType__label') {
           $value = $this->bundle->getLabel();
-          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value, $replaced[$index]));
         }
         elseif ($token === 'TripalEntity__entity_id' and !is_null($this->entity)) {
           $value = $this->entity->getID();
-          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value, $replaced[$index]));
         }
         // Look for values for field related tokens
         elseif (in_array($token, array_keys($this->fields))) {
           $field = $this->fields[$token];
           $key = $field->mainPropertyName();
+          // If not in values array, then this is a field related token
+          // but the value wasn't set with addFieldValue() method.
+          $value = NULL;
           if (array_key_exists($token, $this->values)) {
             $value = @$this->values[$token][$key];
-            if (!is_null($value)) {
-              $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
-            }
-            // If the value is empty or null then we remove the token.
-            $replaced[$index] = trim(preg_replace("/\[$token\]/", '',  $replaced[$index]));
           }
-          // If we get here then this is a field related token but the token
-          // value wasn't set with addFieldValue() method.
+          if (!is_null($value)) {
+            $replaced[$index] = trim(preg_replace("/\[$token\]/", $value, $replaced[$index]));
+          }
+          else {
+            // If the value was missing or is null then we remove the token.
+            $replaced[$index] = trim(preg_replace("/\[$token\]/", '', $replaced[$index]));
+          }
         }
       }
     }
