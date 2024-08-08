@@ -515,10 +515,15 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
     $this->assertTrue($replaced[1] == 'Organism', 'The [TripalEntityType__label] token is not being replaced.');
     $this->assertTrue($replaced[2] == '1', 'The [TripalEntity__entity_id] token is not being replaced.');
 
-    // Test the getFieldValues() function directly
-    $field_values = $token_parser->getFieldValues();
-    print "CP1: field_values=";var_dump($field_values); //@@@
-    // Test the getEntityTitle() function directly
-    
+    // Test calling the getFieldValues() function directly
+    $field_values = $entity->getFieldValues();
+    $this->assertIsArray($field_values, "getFieldValues did not return an array.");
+    $this->assertEquals(14, count($field_values), "getFieldValues returned an array of unexpected size.");
+    $value = $field_values['organism_infraspecific_type'][0]['value'] ?? NULL;
+    $this->assertEquals('subspecies', $value, "getFieldValues did not return the correct infraspecific type.");
+
+    // Test calling the getEntityTitle() function directly
+    $entity_title = $token_parser->getEntityTitle($token_parser->getBundle(), $field_values);
+    $this->assertEquals('Oryza sativa subspecies Japonica', $entity_title, "getEntityTitle did not return the correct title");
   }
 }
