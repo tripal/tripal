@@ -39,12 +39,9 @@ class DefaultTripalBooleanTypeFormatter extends TripalFormatterBase {
     $elements = [];
 
     foreach($items as $delta => $item) {
-      $value = $item->get("value")->getValue();
-      if (!is_null($value) and strlen($value)) {
-        $elements[$delta] = [
-          "#markup" => $value ? $true_string : $false_string,
-        ];
-      }
+      $elements[$delta] = [
+        "#markup" => $item->get("value")->getValue() ? $true_string : $false_string,
+      ];
     }
 
     return $elements;
