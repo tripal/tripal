@@ -22,7 +22,7 @@ jobs:
       - name: Build the Docker
         run: |
           docker build --tag=tripaldocker:localdocker \
-            --build-arg phpversion="${{ matrix.php-version }}" \
+            --build-arg phpversion="8.3" \
             --build-arg drupalversion="10.3.x-dev" \
             --build-arg postgresqlversion="16" \
             --build-arg chadoschema='teacup' ./
