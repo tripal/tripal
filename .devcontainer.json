@@ -2,7 +2,8 @@
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
-      "drupalversion": "10.3.x-dev"
+      "drupalversion": "10.3.x-dev",
+      "phpversion": "8.3"
     }
   },
   "customizations": {
