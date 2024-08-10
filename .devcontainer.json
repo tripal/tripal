@@ -117,5 +117,5 @@
     5432,
     9003
   ],
-  "postCreateCommand": "service postgresql restart && service apache2 restart"
+  "postCreateCommand": "init.sh"
 }
