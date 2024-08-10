@@ -70,7 +70,7 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/${postgresqlversion}/main/pos
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 ## Xdebug
-RUN pecl install xdebug-3.3.1 \
+RUN pecl install xdebug-3.3.2 \
     && docker-php-ext-enable xdebug \
     && cat /app/tripaldocker/default_files/xdebug/xdebug-coverage.ini >> /usr/local/etc/php/php.ini \
     && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
