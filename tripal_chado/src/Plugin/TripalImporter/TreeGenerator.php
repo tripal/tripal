@@ -3,12 +3,6 @@
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\InvokeCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
-use Drupal\Core\Link;
-use Drupal\Core\Url;
 
 /**
  * Tree Generator implementation of the TripalImporterBase.
@@ -55,7 +49,6 @@ class TreeGenerator extends ChadoImporterBase {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
@@ -199,7 +192,6 @@ class TreeGenerator extends ChadoImporterBase {
    */
   protected function retrieveLineage($root_taxon = NULL) {
 
-    $total = count($this->all_orgs);
     $omitted_organisms = [];
     $outside_root_taxon = 0;
     $number_valid = 0;
@@ -300,7 +292,6 @@ class TreeGenerator extends ChadoImporterBase {
    *   organisms not part of this taxon are excluded from the tree.
    */
   protected function rebuildTree($root_taxon = NULL) {
-    $chado = $this->getChadoConnection();
     $lineage_nodes[] = [];
 
     // The taxonomic tree must have a root, so create that first.
@@ -315,11 +306,10 @@ class TreeGenerator extends ChadoImporterBase {
       'branch_set' => [],
     ];
 
-    $total = count($this->all_orgs);
-    $j = 1;
     foreach ($this->all_orgs as $organism) {
 
-      $this->rebuildTreeOrganismLineage($organism, $root_taxon, $lineage_good);
+      list($parent_name, $depth, $lineage_elements) = $this->rebuildTreeOrganismLineage(
+        $organism, $root_taxon, $tree, $lineage_good);
 
       // If $lineage_good is not set then we had problems setting the lineage so
       // skip adding the leaf node below.
@@ -327,6 +317,7 @@ class TreeGenerator extends ChadoImporterBase {
         continue;
       }
 
+      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
       $leaf_rank = 'species';
       if (property_exists($organism, 'type_id') and $organism->type_id and ($organism->type != 'no_rank')) {
         $leaf_rank = $organism->type;
@@ -336,13 +327,13 @@ class TreeGenerator extends ChadoImporterBase {
       $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
       $node = [
         'name' => $sci_name,
-        'depth' => $i,
+        'depth' => $depth,
         'is_root' => 0,
         'is_leaf' => 1,
         'is_internal' => 0,
         'left_index' => 0,
         'right_index' => 0,
-        'parent' => $parent['name'],
+        'parent' => $parent_name,
         'organism_id' => $organism->organism_id,
         'properties' => [
           $this->rank_cvterm_id => $leaf_rank,
@@ -361,8 +352,7 @@ class TreeGenerator extends ChadoImporterBase {
    * Called by rebuildTree(), adds lineage nodes for one organism.
    *
    **/
-  protected function rebuildTreeOrganismLineage($organism, $root_taxon, &$lineage_good) {
-    $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
+  protected function rebuildTreeOrganismLineage($organism, $root_taxon, &$tree, &$lineage_good) {
     //$this->logMessage("- " . ($j++) . " of $total. Adding @organism", array('@organism' => $sci_name));
 
     $phylonode = $this->getPhylonode($this->phylotree->phylotree_id, $organism->organism_id);
@@ -430,6 +420,7 @@ class TreeGenerator extends ChadoImporterBase {
       $this->addTaxonomyNode($tree, $node, $lineage_elements);
       $i++;
     }
+    return [$parent['name'], $i, $lineage_elements];
   }
 
   /**
@@ -520,8 +511,6 @@ class TreeGenerator extends ChadoImporterBase {
    *           3 = no lineage available for this organism
    */
   protected function addOrganismNode($organism, $root_taxon = NULL) : int {
-    $chado = $this->getChadoConnection();
-    $adds_organism = $organism ? FALSE : TRUE;
 
     $lineage = $organism->lineage ?? NULL;
     $lineageex = $organism->lineageex ?? NULL;

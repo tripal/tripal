@@ -3,17 +3,12 @@
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\InvokeCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
-use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 
 /**
  * Taxonomy Importer implementation of the TripalImporterBase.
@@ -429,9 +424,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     // If the caller did not provide an organism then we want to try and
     // add one. But, it only makes sense to add one if this record
     // is of rank species.
-    // The api lookup function called here handles Chado v1.2 where infraspecific
-    // name is appended to the species, as well as Chado v1.3 where we have
-    // more columns in the organism table.
     if (!$organism) {
       // We do the lookup in two steps so that there is no error message for
       // missing (new) organisms from chado_get_organism().
@@ -757,7 +749,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     // n.b. in Tripal 3 there was code to first delete all properties of
     // this type if the rank is zero. With an upsert option, this should
     // no longer be necessary, but noting it here because you never know.
-    $record = $this->property_buddy->upsertProperty('organism', $organism_id, $values, $options);
+    $this->property_buddy->upsertProperty('organism', $organism_id, $values, $options);
   }
 
   /**
@@ -777,7 +769,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       'pkey' => 'organism_id',
     ];
     $dbxref_record = $this->dbxref_buddy->upsertDbxref($values, []);
-    $success = $this->dbxref_buddy->associateDbxref('organism', $organism_id, $dbxref_record, $options);
+    $this->dbxref_buddy->associateDbxref('organism', $organism_id, $dbxref_record, $options);
   }
 
   /**
