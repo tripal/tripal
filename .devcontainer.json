@@ -16,7 +16,8 @@
         "andrewdavidblum.drupal-smart-snippets",
         "DEVSENSE.composer-php-vscode",
         "mblode.twig-language-2",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker"
       ],
       "settings": {
         // This turns off basic PHP suggestions provided by Visual Studio Code (in lieu of Intelephense's).
