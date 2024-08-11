@@ -17,6 +17,7 @@ LABEL os.version="bullseye"
 LABEL postgresql.version="${postgresqlversion}"
 
 COPY . /app
+COPY tripaldocker/init_scripts/motd /etc/motd
 
 ## Install some basic support programs and update apt-get.
 RUN chmod -R +x /app && apt-get update 1> ~/aptget.update.log \
