@@ -368,30 +368,30 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'The TripalPublish service should have published 1 organism.');
 
     // Test that entries were added for all field items and that fields that
-    // shouldn't be saved in Drupal are NULL.
+    // shouldn't be saved in Drupal are equal to the field's default value.
     $this->checkFieldItem('organism', 'organism_genus', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'value' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 1, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_species', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'value' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 1, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_abbreviation', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'value' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 1, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_infraspecific_name', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'value' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 1, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_infraspecific_type', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'type_id' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 1, 'type_id' => 0]);
 
     $this->checkFieldItem('organism', 'organism_comment', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'value' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 1, 'value' => '']);
 
     // Test that the title via token replacement is working.
     $this->assertTrue(array_values($entities)[0] == '<em>Oryza species</em> subspecies <em>Japonica</em>',
@@ -413,27 +413,27 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
     $this->checkFieldItem('organism', 'organism_genus', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_species', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_abbreviation', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_infraspecific_name', 0,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_infraspecific_type', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'type_id' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 2, 'type_id' => 0]);
 
     $this->checkFieldItem('organism', 'organism_comment', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => NULL]);
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
 
     //
     // Test publishing properties.
@@ -485,31 +485,31 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->assertCount(1, array_values($entities),
       'There should only be one published entity for a single organism with new properties.');
 
-    // Check that the property values got published.  The type_id should be
-    // NULL because that's not stored in Drupal.
+    // Check that the property values got published. The type_id should be
+    // 0 in the drupal field table, the default for an integer.
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 1],
-        ['type_id' => NULL, 'linker_id' => $organism_id,
+        ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 2],
-        ['type_id' => NULL, 'linker_id' => $organism_id,
+        ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 3],
-        ['type_id' => NULL, 'linker_id' => $organism_id,
+        ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
         ['record_id' => $organism_id, 'prop_id' => 4],
-        ['type_id' => NULL, 'linker_id' => $organism_id,
+        ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
         ['record_id' => $organism_id, 'prop_id' => 5],
-        ['type_id' => NULL, 'linker_id' => $organism_id,
+        ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
 
     // Check that only the exact number of properties were published.
