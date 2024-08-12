@@ -4,7 +4,8 @@
     "dockerfile": "Dockerfile",
     "args": {
       "drupalversion": "10.3.x-dev",
-      "phpversion": "8.3"
+      "phpversion": "8.3",
+      "postgresqlversion": "16"
     }
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/var/www/drupal/web/modules/contrib/tripal,type=bind",
