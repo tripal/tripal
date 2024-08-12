@@ -88,6 +88,13 @@ class TripalPublish {
   protected $required_types = [];
 
   /**
+   *  A list of property types that are not one of the required types.
+   *
+   * @var array $non_required_types
+   */
+  protected $non_required_types = [];
+
+  /**
    * Supported actions during publishing.
    * Any field containing properties that are not in this list, will not be published!
    *
@@ -170,6 +177,7 @@ class TripalPublish {
     $this->entity_type = NULL;
     $this->storage = NULL;
     $this->required_types = [];
+    $this->non_required_types = [];
     $this->unsupported_fields = [];
     $this->reported = 0;
 
@@ -204,6 +212,7 @@ class TripalPublish {
     // Get the required field properties that will uniquely identify an entity.
     // We only need to search on those properties.
     $this->required_types = $this->storage->getStoredTypes();
+    $this->non_required_types = $this->storage->getNonStoredTypes();
   }
 
   /**
@@ -775,7 +784,8 @@ class TripalPublish {
     $init_sql = "
       INSERT INTO {" . $field_table . "}
         (bundle, deleted, entity_id, revision_id, langcode, delta, ";
-    foreach (array_keys($this->required_types[$field_name]) as $key) {
+    foreach (array_keys(array_merge($this->required_types[$field_name],
+                                    $this->non_required_types[$field_name])) as $key) {
       $init_sql .= $field_name . '_'. $key . ', ';
     }
     $init_sql = rtrim($init_sql, ", ");
@@ -824,6 +834,12 @@ class TripalPublish {
             $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
             $sql .=  $placeholder . ', ';
             $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+          }
+          // Non-required types get a placeholder of the correct type, string '', int 0, etc.
+          foreach ($this->non_required_types[$field_name] as $key => $properties) {
+            $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
+            $sql .=  $placeholder . ', ';
+            $args[$placeholder] = $properties->getDefaultValue();
           }
           $sql = rtrim($sql, ", ");
           $sql .= "),\n";

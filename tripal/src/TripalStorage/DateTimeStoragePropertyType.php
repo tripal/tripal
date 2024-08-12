@@ -32,4 +32,14 @@ class DateTimeStoragePropertyType extends StoragePropertyTypeBase {
     parent::__construct($entityType, $fieldType, $key, $term_id, "dateTime", $storage_settings);
   }
 
+  /**
+   * Returns the default empty value of the correct type for this storage property type.
+   *
+   * @return float
+   *   A zero.
+   */
+  public function getDefaultValue() {
+    return 0.0;
+  }
+
 }
