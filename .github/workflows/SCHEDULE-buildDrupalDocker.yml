@@ -1,8 +1,7 @@
-name: Build and Publish TripalDocker
+name: Build and Publish Drupal Docker
 on:
   push:
     branches:
-      - 4.x
       - tv4g8-issue1950-improveTripalDocker
 
 jobs:
@@ -26,49 +25,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: Check out code
-      ## Build images tagged drupal{VER}-php{VER}-pgsqlVER
+      ## Build images tagged drupal{VER}-php{VER}-pgsql{VER}
       - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build & push Full matrix of Docker images
         with:
-          image: tripalproject/tripaldocker
+          image: tripalproject/tripaldocker-drupal
           tags: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
+          dockerfile: tripaldocker/drupal.Dockerfile
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}"
-          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
-      ## Build images tagged drupal{VER}-php{VER}-pgsqlVER-noChado without chado installed!
-      - uses: mr-smithers-excellent/docker-build-push@v6
-        name: Build & push Full matrix of Docker images WITH NO CHADO
-        with:
-          image: tripalproject/tripaldocker
-          tags: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}-noChado
-          registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}"
-          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
-      ## Build Images tagged drupal{VER} focused on php 8.2 + postgresql 16
+          labels: 'drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+      ## Build Images tagged drupal{VER} focused on php 8.3 + postgresql 16
       - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build & push Docker image Drupal focused Docker images.
-        if: ${{ matrix.php-version == '8.2' && matrix.pgsql-version == '16' }}
+        if: ${{ matrix.php-version == '8.3' && matrix.pgsql-version == '16' }}
         with:
-          image: tripalproject/tripaldocker
+          image: tripalproject/tripaldocker-drupal
           tags: drupal${{ matrix.drupal-version }}
+          dockerfile: tripaldocker/drupal.Dockerfile
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}"
-          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+          labels: 'drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
       ## Build the image tagged as latest which is the highest version combo that we feel is well supported.
       - uses: mr-smithers-excellent/docker-build-push@v6
         name: Build latest using 10.3.x-dev, PHP 8.3, PgSQL 16
         if: ${{ matrix.drupal-version == '10.3.x-dev' && matrix.php-version == '8.3' && matrix.pgsql-version == '16' }}
         with:
-          image: tripalproject/tripaldocker
+          image: tripalproject/tripaldocker-drupal
           tags: latest
+          dockerfile: tripaldocker/drupal.Dockerfile
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}"
-          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+          labels: 'drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
