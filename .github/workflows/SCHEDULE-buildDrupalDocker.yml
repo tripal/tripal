@@ -21,7 +21,7 @@ jobs:
         drupal-version:
           - "10.2.x-dev"
           - "10.3.x-dev"
-    name: Docker Build (drupal${{ matrix.drupal-version }})
+    name: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
     steps:
       - uses: actions/checkout@v4
         name: Check out code
