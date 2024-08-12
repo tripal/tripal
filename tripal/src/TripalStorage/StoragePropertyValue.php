@@ -89,7 +89,7 @@ class StoragePropertyValue extends StoragePropertyBase {
    * @param mixed $default_value
    *   The value to use as the default value.
    */
-  public function setValueType($default_value) {
+  public function setDefaultValue($default_value) {
     $this->default_value = $default_value;
   }
 
