@@ -1,4 +1,5 @@
 {
+  "name": "TripalDocker",
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
@@ -6,6 +7,8 @@
       "phpversion": "8.3"
     }
   },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/var/www/drupal/web/modules/contrib/tripal,type=bind",
+  "workspaceFolder": "/var/www/drupal/web/modules/contrib/tripal",
   "customizations": {
     "vscode": {
       "extensions": [
