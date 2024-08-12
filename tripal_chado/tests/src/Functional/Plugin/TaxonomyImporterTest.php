@@ -2,19 +2,6 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
-use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
-
-// FROM OLD CODE:
-use Drupal\Core\Url;
-use Drupal\Tests\BrowserTestBase;
-use Drupal\Core\Database\Database;
-use Drupal\tripal_chado\api\ChadoSchema;
-use TaxonomyImporter;
 
 /**
  * Tests for the TaxonomyImporter class
@@ -31,8 +18,6 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
    * @group taxonomy
    */
   public function testTaxonomyImporterSimpleTest() {
-    // Public schema connection
-    $public = \Drupal::database();
 
     // Installs up the chado with the test chado data
     $chado = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
@@ -94,7 +79,6 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     $results_object = $results->fetchObject();
     $this->assertEquals(38785, $results_object->accession,
         'An incorrect NCBI Taxid value was retrieved from NCBI for Arabidopsis arenosa');
-
   }
 
 }
