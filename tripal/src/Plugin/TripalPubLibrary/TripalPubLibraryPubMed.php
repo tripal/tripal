@@ -514,9 +514,344 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     }
     // @TODO refer to T3 tripal_chado module, tripal_chado.pub.api.inc
     // $pub['Citation'] = chado_pub_create_citation($pub);
+    $pub['Citation'] = $this->pmid_generate_citation($pub);
   
     // $pub['raw'] = $pub_xml;
     return $pub;
+  }
+
+  /**
+   * Creates Citation
+   * 
+   * This function generates citations for publications.  It requires
+   * an array structure with keys being the terms in the Tripal
+   * publication ontology.  This function is intended to be used
+   * for any function that needs to generate a citation.
+   *
+   * @param $pub
+   *   An array structure containing publication details where the keys
+   *   are the publication ontology term names and values are the
+   *   corresponding details.  The pub array can contain the following
+   *   keys with corresponding values:
+   *     - Publication Type:  an array of publication types. a publication can
+   *       have more than one type.
+   *     - Authors: a  string containing all of the authors of a publication.
+   *     - Journal Name:  a string containing the journal name.
+   *     - Journal Abbreviation: a string containing the journal name
+   *   abbreviation.
+   *     - Series Name: a string containing the series (e.g. conference
+   *       proceedings) name.
+   *     - Series Abbreviation: a string containing the series name abbreviation
+   *     - Volume: the serives volume number.
+   *     - Issue: the series issue number.
+   *     - Pages: the page numbers for the publication.
+   *     - Publication Date:  A date in the format "Year Month Day".
+   *
+   * @return
+   *   A text string containing the citation.
+   */
+  private function pmid_generate_citation(&$pub) {
+    $citation = '';
+    $pub_type = '';
+  
+    // An article may have more than one publication type. For example,
+    // a publication type can be 'Journal Article' but also a 'Clinical Trial'.
+    // Therefore, we need to select the type that makes most sense for
+    // construction of the citation. Here we'll iterate through them all
+    // and select the one that matches best.
+    if (is_array($pub['Publication Type'])) {
+      foreach ($pub['Publication Type'] as $ptype) {
+        if ($ptype == 'Journal Article') {
+          $pub_type = $ptype;
+          break;
+        }
+        else {
+          if ($ptype == 'Conference Proceedings') {
+            $pub_type = $ptype;
+            break;
+          }
+          else {
+            if ($ptype == 'Review') {
+              $pub_type = $ptype;
+              break;
+            }
+            else {
+              if ($ptype == 'Book') {
+                $pub_type = $ptype;
+                break;
+              }
+              else {
+                if ($ptype == 'Letter') {
+                  $pub_type = $ptype;
+                  break;
+                }
+                else {
+                  if ($ptype == 'Book Chapter') {
+                    $pub_type = $ptype;
+                    break;
+                  }
+                  else {
+                    if ($ptype == "Research Support, Non-U.S. Gov't") {
+                      $pub_type = $ptype;
+                      // We don't break because if the article is also a Journal Article
+                      // we prefer that type.
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      // If we don't have a recognized publication type, then just use the
+      // first one in the list.
+      if (!$pub_type) {
+        $pub_type = $pub['Publication Type'][0];
+      }
+    }
+    else {
+      $pub_type = $pub['Publication Type'];
+    }
+    //----------------------
+    // Journal Article
+    //----------------------
+    if ($pub_type == 'Journal Article') {
+      if (array_key_exists('Authors', $pub)) {
+        $citation = $pub['Authors'] . '. ';
+      }
+  
+      $citation .= $pub['Title'] . '. ';
+  
+      if (array_key_exists('Journal Name', $pub)) {
+        $citation .= $pub['Journal Name'] . '. ';
+      }
+      elseif (array_key_exists('Journal Abbreviation', $pub)) {
+        $citation .= $pub['Journal Abbreviation'] . '. ';
+      }
+      elseif (array_key_exists('Series Name', $pub)) {
+        $citation .= $pub['Series Name'] . '. ';
+      }
+      elseif (array_key_exists('Series Abbreviation', $pub)) {
+        $citation .= $pub['Series Abbreviation'] . '. ';
+      }
+      if (array_key_exists('Publication Date', $pub)) {
+        $citation .= $pub['Publication Date'];
+      }
+      elseif (array_key_exists('Year', $pub)) {
+        $citation .= $pub['Year'];
+      }
+      if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages', $pub)) {
+        $citation .= '; ';
+      }
+      if (array_key_exists('Volume', $pub)) {
+        $citation .= $pub['Volume'];
+      }
+      if (array_key_exists('Issue', $pub)) {
+        $citation .= '(' . $pub['Issue'] . ')';
+      }
+      if (array_key_exists('Pages', $pub)) {
+        if (array_key_exists('Volume', $pub)) {
+          $citation .= ':';
+        }
+        $citation .= $pub['Pages'];
+      }
+      $citation .= '.';
+    }
+    //----------------------
+    // Review
+    //----------------------
+    else {
+      if ($pub_type == 'Review') {
+        if (array_key_exists('Authors', $pub)) {
+          $citation = $pub['Authors'] . '. ';
+        }
+  
+        $citation .= $pub['Title'] . '. ';
+  
+        if (array_key_exists('Journal Name', $pub)) {
+          $citation .= $pub['Journal Name'] . '. ';
+        }
+        elseif (array_key_exists('Journal Abbreviation', $pub)) {
+          $citation .= $pub['Journal Abbreviation'] . '. ';
+        }
+        elseif (array_key_exists('Series Name', $pub)) {
+          $citation .= $pub['Series Name'] . '. ';
+        }
+        elseif (array_key_exists('Series Abbreviation', $pub)) {
+          $citation .= $pub['Series Abbreviation'] . '. ';
+        }
+        elseif (array_key_exists('Publisher', $pub)) {
+          $citation .= $pub['Publisher'] . '. ';
+        }
+        if (array_key_exists('Publication Date', $pub)) {
+          $citation .= $pub['Publication Date'];
+        }
+        elseif (array_key_exists('Year', $pub)) {
+          $citation .= $pub['Year'];
+        }
+        if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages', $pub)) {
+          $citation .= '; ';
+        }
+        if (array_key_exists('Volume', $pub)) {
+          $citation .= $pub['Volume'];
+        }
+        if (array_key_exists('Issue', $pub)) {
+          $citation .= '(' . $pub['Issue'] . ')';
+        }
+        if (array_key_exists('Pages', $pub)) {
+          if (array_key_exists('Volume', $pub)) {
+            $citation .= ':';
+          }
+          $citation .= $pub['Pages'];
+        }
+        $citation .= '.';
+      }
+      //----------------------
+      // Research Support, Non-U.S. Gov't
+      //----------------------
+      elseif ($pub_type == "Research Support, Non-U.S. Gov't") {
+        if (array_key_exists('Authors', $pub)) {
+          $citation = $pub['Authors'] . '. ';
+        }
+  
+        $citation .= $pub['Title'] . '. ';
+  
+        if (array_key_exists('Journal Name', $pub)) {
+          $citation .= $pub['Journal Name'] . '. ';
+        }
+        if (array_key_exists('Publication Date', $pub)) {
+          $citation .= $pub['Publication Date'];
+        }
+        elseif (array_key_exists('Year', $pub)) {
+          $citation .= $pub['Year'];
+        }
+        $citation .= '.';
+      }
+      //----------------------
+      // Letter
+      //----------------------
+      elseif ($pub_type == 'Letter') {
+        if (array_key_exists('Authors', $pub)) {
+          $citation = $pub['Authors'] . '. ';
+        }
+  
+        $citation .= $pub['Title'] . '. ';
+        if (array_key_exists('Journal Name', $pub)) {
+          $citation .= $pub['Journal Name'] . '. ';
+        }
+        elseif (array_key_exists('Journal Abbreviation', $pub)) {
+          $citation .= $pub['Journal Abbreviation'] . '. ';
+        }
+        elseif (array_key_exists('Series Name', $pub)) {
+          $citation .= $pub['Series Name'] . '. ';
+        }
+        elseif (array_key_exists('Series Abbreviation', $pub)) {
+          $citation .= $pub['Series Abbreviation'] . '. ';
+        }
+        if (array_key_exists('Publication Date', $pub)) {
+          $citation .= $pub['Publication Date'];
+        }
+        elseif (array_key_exists('Year', $pub)) {
+          $citation .= $pub['Year'];
+        }
+        if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages', $pub)) {
+          $citation .= '; ';
+        }
+        if (array_key_exists('Volume', $pub)) {
+          $citation .= $pub['Volume'];
+        }
+        if (array_key_exists('Issue', $pub)) {
+          $citation .= '(' . $pub['Issue'] . ')';
+        }
+        if (array_key_exists('Pages', $pub)) {
+          if (array_key_exists('Volume', $pub)) {
+            $citation .= ':';
+          }
+          $citation .= $pub['Pages'];
+        }
+        $citation .= '.';
+      }
+      //-----------------------
+      // Conference Proceedings
+      //-----------------------
+      elseif ($pub_type == 'Conference Proceedings') {
+        if (array_key_exists('Authors', $pub)) {
+          $citation = $pub['Authors'] . '. ';
+        }
+  
+        $citation .= $pub['Title'] . '. ';
+        if (array_key_exists('Conference Name', $pub)) {
+          $citation .= $pub['Conference Name'] . '. ';
+        }
+        elseif (array_key_exists('Series Name', $pub)) {
+          $citation .= $pub['Series Name'] . '. ';
+        }
+        elseif (array_key_exists('Series Abbreviation', $pub)) {
+          $citation .= $pub['Series Abbreviation'] . '. ';
+        }
+        if (array_key_exists('Publication Date', $pub)) {
+          $citation .= $pub['Publication Date'];
+        }
+        elseif (array_key_exists('Year', $pub)) {
+          $citation .= $pub['Year'];
+        }
+        if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages', $pub)) {
+          $citation .= '; ';
+        }
+        if (array_key_exists('Volume', $pub)) {
+          $citation .= $pub['Volume'];
+        }
+        if (array_key_exists('Issue', $pub)) {
+          $citation .= '(' . $pub['Issue'] . ')';
+        }
+        if (array_key_exists('Pages', $pub)) {
+          if (array_key_exists('Volume', $pub)) {
+            $citation .= ':';
+          }
+          $citation .= $pub['Pages'];
+        }
+        $citation .= '.';
+      }
+      //-----------------------
+      // Default
+      //-----------------------
+      else {
+        if (array_key_exists('Authors', $pub)) {
+          $citation = $pub['Authors'] . '. ';
+        }
+        $citation .= $pub['Title'] . '. ';
+        if (array_key_exists('Series Name', $pub)) {
+          $citation .= $pub['Series Name'] . '. ';
+        }
+        elseif (array_key_exists('Series Abbreviation', $pub)) {
+          $citation .= $pub['Series Abbreviation'] . '. ';
+        }
+        if (array_key_exists('Publication Date', $pub)) {
+          $citation .= $pub['Publication Date'];
+        }
+        elseif (array_key_exists('Year', $pub)) {
+          $citation .= $pub['Year'];
+        }
+        if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages', $pub)) {
+          $citation .= '; ';
+        }
+        if (array_key_exists('Volume', $pub)) {
+          $citation .= $pub['Volume'];
+        }
+        if (array_key_exists('Issue', $pub)) {
+          $citation .= '(' . $pub['Issue'] . ')';
+        }
+        if (array_key_exists('Pages', $pub)) {
+          if (array_key_exists('Volume', $pub)) {
+            $citation .= ':';
+          }
+          $citation .= $pub['Pages'];
+        }
+        $citation .= '.';
+      }
+    }
+  
+    return $citation;
   }
 
   /**
