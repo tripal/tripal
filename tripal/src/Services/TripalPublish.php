@@ -702,7 +702,7 @@ class TripalPublish {
       $total++;
       $i++;
 
-      // If we've reached the size of the batch then let's do the insert.
+      // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_matches) {
         $args = [
           ':bundle' => $this->bundle,
@@ -809,7 +809,7 @@ class TripalPublish {
       $entity_id = $entities[$title];
       $i++;
 
-      // Iterate through the "items" of each feild and insert a record value
+      // Iterate through the "items" of each field and insert a record value
       // for each item.
       $num_items = count(array_keys($match[$field_name]));
       for ($delta = 0; $delta < $num_items; $delta++) {
@@ -930,7 +930,7 @@ class TripalPublish {
     $existing = $this->findEntities($matches, $titles);
 
     // Exclude any matches that are already published. We
-    // need to publish these matches.
+    // need to publish only new matches.
     list($new_matches, $new_titles) = $this->excludeExisting($matches, $titles, $existing);
 
     // Note: entities are not tied to any storage backend. An entity
