@@ -862,9 +862,13 @@ class TripalPublish {
       $i++;
 
       // Iterate through the "items" of each field and insert a record value
-      // for each item.
+      // for each non-empty item.
       $num_items = count(array_keys($match[$field_name]));
       for ($delta = 0; $delta < $num_items; $delta++) {
+        // Leave these increments outside the add_record check
+        // to keep our count predictable, just note that some
+        // values of $j may not be used, however, $num_inserted
+        // will be accurate.
         $j++;
         $total++;
 
@@ -885,28 +889,7 @@ class TripalPublish {
         }
         if ($add_record) {
           $published[$entity_id] = $title;
-
-          // Add items to those that are not already published.
-          $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
-          $args[":bundle_$j"] = $this->bundle;
-          $args[":deleted_$j"] = 0;
-          $args[":entity_id_$j"] = $entity_id;
-          $args[":revision_id_$j"] = 1;
-          $args[":langcode_$j"] = 'und';
-          $args[":delta_$j"] = $delta;
-          foreach (array_keys($this->required_types[$field_name]) as $key) {
-            $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
-            $sql .=  $placeholder . ', ';
-            $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
-          }
-          // Non-required types get a placeholder of the correct type, string '', int 0, etc.
-          foreach ($this->non_required_types[$field_name] as $key => $properties) {
-            $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
-            $sql .=  $placeholder . ', ';
-            $args[$placeholder] = $properties->getDefaultValue();
-          }
-          $sql = rtrim($sql, ", ");
-          $sql .= "),\n";
+          $this->insertOneFieldItem($sql, $args, $j, $match, $entity_id, $delta, $field_name);
           $num_inserted++;
         }
 
@@ -928,6 +911,48 @@ class TripalPublish {
       }
     }
     return $num_inserted;
+  }
+
+  /**
+   * Add a single field item to the sql and args.
+   * This is a helper function for insertFieldItems().
+   *
+   * @param string &$sql
+   *   The sql command under construction
+   * @param array &$args
+   *   Values for the placeholders
+   * @param int $j
+   *   Index for the placeholders
+   * @param array $match
+   *   Contains all data to be published
+   * @param int $entity_id
+   *   Id of the entity for this field
+   * @param int $delta
+   *   Field delta
+   * @param string $field_name
+   *   Name of the field being published
+   */
+  private function insertOneFieldItem(&$sql, &$args, $j, $match, $entity_id, $delta, $field_name) {
+    $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
+    $args[":bundle_$j"] = $this->bundle;
+    $args[":deleted_$j"] = 0;
+    $args[":entity_id_$j"] = $entity_id;
+    $args[":revision_id_$j"] = 1;
+    $args[":langcode_$j"] = 'und';
+    $args[":delta_$j"] = $delta;
+    foreach (array_keys($this->required_types[$field_name]) as $key) {
+      $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
+      $sql .=  $placeholder . ', ';
+      $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+    }
+    // Non-required types get a placeholder of the correct type, string '', int 0, etc.
+    foreach ($this->non_required_types[$field_name] as $key => $properties) {
+      $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
+      $sql .=  $placeholder . ', ';
+      $args[$placeholder] = $properties->getDefaultValue();
+    }
+    $sql = rtrim($sql, ", ");
+    $sql .= "),\n";
   }
 
   /**
