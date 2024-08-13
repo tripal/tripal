@@ -878,12 +878,14 @@ class TripalPublish {
             array_key_exists($delta, $existing[$entity_id])) {
           $add_record = FALSE;
         }
-        // No need to add items if the chado record is empty
+        // No need to add items if the chado record is empty.
         else {
-          foreach ($this->non_required_types[$field_name] as $key => $properties) {
+          $add_record = FALSE;
+          foreach (array_keys($this->non_required_types[$field_name]) as $key) {
             $value = $match[$field_name][$delta][$key]['value']->getValue();
-            if ($value == '') {
-              $add_record = FALSE;
+            if ($value != '') {
+              $add_record = TRUE;
+              break;
             }
           }
         }
