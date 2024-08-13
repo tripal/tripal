@@ -355,7 +355,6 @@ class TripalPublish {
    * @param array $seach_values
    */
   protected function addRequiredValues(&$search_values) {
-
     // Iterate through the property types that can uniquely identify an entity.
     foreach ($this->required_types as $field_name => $keys) {
       foreach ($keys as $key => $prop_type) {
@@ -448,7 +447,7 @@ class TripalPublish {
    *
    * Sometimes type values are fixed and the user cannot change
    * them.  An example of this is are cases where the ChadoAdditionalTypeDefault
-   * field has a type_id that will never changed.  Content types such as "mRNA"
+   * field has a type_id that will never be changed.  Content types such as "mRNA"
    * or "gene" use these.  We need to add these to our search filter.
    *
    * @param array $seach_values
@@ -488,6 +487,59 @@ class TripalPublish {
             'value' => $prop_value,
             'operation' => '=',
           ];
+        }
+      }
+    }
+  }
+
+  /**
+   * Adds to the search values array any remaining property values.
+   *
+   * @param array $seach_values
+   */
+  protected function addNonRequiredValues(&$search_values) {
+    // Iterate through the property types that can uniquely identify an entity.
+    foreach ($this->non_required_types as $field_name => $keys) {
+      foreach ($keys as $key => $prop_type) {
+        $not_supported = FALSE;
+
+        // This property may be part of a field which has already been marked
+        // as unsupported. If so then it won't be in the field_info and we
+        // should skip it.
+        if (!array_key_exists($field_name, $this->field_info)) {
+          // Add it to the list of unsupported fields just in case
+          // it wasn't added before...
+          $this->unsupported_fields[$field_name] = $field_name;
+          continue;
+        }
+
+        // Add this property value to the search values array.
+        $field_definition = $this->field_info[$field_name]['definition'];
+        $field_class = $this->field_info[$field_name]['class'];
+
+        // We only want to add fields where we support the action for all property types in it.
+        foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
+          $settings = $checking_prop_type->getStorageSettings();
+          if (!in_array($settings['action'], $this->supported_actions)) {
+            $not_supported = TRUE;
+          }
+        }
+
+        if ($not_supported !== TRUE) {
+          // Only add here if not already added in one of the previous steps
+          if (!($search_values[$field_name][0][$prop_type->getKey()]['value'] ?? FALSE)) {
+            $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
+                $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+            $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
+          }
+        }
+        // If it is not supported then we need to remove it from the required types list.
+        else {
+          // Note: We are adding the field to the unsupported list
+          // and will let the admin know later on in this job.
+          $this->unsupported_fields[$field_name] = $field_name;
+          unset($this->non_required_types[$field_name]);
+          unset($this->field_info[$field_name]);
         }
       }
     }
@@ -817,9 +869,21 @@ class TripalPublish {
         $total++;
 
         // No need to add items to those that are already published.
-        if (!array_key_exists($entity_id, $existing) or
-            !array_key_exists($delta, $existing[$entity_id])) {
-
+        $add_record = TRUE;
+        if (array_key_exists($entity_id, $existing) and
+            array_key_exists($delta, $existing[$entity_id])) {
+          $add_record = FALSE;
+        }
+        // No need to add items if the chado record is empty
+        else {
+          foreach ($this->non_required_types[$field_name] as $key => $properties) {
+            $value = $match[$field_name][$delta][$key]['value']->getValue();
+            if ($value == '') {
+              $add_record = FALSE;
+            }
+          }
+        }
+        if ($add_record) {
           $published[$entity_id] = $title;
 
           // Add items to those that are not already published.
@@ -919,6 +983,7 @@ class TripalPublish {
     $this->addRequiredValues($search_values);
     $this->addTokenValues($search_values);
     $this->addFixedTypeValues($search_values);
+    $this->addNonRequiredValues($search_values);
 
     $this->logger->notice("Step  1 of 6: Find matching records... ");
     $matches = $this->storage->findValues($search_values);
