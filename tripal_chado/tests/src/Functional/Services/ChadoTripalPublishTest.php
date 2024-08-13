@@ -427,7 +427,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         ['record_id' => $organism_id2],
         ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
 
-    $this->checkFieldItem('organism', 'organism_infraspecific_type', 1,
+    $this->checkFieldItem('organism', 'organism_infraspecific_type', 0,
         ['record_id' => $organism_id2],
         ['bundle' => 'organism', 'entity_id' => 2, 'type_id' => 0]);
 
@@ -478,7 +478,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $publish->init('organism', 'chado_storage');
     $entities = $publish->publish();
 
-    // Because we added properties for the first organism we should set it's
+    // Because we added properties for the first organism we should set its
     // entity in those returned, but not the gorilla organism.
     $this->assertEquals('<em>Oryza species</em> subspecies <em>Japonica</em>', array_values($entities)[0],
       'The Oryza species subspecies Japonica organism should appear in the published list because it has new properties.');
