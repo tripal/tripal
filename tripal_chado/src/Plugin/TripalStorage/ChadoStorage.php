@@ -161,7 +161,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
         if (($is_required and $required) or (!$is_required and !$required)) {
           $ret_types[$field_name][$key] = $prop_type;
-          $ret_types[$field_name][$key] = $prop_type;
         }
       }
     }
