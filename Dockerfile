@@ -4,6 +4,7 @@ ARG postgresqlversion='16'
 FROM tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-pgsql${postgresqlversion}
 
 ARG modules='devel devel_php field_group field_group_table'
+ARG tripalmodules='tripal tripal_biodb tripal_chado tripal_layout'
 ARG chadoschema='chado'
 ARG installchado=TRUE
 
@@ -19,7 +20,7 @@ RUN service apache2 start \
   && service postgresql start \
   && mkdir -p /var/www/drupal/web/modules/contrib \
   && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
-  && drush en tripal tripal_biodb tripal_chado tripal_layout ${modules} -y \
+  && drush en ${tripalmodules} ${modules} -y \
   && service apache2 stop \
   && service postgresql stop
 
