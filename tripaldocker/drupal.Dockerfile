@@ -170,7 +170,7 @@ RUN composer create-project drupal/recommended-project:${drupalversion} --stabil
   && composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
   && rm composer.lock \
   && packages="${requiredcomposerpackages} ${composerpackages}" \
-  && if [[ "$drupalversion" < "10.6" ]]; then packages="$packages drupal/field_group drupal/field_group_table"; fi \
+  && if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); then packages="$packages drupal/field_group drupal/field_group_table"; fi \
   && composer require --dev $packages \
   && composer install
 
