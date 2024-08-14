@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\TripalDBX;
 
-use Drupal\Core\Database\Driver\pgsql\Connection as PgConnection;
+use Drupal\Core\Database\Connection as PgConnection;
 use Drupal\tripal\TripalDBX\TripalDbxSchema;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 
@@ -104,7 +104,7 @@ abstract class TripalDbxConnection extends PgConnection {
    */
   protected $self_classes = [
     \Drupal\Core\Database\Connection::class => TRUE,
-    \Drupal\Core\Database\Driver\pgsql\Connection::class => TRUE,
+    \Drupal\Core\Database\Connection::class => TRUE,
     \Drupal\pgsql\Driver\Database\pgsql\Connection::class => TRUE,
     \Drupal\tripal\TripalDBX\TripalDbxConnection::class => TRUE,
   ];

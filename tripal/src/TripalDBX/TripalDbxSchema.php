@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\TripalDBX;
 
-use Drupal\Core\Database\Driver\pgsql\Schema as PgSchema;
+use Drupal\Core\Database\Schema as PgSchema;
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
