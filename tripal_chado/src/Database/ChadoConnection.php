@@ -352,4 +352,53 @@ class ChadoConnection extends TripalDbxConnection {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function open(array &$connection_options = []) {
+    parent::open($connection_options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function upsert($table, array $options = []) {
+    parent::upsert($table, $options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function queryRange($query, $from, $count, array $args = [], array $options = []) {
+    parent::queryRange($query, $from, $count, $args, $options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function driver() {
+    parent::driver();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function databaseType() {
+    parent::databaseType();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createDatabase($database) {
+    parent::createDatabase($database);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function mapConditionOperator($operator) {
+    parent::mapConditionOperator($operator);
+  }
+
 }

@@ -217,13 +217,13 @@ class ChadoSchema extends TripalDbxSchema {
    *
    * This method ensures that we support multiple chado instances
    * and do not make any assumptions about the name of the chado schema.
-   * 
+   *
    * Note: The admin can change the default chado instance via the UI
    * by going to Admin > Tripal > Data Storage > Chado > Chado Schemas 
    * (admin/tripal/storage/chado/manager) and clicking "Set default".
    * We DO NOT recommend setting this programmaticly as it is confusing
    * to the admin.
-   * 
+   *
    * @return string
    *   The name of the schema with Chado installed that is to be considered
    *   the default.
@@ -231,4 +231,96 @@ class ChadoSchema extends TripalDbxSchema {
   public function getDefault() {
     return \Drupal::config('tripal_chado.settings')->get('default_schema');
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldTypeMap() {
+    parent::getFieldTypeMap();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function renameTable($table, $new_name) {
+    parent::renameTable($table, $new_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function dropTable($table) {
+    parent::dropTable($table);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addField($table, $field, $spec, $keys_new = []) {
+    parent::addField($table, $field, $spec, $keys_new);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function dropField($table, $field) {
+    parent::dropField($table, $field);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function indexExists($table, $index_name, bool $exact_name = false) {
+    parent::indexExists($table, $index_name, $exact_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addPrimaryKey($table, $fields) {
+    parent::addPrimaryKey($table, $fields);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function dropPrimaryKey($table) {
+    parent::dropPrimaryKey($table);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addUniqueKey($table, $name, $fields) {
+    parent::addUniqueKey($table, $name, $fields);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function dropUniqueKey($table, $name) {
+    parent::dropUniqueKey($table, $name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addIndex($table, $name, $fields, array $spec) {
+    parent::addIndex($table, $name, $fields, $spec);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function dropIndex($table, $name) {
+    parent::dropIndex($table, $name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function changeField($table, $field, $field_new, $spec, $keys_new = []) {
+    parent::changeField($table, $field, $field_new, $spec, $keys_new);
+  }
+
 }
