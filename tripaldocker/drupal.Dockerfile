@@ -161,7 +161,7 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 ## Use composer to install Drupal.
 WORKDIR /var/www
 ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit"
-ARG composerpackages="drupal/devel drupal/devel_php drupal/field_group drupal/field_group_table"
+ARG composerpackages="drupal/devel drupal/devel_php"
 RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal \
   && cd drupal \
   && composer config --no-plugins allow-plugins.composer/installers true \
@@ -169,7 +169,9 @@ RUN composer create-project drupal/recommended-project:${drupalversion} --stabil
   && composer config --no-plugins allow-plugins.drupal/core-project-message true \
   && composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
   && rm composer.lock \
-  && composer require --dev ${requiredcomposerpackages} ${composerpackages} \
+  && packages="${requiredcomposerpackages} ${composerpackages}" \
+  && if [[ "$drupalversion" < "10.6" ]]; then packages="$packages drupal/field_group drupal/field_group_table"; fi \
+  && composer require --dev $packages \
   && composer install
 
 ## Set files directory permissions
