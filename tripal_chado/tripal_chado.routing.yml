@@ -18,7 +18,7 @@ tripal_chado.chado_manager_form:
   path: 'admin/tripal/storage/chado/manager'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoManagerForm'
-    _title: 'Chado Manager'
+    _title: 'Chado Schema Manager'
   requirements:
     _permission: 'administer tripal'
 
@@ -44,7 +44,7 @@ tripal_chado.chado_custom_table_form_edit:
     _form: '\Drupal\tripal_chado\Form\ChadoCustomTableForm'
     _title: 'Edit a Custom Table'
   requirements:
-    _permission: 'manage chado custom tables' 
+    _permission: 'manage chado custom tables'
 
 tripal_chado.chado_custom_tables_delete_form:
   path: 'admin/tripal/storage/chado/custom_table_delete/{table_id}'
@@ -61,7 +61,7 @@ tripal_chado.chado_custom_tables:
     _title: 'Custom Tables'
   requirements:
     _permission: 'manage chado custom tables'
-    
+
 
 
 tripal_chado.chado_mviews_form:
@@ -78,7 +78,7 @@ tripal_chado.chado_mviews_form_edit:
     _form: '\Drupal\tripal_chado\Form\ChadoMviewForm'
     _title: 'Edit a Materialized View'
   requirements:
-    _permission: 'manage chado materialized views' 
+    _permission: 'manage chado materialized views'
 
 tripal_chado.chado_mviews_delete_form:
   path: 'admin/tripal/storage/chado/mview_delete/{mview_id}'
@@ -87,7 +87,7 @@ tripal_chado.chado_mviews_delete_form:
     _title: 'Delete a Materialized View'
   requirements:
     _permission: 'manage chado materialized views'
-    
+
 tripal_chado.chado_mviews_populate_form:
   path: 'admin/tripal/storage/chado/mview_populate/{mview_id}'
   defaults:
@@ -95,7 +95,7 @@ tripal_chado.chado_mviews_populate_form:
     _title: 'Populate a Materialized View'
   requirements:
     _permission: 'manage chado materialized views'
-    
+
 tripal_chado.chado_mviews:
   path: 'admin/tripal/storage/chado/mviews'
   defaults:
@@ -103,8 +103,8 @@ tripal_chado.chado_mviews:
     _title: 'Materialized Views'
   requirements:
     _permission: 'manage chado materialized views'
-    
-    
+
+
 entity.chado_term_mapping.collection:
   path: 'admin/tripal/storage/chado/terms'
   defaults:
@@ -215,7 +215,7 @@ tripal.data_loaders.publication_loaders.delete_publication_search_query:
     _form: 'Drupal\tripal_chado\Form\ChadoDeletePubSearchQueryForm'
     _title: 'Delete publication'
   requirements:
-    _permission: 'allow tripal import'    
+    _permission: 'allow tripal import'
 
 tripal.data_loaders.publication_loaders.edit_publication_search_query:
   path: 'admin/tripal/loaders/publications/edit_publication_search_query/{pub_import_id}'
@@ -223,7 +223,7 @@ tripal.data_loaders.publication_loaders.edit_publication_search_query:
     _form: 'Drupal\tripal_chado\Form\ChadoNewPubSearchQueryForm'
     _title: 'Edit publication search query'
   requirements:
-    _permission: 'allow tripal import'  
+    _permission: 'allow tripal import'
 
 # TODO - Add the correct form here
 tripal.data_loaders.publication_loaders.run_publication_search_query:

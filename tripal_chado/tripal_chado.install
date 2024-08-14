@@ -20,7 +20,6 @@ function tripal_chado_install($is_syncing) {
   $reserved_schema_patterns['frange'] = 'feature range (chado)';
   $reserved_schema_patterns['genetic_code'] = 'genetic code (chado)';
   $reserved_schema_patterns['so'] = 'sequence ontology (chado)';
-  $reserved_schema_patterns[Drupal\tripal_chado\Task\ChadoUpgrader::CHADO_REF_SCHEMA_13] = 'upgrade template (chado)';
   $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
 
   $test_schema_base_names = $config->get('test_schema_base_names') ?? [];
@@ -53,6 +52,7 @@ function tripal_chado_schema() {
   $schema = [];
 
   $schema['chado_installations'] = tripal_chado_chado_installations_schema();
+  $schema['chado_migrations'] = tripal_chado_chado_migrations_schema();
   $schema['tripal_custom_tables'] = tripal_chado_tripal_custom_tables_schema();
   $schema['tripal_mviews'] = tripal_chado_tripal_mviews_schema();
 
@@ -128,6 +128,63 @@ function tripal_chado_chado_installations_schema() {
       'schema_name' => ['schema_name'],
     ],
     'primary key' => ['install_id'],
+  ];
+}
+
+/**
+ * Returns the Drupal Schema API array for the chado_installations table.
+ */
+function tripal_chado_chado_migrations_schema() {
+  return [
+    'fields' => [
+      'migration_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'job_id' => [
+        'type' => 'int',
+        'description' => 'The job_id of the TripalJob this migration was applied during.',
+        'not null' => TRUE,
+      ],
+      'install_id' => [
+        'type' => 'int',
+        'description' => 'The install_id of the Tripal-managed chado installation/schema this migration was applied to.',
+        'not null' => TRUE,
+      ],
+      'version' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'filename' => [
+        'type' => 'text',
+        'not null' => FALSE,
+      ],
+      'applied_on' => [
+        'type' => 'varchar',
+        'length' => 255,
+      ],
+      'success' => [
+        'type' => 'int',
+        'size' => 'tiny',
+      ],
+    ],
+    'unique keys' => [
+      'migration' => ['install_id', 'version'],
+    ],
+    'indexes' => [
+      'status' => ['applied_on', 'success'],
+    ],
+    'foreign keys' => [
+      'chado_installations' => [
+        'table' => 'chado_installations',
+        'columns' => [
+          'install_id' => 'install_id'
+        ],
+      ],
+    ],
+    'primary key' => ['migration_id'],
   ];
 }
 
@@ -544,4 +601,60 @@ function tripal_chado_update_10405() {
   catch (\Exception $e) {
     throw new UpdateException('Could not add entity id to fields: ' . $e->getMessage());
   }
+}
+
+/**
+ * Adds chado_migrations to keep track of migrations applied to chado schema.
+ */
+function tripal_chado_update_10406() {
+  $database = \Drupal::database();
+  $schema = $database->schema();
+
+  $table_name = 'chado_migrations';
+  $table_schema = [
+    'fields' => [
+      'migration_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'install_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'version' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'filename' => [
+        'type' => 'text',
+        'not null' => FALSE,
+      ],
+      'applied_on' => [
+        'type' => 'varchar',
+        'length' => 255,
+      ],
+      'success' => [
+        'type' => 'int',
+        'size' => 'tiny',
+      ],
+    ],
+    'unique keys' => [
+      'migration' => ['install_id', 'version'],
+    ],
+    'indexes' => [
+      'status' => ['applied_on', 'success'],
+    ],
+    'foreign keys' => [
+      'chado_installations' => [
+        'table' => 'chado_installations',
+        'columns' => [
+          'install_id' => 'install_id'
+        ],
+      ],
+    ],
+    'primary key' => ['migration_id'],
+  ];
+  $schema->createTable($table_name, $table_schema);
 }
