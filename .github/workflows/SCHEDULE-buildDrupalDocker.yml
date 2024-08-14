@@ -24,10 +24,16 @@ jobs:
           - "8.3"
         pgsql-version:
           - "13"
+          - "14"
+          - "15"
           - "16"
+          - "17"
         drupal-version:
           - "10.2.x-dev"
           - "10.3.x-dev"
+          - "10.4.x-dev"
+          - "11.0.x-dev"
+          - "11.x-dev"
     name: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
     steps:
       - uses: actions/checkout@v4
