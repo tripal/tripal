@@ -35,11 +35,11 @@ class DateTimeStoragePropertyType extends StoragePropertyTypeBase {
   /**
    * Returns the default empty value of the correct type for this storage property type.
    *
-   * @return float
-   *   A zero.
+   * @return string
+   *   An empty string.
    */
   public function getDefaultValue() {
-    return 0.0;
+    return '';
   }
 
 }
