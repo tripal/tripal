@@ -1,0 +1,144 @@
+name: Build and Publish Drupal Docker
+on:
+  push:
+    branches:
+      - tv4g8-issue1950-improveTripalDocker
+  # Allows us to manually trigger this workflow.
+  # This is great if there is a change made to Tripal core that we want to test our modules on ASAP.
+  workflow_dispatch:
+  # Allows us to schedule when this workflow is run.
+  # This ensures we pick up any new changes in Drupal.
+  schedule:
+    # Run at 2am every night.
+    - cron: '0 2 * * *'
+jobs:
+  push_to_registry:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "8.1"
+          - "8.2"
+          - "8.3"
+        pgsql-version:
+          - "13"
+          - "14"
+          - "15"
+          - "16"
+        drupal-version:
+          - "10.2.x-dev"
+          - "10.3.x-dev"
+          - "10.4.x-dev"
+          - "11.0.x-dev"
+          - "11.x-dev"
+        exclude:
+          - php-version: "8.2"
+            pgsql-version: "13"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.2"
+            pgsql-version: "14"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.2"
+            pgsql-version: "15"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.2"
+            pgsql-version: "16"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.2"
+            pgsql-version: "13"
+            drupal-version: "11.x-dev"
+          - php-version: "8.2"
+            pgsql-version: "14"
+            drupal-version: "11.x-dev"
+          - php-version: "8.2"
+            pgsql-version: "15"
+            drupal-version: "11.x-dev"
+          - php-version: "8.2"
+            pgsql-version: "16"
+            drupal-version: "11.x-dev"
+          - php-version: "8.1"
+            pgsql-version: "13"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.1"
+            pgsql-version: "14"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.1"
+            pgsql-version: "15"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.1"
+            pgsql-version: "16"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.1"
+            pgsql-version: "13"
+            drupal-version: "11.x-dev"
+          - php-version: "8.1"
+            pgsql-version: "14"
+            drupal-version: "11.x-dev"
+          - php-version: "8.1"
+            pgsql-version: "15"
+            drupal-version: "11.x-dev"
+          - php-version: "8.1"
+            pgsql-version: "16"
+            drupal-version: "11.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "13"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "13"
+            drupal-version: "11.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "14"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "14"
+            drupal-version: "11.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "15"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "15"
+            drupal-version: "11.x-dev"
+    name: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
+    steps:
+      - uses: actions/checkout@v4
+        name: Check out code
+      ## Build images tagged drupal{VER}-php{VER}-pgsql{VER}
+      - uses: mr-smithers-excellent/docker-build-push@v6
+        name: Build & push Full matrix of Docker images
+        with:
+          image: tripalproject/tripaldocker-drupal
+          tags: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
+          dockerfile: tripaldocker/drupal.Dockerfile
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}"
+          labels: 'drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+      ## Build Images tagged drupal{VER} focused on php 8.3 + postgresql 16
+      - uses: mr-smithers-excellent/docker-build-push@v6
+        name: Build & push Docker image Drupal focused Docker images.
+        if: ${{ matrix.php-version == '8.3' && matrix.pgsql-version == '16' }}
+        with:
+          image: tripalproject/tripaldocker-drupal
+          tags: drupal${{ matrix.drupal-version }}
+          dockerfile: tripaldocker/drupal.Dockerfile
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}"
+          labels: 'drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+      ## Build the image tagged as latest which is the highest version combo that we feel is well supported.
+      - uses: mr-smithers-excellent/docker-build-push@v6
+        name: Build latest using 10.3.x-dev, PHP 8.3, PgSQL 16
+        if: ${{ matrix.drupal-version == '10.3.x-dev' && matrix.php-version == '8.3' && matrix.pgsql-version == '16' }}
+        with:
+          image: tripalproject/tripaldocker-drupal
+          tags: latest
+          dockerfile: tripaldocker/drupal.Dockerfile
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}"
+          labels: 'drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
