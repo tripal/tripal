@@ -1,0 +1,126 @@
+{
+  "name": "TripalDocker",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "drupalversion": "10.3.x-dev",
+      "phpversion": "8.3",
+      "postgresqlversion": "16"
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/var/www/drupal/web/modules/contrib/tripal,type=bind",
+  "workspaceFolder": "/var/www/drupal/web/modules/contrib/tripal",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "neilbrayfield.php-docblocker",
+        "bmewburn.vscode-intelephense-client",
+        "recca0120.vscode-phpunit",
+        "swordev.phpstan",
+        "andrewdavidblum.drupal-smart-snippets",
+        "DEVSENSE.composer-php-vscode",
+        "mblode.twig-language-2",
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        // This turns off basic PHP suggestions provided by Visual Studio Code (in lieu of Intelephense's).
+        "php.suggest.basic": false,
+        /* Coding Standards */
+        "css.validate": true,
+        "diffEditor.ignoreTrimWhitespace": false,
+        "editor.tabSize": 2,
+        "editor.autoIndent": "full",
+        "editor.insertSpaces": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnSave": false,
+        "editor.renderWhitespace": "boundary",
+        "editor.wordWrapColumn": 80,
+        "editor.wordWrap": "on",
+        "editor.detectIndentation": true,
+        "editor.rulers": [
+          80
+        ],
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "html.format.enable": true,
+        "html.format.wrapLineLength": 80,
+        /* Chosing which language a file is; Drupal-focused */
+        "files.associations": {
+          "*.inc": "php",
+          "*.module": "php",
+          "*.install": "php",
+          "*.theme": "php",
+          "*.profile": "php",
+          "*.tpl.php": "php",
+          "*.test": "php",
+          "*.php": "php",
+          "*.info": "ini",
+          "*.html": "twig"
+        },
+        "emmet.includeLanguages": {
+          "twig": "html"
+        },
+        /* Performance Related. Exludes from indexing */
+        /*files.exclude and files.watcherExclude settings via https://github.com/microsoft/vscode/issues/11963#issuecomment-317830768 */
+        "files.exclude": {
+          "**/.git": true,
+          "**/.svn": true,
+          "**/.hg": true,
+          "**/CVS": true,
+          "**/.DS_Store": true,
+          "**/tmp": true,
+          "**/node_modules": true,
+          "**/bower_components": true,
+          "**/dist": true
+        },
+        "files.watcherExclude": {
+          "**/.git/objects/**": true,
+          "**/.git/subtree-cache/**": true,
+          "**/node_modules/**": true,
+          "**/tmp/**": true,
+          "**/bower_components/**": true,
+          "**/dist/**": true
+        },
+        /* PHP Linting */
+        "php.validate.enable": true,
+        "php.validate.executablePath": "/usr/local/bin/php",
+        "php.validate.run": "onType",
+        "[php]": {
+          "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+        },
+        /* PHP DocBlocker */
+        "php-docblocker.gap": true,
+        "php-docblocker.useShortNames": true,
+        /* PHP Intelephense */
+        // Intelephense and Drupal >8 only. This should be set to the path to web/index.php.
+        "intelephense.environment.documentRoot": "/var/www/drupal/web/index.php",
+        // Intelephense only: For Drupal compliant braces formatting use:
+        "intelephense.format.braces": "k&r",
+        // Indicate where to find additional classes.
+        "intelephense.environment.includePaths": [
+          "/var/www/drupal/web/core/",
+          "/var/www/drupal/vendor/",
+          "/var/www/drupal/web/modules/"
+        ],
+        "intelephense.diagnostics.enable": false,
+        /* PHPUnit Test Explorer */
+        "phpunit.phpunit": "/var/www/drupal/vendor/bin/phpunit",
+        /* Drupal Smart Snippets */
+        // Use this to prioritize Drupal Smart Snippets in the UI.
+        "editor.snippetSuggestions": "top",
+        /* Composer */
+        "composer.bin": "/usr/local/bin/composer",
+        "tws.trimOnSave": true,
+        "tws.highlightTrailingWhiteSpace": true
+      }
+    }
+  },
+  "forwardPorts": [
+    80,
+    5432,
+    9003
+  ],
+  "postCreateCommand": "init.sh"
+}
