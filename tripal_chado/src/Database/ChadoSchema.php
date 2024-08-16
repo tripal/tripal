@@ -81,19 +81,18 @@ class ChadoSchema extends TripalDbxSchema {
   }
 
   /**
-   *  Returns all chado base tables.
+   * Returns all chado base tables.
    *
-   *  Base tables are those that contain the primary record for a data type.
-   * For
-   *  example, feature, organism, stock, are all base tables.  Other tables
-   *  include linker tables (which link two or more base tables), property
+   * Base tables are those that contain the primary record for a data type.
+   * For example, feature, organism, stock, are all base tables.  Other tables
+   * include linker tables (which link two or more base tables), property
    * tables, and relationship tables.  These provide additional information
    * about primary data records and are therefore not base tables.  This
    * function retrieves only the list of tables that are considered 'base'
    * tables.
    *
    * @return
-   *    An array of base table names.
+   *   An array of base table names.
    */
   public function getMainTables() {
 
@@ -230,97 +229,6 @@ class ChadoSchema extends TripalDbxSchema {
    */
   public function getDefault() {
     return \Drupal::config('tripal_chado.settings')->get('default_schema');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFieldTypeMap() {
-    parent::getFieldTypeMap();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function renameTable($table, $new_name) {
-    parent::renameTable($table, $new_name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function dropTable($table) {
-    parent::dropTable($table);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addField($table, $field, $spec, $keys_new = []) {
-    parent::addField($table, $field, $spec, $keys_new);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function dropField($table, $field) {
-    parent::dropField($table, $field);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function indexExists($table, $index_name, bool $exact_name = false) {
-    parent::indexExists($table, $index_name, $exact_name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addPrimaryKey($table, $fields) {
-    parent::addPrimaryKey($table, $fields);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function dropPrimaryKey($table) {
-    parent::dropPrimaryKey($table);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addUniqueKey($table, $name, $fields) {
-    parent::addUniqueKey($table, $name, $fields);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function dropUniqueKey($table, $name) {
-    parent::dropUniqueKey($table, $name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addIndex($table, $name, $fields, array $spec) {
-    parent::addIndex($table, $name, $fields, $spec);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function dropIndex($table, $name) {
-    parent::dropIndex($table, $name);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function changeField($table, $field, $field_new, $spec, $keys_new = []) {
-    parent::changeField($table, $field, $field_new, $spec, $keys_new);
   }
 
 }
