@@ -421,7 +421,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       $query1->condition('CVT.name', $name, '=');
     }
     else {
-      $query1->condition('CVT.name', $this->connection->escapeLike($name) . '%', 'like');
+      $query1->condition('CVT.name', $this->connection->escapeLike($name) . '%', 'LIKE');
     }
     $results = $query1->execute();
     while ($cvterm = $results->fetchObject()) {
