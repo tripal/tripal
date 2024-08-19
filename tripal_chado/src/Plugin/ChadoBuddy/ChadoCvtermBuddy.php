@@ -312,12 +312,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     }
 
     // Retrieve the newly inserted record.
-    $existing_record = $this->getCv($values, $options);
+    $existing_records = $this->getCv($values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($existing_records, $values);
 
-    return $existing_record;
+    return $existing_records[0];
   }
 
   /**
@@ -373,7 +373,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
         $cv_values = $this->subsetInput($values, ['cv']);
         $cv_record = $this->getCv($cv_values);
         $this->validateOutput($cv_record, $values);
-        $values['cvterm.cv_id'] = $cv_record->getValue('cv.cv_id');
+        $values['cvterm.cv_id'] = $cv_record[0]->getValue('cv.cv_id');
       }
       else {
         $values['cvterm.cv_id'] = $values['cv.cv_id'];
@@ -411,12 +411,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     }
 
     // Retrieve the newly inserted record.
-    $existing_record = $this->getCvterm($cvterm_values, $options);
+    $existing_records = $this->getCvterm($cvterm_values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($existing_records, $values);
 
-    return $existing_record;
+    return $existing_records[0];
   }
 
   /**
@@ -474,7 +474,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
         $cvterm_values = $this->subsetInput($values, ['cv', 'cvterm']);
         $cvterm_record = $this->getCvterm($cvterm_values);
         $this->validateOutput($cvterm_record, $values);
-        $values['cvtermsynonym.cvterm_id'] = $cvterm_record->getValue('cvterm.cvterm_id');
+        $values['cvtermsynonym.cvterm_id'] = $cvterm_record[0]->getValue('cvterm.cvterm_id');
       }
       else {
         $values['cvtermsynonym.cvterm_id'] = $values['cvterm.cvterm_id'];
@@ -495,12 +495,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     }
 
     // Retrieve the newly inserted record.
-    $existing_record = $this->getCvtermSynonym($cvtermsynonym_values, $options);
+    $existing_records = $this->getCvtermSynonym($cvtermsynonym_values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($existing_records, $values);
 
-    return $existing_record;
+    return $existing_records[0];
   }
 
   /**
@@ -535,15 +535,15 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
-    $existing_record = $this->getCv($conditions, $options);
-    if (count($existing_record) < 1) {
+    $existing_records = $this->getCv($conditions, $options);
+    if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (count($existing_record) > 1) {
+    if (count($existing_records) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateCv error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
     // Update query will only be based on the cv.cv_id, which we get from the retrieved record.
-    $cv_id = $existing_record->getValue('cv.cv_id');
+    $cv_id = $existing_records[0]->getValue('cv.cv_id');
     // We do not support changing the cv_id.
     if (array_key_exists('cv.cv_id', $values)) {
       unset($values['cv.cv_id']);
@@ -557,12 +557,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy updateCv database error '.$e->getMessage());
     }
-    $existing_record = $this->getCv($values, $options);
+    $existing_records = $this->getCv($values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($existing_records, $values);
 
-    return $existing_record;
+    return $existing_records[0];
   }
 
   /**
@@ -613,15 +613,15 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
-    $existing_record = $this->getCvterm($conditions, $options);
-    if (count($existing_record) < 1) {
+    $existing_records = $this->getCvterm($conditions, $options);
+    if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (count($existing_record) > 1) {
+    if (count($existing_records) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
     // Only update the dbxref if it is being changed.
-    $existing_values = $existing_record->getValues();
+    $existing_values = $existing_records[0]->getValues();
     $update_dbxref = FALSE;
     $check_fields = ['db.db_name', 'db.db_id', 'dbxref.db_id', 'dbxref.accession', 'dbxref.version', 'dbxref.description'];
     foreach ($check_fields as $field) {
@@ -651,12 +651,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy updateCvterm database error '.$e->getMessage());
     }
-    $existing_record = $this->getCvterm($values, $options);
+    $existing_records = $this->getCvterm($values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($existing_records, $values);
 
-    return $existing_record;
+    return $existing_records[0];
   }
 
   /**
@@ -711,16 +711,16 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
-    $existing_record = $this->getCvtermSynonym($conditions, $options);
-    if (count($existing_record) < 1) {
+    $existing_records = $this->getCvtermSynonym($conditions, $options);
+    if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (count($existing_record) > 1) {
+    if (count($existing_records) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
     // This function will only update the cvtermsynonym table
     // Update query will only be based on the cvtermsynonym_id, which we get from the retrieved record.
-    $cvtermsynonym_id = $existing_record->getValue('cvtermsynonym.cvtermsynonym_id');
+    $cvtermsynonym_id = $existing_records[0]->getValue('cvtermsynonym.cvtermsynonym_id');
     // We do not support changing the cvtermsynonym_id.
     if (array_key_exists('cvterm.cvtermsynonym_id', $values)) {
       unset($values['cvterm.cvtermsynonym_id']);
@@ -736,12 +736,12 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy updateCvtermSynonym database error '.$e->getMessage());
     }
-    $existing_record = $this->getCvtermSynonym($synonym_values, $options);
+    $existing_records = $this->getCvtermSynonym($synonym_values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($existing_records, $values);
 
-    return $existing_record;
+    return $existing_records[0];
   }
 
   /**
@@ -774,9 +774,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $key_columns = $this->getTableColumns($valid_tables, 'unique');
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
-    $existing_record = $this->getCv($conditions, $options);
-    if (count($existing_record) > 0) {
-      if (count($existing_record) > 1) {
+    $existing_records = $this->getCv($conditions, $options);
+    if (count($existing_records) > 0) {
+      if (count($existing_records) > 1) {
         throw new ChadoBuddyException("ChadoBuddy upsertCv error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       $new_record = $this->updateCv($values, $conditions, $options);
@@ -833,9 +833,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $key_columns = $this->getTableColumns($valid_tables, 'unique');
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
-    $existing_record = $this->getCvterm($conditions, $options);
-    if (count($existing_record) > 0) {
-      if (count($existing_record) > 1) {
+    $existing_records = $this->getCvterm($conditions, $options);
+    if (count($existing_records) > 0) {
+      if (count($existing_records) > 1) {
         throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       $new_record = $this->updateCvterm($values, $conditions, $options);
@@ -897,9 +897,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $key_columns = $this->getTableColumns($valid_tables, 'unique');
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
-    $existing_record = $this->getCvtermSynonym($conditions, $options);
-    if (count($existing_record) > 0) {
-      if (count($existing_record) > 1) {
+    $existing_records = $this->getCvtermSynonym($conditions, $options);
+    if (count($existing_records) > 0) {
+      if (count($existing_records) > 1) {
         throw new ChadoBuddyException("ChadoBuddy upsertCvtermSynonym error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       $new_record = $this->updateCvtermSynonym($values, $conditions, $options);
