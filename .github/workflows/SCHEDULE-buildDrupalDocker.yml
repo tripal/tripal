@@ -2,7 +2,7 @@ name: Build and Publish Drupal Docker
 on:
   push:
     branches:
-      - tv4g8-issue1950-improveTripalDocker
+      - 4.x
   # Allows us to manually trigger this workflow.
   # This is great if there is a change made to Tripal core that we want to test our modules on ASAP.
   workflow_dispatch:
