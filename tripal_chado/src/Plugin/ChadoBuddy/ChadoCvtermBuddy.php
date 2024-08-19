@@ -85,12 +85,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - 'case_insensitive' - a single key, or an array of keys
    *                            to query case insensitively.
    *
-   * @return bool|array|ChadoBuddyRecord
-   *   If the select values return a single record then we return the
-   *     ChadoBuddyRecord describing the chado record.
-   *   If the select values return multiple records, then we return an array
-   *     of ChadoBuddyRecords describing the results.
-   *   If there are no results then we return FALSE.
+   * @return array
+   *   An array of ChadoBuddyRecord objects. More specifically,
+   *   (1) if the select values return a single record then we return an 
+   *     array containing a single ChadoBuddyRecord describing the record.
+   *   (2) if the select values return multiple records, then we return an 
+   *     array of ChadoBuddyRecords describing the results.
+   *   (3) if there are no results then we return an empty array.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -929,10 +930,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *
    * @param string $base_table
    *   The base table for which the cvterm should be associated. Thus to associate
-   *   a cvterm with a feature the basetable=feature and cvterm_id is added to the
+   *   a cvterm with a feature the base_table=feature and cvterm_id is added to the
    *   feature_cvterm table.
    * @param int $record_id
-   *   The primary key of the basetable to associate the cvterm with.
+   *   The primary key of the base_table to associate the cvterm with.
    * @param ChadoBuddyRecord $cvterm
    *   A cvterm object returned by any of the *Cvterm() in this service.
    * @param $options
