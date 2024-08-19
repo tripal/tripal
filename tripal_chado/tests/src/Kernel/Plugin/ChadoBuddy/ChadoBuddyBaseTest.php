@@ -82,14 +82,50 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertIsObject($instance,
       "We did not have an object created when trying to create an ChadoBuddy instance.");
 
+    // Label
     $label = $instance->label();
     $this->assertIsString($label, "The label is expected to be a string.");
     $this->assertEquals($label, $this->cvtermbuddy_plugin_definition['label'],
       "The label returned did not match what we expected for the Chado Cvterm Buddy.");
 
+    // Description
     $description = $instance->description();
     $this->assertIsString($description, "The description is expected to be a string.");
     $this->assertEquals($description, $this->cvtermbuddy_plugin_definition['description'],
       "The description returned did not match what we expected for the Chado Cvterm Buddy.");
+
+    // Column Alias (protected)
+    // Make methods accessible.
+    $reflection = new \ReflectionClass($instance);
+    $makeAlias = $reflection->getMethod('makeAlias');
+    $makeAlias->setAccessible(true);
+    $unmakeAlias = $reflection->getMethod('unmakeAlias');
+    $unmakeAlias->setAccessible(true);
+    // Now test.
+    $expected_alias = 'fred__sarah';
+    $retrieved_alias = $makeAlias->invoke($instance, 'fred.sarah');
+    $this->assertEquals($expected_alias, $retrieved_alias, "We did not retrieve the alias we expected.");
+    $expected_column = 'sally.jacob';
+    $retrieved_column = $unmakeAlias->invoke($instance, 'sally__jacob');
+    $this->assertEquals($expected_column, $retrieved_column, "We did not retrieve the column we expected when unmaking the alias.");
+    $start_column = 'me.you';
+    $retrieved_alias = $makeAlias->invoke($instance, $start_column);
+    $retrieved_column = $unmakeAlias->invoke($instance, $retrieved_alias);
+    $this->assertEquals($start_column, $retrieved_column, "We were unable to recover the same column when passed to makeAlias() and then unmakeAlias().");
+    // @todo test when a column with no dot is passed in.
+    // @todo test when a column with multiple dots is passed in.
+
+    // Remove Table Prefix (protected)
+    // Make methods accessible.
+    $removeTablePrefix = $reflection->getMethod('removeTablePrefix');
+    $removeTablePrefix->setAccessible(true);
+    // Now test.
+    $referenced_values = ['cvterm.name' => 'sarah', 'cvterm.dbxref_id' => 3, 'cvterm.cv_id' => 9];
+    $expected_values = ['name' => 'sarah', 'dbxref_id' => 3, 'cv_id' => 9];
+    $dereferenced_values = $removeTablePrefix->invoke($instance, $referenced_values);
+    $this->assertEquals($expected_values, $dereferenced_values, "We did not get the dereferenced values we expected when calling removeTablePrefix on " . print_r($referenced_values, TRUE));
+    // @todo test when more then one table of values is passed in (i.e. cv.name and cvterm.name)
+    // @todo test when a key does not have a dot and/or when it has multiple dots
+
   }
 }
