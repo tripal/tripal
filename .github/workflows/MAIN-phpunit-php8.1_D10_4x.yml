@@ -1,0 +1,27 @@
+name: PHPUnit
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 4.x
+  # Allows us to schedule when this workflow is run.
+  # This ensures we pick up any new changes in Drupal.
+  schedule:
+    # Run at 6am every night.
+    - cron: '0 6 * * *'
+jobs:
+  running-tests:
+    name: "Drupal 10.4: PHP 8.1"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Run Automated testing
+        uses: tripal/test-tripal-action@v1.5
+        with:
+          directory-name: 'tripal'
+          modules: 'tripal tripal_biodb tripal_chado'
+          php-version: '8.1'
+          pgsql-version: '16'
+          drupal-version: '10.4.x-dev'
+          build-image: true
