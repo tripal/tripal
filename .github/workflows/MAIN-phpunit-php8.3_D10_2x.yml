@@ -1,5 +1,6 @@
 name: PHPUnit
 on:
+  workflow_dispatch:
   push:
     branches:
       - 4.x
@@ -24,4 +25,3 @@ jobs:
           pgsql-version: '16'
           drupal-version: '10.2.x-dev'
           build-image: true
-          dockerfile: "UseTripalDockerBackupClause"
