@@ -915,10 +915,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *
    * @param string $base_table
    *   The base table for which the cvterm should be associated. Thus to associate
-   *   a cvterm with a feature the basetable=feature and cvterm_id is added to the
+   *   a cvterm with a feature the base_table=feature and cvterm_id is added to the
    *   feature_cvterm table.
    * @param int $record_id
-   *   The primary key of the basetable to associate the cvterm with.
+   *   The primary key of the base_table to associate the cvterm with.
    * @param ChadoBuddyRecord $cvterm
    *   A cvterm object returned by any of the *Cvterm() in this service.
    * @param $options
