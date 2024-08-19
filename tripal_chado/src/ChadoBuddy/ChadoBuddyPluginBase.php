@@ -374,9 +374,8 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    * to ensure there is exactly one record present.
    *
    * @param mixed $output_records
-   *   This can be either FALSE, a ChadoBuddyRecord, or an array
-   *   with multiple records. To be valid, it must be exactly
-   *   one ChadoBuddyRecord.
+   *   An array of zero or more ChadoBuddyRecords.
+   *   To be valid, it must contain exactly one ChadoBuddyRecord.
    * @param array $values
    *   Pass query values to print if an exception is thrown.
    *
@@ -385,50 +384,17 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    */
   protected function validateOutput($output_records, array $values) {
     // These are unlikely cases, but you never know.
-    if (!$output_records) {
+    if (!is_array($output_records) or (count($output_records) < 1)) {
       $calling_function = debug_backtrace()[1]['function'];
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, did not retrieve the expected record\n"
                                    . print_r($values, TRUE));
     }
-    if (is_array($output_records)) {
+    $n = count($output_records);
+    if ($n > 1) {
       $calling_function = debug_backtrace()[1]['function'];
-      $n = count($output_records);
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, more than one record ($n) was"
                                     . " retrieved, only one was expected\n" . print_r($values, TRUE));
     }
-  }
-
-  /**
-   * Used to return a count of how many buddy records were returned
-   * from a buddy function. We provide helper function this because
-   * the result can be FALSE, a single ChadoBuddyRecord, or an array
-   * of ChadoBuddyRecords. We don't accept an empty array, because
-   * no buddy function will ever return that.
-   *
-   * @param mixed $buddies
-   *   Boolean, object, or array as described above.
-   *
-   * @return int
-   *   The number of buddy records
-   *
-   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If some other type of value is passed than the cases described above.
-   */
-  public function countBuddies(mixed $buddies) {
-    $count = NULL;
-    if ($buddies === FALSE) {
-      $count = 0;
-    }
-    elseif (is_object($buddies) and ($buddies instanceof ChadoBuddyRecord)) {
-      $count = 1;
-    }
-    elseif (is_array($buddies) and (count($buddies) >= 1) and ($buddies[0] instanceof ChadoBuddyRecord)) {
-      $count = count($buddies);
-    }
-    if ($count === NULL) {
-      throw new ChadoBuddyException("ChadoBuddy countBuddies error, incompatible value passed");
-    }
-    return $count;
   }
 
 }

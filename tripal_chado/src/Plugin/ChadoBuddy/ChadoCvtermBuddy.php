@@ -85,12 +85,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - 'case_insensitive' - a single key, or an array of keys
    *                            to query case insensitively.
    *
-   * @return bool|array|ChadoBuddyRecord
-   *   If the select values return a single record then we return the
-   *     ChadoBuddyRecord describing the chado record.
-   *   If the select values return multiple records, then we return an array
-   *     of ChadoBuddyRecords describing the results.
-   *   If there are no results then we return FALSE.
+   * @return array
+   *   An array of ChadoBuddyRecord objects. More specifically,
+   *   (1) if the select values return a single record then we return an
+   *     array containing a single ChadoBuddyRecord describing the record.
+   *   (2) if the select values return multiple records, then we return an
+   *     array of ChadoBuddyRecords describing the results.
+   *   (3) if there are no results then we return an empty array.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -128,15 +129,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $buddies[] = $new_record;
     }
 
-    if (count($buddies) > 1) {
-      return $buddies;
-    }
-    elseif (count($buddies) == 1) {
-      return $buddies[0];
-    }
-    else {
-      return FALSE;
-    }
+    return $buddies;
   }
 
   /**
@@ -173,12 +166,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - 'synonyms' - set to true to enable synonym query,
    *                    used internally be getCvtermSynonym()
    *
-   * @return bool|array|ChadoBuddyRecord
-   *   If the select values return a single record then we return the
-   *     ChadoBuddyRecord describing the chado record.
-   *   If the select values return multiple records, then we return an array
-   *     of ChadoBuddyRecords describing the results.
-   *   If there are no results then we return FALSE.
+   * @return array
+   *   An array of ChadoBuddyRecord objects. More specifically,
+   *   (1) if the select values return a single record then we return an
+   *     array containing a single ChadoBuddyRecord describing the record.
+   *   (2) if the select values return multiple records, then we return an
+   *     array of ChadoBuddyRecords describing the results.
+   *   (3) if there are no results then we return an empty array.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -226,16 +220,7 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $buddies[] = $new_record;
     }
 
-    if (count($buddies) > 1) {
-      return $buddies;
-    }
-    elseif (count($buddies) == 1) {
-      return $buddies[0];
-    }
-    else {
-      return FALSE;
-    }
-  }
+    return $buddies;  }
 
   /**
    * Retrieves a controlled vocabulary term.
@@ -273,12 +258,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *     - 'case_insensitive' - a single key, or an array of keys
    *                            to query case insensitively.
    *
-   * @return bool|array|ChadoBuddyRecord
-   *   If the select values return a single record then we return the
-   *     ChadoBuddyRecord describing the chado record.
-   *   If the select values return multiple records, then we return an array
-   *     of ChadoBuddyRecords describing the results.
-   *   If there are no results then we return FALSE.
+   * @return array
+   *   An array of ChadoBuddyRecord objects. More specifically,
+   *   (1) if the select values return a single record then we return an
+   *     array containing a single ChadoBuddyRecord describing the record.
+   *   (2) if the select values return multiple records, then we return an
+   *     array of ChadoBuddyRecords describing the results.
+   *   (3) if there are no results then we return an empty array.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -550,10 +536,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $this->validateInput($conditions, $valid_columns);
 
     $existing_record = $this->getCv($conditions, $options);
-    if (!$existing_record) {
+    if (count($existing_record) < 1) {
       return FALSE;
     }
-    if (is_array($existing_record)) {
+    if (count($existing_record) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateCv error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
     // Update query will only be based on the cv.cv_id, which we get from the retrieved record.
@@ -628,10 +614,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $this->validateInput($conditions, $valid_columns);
 
     $existing_record = $this->getCvterm($conditions, $options);
-    if (!$existing_record) {
+    if (count($existing_record) < 1) {
       return FALSE;
     }
-    if (is_array($existing_record)) {
+    if (count($existing_record) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
     // Only update the dbxref if it is being changed.
@@ -726,10 +712,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $this->validateInput($conditions, $valid_columns);
 
     $existing_record = $this->getCvtermSynonym($conditions, $options);
-    if (!$existing_record) {
+    if (count($existing_record) < 1) {
       return FALSE;
     }
-    if (is_array($existing_record)) {
+    if (count($existing_record) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateCvterm error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
     // This function will only update the cvtermsynonym table
@@ -789,8 +775,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
     $existing_record = $this->getCv($conditions, $options);
-    if ($existing_record) {
-      if (is_array($existing_record)) {
+    if (count($existing_record) > 0) {
+      if (count($existing_record) > 1) {
         throw new ChadoBuddyException("ChadoBuddy upsertCv error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       $new_record = $this->updateCv($values, $conditions, $options);
@@ -848,8 +834,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
     $existing_record = $this->getCvterm($conditions, $options);
-    if ($existing_record) {
-      if (is_array($existing_record)) {
+    if (count($existing_record) > 0) {
+      if (count($existing_record) > 1) {
         throw new ChadoBuddyException("ChadoBuddy upsertCvterm error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       $new_record = $this->updateCvterm($values, $conditions, $options);
@@ -912,8 +898,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
     $existing_record = $this->getCvtermSynonym($conditions, $options);
-    if ($existing_record) {
-      if (is_array($existing_record)) {
+    if (count($existing_record) > 0) {
+      if (count($existing_record) > 1) {
         throw new ChadoBuddyException("ChadoBuddy upsertCvtermSynonym error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       $new_record = $this->updateCvtermSynonym($values, $conditions, $options);
