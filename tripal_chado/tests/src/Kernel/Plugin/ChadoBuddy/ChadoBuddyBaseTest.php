@@ -82,14 +82,83 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertIsObject($instance,
       "We did not have an object created when trying to create an ChadoBuddy instance.");
 
+    // Label
     $label = $instance->label();
     $this->assertIsString($label, "The label is expected to be a string.");
     $this->assertEquals($label, $this->cvtermbuddy_plugin_definition['label'],
       "The label returned did not match what we expected for the Chado Cvterm Buddy.");
 
+    // Description
     $description = $instance->description();
     $this->assertIsString($description, "The description is expected to be a string.");
     $this->assertEquals($description, $this->cvtermbuddy_plugin_definition['description'],
       "The description returned did not match what we expected for the Chado Cvterm Buddy.");
+
+    // Column Alias (protected)
+    // Make methods accessible.
+    $reflection = new \ReflectionClass($instance);
+    $makeAlias = $reflection->getMethod('makeAlias');
+    $makeAlias->setAccessible(true);
+    $unmakeAlias = $reflection->getMethod('unmakeAlias');
+    $unmakeAlias->setAccessible(true);
+
+    // Test a typical use case.
+    $expected_alias = 'fred__sarah';
+    $retrieved_alias = $makeAlias->invoke($instance, 'fred.sarah');
+    $this->assertEquals($expected_alias, $retrieved_alias, "We did not retrieve the alias we expected.");
+    $expected_column = 'sally.jacob';
+    $retrieved_column = $unmakeAlias->invoke($instance, 'sally__jacob');
+    $this->assertEquals($expected_column, $retrieved_column, "We did not retrieve the column we expected when unmaking the alias.");
+    $start_column = 'me.you';
+    $retrieved_alias = $makeAlias->invoke($instance, $start_column);
+    $retrieved_column = $unmakeAlias->invoke($instance, $retrieved_alias);
+    $this->assertEquals($start_column, $retrieved_column, "We were unable to recover the same column when passed to makeAlias() and then unmakeAlias().");
+
+    // Test when a column with no dot is passed in. Expect no change.
+    $start_column = 'abc3_def6_ghi9';
+    $expected_alias = $start_column;
+    $retrieved_alias = $makeAlias->invoke($instance, $start_column);
+    $this->assertEquals($expected_alias, $retrieved_alias, "We did not retrieve the alias we expected.");
+    $retrieved_column = $unmakeAlias->invoke($instance, $retrieved_alias);
+    $this->assertEquals($start_column, $retrieved_column, "We were unable to recover the same column when passed to makeAlias() and then unmakeAlias().");
+
+    // Test when a column with multiple dots, or alias with multiple double
+    // underscores is passed in. Expect only the first instance to be changed.
+    $start_column = 'Abc3.dEf6.ghI9';
+    $expected_alias = 'Abc3__dEf6.ghI9';
+    $retrieved_alias = $makeAlias->invoke($instance, $start_column);
+    $this->assertEquals($expected_alias, $retrieved_alias, "We did not retrieve the alias we expected.");
+    $start_alias = 'A_bc3__dEf6__ghI_9';
+    $expected_column = 'A_bc3.dEf6__ghI_9';
+    $retrieved_column = $unmakeAlias->invoke($instance, $start_alias);
+    $this->assertEquals($expected_column, $retrieved_column, "We were unable to recover the expected column from its alias.");
+
+    // Remove Table Prefix (protected)
+    // Make methods accessible.
+    $removeTablePrefix = $reflection->getMethod('removeTablePrefix');
+    $removeTablePrefix->setAccessible(true);
+
+    // Test a typical use case.
+    $referenced_values = ['cvterm.name' => 'sarah', 'cvterm.dbxref_id' => 3, 'cvterm.cv_id' => 9];
+    $expected_values = ['name' => 'sarah', 'dbxref_id' => 3, 'cv_id' => 9];
+    $dereferenced_values = $removeTablePrefix->invoke($instance, $referenced_values);
+    $this->assertEquals($expected_values, $dereferenced_values, "We did not get the dereferenced values we expected when calling removeTablePrefix on " . print_r($referenced_values, TRUE));
+
+    // Test when more then one table of values is passed in and an ambiguous column
+    // name would result (e.g. cv.name and cvterm.name). Expect exception.
+    $referenced_values = ['cv.name' => 'aldous', 'cvterm.name' => 'huxley'];
+    $exception_caught = FALSE;
+    try {
+      $dereferenced_values = $removeTablePrefix->invoke($instance, $referenced_values);
+    } catch (\Exception $e) {
+      $exception_caught = TRUE;
+    }
+    $this->assertTrue($exception_caught, 'Did not catch exception that should have been thrown for removeTablePrefix()');
+
+    // Test when a key does not have a dot or when it has multiple dots. Only trim to first dot.
+    $referenced_values = ['name_no_dot' => 'newton', 'cvterm.name.fictional.indeed' => 'dumbeldore'];
+    $expected_values = ['name_no_dot' => 'newton', 'name.fictional.indeed' => 'dumbeldore'];
+    $dereferenced_values = $removeTablePrefix->invoke($instance, $referenced_values);
+    $this->assertEquals($expected_values, $dereferenced_values, 'Unexpected dereferenced values from removeTablePrefix()');
   }
 }
