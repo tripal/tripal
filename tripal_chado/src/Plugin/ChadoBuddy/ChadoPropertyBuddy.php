@@ -118,12 +118,12 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - pkey - if the default of $property_table . '_id' needs to be changed
    *
    * @return bool|array|ChadoBuddyRecord
-   *   If the select values return a single record then we return the
-   *     ChadoBuddyRecord describing the chado record.
-   *   If the select values return multiple records, then we return an array
-   *     of ChadoBuddyRecords describing the results.
-   *   If there are no results then we return FALSE and if an error is
-   *     encountered then a ChadoBuddyException will be thrown.
+   *   An array of ChadoBuddyRecord objects. More specifically,
+   *   (1) if the select values return a single record then we return an
+   *     array containing a single ChadoBuddyRecord describing the record.
+   *   (2) if the select values return multiple records, then we return an
+   *     array of ChadoBuddyRecords describing the results.
+   *   (3) if there are no results then we return an empty array.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -136,10 +136,6 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     $valid_columns = $this->getTableColumns($valid_tables);
     $conditions = $this->dereferenceBuddyRecord($conditions);
     $this->validateInput($conditions, $valid_columns);
-
-    if (!isset($this->cvterm_instance)) {
-      $this->cvterm_instance = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
-    }
 
     $query = $this->connection->select('1:' . $property_table, $property_table);
     $query->leftJoin('1:' . $base_table, $base_table, $base_table . '.' . $fkey . ' = ' . $property_table . '.' . $fkey);
@@ -173,15 +169,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
       $buddies[] = $new_record;
     }
 
-    if (count($buddies) > 1) {
-      return $buddies;
-    }
-    elseif (count($buddies) == 1) {
-      return $buddies[0];
-    }
-    else {
-      return FALSE;
-    }
+    return $buddies;
   }
 
   /**
@@ -236,7 +224,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    * @return ChadoBuddyRecord
    *   The inserted ChadoBuddyRecord will be returned on success and an
    *   exception will be thrown if an error is encountered. If the record
-   *   already exists then an error will be thrown... if this is not the desired
+   *   already exists then an error will be thrown. If this is not the desired
    *   behaviour then use the upsert version of this method.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
@@ -289,12 +277,12 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     }
 
     // Retrieve the newly inserted record.
-    $existing_record = $this->getProperty($base_table, $record_id, $property_values, $options);
+    $inserted_records = $this->getProperty($base_table, $record_id, $property_values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($inserted_records, $values);
 
-    return $existing_record;
+    return $inserted_records[0];
   }
 
   /**
@@ -352,8 +340,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *
    * @return bool|ChadoBuddyRecord
    *   The updated ChadoBuddyRecord will be returned on success, FALSE will be
-   *   returned if no record was found to update and a ChadoBuddyException will be thrown
-   *   if an error is encountered.
+   *   returned if no record was found to update.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -370,17 +357,17 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
-    $existing_record = $this->getProperty($base_table, $record_id, $conditions, $options);
-    if (!$existing_record) {
+    $existing_records = $this->getProperty($base_table, $record_id, $conditions, $options);
+    if (count($existing_records) == 0) {
       return FALSE;
     }
-    if (is_array($existing_record)) {
+    if (count($existing_records) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateProperty error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
 
     $query = $this->connection->update('1:' . $property_table);
     // We can now reduce conditions to just the property table primary key
-    $query->condition("$property_table.$pkey", $existing_record->getValue("$property_table.$pkey"), '=');
+    $query->condition("$property_table.$pkey", $existing_records[0]->getValue("$property_table.$pkey"), '=');
     $property_values = $this->subsetInput($values, [$property_table]);
     $query->fields($this->removeTablePrefix($property_values));
     try {
@@ -389,13 +376,13 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy updateProperty database error '.$e->getMessage());
     }
-    $pkey_conditions = ["$property_table.$pkey" => $existing_record->getValue("$property_table.$pkey")];
-    $existing_record = $this->getProperty($base_table, $record_id, $pkey_conditions, $options);
+    $pkey_conditions = ["$property_table.$pkey" => $existing_records[0]->getValue("$property_table.$pkey")];
+    $updated_records = $this->getProperty($base_table, $record_id, $pkey_conditions, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($updated_records, $values);
 
-    return $existing_record;
+    return $updated_records[0];
 
   }
 
@@ -449,8 +436,7 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *         if they do not already exist.
    *
    * @return ChadoBuddyRecord
-   *   The inserted/updated ChadoBuddyRecord will be returned on success, and
-   *   a ChadoBuddyException will be thrown if an error is encountered.
+   *   The inserted/updated ChadoBuddyRecord will be returned on success.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -473,9 +459,9 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
     $key_columns[] = 'cvterm.cvterm_id';
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
-    $existing_record = $this->getProperty($base_table, $record_id, $conditions, $options);
-    if ($existing_record) {
-      if (is_array($existing_record)) {
+    $existing_records = $this->getProperty($base_table, $record_id, $conditions, $options);
+    if (count($existing_records) > 0) {
+      if (count($existing_records) > 1) {
         throw new ChadoBuddyException("ChadoBuddy upsertProperty error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       $new_record = $this->updateProperty($base_table, $record_id, $values, $conditions, $options);
@@ -532,16 +518,11 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
    *     - fkey - if the default of $base_table . '_id' needs to be changed
    *     - pkey - if the default of $property_table . '_id' needs to be changed
    *     - max_delete - specifies the maximum number of properties that can be deleted.
-   *       Default 1, set to -1 for unlimited. If limit exceeded, a
-   *       ChadoBuddyException is thrown.
+   *       Default is 1. Set to -1 for unlimited.
+   *       If the limit is exceeded, a ChadoBuddyException is thrown.
    *
    * @return int
-   *   If the select values return a single record then we return the
-   *     ChadoBuddyRecord describing the chado record.
-   *   If the select values return multiple records, then we return an array
-   *     of ChadoBuddyRecords describing the results.
-   *   If there are no results then we return FALSE and if an error is
-   *     encountered then a ChadoBuddyException will be thrown.
+   *   Returns a count of the number of records that were deleted.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -558,14 +539,9 @@ class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
     $existing_records = $this->getProperty($base_table, $record_id, $conditions, $options);
     $pkey_ids = [];
-    if ($existing_records) {
-      if (is_array($existing_records)) {
-        foreach ($existing_records as $record) {
-          $pkey_ids[] = $record->getValue("$property_table.$pkey");
-        }
-      }
-      else {
-        $pkey_ids[] = $existing_records->getValue("$property_table.$pkey");
+    if (count($existing_records) > 0) {
+      foreach ($existing_records as $record) {
+        $pkey_ids[] = $record->getValue("$property_table.$pkey");
       }
 
       $max_delete = $options['max_delete'] ?? 1;
