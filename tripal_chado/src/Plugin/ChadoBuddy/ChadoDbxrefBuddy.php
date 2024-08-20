@@ -33,12 +33,13 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - 'case_insensitive' - a single key, or an array of keys
    *                            to query case insensitively.
    *
-   * @return bool|array|ChadoBuddyRecord
-   *   If the select values return a single record then we return the
-   *     ChadoBuddyRecord describing the chado record.
-   *   If the select values return multiple records, then we return an array
-   *     of ChadoBuddyRecords describing the results.
-   *   If there are no results then we return FALSE.
+   * @return array
+   *   An array of ChadoBuddyRecord objects. More specifically,
+   *   (1) if the select values return a single record then we return an
+   *     array containing a single ChadoBuddyRecord describing the record.
+   *   (2) if the select values return multiple records, then we return an
+   *     array of ChadoBuddyRecords describing the results.
+   *   (3) if there are no results then we return an empty array.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -75,16 +76,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $buddies[] = $new_record;
     }
 
-    if (count($buddies) > 1) {
-      return $buddies;
-    }
-    elseif (count($buddies) == 1) {
-      return $buddies[0];
-    }
-    else {
-      return FALSE;
-    }
-  }
+    return $buddies;  }
 
   /**
    * Retrieves a chado database reference.
@@ -109,12 +101,13 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
    *     - 'case_insensitive' - a single key, or an array of keys
    *                            to query case insensitively.
    *
-   * @return bool|array|ChadoBuddyRecord
-   *   If the select values return a single record then we return the
-   *     ChadoBuddyRecord describing the chado record.
-   *   If the select values return multiple records, then we return an array
-   *     of ChadoBuddyRecords describing the results.
-   *   If there are no results then we return FALSE.
+   * @return array
+   *   An array of ChadoBuddyRecord objects. More specifically,
+   *   (1) if the select values return a single record then we return an
+   *     array containing a single ChadoBuddyRecord describing the record.
+   *   (2) if the select values return multiple records, then we return an
+   *     array of ChadoBuddyRecords describing the results.
+   *   (3) if there are no results then we return an empty array.
    *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If an error is encountered.
@@ -154,16 +147,7 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       $buddies[] = $new_record;
     }
 
-    if (count($buddies) > 1) {
-      return $buddies;
-    }
-    elseif (count($buddies) == 1) {
-      return $buddies[0];
-    }
-    else {
-      return FALSE;
-    }
-  }
+    return $buddies;  }
 
   /**
    * Generates a URL for a database reference (e.g. the reference for a cvterm).
@@ -257,12 +241,12 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     }
 
     // Retrieve the newly inserted record.
-    $existing_record = $this->getDb($values, $options);
+    $existing_records = $this->getDb($values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($existing_records, $values);
 
-    return $existing_record;
+    return $existing_records[0];
   }
 
   /**
@@ -311,11 +295,11 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
       if (!array_key_exists('db.name', $values) or !$values['db.name']) {
         throw new ChadoBuddyException("ChadoBuddy insertDbxref error, neither db.db_id, dbxref.db_id, nor db.name were specified\n");
       }
-      $existing_record = $this->getDb(['db.name' => $values['db.name']], $options);
-      if (!$existing_record or is_array($existing_record)) {
+      $existing_records = $this->getDb(['db.name' => $values['db.name']], $options);
+      if (count($existing_records) != 1) {
         throw new ChadoBuddyException("ChadoBuddy insertDbxref error, invalid db.name \"".$values['db.name']."\" was specified\n");
       }
-      $values['dbxref.db_id'] = $existing_record->getValue('db.db_id');
+      $values['dbxref.db_id'] = $existing_records[0]->getValue('db.db_id');
       unset($values['db.name']);
     }
 
@@ -331,12 +315,12 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     }
 
     // Retrieve the newly inserted record.
-    $existing_record = $this->getDbxref($dbxref_values, $options);
+    $existing_records = $this->getDbxref($dbxref_values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($existing_records, $values);
 
-    return $existing_record;
+    return $existing_records[0];
   }
 
   /**
@@ -378,16 +362,16 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $this->validateInput($conditions, $valid_columns);
     $this->validateInput($values, $valid_columns);
 
-    $existing_record = $this->getDb($conditions, $options);
-    if (!$existing_record) {
+    $existing_records = $this->getDb($conditions, $options);
+    if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (is_array($existing_record)) {
+    if (count($existing_records) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateDb error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
     // Update query will only be based on the db.db_id, which we
     // can get from the retrieved record.
-    $db_id = $existing_record->getValue('db.db_id');
+    $db_id = $existing_records[0]->getValue('db.db_id');
     // We do not support changing the db_id.
     if (array_key_exists('db.db_id', $values)) {
       unset($values['db.db_id']);
@@ -401,12 +385,12 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy updateDb database error '.$e->getMessage());
     }
-    $existing_record = $this->getDb($values, $options);
+    $existing_records = $this->getDb($values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($existing_records, $values);
 
-    return $existing_record;
+    return $existing_records[0];
   }
 
   /**
@@ -451,17 +435,17 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $this->validateInput($values, $valid_columns);
     $this->validateInput($conditions, $valid_columns);
 
-    $existing_record = $this->getDbxref($conditions, $options);
-    if (!$existing_record) {
+    $existing_records = $this->getDbxref($conditions, $options);
+    if (count($existing_records) < 1) {
       return FALSE;
     }
-    if (is_array($existing_record)) {
+    if (count($existing_records) > 1) {
       throw new ChadoBuddyException("ChadoBuddy updateDbxref error, more than one record matched the conditions specified\n".print_r($conditions, TRUE));
     }
 
     // Update query will only be based on the dbxref_id, which we
     // can get from the retrieved record.
-    $dbxref_id = $existing_record->getValue('dbxref.dbxref_id');
+    $dbxref_id = $existing_records[0]->getValue('dbxref.dbxref_id');
     // We do not support changing the dbxref_id.
     if (array_key_exists('dbxref.dbxref_id', $values)) {
       unset($values['dbxref.dbxref_id']);
@@ -478,12 +462,12 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     catch (\Exception $e) {
       throw new ChadoBuddyException('ChadoBuddy updateDbxref database error '.$e->getMessage());
     }
-    $existing_record = $this->getDbxref($values, $options);
+    $existing_records = $this->getDbxref($values, $options);
 
     // Validate that exactly one record was obtained.
-    $this->validateOutput($existing_record, $values);
+    $this->validateOutput($existing_records, $values);
 
-    return $existing_record;
+    return $existing_records[0];
   }
 
   /**
@@ -521,9 +505,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $key_columns = $this->getTableColumns($valid_tables, 'unique');
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
-    $existing_record = $this->getDb($conditions, $options);
-    if ($existing_record) {
-      if (is_array($existing_record)) {
+    $existing_records = $this->getDb($conditions, $options);
+    if (count($existing_records) > 0) {
+      if (count($existing_records) > 1) {
         throw new ChadoBuddyException("ChadoBuddy upsertDb error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       $new_record = $this->updateDb($values, $conditions, $options);
@@ -570,9 +554,9 @@ class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
     $key_columns = $this->getTableColumns($valid_tables, 'unique');
     $conditions = $this->makeUpsertConditions($values, $key_columns);
 
-    $existing_record = $this->getDbxref($conditions, $options);
-    if ($existing_record) {
-      if (is_array($existing_record)) {
+    $existing_records = $this->getDbxref($conditions, $options);
+    if (count($existing_records) > 0) {
+      if (count($existing_records) > 1) {
         throw new ChadoBuddyException("ChadoBuddy upsertDbxref error, more than one record matched the specified values\n".print_r($values, TRUE));
       }
       $new_record = $this->updateDbxref($values, $conditions, $options);
