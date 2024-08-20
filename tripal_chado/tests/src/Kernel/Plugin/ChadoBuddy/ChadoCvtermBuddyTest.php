@@ -200,8 +200,6 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(20, count($values), 'The values array is of unexpected size for the existing Cvterm with dbxref "newAcc003"');
 
     // TEST: associate a cvterm with a base table.
-    // The minimal test environment won't be able to automatically look up
-    // the primary key for the feature table, so we have to pass 'pkey' in.
     $base_table = 'phenotype';
     $query = $this->connection->insert('1:' . $base_table)
       ->fields(['uniquename' => 'phen005'])
@@ -220,6 +218,27 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $retrieved_cvterm_id = $results[0]->cvterm_id;
     $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
       "We did not get the cvterm_id from \"$linking_table\" that should have been set by associateCvterm");
+
+    // TEST: associate a cvterm with a base table where there are required columns
+    // in the linking table (i.e. pub_id). Tests the auto-lookup functionality.
+    $base_table = 'stock';
+    $query = $this->connection->insert('1:' . $base_table)
+      ->fields(['uniquename' => 'stock005', 'type_id' => 1])
+      ->execute();
+    $linking_table = $base_table . '_cvterm';
+    $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], []);
+    $this->assertIsBool($status, "We did not retrieve a boolean when associating a cvterm with the base table \"$base_table\"");
+    $this->assertTrue($status, "We did not retrieve TRUE when associating a cvterm with the base table \"$base_table\"");
+    $query = $this->connection->select('1:' . $linking_table, 'lt')
+      ->fields('lt', ['cvterm_id', 'pub_id'])
+      ->execute();
+    $results = $query->fetchAll();
+    $this->assertIsArray($results, "We should have been able to select from the \"$linking_table\" table");
+    $this->assertCount(1, $results, "There should only be a single \"$linking_table\" record inserted");
+    $expected_pub_id = 1; // The NULL publication
+    $retrieved_pub_id = $results[0]->pub_id;
+    $this->assertEquals($expected_pub_id, $retrieved_pub_id,
+      "We did not get the pub_id from \"$linking_table\" that should have been set by associateCvterm");
 
     // TEST: We should be able to create a synonym.
     $chado_buddy_record = $instance->insertCvtermSynonym(['cv.name' => 'local', 'cvterm.cvterm_id' => $expected_cvterm_id,

@@ -924,9 +924,13 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    * @param $options
    *   'pkey': Looking up the primary key for the base table is costly. If it is
    *           known, then pass it in as this option for better performance.
+   *
    *   Also pass in any other columns used in the linking table, some of which may
    *   have a NOT NULL constraint. See the table below for a list of which of
    *   the following may be required: 'pub_id', 'is_not', 'rank', 'cvterm_type_id'.
+   *   If not specified, then they will be looked up automatically, but this will
+   *   be a slight performance hit. Disable this by specifying at least one additional
+   *   column, or by setting the option 'lookup_columns' to FALSE.
    *
    *   Chado 1.3 defines these columns in the various linking tables:
    *   ^ table                       ^ pub_id   ^ is_not      ^ rank        ^ cvterm_type_id ^
@@ -964,8 +968,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
       $base_pkey_col => $record_id,
     ];
     // Add in any of the other columns for the linking table.
+    $options = $this->addLinkingColumns($linking_table, $options);
     foreach ($options as $key => $value) {
-      if ($key != 'pkey') {
+      if (($key != 'pkey') and ($key != 'lookup_columns')) {
         $fields[$key] = $value;
       }
     }
@@ -979,6 +984,50 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     }
 
     return TRUE;
+  }
+  /**
+   * If there are additional not NULL columns in the linking table then add them to the options.
+   *
+   * @param string $linking_table
+   *   The name of the linking table, e.g. featureprop.
+   * @param array $options
+   *   The options passed to the Chado Buddy.
+   *
+   * @return array
+   *   The passed options with not-NULL columns added.
+   */
+  private function addLinkingColumns(string $linking_table, array $options): array {
+    $lookup_columns = $options['lookup_columns'] ?? TRUE;
+    if ($lookup_columns) {
+      // For Chado 1.3, these are the only possible additional columns.
+      // Defaults are null pub, FALSE (encoded as zero), rank zero, null cvterm
+      $defaults = ['pub_id' => 1, 'is_not' => 0, 'rank' => 0, 'cvterm_type_id' => 1];
+      // If any of these were specified, we disable the automatic lookup.
+      foreach (array_keys($options) as $key) {
+        if (in_array($key, array_keys($defaults))) {
+          $lookup_columns = FALSE;
+          break;
+        }
+      }
+      if ($lookup_columns) {
+        // Automatic lookup is enabled.
+        // Determine actual columns for this linking table.
+        $schema = $this->connection->schema();
+        $linking_table_def = $schema->getTableDef($linking_table, ['format' => 'Drupal']);
+        foreach ($linking_table_def['fields'] as $field_id => $def) {
+          if (array_key_exists($field_id, $defaults)) {
+            // Only include if a NOT NULL constraint exists.
+            if ($def['not null']) {
+              // And also only include if there is not some type of default value.
+              if (($def['type'] != 'serial') and !($def['default'] ?? FALSE)) {
+                $options[$field_id] = $defaults[$field_id];
+              }
+            }
+          }
+        }
+      }
+    }
+    return $options;
   }
 
   /**

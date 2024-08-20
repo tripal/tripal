@@ -239,6 +239,10 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
     $new_values = [];
     foreach ($values as $key => $value) {
       $new_key = preg_replace('/^[^\.]*\./', '', $key);
+      if (array_key_exists($new_key, $new_values)) {
+        throw new ChadoBuddyException("Ambiguous columns passed to removeTablePrefix(), this function"
+          . " can only handle columns in a single table. Passed values: " . print_r($values, TRUE));
+      }
       $new_values[$new_key] = $value;
     }
     return $new_values;
