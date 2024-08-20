@@ -1016,12 +1016,10 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
         $linking_table_def = $schema->getTableDef($linking_table, ['format' => 'Drupal']);
         foreach ($linking_table_def['fields'] as $field_id => $def) {
           if (array_key_exists($field_id, $defaults)) {
-            // Only include if a NOT NULL constraint exists.
-            if ($def['not null']) {
-              // And also only include if there is not some type of default value.
-              if (($def['type'] != 'serial') and !($def['default'] ?? FALSE)) {
-                $options[$field_id] = $defaults[$field_id];
-              }
+            // Only include if a NOT NULL constraint exists,
+            // and there is not some type of default value
+            if ($def['not null'] and ($def['type'] != 'serial') and !($def['default'] ?? FALSE)) {
+              $options[$field_id] = $defaults[$field_id];
             }
           }
         }
