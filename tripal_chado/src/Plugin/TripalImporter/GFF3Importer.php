@@ -296,14 +296,14 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
    * A controlled vocabulary results object. This is the CV that will be
    * used to for feature properties.
    */
-  private $feature_prop_cv = NULL;
+  private $feature_prop_cv_buddy_record = NULL;
 
 
   /**
    * A controlled vocabulary results object. This is the CV that will be
    * used to for feature properties.
    */
-  private $feature_cv = NULL;
+  private $feature_cv_buddy_record = NULL;
 
   /**
    * Stores proteins
@@ -622,19 +622,19 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
     // Get the feature property CV object
     $conditions = ['cv.name' => 'local'];
-    $cv_record = $this->cvterm_buddy->getCv($conditions, []);
-    if ($this->cvterm_buddy->countBuddies($cv_record) != 1) {
+    $cv_records = $this->cvterm_buddy->getCv($conditions, []);
+    if (count($cv_records) != 1) {
       throw new \Exception(t("Cannot find the 'local' ontology (feature property CV)"));
     }
-    $this->feature_prop_cv = $cv_record;
+    $this->feature_prop_cv_buddy_record = $cv_records[0];
 
     // Get the sequence CV object
     $conditions = ['cv.name' => 'sequence'];
-    $cv_record = $this->cvterm_buddy->getCv($conditions, []);
-    if ($this->cvterm_buddy->countBuddies($cv_record) != 1) {
+    $cv_records = $this->cvterm_buddy->getCv($conditions, []);
+    if (count($cv_records) != 1) {
       throw new \Exception(t("Cannot find the 'sequence' ontology (feature CV)"));
     }
-    $this->feature_cv = $cv_record;
+    $this->feature_cv_buddy_record = $cv_records[0];
 
     // Get the organism object.
     $this->organism = $chado->select('1:organism','o')
@@ -820,9 +820,9 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
   private function getTypeID($type, $is_prop_type) {
 
     // Retrieve the appropriate cv buddy record for this property type
-    $cv_buddy_record = $this->feature_cv;
+    $cv_buddy_record = $this->feature_cv_buddy_record;
     if ($is_prop_type) {
-      $cv_buddy_record = $this->feature_prop_cv;
+      $cv_buddy_record = $this->feature_prop_cv_buddy_record;
     }
 
     if ($is_prop_type) {
@@ -841,20 +841,21 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     // The GFF3 importer has had case insensitivity incorporated
     // since Tripal 3 for this query.
     $options = ['case_insensitive' => 'cvterm.name'];
-    $cvterm_record = $this->cvterm_buddy->getCvterm($conditions, $options);
-    if (!$cvterm_record) {
+    $cvterm_records = $this->cvterm_buddy->getCvterm($conditions, $options);
+    if (!$cvterm_records) {
       $conditions = [
         'cvterm.cv_id' => $cv_buddy_record->getValue('cv.cv_id'),
         'cvtermsynonym.synonym' => $type,
       ];
       $options = ['case_insensitive' => 'cvtermsynonym.synonym'];
-      $cvterm_record = $this->cvterm_buddy->getCvtermSynonym($conditions, $options);
+      $cvterm_records = $this->cvterm_buddy->getCvtermSynonym($conditions, $options);
     }
 
-    if ($this->cvterm_buddy->countBuddies($cvterm_record) == 1) {
-      $cvterm_id = $cvterm_record->getValue('cvterm.cvterm_id');
+    if (count($cvterm_records) == 1) {
+      $cvterm_id = $cvterm_records[0]->getValue('cvterm.cvterm_id');
+      $cvterm_name = $cvterm_records[0]->getValue('cvterm.name');
     }
-    elseif ($this->cvterm_buddy->countBuddies($cvterm_record) > 1) {
+    elseif (count($cvterm_records) > 1) {
       throw new \Exception(t('Error, more than one cvterm record matched %type', ['%type' => $type]));
     }
     else {
@@ -873,11 +874,11 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $options = ['create_dbxref' => TRUE];
       $cvterm_record = $this->cvterm_buddy->insertCvterm($values, $options);
       $cvterm_id = $cvterm_record->getValue('cvterm.cvterm_id');
+      $cvterm_name = $cvterm_record->getValue('cvterm.name');
     }
 
     // Cache the result for future use, under both the canonical name ($cvterm_name)
     // and also by synonym ($type). These will be the same if not a synonym.
-    $cvterm_name = $cvterm_record->getValue('cvterm.name');
     if ($is_prop_type) {
       $this->featureprop_cvterm_lookup[strtolower($cvterm_name)] = $cvterm_id;
       $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id;
@@ -898,12 +899,14 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $values = [
       'cv.name' => 'synonym_type',
     ];
-    $synonym_type_record = $this->cvterm_buddy->upsertCv($values, []);
-    if ($this->cvterm_buddy->countBuddies($synonym_type_record) != 1) {
-      $this->logger->error('Failed to add the "synonym_type" vocabulary.');
+    try {
+      $synonym_type_record = $this->cvterm_buddy->upsertCv($values, []);
+      $syncv = $synonym_type_record->getValue('cv.cv_id');
+    }
+    catch (\Exception $e) {
+      $this->logger->error('Failed to add the "synonym_type" vocabulary. '.$e->getMessage());
       return 0;
     }
-    $syncv = $synonym_type_record->getValue('cv.cv_id');
 
     // get or insert the 'exact' cvterm, which is the type of synonym we're adding
     $values = [
@@ -914,12 +917,14 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       'cvterm.is_obsolete' => 0,
       'cvterm.is_relationshiptype' => 0,
     ];
-    $exact_term_record = $this->cvterm_buddy->upsertCvterm($values, []);
-    if ($this->cvterm_buddy->countBuddies($exact_term_record) != 1) {
-      $this->logger->error('Failed to add the "synonym_type:exact" term.');
+    try {
+      $exact_term_record = $this->cvterm_buddy->upsertCvterm($values, []);
+      $this->exact_syn_id = $exact_term_record->getValue('cvterm.cvterm_id');
+    }
+    catch (\Exception $e) {
+      $this->logger->error('Failed to add the "synonym_type:exact" term. '.$e->getMessage());
       return 0;
     }
-    $this->exact_syn_id = $exact_term_record->getValue('cvterm.cvterm_id');
   }
 
   /**
@@ -978,24 +983,29 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       // First check for the fully qualified URI (e.g. DB:<dbname>. If that
       // can't be found, then look for the name as is. If it still can't be
       // found, then create the database.
-      $db_record = $this->dbxref_buddy->getDb(['db.name' => 'DB:' . $dbname], []);
-      if (!$db_record) {
-        $db_record = $this->dbxref_buddy->getDb(['db.name' => $dbname], []);
+      $db_records = $this->dbxref_buddy->getDb(['db.name' => 'DB:' . $dbname], []);
+      if (count($db_records) < 1) {
+        $db_records = $this->dbxref_buddy->getDb(['db.name' => $dbname], []);
       }
-      if (!$db_record) {
+      if (count($db_records) < 1) {
         $this->logger->notice("Inserting the database \"@dbname\".",
                               ['@dbname' => $dbname]);
         $values = [
           'db.name' => $dbname,
           'db.description' => 'Added automatically by the Tripal GFF loader.',
         ];
-        $db_record = $this->dbxref_buddy->insertDb($values, []);
+        try {
+          $db_record = $this->dbxref_buddy->insertDb($values, []);
+        }
+        catch (\Exception $e) {
+          $this->logger->error('Cannot find or add the database "@dbname". '.$e->getMessage(),
+            ['@dbname' => $dbname]
+          );
+          return 0;
+        }
       }
-      if ($this->dbxref_buddy->countBuddies($db_record) != 1) {
-        $this->logger->error('Cannot find or add the database "@dbname".',
-          ['@dbname' => $dbname]
-        );
-        return 0;
+      else {
+        $db_record = $db_records[0];
       }
       $db_id = $db_record->getValue('db.db_id');
       $this->db_lookup[$dbname] = $db_id;
@@ -1523,7 +1533,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $this->setTotalItems($filesize);
 
     // Holds a unique list of cvterms for later lookup.
-    $feature_cvterms = [];
+    $feature_cv_buddy_recordterms = [];
     $featureprop_cvterms = [];
 
     while ($line = fgets($this->gff_file_h)) {
@@ -1561,24 +1571,24 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
       // Parse this feature from this line of the GFF3 file.
       $gff_feature = $this->parseGFF3Line($line);
-      $this->prepareFeature($gff_feature, $feature_cvterms, $featureprop_cvterms);
+      $this->prepareFeature($gff_feature, $feature_cv_buddy_recordterms, $featureprop_cvterms);
 
       // If there is a second feature (in the case of a match) then
       // repeat this line (to get the match_part).
       if ($gff_feature['repeat'] === TRUE) {
         $gff_feature = $this->parseGFF3Line($line);
-        $this->prepareFeature($gff_feature, $feature_cvterms, $featureprop_cvterms);
+        $this->prepareFeature($gff_feature, $feature_cv_buddy_recordterms, $featureprop_cvterms);
       }
     }
 
     // Make sure we have the protein term in our list.
-    if (!array_key_exists('protein', $feature_cvterms) and
-        !array_key_exists('polypeptide', $feature_cvterms)) {
-      $feature_cvterms['polypeptide'] = 0;
+    if (!array_key_exists('protein', $feature_cv_buddy_recordterms) and
+        !array_key_exists('polypeptide', $feature_cv_buddy_recordterms)) {
+      $feature_cv_buddy_recordterms['polypeptide'] = 0;
     }
 
     // Iterate through the feature type terms and get a chado object for each.
-    foreach (array_keys($feature_cvterms) as $name) {
+    foreach (array_keys($feature_cv_buddy_recordterms) as $name) {
       $this->getTypeID($name, FALSE);
     }
 
@@ -1592,7 +1602,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
   /**
    * Prepare the database prior to working with the feature.
    */
-  private function prepareFeature($gff_feature, &$feature_cvterms, &$featureprop_cvterms) {
+  private function prepareFeature($gff_feature, &$feature_cv_buddy_recordterms, &$featureprop_cvterms) {
     // Add the landmark if it doesn't exist in the landmark list.
     if (!array_key_exists($gff_feature['landmark'], $this->landmarks)) {
       $this->landmarks[$gff_feature['landmark']] = FALSE;
@@ -1636,17 +1646,17 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     }
 
     // Organize the CVterms for faster access later on.
-    if (!array_key_exists($gff_feature['type'], $feature_cvterms)) {
-      $feature_cvterms[$gff_feature['type']] = 0;
+    if (!array_key_exists($gff_feature['type'], $feature_cv_buddy_recordterms)) {
+      $feature_cv_buddy_recordterms[$gff_feature['type']] = 0;
     }
-    $feature_cvterms[$gff_feature['type']]++;
+    $feature_cv_buddy_recordterms[$gff_feature['type']]++;
 
     // Add any target feature types to the list as well.
     if (array_key_exists('name', $gff_feature['target'])) {
-      if (!array_key_exists($gff_feature['target']['type'], $feature_cvterms)) {
-        $feature_cvterms[$gff_feature['target']['type']] = 0;
+      if (!array_key_exists($gff_feature['target']['type'], $feature_cv_buddy_recordterms)) {
+        $feature_cv_buddy_recordterms[$gff_feature['target']['type']] = 0;
       }
-      $feature_cvterms[$gff_feature['target']['type']]++;
+      $feature_cv_buddy_recordterms[$gff_feature['target']['type']]++;
     }
 
     // Organize the feature property types for faster access later on.
