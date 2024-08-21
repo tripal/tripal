@@ -476,6 +476,11 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
       throw new ChadoBuddyException("ChadoBuddy $calling_function error, more than one record ($n) was"
                                     . " retrieved, only one was expected\n" . print_r($values, TRUE));
     }
+    if (!array_key_exists(0, $output_records) or !($output_records[0] instanceof ChadoBuddyRecord)) {
+      $calling_function = debug_backtrace()[1]['function'];
+      throw new ChadoBuddyException("ChadoBuddy $calling_function error, the array passed to validateOutput"
+                                    . " does not contain a ChadoBuddyRecord");
+    }
   }
 
 }
