@@ -73,6 +73,9 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
 
   /**
    * Tests focused on basic getter/setters.
+   *
+   * Specifically, label(), description(), makeAlias(), unmakeAlias(),
+   * removeTablePrefix().
    */
   public function testChadoBuddyGetterSetters() {
 
@@ -128,4 +131,89 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // @todo test when a key does not have a dot and/or when it has multiple dots
 
   }
+
+  /**
+   * Tests methods dealing with table columns: getTableColumns(),
+   * addTableToCache(), makeUpsertConditions().
+   */
+  public function testChadoBuddyColumnMethods() {
+
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $this->assertIsObject($type, 'A chado buddy plugin service object was not returned.');
+    $instance = $type->createInstance('chado_cvterm_buddy', []);
+    $this->assertIsObject(
+      $instance,
+      "We did not have an object created when trying to create an ChadoBuddy instance."
+    );
+
+    // Make protected methods accessible.
+    $reflection = new \ReflectionClass($instance);
+    $getTableColumns = $reflection->getMethod('getTableColumns');
+    $getTableColumns->setAccessible(true);
+    $addTableToCache = $reflection->getMethod('addTableToCache');
+    $addTableToCache->setAccessible(true);
+    $getTableCache = $reflection->getMethod('getTableCache');
+    $getTableCache->setAccessible(true);
+    $makeUpsertConditions = $reflection->getMethod('makeUpsertConditions');
+    $makeUpsertConditions->setAccessible(true);
+
+    // CASE: getTableColumns() with no tables.
+    $returned_columns = $getTableColumns->invoke($instance, []);
+    $this->assertCount(0, $returned_columns, "We should not have had any columns returned when calling getTableColumns() with an empty tables parameter.");
+
+    // CASE: getTableColumns() with a single table, no filter, nothing cached.
+    $expected_columns = [
+      'db.db_id',
+      'db.name',
+      'db.description',
+      'db.urlprefix',
+      'db.url'
+    ];
+    $returned_columns = $getTableColumns->invoke($instance, ['db']);
+    $retrieved_cache = $getTableCache->invoke($instance);
+    $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected columns when calling getTableColumns() with "db" as the only table parameter.');
+    $this->assertCount(1, $retrieved_cache, "There should only be a single table (db) in the cache.");
+    $this->assertArrayHasKey('db', $retrieved_cache, "The db table should be in the cache.");
+
+    // CASE: getTableColumns() with two tables, no filter, one table cached + the other not.
+    $expected_columns = [
+      'db.db_id',
+      'db.name',
+      'db.description',
+      'db.urlprefix',
+      'db.url',
+      'dbxref.accession',
+      'dbxref.dbxref_id',
+      'dbxref.db_id',
+      'dbxref.version',
+      'dbxref.description'
+    ];
+    $returned_columns = $getTableColumns->invoke($instance, ['db', 'dbxref']);
+    $retrieved_cache = $getTableCache->invoke($instance);
+    $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected columns when calling getTableColumns() with "db" and "dbxref" as table parameters.');
+    $this->assertCount(2, $retrieved_cache, "There should now contain two tables (db + dbxref) in the cache.");
+    $this->assertArrayHasKey('db', $retrieved_cache, "The db table should be in the cache.");
+    $this->assertArrayHasKey('dbxref', $retrieved_cache, "The db table should be in the cache.");
+
+    // CASE: getTableColumns() with two tables, no filter, both tables cached.
+    $returned_columns = $getTableColumns->invoke($instance, ['db', 'dbxref']);
+    $retrieved_cache = $getTableCache->invoke($instance);
+    $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected columns when calling getTableColumns() with "db" and "dbxref" as table parameters and both are cached.');
+    $this->assertCount(2, $retrieved_cache, "There should now contain two tables (db + dbxref) in the cache.");
+    $this->assertArrayHasKey('db', $retrieved_cache, "The db table should be in the cache.");
+    $this->assertArrayHasKey('dbxref', $retrieved_cache, "The db table should be in the cache.");
+
+    // CASE: getTableColumns() with two tables, required filter.
+    $returned_columns = $getTableColumns->invoke($instance, ['db', 'dbxref']);
+
+  }
+
+  /**
+   * Tests methods dealing with input: validateInput(), subsetInput(),
+   * dereferenceBuddyRecord().
+   */
+
+   /**
+    * Tests methods dealing with the query object: addConditions().
+    */
 }
