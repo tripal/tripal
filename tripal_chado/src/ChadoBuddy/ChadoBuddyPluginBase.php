@@ -392,10 +392,16 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   Merged associative array of values
    * 
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
-   *   If a value in the ChadoBuddyRecord is different than one in the $values array.
+   *   If the key 'buddy_record' does not have a ChadoBuddyRecord as its value.
+   *   If a value inside the ChadoBuddyRecord is different than one in the $values array.
    */
   protected function dereferenceBuddyRecord(array $values) {
     if (array_key_exists('buddy_record', $values)) {
+      if (!$values['buddy_record'] instanceof ChadoBuddyRecord) {
+        $calling_function = debug_backtrace()[1]['function'];
+        throw new ChadoBuddyException("ChadoBuddy $calling_function error, something other than"
+          . " a ChadoBuddyRecord was stored under the 'buddy_record' key");
+      }
       $buddy_values = $values['buddy_record']->getValues();
       foreach ($buddy_values as $buddy_key => $buddy_value) {
         if (array_key_exists($buddy_key, $values) and ($values[$buddy_key] != $buddy_value)) {
