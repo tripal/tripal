@@ -53,7 +53,10 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // --Ensure we can instantiate the plugin manager.
     $type = \Drupal::service('tripal_chado.chado_buddy');
     // Note: If the plugin manager is not found you will get a ServiceNotFoundException.
-    $this->assertIsObject($type, 'An chado buddy plugin service object was not returned.');
+    $this->assertIsObject(
+      $type,
+      'A chado buddy plugin service object was not returned.'
+    );
 
     // --Use the plugin manager to get a list of available implementations.
     $plugin_definitions = $type->getDefinitions();
@@ -64,12 +67,17 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
 
     // --Use the plugin manager to create an instance.
     $instance = $type->createInstance('chado_cvterm_buddy', []);
-    $this->assertIsObject($instance,
+    $this->assertIsObject(
+      $instance,
       "We did not have an object created when trying to create an ChadoBuddy instance.");
-    $this->assertIsObject($instance->connection,
-      "The chado connection should have been set by the plugin manager but the value is NOT AN OBJECT.");
-    $this->assertInstanceOf(ChadoConnection::class, $instance->connection,
-      "The chado connection should have been set by the plugin manager but the value is NOT A CHADOCONNECTION OBJECT.");
+    $this->assertIsObject(
+      $instance->connection,
+      "The chado connection should have been set by the plugin manager but the value is NOT AN OBJECT."
+    );
+    $this->assertInstanceOf(
+      ChadoConnection::class, $instance->connection,
+      "The chado connection should have been set by the plugin manager but the value is NOT A CHADOCONNECTION OBJECT."
+    );
   }
 
   /**
@@ -83,8 +91,19 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $type = \Drupal::service('tripal_chado.chado_buddy');
     $this->assertIsObject($type, 'A chado buddy plugin service object was not returned.');
     $instance = $type->createInstance('chado_cvterm_buddy', []);
-    $this->assertIsObject($instance,
-      "We did not have an object created when trying to create an ChadoBuddy instance.");
+    $this->assertIsObject(
+      $instance,
+      "We did not have an object created when trying to create an ChadoBuddy instance."
+    );
+
+      // Make protected methods accessible.
+    $reflection = new \ReflectionClass($instance);
+    $makeAlias = $reflection->getMethod('makeAlias');
+    $makeAlias->setAccessible(true);
+    $unmakeAlias = $reflection->getMethod('unmakeAlias');
+    $unmakeAlias->setAccessible(true);
+    $removeTablePrefix = $reflection->getMethod('removeTablePrefix');
+    $removeTablePrefix->setAccessible(true);
 
     // Label
     $label = $instance->label();
@@ -99,13 +118,6 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
       "The description returned did not match what we expected for the Chado Cvterm Buddy.");
 
     // Column Alias (protected)
-    // Make methods accessible.
-    $reflection = new \ReflectionClass($instance);
-    $makeAlias = $reflection->getMethod('makeAlias');
-    $makeAlias->setAccessible(true);
-    $unmakeAlias = $reflection->getMethod('unmakeAlias');
-    $unmakeAlias->setAccessible(true);
-
     // Test a typical use case.
     $expected_alias = 'fred__sarah';
     $retrieved_alias = $makeAlias->invoke($instance, 'fred.sarah');
@@ -138,10 +150,6 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertEquals($expected_column, $retrieved_column, "We were unable to recover the expected column from its alias.");
 
     // Remove Table Prefix (protected)
-    // Make methods accessible.
-    $removeTablePrefix = $reflection->getMethod('removeTablePrefix');
-    $removeTablePrefix->setAccessible(true);
-
     // Test a typical use case.
     $referenced_values = ['cvterm.name' => 'sarah', 'cvterm.dbxref_id' => 3, 'cvterm.cv_id' => 9];
     $expected_values = ['name' => 'sarah', 'dbxref_id' => 3, 'cv_id' => 9];
@@ -152,12 +160,15 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     // name would result (e.g. cv.name and cvterm.name). Expect exception.
     $referenced_values = ['cv.name' => 'aldous', 'cvterm.name' => 'huxley'];
     $exception_caught = FALSE;
+    $exception_message = '';
     try {
       $dereferenced_values = $removeTablePrefix->invoke($instance, $referenced_values);
-    } catch (\Exception $e) {
+    } catch (ChadoBuddyException $e) {
       $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
     }
     $this->assertTrue($exception_caught, 'Did not catch exception that should have been thrown for removeTablePrefix()');
+    $this->assertStringContainsString('Ambiguous columns passed to removeTablePrefix(), this function can only handle columns in a single table.', $exception_message, "We didn't get the exception message we expected for removeTablePrefix()");
 
     // Test when a key does not have a dot or when it has multiple dots. Only trim to first dot.
     $referenced_values = ['name_no_dot' => 'newton', 'cvterm.name.fictional.indeed' => 'dumbeldore'];
