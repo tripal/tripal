@@ -293,10 +293,109 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
 
   /**
    * Tests methods dealing with input: validateInput(), subsetInput(),
-   * dereferenceBuddyRecord().
+   * dereferenceBuddyRecord(), validateOutput().
    */
+  public function testChadoBuddyInputOutputMethods() {
+
+    $type = \Drupal::service('tripal_chado.chado_buddy');
+    $this->assertIsObject($type, 'A chado buddy plugin service object was not returned.');
+    $instance = $type->createInstance('chado_cvterm_buddy', []);
+    $this->assertIsObject(
+      $instance,
+      "We did not have an object created when trying to create an ChadoBuddy instance."
+    );
+
+    // Make protected methods accessible.
+    $reflection = new \ReflectionClass($instance);
+    $validateInput = $reflection->getMethod('validateInput');
+    $validateInput->setAccessible(true);
+    $subsetInput = $reflection->getMethod('subsetInput');
+    $subsetInput->setAccessible(true);
+    $dereferenceBuddyRecord = $reflection->getMethod('dereferenceBuddyRecord');
+    $dereferenceBuddyRecord->setAccessible(true);
+
+    // CASE: valid values passed to validateInput().
+    $user_values = [
+      'analysis.name' => 'A',
+      'analysis.program' => 'B',
+      'analysis.programversion' => 'C',
+      'analysis.sourcename' => 'D',
+      'analysis.sourceversion' => 'E',
+    ];
+    $valid_columns = ['analysis.name', 'analysis.program', 'analysis.programversion', 'analysis.sourcename', 'analysis.sourceversion'];
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $validateInput->invoke($instance, $user_values, $valid_columns);
+    } catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertFalse($exception_caught, "We shouldn't get an exception when calling validateInput() with valid input.");
+
+    // CASE: calling validateInput with no user values
+    $valid_columns = ['analysis.name', 'analysis.program', 'analysis.programversion', 'analysis.sourcename', 'analysis.sourceversion'];
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $validateInput->invoke($instance, [], $valid_columns);
+    } catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should get an exception when calling validateInput() with no user input.");
+    $this->assertStringContainsString('no values were specified', $exception_message, "We did not get the exception message we expected when calling validateInput() with no user values.");
+
+    // CASE: calling validateInput where there is an invalid column in the user input.
+    $user_values = [
+      'analysis.name' => 'A',
+      'analysis.program' => 'B',
+      'analysis.programversion' => 'C',
+      'analysis.sourcename' => 'D',
+      'analysis.sourceversion' => 'E',
+      'me.you' => 'BEEEEEP',
+    ];
+    $valid_columns = ['analysis.name', 'analysis.program', 'analysis.programversion', 'analysis.sourcename', 'analysis.sourceversion'];
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $validateInput->invoke($instance, $user_values, $valid_columns);
+    } catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We should get an exception when calling validateInput() with an invalid column in the user input.");
+    $this->assertStringContainsString('key "me.you" is not valid', $exception_message, "We did not get the exception message we expected when calling validateInput() with an invalid column in the user input.");
+
+    // @todo test when valid values includes a column that is not in the user input.
+
+    // @todo call subsetInput with the expected input
+    // @todo call subsetInput when the valid tables table is not in the user input
+    // @todo call subsetInput when all tables in the user input are in the valid tables.
+    // @todo call subsetInput when all tables are filtered out.
+    // @todo call subsetInput when user input is empty.
+
+    // @todo call dereferenceBuddyRecord with expected input
+    // @todo call dereferenceBuddyRecord with a values array not containing a buddy record
+    // @todo call dereferenceBuddyRecord with a values that are already in the values array with different values.
+    // @todo call dereferenceBuddyRecord with a values['buddy_record'] => array (i.e. value is not actually a buddy record).
+
+    // @todo call validateOutput with valid output
+    // @todo call validateOutput with a string as output
+    // @todo call validateOutput with an empty array as output
+    // @todo call validateOutput with an array containing multiple records.
+  }
 
    /**
     * Tests methods dealing with the query object: addConditions().
     */
+  public function testChadoBuddyQueryMethods() {
+
+    // @todo pass in the expected parameters.
+    // @todo pass in a string as though its a query object ;-p
+    // @todo pass in an empty array of conditions.
+    // @todo pass in a single key string to be case insensitive
+    // @todo pass in an array of keys to be case insensitive.
+
+  }
 }
