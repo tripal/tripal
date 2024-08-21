@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
@@ -236,8 +237,57 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertArrayHasKey('db', $retrieved_cache, "The db table should be in the cache.");
     $this->assertArrayHasKey('dbxref', $retrieved_cache, "The db table should be in the cache.");
 
-    // CASE: getTableColumns() with two tables, required filter.
-    $returned_columns = $getTableColumns->invoke($instance, ['db', 'dbxref']);
+    // CASE: getTableColumns() with required filter.
+    $expected_columns = [
+      'analysis.program',
+      'analysis.programversion',
+    ];
+    $returned_columns = $getTableColumns->invoke($instance, ['analysis'], 'required');
+    $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected required columns when calling getTableColumns(["analysis"], "required").');
+
+    // CASE: getTableColumns() with unique filter.
+    $expected_columns = [
+      'analysis.program',
+      'analysis.programversion',
+      'analysis.sourcename',
+    ];
+    $returned_columns = $getTableColumns->invoke($instance, ['analysis'], 'unique');
+    $this->assertEqualsCanonicalizing($expected_columns, $returned_columns, 'We did not get the expected unique columns when calling getTableColumns(["analysis"], "unique").');
+
+    // CASE: addTableToCache() with a non-existent chado table.
+    $expected_cache = $getTableCache->invoke($instance);
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $arguements = ['sarah', &$expected_cache];
+      $addTableToCache->invokeArgs($instance, $arguements);
+    }
+    catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, "We expected an exception when calling addTableToCache('sarah') when sarah doesn't exist in chado but we didn't get one.");
+    $this->assertStringContainsString('invalid table "sarah" passed to getTableColumns()', $exception_message, "We didn't get the exception message we expected when calling addTableToCache('sarah').");
+
+    // CASE: Basic use of makeUpsertConditions().
+    $values = [
+      'analysis.name' => 'A',
+      'analysis.program' => 'B',
+      'analysis.programversion' => 'C',
+      'analysis.sourcename' => 'D',
+      'analysis.sourceversion' => 'E',
+    ];
+    $columns_to_keep = ['analysis.program', 'analysis.programversion', 'analysis.sourcename'];
+    $expected_conditions = [
+      'analysis.program' => 'B',
+      'analysis.programversion' => 'C',
+      'analysis.sourcename' => 'D',
+    ];
+    $returned_conditions = $makeUpsertConditions->invoke($instance, $values, $columns_to_keep);
+    $this->assertEqualsCanonicalizing($expected_conditions, $returned_conditions, "We did not get the conditions we expected for the analsis table when calling makeUpsertConditions()");
+
+    // @todo pass in columns that are not in the values.
+    // @todo pass in columns that are not part of the unique constraint.
 
   }
 
