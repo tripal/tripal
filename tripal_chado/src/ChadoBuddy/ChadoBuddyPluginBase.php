@@ -384,16 +384,27 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *   table+dot+column name, values are the database table values.
    *   The special case value of 'buddy_record' => ChadoBuddyRecord
    *   will have its component values appended to the values.
-   *   In the case of a duplicated key, the one in $values
-   *   takes precedence over the one inside the ChadoBuddyRecord.
+   *   In the case of a duplicated key, if the value in the
+   *   ChadoBuddyRecord is different from the one in the array,
+   *   then an exception is thrown.
    *
    * @return array
    *   Merged associative array of values
+   * 
+   * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
+   *   If a value in the ChadoBuddyRecord is different than one in the $values array.
    */
   protected function dereferenceBuddyRecord(array $values) {
     if (array_key_exists('buddy_record', $values)) {
-      $record_values = $values['buddy_record']->getValues();
-      $values = array_merge($record_values, $values);
+      $buddy_values = $values['buddy_record']->getValues();
+      foreach ($buddy_values as $buddy_key => $buddy_value) {
+        if (array_key_exists($buddy_key, $values) and ($values[$buddy_key] != $buddy_value)) {
+          $calling_function = debug_backtrace()[1]['function'];
+          throw new ChadoBuddyException("ChadoBuddy $calling_function error, a value with the key"
+            . " $buddy_key was declared twice with different values");
+        }
+        $values[$buddy_key] = $buddy_value;
+      }
       unset($values['buddy_record']);
     }
     return $values;
