@@ -496,6 +496,18 @@ class ChadoBuddyBaseTest extends ChadoTestKernelBase {
     $this->assertFalse($exception_caught, 'We should not get an exception when calling dereferenceBuddyRecord with valid values including a ChadoBuddyRecord.');
     $this->assertEqualsCanonicalizing($expected_values, $updated_values, 'We did not get back the expected dereferenced values from dereferenceBuddyRecord() including a ChadoBuddyRecord.');
 
+    // CASE: using this ChadoBuddyRecord, getting a non-existant value from it causes an exception.
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $should_fail = $buddy_record->getValue('non.exist');
+    } catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, 'We should get an exception when calling getValue with an invalid key.');
+    $this->assertStringContainsString("the key 'non.exist' is not present in the values array", $exception_message, "We did not get the exception message we expected when calling getValue with an invalid key.");
+
     // CASE: calling dereferenceBuddyRecord() with a key=>value pair in both the
     // ChadoBuddyRecord and in the values array, but the values are identical. Not an error.
     $values['project.name'] = $sub_values['project.name'];
