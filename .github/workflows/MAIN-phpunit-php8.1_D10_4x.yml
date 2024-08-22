@@ -12,7 +12,7 @@ on:
     - cron: '0 6 * * *'
 jobs:
   running-tests:
-    name: "Drupal 10.3: PHP 8.1"
+    name: "Drupal 10.4: PHP 8.1"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -24,5 +24,5 @@ jobs:
           modules: 'tripal tripal_biodb tripal_chado'
           php-version: '8.1'
           pgsql-version: '16'
-          drupal-version: '10.3.x-dev'
+          drupal-version: '10.4.x-dev'
           build-image: true
