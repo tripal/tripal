@@ -49,6 +49,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     $query_id = "";
     $build_args = $form_state->getBuildInfo();
+    // dpm($build_args);
     if ($build_args['args'][1] != NULL) {
       $query_id = $build_args['args'][1];
     }
