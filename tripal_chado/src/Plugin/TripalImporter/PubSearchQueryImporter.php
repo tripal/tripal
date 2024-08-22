@@ -334,13 +334,14 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $this->public = \Drupal::database();
     $public = $this->public;
     $arguments = $this->arguments['run_args'];
-    // print_r($arguments);
+
     
     // @RISH NOTES: I think all of the above should be bypassed since the job is already created and
     // executed by this run function
     // I see it running the chado_execute_pub_importer function so maybe we should start there
     $query_id = NULL;
-    if (!isset($arguments['query_id']) and !empty($arguments['query_id'])) {
+    // print_r('Query ID: ' . $arguments['query_id'] . "\n");
+    if (isset($arguments['query_id']) and !empty($arguments['query_id'])) {
       $query_id = $arguments['query_id'];
     }
     else {
@@ -450,7 +451,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       // DELETE FROM chado.pub_dbxref;
       // DELETE FROM chado.pub;
       // DELETE FROM chado.dbxref WHERE db_id = 17;
-      throw new \Exception('DEBUG');
+      // throw new \Exception('DEBUG');
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();

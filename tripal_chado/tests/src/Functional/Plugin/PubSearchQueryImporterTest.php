@@ -137,18 +137,16 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     $this->assertGreaterThan(2, count($results['pubs'][0]['Author List']), 'Author List should have more than 2 elements but does not');
     // print_r($results);
 
-    // TODO: Perform an actual import with the importer
+    // Perform an actual import with the importer (on our second query - the one above to see if props get imported in)
     $importer_manager = \Drupal::service('tripal.importer');
     $pub_search_query_loader_importer = $importer_manager->createInstance('pub_search_query_loader');
-    // $run_args = [
-    //   'importer_plugin_id' => 'pub_search_query_loader',
-    //   'schema_name' => 'chado',
-    //   'query_id' => 1,
-    //   'database' => 'tripal_pub_library_pubmed',
-    //   'search_query_name' => 'Populus (1)',
-    //   'button_view_query_details' => 'Preview query details',
-    //   'pub_query_details' => ''
-    // ];
+    $run_args = [
+      'importer_plugin_id' => 'pub_search_query_loader',
+      'schema_name' => $schema_name,
+      'query_id' => 2,
+    ];
+    $pub_search_query_loader_importer->createImportJob($run_args);
+    $pub_search_query_loader_importer->run();
   }
 }
 ?>
