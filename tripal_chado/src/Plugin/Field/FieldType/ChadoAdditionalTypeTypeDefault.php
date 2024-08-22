@@ -90,10 +90,10 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // from Chado tables if appropriate.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-    $type_id_term = $mapping->getColumnTermId($type_table, $type_column);
-    $name_term = $mapping->getColumnTermId('cvterm', 'name');
+    $type_id_term = $mapping->getColumnTermId($type_table, $type_column) ?: 'rdfs:type';
+    $name_term = $mapping->getColumnTermId('cvterm', 'name') ?: 'schema:name';
     $idspace_term = 'SIO:000067';
-    $accession_term = $mapping->getColumnTermId('dbxref', 'accession');
+    $accession_term = $mapping->getColumnTermId('dbxref', 'accession') ?: 'data:2091';
 
     // Always store the record id of the base record that this field is
     // associated with in Chado.
@@ -112,8 +112,8 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $type_table_def = $schema->getTableDef($type_table, ['format' => 'Drupal']);
       $type_pkey_col = $type_table_def['primary key'];
       $type_fkey_col = array_keys($type_table_def['foreign keys'][$base_table]['columns'])[0];
-      $link_term = $mapping->getColumnTermId($type_table, $type_fkey_col);
-      $value_term = $mapping->getColumnTermId($type_table, 'value');
+      $link_term = $mapping->getColumnTermId($type_table, $type_fkey_col) ?: self::$record_id_term;
+      $value_term = $mapping->getColumnTermId($type_table, 'value') ?: 'NCIT:C25712';
 
       // (e.g., analysisprop.analysisprop_id)
       $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', self::$record_id_term, [
@@ -216,9 +216,9 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // If this is an existing field, retrieve its storage settings.
     $storage_settings = $this->getSetting('storage_plugin_settings');
 
-    $type_table = $storage_settings['type_table'] ?? '';
-    $type_column = $storage_settings['type_column'] ?? '';
-    $type_fkey = $storage_settings['type_fkey'] ?? '';
+    $type_table = $storage_settings['type_table'] ?: '';
+    $type_column = $storage_settings['type_column'] ?: '';
+    $type_fkey = $storage_settings['type_fkey'] ?: '';
 
     // In the form, table and column will be selected together as a single unit
     $type_select = $type_fkey;
