@@ -933,7 +933,8 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
    *   column, or by setting the option 'lookup_columns' to FALSE.
    *
    *   Chado 1.3 defines these columns in the various linking tables:
-   *   ^ table                       ^ pub_id   ^ is_not      ^ rank        ^ cvterm_type_id ^
+   *   | table                       | pub_id   | is_not      | rank        | cvterm_type_id |
+   *   +-----------------------------+----------+-------------+-------------+----------------+
    *   | analysis_cvterm             | -absent  | has default | has default | -absent        |
    *   | cell_line_cvterm            | not null | -absent     | has default | -absent        |
    *   | environment_cvterm          | -absent  | -absent     | -absent     | -absent        |
