@@ -272,7 +272,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Create a field entry for each property type.
     foreach ($results as $recprop) {
       $field_list[] = [
-        'name' => self::generateFieldName($bundle, $recprop->cvterm_name),
+        'name' => self::generateFieldName($bundle, $recprop->cvterm_name, $recprop->cvterm_id),
         'content_type' => $bundle->getID(),
         'label' => ucwords($recprop->cvterm_name),
         'type' => self::$id,
