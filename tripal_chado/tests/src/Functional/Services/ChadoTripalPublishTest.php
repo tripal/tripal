@@ -423,6 +423,12 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         ['record_id' => $organism_id2],
         ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
 
+    $this->checkFieldItem('organism', 'organism_comment', 1,
+        ['record_id' => $organism_id2],
+        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
+
+    // These next two should be absent in the Drupal field table,
+    // so passing zero as $num_expected to verify this.
     $this->checkFieldItem('organism', 'organism_infraspecific_name', 0,
         ['record_id' => $organism_id2],
         ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
@@ -430,10 +436,6 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->checkFieldItem('organism', 'organism_infraspecific_type', 0,
         ['record_id' => $organism_id2],
         ['bundle' => 'organism', 'entity_id' => 2, 'type_id' => 0]);
-
-    $this->checkFieldItem('organism', 'organism_comment', 1,
-        ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
 
     //
     // Test publishing properties.
