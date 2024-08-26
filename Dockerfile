@@ -3,8 +3,8 @@ ARG drupalversion='10.3.x-dev'
 ARG postgresqlversion='16'
 FROM tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-pgsql${postgresqlversion}
 
-ARG modules='devel devel_php field_group field_group_table'
-ARG tripalmodules='tripal tripal_biodb tripal_chado tripal_layout'
+ARG modules='devel devel_php' #REMOVE field_group field_group_table'
+ARG tripalmodules='tripal tripal_biodb tripal_chado' #REMOVE tripal_layout'
 ARG chadoschema='chado'
 ARG installchado=TRUE
 
