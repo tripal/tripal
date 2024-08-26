@@ -115,7 +115,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getStoredTypes()
    */
-  public function getStoredTypes(bool $non_required = FALSE) {
+  public function getStoredTypes() {
     return $this->getStoredTypesFilter(TRUE);
   }
 
@@ -124,14 +124,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getNonStoredTypes()
    */
-  public function getNonStoredTypes(bool $non_required = FALSE) {
+  public function getNonStoredTypes() {
     return $this->getStoredTypesFilter(FALSE);
   }
 
   /**
    * Helper function for getStoredTypes() and getNonStoredTypes().
    *
-   * @param book $required
+   * @param bool $required
    *   TRUE to return types that are required.
    *   FALSE to return types that are not required.
    *

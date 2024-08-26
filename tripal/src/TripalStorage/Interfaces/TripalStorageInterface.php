@@ -105,8 +105,14 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   public function getStoredTypes();
 
   /**
-   * Returns a list of property types that should not be stored.
-   * This is the complement function of getStoredTypes.
+   * Returns a list of property types whose value should not be stored in Drupal
+   * field tables.
+   *
+   * This is the inverse of the getStoredTypes() method. It's needed because all
+   * field property types have a column in the Drupal table. However, the "Stored"
+   * ones save the value both in Drupal and in the storage backend and the
+   * "unstored" ones save an empty value in Drupal that is populated on load by
+   * the storage backend.
    *
    * @return @array
    *   Array of \Drupal\tripal\Base\StoragePropertyTypeBase objects.
