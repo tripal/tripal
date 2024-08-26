@@ -358,22 +358,18 @@ class TripalPublish {
   protected function addRequiredValues(&$search_values) {
     // Iterate through the property types that can uniquely identify an entity.
     foreach ($this->required_types as $field_name => $keys) {
+
+      // Skip any fields not supported by publish.
+      if (!$this->checkFieldIsSupported($field_name)) {
+        continue;
+      }
+
+      // Add this property value to the search values array.
+      $field_definition = $this->field_info[$field_name]['definition'];
+      $field_class = $this->field_info[$field_name]['class'];
+
       foreach ($keys as $key => $prop_type) {
         $not_supported = FALSE;
-
-        // This property may be part of a field which has already been marked
-        // as unsupported. If so then it won't be in the field_info and we
-        // should skip it.
-        if (!array_key_exists($field_name, $this->field_info)) {
-          // Add it to the list of unsupported fields just in case
-          // it wasn't added before...
-          $this->unsupported_fields[$field_name] = $field_name;
-          continue;
-        }
-
-        // Add this property value to the search values array.
-        $field_definition = $this->field_info[$field_name]['definition'];
-        $field_class = $this->field_info[$field_name]['class'];
 
         // We only want to add fields where we support the action for all property types in it.
         foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
@@ -501,22 +497,18 @@ class TripalPublish {
   protected function addNonRequiredValues(&$search_values) {
     // Iterate through the property types that can uniquely identify an entity.
     foreach ($this->non_required_types as $field_name => $keys) {
+
+      // Skip any fields not supported by publish.
+      if (!$this->checkFieldIsSupported($field_name)) {
+        continue;
+      }
+
+      // Add this property value to the search values array.
+      $field_definition = $this->field_info[$field_name]['definition'];
+      $field_class = $this->field_info[$field_name]['class'];
+
       foreach ($keys as $key => $prop_type) {
         $not_supported = FALSE;
-
-        // This property may be part of a field which has already been marked
-        // as unsupported. If so then it won't be in the field_info and we
-        // should skip it.
-        if (!array_key_exists($field_name, $this->field_info)) {
-          // Add it to the list of unsupported fields just in case
-          // it wasn't added before...
-          $this->unsupported_fields[$field_name] = $field_name;
-          continue;
-        }
-
-        // Add this property value to the search values array.
-        $field_definition = $this->field_info[$field_name]['definition'];
-        $field_class = $this->field_info[$field_name]['class'];
 
         // We only want to add fields where we support the action for all property types in it.
         foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
@@ -544,6 +536,30 @@ class TripalPublish {
         }
       }
     }
+  }
+
+  /**
+   * Determines whether a field is supported for publishing.
+   *
+   * @param string $field_name
+   *   The name of the field to check.
+   *
+   * @return bool
+   *   TRUE if supported, FALSE if not.
+   */
+  protected function checkFieldIsSupported(string $field_name): bool {
+
+    // This property may be part of a field which has already been marked
+    // as unsupported. If so then it won't be in the field_info and we
+    // should skip it.
+    if (!array_key_exists($field_name, $this->field_info)) {
+      // Add it to the list of unsupported fields just in case
+      // it wasn't added before.
+      $this->unsupported_fields[$field_name] = $field_name;
+      return FALSE;
+    }
+
+    return TRUE;
   }
 
   /**
