@@ -564,9 +564,19 @@ class TripalPublish {
       // Collapse match array to follow the format expected by getEntityTitle.
       $entity_values = [];
       foreach ($match as $field_name => $field_items) {
-        foreach($field_items as $delta => $properties) {
-          foreach ($properties as $property_name => $prop_deets) {
-            $entity_values[$field_name][$delta][$property_name] = $prop_deets['value']->getValue();
+        if ($field_items) {
+          foreach($field_items as $delta => $properties) {
+            foreach ($properties as $property_name => $prop_deets) {
+              $entity_values[$field_name][$delta][$property_name] = $prop_deets['value']->getValue();
+            }
+          }
+        }
+        else {
+          // Any fields without values are also included as NULL, although only
+          // as delta zero. This is because these might be part of the entity
+          // title but are missing, e.g. organism_infraspecific_name.
+          foreach ($this->field_info[$field_name]['prop_types'] as $property_name => $prop_deets) {
+            $entity_values[$field_name][0][$property_name] = NULL;
           }
         }
       }
