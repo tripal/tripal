@@ -80,7 +80,7 @@ class TripalImporterForm implements FormInterface {
       $form['file']['file_upload'] = [
         '#type' => 'html5_file',
         '#title' => '',
-        '#description' => 'Remember to click the "Upload File" button below to send ' .
+        '#description' => 'Remember to click the "Upload" button below to send ' .
             'your file to the server.  This interface is capable of uploading very ' .
             'large files.  If you are disconnected you can return, reload the file and it ' .
             'will resume where it left off.  Once the file is uploaded the "Upload ' .
@@ -91,7 +91,6 @@ class TripalImporterForm implements FormInterface {
         '#allowed_types' => $importer_def['file_types'],
         '#cardinality' => $importer_def['cardinality'],
       ];
-dpm($form['file']['file_upload'], "CP31 form['file']['file_upload']");//@@@
     }
 
     if (array_key_exists('file_local', $importer_def) and $importer_def['file_local'] == TRUE) {

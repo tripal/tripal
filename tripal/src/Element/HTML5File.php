@@ -18,7 +18,6 @@ class HTML5File extends FormElement {
    */
   public function getInfo() {
     $class = get_class($this);
-$caller = debug_backtrace()[1]['function']; dpm($class, "CP02 getInfo called by $caller, class"); //@@@
     return [
       '#input' => TRUE,
       '#size' => 60,
@@ -52,7 +51,6 @@ $caller = debug_backtrace()[1]['function']; dpm($class, "CP02 getInfo called by 
     $type = $element['#usage_id'] . '-' . $element['#usage_type'] . '-' . $module;
     $type_var_name = 'uploader_' . $element['#usage_id'] . '_' . $element['#usage_type'] . '_' . $module;
     $name = HTML5File::getBaseKey($element);
-dpm($name, "CP01 name"); //@@@
     $allowed_types = $element['#allowed_types'] ?? [];
     $cardinality = $element['#cardinality'] ?? 1;
     $paired = $element['#paired'] ?? FALSE;
@@ -186,7 +184,6 @@ dpm($name, "CP01 name"); //@@@
    */
   public static function validateHTML5File(array &$element, FormStateInterface &$form_state, array $form) {
     $is_required = $element['#required'];
-dpm($is_required, "CP11 is_required"); //@@@
     $fid = $element['#value'] ?? NULL;
 
     if ($is_required and !$fid) {
@@ -198,7 +195,6 @@ dpm($is_required, "CP11 is_required"); //@@@
    * {@inheritdoc}
    */
   public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
-dpm($input, "CP21 valueCallback"); //@@@
     if ($input) {
       if (is_array($input)) {
         $name = HTML5File::getBaseKey($element);
@@ -218,7 +214,6 @@ dpm($input, "CP21 valueCallback"); //@@@
    *   The altered element.
    */
   public static function preRenderHTML5File(array $element) {
-dpm("CP22 preRenderHTML5File");//@@@
     $element['#attributes']['type'] = 'html5file';
     return $element;
   }
@@ -233,7 +228,6 @@ dpm("CP22 preRenderHTML5File");//@@@
    *   The base key.
    */
   protected static function getBaseKey(array $element) {
-dpm(end($element['#array_parents']), "CP23 getBaseKey"); //@@@
     return end($element['#array_parents']);
   }
 
