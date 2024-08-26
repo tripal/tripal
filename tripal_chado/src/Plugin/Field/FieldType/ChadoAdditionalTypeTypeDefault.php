@@ -69,6 +69,11 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $base_table = $storage_settings['base_table'];
     $type_table = $storage_settings['type_table'] ?? '';
     $type_column = $storage_settings['type_column'] ?? '';
+    // Type table and column can also be stored as the select element
+    $type_fkey = $storage_settings['type_fkey'] ?? '';
+    if ($type_fkey) {
+      list($type_table, $type_column) = explode(self::$table_column_delimiter, $type_fkey);
+    }
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
@@ -216,9 +221,9 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // If this is an existing field, retrieve its storage settings.
     $storage_settings = $this->getSetting('storage_plugin_settings');
 
-    $type_table = $storage_settings['type_table'] ?: '';
-    $type_column = $storage_settings['type_column'] ?: '';
-    $type_fkey = $storage_settings['type_fkey'] ?: '';
+    $type_table = $storage_settings['type_table'] ?? '';
+    $type_column = $storage_settings['type_column'] ?? '';
+    $type_fkey = $storage_settings['type_fkey'] ?? '';
 
     // In the form, table and column will be selected together as a single unit
     $type_select = $type_fkey;
