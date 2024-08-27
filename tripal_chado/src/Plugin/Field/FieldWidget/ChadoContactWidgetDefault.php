@@ -127,16 +127,8 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
       ];
     }
 
-    // Save initial values to allow later handling of the "Remove" button
-    $storage = $form_state->getStorage();
-    if (!($storage['initial_values'][$delta] ?? FALSE)) {
-      $storage['initial_values'][$delta] = [
-        'linker_id' => $linker_id,
-        'linker_fkey_column' => $linker_fkey_column,
-        $linker_fkey_column => $contact_id,
-      ];
-      $form_state->setStorage($storage);
-    }
+    // Save some initial values to allow later handling of the "Remove" button
+    $this->saveInitialValues($delta, $contact_id, $linker_id, $linker_fkey_column, $form_state);
 
     return $elements;
   }
@@ -145,57 +137,6 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-
-    // Handle any empty values.
-    $retained_records = [];
-    $next_delta = 0;
-    foreach ($values as $val_key => $value) {
-      $retained_records[$val_key] = $value['contact_id'];
-      // Foreign key is usually contact_id, but not always.
-      $linker_fkey_column = $value['linker_fkey_column'];
-      if ($value[$linker_fkey_column] == '') {
-        if ($value['record_id']) {
-          // If there is a record_id, but no contact_id, this means
-          // we need to pass in this record to chado storage to
-          // have the linker record be deleted there. To do this,
-          // we need to have the correct primitive type for this
-          // field, so change from empty string to zero.
-          $values[$val_key][$linker_fkey_column] = 0;
-        }
-        else {
-          unset($values[$val_key]);
-        }
-      }
-      if ($next_delta <= $val_key) {
-        $next_delta = $val_key + 1;
-      }
-    }
-
-    // If there were any values in the initial values that are not
-    // present in the current form state, then the "Remove" button
-    // was clicked. We need to include these in the values array
-    // so that chado storage is informed to delete them in chado.
-    $storage_values = $form_state->getStorage();
-    $initial_values = $storage_values['initial_values'];
-    foreach ($initial_values as $delta => $initial_value) {
-      $linker_fkey_column = $initial_value['linker_fkey_column'];
-      $contact_id = $initial_value[$linker_fkey_column];
-      if ($contact_id and !in_array($contact_id, $retained_records)) {
-        // This delta was removed from the original form. Add back a
-        // value so that chado storage knows to remove the chado record.
-        $values[$next_delta]['linker_id'] = $initial_value['linker_id'];
-        $values[$next_delta][$linker_fkey_column] = 0;
-        $next_delta++;
-      }
-    }
-
-    // Reset the weights
-    $i = 0;
-    foreach ($values as $val_key => $value) {
-      $values[$val_key]['_weight'] = $i;
-      $i++;
-    }
-
-    return $values;
+    return $this->massageLinkingFormValues('contact_id', $values, $form, $form_state);
   }
 }
