@@ -361,6 +361,7 @@ class TripalPublish {
 
       // Skip any fields not supported by publish.
       if (!$this->checkFieldIsSupported($field_name)) {
+        unset($this->required_types[$field_name]);
         continue;
       }
 
@@ -369,29 +370,9 @@ class TripalPublish {
       $field_class = $this->field_info[$field_name]['class'];
 
       foreach ($keys as $key => $prop_type) {
-        $not_supported = FALSE;
-
-        // We only want to add fields where we support the action for all property types in it.
-        foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
-          $settings = $checking_prop_type->getStorageSettings();
-          if (!in_array($settings['action'], $this->supported_actions)) {
-            $not_supported = TRUE;
-          }
-        }
-
-        if ($not_supported !== TRUE) {
-          $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
-              $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
-          $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
-        }
-        // If it is not supported then we need to remove it from the required types list.
-        else {
-          // Note: We are adding the field to the unsupported list
-          // and will let the admin know later on in this job.
-          $this->unsupported_fields[$field_name] = $field_name;
-          unset($this->required_types[$field_name]);
-          unset($this->field_info[$field_name]);
-        }
+        $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
+            $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+        $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
       }
     }
   }
@@ -500,6 +481,7 @@ class TripalPublish {
 
       // Skip any fields not supported by publish.
       if (!$this->checkFieldIsSupported($field_name)) {
+        unset($this->non_required_types[$field_name]);
         continue;
       }
 
@@ -508,31 +490,11 @@ class TripalPublish {
       $field_class = $this->field_info[$field_name]['class'];
 
       foreach ($keys as $key => $prop_type) {
-        $not_supported = FALSE;
-
-        // We only want to add fields where we support the action for all property types in it.
-        foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
-          $settings = $checking_prop_type->getStorageSettings();
-          if (!in_array($settings['action'], $this->supported_actions)) {
-            $not_supported = TRUE;
-          }
-        }
-
-        if ($not_supported !== TRUE) {
-          // Only add here if not already added in one of the previous steps
-          if (!($search_values[$field_name][0][$prop_type->getKey()]['value'] ?? FALSE)) {
-            $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
-                $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
-            $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
-          }
-        }
-        // If it is not supported then we need to remove it from the required types list.
-        else {
-          // Note: We are adding the field to the unsupported list
-          // and will let the admin know later on in this job.
-          $this->unsupported_fields[$field_name] = $field_name;
-          unset($this->non_required_types[$field_name]);
-          unset($this->field_info[$field_name]);
+        // Only add here if not already added in one of the previous steps
+        if (!($search_values[$field_name][0][$prop_type->getKey()]['value'] ?? FALSE)) {
+          $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
+              $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+          $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
         }
       }
     }
@@ -557,6 +519,18 @@ class TripalPublish {
       // it wasn't added before.
       $this->unsupported_fields[$field_name] = $field_name;
       return FALSE;
+    }
+
+    // We only want to add fields where we support the action for all property types in it.
+    foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
+      $settings = $checking_prop_type->getStorageSettings();
+      if (!in_array($settings['action'], $this->supported_actions)) {
+        // Add it to the list of unsupported fields just in case
+        // it wasn't added before.
+        $this->unsupported_fields[$field_name] = $field_name;
+        unset($this->field_info[$field_name]);
+        return FALSE;
+      }
     }
 
     return TRUE;
