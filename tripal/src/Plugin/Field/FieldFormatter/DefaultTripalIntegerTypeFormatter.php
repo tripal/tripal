@@ -42,13 +42,15 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
 
     foreach($items as $delta => $item) {
       $value = $item->get("value")->getValue();
-      if (strlen($thousand_separator)) {
-        // For an integer we can hardcode the unused decimal setting
-        $value = number_format(floatval($value), 0, '.', $thousand_separator);
+      if (!is_null($value) and strlen($value)) {
+        if (strlen($thousand_separator)) {
+          // For an integer we can hardcode the unused decimal setting
+          $value = number_format(floatval($value), 0, '.', $thousand_separator);
+        }
+        $elements[$delta] = [
+          "#markup" => $field_prefix . $value . $field_suffix,
+        ];
       }
-      $elements[$delta] = [
-        "#markup" => $field_prefix . $value . $field_suffix,
-      ];
     }
 
     return $elements;

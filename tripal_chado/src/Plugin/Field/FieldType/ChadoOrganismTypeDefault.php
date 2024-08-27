@@ -312,7 +312,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
     // Create a field entry in the list.
     $field_list[] = [
-      'name' => self::generateFieldName($bundle, 'organism'),
+      'name' => self::generateFieldName($bundle, 'organism', 0),
       'content_type' => $bundle->getID(),
       'label' => 'Organism',
       'type' => self::$id,

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
@@ -83,6 +84,18 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals('pre004', $values['db.urlprefix'], 'The DB urlprefix was not updated for the upserted DB "newDb003"');
     $this->assertEquals('url004', $values['db.url'], 'The DB url was not updated for the upserted DB "newDb003"');
 
+    // TEST: We should not be able to insert a DB record if it does exist.
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $chado_buddy_records = $instance->insertDb(['db.name' => 'newDb003', 'db.description' => 'should fail']);
+    } catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, 'We should get an exception when inserting a DB record that already exists.');
+    $this->assertStringContainsString('already exists', $exception_message, "We did not get the exception message we expected when inserting a DB record that already exists.");
+
     // TEST: we should be able to get the two records created above. Will also catch if upsert did an insert instead of update.
     foreach (['newDb002', 'newDb003'] as $db_name) {
       $chado_buddy_records = $instance->getDb(['db.name' => $db_name]);
@@ -103,11 +116,6 @@ class ChadoDbxrefBuddyTest extends ChadoTestKernelBase {
     // TEST: case insensitive override should work
     $chado_buddy_records = $instance->getDb(['db.name' => 'NEWdb003'], ['case_insensitive' => 'db.name']);
     $this->assertEquals(1, count($chado_buddy_records), "We did not receive case insensitive results for getDb when we should have");
-
-    // TEST: We should not be able to insert a DB record if it does exist.
-    // Run last because this causes an exception.
-    $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
-    $chado_buddy_records = $instance->insertDb(['db.name' => 'newDb003', 'db.description' => 'should fail']);
   }
 
   /**

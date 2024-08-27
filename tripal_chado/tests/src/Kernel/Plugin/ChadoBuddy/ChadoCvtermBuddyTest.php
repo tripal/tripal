@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
@@ -77,6 +78,18 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the upserted CV "newCv003"');
     $this->assertEquals('def004', $values['cv.definition'], 'The CV definition was not updated for the upserted CV "newDb003"');
 
+    // TEST: We should not be able to insert a CV record if it does exist.
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $chado_buddy_records = $instance->insertCv(['cv.name' => 'local', 'cv.definition' => 'def003']);
+    } catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, 'We should get an exception when inserting a CV record that already exists.');
+    $this->assertStringContainsString('already exists', $exception_message, "We did not get the exception message we expected when inserting a CV record that already exists.");
+
     // TEST: we should be able to get the two records created above. Will also catch if upsert did an insert instead of update.
     foreach (['newCv002', 'newCv003'] as $cv_name) {
       $chado_buddy_records = $instance->getCv(['cv.name' => $cv_name]);
@@ -103,12 +116,6 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $values = ['buddy_record' => $chado_buddy_records[0]];
     $chado_buddy_records = $instance->getCv($values, []);
     $this->assertEquals(1, count($chado_buddy_records), "We did not receive the Cv when querying using a ChadoBuddyRecord");
-
-    // TEST: We should not be able to insert a CV record if it does exist.
-    // Run last because this causes an exception.
-    $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
-    $chado_buddy_records = $instance->insertCv(['cv.name' => 'local', 'cv.definition' => 'def003']);
-
   }
 
   /**
@@ -170,6 +177,19 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals(0, $values['cvterm.is_obsolete'], 'The Cvterm is_obsolete value was incorrectly updated for the upserted Cvterm "newCvterm003"');
     $this->assertEquals(1, $values['cvterm.is_relationshiptype'], 'The Cvterm is_relationshiptype value was not updated for the upserted Cvterm "newCvterm003"');
 
+    // TEST: We should not be able to insert a Cvterm record if it does exist.
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $chado_buddy_record = $instance->insertCvterm(['cvterm.name' => 'newCvterm001', 'cvterm.definition' => 'def001',
+        'cv.name' => 'local', 'db.name' => 'local', 'dbxref.accession' => 'newAcc001']);
+    } catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, 'We should get an exception when inserting a Cvterm record that already exists.');
+    $this->assertStringContainsString('already exists', $exception_message, "We did not get the exception message we expected when inserting a Cvterm record that already exists.");
+
     // TEST: we should be able to get the two records created above. Will also catch if upsert did an insert instead of update.
     foreach (['newCvterm002', 'newCvterm003'] as $cvterm_name) {
       $chado_buddy_records = $instance->getCvterm(['cvterm.name' => $cvterm_name]);
@@ -220,13 +240,36 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
       "We did not get the cvterm_id from \"$linking_table\" that should have been set by associateCvterm");
 
     // TEST: associate a cvterm with a base table where there are required columns
-    // in the linking table (i.e. pub_id). Tests the auto-lookup functionality.
-    $base_table = 'stock';
+    // in the linking table (i.e. pub_id), but we disable automatic lookup and
+    // we don't include pub_id. Exception expected.
+    $base_table = 'organism';
     $query = $this->connection->insert('1:' . $base_table)
-      ->fields(['uniquename' => 'stock005', 'type_id' => 1])
+      ->fields(['genus' => 'org005', 'species' => 'org005'])
       ->execute();
     $linking_table = $base_table . '_cvterm';
-    $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], []);
+    $options = [
+      'lookup_columns' => FALSE,
+    ];
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], $options);
+    } catch (ChadoBuddyException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue($exception_caught, 'We should get an exception when inserting associating a Cvterm without pub_id.');
+    $this->assertStringContainsString('Not null violation', $exception_message, "We did not get the exception message we expected when associating a Cvterm without pub_id.");
+
+    // TEST: associate a cvterm with a base table where there are required columns
+    // in the linking table (i.e. pub_id). Tests the default auto-lookup functionality.
+    $base_table = 'stock';
+    $query = $this->connection->insert('1:' . $base_table)
+      ->fields(['uniquename' => 'stock006', 'type_id' => 1])
+      ->execute();
+    $linking_table = $base_table . '_cvterm';
+    $options = [];
+    $status = $instance->associateCvterm($base_table, 1, $chado_buddy_records[0], $options);
     $this->assertIsBool($status, "We did not retrieve a boolean when associating a cvterm with the base table \"$base_table\"");
     $this->assertTrue($status, "We did not retrieve TRUE when associating a cvterm with the base table \"$base_table\"");
     $query = $this->connection->select('1:' . $linking_table, 'lt')
@@ -288,10 +331,8 @@ class ChadoCvtermBuddyTest extends ChadoTestKernelBase {
     $this->assertEquals($expected_cvterm_id, $retrieved_cvterm_id,
       'We did not get the correct cvterm_id for the existing Cvterm with synonym "syn006"');
 
-    // TEST: We should not be able to insert a Cvterm if it does exist.
-    // Run last because this causes an exception.
-    $this->expectException(\Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException::class);
-    $chado_buddy_records = $instance->insertCvterm(['cvterm.name' => 'newCvterm001', 'cvterm.definition' => 'def001',
-      'cv.name' => 'local', 'db.name' => 'local', 'dbxref.accession' => 'newAcc001']);
+    // TEST: If we disable auto-lookup of linking columns and specify one
+    // then we should be fine...
+
   }
 }
