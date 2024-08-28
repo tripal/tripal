@@ -71,7 +71,6 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // deletes the record in chado. This happens when an existing
     // record is changed to "-- Select --"
     $retained_records = [];
-    $next_delta = 0;
     foreach ($values as $val_key => $value) {
       $retained_records[$val_key] = $value[$fkey];
       $linker_fkey_column = $value['linker_fkey_column'];
@@ -90,10 +89,6 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
           unset($values[$val_key]);
         }
       }
-      // Keep track of the highest key for the next chunk of code.
-      if ($values[$val_key] and ($next_delta <= $val_key)) {
-        $next_delta = $val_key + 1;
-      }
     }
 
     // If there were any values in the initial values that are not
@@ -101,6 +96,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // was deleted by clicking the "Remove" button. Similarly to
     // the code above, we need to include these in the values array
     // so that chado storage is informed to delete them in chado.
+    $next_delta = array_key_last($values) + 1;
     $storage_values = $form_state->getStorage();
     $initial_values = $storage_values['initial_values'];
     foreach ($initial_values as $delta => $initial_value) {
