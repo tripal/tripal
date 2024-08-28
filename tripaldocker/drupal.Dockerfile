@@ -1,4 +1,5 @@
-FROM php:8.1-apache-bullseye
+ARG phpversion='8.3'
+FROM php:${phpversion}-apache-bullseye
 
 ARG drupalversion='~10.2.0'
 ARG postgresqlversion='16'
@@ -13,10 +14,10 @@ LABEL drupal.stability="production"
 LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
 LABEL os.version="bullseye"
-LABEL php.version="8.1"
 LABEL postgresql.version="${postgresqlversion}"
 
 COPY . /app
+COPY tripaldocker/init_scripts/motd /etc/motd
 
 ## Install some basic support programs and update apt-get.
 RUN chmod -R +x /app && apt-get update 1> ~/aptget.update.log \
@@ -46,14 +47,14 @@ USER postgres
 ## Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
 ## then create a database `docker` owned by the ``docker`` role.
 RUN    /etc/init.d/postgresql start &&\
-    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';"  \
-    && createdb -O docker docker \
-    && psql --command="CREATE USER drupaladmin WITH PASSWORD 'drupaldevelopmentonlylocal'" \
-    && psql --command="ALTER USER drupaladmin WITH LOGIN" \
-    && psql --command="ALTER USER drupaladmin WITH CREATEDB" \
-    && psql --command="CREATE DATABASE sitedb WITH OWNER drupaladmin" \
-    && psql sitedb --command="CREATE EXTENSION pg_trgm" \
-    && service postgresql stop
+  psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';"  \
+  && createdb -O docker docker \
+  && psql --command="CREATE USER drupaladmin WITH PASSWORD 'drupaldevelopmentonlylocal'" \
+  && psql --command="ALTER USER drupaladmin WITH LOGIN" \
+  && psql --command="ALTER USER drupaladmin WITH CREATEDB" \
+  && psql --command="CREATE DATABASE sitedb WITH OWNER drupaladmin" \
+  && psql sitedb --command="CREATE EXTENSION pg_trgm" \
+  && service postgresql stop
 
 ## Now back to the root user.
 USER root
@@ -70,53 +71,53 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/${postgresqlversion}/main/pos
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 ## Xdebug
-RUN pecl install xdebug-3.2.1 \
-    && docker-php-ext-enable xdebug \
-    && cat /app/tripaldocker/default_files/xdebug/xdebug-coverage.ini >> /usr/local/etc/php/php.ini \
-    && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
-    && cp /app/tripaldocker/default_files/xdebug/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.dis \
-    && rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN pecl install xdebug-3.3.2 \
+  && docker-php-ext-enable xdebug \
+  && cat /app/tripaldocker/default_files/xdebug/xdebug-coverage.ini >> /usr/local/etc/php/php.ini \
+  && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
+  && cp /app/tripaldocker/default_files/xdebug/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.dis \
+  && rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 ## install the PHP extensions we need
 RUN set -eux; \
   \
   if command -v a2enmod; then \
-    a2enmod rewrite; \
+  a2enmod rewrite; \
   fi; \
   \
   savedAptMark="$(apt-mark showmanual)"; \
   \
   apt-get update; \
   apt-get install -y --no-install-recommends \
-    libfreetype6-dev \
-    libjpeg-dev \
-    libpng-dev \
-    libwebp-dev \
-    libpq-dev \
-    libzip-dev \
+  libfreetype6-dev \
+  libjpeg-dev \
+  libpng-dev \
+  libwebp-dev \
+  libpq-dev \
+  libzip-dev \
   ; \
   \
   docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp; \
   \
   docker-php-ext-install -j "$(nproc)" \
-    gd \
-    opcache \
-    pdo_mysql \
-    pdo_pgsql \
-    pgsql \
-    zip \
+  gd \
+  opcache \
+  pdo_mysql \
+  pdo_pgsql \
+  pgsql \
+  zip \
   ; \
   \
-# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+  # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
   apt-mark auto '.*' > /dev/null; \
   apt-mark manual $savedAptMark; \
   ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
-    | awk '/=>/ { print $3 }' \
-    | sort -u \
-    | xargs -r dpkg-query -S \
-    | cut -d: -f1 \
-    | sort -u \
-    | xargs -rt apt-mark manual; \
+  | awk '/=>/ { print $3 }' \
+  | sort -u \
+  | xargs -r dpkg-query -S \
+  | cut -d: -f1 \
+  | sort -u \
+  | xargs -rt apt-mark manual; \
   \
   apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
   rm -rf /var/lib/apt/lists/*
@@ -124,12 +125,12 @@ RUN set -eux; \
 ## set recommended PHP.ini settings
 ## see https://secure.php.net/manual/en/opcache.installation.php
 RUN { \
-    echo 'opcache.memory_consumption=128'; \
-    echo 'opcache.interned_strings_buffer=8'; \
-    echo 'opcache.max_accelerated_files=4000'; \
-    echo 'opcache.revalidate_freq=60'; \
-    echo 'opcache.fast_shutdown=1'; \
-    echo 'opcache.memory_limit=1028M';\
+  echo 'opcache.memory_consumption=128'; \
+  echo 'opcache.interned_strings_buffer=8'; \
+  echo 'opcache.max_accelerated_files=4000'; \
+  echo 'opcache.revalidate_freq=60'; \
+  echo 'opcache.fast_shutdown=1'; \
+  echo 'opcache.memory_limit=1028M';\
   } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
 RUN echo 'memory_limit = 1028M' >> /usr/local/etc/php/conf.d/docker-php-memlimit.ini \
@@ -160,7 +161,7 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 ## Use composer to install Drupal.
 WORKDIR /var/www
 ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit"
-ARG composerpackages="drupal/devel drupal/devel_php drupal/field_group drupal/field_group_table"
+ARG composerpackages="drupal/devel drupal/devel_php"
 RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal \
   && cd drupal \
   && composer config --no-plugins allow-plugins.composer/installers true \
@@ -168,7 +169,9 @@ RUN composer create-project drupal/recommended-project:${drupalversion} --stabil
   && composer config --no-plugins allow-plugins.drupal/core-project-message true \
   && composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
   && rm composer.lock \
-  && composer require --dev ${requiredcomposerpackages} ${composerpackages} \
+  && packages="${requiredcomposerpackages} ${composerpackages}" \
+  && if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); then packages="$packages drupal/field_group drupal/field_group_table"; fi \
+  && composer require --dev $packages \
   && composer install
 
 ## Set files directory permissions
@@ -190,23 +193,6 @@ RUN cd /var/www/drupal \
   --account-pass=some_admin_password \
   --site-mail="drupaladmin@localhost" \
   --site-name="Tripal 4.x-dev on Drupal ${drupalversion}" \
-  && service apache2 stop \
-  && service postgresql stop
-
-############# Tripal ##########################################################
-
-WORKDIR /var/www/drupal
-RUN service apache2 start \
-  && service postgresql start \
-  && sleep 30 \
-  && mkdir -p /var/www/drupal/web/modules/contrib \
-  && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
-  && vendor/bin/drush en tripal tripal_biodb tripal_chado tripal_layout ${modules} -y \
-  && if [ "$installchado" = "TRUE" ]; then \
-    vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
-    && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
-    && vendor/bin/drush trp-import-types --collection_id=general_chado --username=drupaladmin; \
-    fi \
   && service apache2 stop \
   && service postgresql stop
 
@@ -233,4 +219,3 @@ WORKDIR /var/www/drupal/web
 EXPOSE 80 5432 9003
 
 ENTRYPOINT ["init.sh"]
-
