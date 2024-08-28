@@ -74,11 +74,11 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       $linker_fkey_column = $value['linker_fkey_column'];
       if ($value[$linker_fkey_column] == '') {
         if ($value['record_id']) {
-          // If there is a record_id, but no contact_id, this means
-          // we need to pass in this record to chado storage to
-          // have the linker record be deleted there. To do this,
-          // we need to have the correct primitive type for this
-          // field, so change from empty string to zero.
+          // If there is a record_id, but no base table id, this
+          // means we need to pass in this record to chado storage
+          // to have the linker record be deleted there. To do
+          // this, we need to have the correct primitive type for
+          // this field, so change from empty string to zero.
           $values[$val_key][$linker_fkey_column] = 0;
         }
         else {
@@ -98,8 +98,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     $initial_values = $storage_values['initial_values'];
     foreach ($initial_values as $delta => $initial_value) {
       $linker_fkey_column = $initial_value['linker_fkey_column'];
-      $contact_id = $initial_value[$linker_fkey_column];
-      if ($contact_id and !in_array($contact_id, $retained_records)) {
+      $base_id = $initial_value[$linker_fkey_column];
+      if ($base_id and !in_array($base_id, $retained_records)) {
         // This delta was removed from the original form. Add back a
         // value so that chado storage knows to remove the chado record.
         $values[$next_delta]['linker_id'] = $initial_value['linker_id'];
