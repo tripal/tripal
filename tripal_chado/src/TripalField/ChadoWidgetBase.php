@@ -48,7 +48,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    *
    * @param string $fkey
    *   The foreign key column name in the linking table.
-   *   Needed because it is not guaranteed to be in $values array.
+   *   Needed because it is not guaranteed to be in $values array,
+   *   e.g. for dbxref.
    * @param array $values
    *   The submitted form values produced by the widget.
    *   - If the widget does not manage multiple values itself, the array holds
@@ -67,6 +68,10 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    */
   protected function massageLinkingFormValues(string $fkey, array $values, array $form, FormStateInterface $form_state) {
 
+    // In some cases the foreign key is not the same name as the
+    // base table, e.g. manufacturer_id as a fkey for contact_id.
+    $fkey = $values[0]['linker_fkey_column'] ?? $fkey;
+
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
     // existing record is changed to "-- Select --"
@@ -80,7 +85,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
           // to have the linker record be deleted there. To do
           // this, we need to have the correct primitive type for
           // this field, so change from empty string to zero.
-          $values[$val_key][$linker_fkey_column] = 0;
+          $values[$val_key][$fkey] = 0;
         }
         else {
           // If there is no record_id, then it is the empty
@@ -116,7 +121,6 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       $values[$val_key]['_weight'] = $i;
       $i++;
     }
-
     return $values;
   }
 }
