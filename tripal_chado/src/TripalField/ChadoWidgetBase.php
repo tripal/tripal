@@ -33,11 +33,10 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   protected function saveInitialValues(int $delta, int $base_id, int $linker_id, string $fkey, FormStateInterface &$form_state) {
     $storage = $form_state->getStorage();
     // We want initial values, so never update them.
-    if (!($storage['initial_values'][$delta] ?? FALSE)) {
-      $storage['initial_values'][$delta] = [
+    if (!($storage['initial_values'][$fkey][$delta] ?? FALSE)) {
+      $storage['initial_values'][$fkey][$delta] = [
+        'base_id' => $base_id,
         'linker_id' => $linker_id,
-        'linker_fkey_column' => $fkey,
-        $fkey => $base_id,
       ];
       $form_state->setStorage($storage);
     }
@@ -49,6 +48,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    *
    * @param string $fkey
    *   The foreign key column name in the linking table.
+   *   Needed because it is not guaranteed to be in $values array.
    * @param array $values
    *   The submitted form values produced by the widget.
    *   - If the widget does not manage multiple values itself, the array holds
@@ -68,13 +68,12 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   protected function massageLinkingFormValues(string $fkey, array $values, array $form, FormStateInterface $form_state) {
 
     // Handle any empty values so that chado storage properly
-    // deletes the record in chado. This happens when an existing
-    // record is changed to "-- Select --"
+    // deletes the linking record in chado. This happens when an
+    // existing record is changed to "-- Select --"
     $retained_records = [];
     foreach ($values as $val_key => $value) {
       $retained_records[$val_key] = $value[$fkey];
-      $linker_fkey_column = $value['linker_fkey_column'];
-      if ($value[$linker_fkey_column] == '') {
+      if ($value[$fkey] == '') {
         if ($value['record_id']) {
           // If there is a record_id, but no base table id, this
           // means we need to pass in this record to chado storage
@@ -95,18 +94,18 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // present in the current form state, then an existing record
     // was deleted by clicking the "Remove" button. Similarly to
     // the code above, we need to include these in the values array
-    // so that chado storage is informed to delete them in chado.
-    $next_delta = array_key_last($values) + 1;
+    // so that chado storage is informed to delete the linking record.
+    $next_delta = $values ? array_key_last($values) + 1 : 0;
     $storage_values = $form_state->getStorage();
-    $initial_values = $storage_values['initial_values'];
+    $initial_values = $storage_values['initial_values'][$fkey];
     foreach ($initial_values as $delta => $initial_value) {
-      $linker_fkey_column = $initial_value['linker_fkey_column'];
-      $base_id = $initial_value[$linker_fkey_column];
+      $base_id = $initial_value['base_id'];
+      $linker_id = $initial_value['linker_id'];
       if ($base_id and !in_array($base_id, $retained_records)) {
         // This item was removed from the form. Add back a value
         // so that chado storage knows to remove the chado record.
-        $values[$next_delta]['linker_id'] = $initial_value['linker_id'];
-        $values[$next_delta][$linker_fkey_column] = 0;
+        $values[$next_delta]['linker_id'] = $linker_id;
+        $values[$next_delta][$fkey] = 0;
         $next_delta++;
       }
     }
