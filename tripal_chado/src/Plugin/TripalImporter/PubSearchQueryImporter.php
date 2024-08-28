@@ -587,7 +587,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
           if ($add_to_insert) {
             $i++;
-            echo "ADD TO INSERT $i\n";
+            // echo "ADD TO INSERT $i\n";
             $prop_count++; // keep count of inserted prop (return this just for details)
             $sql .= " (:pub_id_$i, :type_id_$i, :value_$i), ";
             $args[":pub_id_$i"] = $pub_id;
@@ -627,10 +627,10 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     }
 
     if (count($missing_cvterms) > 0) {
-      echo "[!]   Overall missing CVTERMS for this set of publications: " . implode(',', array_keys($missing_cvterms)) . "\n";
+      $this->logger->notice("[!]   Overall missing CVTERMS for this set of publications: " . implode(',', array_keys($missing_cvterms)) . "\n");
     }
     if (count($unprocessed_array_keys) > 0) {
-      echo "[!]   Unprocessed publication keys that are arrays: " . implode(',', array_keys($unprocessed_array_keys)) . "\n";
+      $this->logger->notice("[!]   Unprocessed publication keys that are arrays: " . implode(',', array_keys($unprocessed_array_keys)) . "\n");
     }    
 
     return $prop_count;

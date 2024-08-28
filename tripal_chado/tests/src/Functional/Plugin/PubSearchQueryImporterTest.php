@@ -147,6 +147,84 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     ];
     $pub_search_query_loader_importer->createImportJob($run_args);
     $pub_search_query_loader_importer->run();
+
+    $pub_records = $chado->query("SELECT * FROM {1:pub}",[]);
+    $pub_record = NULL;
+    foreach ($pub_records as $row) {
+      $pub_record = $row;
+    }
+
+    
+
+    $this->assertNotEquals($pub_record, NULL, 'No publication record could be found in the chado pub table 
+    even though an import was executed');
+
+    
+    $this->assertEquals($pub_record->title, 'Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.', 'Publication title is different');
+    $this->assertEquals($pub_record->series_name, 'International journal of molecular sciences', 'Series name is different');
+    $this->assertEquals($pub_record->pyear, '2024', 'Publication year is different');
+
+    $pub_id = $pub_record->pub_id;
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id",[
+      ':pub_id' => $pub_id
+    ]);
+    $row_count = NULL;
+    foreach ($pub_props as $row) {
+      $row_count = $row->c1;
+    }
+
+    $this->assertGreaterThan(0, $row_count, 'No properties were found in pubprop, this is an error');
+
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
+      ':pub_id' => $pub_id,
+      ':value' => 'PMID:39125884'
+    ]);
+    $row_count = NULL;
+    foreach ($pub_props as $row) {
+      $row_count = $row->c1;
+    }
+    $this->assertGreaterThan(0, $row_count, 'Publication ID was not found in pubprop table');
+
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
+      ':pub_id' => $pub_id,
+      ':value' => 'International journal of molecular sciences'
+    ]);
+    $row_count = NULL;
+    foreach ($pub_props as $row) {
+      $row_count = $row->c1;
+    }
+    $this->assertGreaterThan(0, $row_count, 'Journal name was not found in pubprop table');
+
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
+      ':pub_id' => $pub_id,
+      ':value' => '10.3390/ijms25158314'
+    ]);
+    $row_count = NULL;
+    foreach ($pub_props as $row) {
+      $row_count = $row->c1;
+    }
+    $this->assertGreaterThan(0, $row_count, 'Publication DOI was not found in pubprop table');
+
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
+      ':pub_id' => $pub_id,
+      ':value' => 'Yang X, Zhu P, Gui J'
+    ]);
+    $row_count = NULL;
+    foreach ($pub_props as $row) {
+      $row_count = $row->c1;
+    }
+    $this->assertGreaterThan(0, $row_count, 'Authors were not found in pubprop table');
+    
+    $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
+      ':pub_id' => $pub_id,
+      ':value' => 'Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.'
+    ]);
+    $row_count = NULL;
+    foreach ($pub_props as $row) {
+      $row_count = $row->c1;
+    }
+    $this->assertGreaterThan(0, $row_count, 'Title was not found in pubprop table');
+      
   }
 }
 ?>
