@@ -40,20 +40,17 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    // $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
     $form_state_values = $form_state->getValues();
-    // dpm($form_state_values);
-
 
     $query_id = "";
     $build_args = $form_state->getBuildInfo();
-    // dpm($build_args);
+
     if ($build_args['args'][1] != NULL) {
       $query_id = $build_args['args'][1];
     }
-    // dpm($form_state);
+
     $form['query_id'] = [
         '#title' => t('Query ID'),
         '#type' => 'hidden',
@@ -84,33 +81,12 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         '#required' => TRUE,
         '#options' => $library_options,
         '#description' => 'The database of the search query',
-        // '#ajax' => [
-        //   // 'callback' => '::database_on_change', // don't forget :: when calling a class method.
-        //   'callback' => [$this, 'database_on_change'], //alternative notation
-        //   'disable-refocus' => FALSE, // Or TRUE to prevent re-focusing on the triggering element.
-        //   'event' => 'change',
-        //   'wrapper' => 'edit-output', // This element is updated with this AJAX callback.
-        //   'progress' => [
-        //     'type' => 'throbber',
-        //     'message' => 'Verifying entry...',
-        //   ],
-        // ],
-        //
         '#ajax' => [
           'callback' =>  [$this::class, 'database_on_change'],
           'wrapper' => 'edit-output',
         ],
       ];
 
-      // For debug purposes when a user selects from the database / library select list
-      // $form['output'] = [
-      //   '#type' => 'hidden',
-      //   '#size' => '60',
-      //   '#disabled' => TRUE,
-      //   '#value' => 'Hello, Drupal!!1',      
-      //   '#prefix' => '<div id="edit-output">',
-      //   '#suffix' => '</div>',
-      // ]; 
       
       $form['search_query_name'] = [
         '#title' => t('Search query name'),
@@ -122,41 +98,17 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         '#description' => t("The search query name"),
         '#prefix' => '<div id="edit-search-query-name">',
         '#suffix' => '</div>',
-        // '#ajax' => [
-        //   'callback' => [$this::class, 'search_query_name_on_change'],
-        //   'wrapper' => 'pub-query-details',
-        //   'event' => 'autocompleteclose',
-        //   // 'event' => 'change'
-        // ],
       ];
 
-      // $form['test_click'] = [
-      //   '#type' => 'textfield',
-      //   '#value' => 'OK',
-      //   '#ajax' => [
-      //     'callback' => [$this::class, 'test_click_on_change'],
-      //     'wrapper' => 'edit-test-click',
-      //     'event' => 'click',
-      //     // 'event' => 'change'
-      //   ],
-      // ];
+
 
       $form['button_view_query_details'] = [
         '#type' => 'button',
         '#button_type' => 'button',
         '#value' => 'Preview query details'
-        // '#ajax' => [
-        //   'callback' => [$this::class, 'test_click_on_change'],
-        //   'wrapper' => 'pub-query-details',
-        //   'event' => 'click',
-        //   // 'event' => 'change'
-        // ],
       ];
 
-      // $form['button_view_query_details'] = [
-      //   '#markup' => Markup::create('<div class="button">Preview query details</div>'),
 
-      // ];
 
       if (isset($form_state_values['op'])) {
         $op = $form_state_values['op'];
@@ -188,8 +140,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
           $public = \Drupal::database();
           $query = $public->select('tripal_pub_library_query','tpi')->fields('tpi')->condition('pub_library_query_id', $query_id, '=');
-          // $pub_importers_count = $query->countQuery()->execute()->fetchField();
-          // dpm($pub_importers_count);
           $results = $query->execute();
           foreach ($results as $pub_query) {
             $criteria_column_array = unserialize($pub_query->criteria);
@@ -247,8 +197,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         }
       }
       
-
-
     }
 
     // If the query id is set, display the data
@@ -284,12 +232,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $response = new AjaxResponse();
 
     $response->addCommand(new ReplaceCommand('#pub-query-details', 'WOW'));
-    //$response->addCommand(new ReplaceCommand('#pub-query-details', $form['pub_query_details']));
-    // $response->addCommand(new InvokeCommand('#pub-query-details', 'html', ['OK']));
-    
-    return $response;
 
-    // return $form['pub_query_details'];
+    return $response;
 
   }
 
@@ -298,12 +242,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     // database / library value when changed
     $database = $user_input['database'];
-
     $response = new AjaxResponse();
-
-    // Used for debugging purposes
-    // $form['output']['#value'] = "Interesting";
-    // $response->addCommand(new ReplaceCommand('#edit-output', $database));
 
     // This adjusts the autocomplete path for search query name
     $autocomplete_path = $form['search_query_name']['#autocomplete_path'];
@@ -324,7 +263,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     // $form_state_values = $form_state->getValues();
 
     // $organism_id = $form_state_values['organism_id'];
-
   }
 
   /**
@@ -335,10 +273,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $public = $this->public;
     $arguments = $this->arguments['run_args'];
 
-    
-    // @RISH NOTES: I think all of the above should be bypassed since the job is already created and
-    // executed by this run function
-    // I see it running the chado_execute_pub_importer function so maybe we should start there
     $query_id = NULL;
     // print_r('Query ID: ' . $arguments['query_id'] . "\n");
     if (isset($arguments['query_id']) and !empty($arguments['query_id'])) {
@@ -367,8 +301,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       return;
     }
 
-    // print_r($criteria);
-
     // Initialize chado variable (used in other helper functions within this class)
     $chado = $this->getChadoConnection();
     $this->chado = $chado;
@@ -390,17 +322,10 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
     $this->logger->notice("Step  2 of 27: Retrieving publication data from remote database ...");
-    $publications = $plugin->run($query_id); // max of 10 since limit was not set @TODO
+    $publications = $plugin->run($query_id);
     
-    // Wouldn't publications end up causing an issue memory wise? 
-    // @TODO: Remove the raw value
-
     $this->logger->notice("               🗸 Found publications: " . count($publications));
     
-    // $publications = $plugin->retrieve($criteria, 5, 0);
-    // print_r($publications);
-
-
     $transaction_chado = $this->chado->startTransaction();
     try { 
 
@@ -422,11 +347,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $inserted_dbxref_ids = $this->insertMissingPublicationsDbxref($missing_publications_dbxref);
         $this->logger->notice("               🗸 Inserted: " . count($inserted_dbxref_ids));
       }
-
-      // $missing_publications_dbxref contains the accessions ()
-      // $inserted_dbxref_ids in same order as $missing_publications_dbxref
-      // print_r($missing_publications_dbxref);
-      // Insert publications - do we need to double check that they don't already exist?
 
       $this->logger->notice("Step  6 of 27: Insert new publications ...                       ");
       $inserted_pub_ids = [];
@@ -508,7 +428,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       'Media Alias',
       'Original Title',
     ];
-    // echo "CVTERMS COUNT: " . count($cvterm_names) . "\n";
 
     foreach ($cvterm_names as $cvterm_name) {
       $sql = "SELECT * FROM {1:cvterm} WHERE name = :name";
@@ -520,7 +439,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       foreach ($result as $row) {
         $cvterm_id = $row->cvterm_id;
       }
-      // echo $cvterm_name . " => " . $cvterm_id . "\n";
       if ($cvterm_id != NULL && $cvterm_id != "") {
         $this->cvterm_lookups[$cvterm_name] = $cvterm_id;
       }
@@ -528,7 +446,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         throw new \Exception('[FATAL] CVTERM ' . $cvterm_name . ' could not be found in database.');
       }
     }
-    // print_r($this->cvterm_lookups);
   }
 
   function insertPubProps($inserted_pub_ids, $missing_publications_dbxref, &$publications) {
@@ -550,20 +467,14 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
       $total++;
 
-      // DEBUGGING PURPOSES WHILE CONSULTING STEPHEN
-      // if ($total == 1) {
-      //   print_r($publication);
-      // }
-
       // Generate Uniquename which is a special field that isn't in the publication array
       $title = $publication['Title'];
       $series_name = trim(explode('(', $publication['Journal Name'])[0]);
       $pyear = $publication['Year'];
-      // @TODO - ASK STEPHEN about what to do when Authors is missing.
+      
       $uniquename = str_replace(',',';', @$publication['Authors']) . $title . ' ' . $series_name . '; ' . $pyear;
-      // @TODO - NEW - SUGGESTED BY STEPHEN - Set the uniquename as the citation 
+      
       $publication['Uniquename'] = $uniquename;
-      // Old code: tripal_pub_get_publication_array (TRIPAL 3)
 
       // Go through each publication array keys => values
       foreach ($publication as $key => $value) {
@@ -581,13 +492,11 @@ class PubSearchQueryImporter extends ChadoImporterBase {
             }
             else {
               $unprocessed_array_keys[$key] = true;
-              // echo "Publication[$key] is an array of values - DEBUG - determine how to process it\n";
             }
           }
 
           if ($add_to_insert) {
             $i++;
-            // echo "ADD TO INSERT $i\n";
             $prop_count++; // keep count of inserted prop (return this just for details)
             $sql .= " (:pub_id_$i, :type_id_$i, :value_$i), ";
             $args[":pub_id_$i"] = $pub_id;
@@ -597,9 +506,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
             if ($i == $batch_size) {
               $sql = rtrim($sql, ", ");
               $sql = $init_sql . $sql;
-              // echo $sql . "\n";
-              // print_r($args);
-              // echo "\n";
               $this->chado->query($sql, $args);
 
               $batch_num++;
@@ -612,7 +518,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         }
         else {
           $missing_cvterms[$key] = true;
-          // echo "Publication[$key] does not have a matching cvterm so ignoring it.\n";
         }
       }
 
@@ -621,9 +526,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $sql = rtrim($sql, ", ");
       $sql = $init_sql . $sql;
       $this->chado->query($sql, $args);
-      // echo $sql . "\n";
-      // print_r($args);
-      // echo "\n";
     }
 
     if (count($missing_cvterms) > 0) {

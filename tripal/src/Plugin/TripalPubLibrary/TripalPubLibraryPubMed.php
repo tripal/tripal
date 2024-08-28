@@ -72,7 +72,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
   }
 
   public function formValidate($form, &$form_state) {
-    // @TODO - Perform any form validations necessary with the form data
+    // Perform any form validations necessary with the form data
   }
 
 
@@ -88,7 +88,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     ->fetchObject();
     // Get the criteria column which has serialized data, so unserialize it into $query variable
     $query = unserialize($row->criteria);
-    // @TODO Run a unit test to see if this works correctly
+
     // Go through all results until pubs is empty
     $page_results = $this->retrieve($query);
     // print_r($page_results);
@@ -97,7 +97,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     if (count($page_results['pubs']) != 0) {
       $publications = array_merge($publications, $page_results['pubs']);
     }
-    return $publications; // @TODO I might need to change this to a structured array
+    return $publications;
   }
 
   /**
@@ -114,13 +114,9 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     return $results;
   }
 
-
-  /** THIS IS FROM 7.x-3.x/tripal_chado/includes/loaders/tripal_chado.pub_importer_PMID.inc */
-  /** UPGRADED FOR TRIPAL 4 USE */
   
   /**
    * A function for performing the search on the PubMed database.
-   * T4 - this is not a hook any longer but can still be used
    *
    * @param $search_array
    *   An array containing the search criteria for the search
@@ -512,8 +508,6 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
         }
       }
     }
-    // @TODO refer to T3 tripal_chado module, tripal_chado.pub.api.inc
-    // $pub['Citation'] = chado_pub_create_citation($pub);
     $pub['Citation'] = $this->pmid_generate_citation($pub);
   
     // $pub['raw'] = $pub_xml;
