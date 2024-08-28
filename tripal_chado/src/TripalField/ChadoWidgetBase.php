@@ -15,9 +15,9 @@ use Drupal\tripal\TripalField\TripalWidgetBase;
 abstract class ChadoWidgetBase extends TripalWidgetBase {
 
   /**
-   * Saves some values from the initial state when an entity
+   * Saves some values from the initial form state when an entity
    * is first edited for multi-cardinality linking fields.
-   * This is needed to support the "Remove" button.
+   * These values are needed to support the "Remove" button.
    *
    * @param int $delta
    *   The numeric index of the item.
@@ -32,6 +32,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    */
   protected function saveInitialValues(int $delta, int $base_id, int $linker_id, string $fkey, FormStateInterface &$form_state) {
     $storage = $form_state->getStorage();
+    // We want initial values, so never update them.
     if (!($storage['initial_values'][$delta] ?? FALSE)) {
       $storage['initial_values'][$delta] = [
         'linker_id' => $linker_id,
@@ -44,6 +45,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
 
   /**
    * Assists the massageFormValues() function for linking fields.
+   * This includes properly handling deletion of linked records.
    *
    * @param string $fkey
    *   The foreign key column name in the linking table.
@@ -66,7 +68,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   protected function massageLinkingFormValues(string $fkey, array $values, array $form, FormStateInterface $form_state) {
 
     // Handle any empty values so that chado storage properly
-    // deletes the record in chado.
+    // deletes the record in chado. This happens when an existing
+    // record is changed to "-- Select --"
     $retained_records = [];
     $next_delta = 0;
     foreach ($values as $val_key => $value) {
@@ -82,17 +85,21 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
           $values[$val_key][$linker_fkey_column] = 0;
         }
         else {
+          // If there is no record_id, then it is the empty
+          // field at the end of the list, and can be ignored.
           unset($values[$val_key]);
         }
       }
-      if ($next_delta <= $val_key) {
+      // Keep track of the highest key for the next chunk of code.
+      if ($values[$val_key] and ($next_delta <= $val_key)) {
         $next_delta = $val_key + 1;
       }
     }
 
     // If there were any values in the initial values that are not
-    // present in the current form state, then the "Remove" button
-    // was clicked. We need to include these in the values array
+    // present in the current form state, then an existing record
+    // was deleted by clicking the "Remove" button. Similarly to
+    // the code above, we need to include these in the values array
     // so that chado storage is informed to delete them in chado.
     $storage_values = $form_state->getStorage();
     $initial_values = $storage_values['initial_values'];
@@ -100,8 +107,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       $linker_fkey_column = $initial_value['linker_fkey_column'];
       $base_id = $initial_value[$linker_fkey_column];
       if ($base_id and !in_array($base_id, $retained_records)) {
-        // This delta was removed from the original form. Add back a
-        // value so that chado storage knows to remove the chado record.
+        // This item was removed from the form. Add back a value
+        // so that chado storage knows to remove the chado record.
         $values[$next_delta]['linker_id'] = $initial_value['linker_id'];
         $values[$next_delta][$linker_fkey_column] = 0;
         $next_delta++;
