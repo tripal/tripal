@@ -66,13 +66,13 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    *   An array of field values, keyed by delta.
    */
   protected function massageLinkingFormValues(string $fkey, array $values, array $form, FormStateInterface $form_state) {
-
+$linker_key = 'linker_id'; // To become a parameter in next commit
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
     // existing record is changed to "-- Select --"
     $retained_records = [];
     foreach ($values as $val_key => $value) {
-      $retained_records[$val_key] = $value[$fkey];
+      $retained_records[$val_key] = $value[$linker_key];
       if ($value[$fkey] == '') {
         if ($value['record_id']) {
           // If there is a record_id, but no base table id, this
@@ -80,7 +80,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
           // to have the linker record be deleted there. To do
           // this, we need to have the correct primitive type for
           // this field, so change from empty string to zero.
-          $values[$val_key][$linker_fkey_column] = 0;
+          $values[$val_key][$fkey] = 0;
         }
         else {
           // If there is no record_id, then it is the empty
@@ -100,11 +100,11 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     $initial_values = $storage_values['initial_values'][$fkey];
     foreach ($initial_values as $delta => $initial_value) {
       $base_id = $initial_value['base_id'];
-      $linker_id = $initial_value['linker_id'];
-      if ($base_id and !in_array($base_id, $retained_records)) {
+      $linker_id = $initial_value[$linker_key];
+      if ($linker_id and !in_array($linker_id, $retained_records)) {
         // This item was removed from the form. Add back a value
         // so that chado storage knows to remove the chado record.
-        $values[$next_delta]['linker_id'] = $linker_id;
+        $values[$next_delta][$linker_key] = $linker_id;
         $values[$next_delta][$fkey] = 0;
         $next_delta++;
       }
