@@ -545,3 +545,55 @@ function tripal_chado_update_10405() {
     throw new UpdateException('Could not add entity id to fields: ' . $e->getMessage());
   }
 }
+
+/**
+ * Adds missing 'delete_if_empty' setting to the 'linker_synonym_fkey_id'
+ * property in the 'chado_synonym_type_default' field, PR 1958
+ */
+function tripal_chado_update_10406() {
+  try {
+    $messenger = \Drupal::messenger();
+
+    $entity_type = 'tripal_entity';
+    $property = 'linker_synonym_fkey_id';
+
+    $manager = \Drupal::entityDefinitionUpdateManager();
+    $schema = \Drupal::database()->schema();
+    $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
+    $field_map = \Drupal::service('entity_field.manager')->getFieldMap();
+    $fields = $field_map[$entity_type];
+    $n_updated = 0;
+
+    foreach ($fields as $field_name => $field_def) {
+      $id = $field_def['type'];
+      if ($id == 'chado_synonym_type_default') {
+        $field_storage_definition = $manager->getFieldStorageDefinition($field_name, 'tripal_entity');
+        if ($field_storage_definition) {
+          $field_schema = $field_storage_definition->getSchema();
+          $table_mapping = $storage->getTableMapping([$field_name => $field_storage_definition]);
+          $table_names = $table_mapping->getDedicatedTableNames();
+          $columns = $table_mapping->getColumnNames($field_name);
+
+          foreach ($table_names as $table_name) {
+            $table_exists = $schema->tableExists($table_name);
+            if ($table_exists) {
+              $messenger->addMessage(t("Updating properties for Drupal table \"@table_name\", field \"@field_name\"",
+                  ['@table_name' => $table_name, '@field_name' => $field_name]));
+              $field_exists = $schema->fieldExists($table_name, $columns[$property]);
+              if ($field_exists) {
+                $schema->changeField($table_name, $columns[$property], $columns[$property], $field_schema['columns'][$property]);
+                $n_updated++;
+              }
+              $manager->updateFieldStorageDefinition($field_storage_definition);
+            }
+          }
+        }
+      }
+    }
+    $messenger->addMessage(t("Updated @n_updated properties",
+        ['@n_updated' => $n_updated]));
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not update property: ' . $e->getMessage());
+  }
+}
