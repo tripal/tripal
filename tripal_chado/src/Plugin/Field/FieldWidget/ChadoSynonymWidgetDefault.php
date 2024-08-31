@@ -73,14 +73,17 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $record_id,
     ];
+    // primary key column of linking table, e.g. feature_synonym_id
     $elements['linker_pkey_id'] = [
       '#type' => 'value',
       '#default_value' => $linker_pkey_id,
     ];
+    // linker_base_fkey_id corresponds to base table id, e.g. feature_id
     $elements['linker_base_fkey_id'] = [
       '#type' => 'value',
       '#default_value' => $linker_base_fkey_id,
     ];
+    // linker_synonym_fkey_id corresponds to synonym_id
     $elements['linker_synonym_fkey_id'] = [
       '#type' => 'value',
       '#default_value' => $linker_synonym_fkey_id,
@@ -122,12 +125,16 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
       '#title' => 'Is this synonym internal?',
       '#default_value' => $is_internal,
       '#description' => t('Typically a synonym exists so that somebody querying the database with an ' .
-          'obsolete name can find the object they\'re looking.  If the synonym has been used publicly '.
+          'obsolete name can find the object they\'re looking for.  If the synonym has been used publicly '.
           'and deliberately (e.g. in a paper), it may also be listed in reports as a synonym. If the ' .
           'synonym was not used deliberately (e.g. there was a typo which went public), then the ' .
           'synonym is internal.'),
       '#weight' => 14,
     ];
+
+    // Save some initial values to allow later handling of the "Remove" button
+    $this->saveInitialValues($delta, $linker_pkey_id, 'linker_synonym_fkey_id', $form_state, 'linker_pkey_id');
+
     return $elements;
   }
 
@@ -145,18 +152,9 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
       }
     }
 
-    // Reset the weights
-    $i = 0;
-    foreach ($values as $delta => $value) {
-      if (array_key_exists('value', $value) AND $value['value'] == '') {
-        continue;
-      }
-      $values[$delta]['_weight'] = $i;
-      $i++;
-    }
-
-    // Iterate through the synonyms and if a name is not
-    // present in the synonym table then add it.
+    // Iterate through the synonyms and try to get the synonym_id.
+    // If the synonym is not already present in the synonym table,
+    // then add it.
     foreach ($values as $delta => $item) {
       $name = $item['name'];
       $synonym_type_id = $item['synonym_type_id'];
@@ -177,7 +175,8 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
       }
       $values[$delta]['linker_synonym_fkey_id'] = $synonym->synonym_id;
     }
-    return $values;
+
+    return $this->massageLinkingFormValues('linker_synonym_fkey_id', $values, $form_state, 'linker_pkey_id');
   }
 
 }

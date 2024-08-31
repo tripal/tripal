@@ -128,7 +128,7 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
     }
 
     // Save some initial values to allow later handling of the "Remove" button
-    $this->saveInitialValues($delta, $contact_id, $linker_id, $linker_fkey_column, $form_state);
+    $this->saveInitialValues($delta, $linker_id, $linker_fkey_column, $form_state);
 
     return $elements;
   }
@@ -137,6 +137,6 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    return $this->massageLinkingFormValues('contact_id', $values, $form, $form_state);
+    return $this->massageLinkingFormValues('contact_id', $values, $form_state);
   }
 }
