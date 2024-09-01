@@ -21,18 +21,18 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    *
    * @param int $delta
    *   The numeric index of the item.
+   * @param string $field_term
+   *   The controlled vocabulary term for the field.
    * @param int $linker_id
    *   The primary key value of the record in the linking table.
-   * @param string $fkey
-   *   The name of the foreign key column in the linking table.
    * @param FormStateInterface &$form_state
    *   The current form state.
    */
-  protected function saveInitialValues(int $delta, int $linker_id, string $fkey, FormStateInterface &$form_state) {
+  protected function saveInitialValues(int $delta, string $field_term, int $linker_id, FormStateInterface &$form_state) {
     $storage = $form_state->getStorage();
-    // We want the initial values, so never update them.
-    if (!($storage['initial_values'][$fkey][$delta] ?? FALSE)) {
-      $storage['initial_values'][$fkey][$delta] = [
+    // We want the initial values, so never update them once saved.
+    if (!($storage['initial_values'][$field_term][$delta] ?? FALSE)) {
+      $storage['initial_values'][$field_term][$delta] = [
         'linker_id' => $linker_id,
       ];
       $form_state->setStorage($storage);
@@ -67,7 +67,12 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
 
     // In some cases the foreign key is not the same name as the
     // base table, e.g. manufacturer_id as a fkey for contact_id.
+    // n.b. this has no effect for the property field.
     $fkey = $values[0]['linker_fkey_column'] ?? $fkey;
+
+    // The CV term used for the field, sometimes there are multiple
+    // copies of one field, e.g. properties, so this distinguishes them.
+    $field_term = $values[0]['field_term'];
 
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
@@ -101,8 +106,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // so that chado storage is informed to delete the linking record.
     $next_delta = $values ? array_key_last($values) + 1 : 0;
     $storage_values = $form_state->getStorage();
-    $initial_values = $storage_values['initial_values'][$fkey];
-    foreach ($initial_values as $unused_delta => $initial_value) {
+    $initial_values = $storage_values['initial_values'][$field_term];
+    foreach ($initial_values as $initial_value) {
       // For initial values, the key is always 'linker_id', regardless of $linker_key value.
       $linker_id = $initial_value['linker_id'];
       if ($linker_id and !in_array($linker_id, $retained_records)) {

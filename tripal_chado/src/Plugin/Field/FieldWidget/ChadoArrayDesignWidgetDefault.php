@@ -27,10 +27,12 @@ class ChadoArrayDesignWidgetDefault extends ChadoWidgetBase {
 
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
-    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
+    $settings = $field_definition->getSettings();
+    $storage_settings = $settings['storage_plugin_settings'];
     $linker_fkey_column = $storage_settings['linker_fkey_column']
       ?? $storage_settings['base_column'] ?? 'arraydesign_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
+    $field_term = $settings['termIdSpace'] . ':' . $settings['termAccession'];
 
     // Get the list of arraydesigns.
     $arraydesigns = [];
@@ -69,6 +71,11 @@ class ChadoArrayDesignWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $linker_fkey_column,
     ];
+    // pass the field cv term through the form for massageFormValues()
+    $elements['field_term'] = [
+      '#type' => 'value',
+      '#default_value' => $field_term,
+    ];
     $elements[$linker_fkey_column] = $element + [
       '#type' => 'select',
       '#options' => $arraydesigns,
@@ -90,7 +97,7 @@ class ChadoArrayDesignWidgetDefault extends ChadoWidgetBase {
     }
 
     // Save some initial values to allow later handling of the "Remove" button
-    $this->saveInitialValues($delta, $linker_id, $linker_fkey_column, $form_state);
+    $this->saveInitialValues($delta, $field_term, $linker_id, $form_state);
 
     return $elements;
   }
