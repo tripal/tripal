@@ -368,7 +368,7 @@ function tripal_chado_field_reload(array $upgradable_types, array $upgradable_pr
           foreach ($table_names as $table_name) {
             $table_exists = $schema->tableExists($table_name);
             if ($table_exists) {
-              $messenger->addMessage(t("Adding and updating properties for Drupal table \"@table_name\", field \"@field_name\"",
+              $messenger->addMessage(t("Updating properties for Drupal table \"@table_name\", field \"@field_name\"",
                   ['@table_name' => $table_name, '@field_name' => $field_name]));
               foreach ($upgradable_properties as $property) {
                 $field_exists = $schema->fieldExists($table_name, $columns[$property]);
