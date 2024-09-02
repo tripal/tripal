@@ -29,6 +29,7 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_settings = $field_definition->getSettings();
+    $field_term = $field_settings['termIdSpace'] . ':' . $field_settings['termAccession'];
 
     // Get the default values.
     $item_vals = $items[$delta]->getValue();
@@ -62,6 +63,11 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#value' => $term_id,
     ];
+    // pass the field cv term through the form for massageFormValues()
+    $elements['field_term'] = [
+      '#type' => 'value',
+      '#default_value' => $field_term,
+    ];
     $elements['value'] = $element + [
       '#type' => 'textarea',
       '#default_value' => $default_value,
@@ -74,6 +80,10 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#value' => $delta,
     ];
+
+    // Save some initial values to allow later handling of the "Remove" button
+    $this->saveInitialValues($delta, $field_term, $prop_id, $form_state);
+
     return $elements;
   }
 
@@ -81,30 +91,16 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+
+    // Look up the rank term
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-
     $storage_settings = $this->getFieldSetting('storage_plugin_settings');
     $prop_table = $storage_settings['prop_table'];
     $rank_term = $this->sanitizeKey($mapping->getColumnTermId($prop_table, 'rank'));
 
-    // Remove any empty values that aren't mapped to a record id.
-    foreach ($values as $val_key => $value) {
-      if ($value['value'] == '' and $value['record_id'] == 0) {
-        unset($values[$val_key]);
-      }
-    }
-
-    // Reset the weights
-    $i = 0;
-    foreach ($values as $val_key => $value) {
-      if ($value['value'] == '') {
-        continue;
-      }
-      $values[$val_key]['_weight'] = $i;
-      $values[$val_key][$rank_term] = $i;
-      $i++;
-    }
+    // Call parent massage helper function
+    $values = $this->massagePropertyFormValues('value', $values, $form_state, $rank_term, 'prop_id');
 
     return $values;
   }
