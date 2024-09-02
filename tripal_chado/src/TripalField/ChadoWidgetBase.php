@@ -69,6 +69,10 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   protected function massageLinkingFormValues(string $fkey, array $values,
       FormStateInterface $form_state, string $linker_key = 'linker_id') {
 
+    if (!$values) {
+      return $values;
+    }
+
     // In some cases the foreign key is not the same name as in the
     // base table, e.g. manufacturer_id as a fkey for contact_id.
     // n.b. this has no effect for the property field.
@@ -88,7 +92,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       }
       if ($value[$fkey] == '') {
         if ($value['record_id']) {
-          // If there is a record_id, but no base table id, this
+          // If there is a record_id, but no linked record id, this
           // means we need to pass in this record to chado storage
           // to have the linker record be deleted there. To do
           // this, we need to have the correct primitive type for
@@ -161,6 +165,10 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   protected function massagePropertyFormValues(string $val, array $values,
       FormStateInterface $form_state, string $rank_term = NULL, string $linker_key = 'prop_id') {
 
+    if (!$values) {
+      return $values;
+    }
+
     // The CV term used for the field. There are usually multiple
     // copies of a property field, so this distinguishes them.
     $field_term = $values[0]['field_term'];
@@ -175,12 +183,11 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       }
       if ($value[$val] == '') {
         if ($value['record_id']) {
-          // If there is a record_id, but no base table id, this
+          // If there is a record_id, but no value, this
           // means we need to pass in this record to chado storage
-          // to have the linker record be deleted there. To do
-          // this, we need to have the correct primitive type for
-          // this field, so change from empty string to zero.
-          $values[$val_key][$val] = 0;
+          // to have the linker record be deleted there. Here,
+          // the empty string is the correct primitive type,
+          // so nothing to change.
         }
         else {
           // If there is no record_id, then it is the empty
