@@ -68,7 +68,6 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    */
   protected function massageLinkingFormValues(string $fkey, array $values,
       FormStateInterface $form_state, string $linker_key = 'linker_id') {
-
     if (!$values) {
       return $values;
     }
@@ -76,11 +75,12 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // In some cases the foreign key is not the same name as in the
     // base table, e.g. manufacturer_id as a fkey for contact_id.
     // n.b. this has no effect for the property field.
-    $fkey = $values[0]['linker_fkey_column'] ?? $fkey;
+    $first_delta = array_key_first($values);
+    $fkey = $values[$first_delta]['linker_fkey_column'] ?? $fkey;
 
     // The CV term used for the field. Sometimes there are multiple
     // copies of one field, e.g. properties, so this distinguishes them.
-    $field_term = $values[0]['field_term'];
+    $field_term = $values[$first_delta]['field_term'];
 
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
@@ -171,7 +171,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
 
     // The CV term used for the field. There are usually multiple
     // copies of a property field, so this distinguishes them.
-    $field_term = $values[0]['field_term'];
+    $first_delta = array_key_first($values);
+    $field_term = $values[$first_delta]['field_term'];
 
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
