@@ -50,11 +50,11 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
     // Retrieve a value we need to get from the form state after an ajax callback
     $field_name = $items->getFieldDefinition()->get('field_name');
-    $db_id = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_id']);
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
+    $db_id = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_id']);
     if (!$db_id) {
       $db_id = $item_vals['dbxref_db_id'] ?? 0;
     }
