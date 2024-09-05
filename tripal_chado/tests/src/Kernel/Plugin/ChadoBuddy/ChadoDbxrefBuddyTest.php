@@ -45,6 +45,11 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     $db_id = $values['get']['db.db_id'];
     $this->assertTrue(is_numeric($db_id), 'We did not retrieve an integer db.id for the new DB "newDb001"');
 
+    // TEST: Updating a non-existent DB should return FALSE.
+    $chado_buddy_records = $instance->updateDb(['db.name' => 'newDb002', 'db.description' => 'desc002', 'db.urlprefix' => 'https://tripal.org/{db}/{accession}'],
+                                               ['db.name' => 'does-not-exist']);
+    $this->assertFalse($chado_buddy_records, "We received a value other than FALSE for an update to a DB that does not exist");
+
     // TEST: We should be able to update an existing DB record.
     $test_records = [];
     $test_records['set'] = $instance->updateDb(['db.name' => 'newDb002', 'db.description' => 'desc002', 'db.urlprefix' => 'https://tripal.org/{db}/{accession}'],
@@ -130,9 +135,15 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     $db_id = $values['get']['db.db_id'];
     $this->assertTrue(is_numeric($db_id), 'We did not retrieve an integer db.db_id for the new Dbxref "newDbxref001"');
 
+    // TEST: Updating a non-existent Dbxref should return FALSE.
+    $chado_buddy_records = $instance->updateDbxref(['dbxref.accession' => 'newDbxref002'],
+                                                   ['dbxref.accession' => 'does-not-exist']);
+    $this->assertFalse($chado_buddy_records, "We received a value other than FALSE for an update to a Dbxref that does not exist");
+
     // TEST: We should be able to update an existing Dbxref record without including db.db_id.
     $test_records = [];
-    $test_records['set'] = $instance->updateDbxref(['dbxref.accession' => 'newDbxref002'], ['dbxref.accession' => 'newDbxref001']);
+    $test_records['set'] = $instance->updateDbxref(['dbxref.accession' => 'newDbxref002'],
+                                                   ['dbxref.accession' => 'newDbxref001']);
     $test_records['get'] = $instance->getDbxref(['dbxref.accession' => 'newDbxref002']);
     $values = $this->multiAssert('updateDbxref', $test_records, 'dbxref', 'dbxref.dbxref_id', 'dbxref "newDbxref001"', 10);
     $this->assertEquals('newDbxref002', $values['get']['dbxref.accession'], "The Dbxref accession was not updated for newDbxref001");
@@ -184,16 +195,16 @@ class ChadoDbxrefBuddyTest extends ChadoTestBuddyBase {
     $this->assertIsString($url, 'We did not receive a string from getDbxrefUrl with urlprefix');
     $this->assertEquals('https://tripal.org/newDb004/newDbxref004', $url, "Incorrect url for a DB with urlprefix");
 
-    // TEST: We should be able to get a URL from a dbxref that does not have a urlprefix.
-    $db_buddy_record = $instance->updateDb(['db.urlprefix' => ''], ['db.name' => 'newDb004']);
-    $this->assertIsObject($db_buddy_record, "We did not remove the urlprefix");
-    $chado_buddy_records = $instance->getDbxref(['dbxref.accession' => 'newDbxref004']);
-    $this->assertEquals(1, count($chado_buddy_records), "We did not retrieve the dbxref \"newDbxref004\"");
-    $urlprefix = $chado_buddy_records[0]->getValue('db.urlprefix');
-    $this->assertEquals('', $urlprefix, "Removed urlprefix is not an empty string");
-    $url = $instance->getDbxrefUrl($chado_buddy_records[0]);
+    // TEST: We should be able to get a URL from a dbxref that does NOT have a urlprefix.
+    $db_buddy = $instance->insertDb(['db.name' => 'newDb005', 'db.description' => 'desc005']);
+    $this->assertIsObject($db_buddy, 'We did not insert a DB without a urlprefix');
+    $db_id = $db_buddy->getValue('db.db_id');
+    $this->assertTrue(is_numeric($db_id), 'We did not retrieve an integer db.db_id for the new DB without a urlprefix');
+    $dbxref_buddy = $instance->insertDbxref(['dbxref.accession' => 'newDbxref005', 'db.db_id' => $db_id]);
+    $this->assertIsObject($dbxref_buddy, 'We did not insert a Dbxref without a urlprefix');
+    $url = $instance->getDbxrefUrl($dbxref_buddy);
     $this->assertIsString($url, 'We did not receive a string from getDbxrefUrl without urlprefix');
-    $this->assertEquals('cv/lookup/newDb004/newDbxref004', $url, "Incorrect url for a DB without urlprefix");
+    $this->assertEquals('cv/lookup/newDb005/newDbxref005', $url, "Incorrect url for a DB without a urlprefix");
 
     // TEST: associate a dbxref with a base table.
     $base_table = 'project';

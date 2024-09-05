@@ -45,9 +45,15 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $cv_id = $values['get']['cv.cv_id'];
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new CV "newCv001"');
 
+    // TEST: Updating a non-existent CV should return FALSE.
+    $chado_buddy_records = $instance->updateCv(['cv.name' => 'newCv002', 'cv.definition' => 'def002'],
+                                               ['cv.name' => 'does-not-exist']);
+    $this->assertFalse($chado_buddy_records, "We received a value other than FALSE for an update to a CV that does not exist");
+
     // TEST: We should be able to update an existing CV record.
     $test_records = [];
-    $test_records['set'] = $instance->updateCv(['cv.name' => 'newCv002', 'cv.definition' => 'def002'], ['cv.name' => 'newCv001']);
+    $test_records['set'] = $instance->updateCv(['cv.name' => 'newCv002', 'cv.definition' => 'def002'],
+                                               ['cv.name' => 'newCv001']);
     $test_records['get'] = $instance->getCv(['cv.name' => 'newCv002']);
     $values = $this->multiAssert('updateCv', $test_records, 'cv', 'cv.cv_id', 'cv "newCv002"', 3);
     $this->assertEquals('newCv002', $values['get']['cv.name'], 'The CV name was not updated for CV "newCv001"');
@@ -132,9 +138,15 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $cv_id = $values['get']['cv.cv_id'];
     $this->assertTrue(is_numeric($cv_id), 'We did not retrieve an integer cv_id for the new Cvterm "newCvterm001"');
 
+    // TEST: Updating a non-existent Cvterm should return FALSE.
+    $chado_buddy_records = $instance->updateCvterm(['cvterm.name' => 'newCvterm002', 'cvterm.definition' => 'def002'],
+                                                   ['cvterm.name' => 'does-not-exist']);
+    $this->assertFalse($chado_buddy_records, "We received a value other than FALSE for an update to a Cvterm that does not exist");
+
     // TEST: We should be able to update an existing Cvterm record.
     $test_records = [];
-    $test_records['set'] = $instance->updateCvterm(['cvterm.name' => 'newCvterm002', 'cvterm.definition' => 'def002'], ['cvterm.name' => 'newCvterm001']);
+    $test_records['set'] = $instance->updateCvterm(['cvterm.name' => 'newCvterm002', 'cvterm.definition' => 'def002'],
+                                                   ['cvterm.name' => 'newCvterm001']);
     $test_records['get'] = $instance->getCvterm(['cvterm.name' => 'newCvterm002', 'cvterm.definition' => 'def002']);
     $values = $this->multiAssert('updateCvterm', $test_records, 'cvterm', 'cvterm.cvterm_id', 'cvterm "newCvterm001"', 20);
     $this->assertEquals('newCvterm002', $values['get']['cvterm.name'], 'The Cvterm name was not updated for Cvterm "newCvterm001"');
