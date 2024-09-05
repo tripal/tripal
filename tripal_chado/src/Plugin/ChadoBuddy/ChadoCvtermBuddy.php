@@ -472,9 +472,9 @@ class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterfa
     if (!array_key_exists('cvtermsynonym.cvterm_id', $values) or !$values['cvtermsynonym.cvterm_id']) {
       if (!array_key_exists('cvterm.cvterm_id', $values) or !$values['cvterm.cvterm_id']) {
         $cvterm_values = $this->subsetInput($values, ['cv', 'cvterm']);
-        $cvterm_record = $this->getCvterm($cvterm_values);
-        $this->validateOutput($cvterm_record, $values);
-        $values['cvtermsynonym.cvterm_id'] = $cvterm_record[0]->getValue('cvterm.cvterm_id');
+        $cvterm_records = $this->getCvterm($cvterm_values);
+        $this->validateOutput($cvterm_records, $values);
+        $values['cvtermsynonym.cvterm_id'] = $cvterm_records[0]->getValue('cvterm.cvterm_id');
       }
       else {
         $values['cvtermsynonym.cvterm_id'] = $values['cvterm.cvterm_id'];

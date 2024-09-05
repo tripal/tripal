@@ -267,11 +267,11 @@ class ChadoCvtermBuddyTest extends ChadoTestBuddyBase {
     $this->assertEquals($expected_pub_id, $retrieved_pub_id,
       "We did not get the pub_id from \"$linking_table\" that should have been set by associateCvterm");
 
-    // TEST: We should be able to create a synonym.
+    // TEST: We should be able to create a synonym, knowing only the name of the cv vocabulary and of the cv term
     $test_records = [];
-    $test_records['set'] = $instance->insertCvtermSynonym(['cv.name' => 'local', 'cvterm.cvterm_id' => $expected_cvterm_id,
+    $test_records['set'] = $instance->insertCvtermSynonym(['cv.name' => 'local', 'cvterm.name' => 'newCvterm003',
                                                            'cvtermsynonym.synonym' => 'syn005', 'cvtermsynonym.type_id' => 5]);
-    $test_records['get'] = $instance->getCvtermSynonym(['cv.name' => 'local', 'cvterm.cvterm_id' => $expected_cvterm_id,
+    $test_records['get'] = $instance->getCvtermSynonym(['cv.name' => 'local', 'cvterm.name' => 'newCvterm003',
                                                         'cvtermsynonym.synonym' => 'syn005', 'cvtermsynonym.type_id' => 5]);
     $values = $this->multiAssert('insertCvtermSynonym', $test_records, 'cvterm', 'cvtermsynonym.cvtermsynonym_id', 'synonym "syn005"', 24);
     $retrieved_cvterm_id = $values['get']['cvterm.cvterm_id'];
