@@ -136,6 +136,8 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
 
     // TEST: we should not by default be able to delete more than one property
     // record at a time. The two existing ones both have rank=5.
+    $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.rank' => 5]);
+    $this->assertEquals(2, count($chado_buddy_records), "We did select multiple property records");
     $exception_caught = FALSE;
     $exception_message = '';
     try {
@@ -146,11 +148,15 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     }
     $this->assertTrue($exception_caught, 'We should get an exception when deleting more than one property record.');
     $this->assertStringContainsString('max_delete is set to', $exception_message, "We did not get the exception message we expected when deleting more than one property.");
+    $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.rank' => 5]);
+    $this->assertEquals(2, count($chado_buddy_records), "We did delete multiple property records but should not have");
 
     // TEST: we should be able to delete a single property record
     $num_deleted = $instance->deleteProperty('project', 1, ['projectprop.value' => 'prop002'], []);
     $this->assertTrue(is_numeric($num_deleted), 'We did not retrieve an integer from deleteProperty');
     $this->assertEquals(1, $num_deleted, "We did not delete exactly one property record \"prop002\"");
+    $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.value' => 'prop002']);
+    $this->assertEquals(0, count($chado_buddy_records), "We did not delete a single property records");
 
     // TEST: We should be able to insert a property record even if the cvterm doesn't exist.
     // This tests a use case for an importer, both term and dbxref are automatically created.
