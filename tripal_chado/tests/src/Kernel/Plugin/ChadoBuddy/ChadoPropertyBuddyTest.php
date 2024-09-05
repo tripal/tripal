@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 
-use Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy\ChadoTestBuddyBase;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy\ChadoTestBuddyBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
@@ -49,14 +49,14 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     $test_records = [];
     $test_records['set'] = $instance->insertProperty('project', 1, ['projectprop.type_id' => 1, 'projectprop.value' => 'prop001'], []);
     $test_records['get'] = $instance->getProperty('project', 1, ['projectprop.type_id' => 1]);
-    $this->multiAssert('insertProperty', $test_records, 'project', 'property "prop001"', 28);
+    $this->multiAssert('insertProperty', $test_records, 'project', 'projectprop.projectprop_id', 'property "prop001"', 28);
 
     // TEST: We should be able to update an existing property record.
     $test_records = [];
     $test_records['set'] = $instance->updateProperty('project', 1, ['projectprop.type_id' => 2, 'projectprop.value' => 'prop002', 'projectprop.rank' => 5],
                                                      ['projectprop.projectprop_id' => 1], []);
     $test_records['get'] = $instance->getProperty('project', 1, ['projectprop.type_id' => 2]);
-    $values = $this->multiAssert('insertProperty', $test_records, 'project', 'property "prop002"', 28);
+    $values = $this->multiAssert('insertProperty', $test_records, 'project', 'projectprop.projectprop_id', 'property "prop002"', 28);
     $this->assertEquals(2, $values['get']['projectprop.type_id'], 'The property type was not updated for property "prop001"');
     $this->assertEquals(5, $values['get']['projectprop.rank'], 'The property rank was not updated for property "prop001"');
 
@@ -69,7 +69,7 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     $test_records = [];
     $test_records['set'] = $instance->upsertProperty('project', 1, ['projectprop.type_id' => 1, 'projectprop.value' => 'prop003', 'projectprop.rank' => 5], []);
     $test_records['get'] = $instance->getProperty('project', 1, ['projectprop.type_id' => 1, 'projectprop.value' => 'prop003', 'projectprop.rank' => 5], []);
-    $this->multiAssert('upsertProperty (new)', $test_records, 'project', 'property "prop003"', 28);
+    $this->multiAssert('upsertProperty (new)', $test_records, 'project', 'projectprop.projectprop_id', 'property "prop003"', 28);
 
     // TEST: We should not be able to insert a property record if it does exist.
     $exception_caught = FALSE;
@@ -99,7 +99,7 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     $test_records = [];
     $test_records['set'] = $instance->upsertProperty('project', 1, ['projectprop.type_id' => 1, 'projectprop.value' => 'prop004', 'projectprop.rank' => 5], []);
     $test_records['get'] = $instance->getProperty('project', 1, ['projectprop.type_id' => 1, 'projectprop.rank' => 5], []);
-    $values = $this->multiAssert('upsertProperty (existing)', $test_records, 'project', 'property "prop004"', 28);
+    $values = $this->multiAssert('upsertProperty (existing)', $test_records, 'project', 'projectprop.projectprop_id', 'property "prop004"', 28);
     $cvterm_id = $values['get']['projectprop.projectprop_id'];
     $this->assertTrue(is_numeric($cvterm_id), 'We did not retrieve an integer cvterm_id for the upserted property "prop004"');
 
@@ -123,6 +123,8 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     $this->assertEquals(0, count($chado_buddy_records), "An update was incorrectly performed for conditions that match more than one record");
 
     // TEST: Upsert should throw an exception if it matches more than one record.
+    $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.rank' => 5], []);
+    $this->assertEquals(2, count($chado_buddy_records), "The upsert conditions did not match multiple records");
     $exception_caught = FALSE;
     $exception_message = '';
     try {
@@ -133,6 +135,8 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     }
     $this->assertTrue($exception_caught, 'We should get an exception when upserting a property record that matches multiple properties.');
     $this->assertStringContainsString('more than one record matched', $exception_message, "We did not get the exception message we expected when upserting a property that matches multiple properties.");
+    $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.rank' => 5], []);
+    $this->assertEquals(2, count($chado_buddy_records), "The upsert appears to have changed number of records");
 
     // TEST: we should not by default be able to delete more than one property
     // record at a time. The two existing ones both have rank=5.
@@ -149,7 +153,7 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     $this->assertTrue($exception_caught, 'We should get an exception when deleting more than one property record.');
     $this->assertStringContainsString('max_delete is set to', $exception_message, "We did not get the exception message we expected when deleting more than one property.");
     $chado_buddy_records = $instance->getProperty('project', 1, ['projectprop.rank' => 5]);
-    $this->assertEquals(2, count($chado_buddy_records), "We did delete multiple property records but should not have");
+    $this->assertEquals(2, count($chado_buddy_records), "We did delete property records but should not have");
 
     // TEST: we should be able to delete a single property record
     $num_deleted = $instance->deleteProperty('project', 1, ['projectprop.value' => 'prop002'], []);
@@ -167,7 +171,7 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
                                                      'cvterm.name' => 'name005', 'dbxref.accession' => 'acc005'],
                                                      ['create_cvterm' => TRUE]);
     $test_records['get'] = $instance->getProperty('project', 1, ['projectprop.value' => 'prop005', 'projectprop.rank' => 5]);
-    $values = $this->multiAssert('insertProperty (create cvterm)', $test_records, 'project', 'property "prop005"', 28);
+    $values = $this->multiAssert('insertProperty (create cvterm)', $test_records, 'project', 'projectprop.projectprop_id', 'property "prop005"', 28);
     $this->assertEquals('local', $values['get']['db.name'], 'The DB name is incorrect for the new property "prop005"');
     $this->assertEquals('local', $values['get']['cv.name'], 'The CV name is incorrect for the new property "prop005"');
     $this->assertEquals('acc005', $values['get']['dbxref.accession'], 'The dbxref accession is incorrect for the new property "prop005"');
@@ -177,7 +181,7 @@ class ChadoPropertyBuddyTest extends ChadoTestBuddyBase {
     $test_records = [];
     $test_records['set'] = $instance->upsertProperty('project', 1, ['cvterm.cvterm_id' => 2, 'projectprop.value' => 'prop006'], []);
     $test_records['get'] = $instance->getProperty('project', 1, ['cvterm.cvterm_id' => 2, 'projectprop.value' => 'prop006']);
-    $values = $this->multiAssert('upsertProperty (use cvterm.cvterm_id)', $test_records, 'project', 'property "prop006"', 28);
+    $values = $this->multiAssert('upsertProperty (use cvterm.cvterm_id)', $test_records, 'project', 'projectprop.projectprop_id', 'property "prop006"', 28);
     $this->assertEquals(2, $values['get']['cvterm.cvterm_id'], 'The CV term id is incorrect for the property "prop006"');
     $this->assertEquals('prop006', $values['get']['projectprop.value'], 'The upserted value is incorrect for the property "prop006"');
 

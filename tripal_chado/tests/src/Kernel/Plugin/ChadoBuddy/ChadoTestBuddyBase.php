@@ -27,7 +27,9 @@ abstract class ChadoTestBuddyBase extends ChadoTestKernelBase {
    * @param array $test_records
    *   Associative array of chado buddy records, keys will be 'set' and 'get'.
    * @param string $base_table
-   *   The name of the chado base table that the property is attached to.
+   *   The name of the chado base table for the buddy.
+   * @param string $pkey
+   *   The primary key to check in the returned values, e.g. 'cv.cv_id'.
    * @param array $description
    *   Describes the buddy in assertions, e.g. 'db "local"', 'property "prop001"'
    * @param int $count
@@ -37,7 +39,7 @@ abstract class ChadoTestBuddyBase extends ChadoTestKernelBase {
    *   i.e. the 'set' values and the 'get' values.
    */
   protected function multiAssert(string $test_type, array $test_records,
-      string $base_table, string $description, int $count) {
+      string $base_table, string $pkey, string $description, int $count) {
     $values = [];
     foreach ($test_records as $mode => $chado_buddy_records) {
       // mode 'set' will be an object, while 'get' will be an array of objects
@@ -56,7 +58,7 @@ abstract class ChadoTestBuddyBase extends ChadoTestKernelBase {
       $values[$mode] = $record_values;
       $this->assertIsArray($record_values, "On $test_type+$mode, we did not retrieve an array of values for $description");
       $this->assertEquals($count, count($record_values), "On $test_type+$mode, the values array is of unexpected size for $description");
-      $pkey_id = $chado_buddy_record->getValue($base_table . 'prop.' . $base_table . 'prop_id');
+      $pkey_id = $chado_buddy_record->getValue($pkey);
       $this->assertTrue(is_numeric($pkey_id), "On $test_type+$mode, we did not retrieve an integer pkey_id for $description");
       $this->assertEquals($base_table, $record_base_table, "On $test_type+$mode, the base table is incorrect for $description");
       $this->assertEquals($this->testSchemaName, $record_schema_name, "On $test_type+$mode, the schema is incorrect for $description");
