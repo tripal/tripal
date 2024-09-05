@@ -29,7 +29,7 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_settings = $field_definition->getSettings();
-    $field_term = $field_settings['termIdSpace'] . ':' . $field_settings['termAccession'];
+    $field_name = $items->getFieldDefinition()->get('field_name');
 
     // Get the default values.
     $item_vals = $items[$delta]->getValue();
@@ -81,10 +81,10 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#value' => $term_id,
     ];
-    // pass the field cv term through the form for massageFormValues()
-    $elements['field_term'] = [
+    // pass the field machine name through the form for massageFormValues()
+    $elements['field_name'] = [
       '#type' => 'value',
-      '#default_value' => $field_term,
+      '#default_value' => $field_name,
     ];
     $elements['value'] = $element + [
       '#type' => 'select',
@@ -99,7 +99,7 @@ class ChadoPropertySelectWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Save some initial values to allow later handling of the "Remove" button
-    $this->saveInitialValues($delta, $field_term, $prop_id, $form_state);
+    $this->saveInitialValues($delta, $field_name, $prop_id, $form_state);
 
     return $elements;
   }

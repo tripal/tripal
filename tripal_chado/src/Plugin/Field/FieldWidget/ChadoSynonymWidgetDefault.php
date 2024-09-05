@@ -26,11 +26,7 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $chado = \Drupal::service('tripal_chado.database');
 
-    // Get the field settings.
-    $field_definition = $items[$delta]->getFieldDefinition();
-    $settings = $field_definition->getSettings();
-    $field_term = $settings['termIdSpace'] . ':' . $settings['termAccession'];
-
+    $field_name = $items->getFieldDefinition()->get('field_name');
     $schema = $chado->schema();
     $synonym_table_def = $schema->getTableDef('synonym', ['format' => 'Drupal']);
     $syn_name_len = $synonym_table_def['fields']['name']['size'];
@@ -136,14 +132,14 @@ class ChadoSynonymWidgetDefault extends ChadoWidgetBase {
           'synonym is internal.'),
       '#weight' => 14,
     ];
-    // pass the field cv term through the form for massageFormValues()
-    $elements['field_term'] = [
+    // pass the field machine name through the form for massageFormValues()
+    $elements['field_name'] = [
       '#type' => 'value',
-      '#default_value' => $field_term,
+      '#default_value' => $field_name,
     ];
 
     // Save some initial values to allow later handling of the "Remove" button
-    $this->saveInitialValues($delta, $field_term, $linker_pkey_id, $form_state);
+    $this->saveInitialValues($delta, $field_name, $linker_pkey_id, $form_state);
 
     return $elements;
   }

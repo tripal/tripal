@@ -27,12 +27,11 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
 
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
-    $settings = $field_definition->getSettings();
-    $storage_settings = $settings['storage_plugin_settings'];
+    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $linker_fkey_column = $storage_settings['linker_fkey_column']
       ?? $storage_settings['base_column'] ?? 'organism_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
-    $field_term = $settings['termIdSpace'] . ':' . $settings['termAccession'];
+    $field_name = $items->getFieldDefinition()->get('field_name');
 
     // Get the list of organisms. Second parameter true includes common names.
     $organisms = chado_get_organism_select_options(FALSE, TRUE);
@@ -61,10 +60,10 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $linker_fkey_column,
     ];
-    // pass the field cv term through the form for massageFormValues()
-    $elements['field_term'] = [
+    // pass the field machine name through the form for massageFormValues()
+    $elements['field_name'] = [
       '#type' => 'value',
-      '#default_value' => $field_term,
+      '#default_value' => $field_name,
     ];
     $elements[$linker_fkey_column] = $element + [
       '#type' => 'select',
@@ -87,7 +86,7 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
     }
 
     // Save some initial values to allow later handling of the "Remove" button
-    $this->saveInitialValues($delta, $field_term, $linker_id, $form_state);
+    $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
 
     return $elements;
   }
