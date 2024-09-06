@@ -4,8 +4,8 @@ namespace Drupal\Tests\tripal\Kernel\TripalField;
 
 use Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use Drupal\Tests\tripal\Traits\TripalFieldTestTrait;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
-use \Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\field\Entity\FieldConfig;
@@ -21,7 +21,7 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
 
   protected static $modules = ['system', 'user', 'field', 'tripal'];
 
-  use UserCreationTrait;
+  use TripalFieldTestTrait;
 
   /**
    * The entity the fields should be attached to for testing.
@@ -40,9 +40,8 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
   /**
    * A term to be associated with the field being tested.
    */
-  protected string $termVocab = 'The Best Vocabulary';
-  protected string $termIdSpace = 'VOCAB';
-  protected string $termAccession = '123456';
+  protected string $term_id_space = 'VOCAB';
+  protected string $term_accession = '123456';
 
   /**
    * {@inheritdoc}
@@ -50,53 +49,11 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Ensure we see all logging in tests.
-    \Drupal::state()->set('is_a_test_environment', TRUE);
+    $this->setupFieldTestEnvironment();
 
-    // Setup the test environment based on the Entity kernel test base.
-    $this->installSchema('system', 'sequences');
-    $this->installSchema('tripal', ['tripal_id_space_collection', 'tripal_terms_idspaces', 'tripal_vocabulary_collection', 'tripal_terms_vocabs', 'tripal_terms']);
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('tripal_entity');
-    $this->installEntitySchema('tripal_entity_type');
-    $this->installConfig(['field']);
-    $this->setUpCurrentUser();
-
-    // We need a term in order to test some things:
-    // Create the terms for the field property storage types.
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idspace = $idsmanager->createCollection($this->termIdSpace, "tripal_default_id_space");
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $vocab = $vmanager->createCollection($this->termVocab, "tripal_default_vocabulary");
-    $term = new \Drupal\tripal\TripalVocabTerms\TripalTerm([
-      'name' => 'mock term',
-      'idSpace' => $this->termIdSpace,
-      'vocabulary' => $this->termVocab,
-      'accession' => $this->termAccession,
-      'definition' => 'This is simply a random term for use in my test.',
-    ]);
-    $idspace->saveTerm($term);
-
-    // We also need a bundle with this storage type...
-    $this->bundle_name = 'fake_bundle_' . uniqid();
-    $bundle = \Drupal\tripal\Entity\TripalEntityType::create([
-      'id' => $this->bundle_name,
-      'label' => 'FAKE Bundle For Testing',
-      'termIdSpace' => 'FAKE',
-      'termAccession' => 'Term',
-      'help_text' => '',
-      'category' => '',
-      'title_format' => '',
-      'url_format' => '',
-      'hide_empty_field' => '',
-      'ajax_field' => '',
-    ]);
-    $this->assertIsObject(
-      $bundle,
-      "We were unable to create our Tripal Entity type during test setup."
-    );
-    $bundle->save();
-
+    // Create a TripalContentType for the field to be attached to.
+    $bundle = $this->createTripalContentType();
+    $this->bundle_name = $bundle->getID();
   }
 
   public function provideFieldsToTest() {
@@ -116,6 +73,9 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
         'id' => 'default_tripal_boolean_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalBooleanTypeFormatter',
       ],
+      'expectations' => [
+        'number_of_constraints' => 0,
+      ],
     ];
 
     // INTEGER
@@ -131,6 +91,9 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
       'formatter' => [
         'id' => 'default_tripal_integer_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalIntegerTypeFormatter',
+      ],
+      'expectations' => [
+        'number_of_constraints' => 0,
       ],
     ];
 
@@ -148,6 +111,9 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
         'id' => 'default_tripal_string_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalStringTypeFormatter',
       ],
+      'expectations' => [
+        'number_of_constraints' => 1,
+      ],
     ];
 
     // TEXT
@@ -164,50 +130,44 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
         'id' => 'default_tripal_text_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalTextTypeFormatter',
       ],
+      'expectations' => [
+        'number_of_constraints' => 0,
+      ],
     ];
 
     return $senarios;
   }
+
   /**
    * This method tests that we can create an entity with this field.
    *
    * @dataProvider provideFieldsToTest
    */
-  public function testCreateEntityWithField($field_type, $field_widget, $field_formatter) {
+  public function testCreateEntityWithField($field_type, $field_widget, $field_formatter, $expectations) {
 
     // Setup the field to be tested based on the data provider values.
     $field_name = $this->randomMachineName();
-    $fieldStorage = FieldStorageConfig::create([
-      'field_name' => $field_name,
-      'entity_type' => $this->entity_type_id,
-      'type' => $field_type['id'],
-      'settings' => [
-        'termIdSpace' => $this->termIdSpace,
-        'termAccession' => $this->termAccession,
-      ],
-    ]);
-    $fieldStorage
-      ->save();
-    $fieldConfig = FieldConfig::create([
-      'field_storage' => $fieldStorage,
-      'bundle' => $this->bundle_name,
-      'required' => TRUE,
-    ]);
-    $fieldConfig
-      ->save();
-    $display_options = [
-      'type' => $field_formatter['id'],
-      'label' => 'hidden',
-      'settings' => [],
-    ];
-    $display = EntityViewDisplay::create([
-      'targetEntityType' => $fieldConfig->getTargetEntityTypeId(),
-      'bundle' => $fieldConfig->getTargetBundle(),
-      'mode' => 'default',
-      'status' => TRUE,
-    ]);
-    $display->setComponent($fieldStorage->getName(), $display_options);
-    $display->save();
+    $fieldStorage = $this->createFieldType(
+      'tripal_entity',
+      [
+        'field_name' => $field_name,
+        'field_type' => $field_type['id'],
+        'term_id_space' => $this->term_id_space,
+        'term_accession' => $this->term_id_space,
+      ]
+    );
+    $fieldConfig = $this->createFieldInstance(
+      'tripal_entity',
+      [
+        'field_name' => $field_name,
+        'field_type' => $field_type['id'],
+        'bundle_name' => $this->bundle_name,
+        'fieldStorage' => $fieldStorage,
+        'term_id_space' => $this->term_id_space,
+        'term_accession' => $this->term_id_space,
+        'formatter_id' => $field_formatter['id'],
+      ]
+    );
 
     $field_value = $field_type['class']::generateSampleValue($fieldConfig);
     $this->assertIsArray($field_value,
@@ -222,5 +182,14 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
       $this->assertEquals($expected_property_value, $entity->{$field_name}->{$property_key},
         "The value of the property $property_key was not what we expected for this field.");
     }
+  }
+
+  /**
+   * Tests that each field has the expected number of constraints.
+   *
+   * @dataProvider provideFieldsToTest
+   */
+  public function testFieldConstraints($field_type, $field_widget, $field_formatter, $expectations) {
+
   }
 }
