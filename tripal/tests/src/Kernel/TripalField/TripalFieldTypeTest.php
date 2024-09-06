@@ -50,10 +50,6 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
     parent::setUp();
 
     $this->setupFieldTestEnvironment();
-
-    // Create a TripalContentType for the field to be attached to.
-    $bundle = $this->createTripalContentType();
-    $this->bundle_name = $bundle->getID();
   }
 
   public function provideFieldsToTest() {
@@ -147,37 +143,30 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
 
     // Setup the field to be tested based on the data provider values.
     $field_name = $this->randomMachineName();
-    $fieldStorage = $this->createFieldType(
-      'tripal_entity',
-      [
-        'field_name' => $field_name,
-        'field_type' => $field_type['id'],
-        'term_id_space' => $this->term_id_space,
-        'term_accession' => $this->term_id_space,
-      ]
-    );
     $fieldConfig = $this->createFieldInstance(
       'tripal_entity',
       [
         'field_name' => $field_name,
         'field_type' => $field_type['id'],
-        'bundle_name' => $this->bundle_name,
-        'fieldStorage' => $fieldStorage,
         'term_id_space' => $this->term_id_space,
         'term_accession' => $this->term_id_space,
         'formatter_id' => $field_formatter['id'],
       ]
     );
 
+    // Create an entity with a specific value for this field
+    // -- use the sample value generating to get a value for this field.
     $field_value = $field_type['class']::generateSampleValue($fieldConfig);
     $this->assertIsArray($field_value,
       "The ".$field_type['class']."::generateSampleValue() method for this field type did not return a valid value.");
+    // -- create the entity with that value set
     $entity = TripalEntity::create([
       'title' => $this->randomString(),
-      'type' => $this->bundle_name,
+      'type' => $this->TripalEntityType->getID(),
       $field_name => $field_value,
     ]);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $field_type['id'] . " field.");
+    // -- confirm the values in the created entity match those we set.
     foreach ($field_value as $property_key => $expected_property_value) {
       $this->assertEquals($expected_property_value, $entity->{$field_name}->{$property_key},
         "The value of the property $property_key was not what we expected for this field.");
