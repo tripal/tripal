@@ -45,7 +45,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $linker_fkey_column = $storage_settings['linker_fkey_column']
       ?? $storage_settings['base_column'] ?? 'biomaterial_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
-    $field_term = $settings['termIdSpace'] . ':' . $settings['termAccession'];
+    $field_name = $items->getFieldDefinition()->get('field_name');
     $storage = $form_state->getStorage();
 
     // Retrieve a value we need to get from the form state after an ajax callback
@@ -62,11 +62,11 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     // We need to handle an additional case, no $item_vals will be available when
     // the "Add another item" ajax triggers, so store db_id if we have it.
     if ($db_id) {
-      $storage['initial_values'][$field_term][$delta]['db_id'] = $db_id;
+      $storage['initial_values'][$field_name][$delta]['db_id'] = $db_id;
       $form_state->setStorage($storage);
     }
     else {
-      $db_id = $storage['initial_values'][$field_term][$delta]['db_id'] ?? 0;
+      $db_id = $storage['initial_values'][$field_name][$delta]['db_id'] ?? 0;
     }
 
     $dbxref_id = $item_vals['dbxref_id'] ?? 0;
