@@ -37,4 +37,15 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
       new IntStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession),
     ];
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $values = [];
+
+    $values['value'] = mt_rand(1, 100000);
+
+    return $values;
+  }
 }

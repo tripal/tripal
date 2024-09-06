@@ -37,4 +37,16 @@ class TripalBooleanTypeItem extends TripalFieldItemBase {
       new BoolStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession),
     ];
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $values = [];
+
+    $random = new \Drupal\Component\Utility\Random();
+    $values['value'] = TRUE;
+
+    return $values;
+  }
 }

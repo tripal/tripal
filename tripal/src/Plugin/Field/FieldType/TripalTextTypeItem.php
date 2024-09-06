@@ -27,6 +27,18 @@ class TripalTextTypeItem extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $values = [];
+
+    $random = new \Drupal\Component\Utility\Random();
+    $values['value'] = $random->sentences(mt_rand(1, 4500000));
+
+    return $values;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $storage_settings = $field_definition->getSettings();
