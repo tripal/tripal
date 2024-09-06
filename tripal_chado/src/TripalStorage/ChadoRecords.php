@@ -697,7 +697,7 @@ class ChadoRecords  {
           // if this column is an ID field and links to this base table then update the value.
           if (array_key_exists($column_alias, $record['link_columns'])) {
             $base_table = $record['link_columns'][$column_alias];
-            $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] = $record_id;
+            $this->setColumnValue($base_table, $table_alias, $delta, $column_alias, $record_id);
 
 
             // If a condition exists for this id set it as well.
