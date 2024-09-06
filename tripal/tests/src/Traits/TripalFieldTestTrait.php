@@ -6,6 +6,7 @@ use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\field\Entity\FieldConfig;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Provides functions related to testing Tripal Fields.
@@ -13,6 +14,11 @@ use Drupal\field\Entity\FieldConfig;
 trait TripalFieldTestTrait {
 
   use UserCreationTrait;
+
+  protected FieldStorageConfig $fieldStorage;
+  protected FieldConfig $fieldConfig;
+  protected TripalEntityType $TripalEntityType;
+  protected TripalEntity $tripalEntity;
 
   /**
    * Called in the test setUp() for kernel tests to ensure all the needed
@@ -83,6 +89,7 @@ trait TripalFieldTestTrait {
     $fieldStorage
       ->save();
 
+    $this->fieldStorage = $fieldStorage;
     return $fieldStorage;
   }
 
@@ -105,6 +112,29 @@ trait TripalFieldTestTrait {
    */
   public function createFieldInstance(string $entity_type, array $values = []) {
 
+    // Defaults
+    $random = $this->getRandomGenerator();
+    $values['formatter_id'] = $values['formatter_id'] ?? 'default_tripal_string_type_formatter';
+    $values['field_type'] = $values['field_type'] ?? 'tripal_string_type';
+    // -- Bundle
+    if (!array_key_exists('bundle_name', $values)) {
+      $bundle = $this->createTripalContentType();
+      $values['bundle_name'] = $bundle->getID();
+    }
+    else {
+      $bundle = \Drupal::entityTypeManager()
+        ->getStorage('tripal_entity_type')
+        ->loadByProperties(['id' => $values['bundle_name']]);
+      $bundle = array_pop($bundle);
+    }
+    // -- Field Storage Config
+    if (!array_key_exists('fieldStorage', $values)) {
+      $values['fieldStorage'] = $this->createFieldType(
+        'tripal_entity',
+        $values
+      );
+    }
+
     $fieldConfig = FieldConfig::create([
       'field_storage' => $values['fieldStorage'],
       'bundle' => $values['bundle_name'],
@@ -126,6 +156,8 @@ trait TripalFieldTestTrait {
     $display->setComponent($values['fieldStorage']->getName(), $display_options);
     $display->save();
 
+    $this->fieldConfig = $fieldConfig;
+    $this->TripalEntityType = $bundle;
     return $fieldConfig;
   }
 }
