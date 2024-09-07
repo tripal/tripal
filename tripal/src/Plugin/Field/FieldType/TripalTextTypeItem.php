@@ -27,6 +27,24 @@ class TripalTextTypeItem extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function defaultFieldSettings() {
+    $settings = [];
+    return $settings + parent::defaultFieldSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultStorageSettings() {
+    $settings = [
+      'storage_plugin_id' => 'drupal_sql_storage',
+    ];
+    return $settings + parent::defaultStorageSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $values = [];
 
