@@ -104,8 +104,14 @@ class TripalStringTypeItem extends TripalFieldItemBase {
     $termAccession = $storage_settings['termAccession'];
     $max_length = $storage_settings['max_length'];
 
+    // Use a default term if one is not set.
+    $term = 'local:property';
+    if ($termIdSpace) {
+      $term = $termIdSpace . ':' . $termAccession;
+    }
+
     return [
-      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession, $max_length),
+      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $term, $max_length),
     ];
   }
 
