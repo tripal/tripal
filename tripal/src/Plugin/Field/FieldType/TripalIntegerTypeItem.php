@@ -51,8 +51,14 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
     $termIdSpace = $storage_settings['termIdSpace'];
     $termAccession = $storage_settings['termAccession'];
 
+    // Use a default term if one is not set.
+    $term = 'local:property';
+    if ($termIdSpace) {
+      $term = $termIdSpace . ':' . $termAccession;
+    }
+
     return [
-      new IntStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession),
+      new IntStoragePropertyType($entity_type_id, self::$id, "value", $term),
     ];
   }
 
