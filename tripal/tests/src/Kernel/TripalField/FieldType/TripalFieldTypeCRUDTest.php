@@ -24,26 +24,6 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
   use TripalFieldTestTrait;
 
   /**
-   * The entity the fields should be attached to for testing.
-   *
-   * @var string
-   */
-  protected string $entity_type_id = 'tripal_entity';
-
-  /**
-   * The name of the tripal entity type to use in testing (i.e. organism)
-   *
-   * @var string
-   */
-  protected string $bundle_name;
-
-  /**
-   * A term to be associated with the field being tested.
-   */
-  protected string $term_id_space = 'VOCAB';
-  protected string $term_accession = '123456';
-
-  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -69,9 +49,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
         'id' => 'default_tripal_boolean_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalBooleanTypeFormatter',
       ],
-      'expectations' => [
-        'number_of_constraints' => 0,
-      ],
+      'expectations' => [],
     ];
 
     // INTEGER
@@ -88,9 +66,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
         'id' => 'default_tripal_integer_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalIntegerTypeFormatter',
       ],
-      'expectations' => [
-        'number_of_constraints' => 0,
-      ],
+      'expectations' => [],
     ];
 
     // STRING
@@ -107,9 +83,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
         'id' => 'default_tripal_string_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalStringTypeFormatter',
       ],
-      'expectations' => [
-        'number_of_constraints' => 1,
-      ],
+      'expectations' => [],
     ];
 
     // TEXT
@@ -126,9 +100,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
         'id' => 'default_tripal_text_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalTextTypeFormatter',
       ],
-      'expectations' => [
-        'number_of_constraints' => 0,
-      ],
+      'expectations' => [],
     ];
 
     return $senarios;
@@ -148,8 +120,6 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
       [
         'field_name' => $field_name,
         'field_type' => $field_type['id'],
-        'term_id_space' => $this->term_id_space,
-        'term_accession' => $this->term_id_space,
         'formatter_id' => $field_formatter['id'],
       ]
     );
