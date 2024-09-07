@@ -172,13 +172,4 @@ class TripalFieldTypeTest extends TripalTestKernelBase {
         "The value of the property $property_key was not what we expected for this field.");
     }
   }
-
-  /**
-   * Tests that each field has the expected number of constraints.
-   *
-   * @dataProvider provideFieldsToTest
-   */
-  public function testFieldConstraints($field_type, $field_widget, $field_formatter, $expectations) {
-
-  }
 }
