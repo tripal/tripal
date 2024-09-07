@@ -73,7 +73,6 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
         'form_elements' => [
           'max_length' => [
             '#type' => 'number',
-            '#title' => 'Maximum length',
             '#default_value' => 255,
             '#required' => TRUE,
             '#min' => 1,
@@ -133,6 +132,26 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
     $this->assertArrayHasKey('storage_plugin_id', $form['settings'],
       "All Tripal field storage settings forms should have a element for the Tripal Storage Plugin ID");
     // - Storage Settings Summary
+    $this->assertArrayHasKey(
+      'settings_fs',
+      $form['settings'],
+      "All Tripal field storage settings forms should have a element summarizing the Field Storage Settings"
+    );
+
+    // For Tripal Fields, the storage plugin id should be Drupal Storage.
+    $this->assertEquals(
+      'drupal_sql_storage',
+      $form['settings']['storage_plugin_id']['#default_value'],
+      "Tripal fields should have their Tripal Storage Plugin set to Drupal Storage."
+    );
+    $this->assertTrue(
+      $form['settings']['storage_plugin_id']['#required'],
+      "The storage plugin id should always be required for Tripal Fields."
+    );
+    $this->assertTrue(
+      $form['settings']['storage_plugin_id']['#disabled'],
+      "The storage plugin id should always be disabled for Tripal fields."
+    );
 
     // Now lets check for the form elements specific to this field.
     foreach ($expectations['form_elements'] as $element_key => $element_details) {
@@ -141,6 +160,16 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
         $form['settings'],
         "The " . $field_info['field_type_class'] . "::storageSettingsForm() expected form element is not present."
       );
+      foreach ($element_details as $key => $expected_value) {
+        $element_identifier = $element_key . '[' . $key . ']';
+        $this->assertArrayHasKey(
+          $key,
+          $form['settings'][$element_key],
+          "The " . $field_info['field_type_class'] . "::storageSettingsForm() form element $element_identifier element is not present."
+        );
+        $this->assertEquals($expected_value, $form['settings'][$element_key][$key],
+          "The " . $field_info['field_type_class'] . "::storageSettingsForm() form element $element_identifier does not have the expected value.");
+      }
     }
   }
 }

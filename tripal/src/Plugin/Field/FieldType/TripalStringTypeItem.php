@@ -37,6 +37,7 @@ class TripalStringTypeItem extends TripalFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $settings = [
+      'storage_plugin_id' => 'drupal_sql_storage',
       'max_length' => 255,
     ];
     return $settings + parent::defaultStorageSettings();
