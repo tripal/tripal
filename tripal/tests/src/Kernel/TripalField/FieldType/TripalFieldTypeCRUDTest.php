@@ -16,7 +16,7 @@ use Drupal\Core\Form\FormState;
  *
  * @group TripalField
  */
-class TripalFieldTypeTest extends TripalTestKernelBase {
+class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
   protected static $modules = ['system', 'user', 'field', 'tripal'];
