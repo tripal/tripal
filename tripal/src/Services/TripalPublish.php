@@ -874,7 +874,15 @@ class TripalPublish {
         else {
           $add_record = FALSE;
           if ($this->field_info[$field_name]['cardinality'] == 1) {
-            $add_record = TRUE;
+            $main_value = '';
+            // Check if the main property value is NULL as opposed to empty
+            $main_prop = $this->field_info[$field_name]['instance']->mainPropertyName();
+            if (array_key_exists($main_prop, $match[$field_name][$delta])) {
+              $main_value = $match[$field_name][$delta][$main_prop]['value']->getValue();
+            }
+            if (!is_null($main_value)) {
+              $add_record = TRUE;
+            }
           }
           else {
             foreach (array_keys($this->non_required_types[$field_name]) as $key) {
