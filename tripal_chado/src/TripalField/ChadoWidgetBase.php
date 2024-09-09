@@ -15,20 +15,24 @@ use Drupal\tripal\TripalField\TripalWidgetBase;
  * For linking multi-cardinality fields, this class includes the following
  * helper methods to provide support for the "remove" button added by Drupal.
  * To enable this support, the following need to be implemented in your widget:
- *  1. You have a element in formElement() where the key is 'field_name'
- *     and the value is the name of the field (see code example below).
- *     @code
- *       $field_name = $items->getFieldDefinition()->get('field_name');
- *       $elements['field_name'] = [
- *         '#type' => 'value',
- *         '#default_value' => $field_name,
- *       ];
- *     @endcode
+ *  1. You have the following elements in formElement():
+ *     - a hidden value element with the key of 'record_id' that contains the
+ *       base table primary key. This is used to determine if an element should
+ *       be removed due to being set to empty.
+ *     - a hidden value element with the key of 'field_name' and the value is
+ *       the name of the field (see code example below).
+ *       @code
+ *         $field_name = $items->getFieldDefinition()->get('field_name');
+ *         $elements['field_name'] = [
+ *           '#type' => 'value',
+ *           '#default_value' => $field_name,
+ *         ];
+ *       @endcode
  *  2. You call saveInitialValues() at the bottom of your formElement() and
  *     pass in information about the linking record.
  *  3. You call massageLinkingFormValues() or massagePropertyFormValues() in
- *     your massageFormValues() and indicate the element containing the linker
- *     primary key.
+ *     your massageFormValues() and indicate the requested elements. See the doc
+ *     block headers for these methods for specifics.
  */
 abstract class ChadoWidgetBase extends TripalWidgetBase {
 
