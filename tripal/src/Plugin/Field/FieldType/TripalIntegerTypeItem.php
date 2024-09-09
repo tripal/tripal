@@ -45,6 +45,17 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $values = [];
+
+    $values['value'] = mt_rand(1, 100000);
+
+    return $values;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $storage_settings = $field_definition->getSettings();
