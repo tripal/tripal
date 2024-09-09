@@ -49,7 +49,7 @@ class TripalBooleanTypeItem extends TripalFieldItemBase {
     $values = [];
 
     $random = new \Drupal\Component\Utility\Random();
-    $values['value'] = TRUE;
+    $values['value'] = mt_rand(0, 1) ? TRUE : FALSE;
 
     return $values;
   }
