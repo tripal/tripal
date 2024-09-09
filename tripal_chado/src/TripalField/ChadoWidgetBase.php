@@ -19,20 +19,36 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    * is first edited for multi-cardinality linking fields.
    * These values are needed to support the "Remove" button.
    *
+   * NOTE: This approach requires the following to be met in your widget:
+   *  1. You have a element in formElement() where the key is 'field_name'
+   *     and the value is the name of the field (see code example below).
+   *     @code
+   *       $field_name = $items->getFieldDefinition()->get('field_name');
+   *       $elements['field_name'] = [
+   *         '#type' => 'value',
+   *         '#default_value' => $field_name,
+   *       ];
+   *     @endcode
+   *  2. You call saveInitialValues() at the bottom of your formElement() and
+   *     pass in information about the linking record.
+   *  3. You call massageLinkingFormValues() in your massageFormValues() and
+   *     indicate the element containing the linker primary key.
+   *
    * @param int $delta
    *   The numeric index of the item.
-   * @param string $field_term
-   *   The controlled vocabulary term for the field.
+   * @param string $field_name
+   *   The machine name of the field used for linking the info we're saving in
+   *   form_state with the values submitted by the form.
    * @param int $linker_id
    *   The primary key value of the record in the linking table.
    * @param FormStateInterface &$form_state
    *   The current form state.
    */
-  protected function saveInitialValues(int $delta, string $field_term, int $linker_id, FormStateInterface &$form_state) {
+  protected function saveInitialValues(int $delta, string $field_name, int $linker_id, FormStateInterface &$form_state) {
     $storage = $form_state->getStorage();
     // We want the initial values, so never update them once saved.
-    if (!($storage['initial_values'][$field_term][$delta] ?? FALSE)) {
-      $storage['initial_values'][$field_term][$delta] = [
+    if (!($storage['initial_values'][$field_name][$delta] ?? FALSE)) {
+      $storage['initial_values'][$field_name][$delta] = [
         'linker_id' => $linker_id,
       ];
       $form_state->setStorage($storage);
@@ -44,6 +60,21 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    * is, double-hop fields where an intermediate linking table is used.
    * This includes properly handling deletion of the record in the
    * linking table in chado.
+   *
+   * NOTE: This approach requires the following to be met in your widget:
+   *  1. You have a element in formElement() where the key is 'field_name'
+   *     and the value is the name of the field (see code example below).
+   *     @code
+   *       $field_name = $items->getFieldDefinition()->get('field_name');
+   *       $elements['field_name'] = [
+   *         '#type' => 'value',
+   *         '#default_value' => $field_name,
+   *       ];
+   *     @endcode
+   *  2. You call saveInitialValues() at the bottom of your formElement() and
+   *     pass in information about the linking record.
+   *  3. You call massageLinkingFormValues() in your massageFormValues() and
+   *     indicate the element containing the linker primary key.
    *
    * @param string $fkey
    *   The foreign key column name in the linking table.
@@ -78,9 +109,9 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     $first_delta = array_key_first($values);
     $fkey = $values[$first_delta]['linker_fkey_column'] ?? $fkey;
 
-    // The CV term used for the field. Sometimes there are multiple
+    // The machine name for the field. Sometimes there are multiple
     // copies of one field, e.g. properties, so this distinguishes them.
-    $field_term = $values[$first_delta]['field_term'];
+    $field_name = $values[$first_delta]['field_name'];
 
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
@@ -114,7 +145,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // so that chado storage is informed to delete the linking record.
     $next_delta = $values ? array_key_last($values) + 1 : 0;
     $storage_values = $form_state->getStorage();
-    $initial_values = $storage_values['initial_values'][$field_term];
+    $initial_values = $storage_values['initial_values'][$field_name];
     foreach ($initial_values as $initial_value) {
       // For initial values, the key is always 'linker_id', regardless of $linker_key value.
       $linker_id = $initial_value['linker_id'];
@@ -169,10 +200,10 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       return $values;
     }
 
-    // The CV term used for the field. There are usually multiple
+    // The field name for the field. There are usually multiple
     // copies of a property field, so this distinguishes them.
     $first_delta = array_key_first($values);
-    $field_term = $values[$first_delta]['field_term'];
+    $field_name = $values[$first_delta]['field_name'];
 
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
@@ -205,7 +236,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // so that chado storage is informed to delete the linking record.
     $next_delta = $values ? array_key_last($values) + 1 : 0;
     $storage_values = $form_state->getStorage();
-    $initial_values = $storage_values['initial_values'][$field_term];
+    $initial_values = $storage_values['initial_values'][$field_name];
     foreach ($initial_values as $initial_value) {
       // For initial values, the key is always 'linker_id', regardless of $linker_key value.
       $linker_id = $initial_value['linker_id'];
