@@ -11,6 +11,24 @@ use Drupal\tripal\TripalField\TripalWidgetBase;
 
 /**
  * Defines the Chado field widget base class.
+ *
+ * For linking multi-cardinality fields, this class includes the following
+ * helper methods to provide support for the "remove" button added by Drupal.
+ * To enable this support, the following need to be implemented in your widget:
+ *  1. You have a element in formElement() where the key is 'field_name'
+ *     and the value is the name of the field (see code example below).
+ *     @code
+ *       $field_name = $items->getFieldDefinition()->get('field_name');
+ *       $elements['field_name'] = [
+ *         '#type' => 'value',
+ *         '#default_value' => $field_name,
+ *       ];
+ *     @endcode
+ *  2. You call saveInitialValues() at the bottom of your formElement() and
+ *     pass in information about the linking record.
+ *  3. You call massageLinkingFormValues() or massagePropertyFormValues() in
+ *     your massageFormValues() and indicate the element containing the linker
+ *     primary key.
  */
 abstract class ChadoWidgetBase extends TripalWidgetBase {
 
@@ -18,21 +36,6 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    * Saves some values from the initial form state when an entity
    * is first edited for multi-cardinality linking fields.
    * These values are needed to support the "Remove" button.
-   *
-   * NOTE: This approach requires the following to be met in your widget:
-   *  1. You have a element in formElement() where the key is 'field_name'
-   *     and the value is the name of the field (see code example below).
-   *     @code
-   *       $field_name = $items->getFieldDefinition()->get('field_name');
-   *       $elements['field_name'] = [
-   *         '#type' => 'value',
-   *         '#default_value' => $field_name,
-   *       ];
-   *     @endcode
-   *  2. You call saveInitialValues() at the bottom of your formElement() and
-   *     pass in information about the linking record.
-   *  3. You call massageLinkingFormValues() in your massageFormValues() and
-   *     indicate the element containing the linker primary key.
    *
    * @param int $delta
    *   The numeric index of the item.
@@ -60,21 +63,6 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    * is, double-hop fields where an intermediate linking table is used.
    * This includes properly handling deletion of the record in the
    * linking table in chado.
-   *
-   * NOTE: This approach requires the following to be met in your widget:
-   *  1. You have a element in formElement() where the key is 'field_name'
-   *     and the value is the name of the field (see code example below).
-   *     @code
-   *       $field_name = $items->getFieldDefinition()->get('field_name');
-   *       $elements['field_name'] = [
-   *         '#type' => 'value',
-   *         '#default_value' => $field_name,
-   *       ];
-   *     @endcode
-   *  2. You call saveInitialValues() at the bottom of your formElement() and
-   *     pass in information about the linking record.
-   *  3. You call massageLinkingFormValues() in your massageFormValues() and
-   *     indicate the element containing the linker primary key.
    *
    * @param string $fkey
    *   The foreign key column name in the linking table.
