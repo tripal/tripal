@@ -342,7 +342,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * @{inheritdoc}
    */
-  public function findValues($values) {
+  public function findValues($values, $options = []) {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Find');
@@ -402,12 +402,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Now set the values.
           $this->setPropValues($new_values, $match);
 
-          // Remove any values that are not valid.
-          foreach ($new_values as $field_name => $deltas) {
-            foreach ($deltas as $delta => $properties) {
-              $is_valid = $this->isFieldValid($field_name, $delta, $new_values);
-              if (!$is_valid) {
-                unset($new_values[$field_name][$delta]);
+          // Remove any values that are not valid. This is omitted for publish.
+          if ($options['check_valid'] ?? TRUE) {
+            foreach ($new_values as $field_name => $deltas) {
+              foreach ($deltas as $delta => $properties) {
+                $is_valid = $this->isFieldValid($field_name, $delta, $new_values);
+                if (!$is_valid) {
+                  unset($new_values[$field_name][$delta]);
+                }
               }
             }
           }

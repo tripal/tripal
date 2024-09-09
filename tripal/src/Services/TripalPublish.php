@@ -331,6 +331,7 @@ class TripalPublish {
           $instance = $field_type_manager->createInstance($field_definition->getType(), $configuration);
           $prop_types = $instance->tripalTypes($field_definition);
           $field_class = get_class($instance);
+          $cardinality = $storage_definition->getCardinality();
           $this->storage->addTypes($field_name, $prop_types);
           $this->storage->addFieldDefinition($field_name, $field_definition);
           $field_info = [
@@ -338,6 +339,7 @@ class TripalPublish {
             'class' => $field_class,
             'prop_types' => [],
             'instance' => $instance,
+            'cardinality' => $cardinality,
           ];
           // Order the property types by key for easy lookup.
           foreach ($prop_types as $prop_type) {
@@ -868,14 +870,19 @@ class TripalPublish {
             array_key_exists($delta, $existing[$entity_id])) {
           $add_record = FALSE;
         }
-        // No need to add items if the chado record is empty.
+        // No need to add items if the chado record is empty and cardinality is > 1
         else {
           $add_record = FALSE;
-          foreach (array_keys($this->non_required_types[$field_name]) as $key) {
-            $value = $match[$field_name][$delta][$key]['value']->getValue();
-            if ($value != '') {
-              $add_record = TRUE;
-              break;
+          if ($this->field_info[$field_name]['cardinality'] == 1) {
+            $add_record = TRUE;
+          }
+          else {
+            foreach (array_keys($this->non_required_types[$field_name]) as $key) {
+              $value = $match[$field_name][$delta][$key]['value']->getValue();
+              if ($value != '') {
+                $add_record = TRUE;
+                break;
+              }
             }
           }
         }
@@ -1003,7 +1010,7 @@ class TripalPublish {
     $this->addNonRequiredValues($search_values);
 
     $this->logger->notice("Step  1 of 6: Find matching records... ");
-    $matches = $this->storage->findValues($search_values);
+    $matches = $this->storage->findValues($search_values, ['check_valid' => FALSE]);
 
     $this->logger->notice("Step  2 of 6: Generate page titles...");
     $titles = $this->getEntityTitles($matches);
