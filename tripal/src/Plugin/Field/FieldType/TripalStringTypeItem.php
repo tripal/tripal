@@ -37,6 +37,7 @@ class TripalStringTypeItem extends TripalFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $settings = [
+      'storage_plugin_id' => 'drupal_sql_storage',
       'max_length' => 255,
     ];
     return $settings + parent::defaultStorageSettings();
@@ -64,8 +65,10 @@ class TripalStringTypeItem extends TripalFieldItemBase {
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $values = [];
-    //$random = new Random();
-    //$values['value'] = $random->word(mt_rand(1, $field_definition->getSetting('max_length')));
+
+    $random = new \Drupal\Component\Utility\Random();
+    $values['value'] = $random->word(mt_rand(1, $field_definition->getSetting('max_length')));
+
     return $values;
   }
 
@@ -103,8 +106,14 @@ class TripalStringTypeItem extends TripalFieldItemBase {
     $termAccession = $storage_settings['termAccession'];
     $max_length = $storage_settings['max_length'];
 
+    // Use a default term if one is not set.
+    $term = 'local:property';
+    if ($termIdSpace) {
+      $term = $termIdSpace . ':' . $termAccession;
+    }
+
     return [
-      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession, $max_length),
+      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $term, $max_length),
     ];
   }
 

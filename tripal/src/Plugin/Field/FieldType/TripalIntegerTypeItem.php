@@ -27,14 +27,49 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function defaultFieldSettings() {
+    $settings = [];
+    return $settings + parent::defaultFieldSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultStorageSettings() {
+    $settings = [
+      'storage_plugin_id' => 'drupal_sql_storage',
+    ];
+    return $settings + parent::defaultStorageSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $values = [];
+
+    $values['value'] = mt_rand(1, 100000);
+
+    return $values;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $storage_settings = $field_definition->getSettings();
     $termIdSpace = $storage_settings['termIdSpace'];
     $termAccession = $storage_settings['termAccession'];
 
+    // Use a default term if one is not set.
+    $term = 'local:property';
+    if ($termIdSpace) {
+      $term = $termIdSpace . ':' . $termAccession;
+    }
+
     return [
-      new IntStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession),
+      new IntStoragePropertyType($entity_type_id, self::$id, "value", $term),
     ];
   }
 }
