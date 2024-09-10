@@ -43,16 +43,17 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $field_definition = $items[$delta]->getFieldDefinition();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? 'biomaterial_id';
+      ?? $storage_settings['base_column'] ?? 'dbxref_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
+    $field_name = $items->getFieldDefinition()->get('field_name');
 
     // Retrieve a value we need to get from the form state after an ajax callback
     $field_name = $items->getFieldDefinition()->get('field_name');
-    $db_id = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_id']);
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
+    $db_id = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_id']);
     if (!$db_id) {
       $db_id = $item_vals['dbxref_db_id'] ?? 0;
     }
@@ -72,6 +73,11 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $elements['link'] = [
       '#type' => 'value',
       '#default_value' => $link,
+    ];
+    // pass the field machine name through the form for massageFormValues()
+    $elements['field_name'] = [
+      '#type' => 'value',
+      '#default_value' => $field_name,
     ];
 
     // The next two fields are inserted into the passed $element so they
@@ -121,6 +127,10 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
         ];
       }
     }
+
+    // Save some initial values to allow later handling of the "Remove" button
+    $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
+
     return $elements;
   }
 
@@ -129,26 +139,16 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
 
-    // Handle any empty values.
+    // If the accession does not exist in the DB, then create it.
     foreach ($values as $val_key => $value) {
       $db_id = $value['dbxref']['db_id'];
       $accession = $value['dbxref']['dbxref_accession'];
-      if ($accession == '') {
-        if ($value['record_id']) {
-          // If there is a record_id, but no dbxref_id, this means
-          // we need to pass in this record to chado storage to
-          // have the linker record be deleted there.
-        }
-        else {
-          unset($values[$val_key]);
-        }
-      }
-      else {
+      if ($accession != '') {
         // See if we can convert the returned string to its dbxref_id value
         $dbxref_autocomplete = new ChadoDbxrefAutocompleteController();
         $dbxref_id = $dbxref_autocomplete->getDbxrefId($accession, $db_id);
 
-        // This is a new dbxref, we need to insert it and retrieve the dbxref_id.
+        // If this is a new dbxref, we need to insert it and retrieve the dbxref_id.
         if (!$dbxref_id) {
           $chado = \Drupal::service('tripal_chado.database');
 
@@ -177,16 +177,12 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
         }
         $values[$val_key]['dbxref_id'] = $dbxref_id;
       }
+      else {
+        // Placeholder for massageLinkingFormValues()
+        $values[$val_key]['dbxref_id'] = '';
+      }
     }
-
-    // Reset the weights
-    $i = 0;
-    foreach ($values as $val_key => $value) {
-      $values[$val_key]['_weight'] = $i;
-      $i++;
-    }
-
-    return $values;
+    return $this->massageLinkingFormValues('dbxref_id', $values, $form_state);
   }
 
   /**
