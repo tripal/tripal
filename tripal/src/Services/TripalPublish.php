@@ -331,7 +331,6 @@ class TripalPublish {
           $instance = $field_type_manager->createInstance($field_definition->getType(), $configuration);
           $prop_types = $instance->tripalTypes($field_definition);
           $field_class = get_class($instance);
-          $cardinality = $storage_definition->getCardinality();
           $this->storage->addTypes($field_name, $prop_types);
           $this->storage->addFieldDefinition($field_name, $field_definition);
           $field_info = [
@@ -339,7 +338,6 @@ class TripalPublish {
             'class' => $field_class,
             'prop_types' => [],
             'instance' => $instance,
-            'cardinality' => $cardinality,
           ];
           // Order the property types by key for easy lookup.
           foreach ($prop_types as $prop_type) {
@@ -870,25 +868,19 @@ class TripalPublish {
             array_key_exists($delta, $existing[$entity_id])) {
           $add_record = FALSE;
         }
-        // No need to add items if the chado record is empty and cardinality is > 1
+        // Determine if we want to add this item.
         else {
-          $add_record = FALSE;
-          if ($this->field_info[$field_name]['cardinality'] == 1) {
-            $main_value = '';
-            // Check if the main property value is NULL as opposed to empty
-            $main_prop = $this->field_info[$field_name]['instance']->mainPropertyName();
-            if (array_key_exists($main_prop, $match[$field_name][$delta])) {
-              $main_value = $match[$field_name][$delta][$main_prop]['value']->getValue();
-            }
-            if (!is_null($main_value)) {
-              $add_record = TRUE;
-            }
-          }
-          else {
-            foreach (array_keys($this->non_required_types[$field_name]) as $key) {
-              $value = $match[$field_name][$delta][$key]['value']->getValue();
-              if ($value != '') {
-                $add_record = TRUE;
+          $add_record = TRUE;
+          foreach (array_keys($this->required_types[$field_name]) as $key) {
+            $storage_settings = $this->field_info[$field_name]['prop_types'][$key]->getStorageSettings();
+            $drupal_store = $storage_settings['drupal_store'] ?? FALSE;
+            if ($drupal_store) {
+              $value = '';
+              if (array_key_exists($key, $match[$field_name][$delta])) {
+                $value = $match[$field_name][$delta][$key]['value']->getValue();
+              }
+              if (is_null($value)) {
+                $add_record = FALSE;
                 break;
               }
             }
@@ -947,12 +939,17 @@ class TripalPublish {
     $args[":revision_id_$j"] = 1;
     $args[":langcode_$j"] = 'und';
     $args[":delta_$j"] = $delta;
-    foreach (array_keys($this->required_types[$field_name]) as $key) {
+    foreach ($this->required_types[$field_name] as $key => $properties) {
       $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
       $sql .=  $placeholder . ', ';
+      $value = $match[$field_name][$delta][$key]['value']->getValue();
+      // If there is no value, use a placeholder of the correct type, string '', int 0, etc.
+      if (is_null($value)) {
+        $value = $properties->getDefaultValue();
+      }
       $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
     }
-    // Non-required types get a placeholder of the correct type, string '', int 0, etc.
+    // Non-required types never have a value stored, just a placeholder.
     foreach ($this->non_required_types[$field_name] as $key => $properties) {
       $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
       $sql .=  $placeholder . ', ';
