@@ -183,6 +183,8 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
       'action' => 'store',
       'drupal_store' => TRUE,
       'path' => $linker_table . '.synonym_id',
+      'delete_if_empty' => TRUE,
+      'empty_value' => 0,
     ]);
     // E.g. feature_synonym.is_current
     $properties[] = new ChadoBoolStoragePropertyType($entity_type_id, self::$id, 'is_current', $linker_is_current_term, [

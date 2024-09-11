@@ -333,6 +333,76 @@ function tripal_chado_tripal_custom_tables_schema() {
 }
 
 /**
+ * Helper function for any time we have to re-load a chado field
+ *
+ * @param array $upgradable_types
+ *   A list of one or more chado fields
+ * @param array $upgradable_properties
+ *   A list of one or more properties to re-load
+ * @param bool $update_only
+ *   If TRUE then only update existing properties,
+ *   if FALSE then we can also add a property if it does not exist.
+ */
+function tripal_chado_field_reload(array $upgradable_types, array $upgradable_properties, bool $update_only) {
+  try {
+    $messenger = \Drupal::messenger();
+    $entity_type = 'tripal_entity';
+
+    $manager = \Drupal::entityDefinitionUpdateManager();
+    $schema = \Drupal::database()->schema();
+    $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
+    $field_map = \Drupal::service('entity_field.manager')->getFieldMap();
+    $fields = $field_map[$entity_type];
+    $n_added = 0;
+    $n_updated = 0;
+
+    foreach ($fields as $field_name => $field_def) {
+      $id = $field_def['type'];
+      if (in_array($id, $upgradable_types, TRUE)) {
+        $field_storage_definition = $manager->getFieldStorageDefinition($field_name, $entity_type);
+        if ($field_storage_definition) {
+          $field_schema = $field_storage_definition->getSchema();
+          $table_mapping = $storage->getTableMapping([$field_name => $field_storage_definition]);
+          $table_names = $table_mapping->getDedicatedTableNames();
+          $columns = $table_mapping->getColumnNames($field_name);
+
+          foreach ($table_names as $table_name) {
+            $table_exists = $schema->tableExists($table_name);
+            if ($table_exists) {
+              $messenger->addMessage(t("Updating properties for Drupal table \"@table_name\", field \"@field_name\"",
+                  ['@table_name' => $table_name, '@field_name' => $field_name]));
+              foreach ($upgradable_properties as $property) {
+                $field_exists = $schema->fieldExists($table_name, $columns[$property]);
+                if ($field_exists) {
+                  $schema->changeField($table_name, $columns[$property], $columns[$property], $field_schema['columns'][$property]);
+                  $n_updated++;
+                }
+                elseif (!$update_only) {
+                  $schema->addField($table_name, $columns[$property], $field_schema['columns'][$property]);
+                  $n_added++;
+                }
+              }
+              $manager->updateFieldStorageDefinition($field_storage_definition);
+            }
+          }
+        }
+      }
+    }
+    if ($update_only) {
+      $messenger->addMessage(t("Updated @n_updated properties",
+          ['@n_updated' => $n_updated]));
+    }
+    else {
+      $messenger->addMessage(t("Added @n_added properties, updated @n_updated properties",
+          ['@n_added' => $n_added, '@n_updated' => $n_updated]));
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not update property: ' . $e->getMessage());
+  }
+}
+
+/**
  * Adds third party settings for Tripal content types to Chado base tables.
  */
 function tripal_chado_update_10401() {
@@ -384,6 +454,12 @@ function tripal_chado_update_10401() {
 }
 
 /**
+ * Updates missing mapping of CV terms to some chado table columns.
+ * Note: tripal_chado_update_10402 has been renumbered to
+ * tripal_chado_update_10407 by PR 1927
+ */
+
+/**
  * Updates entity_id properties added to linking fields in PR 1782
  * Note: tripal_chado_update_10403 has been renumbered to
  * tripal_chado_update_10405 by PR 1865
@@ -394,62 +470,12 @@ function tripal_chado_update_10401() {
  * chado_sequence_coordinates_default field in PR 1861
  */
 function tripal_chado_update_10404() {
-  try {
-    $messenger = \Drupal::messenger();
-
-    // This update only modifies a single field type.
-    $upgradable_types = ['chado_sequence_coordinates_default'];
-    $upgradable_properties = ['uniquename', 'fkey', 'srcfeature_id',
-        'fmin', 'is_fmin_partial', 'fmax', 'is_fmax_partial',
-        'strand', 'phase', 'residue_info', 'locgroup', 'rank'];
-    $entity_type = 'tripal_entity';
-
-    $manager = \Drupal::entityDefinitionUpdateManager();
-    $schema = \Drupal::database()->schema();
-    $storage = \Drupal::entityTypeManager()->getStorage($entity_type);
-    $field_map = \Drupal::service('entity_field.manager')->getFieldMap();
-    $fields = $field_map[$entity_type];
-    $n_added = 0;
-    $n_updated = 0;
-
-    foreach ($fields as $field_name => $field_def) {
-      $id = $field_def['type'];
-      if (in_array($id, $upgradable_types, TRUE)) {
-        $field_storage_definition = $manager->getFieldStorageDefinition($field_name, 'tripal_entity');
-        if ($field_storage_definition) {
-          $field_schema = $field_storage_definition->getSchema();
-          $table_mapping = $storage->getTableMapping([$field_name => $field_storage_definition]);
-          $table_names = $table_mapping->getDedicatedTableNames();
-          $columns = $table_mapping->getColumnNames($field_name);
-
-          foreach ($table_names as $table_name) {
-            $table_exists = $schema->tableExists($table_name);
-            if ($table_exists) {
-              $messenger->addMessage(t("Adding and updating properties for Drupal table \"@table_name\", field \"@field_name\"",
-                  ['@table_name' => $table_name, '@field_name' => $field_name]));
-              foreach ($upgradable_properties as $property) {
-                $field_exists = $schema->fieldExists($table_name, $columns[$property]);
-                if ($field_exists) {
-                  $schema->changeField($table_name, $columns[$property], $columns[$property], $field_schema['columns'][$property]);
-                  $n_updated++;
-                }
-                else {
-                  $schema->addField($table_name, $columns[$property], $field_schema['columns'][$property]);
-                  $n_added++;
-                }
-              }
-              $manager->updateFieldStorageDefinition($field_storage_definition);
-            }
-          }
-        }
-      }
-    }
-    $messenger->addMessage(t("Added @n_added properties, updated @n_updated properties",
-        ['@n_added' => $n_added, '@n_updated' => $n_updated]));
-  }
-  catch (\Exception $e) {
-    throw new UpdateException('Could not update property: ' . $e->getMessage());
-  }
+  // This update only modifies a single field type.
+  $upgradable_types = ['chado_sequence_coordinates_default'];
+  $upgradable_properties = ['uniquename', 'fkey', 'srcfeature_id',
+      'fmin', 'is_fmin_partial', 'fmax', 'is_fmax_partial',
+      'strand', 'phase', 'residue_info', 'locgroup', 'rank'];
+  tripal_chado_field_reload($upgradable_types, $upgradable_properties, FALSE);
 }
 
 /**
@@ -528,10 +554,21 @@ function tripal_chado_update_10405() {
 }
 
 /**
- * Updates missing mapping of CV terms to some chado table columns.
+ * Adds missing 'delete_if_empty' setting to the 'linker_synonym_fkey_id'
+ * property in the 'chado_synonym_type_default' field, PR 1958
  */
 function tripal_chado_update_10406() {
-  // Same as former 10402 but adding a new cvterm local:lineageex for PR#1927
+  $upgradable_types = ['chado_synonym_type_default'];
+  $upgradable_properties = ['linker_synonym_fkey_id'];
+  tripal_chado_field_reload($upgradable_types, $upgradable_properties, TRUE);
+}
+
+/**
+ * Updates missing mapping of CV terms to some chado table columns.
+ */
+function tripal_chado_update_10407() {
+  // This is the same as former tripal_chado_update_10402, but here we are
+  // adding a new cvterm local:lineageex for PR#1927
   try {
     $messenger = \Drupal::messenger();
 
