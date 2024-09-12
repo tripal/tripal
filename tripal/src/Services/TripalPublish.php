@@ -870,7 +870,6 @@ class TripalPublish {
         }
         // Determine if we want to add this item.
         else {
-          $add_record = TRUE;
           foreach (array_keys($this->required_types[$field_name]) as $key) {
             $storage_settings = $this->field_info[$field_name]['prop_types'][$key]->getStorageSettings();
             $drupal_store = $storage_settings['drupal_store'] ?? FALSE;
