@@ -936,7 +936,7 @@ class TripalPublish {
     $args[":bundle_$j"] = $this->bundle;
     $args[":deleted_$j"] = 0;
     $args[":entity_id_$j"] = $entity_id;
-    $args[":revision_id_$j"] = 1;
+    $args[":revision_id_$j"] = $entity_id;  // For an unversioned entity this is the same as the entity id
     $args[":langcode_$j"] = 'und';
     $args[":delta_$j"] = $delta;
     foreach ($this->required_types[$field_name] as $key => $properties) {
