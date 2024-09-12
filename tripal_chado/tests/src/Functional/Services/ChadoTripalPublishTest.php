@@ -485,7 +485,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->assertEquals('<em>Oryza species</em> subspecies <em>Japonica</em>', array_values($entities)[0],
       'The Oryza species subspecies Japonica organism should appear in the published list because it has new properties.');
     $this->assertCount(2, array_values($entities),
-      'Both entities should be re-published.');
+      'There should only be one published entity for a single organism with new properties.');
 
     // Check that the property values got published. The type_id should be
     // 0 in the drupal field table, the default for an integer.
