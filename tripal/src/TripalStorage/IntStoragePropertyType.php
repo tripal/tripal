@@ -32,4 +32,14 @@ class IntStoragePropertyType extends StoragePropertyTypeBase {
     parent::__construct($entityType, $fieldType, $key, $term_id, "int", $storage_settings );
   }
 
+  /**
+   * Returns the default empty value of the correct type for this storage property type.
+   *
+   * @return int
+   *   A zero.
+   */
+  public function getDefaultValue() {
+    return 0;
+  }
+
 }

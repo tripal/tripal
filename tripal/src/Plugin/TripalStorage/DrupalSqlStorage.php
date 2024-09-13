@@ -104,4 +104,14 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
     return $this->getTypes();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  public function getNonStoredTypes() {
+
+    // All types are stored for this storage backend.
+    // Thus this function returns nothing.
+    return [];
+  }
+
 }
