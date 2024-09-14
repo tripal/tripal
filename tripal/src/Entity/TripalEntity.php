@@ -561,8 +561,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
 
           // Keep track of elements that have no value.
-          foreach ($prop_values as $prop_value) {
-            if (!$prop_value->getValue()) {
+          foreach ($prop_values as $i => $prop_value) {
+            $prop_value_value = $prop_value->getValue();
+            if (is_null($prop_value_value)) {
               // A given delta should only be present once here.
               if (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name])) {
                 $delta_remove[$field_name][] = $delta;
