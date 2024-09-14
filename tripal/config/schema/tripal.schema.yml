@@ -330,6 +330,14 @@ tripal.tripalfield_collection.*:
                                type: string
                                label: 'Field suffix'
                                nullable: true
+                             hide_condition:
+                               type: string
+                               label: 'Hide condition'
+                               nullable: true
+                             hide_value:
+                               type: string
+                               label: 'Hide value'
+                               nullable: true
                    form:
                      type: sequence
                      label: 'Edit'
