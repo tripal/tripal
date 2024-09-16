@@ -55,18 +55,27 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
     $db_id = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_id']);
+    $db_name = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_name']);
     if (!$db_id) {
       $db_id = $item_vals['dbxref_db_id'] ?? 0;
+      $db_name = $item_vals['dbxref_db_name'] ?? '';
     }
 
     // We need to handle an additional case, no $item_vals will be available when
     // the "Add another item" ajax triggers, so store db_id if we have it.
-    if ($db_id) {
-      $storage['initial_values'][$field_name][$delta]['db_id'] = $db_id;
-      $form_state->setStorage($storage);
-    }
-    else {
-      $db_id = $storage['initial_values'][$field_name][$delta]['db_id'] ?? 0;
+    // This should not trigger, however, for the remove button, since that changes
+    // delta values.
+    $triggering_element = $form_state->getTriggeringElement()['#name'] ?? '';
+    if (preg_match('/remove_button/', $triggering_element)) {
+      if ($db_id) {
+        $storage['initial_values'][$field_name][$delta]['db_id'] = $db_id;
+        $storage['initial_values'][$field_name][$delta]['db_name'] = $db_name;
+        $form_state->setStorage($storage);
+      }
+      else {
+        $db_id = $storage['initial_values'][$field_name][$delta]['db_id'] ?? 0;
+        $db_name = $storage['initial_values'][$field_name][$delta]['db_name'] ?? '';
+      }
     }
 
     $dbxref_id = $item_vals['dbxref_id'] ?? 0;
@@ -120,7 +129,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
       '#prefix' => '<div id="edit-' . $machine_name . '-accession-' . $delta . '">',
       '#suffix' => '</div>',
       '#weight' => 2,
-      '#default_value' => $accession,
+      '#default_value' => $accession ? $db_name . ':' . $accession : '',
       '#disabled' => $db_id?FALSE:TRUE,
       '#autocomplete_route_name' => 'tripal_chado.dbxref_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 5, 'db_id' => $db_id],

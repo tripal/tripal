@@ -140,7 +140,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     $initial_values = $storage_values['initial_values'][$field_name];
     foreach ($initial_values as $initial_value) {
       // For initial values, the key is always 'linker_id', regardless of $linker_key value.
-      $linker_id = $initial_value['linker_id'];
+      $linker_id = $initial_value['linker_id'] ?? 0;
       if ($linker_id and !in_array($linker_id, $retained_records)) {
         // This item was removed from the form. Add back a value
         // so that chado storage knows to remove the chado record.
