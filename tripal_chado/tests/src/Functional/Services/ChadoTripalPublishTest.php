@@ -449,13 +449,14 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         ['record_id' => $organism_id2],
         ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
 
-    $this->checkFieldItem('organism', 'organism_infraspecific_name', 1,
+    // We expect no infraspecies here, so expected count is zero
+    $this->checkFieldItem('organism', 'organism_infraspecific_name', 0,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
+        []);
 
-    $this->checkFieldItem('organism', 'organism_infraspecific_type', 1,
+    $this->checkFieldItem('organism', 'organism_infraspecific_type', 0,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'type_id' => 0]);
+        []);
 
     //
     // Test publishing properties.
