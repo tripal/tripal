@@ -113,6 +113,28 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
   }
 
   /**
+   * A helper function for adding an array design record to Chado.
+   *
+   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
+   *   A chado database object.
+   * @param array $details
+   *   The key/value pairs of entries for the array design. The keys correspond
+   *   to the columns of the arraydesign table.
+   * @return int
+   *   The arraydesign_id
+   */
+  public function addChadoArrayDesign($chado, $details) {
+    $insert = $chado->insert('1:arraydesign');
+    $insert->fields([
+      'name' => $details['name'],
+      'manufacturer_id' => array_key_exists('manufacturer_id', $details) ? $details['manufacturer_id'] : 1,
+      'platformtype_id' => array_key_exists('platformtype_id', $details) ? $details['platformtype_id'] : 1,
+      'num_of_elements' => array_key_exists('num_of_elements', $details) ? $details['num_of_elements'] : NULL,
+    ]);
+    return $insert->execute();
+  }
+
+  /**
    * A helper function for adding a property to a record in Chado.
    *
    * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
@@ -332,7 +354,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $schema_db->saveTerm($comment_term);
 
     // Make sure we have the content types and fields that we want to test.
-    $collection_ids = ['general_chado'];
+    $collection_ids = ['general_chado', 'expression_chado'];
     $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
     $fields_setup = \Drupal::service('tripal.tripalfield_collection');
     $content_type_setup->install($collection_ids);
@@ -584,6 +606,23 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // Check that only the exact number of linked items were published.
     $this->checkFieldItem('project', 'project_contact', 2, ['entity_id' => 6], []);
     $this->checkFieldItem('project', 'project_contact', 1, ['entity_id' => 7], []);
+
+    // Test publishing of integer fields
+    $array_design_id1 = $this->addChadoArrayDesign($chado, [
+      'name' => 'AD1',
+      'num_of_elements' => 1,
+    ]);
+    $publish->init('array_design', 'chado_storage');
+    $entities = $publish->publish();
+    $this->assertCount(1, $entities,
+        'Failed to publish 1 array design entitity.');
+    $this->checkFieldItem('array_design', 'array_design_num_of_elements', 1,
+        ['record_id' => $array_design_id1],
+        ['bundle' => 'array_design', 'entity_id' => 8, 'value' => 0]);
+    // We do not expect a NULL integer item to be published
+    $this->checkFieldItem('array_design', 'array_design_num_array_columns', 0,
+        ['record_id' => $array_design_id1],
+        []);
 
   }
 }
