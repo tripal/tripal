@@ -42,54 +42,82 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     'id' => 'chado_property_type_default'
   ];
 
-  protected array $property_type_terms = [
-    'record_id' => [
-      'key' => 'record_id',
+  /**
+   * An array of terms that need to be created for this field to work.
+   *
+   * @var array
+   *  A list of terms keyed by the IDSPACE:ACCESSION format where the value is
+   *  and array including the parameters for createTripalTerm().
+   */
+  protected array $terms = [
+    'SIO:000729' => [
       'vocab_name' => 'SIO',
       'id_space_name' => 'SIO',
       'term' => [
         'accession' => '000729',
       ]
     ],
-    'prop_id' => [
-      'key' => 'prop_id',
-      'vocab_name' => 'SIO',
-      'id_space_name' => 'SIO',
-      'term' => [
-        'accession' => '000729',
-      ],
-    ],
-    'linker_id' => [
-      'key' => 'linker_id',
-      'vocab_name' => 'SIO',
-      'id_space_name' => 'SIO',
-      'term' => [
-        'accession' => '000729',
-      ],
-    ],
-    'value' => [
-      'key' => 'value',
+    'NCIT:C25712' => [
       'vocab_name' => 'ncit',
       'id_space_name' => 'NCIT',
       'term' => [
         'accession' => 'C25712',
       ],
     ],
-    'rank' => [
-      'key' => 'rank',
+    'OBCS:0000117' => [
       'vocab_name' => 'OBCS',
       'id_space_name' => 'OBCS',
       'term' => [
         'accession' => '0000117',
       ],
     ],
-    'type_id' => [
-      'key' => 'type_id',
+    'schema:additionalType' => [
       'vocab_name' => 'schema',
       'id_space_name' => 'schema',
       'term' => [
         'accession' => 'additionalType',
       ],
+    ],
+    'OBI:0100026' => [
+      'vocab_name' => 'obi',
+      'id_space_name' => 'OBI',
+      'term' => [
+        'accession' => '0100026',
+      ],
+    ],
+  ];
+
+  /**
+   * A List of the expected property types for this field.
+   *
+   * @var array
+   *  A list of property types keyed by the propertyType key where the value
+   *  is an array defining the key, term (i.e. IDSPACE:ACCESSION).
+   */
+  protected array $property_types = [
+    'record_id' => [
+      'key' => 'record_id',
+      'term' => 'SIO:000729',
+    ],
+    'prop_id' => [
+      'key' => 'prop_id',
+      'term' => 'SIO:000729',
+    ],
+    'linker_id' => [
+      'key' => 'linker_id',
+      'term' => 'SIO:000729',
+    ],
+    'value' => [
+      'key' => 'value',
+      'term' => 'NCIT:C25712',
+    ],
+    'rank' => [
+      'key' => 'rank',
+      'term' => 'OBCS:0000117',
+    ],
+    'type_id' => [
+      'key' => 'type_id',
+      'term' => 'schema:additionalType',
     ],
   ];
 
@@ -134,6 +162,13 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
   ];
 
   /**
+   * The random name of the field generated for this test.
+   *
+   * @var string
+   */
+  protected string $field_name;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -145,42 +180,87 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     // Prepare kernel environment for field testing.
     $this->setupFieldTestEnvironment();
 
-  }
-
-  /**
-   * This method tests that we can create an entity with multiple property fields.
-   */
-  public function testCreateEntityWithField() {
-
     // Setup the field to be tested based on the data provider values.
-    $field_name = $this->randomMachineName();
+    $this->field_name = $this->randomMachineName();
 
+    // Next create the terms for the properies this field will use.
+    foreach ($this->terms as $key => $term_deets) {
+      $this->createTripalTerm($term_deets, 'chado_id_space', 'chado_vocabulary');
+    }
+
+    // Finally create the bundle, field type (i.e. FieldStorageConfig)
+    // and field instance (i.e. FieldConfig).
     $fieldConfig = $this->createFieldInstance(
       'tripal_entity',
-      $this->property_type_terms,
       [
-        'field_name' => $field_name,
+        'field_name' => $this->field_name,
         'field_type' => $this->field_type['id'],
         'formatter_id' => $this->formatters['ul_list']['id'],
+        'settings' => [
+          'storage_plugin_settings' => [
+            'base_table' => 'organism',
+            'prop_table' => 'organismprop',
+          ],
+        ],
       ]
     );
 
+  }
+
+  /**
+   * This method tests that we can create an entity a property field and that the
+   * sample value can be saved and loaded from chado storage using the field.
+   */
+  public function testCreateEntityWithField() {
+
     // Create an entity with a specific value for this field
     // -- use the sample value generating to get a value for this field.
-    $field_value = $this->field_type['class']::generateSampleValue($fieldConfig);
+    $field_value = $this->field_type['class']::generateSampleValue($this->fieldConfig);
     $this->assertIsArray($field_value,
       "The ".$this->field_type['class']."::generateSampleValue() method for this field type did not return a valid value.");
     // -- create the entity with that value set
     $entity = TripalEntity::create([
       'title' => $this->randomString(),
       'type' => $this->TripalEntityType->getID(),
-      $field_name => $field_value,
+      $this->field_name => $field_value,
     ]);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $this->field_type['id'] . " field.");
     // -- confirm the values in the created entity match those we set.
     foreach ($field_value as $property_key => $expected_property_value) {
-      $this->assertEquals($expected_property_value, $entity->{$field_name}->{$property_key},
+      $this->assertEquals($expected_property_value, $entity->{$this->field_name}->{$property_key},
         "The value of the property $property_key was not what we expected for this field.");
-      }
+    }
+
+    // Retrieve values using the Drupal infrastructure.
+    // Tests basic Tripal Storage and TripalField interactions.
+    $expected_values = [0 => $field_value];
+    list($retrieved_values, $tripalStorages) = TripalEntity::getValuesArray($entity);
+    $this->assertArrayHasKey('chado_storage', $retrieved_values, "The retrieved values should include ChadoStorage since that is what this field uses.");
+    $this->assertArrayHasKey($this->field_name, $retrieved_values['chado_storage'], "Next the field should be registered with ChadoStorage.");
+    $this->assertCount(1, $retrieved_values['chado_storage'][$this->field_name],
+      "Since this is the sample value we expect only one delta.");
+    // -- check each of the values returned.
+    $this->assertFieldValuesMatch($expected_values, $this->property_types, $retrieved_values['chado_storage'][$this->field_name]);
+
+    // @todo save the entity and check it saves in chado.
+    // @todo load the entity again and check it matches what we tried to save.
+  }
+
+  /**
+   * Tests the tripalTypes method of this field type.
+   *
+   * This test ensures there are no dependancies on the values of the field
+   * when creating the property types.
+   */
+  public function testTripalTypes() {
+
+    $property_types = $this->field_type['class']::tripalTypes($this->fieldConfig);
+    $this->assertIsArray($property_types, "We were unable to retrieve the property types for this field.");
+    $this->assertCount(sizeof($this->property_types), $property_types, "We did not get the number of property types returned that we expected.");
+    foreach ($property_types as $retrieved_type) {
+      $this->assertInstanceOf(\Drupal\tripal\TripalStorage\StoragePropertyTypeBase::class, $retrieved_type, "The retrieved property type does not inherit from the StoragePropertyTypeBase.");
+      $this->assertArrayHasKey($retrieved_type->getKey(), $this->property_types,
+       "The key of the retrieved property type does not match one of the ones we expected.");
+    }
   }
 }
