@@ -56,7 +56,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $random = new \Drupal\Component\Utility\Random();
     $values['record_id'] = 1;
     $values['prop_id'] = 1;
-    $values['link_id'] = 1;
+    $values['linker_id'] = 1;
     $values['value'] = 'fred';
     $values['type_id'] = 4;
     $values['rank'] = 0;
