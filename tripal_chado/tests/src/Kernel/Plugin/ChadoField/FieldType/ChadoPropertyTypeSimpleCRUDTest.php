@@ -13,10 +13,13 @@ use Drupal\Core\Form\FormState;
 /**
  * Tests the ChadoPropertyTypeDefault Field Type.
  *
+ * Specifically focused on coverage using a very simple, single property field
+ * test case and the generated value.
+ *
  * @group TripalField
  * @group ChadoField
  */
-class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
+class ChadoPropertyTypeSimpleCRUDTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
   protected static $modules = ['system', 'user', 'field', 'tripal', 'tripal_chado'];
@@ -168,6 +171,8 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
    */
   protected string $field_name;
 
+  protected string $bundle_name = 'research_project';
+
   /**
    * {@inheritdoc}
    */
@@ -188,18 +193,43 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
       $this->createTripalTerm($term_deets, 'chado_id_space', 'chado_vocabulary');
     }
 
+    // Then create the Tripal Content Type.
+    $bundle = $this->createTripalContentType([
+      'id' => $this->bundle_name,
+    ]);
+    $bundle->setThirdPartySetting('tripal', 'chado_base_table', 'project');
+
+    // Finally create the bundle, field type (i.e. FieldStorageConfig)
+    // and field instance (i.e. FieldConfig).
+    $fieldConfig = $this->createFieldInstance(
+      'tripal_entity',
+      [
+        'field_name' => 'project_name',
+        'bundle_name' => $this->bundle_name,
+        'field_type' => 'chado_string_type_default',
+        'formatter_id' => 'chado_string_type_formatter',
+        'settings' => [
+          'storage_plugin_settings' => [
+            'base_table' => 'project',
+            'base_column' => 'name',
+          ],
+        ],
+      ]
+    );
+
     // Finally create the bundle, field type (i.e. FieldStorageConfig)
     // and field instance (i.e. FieldConfig).
     $fieldConfig = $this->createFieldInstance(
       'tripal_entity',
       [
         'field_name' => $this->field_name,
+        'bundle_name' => $this->bundle_name,
         'field_type' => $this->field_type['id'],
         'formatter_id' => $this->formatters['ul_list']['id'],
         'settings' => [
           'storage_plugin_settings' => [
-            'base_table' => 'organism',
-            'prop_table' => 'organismprop',
+            'base_table' => 'project',
+            'prop_table' => 'projectprop',
           ],
         ],
       ]
@@ -212,17 +242,29 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
    * sample value can be saved and loaded from chado storage using the field.
    */
   public function testCreateEntityWithField() {
+    $project_name = 'Random Project for testing ' . uniqid();
 
     // Create an entity with a specific value for this field
     // -- use the sample value generating to get a value for this field.
-    $field_value = $this->field_type['class']::generateSampleValue($this->fieldConfig);
+    $field_value = [
+      'record_id' => NULL,
+      'prop_id' => NULL,
+      'linker_id' => NULL,
+      'value' => 'fred',
+      'type_id' => 4,
+      'rank' => 0,
+    ];
     $this->assertIsArray($field_value,
       "The ".$this->field_type['class']."::generateSampleValue() method for this field type did not return a valid value.");
     // -- create the entity with that value set
     $entity = TripalEntity::create([
       'title' => $this->randomString(),
-      'type' => $this->TripalEntityType->getID(),
+      'type' => $this->bundle_name,
       $this->field_name => $field_value,
+      'project_name' => [
+        'record_id' => NULL,
+        'value' => $project_name,
+      ]
     ]);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $this->field_type['id'] . " field.");
     // -- confirm the values in the created entity match those we set.
@@ -242,7 +284,10 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     // -- check each of the values returned.
     $this->assertFieldValuesMatch($expected_values, $this->property_types, $retrieved_values['chado_storage'][$this->field_name]);
 
-    // @todo save the entity and check it saves in chado.
+    // Save the entity and check it saves in chado.
+    $entity->save();
+    // @todo check that the records are in chado storage.
+
     // @todo load the entity again and check it matches what we tried to save.
   }
 
@@ -254,7 +299,7 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
    */
   public function testTripalTypes() {
 
-    $property_types = $this->field_type['class']::tripalTypes($this->fieldConfig);
+    $property_types = $this->field_type['class']::tripalTypes($this->fieldConfig[$this->field_name]);
     $this->assertIsArray($property_types, "We were unable to retrieve the property types for this field.");
     $this->assertCount(sizeof($this->property_types), $property_types, "We did not get the number of property types returned that we expected.");
     foreach ($property_types as $retrieved_type) {

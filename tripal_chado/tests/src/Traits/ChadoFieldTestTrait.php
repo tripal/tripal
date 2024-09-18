@@ -15,10 +15,33 @@ trait ChadoFieldTestTrait {
 
   use UserCreationTrait;
 
-  protected FieldStorageConfig $fieldStorage;
-  protected FieldConfig $fieldConfig;
-  protected TripalEntityType $TripalEntityType;
-  protected TripalEntity $tripalEntity;
+  /**
+   * An array of FieldStorageConfig objects keyed by the field name.
+   *
+   * @var FieldStorageConfig[]
+   */
+  protected array $fieldStorage = [];
+
+  /**
+   * An array of FieldConfig objects keyed by the field name.
+   *
+   * @var FieldConfig[]
+   */
+  protected array $fieldConfig = [];
+
+  /**
+   * An array of TripalEntityType objects keyed by the bundle name.
+   *
+   * @var TripalEntityType[]
+   */
+  protected array $tripalEntityType = [];
+
+  /**
+   * An array of display objects keyed by Tripal Content Type bundle name.
+   *
+   * @var EntityViewDisplay[]
+   */
+  protected array $entityViewDisplay = [];
 
   /**
    * Called in the test setUp() for kernel tests to ensure all the needed
@@ -142,7 +165,7 @@ trait ChadoFieldTestTrait {
     $fieldStorage
       ->save();
 
-    $this->fieldStorage = $fieldStorage;
+    $this->fieldStorage[$values['field_name']] = $fieldStorage;
     return $fieldStorage;
   }
 
@@ -186,6 +209,7 @@ trait ChadoFieldTestTrait {
         'tripal_entity',
         $values
       );
+      $this->fieldStorage[$values['field_name']] = $values['fieldStorage'];
     }
 
     $fieldConfig = FieldConfig::create([
@@ -200,17 +224,23 @@ trait ChadoFieldTestTrait {
       'label' => 'hidden',
       'settings' => [],
     ];
-    $display = EntityViewDisplay::create([
-      'targetEntityType' => $fieldConfig->getTargetEntityTypeId(),
-      'bundle' => $values['bundle_name'],
-      'mode' => 'default',
-      'status' => TRUE,
-    ]);
+    if (array_key_exists($values['bundle_name'], $this->entityViewDisplay)) {
+      $display = $this->entityViewDisplay[$values['bundle_name']];
+    }
+    else {
+      $display = EntityViewDisplay::create([
+        'targetEntityType' => $fieldConfig->getTargetEntityTypeId(),
+        'bundle' => $values['bundle_name'],
+        'mode' => 'default',
+        'status' => TRUE,
+      ]);
+      $this->entityViewDisplay[$values['bundle_name']] = $display;
+    }
     $display->setComponent($values['fieldStorage']->getName(), $display_options);
     $display->save();
 
-    $this->fieldConfig = $fieldConfig;
-    $this->TripalEntityType = $bundle;
+    $this->fieldConfig[$values['field_name']] = $fieldConfig;
+    $this->tripalEntityType[$values['bundle_name']] = $bundle;
     return $fieldConfig;
   }
 }
