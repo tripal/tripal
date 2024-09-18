@@ -40,9 +40,58 @@ trait ChadoFieldTestTrait {
     $this->installEntitySchema('tripal_entity');
     // -- we need a tripal content type for our tripal content entity to belong to.
     $this->installEntitySchema('tripal_entity_type');
+    // -- we need the chado term mapping for our properties.
+    $this->installEntitySchema('chado_term_mapping');
     // -- we need the field module configuration.
     $this->installConfig(['field']);
+    // -- we need access to the core term mappings.
+    tripal_chado_rebuild_chado_term_mappings();
 
+  }
+
+  /**
+   * Confirms that the retrieved values match the expected ones.
+   *
+   * More specifically, it checks
+   *  1. the retrieved values matches the expected format
+   *  2. Each expected property type exists in the retrieved values for
+   *     each delta by checking the property key is at values[delta][property key]
+   *  3. For each delta[property key]
+   *       - the value is an array
+   *       - the array has a 'value' key
+   *       - the delta[property key][value] is a StoragePropertyValue instance
+   *       - the delta[property key][value]->value matches the expected value
+   *
+   * @param array $expected_values
+   *  A nested array of expected values following the format:
+   *    - delta (e.g. 0):
+   *      - property key => expected value
+   * @param array $expected_property_types
+   *  A nested array of the expected property types for this field following the format:
+   *    - property key (e.g. record_id):
+   *      - key (string; e.g. record_id)
+   *      - term (string of IDSPACE:ACCESSION; e.g. schema:additionalType)
+   * @param array $retrieved_values
+   *  A nested array keyed in the following levels:
+   *    - 3rd: Delta value of the field item.
+   *    - 4th: the property key.
+   *    - 5th: One of the following keys:
+   *      - 'value': the property value object.
+   *      - 'operation': the operation to use when matching this value.
+   * @return void
+   */
+  public function assertFieldValuesMatch($expected_values, $expected_property_types, $retrieved_values) {
+    foreach ($retrieved_values as $delta => $ret_values) {
+      foreach ($expected_property_types as $property_key => $details) {
+        $this->assertArrayHasKey($property_key, $ret_values, "The expected property type did not appear in the retrieved values for delta $delta.");
+        $this->assertIsArray($ret_values[$property_key], "Each property key should be an array with a 'value' and 'operation' but [$delta][$property_key] is not an array.");
+        /** Currently not always the case...
+        $this->assertArrayHasKey('operation', $ret_values[$property_key], "Each property key should be an array with a 'value' and 'operation' but [$delta][$property_key] does not have a operation key.");*/
+        $this->assertArrayHasKey('value', $ret_values[$property_key], "Each property key should be an array with a 'value' and 'operation' but [$delta][$property_key] does not have a value key.");
+        $this->assertInstanceOf(\Drupal\tripal\TripalStorage\StoragePropertyValue::class, $ret_values[$property_key]['value'], "The value for [$delta][$property_key] is not a StoragePropertyValue object.");
+        $this->assertEquals($expected_values[$delta][$property_key], $ret_values[$property_key]['value']->getValue(), "The value of [$delta][$property_key] does not match what we expected.");
+      }
+    }
   }
 
   /**
@@ -50,22 +99,17 @@ trait ChadoFieldTestTrait {
    *
    * @param string $entity_type
    *   The machine name of the entity to add the field to (e.g., organism)
-   * @param array $property_type_terms
-   *   A list of the property types this field uses. The key will be the key of
-   *   the property type and the value is an array defining:
-   *    - key (string)
-   *    - id_space_name (string)
-   *    - accession (string)
    * @param array $values
    *   These values are passed directly to the create() method. Suggested values are:
    *    - field_name (string)
    *    - field_type (string)
    *    - termIdSpace (string)
    *    - termAccession (string)
+   *    - settings (array) an array of additional settings for the field
    * @return FieldStorageConfig
    *   The field storage object that was just created.
    */
-  public function createFieldType(string $entity_type, array $property_type_terms, array $values = []) {
+  public function createFieldType(string $entity_type, array $values = []) {
 
     // Defaults
     $random = $this->getRandomGenerator();
@@ -80,14 +124,10 @@ trait ChadoFieldTestTrait {
       $term_values['term'] = [];
       $term_values['term']['accession'] = $values['termAccession'];
     }
+    $values['settings'] = $values['settings'] ?? [];
 
     // Now create the main term for the field.
     $term = $this->createTripalTerm($term_values, 'chado_id_space', 'chado_vocabulary');
-
-    // Next create the terms for the properies this field will use.
-    foreach ($property_type_terms as $key => $prop_term) {
-      $this->createTripalTerm($prop_term, 'chado_id_space', 'chado_vocabulary');
-    }
 
     // Now for the field storage.
     $fieldStorage = FieldStorageConfig::create([
@@ -97,7 +137,7 @@ trait ChadoFieldTestTrait {
       'settings' => [
         'termIdSpace' => $term_values['id_space_name'],
         'termAccession' => $term_values['term']['accession'],
-      ],
+      ] + $values['settings'],
     ]);
     $fieldStorage
       ->save();
@@ -111,12 +151,6 @@ trait ChadoFieldTestTrait {
    *
    * @param string $entity_type
    *   The machine name of the entity to add the field to (e.g., organism)
-   * @param array $properties
-   *   A list of the property types this field uses. The key will be the key of
-   *   the property type and the value is an array defining:
-   *    - key (string)
-   *    - id_space_name (string)
-   *    - accession (string)
    * @param array $values
    *   These values are passed directly to the create() method. Suggested values are:
    *    - field_name (string)
@@ -129,7 +163,7 @@ trait ChadoFieldTestTrait {
    * @return FieldConfig
    *   The field object that was just created.
    */
-  public function createFieldInstance(string $entity_type, array $properties, array $values = []) {
+  public function createFieldInstance(string $entity_type, array $values = []) {
 
     // Defaults
     $random = $this->getRandomGenerator();
@@ -150,7 +184,6 @@ trait ChadoFieldTestTrait {
     if (!array_key_exists('fieldStorage', $values)) {
       $values['fieldStorage'] = $this->createFieldType(
         'tripal_entity',
-        $properties,
         $values
       );
     }
