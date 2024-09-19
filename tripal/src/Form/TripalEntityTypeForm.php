@@ -22,6 +22,7 @@ class TripalEntityTypeForm extends EntityForm {
 
     $tripal_entity_type = $this->entity;
     $tripal_entity_type->setDefaults();
+    list($url_tokens, $title_tokens) = $this->getValidTokens($tripal_entity_type);
 
     // We need to choose a term if this is a new content type.
     // The term cannot be changed later!
@@ -166,7 +167,6 @@ class TripalEntityTypeForm extends EntityForm {
       '#markup' => 'Copy the token and paste it into the "Page Title Format" text field above.'
     ];
 
-    $title_tokens = $this->getTitleTokens($tripal_entity_type);
     $form['title_settings']['tokens']['content'] =
       theme_token_list($title_tokens);
 
@@ -201,7 +201,7 @@ class TripalEntityTypeForm extends EntityForm {
       '#markup' => 'Copy the token and paste it into the "URL Alias Pattern" text field above.'
     ];
 
-    $form['url_settings']['tokens']['content'] = theme_token_list($tokens);
+    $form['url_settings']['tokens']['content'] = theme_token_list($url_tokens);
 
     return $form;
   }
@@ -278,6 +278,24 @@ class TripalEntityTypeForm extends EntityForm {
       $form_state->setErrorByName('term',
           'Please select a term from the autocomplete drop-down. It must have the ID space and accession in parenthesis.');
     }
+    list($url_tokens, $title_tokens) = $this->getValidTokens($tripal_entity_type);
+
+    // Make sure all title tokens used are valid
+    $title_format = $form_state->getValue('title_format');
+    $invalid_token = $this->validateTokens($title_format, $title_tokens);
+    if ($invalid_token) {
+      $form_state->setErrorByName('title_format',
+          "The token \"$invalid_token\" is not a valid title token");
+    }
+
+    // Make sure all url tokens used are valid
+    $url_format = $form_state->getValue('url_format');
+    $invalid_token = $this->validateTokens($url_format, $url_tokens);
+    if ($invalid_token) {
+      $form_state->setErrorByName('url_format',
+          "The token \"$invalid_token\" is not a valid url token");
+    }
+
   }
 
   /**
@@ -288,13 +306,27 @@ class TripalEntityTypeForm extends EntityForm {
    * @return array
    *   The list of valid tokens
    */
-  protected function getTitleTokens($tripal_entity_type) {
-    $tokens = $tripal_entity_type->getTokens();
-    $title_tokens = $tokens;
+  protected function getValidTokens($tripal_entity_type) {
+    $url_tokens = $tripal_entity_type->getTokens();
+    $title_tokens = $url_tokens;
     unset($title_tokens['[title]']);
     unset($title_tokens['[TripalBundle__bundle_id]']);
     unset($title_tokens['[TripalEntity__entity_id]']);
-    return $title_tokens;
+    return [$url_tokens, $title_tokens];
+  }
+
+  /**
+   */
+  protected function validateTokens($format_string, $valid_tokens) {
+    $invalid_token = '';
+    preg_match_all('/(\[[^\]]+\])/', $format_string, $matches);
+    foreach ($matches as $match) {
+      if ($match and !array_key_exists($match[0], $valid_tokens)) {
+        $invalid_token = $match[0];
+        break;
+      }
+    }
+    return $invalid_token;
   }
 
   /**
