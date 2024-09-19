@@ -98,8 +98,12 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
     // We do this because any changes here are not actually saved and thus
     // having it enabled is misleading.
     // Note: We couldn't disable it or the text format element would stop working ;-)
+    // This loops through the delta.
     foreach (\Drupal\Core\Render\Element::children($element) as $key) {
-      $element[$key]['value']['format']['#attributes']['class'][] = 'hidden';
+      // We only want to change the text_format subelement.
+      if (array_key_exists('value', $element[$key]) && array_key_exists('format', $element[$key]['value'])) {
+        $element[$key]['value']['format']['#attributes']['class'][] = 'hidden';
+      }
     }
 
     return $element;
