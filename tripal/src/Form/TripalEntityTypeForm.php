@@ -135,12 +135,6 @@ class TripalEntityTypeForm extends EntityForm {
       '#title' => t('Advanced Settings'),
     );
 
-    $tokens = $tripal_entity_type->getTokens();
-    $title_tokens = $tokens;
-    unset($title_tokens['[title]']);
-    unset($title_tokens['[TripalBundle__bundle_id]']);
-    unset($title_tokens['[TripalEntity__entity_id]']);
-
     // Page title options:
     $form['title_settings'] = [
       '#type' => 'details',
@@ -151,7 +145,7 @@ class TripalEntityTypeForm extends EntityForm {
     $form['title_settings']['msg'] = [
       '#type' => 'item',
       '#markup' => t('
-<p>The format below is used to determine the title displayed on content pages of the current type. This ensures all content of this type is consistent while still allowing you to indicate which data you want represented in the title (ie: which data would most identify your content).</p>
+<p>The format below is used to determine the title displayed on content pages of the current type. This ensures all content of this type is consistent while still allowing you to indicate which data you want represented in the title (i.e.: which data would most identify your content).</p>
 
 <p>Keep in mind that it might be confusing to users if more than one page has the same title. <strong>We recommend you choose a combination of tokens that will uniquely identify your content</strong>.</p>'),
     ];
@@ -172,6 +166,7 @@ class TripalEntityTypeForm extends EntityForm {
       '#markup' => 'Copy the token and paste it into the "Page Title Format" text field above.'
     ];
 
+    $title_tokens = $this->getTitleTokens($tripal_entity_type);
     $form['title_settings']['tokens']['content'] =
       theme_token_list($title_tokens);
 
@@ -283,6 +278,23 @@ class TripalEntityTypeForm extends EntityForm {
       $form_state->setErrorByName('term',
           'Please select a term from the autocomplete drop-down. It must have the ID space and accession in parenthesis.');
     }
+  }
+
+  /**
+   * Returns an array of valid tokens that may be used in an entity title.
+   *
+   * @param object $tripal_entity_type
+   *
+   * @return array
+   *   The list of valid tokens
+   */
+  protected function getTitleTokens($tripal_entity_type) {
+    $tokens = $tripal_entity_type->getTokens();
+    $title_tokens = $tokens;
+    unset($title_tokens['[title]']);
+    unset($title_tokens['[TripalBundle__bundle_id]']);
+    unset($title_tokens['[TripalEntity__entity_id]']);
+    return $title_tokens;
   }
 
   /**
