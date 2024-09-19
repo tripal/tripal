@@ -304,7 +304,7 @@ class TripalEntityTypeForm extends EntityForm {
    * @param object $tripal_entity_type
    *
    * @return array
-   *   The list of valid tokens
+   *   The list of valid tokens for URLs, and the list of valid tokens for entity titles.
    */
   protected function getValidTokens($tripal_entity_type) {
     $url_tokens = $tripal_entity_type->getTokens();
@@ -316,6 +316,17 @@ class TripalEntityTypeForm extends EntityForm {
   }
 
   /**
+   * Validate that all tokens present in a passed string are valid.
+   * A token is anything enclosed in square brackets [xxx].
+   *
+   * @param string $format_string
+   *   The string to be validated containing any number of tokens.
+   * @param array $valid_tokens
+   *   A list of valid tokens. The token is the array key.
+   *
+   * @return string
+   *   An empty string if all tokens are valid, otherwise return
+   *   the first invalid token found.
    */
   protected function validateTokens($format_string, $valid_tokens) {
     $invalid_token = '';
