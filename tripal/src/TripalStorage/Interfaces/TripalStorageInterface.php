@@ -67,7 +67,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * using this function before the *Values() method can be called.
    *
    * @param string $field_name
-   *   The name of the field based on it's annotation 'id'.
+   *   The name of the field based on its annotation 'id'.
    * @param object $field_definition
    *   The field configuration object. This can be an instance of:
    *   \Drupal\field\Entity\FieldStorageConfig or
@@ -81,7 +81,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * Retrieves the stored field definition of a given field.
    *
    * @param string $field_name
-   *   The name of the field based on it's annotation 'id'.
+   *   The name of the field based on its annotation 'id'.
    * @return object $field_definition
    *   The field configuration object. This can be an instance of:
    *   \Drupal\field\Entity\FieldStorageConfig or
@@ -105,7 +105,22 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   public function getStoredTypes();
 
   /**
-   * Returns a list of property values for stored types..
+   * Returns a list of property types whose value should not be stored in Drupal
+   * field tables.
+   *
+   * This is the inverse of the getStoredTypes() method. It's needed because all
+   * field property types have a column in the Drupal table. However, the "Stored"
+   * ones save the value both in Drupal and in the storage backend and the
+   * "unstored" ones save an empty value in Drupal that is populated on load by
+   * the storage backend.
+   *
+   * @return @array
+   *   Array of \Drupal\tripal\Base\StoragePropertyTypeBase objects.
+   */
+  public function getNonStoredTypes();
+
+  /**
+   * Returns a list of property values for stored types.
    *
    * This function returns an array of property value objects that
    * correspond to the types returned by getStoredTypes().
