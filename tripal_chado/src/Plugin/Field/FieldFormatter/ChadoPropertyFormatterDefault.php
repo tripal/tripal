@@ -28,15 +28,34 @@ class ChadoPropertyFormatterDefault extends ChadoFormatterBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
 
+    // Default filter format.
+    $filter_format = 'basic_html';
+
+    // We need to get the format which was set in the widget settings
+    // because they need to match.
+    // Note: the default filter is used when the widget does not support
+    // filter formats (i.e. String and Select widgets).
+    $entity_type = $this->fieldDefinition->get('entity_type');
+    $bundle = $this->fieldDefinition->get('bundle');
+    $field_name = $this->fieldDefinition->get('field_name');
+    $form_display = \Drupal::service('entity_display.repository')->getFormDisplay($entity_type, $bundle);
+    $widget = $form_display->getComponent($field_name);
+    if (array_key_exists('filter_format', $widget['settings'])) {
+      $filter_format = $widget['settings']['filter_format'];
+    }
+
     $list = [];
     foreach($items as $delta => $item) {
-      $value = $item->get('value')->getString();
+      $value = $item->get('value')->getValue();
       // any URLs are made into clickable links
       if (UrlHelper::isExternal($value)) {
         $value = Link::fromTextAndUrl($value, Url::fromUri($value))->toString();
       }
       $list[$delta] = [
-        '#markup' => $value,
+        '#type' => 'processed_text',
+        '#text' => $value,
+        '#format' => $filter_format,
+        '#langcode' => $item->getLangcode(),
       ];
     }
 
