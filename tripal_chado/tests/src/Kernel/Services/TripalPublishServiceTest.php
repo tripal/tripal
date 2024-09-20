@@ -81,32 +81,27 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     }
 
     // Create terms for organism_dbxref since it seems to be missing.
-    $this->createTripalTerm(
-      [
-        'vocab_name' => 'sbo',
-        'id_space_name' => 'SBO',
-        'term' => [
-          'name' => 'reference annotation',
-          'definition' => 'Additional information that supplements existing data, usually in a document, by providing a link to more detailed information, which is held externally, or elsewhere.',
-          'accession' => '0000552',
-        ],
+    $term_details = [
+      'vocab_name' => 'sbo',
+      'id_space_name' => 'SBO',
+      'term' => [
+        'name' => 'reference annotation',
+        'definition' => 'Additional information that supplements existing data, usually in a document, by providing a link to more detailed information, which is held externally, or elsewhere.',
+        'accession' => '0000552',
       ],
-      'chado_id_space',
-      'chado_vocabulary'
-    );
-     $this->createTripalTerm(
-      [
-        'vocab_name' => 'ero',
-        'id_space_name' => 'ERO',
-        'term' => [
-          'name' => 'database',
-          'definition' => 'A database is an organized collection of data, today typically in digital form.',
-          'accession' => '0001716',
-        ],
+    ];
+    $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
+
+    $term_details = [
+      'vocab_name' => 'ero',
+      'id_space_name' => 'ERO',
+      'term' => [
+        'name' => 'database',
+        'definition' => 'A database is an organized collection of data, today typically in digital form.',
+        'accession' => '0001716',
       ],
-      'chado_id_space',
-      'chado_vocabulary'
-    );
+    ];
+    $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
 
     // Create the content types + fields that we need.
     $this->createContentTypeFromConfig('general_chado', 'organism', TRUE);

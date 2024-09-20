@@ -403,3 +403,6 @@ field.widget.settings.*:
     filter_format:
       type: string
       label: 'Filter format for a filtered text field'
+    num_rows:
+      type: integer
+      label: 'Number of Rows to display in the text widget'

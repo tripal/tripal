@@ -99,7 +99,7 @@ trait TripalTestTrait {
    * @return TripalTerm
    *   Returns the tripal term that was created.
    */
-  public function createTripalTerm($values, $idspace_plugin_id, $vocab_plugin_id) {
+  public function createTripalTerm(&$values, $idspace_plugin_id, $vocab_plugin_id) {
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
@@ -122,6 +122,7 @@ trait TripalTestTrait {
       $vocabulary = $vmanager->createCollection($values['vocab_name'], $vocab_plugin_id);
       $this->assertInstanceOf(TripalVocabularyInterface::class, $vocabulary, "Unable to create the Vocabulary.");
     }
+    $this->assertInstanceOf(TripalVocabularyInterface::class, $vocabulary, "Unable to load the Vocabulary.");
 
     // Create the ID Space.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
@@ -131,13 +132,13 @@ trait TripalTestTrait {
       $this->assertInstanceOf(TripalIdSpaceInterface::class, $idSpace, "Unable to create the ID Space.");
       $idSpace->setDefaultVocabulary($vocabulary->getName());
     }
-
+    $this->assertInstanceOf(TripalIdSpaceInterface::class, $idSpace, "Unable to load the ID Space.");
 
     $term = $idSpace->getTerm($values['term']['accession']);
     if (!$term) {
       // Now create the term.
-      $values['term']['idSpace'] = $idSpace->getName();
-      $values['term']['vocabulary'] = $vocabulary->getName();
+      $values['term']['idSpace'] = $values['id_space_name'];
+      $values['term']['vocabulary'] = $values['vocab_name'];
       $term = new TripalTerm($values['term']);
       $this->assertInstanceOf(TripalTerm::class, $term, "Unable to create the term object.");
       // and save it to the ID Space.
