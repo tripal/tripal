@@ -66,16 +66,16 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     // This should not trigger, however, for the remove button, since that changes
     // delta values.
     $triggering_element = $form_state->getTriggeringElement()['#name'] ?? '';
-    if (preg_match('/remove_button/', $triggering_element)) {
-      if ($db_id) {
+    if ($db_id) {
+      if (!preg_match('/remove_button/', $triggering_element)) {
         $storage['initial_values'][$field_name][$delta]['db_id'] = $db_id;
         $storage['initial_values'][$field_name][$delta]['db_name'] = $db_name;
         $form_state->setStorage($storage);
       }
-      else {
-        $db_id = $storage['initial_values'][$field_name][$delta]['db_id'] ?? 0;
-        $db_name = $storage['initial_values'][$field_name][$delta]['db_name'] ?? '';
-      }
+    }
+    else {
+      $db_id = $storage['initial_values'][$field_name][$delta]['db_id'] ?? 0;
+      $db_name = $storage['initial_values'][$field_name][$delta]['db_name'] ?? '';
     }
 
     $dbxref_id = $item_vals['dbxref_id'] ?? 0;
