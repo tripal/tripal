@@ -69,10 +69,10 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
         ])->execute();
     }
 
-    // Create one contact in chado.
+    // Create one contact in chado, in addition to the null contact.
     $this->connection->insert('1:contact')
       ->fields([
-        'name' => 'Contact No. 1',
+        'name' => 'Contact No. 2',
       ])->execute();
 
     // Create one arraydesign in chado, to test the mismatched
@@ -205,14 +205,15 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     // primary key, e.g. arraydesign table column manufacturer_id is
     // a foreign key to the contact table column contact_id.
 
-    // Publish the (null and) test contact and arraydesign entities and confirm that they have been created.
+    // Publish the null contact entity and confirm that it has been created. Issue #1809
     $bundle = 'contact';
     TripalPublish::runTripalJob($bundle, $datastore, $publish_options);
     $contact_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
     // Expect 2 here instead of 1 because the null contact will also be published - Issue #1809
     $this->assertCount(2, $contact_entities,
-      "We expected there to be the same number of $bundle entities as we inserted plus one.");
+      "We expected there to be two contacts created, including the null contact.");
 
+    // Publish the arraydesign entity and confirm that it has been created.
     $bundle = 'array_design';  // not the same as the table name
     TripalPublish::runTripalJob($bundle, $datastore, $publish_options);
     $arraydesign_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
@@ -224,16 +225,17 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     // this uses the fallback entity lookup function getDefaultBundle(),
     // because the term for manufacturer_id is NOT a content type.
     // For the fallback lookup we need to also pass the base table.
+    // Note that we don't depend on the order that contacts are published in.
     $base_table = 'contact';
     $chado_contact_id = 2;  // 1 is the null contact
-    $expected_contact_entity_id = 8; // 1-3: project, 4-6: analysis, 7: null contact, 8: test contact, 9: array_design
+    $expected_contact_entity_ids = ['7', '8']; // 1-3: project, 4-6: analysis, 7or8: null contact, 7or8: test contact, 9: array_design
     $entity_id = $lookup_manager->getEntityId(
       $chado_contact_id,
       $this->manufacturer_termIdSpace,
       $this->manufacturer_Accession,
       $base_table
     );
-    $this->assertEquals($expected_contact_entity_id, $entity_id, "We did not retrieve the expected entity_id for manufacturer_id $chado_contact_id");
+    $this->assertContains($entity_id, $expected_contact_entity_ids, "We did not retrieve the expected entity_id for manufacturer_id $chado_contact_id");
 
     // Also check that the contact_id (as manufacturer_id) is in the Drupal table
     $entity_table_name = 'tripal_entity__array_design_manufacturer';
