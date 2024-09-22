@@ -318,7 +318,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       $bundle = $form_state_storage['bundle'];
       $existing_terms = self::getExistingFieldTerms($bundle);
       $existing_field = $existing_terms[$idSpace_name . ':' . $accession] ?? NULL;
-      if ($existing_field) {
+      $current_field_name = $form_state->getFormObject()->getEntity()->getName();
+      if ($existing_field and ($existing_field != $current_field_name)) {
         $form_state->setErrorByName('settings][field_term_fs][vocabulary_term',
             "Another field ($existing_field) is already using this term. Please supply"
             . ' a different term, or remove the other field from this content type.');
