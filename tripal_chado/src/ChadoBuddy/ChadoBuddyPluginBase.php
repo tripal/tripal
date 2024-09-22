@@ -390,7 +390,7 @@ abstract class ChadoBuddyPluginBase extends PluginBase implements ChadoBuddyInte
    *
    * @return array
    *   Merged associative array of values
-   * 
+   *
    * @throws Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException
    *   If the key 'buddy_record' does not have a ChadoBuddyRecord as its value.
    *   If a value inside the ChadoBuddyRecord is different than one in the $values array.
