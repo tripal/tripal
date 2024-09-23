@@ -22,11 +22,10 @@ tripal_layout.content_type_field_layout_reset:
         type: entity:tripal_entity_type
   requirements:
     _permission: 'administer tripal'
-    
+
 ##
 # Tripal Layout Default View entity.
 ##
-
 entity.tripal_layout_default_view.layouts:
   path: '/admin/tripal/config/tripal_layout_default_view'
   defaults:
@@ -38,6 +37,24 @@ entity.tripal_layout_default_view.delete_form:
   path: '/admin/tripal/config/tripal_layout_default_view/{tripal_layout_default_view}/delete'
   defaults:
     _entity_form: 'tripal_layout_default_view.delete'
+    _title: 'Delete Configuration'
+  requirements:
+    _permission: 'administer tripal'
+
+##
+# Tripal Default Form Layout entity.
+##
+entity.tripal_layout_default_form.layouts:
+  path: '/admin/tripal/config/tripal_layout_default_form'
+  defaults:
+    _entity_list: 'tripal_layout_default_form'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.tripal_layout_default_form.delete_form:
+  path: '/admin/tripal/config/tripal_layout_default_form/{tripal_layout_default_form}/delete'
+  defaults:
+    _entity_form: 'tripal_layout_default_form.delete'
     _title: 'Delete Configuration'
   requirements:
     _permission: 'administer tripal'
