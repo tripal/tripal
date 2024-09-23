@@ -4,7 +4,7 @@ namespace Drupal\tripal_layout\Entity;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 
 /**
- * Defines the Default Form entity controlling the form layout.
+ * Defines the Default Layout entity controlling the form layout.
  *
  * @ConfigEntityType(
  *   id = "tripal_layout_default_form",

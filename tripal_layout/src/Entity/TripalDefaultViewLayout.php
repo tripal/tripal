@@ -2,18 +2,17 @@
 namespace Drupal\tripal_layout\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\example\ExampleInterface;
 
 /**
- * Defines the Example entity.
+ * Defines the Default Layout entity controlling the page display/layout.
  *
  * @ConfigEntityType(
  *   id = "tripal_layout_default_view",
- *   label = @Translation("Default layouts for Tripal"),
+ *   label = @Translation("Tripal Default Display Layout"),
  *   handlers = {
- *     "list_builder" = "Drupal\tripal_layout\ListBuilders\TripalLayoutDefaultViewListBuilder",
+ *     "list_builder" = "Drupal\tripal_layout\ListBuilders\TripalDefaultViewLayoutListBuilder",
  *     "form" = {
- *       "delete" = "Drupal\tripal_layout\Form\TripalLayoutDefaultViewDeleteForm",
+ *       "delete" = "Drupal\tripal_layout\Form\TripalDefaultViewLayoutDeleteForm",
  *     }
  *   },
  *   config_prefix = "tripal_layout_default_view",
@@ -34,23 +33,24 @@ use Drupal\example\ExampleInterface;
  *   }
  * )
  */
-class TripalLayoutDefaultView extends ConfigEntityBase implements TripalLayoutDefaultViewInterface {
+class TripalDefaultViewLayout extends ConfigEntityBase implements TripalLayoutDefaultViewInterface {
+
   /**
-   * The Example ID.
+   * A unique ID for this display layout entity.
    *
    * @var string
    */
   protected $id;
 
   /**
-   * The Example label.
+   * A label to provide to the admin identifying this collection of display layouts.
    *
    * @var string
    */
   protected $label;
 
   /**
-   * The TripalEntityTypeCollectionConfig description.
+   * A description to provide to the admin describing this collection.
    *
    * @var string
    */
@@ -58,13 +58,14 @@ class TripalLayoutDefaultView extends ConfigEntityBase implements TripalLayoutDe
 
 
   /**
+   * The collection of display layouts itself directly from the YAML.
    *
    * @var array
    */
   protected $layouts;
 
   /**
-   * Retrieves the current description for the content type configuration.
+   * Retrieves the description of this display layout collection.
    *
    * @return string
    */

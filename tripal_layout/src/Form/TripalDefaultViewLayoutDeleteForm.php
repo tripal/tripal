@@ -6,10 +6,9 @@ use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Builds the form to delete an Chado Term Mapping Config Entity.
+ * Builds the form to delete an TripalDefaultViewLayout Config Entity.
  */
-
-class TripalLayoutDefaultViewDeleteForm extends EntityConfirmFormBase {
+class TripalDefaultViewLayoutDeleteForm extends EntityConfirmFormBase {
 
   /**
    * {@inheritdoc}
@@ -23,8 +22,8 @@ class TripalLayoutDefaultViewDeleteForm extends EntityConfirmFormBase {
    */
   public function getDescription() {
     return $this->t('You are deleting an entire configuration that specifies how ' .
-        'content types should be displayed by default. Rebuild the cache to re-import ' .
-        'the default settings of this configuration.');
+        'content types forms should be organized by default. Rebuild the cache ' .
+        'to re-import the default settings of this configuration.');
   }
 
   /**
@@ -46,7 +45,7 @@ class TripalLayoutDefaultViewDeleteForm extends EntityConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->entity->delete();
-    $this->messenger()->addMessage($this->t('The %label Tripal Default Layotus has been deleted.', ['%label' => $this->entity->label()]));
+    $this->messenger()->addMessage($this->t('The %label Tripal Default View Layout has been deleted.', ['%label' => $this->entity->label()]));
 
     $form_state->setRedirectUrl($this->getCancelUrl());
   }
