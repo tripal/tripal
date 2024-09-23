@@ -6,9 +6,9 @@ use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Builds the form to delete an TripalDefaultViewLayout Config Entity.
+ * Builds the form to delete an TripalLayoutDefaultForm Config Entity.
  */
-class TripalDefaultViewLayoutDeleteForm extends EntityConfirmFormBase {
+class TripalLayoutDefaultFormDeleteForm extends EntityConfirmFormBase {
 
   /**
    * {@inheritdoc}
@@ -22,15 +22,15 @@ class TripalDefaultViewLayoutDeleteForm extends EntityConfirmFormBase {
    */
   public function getDescription() {
     return $this->t('You are deleting an entire configuration that specifies how ' .
-        'content types forms should be organized by default. Rebuild the cache ' .
-        'to re-import the default settings of this configuration.');
+        'content types forms should be organized by default. Rebuild the cache to re-import ' .
+        'the default settings of this configuration.');
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('entity.tripal_layout_default_view.layouts');
+    return new Url('entity.tripal_layout_default_form.layouts');
   }
 
   /**
@@ -45,7 +45,7 @@ class TripalDefaultViewLayoutDeleteForm extends EntityConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->entity->delete();
-    $this->messenger()->addMessage($this->t('The %label Tripal Default View Layout has been deleted.', ['%label' => $this->entity->label()]));
+    $this->messenger()->addMessage($this->t('The %label Tripal Default Form Layout has been deleted.', ['%label' => $this->entity->label()]));
 
     $form_state->setRedirectUrl($this->getCancelUrl());
   }

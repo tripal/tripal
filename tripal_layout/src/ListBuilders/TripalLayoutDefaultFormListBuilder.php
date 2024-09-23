@@ -9,7 +9,7 @@ use Drupal\Core\Entity\EntityInterface;
 /**
  * Provides a listing of Form Layout collections.
  */
-class TripalDefaultFormLayoutListBuilder extends ConfigEntityListBuilder {
+class TripalLayoutDefaultFormListBuilder extends ConfigEntityListBuilder {
 
   /**
    * {@inheritdoc}

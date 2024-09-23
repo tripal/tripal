@@ -9,7 +9,7 @@ use Drupal\Core\Entity\EntityInterface;
 /**
  * Provides a listing of View Layout collections.
  */
-class TripalDefaultViewLayoutListBuilder extends ConfigEntityListBuilder {
+class TripalLayoutDefaultViewListBuilder extends ConfigEntityListBuilder {
 
   /**
    * {@inheritdoc}

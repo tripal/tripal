@@ -10,9 +10,9 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *   id = "tripal_layout_default_form",
  *   label = @Translation("Tripal Default Form Layout"),
  *   handlers = {
- *     "list_builder" = "Drupal\tripal_layout\ListBuilders\TripalDefaultFormLayoutListBuilder",
+ *     "list_builder" = "Drupal\tripal_layout\ListBuilders\TripalLayoutDefaultFormListBuilder",
  *     "form" = {
- *       "delete" = "Drupal\tripal_layout\Form\TripalDefaultFormLayoutDeleteForm",
+ *       "delete" = "Drupal\tripal_layout\Form\TripalLayoutDefaultFormDeleteForm",
  *     }
  *   },
  *   config_prefix = "tripal_layout_default_form",
@@ -33,7 +33,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *   }
  * )
  */
-class TripalDefaultFormLayout extends ConfigEntityBase {
+class TripalLayoutDefaultForm extends ConfigEntityBase {
 
   /**
    * A unique ID for this form layout entity.

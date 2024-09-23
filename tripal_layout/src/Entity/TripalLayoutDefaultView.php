@@ -10,9 +10,9 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *   id = "tripal_layout_default_view",
  *   label = @Translation("Tripal Default Display Layout"),
  *   handlers = {
- *     "list_builder" = "Drupal\tripal_layout\ListBuilders\TripalDefaultViewLayoutListBuilder",
+ *     "list_builder" = "Drupal\tripal_layout\ListBuilders\TripalLayoutDefaultViewListBuilder",
  *     "form" = {
- *       "delete" = "Drupal\tripal_layout\Form\TripalDefaultViewLayoutDeleteForm",
+ *       "delete" = "Drupal\tripal_layout\Form\TripalLayoutDefaultViewDeleteForm",
  *     }
  *   },
  *   config_prefix = "tripal_layout_default_view",
@@ -33,7 +33,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *   }
  * )
  */
-class TripalDefaultViewLayout extends ConfigEntityBase implements TripalLayoutDefaultViewInterface {
+class TripalLayoutDefaultView extends ConfigEntityBase implements TripalLayoutDefaultViewInterface {
 
   /**
    * A unique ID for this display layout entity.
