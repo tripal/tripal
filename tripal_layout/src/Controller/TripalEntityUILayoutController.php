@@ -6,6 +6,199 @@ use Drupal\Core\Entity\Entity\EntityViewDisplay;
 
 class TripalEntityUILayoutController extends ControllerBase {
 
+  /**
+   * FORM: Applies the default Tripal layout to a tripal entity form.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   */
+  public function applyFormLayout($tripal_entity_type) {
+
+    $bundle = $tripal_entity_type->id();
+    $bundle_label = $tripal_entity_type->getLabel();
+
+    \Drupal::messenger()->addMessage(t('Not Yet Implemented.'));
+
+    return $this->redirect(
+      'entity.entity_form_display.tripal_entity.default',
+      ['tripal_entity_type' => $bundle]
+    );
+  }
+
+  /**
+   * FORM: Removes all layout applied by this module to the tripal entity form.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   */
+  public function resetFormLayout($tripal_entity_type) {
+
+    $bundle = $tripal_entity_type->id();
+    $bundle_label = $tripal_entity_type->getLabel();
+
+    \Drupal::messenger()->addMessage(t('Not Yet Implemented.'));
+
+    return $this->redirect(
+      'entity.entity_form_display.tripal_entity.default',
+      ['tripal_entity_type' => $bundle]
+    );
+  }
+
+  /**
+   * DISPLAY: Applies the default Tripal layout to a tripal entity view.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   */
+  public function applyLayout($tripal_entity_type) {
+
+    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_entity_storage **/
+    /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $display **/
+    /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
+    $bundle = $tripal_entity_type->id();
+    $bundle_label = $tripal_entity_type->getLabel();
+    $entity_type_manager = \Drupal::service('entity_type.manager');
+    $config_entity_storage = $entity_type_manager->getStorage('entity_view_display');
+    $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+
+    // First reset the display.
+    $this->clearFieldGroups($display);
+    $this->unhideAll($display);
+
+    // Get the layout for this bundle.
+    $bundle_layouts = $this->getLayout($bundle);
+    if (count($bundle_layouts) == 0) {
+      \Drupal::messenger()->addWarning(t('No default layouts could be found for this content type.'));
+      return $this->redirect(
+        'entity.entity_view_display.tripal_entity.default',
+        ['tripal_entity_type' => $bundle]
+      );
+    }
+    if (count($bundle_layouts) > 1) {
+      \Drupal::messenger()->addWarning(t('There are multiple layouts for the same content type. '
+      . 'Selecting the first. @layouts'), ['@layouts' => print_r($bundle_layouts, TRUE)]);
+    }
+    $layout =  array_values($bundle_layouts)[0];
+
+    // If there are field group definitinos then create those.
+    if (array_key_exists('field_groups', $layout)) {
+
+      // First, create the field groups
+      foreach ($layout['field_groups'] as $group_type => $field_groups) {
+        if ($group_type == 'details') {
+          foreach ($field_groups as $group_name => $settings) {
+            $this->addDetailsFieldGroup($group_name, $display, $settings);
+          }
+        }
+        if ($group_type == 'field_group_table') {
+          foreach ($field_groups as $group_name => $settings) {
+            $this->addTableFieldGroup($group_name, $display, $settings);
+          }
+        }
+      }
+
+      // Now set the children.
+      foreach ($layout['field_groups'] as $group_type => $field_groups) {
+        foreach ($field_groups as $group_name => $settings) {
+          $children = $settings['children'];
+          foreach ($children as $child) {
+            // Prevent the case where the setup accidently sets the parent
+            // as a child of itself.
+            if ($child == $group_name) {
+              \Drupal::messenger()->addWarning(t(
+                'Please check the layout configuration.'
+                . 'It is trying to set a element to be a child of itself: @group_name == @child',
+                ['@group_name' => $group_name, '@child' => $child]
+              ));
+              continue;
+            }
+
+            // Before adding the child we need to distinguish between a
+            // field instance name and a field type name.  The latter begins
+            // with 'type:'.  If the former, we can simply add the child. If
+            // the latter then we have to find all of the fields of the given
+            // field type and then add each one at a time.
+            $matches = [];
+            if (preg_match('/^type:(.+)$/', $child, $matches)) {
+              $child_type = $matches[1];
+
+              // Get the fields of this bundle and if any match the type
+              // then set the child.
+              $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle);
+              /** @var \Drupal\field\Entity\FieldConfig $entity_field_def **/
+              foreach ($entity_field_defs as $entity_field_def) {
+                if ($entity_field_def->getType() == $child_type) {
+                  $this->setChild($entity_field_def->getName(), $group_name, $display);
+                }
+              }
+            }
+            // We don't have a field type, so simply set the field instance.
+            else {
+              $this->setChild($child, $group_name, $display);
+            }
+          }
+        }
+      }
+    }
+
+    // Now hide any fields that should be hidden.
+    foreach ($layout['hidden'] as $field_name) {
+      $this->hideComponent($field_name, $display);
+    }
+
+    // Hide the labels of all fields.
+    $components = $display->getComponents();
+    foreach ($components as $component_name => $options) {
+      $options['label'] = 'hidden';
+      $display->setComponent($component_name, $options);
+    }
+
+    // Save all of the changes to the display.
+    $display->save();
+
+    \Drupal::messenger()->addMessage(t('The default Tripal layout has been set for this content type and saved.'));
+
+    return $this->redirect(
+      'entity.entity_view_display.tripal_entity.default',
+      ['tripal_entity_type' => $bundle]
+    );
+  }
+
+  /**
+   * DISPLAY: Removes all layout applied by this module to the tripal entity view.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   */
+  public function resetLayout($tripal_entity_type) {
+    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_entity_storage **/
+    /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $display **/
+    $bundle = $tripal_entity_type->id();
+    $bundle_label = $tripal_entity_type->getLabel();
+    $entity_type_manager = \Drupal::service('entity_type.manager');
+    $config_entity_storage = $entity_type_manager->getStorage('entity_view_display');
+    $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
+
+    // First reset the display.
+    $this->clearFieldGroups($display);
+    $this->unhideAll($display);
+
+    // Set the component label's back to above.
+    $components = $display->getComponents();
+    foreach ($components as $component_name => $options) {
+      $options['label'] = 'above';
+      $display->setComponent($component_name, $options);
+    }
+
+    // Save all of the changes to the display.
+    $display->save();
+
+    \Drupal::messenger()->addMessage(t('Layout has been reset and saved.'));
+
+    return $this->redirect(
+      'entity.entity_view_display.tripal_entity.default',
+      ['tripal_entity_type' => $bundle]
+    );
+  }
 
   /**
    * A generic funtion for getting a settings for addDetailsFieldGroup().
@@ -233,159 +426,4 @@ class TripalEntityUILayoutController extends ControllerBase {
 
     return $bundle_layouts;
   }
-
-
-  /**
-   * Removes all layout applied by this module.
-   *
-   * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
-   */
-
-  public function resetLayout($tripal_entity_type) {
-    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_entity_storage **/
-    /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $display **/
-    $bundle = $tripal_entity_type->id();
-    $bundle_label = $tripal_entity_type->getLabel();
-    $entity_type_manager = \Drupal::service('entity_type.manager');
-    $config_entity_storage = $entity_type_manager->getStorage('entity_view_display');
-    $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
-
-    // First reset the display.
-    $this->clearFieldGroups($display);
-    $this->unhideAll($display);
-
-    // Set the component label's back to above.
-    $components = $display->getComponents();
-    foreach ($components as $component_name => $options) {
-      $options['label'] = 'above';
-      $display->setComponent($component_name, $options);
-    }
-
-    // Save all of the changes to the display.
-    $display->save();
-
-    \Drupal::messenger()->addMessage(t('Layout has been reset and saved.'));
-
-    return $this->redirect('entity.entity_view_display.tripal_entity.default',
-        ['tripal_entity_type' => $bundle]);
-  }
-
-
-  /**
-   * Applies the default Tripal layout to a tripal entity.
-   *
-   * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
-   */
-  public function applyLayout($tripal_entity_type) {
-
-    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_entity_storage **/
-    /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $display **/
-    /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
-    $bundle = $tripal_entity_type->id();
-    $bundle_label = $tripal_entity_type->getLabel();
-    $entity_type_manager = \Drupal::service('entity_type.manager');
-    $config_entity_storage = $entity_type_manager->getStorage('entity_view_display');
-    $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
-    $entity_field_manager = \Drupal::service('entity_field.manager');
-
-    // First reset the display.
-    $this->clearFieldGroups($display);
-    $this->unhideAll($display);
-
-    // Get the layout for this bundle.
-    $bundle_layouts = $this->getLayout($bundle);
-    if (count($bundle_layouts) == 0) {
-      \Drupal::messenger()->addWarning(t('No default layouts could be found for this content type.'));
-      return $this->redirect('entity.entity_view_display.tripal_entity.default',
-          ['tripal_entity_type' => $bundle]);
-
-    }
-    if (count($bundle_layouts) > 1) {
-      \Drupal::messenger()->addWarning(t('There are multiple layouts for the same content type. '
-          . 'Selecting the first. @layouts'), ['@layouts' => print_r($bundle_layouts, TRUE)]);
-    }
-    $layout =  array_values($bundle_layouts)[0];
-
-    // If there are field group definitinos then create those.
-    if (array_key_exists('field_groups', $layout)) {
-
-      // First, create the field groups
-      foreach ($layout['field_groups'] as $group_type => $field_groups) {
-        if ($group_type == 'details') {
-          foreach ($field_groups as $group_name => $settings) {
-            $this->addDetailsFieldGroup($group_name, $display, $settings);
-          }
-        }
-        if ($group_type == 'field_group_table') {
-          foreach ($field_groups as $group_name => $settings) {
-            $this->addTableFieldGroup($group_name, $display, $settings);
-          }
-        }
-      }
-
-      // Now set the children.
-      foreach ($layout['field_groups'] as $group_type => $field_groups) {
-        foreach ($field_groups as $group_name => $settings) {
-          $children = $settings['children'];
-          foreach ($children as $child) {
-            // Prevent the case where the setup accidently sets the parent
-            // as a child of itself.
-            if ($child == $group_name) {
-              \Drupal::messenger()->addWarning(t('Please check the layout configuration.'
-                  . 'It is trying to set a element to be a child of itself: @group_name == @child',
-                  ['@group_name' => $group_name, '@child' => $child]));
-              continue;
-            }
-
-            // Before adding the child we need to distinguish between a
-            // field instance name and a field type name.  The latter begins
-            // with 'type:'.  If the former, we can simply add the child. If
-            // the latter then we have to find all of the fields of the given
-            // field type and then add each one at a time.
-            $matches = [];
-            if (preg_match('/^type:(.+)$/', $child, $matches)) {
-              $child_type = $matches[1];
-
-              // Get the fields of this bundle and if any match the type
-              // then set the child.
-              $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle);
-              /** @var \Drupal\field\Entity\FieldConfig $entity_field_def **/
-              foreach ($entity_field_defs as $entity_field_def) {
-                if ($entity_field_def->getType() == $child_type) {
-                  $this->setChild($entity_field_def->getName(), $group_name, $display);
-                }
-              }
-            }
-            // We don't have a field type, so simply set the field instance.
-            else {
-              $this->setChild($child, $group_name, $display);
-            }
-          }
-        }
-      }
-    }
-
-    // Now hide any fields that should be hidden.
-    foreach ($layout['hidden'] as $field_name) {
-      $this->hideComponent($field_name, $display);
-    }
-
-    // Hide the labels of all fields.
-    $components = $display->getComponents();
-    foreach ($components as $component_name => $options) {
-      $options['label'] = 'hidden';
-      $display->setComponent($component_name, $options);
-    }
-
-    // Save all of the changes to the display.
-    $display->save();
-
-    \Drupal::messenger()->addMessage(t('The default Tripal layout has been set for this content type and saved.'));
-
-    return $this->redirect('entity.entity_view_display.tripal_entity.default',
-        ['tripal_entity_type' => $bundle]);
-  }
-
 }

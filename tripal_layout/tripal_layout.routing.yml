@@ -23,6 +23,31 @@ tripal_layout.content_type_field_layout_reset:
   requirements:
     _permission: 'administer tripal'
 
+# Adds a +Apply Default Layout link on the 'Tripal Content Field Display' page.
+tripal_layout.content_type_form_layout:
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/form-display/layout'
+  defaults:
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::applyFormLayout'
+    _title: 'Apply Default Layout'
+  options:
+    parameters:
+      tripal_entity_type:
+        type: entity:tripal_entity_type
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_layout.content_type_form_layout_reset:
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/form-display/reset-layout'
+  defaults:
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::resetFormLayout'
+    _title: 'Reset Layout'
+  options:
+    parameters:
+      tripal_entity_type:
+        type: entity:tripal_entity_type
+  requirements:
+    _permission: 'administer tripal'
+
 ##
 # Tripal Layout Default View entity.
 ##
