@@ -17,4 +17,5 @@ function tripal_layout_page_attachments(array &$attachments) {
  */
 function tripal_layout_rebuild() {
   tripal_load_configuration('tripal_layout', 'tripal_layout_default_view');
+  tripal_load_configuration('tripal_layout', 'tripal_layout_default_form');
 }
