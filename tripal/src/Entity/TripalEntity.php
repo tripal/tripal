@@ -175,12 +175,20 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Make sure the path alias is URL friendly.
     $path_alias = str_replace(['%2F', '+'], ['/', '-'], urlencode($path_alias));
 
-    // Now finally, set the alias.
-    $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
-      'path' => $system_path,
-      'alias' => $path_alias,
-    ]);
-    $path->save();
+    // Check if this alias already exists.
+    $alias_exists = FALSE;
+    if (\Drupal::service('path_alias.repository')->lookupByAlias($path_alias, 'und')) {
+      $alias_exists = TRUE;
+    }
+
+    // If the alias does not exist, then create it.
+    if (!$alias_exists) {
+      $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+        'path' => $system_path,
+        'alias' => $path_alias,
+      ]);
+      $path->save();
+    }
   }
 
   /**
