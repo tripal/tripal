@@ -395,6 +395,8 @@ vocabularies:
                 description: 'A taxonmic rank'
             -   id: 'local:lineage'
                 name: 'lineage'
+            -   id: 'local:lineageex'
+                name: 'lineageex'
             -   id: 'local:genetic_code'
                 name: 'genetic_code'
             -   id: 'local:genetic_code_name'

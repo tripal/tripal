@@ -7,6 +7,7 @@
 use \Drupal\Core\Database\Database;
 use \Drupal\Core\Utility\UpdateException;
 use \Drupal\tripal_chado\Entity\ChadoTermMapping;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
  * Implements hook_install().
@@ -453,24 +454,10 @@ function tripal_chado_update_10401() {
 }
 
 /**
- * Updates missing mapping of CV terms to some chado table columns
+ * Updates missing mapping of CV terms to some chado table columns.
+ * Note: tripal_chado_update_10402 has been renumbered to
+ * tripal_chado_update_10407 by PR 1927
  */
-function tripal_chado_update_10402() {
-  try {
-    $messenger = \Drupal::messenger();
-
-    $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
-    ChadoTermMapping::refreshMapping($id);
-    $messenger->addMessage('Reloaded Chado content terms');
-
-    $id = 'config/install/tripal_chado.chado_term_mapping.core_mapping';
-    ChadoTermMapping::refreshMapping($id);
-    $messenger->addMessage('Reloaded Chado term mapping');
-  }
-  catch (\Exception $e) {
-    throw new UpdateException('Could not reload Chado terms and mappings: ' . $e->getMessage());
-  }
-}
 
 /**
  * Updates entity_id properties added to linking fields in PR 1782
@@ -574,4 +561,34 @@ function tripal_chado_update_10406() {
   $upgradable_types = ['chado_synonym_type_default'];
   $upgradable_properties = ['linker_synonym_fkey_id'];
   tripal_chado_field_reload($upgradable_types, $upgradable_properties, TRUE);
+}
+
+/**
+ * Updates missing mapping of CV terms to some chado table columns.
+ */
+function tripal_chado_update_10407() {
+  // This is the same as former tripal_chado_update_10402, but here we are
+  // adding a new cvterm local:lineageex for PR#1927
+  try {
+    $messenger = \Drupal::messenger();
+
+    // create the local:lineageex term for PR#1927 if it does not exist
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $cvterm_buddy->upsertCvterm(['cvterm.name' => 'lineageex',
+                                 'cv.name' => 'local',
+                                 'dbxref.accession' => 'lineageex',
+                                 'db.name' => 'local'], []);
+
+    $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
+    ChadoTermMapping::refreshMapping($id);
+    $messenger->addMessage('Reloaded Chado content terms');
+
+    $id = 'config/install/tripal_chado.chado_term_mapping.core_mapping';
+    ChadoTermMapping::refreshMapping($id);
+    $messenger->addMessage('Reloaded Chado term mapping');
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not reload Chado terms and mappings: ' . $e->getMessage());
+  }
 }

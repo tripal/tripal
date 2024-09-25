@@ -60,9 +60,9 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
   public function testTripalImporterManagerForChadoImporters() {
 
     // These are the importers we expect to have.
-    $expected_importers = ['chado_obo_loader', 'chado_taxonomy_loader', 'chado_newick_tree_loader', 'chado_fasta_loader', 'chado_gff3_loader'];
+    $expected_importers = ['chado_obo_loader', 'chado_taxonomy_loader', 'chado_tree_generator', 'chado_newick_tree_loader', 'chado_fasta_loader', 'chado_gff3_loader'];
     $expected_count = count($expected_importers);
-    $expected_annotation = ['id', 'label','description','file_types', 'upload_description', 'upload_title', 'use_analysis', 'require_analysis', 'use_button', 'submit_disabled', 'button_text', 'file_upload', 'file_local', 'file_remote', 'file_required'];
+    $expected_annotation = ['id', 'label', 'description', 'file_types', 'use_analysis', 'require_analysis', 'use_button', 'submit_disabled', 'button_text', 'file_upload', 'file_local', 'file_remote', 'file_required'];
 
     // Test the Tripal Importer Plugin Manager.
     // --Ensure we can instantiate the plugin manager.
