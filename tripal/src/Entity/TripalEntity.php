@@ -170,28 +170,29 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * Sets a URL alias for the current entity.
+   * Sets a URL alias for the current entity if one does not already exist.
    *
    * @param string $path_alias
    *   The alias to use. It can contain tokens that correspond to field values.
    *   Tokens should be be compatible with those returned by
    *   tripal_get_entity_tokens(). If NULL, then use the default alias.
    */
-  public function setAlias($path_alias = NULL) {
+  public function setDefaultAlias($path_alias = NULL) {
 
     if (!$path_alias) {
       $path_alias = $this->getDefaultAlias();
     }
+    $system_path = "/bio_data/" . $this->getID();
+    $langcode = $this->defaultLangcode;
 
-    // Check if this alias already exists.
+    // Check if an alias already exists.
     $alias_exists = FALSE;
-    if (\Drupal::service('path_alias.repository')->lookupByAlias($path_alias, 'und')) {
+    if (\Drupal::service('path_alias.repository')->lookupBySystemPath($system_path, $langcode)) {
       $alias_exists = TRUE;
     }
 
-    // If the alias does not exist, then create it.
+    // If an alias does not exist, then create a default alias.
     if (!$alias_exists) {
-      $system_path = "/bio_data/" . $this->getID();
       $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
         'path' => $system_path,
         'alias' => $path_alias,
