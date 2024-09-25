@@ -41,6 +41,8 @@ class TripalEntityForm extends ContentEntityForm {
     $entity->setTitle($values['title'][0]['value']);
     $entity->setOwnerId($values['uid'][0]['target_id']);
     $status = parent::save($form, $form_state);
+
+    // Create the default alias.
     $entity->setAlias();
 
     switch ($status) {

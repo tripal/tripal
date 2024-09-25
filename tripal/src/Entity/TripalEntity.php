@@ -4,6 +4,7 @@ namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -146,41 +147,57 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * Sets the URL alias for the current entity.
+   * Generates a default URL alias for the current entity.
    *
-   * @param string $alias
-   *   The alias to use. It can contain tokens the correspond to field values.
-   *   Token should be be compatible with those returned by
-   *   tripal_get_entity_tokens().
+   * @return string
+   *   The default entity alias, e.g. "/project/1234"
    */
-  public function setAlias($path_alias = NULL) {
-
-
-    $system_path = "/bio_data/" . $this->getID();
-
-    // If no alias was supplied then we should try to generate one using the
-    // default format set by admins.
-    if (!$path_alias) {
-
-      $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
-      $path_alias = $bundle->getURLFormat();
-      $path_alias = $this->replaceTokens($path_alias, $bundle);
-    }
+  public function getDefaultAlias() {
+    // Generate an alias using the default format set by admins.
+    $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+    $default_alias = $bundle->getURLFormat();
+    $default_alias = $this->replaceTokens($default_alias, $bundle);
 
     // Ensure there is a leading slash.
-    if ($path_alias[0] != '/') {
-      $path_alias = '/' . $path_alias;
+    if ($default_alias[0] != '/') {
+      $default_alias = '/' . $default_alias;
     }
 
     // Make sure the path alias is URL friendly.
-    $path_alias = str_replace(['%2F', '+'], ['/', '-'], urlencode($path_alias));
+    $default_alias = str_replace(['%2F', '+'], ['/', '-'], urlencode($default_alias));
 
-    // Now finally, set the alias.
-    $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
-      'path' => $system_path,
-      'alias' => $path_alias,
-    ]);
-    $path->save();
+    return $default_alias;
+  }
+
+  /**
+   * Sets a URL alias for the current entity.
+   *
+   * @param string $path_alias
+   *   The alias to use. It can contain tokens that correspond to field values.
+   *   Tokens should be be compatible with those returned by
+   *   tripal_get_entity_tokens(). If NULL, then use the default alias.
+   */
+  public function setAlias($path_alias = NULL) {
+
+    if (!$path_alias) {
+      $path_alias = $this->getDefaultAlias();
+    }
+
+    // Check if this alias already exists.
+    $alias_exists = FALSE;
+    if (\Drupal::service('path_alias.repository')->lookupByAlias($path_alias, 'und')) {
+      $alias_exists = TRUE;
+    }
+
+    // If the alias does not exist, then create it.
+    if (!$alias_exists) {
+      $system_path = "/bio_data/" . $this->getID();
+      $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+        'path' => $system_path,
+        'alias' => $path_alias,
+      ]);
+      $path->save();
+    }
   }
 
   /**
@@ -282,7 +299,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * Replaces tokens in a given tokens in URL Aliases and Titles.
+   * Replaces tokens in URL Aliases and Titles.
    *
    * @param string $string
    *   The string to replace.
@@ -365,6 +382,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       ))
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
+
+    $fields['path'] = BaseFieldDefinition::create('path')
+      ->setLabel(t('URL alias'))
+      ->setTranslatable(TRUE)
+      ->setDisplayOptions('form', [
+        'type' => 'path',
+        'weight' => 100,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setComputed(TRUE);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Publishing status'))
@@ -597,8 +624,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     parent::postLoad($storage, $entities);
 
 
-    // IF we are doing a listing of content types there is no way in Drupal 10
-    // to specify which fields to load.  By deafult the SqlContentEntityStorage
+    // If we are doing a listing of content types there is no way in Drupal 10
+    // to specify which fields to load.  By default the SqlContentEntityStorage
     // storage system we're using will always attach all fields.  But we can
     // control what fields get attached to entities with this postLoad function.
     // In the TripalEntityListBuilder::load() function we set the
