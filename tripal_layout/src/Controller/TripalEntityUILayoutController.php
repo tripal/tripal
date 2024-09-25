@@ -81,16 +81,27 @@ class TripalEntityUILayoutController extends ControllerBase {
     $bundle = $tripal_entity_type->id();
     $bundle_label = $tripal_entity_type->label();
 
-    $this->applyLayout($tripal_entity_type, 'view');
+    $successful = $this->applyLayout($tripal_entity_type, 'view');
 
     // And let the admin know we have.
-    \Drupal::messenger()->addMessage(t(
-      '%bundle @context Default Tripal Layout has been applied.',
-      [
-        '%bundle' => $bundle_label,
-        '@context' => 'Page'
-      ]
-    ));
+    if ($successful === TRUE) {
+      \Drupal::messenger()->addMessage(t(
+        '%bundle @context Default Tripal Layout has been applied.',
+        [
+          '%bundle' => $bundle_label,
+          '@context' => 'Page'
+        ]
+      ));
+    }
+    else {
+      \Drupal::messenger()->addError(t(
+        'Errors were encountered when attempting to apply the %bundle @context Default Tripal Layout!',
+        [
+          '%bundle' => $bundle_label,
+          '@context' => 'Page'
+        ]
+      ));
+    }
 
     return $this->redirect(
       'entity.entity_view_display.tripal_entity.default',
@@ -453,6 +464,8 @@ class TripalEntityUILayoutController extends ControllerBase {
    * @param EntityDisplayBase $display
    *   The display to modified. This is optional and will be loaded
    *   based on the first two parameters if not supplied.
+   * @return bool
+   *   TRUE if the layout was applied successfully and FALSE otherwise.
    */
   protected function applyLayout(TripalEntityType $tripal_entity_type, string $display_context, EntityDisplayBase $display = NULL) {
 
@@ -473,10 +486,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     $bundle_layouts = $this->getLayout($bundle);
     if (count($bundle_layouts) == 0) {
       \Drupal::messenger()->addWarning(t('No default layouts could be found for this content type.'));
-      return $this->redirect(
-        'entity.entity_view_display.tripal_entity.default',
-        ['tripal_entity_type' => $bundle]
-      );
+      return FALSE;
     }
     if (count($bundle_layouts) > 1) {
       \Drupal::messenger()->addWarning(t('There are multiple layouts for the same content type. '
@@ -528,8 +538,8 @@ class TripalEntityUILayoutController extends ControllerBase {
 
               // Get the fields of this bundle and if any match the type
               // then set the child.
-              $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle);
               /** @var \Drupal\field\Entity\FieldConfig $entity_field_def **/
+              $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle);
               foreach ($entity_field_defs as $entity_field_def) {
                 if ($entity_field_def->getType() == $child_type) {
                   $this->setChild($entity_field_def->getName(), $group_name, $display);
@@ -559,5 +569,7 @@ class TripalEntityUILayoutController extends ControllerBase {
 
     // Save all of the changes to the display.
     $display->save();
+
+    return TRUE;
   }
 }
