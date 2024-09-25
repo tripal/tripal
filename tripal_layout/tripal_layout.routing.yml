@@ -1,8 +1,8 @@
-# Adds a +Apply Default Layout link on the 'Tripal Content Field Display' page.
+# Adds an "+Apply Tripal Layout" link on the Tripal Content "Manage Display" page.
 tripal_layout.content_type_field_layout:
-  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/layout'
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/display/layout'
   defaults:
-    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::applyLayout'
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::applyViewLayout'
     _title: 'Apply Default Layout'
   options:
     parameters:
@@ -12,9 +12,9 @@ tripal_layout.content_type_field_layout:
     _permission: 'administer tripal'
 
 tripal_layout.content_type_field_layout_reset:
-  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/layout/reset'
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/display/reset-layout'
   defaults:
-    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::resetLayout'
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::resetViewLayout'
     _title: 'Reset Layout'
   options:
     parameters:

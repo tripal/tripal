@@ -2,7 +2,9 @@
 namespace Drupal\tripal_layout\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Entity\EntityDisplayBase;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
 
 class TripalEntityUILayoutController extends ControllerBase {
 
@@ -10,6 +12,12 @@ class TripalEntityUILayoutController extends ControllerBase {
    * FORM: Applies the default Tripal layout to a tripal entity form.
    *
    * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   *  The TripalEntityType whose form display layout we want to apply the default
+   *  tripal layout to. Note: The tripal layout specific to this TripalEntityType
+   *  will be applied.
+   * @return \Symfony\Component\HttpFoundation\Response
+   *  Returns the action to take on the page; specifically, returns a redirect
+   *  action to return to the "Manage Form Display" page for this TripalEntityType.
    */
   public function applyFormLayout($tripal_entity_type) {
 
@@ -28,16 +36,78 @@ class TripalEntityUILayoutController extends ControllerBase {
    * FORM: Removes all layout applied by this module to the tripal entity form.
    *
    * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   *  The TripalEntityType whose form display layout we want to reset to
+   *  it's defaults.
+   * @return \Symfony\Component\HttpFoundation\Response
+   *  Returns the action to take on the page; specifically, returns a redirect
+   *  action to return to the "Manage Form Display" page for this TripalEntityType.
    */
   public function resetFormLayout($tripal_entity_type) {
 
     $bundle = $tripal_entity_type->id();
-    $bundle_label = $tripal_entity_type->getLabel();
+    $bundle_label = $tripal_entity_type->label();
 
-    \Drupal::messenger()->addMessage(t('Not Yet Implemented.'));
+    $this->resetLayout($tripal_entity_type, 'form');
+
+    // And let the admin know we have.
+    \Drupal::messenger()->addMessage(t(
+      '%bundle @context Display Layout has been reset to show all fields using their display defaults.',
+      [
+        '%bundle' => $bundle_label,
+        '%context' => 'Form'
+      ]
+    ));
 
     return $this->redirect(
       'entity.entity_form_display.tripal_entity.default',
+      ['tripal_entity_type' => $bundle]
+    );
+  }
+
+  /**
+   * VIEW: Applies the default Tripal layout to a tripal entity view.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   *  The TripalEntityType whose view display layout we want to apply the default
+   *  tripal layout to. Note: The tripal layout specific to this TripalEntityType
+   *  will be applied.
+   * @return \Symfony\Component\HttpFoundation\Response
+   *  Returns the action to take on the page; specifically, returns a redirect
+   *  action to return to the "Manage Display" page for this TripalEntityType.
+   */
+  public function applyViewLayout($tripal_entity_type) {
+    return $this->applyLayout($tripal_entity_type);
+  }
+
+  /**
+   * VIEW: Removes all layout applied by this module to the tripal entity view.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   *  The TripalEntityType whose view display layout we want to reset to
+   *  it's defaults.
+   * @return \Symfony\Component\HttpFoundation\Response
+   *  Returns the action to take on the page; specifically, returns a redirect
+   *  action to return to the "Manage Display" page for this TripalEntityType.
+   */
+  public function resetViewLayout($tripal_entity_type) {
+
+    $bundle = $tripal_entity_type->id();
+    $bundle_label = $tripal_entity_type->label();
+
+    // Now reset the view layout.
+    $this->resetLayout($tripal_entity_type, 'view');
+
+    // And let the admin know we have.
+    \Drupal::messenger()->addMessage(t(
+      '%bundle @context Display Layout has been reset to show all fields using their display defaults.',
+      [
+        '%bundle' => $bundle_label,
+        '@context' => 'Page'
+      ]
+    ));
+
+    return $this->redirect(
+      'entity.entity_view_display.tripal_entity.default',
       ['tripal_entity_type' => $bundle]
     );
   }
@@ -47,8 +117,7 @@ class TripalEntityUILayoutController extends ControllerBase {
    *
    * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
    */
-  public function applyLayout($tripal_entity_type) {
-
+  protected function applyLayout($tripal_entity_type) {
     /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
     /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_entity_storage **/
     /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $display **/
@@ -62,7 +131,7 @@ class TripalEntityUILayoutController extends ControllerBase {
 
     // First reset the display.
     $this->clearFieldGroups($display);
-    $this->unhideAll($display);
+    $this->enableAll($display);
 
     // Get the layout for this bundle.
     $bundle_layouts = $this->getLayout($bundle);
@@ -164,40 +233,50 @@ class TripalEntityUILayoutController extends ControllerBase {
   }
 
   /**
-   * DISPLAY: Removes all layout applied by this module to the tripal entity view.
+   * Clears any field groups, enables all fields and resets them
+   * to their default display options.
    *
    * @param \Drupal\tripal\Entity\TripalEntityType $tripal_entity_type
+   *   The bundle whose display is being managed (e.g. organism)
+   * @param string $display_context
+   *   One of 'view' or 'form' depending on whether the display to
+   *   be reset is for the page view display or the form display.
+   * @param EntityDisplayBase $display
+   *   The display to be reset. This is optional and will be loaded
+   *   based on the first two parameters if not supplied.
    */
-  public function resetLayout($tripal_entity_type) {
-    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_entity_storage **/
-    /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $display **/
-    $bundle = $tripal_entity_type->id();
-    $bundle_label = $tripal_entity_type->getLabel();
-    $entity_type_manager = \Drupal::service('entity_type.manager');
-    $config_entity_storage = $entity_type_manager->getStorage('entity_view_display');
-    $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
+  public function resetLayout($tripal_entity_type, $display_context, $display = NULL) {
 
-    // First reset the display.
-    $this->clearFieldGroups($display);
-    $this->unhideAll($display);
+    if ($display === NULL) {
 
-    // Set the component label's back to above.
-    $components = $display->getComponents();
-    foreach ($components as $component_name => $options) {
-      $options['label'] = 'above';
-      $display->setComponent($component_name, $options);
+      $bundle = $tripal_entity_type->id();
+      /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+      $entity_type_manager = \Drupal::service('entity_type.manager');
+
+      if ($display_context === 'view') {
+        /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_entity_storage **/
+        $config_entity_storage = $entity_type_manager->getStorage('entity_view_display');
+      }
+      elseif ($display_context === 'form') {
+        /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_entity_storage **/
+        $config_entity_storage = $entity_type_manager->getStorage('entity_form_display');
+      }
+      else {
+        throw new \Exception("Unable to load the default display for $bundle [$display_context] as only 'view' and 'form' are supported.");
+
+      }
+
+      /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $display **/
+      $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
     }
 
-    // Save all of the changes to the display.
+    // Now reset the display.
+    $this->clearFieldGroups($display);
+    $this->enableAll($display);
+    $this->resetComponents($display);
+
+    // And save it.
     $display->save();
-
-    \Drupal::messenger()->addMessage(t('Layout has been reset and saved.'));
-
-    return $this->redirect(
-      'entity.entity_view_display.tripal_entity.default',
-      ['tripal_entity_type' => $bundle]
-    );
   }
 
   /**
@@ -322,20 +401,38 @@ class TripalEntityUILayoutController extends ControllerBase {
   }
 
   /**
-   * Sets all fields for display.
+   * Sets all fields to be enabled in the form display.
    *
-   * @param EntityViewDisplay $display
+   * @param EntityDisplayBase $display
    */
-  protected function unhideAll(EntityViewDisplay $display) {
-     $display->set('hidden', []);
+  protected function enableAll(EntityDisplayBase &$display) {
+    $disabled_fields = $display->get('hidden');
+    foreach ($disabled_fields as $field_name => $disabled) {
+      $display->setComponent($field_name);
+    }
+  }
+
+  /**
+   * Resets all enabled components to their default display settings.
+   *
+   * @param EntityDisplayBase $display
+   * @return void
+   */
+  protected function resetComponents(EntityDisplayBase &$display) {
+    $components = $display->getComponents();
+    foreach ($components as $field_name => $options) {
+      // setComponent resets the component to it's defaults when
+      // no options are passed as the second parameter.
+      $display->setComponent($field_name);
+    }
   }
 
   /**
    * Removes all field groups from the display
    *
-   * @param EntityViewDisplay $display
+   * @param EntityDisplayBase $display
    */
-  protected function clearFieldGroups(EntityViewDisplay $display) {
+  protected function clearFieldGroups(EntityDisplayBase $display) {
     $field_groups = $display->getThirdPartySettings('field_group');
     foreach ($field_groups as $group_name => $group_details) {
       $display->unsetThirdPartySetting('field_group', $group_name);
