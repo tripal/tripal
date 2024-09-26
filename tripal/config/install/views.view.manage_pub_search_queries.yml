@@ -9,7 +9,7 @@ dependencies:
 _core:
   default_config_hash: _E1_O1oLo39mGKB45jyriip-fw8MDBKiJMCvGB8CKho
 id: manage_pub_search_queries
-label: 'Manage Pub Search Queries'
+label: 'Manage Publication Search Queries'
 module: views
 description: ''
 tag: 'tripal, loaders'
@@ -22,7 +22,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Manage Pub Search Queries'
+      title: 'Manage Publication Search Queries'
       fields:
         pub_library_query_id:
           id: pub_library_query_id
@@ -795,7 +795,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: "<ul class='action-links'>\r\n<li><a href=\"/admin/tripal/loaders/publications/new_publication_search_query\">New search query</a></li>\r\n</ul>\r\n<p>\r\n    A publication importer is used to create a set of search criteria that can be used\r\n      to query a remote database, find publications that match the specified criteria\r\n      and then import those publications into the Chado database. An example use case would\r\n      be to periodically add new publications to this Tripal site that have appeared in PubMed\r\n      in the last 30 days.  You can import publications in one of two ways:\r\n      <ol>\r\n        <li>Create a new importer by clicking the 'New Importer' link above, and after saving it should appear in the list below.  Click the\r\n            link labeled 'Import Pubs' to schedule a job to import the publications</li>\r\n        <li>The first method only performs the import once.  However, you can schedule the\r\n            importer to run periodically by adding a cron job. </li>\r\n      </ol>\r\n</p>"
+          content: "<ul class='action-links'>\r\n<li><a href=\"/admin/tripal/loaders/publications/new_publication_search_query\">New search query</a></li>\r\n</ul>\r\n<p>\r\n    A publication importer is used to create a set of search criteria that can be used\r\n      to query a remote database, find publications that match the specified criteria\r\n      and then import those publications into the Chado database. An example use case would\r\n      be to periodically add new publications to this Tripal site that have appeared in PubMed\r\n      in the last 30 days.  You can import publications in one of two ways:\r\n      <ol>\r\n        <li>            Create a new importer by clicking the 'New search query' link above, and\r\n                        after saving it should appear in the list below.\r\n                        Under 'Actions' select 'Run' to create a job to import the publications.</li>\r\n        <li>The first method only performs the import once.  However, you can schedule the\r\n            importer to run periodically by adding a cron job. </li>\r\n      </ol>\r\n</p>"
           tokenize: false
       footer: {  }
       display_extenders: {  }
@@ -817,7 +817,7 @@ display:
       path: admin/tripal/loaders/publications/manage_publication_search_queries
       menu:
         type: normal
-        title: 'Pub Search Queries'
+        title: 'Publication Search Queries'
         description: ''
         weight: -10
         expanded: false

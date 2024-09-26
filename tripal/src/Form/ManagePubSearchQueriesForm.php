@@ -38,10 +38,11 @@ class ManagePubSearchQueriesForm extends FormBase {
       be to periodically add new publications to this Tripal site that have appeared in PubMed
       in the last 30 days.  You can import publications in one of two ways:
       <ol>
-        <li>Create a new importer by clicking the 'New search query' link above, and after saving it should appear in the list below.  Click the
-            link labeled 'Import Pubs' to schedule a job to import the publications</li>
-        <li>The first method only performs the import once.  However, you can schedule the
-            importer to run periodically by adding a cron job. </li>
+        <li>Create a new importer by clicking the 'New search query' link above, and
+            after saving it should appear in the list below.
+            Under 'Actions' select 'Run' to create a job to import the publications.</li>
+        <li>The first method only performs the import once. However, you can schedule the
+            importer to run periodically by adding a cron job.</li>
       </ol><br>");
     $form['heading'] = [
       '#markup' => $html

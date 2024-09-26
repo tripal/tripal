@@ -627,7 +627,7 @@ tripal.data_loaders.publication_loaders.manage_publication_search_queries:
   path: 'admin/tripal/loaders/publications/manage_publication_search_queries'
   defaults:
     _form: 'Drupal\tripal\Form\ManagePubSearchQueriesForm'
-    _title: 'Manage Pub Search Queries'
+    _title: 'Manage Publication Search Queries'
   requirements:
     _permission: 'allow tripal import'
 
@@ -653,7 +653,7 @@ tripal.data_loaders.publication_loaders.delete_publication_search_query:
     _form: 'Drupal\tripal\Form\DeletePubSearchQueryForm'
     _title: 'Delete publication'
   requirements:
-    _permission: 'allow tripal import'   
+    _permission: 'allow tripal import'
 
 tripal.data_loaders.publication_loaders.edit_publication_search_query:
   path: 'admin/tripal/loaders/publications/edit_publication_search_query/{pub_import_id}'
@@ -661,4 +661,4 @@ tripal.data_loaders.publication_loaders.edit_publication_search_query:
     _form: 'Drupal\tripal\Form\NewPubSearchQueryForm'
     _title: 'Edit publication search query'
   requirements:
-    _permission: 'allow tripal import' 
+    _permission: 'allow tripal import'

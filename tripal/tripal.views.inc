@@ -316,17 +316,17 @@ function tripal_views_data_jobs(&$data) {
 function tripal_views_pub_search_queries(&$data) {
   $data['tripal_pub_library_query'] = [];
   $data['tripal_pub_library_query']['table'] = [];
-  $data['tripal_pub_library_query']['table']['group'] = t('Pub Search Queries');
+  $data['tripal_pub_library_query']['table']['group'] = t('Publication Search Queries');
   // $data['pub_search_queries']['table']['provider'] = 'tripal';
   $data['tripal_pub_library_query']['table']['base'] = [
     'field' => 'pub_library_query_id',
-    'title' => t('Pub Library Query'),
-    'help' => t('Pub Library Query Management system for Tripal.'),
+    'title' => t('Publication Library Query'),
+    'help' => t('Publication Library Query Management system for Tripal.'),
     'weight' => 10,
   ];
 
   $data['tripal_pub_library_query']['pub_library_query_id'] = [
-    'title' => t('Pub Library Query ID'),
+    'title' => t('Publication Library Query ID'),
     'help' => t('The query primary key.'),
     'field' => [
       'id' => 'numeric',
@@ -344,7 +344,7 @@ function tripal_views_pub_search_queries(&$data) {
 
   $data['tripal_pub_library_query']['name'] = [
     'title' => t('Name'),
-    'help' => t('The pub query name'),
+    'help' => t('The publication query name'),
     'field' => [
       'id' => 'standard',
     ],
@@ -361,7 +361,7 @@ function tripal_views_pub_search_queries(&$data) {
 
   $data['tripal_pub_library_query']['criteria'] = [
     'title' => t('Criteria'),
-    'help' => t("The pub query criteria - label must be either 'database' or 'search string'."),
+    'help' => t("The publication query criteria - label must be either 'database' or 'search string'."),
     'field' => [
       'id' => 'criteria',
     ],
@@ -378,7 +378,7 @@ function tripal_views_pub_search_queries(&$data) {
 
   // $data['tripal_pub_library_query']['criteriasearchstring'] = [
   //   'title' => t('Criteria - Search String'),
-  //   'help' => t('The pub query criteria search string'),
+  //   'help' => t('The publication query criteria search string'),
   //   'field' => [
   //     'id' => 'criteria',
   //   ],
@@ -395,7 +395,7 @@ function tripal_views_pub_search_queries(&$data) {
 
   // $data['tripal_pub_library_query']['criteriadatabase'] = [
   //   'title' => t('Criteria - Database'),
-  //   'help' => t('The pub query criteria database'),
+  //   'help' => t('The publication query criteria database'),
   //   'field' => [
   //     'id' => 'criteria',
   //   ],

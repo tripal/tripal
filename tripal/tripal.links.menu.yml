@@ -174,10 +174,10 @@ tripal.files_usage:
 # -- Manage Publication Loaders
 tripal.data_loaders.publication_loaders:
   route_name: tripal.data_loaders.publication_loaders
-  title: 'Publication Loaders'
-  description: "Create, edit, run, delete publication loaders"
+  title: 'Publication Search Query Definitions'
+  description: "Create, edit, test, or delete publication search queries"
   parent: tripal.data_loaders
-  weight: 90
+  weight: 10
 
 tripal.data_loaders.publication_loaders.import_publication_file:
   route_name: tripal.data_loaders.publication_loaders.import_publication_file

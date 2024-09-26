@@ -13,14 +13,11 @@ use Drupal\Core\Render\Markup;
  *
  *  @TripalImporter(
  *    id = "pub_search_query_loader",
- *    label = @Translation("Pub Search Query Loader"),
- *    description = @Translation("Import a Pub Search Query file into Chado"),
- *    file_types = {"fasta","txt","fa","aa","pep","nuc","faa","fna"},
- *    upload_description = @Translation("Please provide a file."),
- *    upload_title = @Translation("File"),
+ *    label = @Translation("Publication Loader"),
+ *    description = @Translation("Import Publications into Chado using a Publication Search Query"),
  *    use_analysis = False,
  *    require_analysis = False,
- *    button_text = @Translation("Import Pub Search Query"),
+ *    button_text = @Translation("Import Publications"),
  *    file_upload = False,
  *    file_remote = False,
  *    file_local = False,
