@@ -14,13 +14,13 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  */
 class GFF3ImporterFormTest extends ChadoTestKernelBase {
 
-	protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'stark';
 
-	protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
+  protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
 
   protected $connection;
 
-	/**
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -29,8 +29,8 @@ class GFF3ImporterFormTest extends ChadoTestKernelBase {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
-		// Open connection to Chado
-		$this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    // Open connection to Chado
+    $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
     // Ensure we can access file_managed related functionality from Drupal.
     // ... users need access to system.action config?
@@ -43,12 +43,12 @@ class GFF3ImporterFormTest extends ChadoTestKernelBase {
 
   }
 
-	/**
+  /**
    * Tests focusing on the importer form.
    */
   public function testImporterForm() {
 
-		$plugin_id = 'chado_gff3_loader';
+    $plugin_id = 'chado_gff3_loader';
     $importer_label = 'Chado GFF3 File Loader';
 
     // Build the form using the Drupal form builder.
@@ -84,6 +84,6 @@ class GFF3ImporterFormTest extends ChadoTestKernelBase {
     //$this->assertArrayHasKey('instructions', $form,
     //  "The form should include an instructions form element.");
 
-	}
+  }
 
 }
