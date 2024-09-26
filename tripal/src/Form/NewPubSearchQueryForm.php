@@ -27,7 +27,7 @@ class NewPubSearchQueryForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state, $pub_import_id = null) {
     if ($pub_import_id != null) {
       // used to keep track of whether this is a new query or edit query
-      $this->pub_import_id = $pub_import_id; 
+      $this->pub_import_id = $pub_import_id;
       $public = \Drupal::database();
 
       // This is the edit version of the form, we need to lookup the current pub_import_id
@@ -36,7 +36,7 @@ class NewPubSearchQueryForm extends FormBase {
       $criteria = unserialize($publication->criteria);
 
 
-      // Add the previously saved user input into the instantiated object   
+      // Add the previously saved user input into the instantiated object
       $this->form_state_previous_user_input = $criteria['form_state_user_input'];
 
 
@@ -68,9 +68,9 @@ class NewPubSearchQueryForm extends FormBase {
     }
 
     $html = "<ul class='action-links'>";
-    $html .= '  <li>' . 
+    $html .= '  <li>' .
       Link::fromTextAndUrl(
-        'Return to manage pub search queries', 
+        'Return to manage pub search queries',
         Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries')
       )->toString() . '</li>';
     $html .= '</ul>';
@@ -96,7 +96,7 @@ class NewPubSearchQueryForm extends FormBase {
 
       // add the common elements (like search criteria)
       $form = $this->form_elements_common($form, $form_state);
-      
+
       // handle previous user input
       if ($pub_import_id != 'null') {
         $this->form_elements_load_previous_user_input(
@@ -110,7 +110,7 @@ class NewPubSearchQueryForm extends FormBase {
           $plugin_id = $form['plugin_id']['#default_value'];
           if ($plugin_id) {
             // Instantiate the selected plugin
-            // Pub Library Manager is found in tripal module: 
+            // Pub Library Manager is found in tripal module:
             // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
             $pub_library_manager = \Drupal::service('tripal.pub_library');
             $plugin = $pub_library_manager->createInstance($plugin_id, []);
@@ -134,15 +134,15 @@ class NewPubSearchQueryForm extends FormBase {
             if ($results != NULL) {
 
               $form['test_results_count_info'] = [
-                '#markup' => '<h1>Test results</h1><div>Found ' . $results['total_records'] . 
+                '#markup' => '<h1>Test results</h1><div>Found ' . $results['total_records'] .
                   ' publications.' . ($results['total_records']>5?' Showing the first 5 publications.':'') . '</div>',
                 '#weight' => 998
               ];
-              
+
               $form['test_results_search_string'] = [
                 '#markup' => 'Search String: ' .  $results['search_str'],
                 '#weight' => 999,
-              ];  
+              ];
 
               $index = 0;
               foreach ($results['pubs'] as $pubs_row) {
@@ -155,8 +155,8 @@ class NewPubSearchQueryForm extends FormBase {
                 ];
                 $row["authors"] = [
                   '#markup' => $pubs_row['Authors'] ?? '',
-                ];              
-                $form['test_results_table'][$index - 1] = $row;                           
+                ];
+                $form['test_results_table'][$index - 1] = $row;
               }
             }
 
@@ -230,14 +230,14 @@ class NewPubSearchQueryForm extends FormBase {
     }
 
     if ($trigger == 'add') {
-      // Increment the num_criteria which should regenerate the form with an additional criteria row
+      // Increment the num_criteria which should regenerate the form with an additional criterion row
       $num_criteria += 1;
       $user_input['num_criteria'] = $num_criteria;
       $form_state->setUserInput($user_input);
-      
+
     }
     elseif ($trigger == 'remove') {
-      // Increment the num_criteria which should regenerate the form with an additional criteria row
+      // Decrement the num_criteria which should regenerate the form with one fewer criterion row
       $num_criteria -= 1;
       $user_input['num_criteria'] = $num_criteria;
       $form_state->setUserInput($user_input);
@@ -399,11 +399,11 @@ class NewPubSearchQueryForm extends FormBase {
       '#type' => 'textfield',
       '#description' => t('<span style="white-space: normal">Please provide a list of words for searching. You may use
         conjunctions such as "AND" or "OR" to separate words if they are expected in
-        the same scope, but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions 
+        the same scope, but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions
         as part of the text to search</span>'),
       '#description_display' => 'after',
       '#default_value' => $search_terms,
-      '#required' => TRUE,
+//      '#required' => TRUE,
       '#maxlength' => 2048,
     ];
     $row["is_phrase-$i"] = [
@@ -423,18 +423,17 @@ class NewPubSearchQueryForm extends FormBase {
         ];
       }
 
-
       $row["add-$i"] = [
         // '#type' => 'button',
         '#type' => 'submit',
         '#name' => 'add',
         '#value' => t('Add'),
       ];
-      
+
     }
     $form['pub_library']['table'][$i] = $row;
     return $form;
-  }  
+  }
 
   public function form_elements_specific_importer($form, FormStateInterface $form_state) {
     // Add elements only after a plugin has been selected.
@@ -444,7 +443,7 @@ class NewPubSearchQueryForm extends FormBase {
     }
     if ($plugin_id) {
       // Instantiate the selected plugin
-      // Pub Library Manager is found in tripal module: 
+      // Pub Library Manager is found in tripal module:
       // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
       $pub_library_manager = \Drupal::service('tripal.pub_library');
       $plugin = $pub_library_manager->createInstance($plugin_id, []);
@@ -491,7 +490,7 @@ class NewPubSearchQueryForm extends FormBase {
       '#value' => 'Next'
     ];
 
-    // This is the container that will hold the specific fields for a specific 'plugin' which represents the 
+    // This is the container that will hold the specific fields for a specific 'plugin' which represents the
     // publication / sources eg NIH PubMed database form elements
     $form['pub_library'] = [
       '#prefix' => '<span id="edit-pub_library">',
@@ -512,7 +511,7 @@ class NewPubSearchQueryForm extends FormBase {
       $form_mode = $user_input['mode'];
     }
     $trigger = $form_state->getTriggeringElement()['#name'];
-    
+
     if ($trigger == 'op') {
       $op = $user_input['op'];
       if ($op == 'Save Search Query') {
@@ -531,7 +530,7 @@ class NewPubSearchQueryForm extends FormBase {
         $plugin = NULL;
         if ($plugin_id) {
           // Instantiate the selected plugin
-          // Pub Library Manager is found in tripal module: 
+          // Pub Library Manager is found in tripal module:
           // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
           $pub_library_manager = \Drupal::service('tripal.pub_library');
           $plugin = $pub_library_manager->createInstance($plugin_id, []);
@@ -567,7 +566,7 @@ class NewPubSearchQueryForm extends FormBase {
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
         }
-        
+
         $form_state->setRebuild(FALSE);
 
       }
@@ -577,7 +576,7 @@ class NewPubSearchQueryForm extends FormBase {
         $form_state->setRedirectUrl($url);
       }
       else if ($op == 'Test Search Query') {
-        // This session variable gets checked when the form reloads so you can find the code 
+        // This session variable gets checked when the form reloads so you can find the code
         // in the buildForm function
         $_SESSION['tripal_pub_import']['perform_test'] = 1;
 
@@ -591,7 +590,7 @@ class NewPubSearchQueryForm extends FormBase {
         $plugin_id = $user_input['plugin_id'];
         if ($plugin_id) {
           // Instantiate the selected plugin
-          // Pub Library Manager is found in tripal module: 
+          // Pub Library Manager is found in tripal module:
           // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
           $pub_library_manager = \Drupal::service('tripal.pub_library');
           $plugin = $pub_library_manager->createInstance($plugin_id, []);
@@ -621,7 +620,7 @@ class NewPubSearchQueryForm extends FormBase {
    */
   public function criteria_convert_to_array($form, FormStateInterface $form_state) {
     $user_input = $form_state->getUserInput();
-    
+
     $disabled = $user_input['disabled'];
     if ($disabled == null) {
       $disabled = 0;
@@ -649,7 +648,7 @@ class NewPubSearchQueryForm extends FormBase {
     // Save form_state_user_input (for use with the edit version of this form)
     // This removes the requirement to retranslate the saved data which could become unmaintainable
     // Remove any data from user_input that is not necessary or can confuse logic processing
-    
+
     unset($user_input['op']); // used to determine if it was a save or delete
     // unset($user_input['form_build_id']);
     // unset($user_input['form_token']);
@@ -674,6 +673,27 @@ class NewPubSearchQueryForm extends FormBase {
     }
 
     return $criteria_column_array;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    // We can't make the criteria fields required as it will prevent the "Remove"
+    // button from working, but we can validate this here for any other action.
+    $trigger = @$form_state->getTriggeringElement()['#name'];
+    if ($trigger != 'remove') {
+      $user_input = $form_state->getUserInput();
+      if (array_key_exists('table', $user_input)) {
+        foreach ($user_input['table'] as $delta => $table) {
+          $key = 'search_terms-' . $delta;
+          $criterion = $table[$key];
+          if (!$criterion) {
+            $form_state->setErrorByName("table][$delta][$key", t('The Search Terms field cannot be blank'));
+          }
+        }
+      }
+    }
   }
 
 }
