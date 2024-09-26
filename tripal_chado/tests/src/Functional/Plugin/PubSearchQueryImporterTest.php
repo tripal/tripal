@@ -51,13 +51,13 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     $criteria = unserialize($pub_record->criteria);
     $this->assertEquals($criteria['form_state_user_input']['plugin_id'], 'tripal_pub_library_pubmed', 'This should have returned the plugin id as tripal_pub_library_pubmed but did not');
     $plugin_id = $criteria['form_state_user_input']['plugin_id'];
-    
+
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
     $results = $plugin->retrieve($criteria, 1, 0);
     // This should return a single pub since we used the limit 1 in the retrieve function
     $pub_count = count($results['pubs']);
     $this->assertEquals($pub_count, 1, 'One publication should have been retrieved but was not');
-    
+
 
     // Specific PMID
     $criteria_serialized = 'a:9:{s:9:"remote_db";s:6:"pubmed";s:12:"num_criteria";s:1:"1";s:11:"loader_name";s:13:"PMID:39125884";s:8:"disabled";i:0;s:10:"do_contact";i:0;s:13:"pub_import_id";N;s:8:"criteria";a:1:{i:1;a:4:{s:12:"search_terms";s:13:"PMID:39125884";s:5:"scope";s:2:"id";s:9:"is_phrase";i:0;s:9:"operation";s:0:"";}}s:21:"form_state_user_input";a:13:{s:9:"plugin_id";s:25:"tripal_pub_library_pubmed";s:11:"button_next";s:4:"Next";s:11:"loader_name";s:13:"PMID:39125884";s:12:"ncbi_api_key";s:0:"";s:4:"days";s:0:"";s:12:"num_criteria";s:1:"1";s:5:"table";a:1:{i:1;a:4:{s:11:"operation-1";s:0:"";s:7:"scope-1";s:2:"id";s:14:"search_terms-1";s:13:"PMID:39125884";s:11:"is_phrase-1";N;}}s:13:"form_build_id";s:48:"form-aL6YIsiQvl_GAXbQwYymTZaMm4PZrWeHpNcNdSBW_84";s:10:"form_token";s:43:"_PQ4ccPhMHXx3llqAKiOvclk7BJmv0RrMvJkZAx50ws";s:7:"form_id";s:31:"chado_new_pub_search_query_form";s:8:"disabled";N;s:10:"do_contact";N;s:18:"test_results_table";N;}s:4:"days";s:0:"";}';
@@ -84,7 +84,7 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     // This should return a single pub since we used the limit 1 in the retrieve function
     $pub_count = count($results['pubs']);
     $this->assertEquals(1, $pub_count, 'One publication should have been retrieved but was not');
-    $this->assertEquals('PMID:39125884', $results['pubs'][0]['Publication Dbxref'], 'Publication Dbxref should have been PMID:39125884 but it is not');
+    $this->assertEquals('39125884', $results['pubs'][0]['Publication Dbxref'], 'Publication Dbxref should have been 39125884 but it is not');
     $this->assertEquals('10.3390/ijms25158314', $results['pubs'][0]['DOI'], 'DOI should have been 10.3390/ijms25158314 but it is not - parsing issue?');
     $this->assertEquals('2024', $results['pubs'][0]['Year'], 'Year should have been 2024 but it is not - parsing issue?');
     $this->assertEquals('Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.', $results['pubs'][0]['Title'], 'Title should have been Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus. but it is not - parsing issue?');
@@ -109,12 +109,12 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
       $pub_record = $row;
     }
 
-    
+
 
     $this->assertNotEquals($pub_record, NULL, 'No publication record could be found in the chado pub table 
     even though an import was executed');
 
-    
+
     $this->assertEquals($pub_record->title, 'Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.', 'Publication title is different');
     $this->assertEquals($pub_record->series_name, 'International journal of molecular sciences', 'Series name is different');
     $this->assertEquals($pub_record->pyear, '2024', 'Publication year is different');
@@ -132,7 +132,7 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
 
     $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
       ':pub_id' => $pub_id,
-      ':value' => 'PMID:39125884'
+      ':value' => '39125884'
     ]);
     $row_count = NULL;
     foreach ($pub_props as $row) {
@@ -169,7 +169,7 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
       $row_count = $row->c1;
     }
     $this->assertGreaterThan(0, $row_count, 'Authors were not found in pubprop table');
-    
+
     $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id AND value = :value",[
       ':pub_id' => $pub_id,
       ':value' => 'Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.'
@@ -179,7 +179,7 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
       $row_count = $row->c1;
     }
     $this->assertGreaterThan(0, $row_count, 'Title was not found in pubprop table');
-      
+
   }
 }
 ?>
