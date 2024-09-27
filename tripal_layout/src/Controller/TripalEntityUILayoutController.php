@@ -4,7 +4,6 @@ namespace Drupal\tripal_layout\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityDisplayBase;
 use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 
 class TripalEntityUILayoutController extends ControllerBase {
@@ -25,7 +24,26 @@ class TripalEntityUILayoutController extends ControllerBase {
     $bundle = $tripal_entity_type->id();
     $bundle_label = $tripal_entity_type->getLabel();
 
-    \Drupal::messenger()->addMessage(t('Not Yet Implemented.'));
+    $successful = $this->applyLayout($tripal_entity_type, 'form');
+
+    // And let the admin know we have.
+    if ($successful === TRUE) {
+      \Drupal::messenger()->addMessage(t(
+        '%bundle @context Default Tripal Layout has been applied.',
+        [
+          '%bundle' => $bundle_label,
+          '@context' => 'Page'
+        ]
+      ));
+    } else {
+      \Drupal::messenger()->addError(t(
+        'Errors were encountered when attempting to apply the %bundle @context Default Tripal Layout!',
+        [
+          '%bundle' => $bundle_label,
+          '@context' => 'Page'
+        ]
+      ));
+    }
 
     return $this->redirect(
       'entity.entity_form_display.tripal_entity.default',
@@ -164,9 +182,9 @@ class TripalEntityUILayoutController extends ControllerBase {
    *
    * @param unknown $name
    * @param unknown $parent
-   * @param EntityViewDisplay $display
+   * @param EntityDisplayBase $display
    */
-  protected function setChild($child, $parent, EntityViewDisplay $display) {
+  protected function setChild($child, $parent, EntityDisplayBase $display) {
 
     $field_groups = $display->getThirdPartySettings('field_group');
 
@@ -218,14 +236,41 @@ class TripalEntityUILayoutController extends ControllerBase {
     }
   }
 
+  /**
+   * Adds all the field groups defined in a layout.
+   *
+   * Currently supports:
+   *  - details
+   *  - field_group_table
+   *
+   * @param array $field_groups
+   *   An array of field groups defined in a layout.
+   * @param EntityDisplayBase $display
+   *   The display to add the field groups to.
+   * @return void
+   */
+  protected function addFieldGroups($field_groups, $display) {
+    foreach ($field_groups as $group_type => $field_groups) {
+      if ($group_type == 'details') {
+        foreach ($field_groups as $group_name => $settings) {
+          $this->addDetailsFieldGroup($group_name, $display, $settings);
+        }
+      }
+      if ($group_type == 'field_group_table') {
+        foreach ($field_groups as $group_name => $settings) {
+          $this->addTableFieldGroup($group_name, $display, $settings);
+        }
+      }
+    }
+  }
 
   /**
    *
    * @param unknown $name
-   * @param EntityViewDisplay $dispaly
+   * @param EntityDisplayBase $dispaly
    * @param array $settings
    */
-  protected function addTableFieldGroup($name, EntityViewDisplay $display, $settings = []) {
+  protected function addTableFieldGroup($name, EntityDisplayBase $display, $settings = []) {
     $field_groups = $display->getThirdPartySettings('field_group');
 
     // If the field group doesn't exist then add it.
@@ -307,10 +352,10 @@ class TripalEntityUILayoutController extends ControllerBase {
    *
    * @param string $name
    *   The name of the field component
-   * @param EntityViewDisplay $display
+   * @param EntityDisplayBase $display
    *   The display configuration.
    */
-  protected function addDetailsFieldGroup($name, EntityViewDisplay $display, $settings = []) {
+  protected function addDetailsFieldGroup($name, EntityDisplayBase $display, $settings = []) {
     $field_groups = $display->getThirdPartySettings('field_group');
 
     // If the field group doesn't exist then add it.
@@ -339,7 +384,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     }
   }
 
-  protected function addFieldGroupChild($name, EntityViewDisplay $display) {
+  protected function addFieldGroupChild($name, EntityDisplayBase $display) {
 
   }
   /**
@@ -347,17 +392,19 @@ class TripalEntityUILayoutController extends ControllerBase {
    *
    * @param string $name
    *   The name of the field component
-   * @param EntityViewDisplay $display
+   * @param EntityDisplayBase $display
    *   The display configuration.
+   * @param array $components
+   *   An array of display components to act on.
    */
-  protected function hideComponent($name, EntityViewDisplay $display) {
-    $components = $display->getComponents();
-    $hidden = $display->get('hidden');
-    if (in_array($name, array_keys($components))) {
-      $display->removeComponent($name);
+  protected function hideComponents(array $names, EntityDisplayBase $display, array $components = []) {
+
+    $components = $components ?? $display->getComponents();
+    foreach ($names as $name) {
+      if (in_array($name, array_keys($components))) {
+        $display->removeComponent($name);
+      }
     }
-    $hidden[$name] = TRUE;
-    $display->set('hidden', $hidden);
   }
 
   /**
@@ -419,7 +466,7 @@ class TripalEntityUILayoutController extends ControllerBase {
    *
    * @return EntityDisplayBase $display
    *   The display requested to be loaded as defined by the parameters. This will
-   *   be of type EntityViewDisplay for 'view' display context or
+   *   be of type EntityDisplayBase for 'view' display context or
    *   EntityFormDisplay for 'form' display context.
    */
   protected function loadDisplay(TripalEntityType $tripal_entity_type, string $display_context) {
@@ -438,7 +485,7 @@ class TripalEntityUILayoutController extends ControllerBase {
       throw new \Exception("Unable to load the default display for $bundle [$display_context] as only 'view' and 'form' are supported.");
     }
 
-    /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $display **/
+    /** @var \Drupal\Core\Entity\Entity\EntityDisplayBase $display **/
     $display = $config_entity_storage->load('tripal_entity.' . $bundle . '.default');
 
     return $display;
@@ -509,19 +556,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     // If there are field group definitinos then create those.
     if (array_key_exists('field_groups', $layout)) {
 
-      // First, create the field groups
-      foreach ($layout['field_groups'] as $group_type => $field_groups) {
-        if ($group_type == 'details') {
-          foreach ($field_groups as $group_name => $settings) {
-            $this->addDetailsFieldGroup($group_name, $display, $settings);
-          }
-        }
-        if ($group_type == 'field_group_table') {
-          foreach ($field_groups as $group_name => $settings) {
-            $this->addTableFieldGroup($group_name, $display, $settings);
-          }
-        }
-      }
+      $this->addFieldGroups($layout['field_groups'], $display);
 
       // Now set the children.
       foreach ($layout['field_groups'] as $group_type => $field_groups) {
@@ -568,16 +603,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     }
 
     // Now hide any fields that should be hidden.
-    foreach ($layout['hidden'] as $field_name) {
-      $this->hideComponent($field_name, $display);
-    }
-
-    // Hide the labels of all fields.
-    $components = $display->getComponents();
-    foreach ($components as $component_name => $options) {
-      $options['label'] = 'hidden';
-      $display->setComponent($component_name, $options);
-    }
+    $this->hideComponents($layout['hidden'], $display);
 
     // Save all of the changes to the display.
     $display->save();
