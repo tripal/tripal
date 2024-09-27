@@ -37,6 +37,16 @@ class TripalPublish {
   private $interval = 1;
 
   /**
+   * Specifies the maximum number of records to publish at one time.
+   * This limits memory consumption if there are many thousands of
+   * records, for example gene records in the feature table.
+   * @todo We might want to add this as an option on the publish form.
+   *
+   * @var integer $batch_size
+   */
+  private $batch_size = 1000;
+
+  /**
    * The TripalJob object.
    *
    * @var \Drupal\tripal\Services\TripalJob $job
@@ -49,6 +59,13 @@ class TripalPublish {
    * @var string $bundle
    */
   protected $bundle = '';
+
+  /**
+   * The base table of the bundle
+   *
+   * @var string $base_table
+   */
+  protected $base_table = '';
 
   /**
    * The id of the TripalStorage plugin.
@@ -198,6 +215,7 @@ class TripalPublish {
       throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
     }
     $this->entity_type = $entity_type;
+    $this->base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
 
     // Get the storage plugin used to publish.
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
@@ -990,6 +1008,26 @@ class TripalPublish {
   }
 
   /**
+   * Divides up a long list of record IDs into smaller batches
+   * for publishing, to reduce memory requirements.
+   *
+   * @param array $record_ids
+   *   A list of primary key values.
+   *
+   * @return array
+   *   Original array values divided into a 2-D array of several batches.
+   *   First level array key is a delta value starting at zero.
+   */
+  protected function divideIntoBatches($record_ids) {
+    $batches = [];
+    $num_batches = (int) ((count($record_ids) + $this->batch_size - 1) / $this->batch_size);
+    for ($delta = 0; $delta < $num_batches; $delta++) {
+      $batches[$delta] = array_slice($record_ids, $delta * $this->batch_size, $this->batch_size);
+    }
+    return $batches;
+  }
+
+  /**
    * Publishes Tripal entities.
    *
    * Publishes content to Tripal from Chado or another
@@ -1013,35 +1051,53 @@ class TripalPublish {
     $this->addFixedTypeValues($search_values);
     $this->addNonRequiredValues($search_values);
 
-    $this->logger->notice("Step  1 of 6: Find matching records... ");
-    $matches = $this->storage->findValues($search_values, ['check_valid' => FALSE]);
+    // We retrieve a list of all primary keys for the base table of the
+    // content type. This allows us to divide publishing into small batches
+    // to reduce the amount of memory required if there are thousands of
+    // records to publish.
+    $this->logger->notice("Finding candidate record IDs...");
+    $record_ids = $this->storage->findAllRecordIds($this->base_table);
+    $record_id_batches = $this->divideIntoBatches($record_ids);
+    $number_of_batches = count($record_id_batches);
 
-    $this->logger->notice("Step  2 of 6: Generate page titles...");
-    $titles = $this->getEntityTitles($matches);
+    foreach ($record_id_batches as $batch_num => $record_id_batch) {
 
-    $this->logger->notice("Step  3 of 6: Find existing published entities...");
-    $existing = $this->findEntities($matches, $titles);
+      // Only display a batch prefix when there is more than one batch.
+      $batch_prefix = '';
+      if ($number_of_batches > 1) {
+        $batch_prefix = 'Batch ' . number_format($batch_num + 1) . ' of ' . number_format($number_of_batches) . ', ';
+      }
 
-    // Exclude any matches that are already published. We
-    // need to publish only new matches.
-    list($new_matches, $new_titles) = $this->excludeExisting($matches, $titles, $existing);
+      $this->logger->notice($batch_prefix . "Step 1 of 6: Find matching records...");
+      $matches = $this->storage->findValues($search_values, $record_id_batch);
 
-    // Note: entities are not tied to any storage backend. An entity
-    // references an "object".  The information about that object
-    // is in the form of fields and can come from any number of data storage
-    // backends. But, if the entity with a given title for this content type
-    // doesn't exist, then let's create one.
-    $this->logger->notice("Step  4 of 6: Publishing " . number_format(count($new_titles))  . " new entities...");
-    $this->insertEntities($new_matches, $new_titles);
+      $this->logger->notice($batch_prefix . "Step 2 of 6: Generate page titles...");
+      $titles = $this->getEntityTitles($matches);
 
-    $this->logger->notice("Step  5 of 6: Find IDs of entities...");
-    $entities = $this->findEntities($matches, $titles);
+      $this->logger->notice($batch_prefix . "Step 3 of 6: Find existing published entities...");
+      $existing = $this->findEntities($matches, $titles);
 
-    // Now we have to publish the field items. These represent storage back-end information
-    // about the entity. If the entity was previously published we still may be adding new
-    // information about it (say if we are publishing genes from a noSQL back-end but the
-    // original entity was created when it was first published when using the Chado backend).
-    $this->logger->notice("Step  6 of 6: Add field items to published entities...");
+      // Exclude any matches that are already published. We
+      // need to publish only new matches.
+      list($new_matches, $new_titles) = $this->excludeExisting($matches, $titles, $existing);
+
+      // Note: entities are not tied to any storage backend. An entity
+      // references an "object".  The information about that object
+      // is in the form of fields and can come from any number of data storage
+      // backends. But, if the entity with a given title for this content type
+      // doesn't exist, then let's create one.
+      $this->logger->notice($batch_prefix . "Step 4 of 6: Publishing " . number_format(count($new_titles))  . " new entities...");
+      $this->insertEntities($new_matches, $new_titles);
+
+      $this->logger->notice($batch_prefix . "Step 5 of 6: Find IDs of entities...");
+      $entities = $this->findEntities($matches, $titles);
+
+      // Now we have to publish the field items. These represent storage back-end information
+      // about the entity. If the entity was previously published we still may be adding new
+      // information about it (say if we are publishing genes from a noSQL back-end but the
+      // original entity was created when it was first published when using the Chado backend).
+      $this->logger->notice($batch_prefix . "Step 6 of 6: Add field items to published entities...");
+    }
 
     if (!empty($this->unsupported_fields)) {
       $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
