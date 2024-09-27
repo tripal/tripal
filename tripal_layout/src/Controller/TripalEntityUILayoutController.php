@@ -265,10 +265,53 @@ class TripalEntityUILayoutController extends ControllerBase {
   }
 
   /**
+   * Adds a 'details' field group.
    *
-   * @param unknown $name
-   * @param EntityDisplayBase $dispaly
+   * @param string $name
+   *   The name of the field group component.
+   * @param EntityDisplayBase $display
+   *   The display configuration to add the field group component to.
    * @param array $settings
+   *   An array of settings to apply to the field group.
+   */
+  protected function addDetailsFieldGroup($name, EntityDisplayBase $display, $settings = []) {
+    $field_groups = $display->getThirdPartySettings('field_group');
+
+    // If the field group doesn't exist then add it.
+    if (!array_key_exists($name, array_keys($field_groups))) {
+
+      $classes = $this->getSetting('classes', '', $settings);
+      $classes .= 'tripal-layout-details';
+
+      $parent_name = $this->getSetting('parent_name', '', $settings);
+      $details_group = [
+        "children" => [],
+        "label" => $this->getSetting('label', 'Missing Label', $settings),
+        "parent_name" => $parent_name,
+        "region" => "content",
+        "weight" => $this->getSetting('weight', 0, $settings),
+        "format_type" => "details",
+        "format_settings" => [
+          "classes" => $classes,
+          "show_empty_fields" => $this->getSetting('show_empty', FALSE, $settings),
+          "id" => "",
+          "open" => $this->getSetting('open', FALSE, $settings),
+          "description" => "",
+        ],
+      ];
+      $display->setThirdPartySetting('field_group', $name, $details_group);
+    }
+  }
+
+  /**
+   * Adds a 'field_group_table' field group.
+   *
+   * @param string $name
+   *   The name of the field group component.
+   * @param EntityDisplayBase $display
+   *   The display configuration to add the field group component to.
+   * @param array $settings
+   *   An array of settings to apply to the field group.
    */
   protected function addTableFieldGroup($name, EntityDisplayBase $display, $settings = []) {
     $field_groups = $display->getThirdPartySettings('field_group');
@@ -344,43 +387,6 @@ class TripalEntityUILayoutController extends ControllerBase {
     $field_groups = $display->getThirdPartySettings('field_group');
     foreach ($field_groups as $group_name => $group_details) {
       $display->unsetThirdPartySetting('field_group', $group_name);
-    }
-  }
-
-  /**
-   * Adds a field group.
-   *
-   * @param string $name
-   *   The name of the field component
-   * @param EntityDisplayBase $display
-   *   The display configuration.
-   */
-  protected function addDetailsFieldGroup($name, EntityDisplayBase $display, $settings = []) {
-    $field_groups = $display->getThirdPartySettings('field_group');
-
-    // If the field group doesn't exist then add it.
-    if (!array_key_exists($name, array_keys($field_groups))) {
-
-      $classes = $this->getSetting('classes', '', $settings);
-      $classes .= 'tripal-layout-details';
-
-      $parent_name = $this->getSetting('parent_name', '', $settings);
-      $details_group = [
-        "children" => [],
-        "label" => $this->getSetting('label', 'Missing Label', $settings),
-        "parent_name" => $parent_name,
-        "region" => "content",
-        "weight" => $this->getSetting('weight', 0, $settings),
-        "format_type" => "details",
-        "format_settings" => [
-          "classes" => $classes,
-          "show_empty_fields" => $this->getSetting('show_empty', FALSE, $settings),
-          "id" => "",
-          "open" => $this->getSetting('open', FALSE, $settings),
-          "description" => "",
-        ],
-      ];
-      $display->setThirdPartySetting('field_group', $name, $details_group);
     }
   }
 
