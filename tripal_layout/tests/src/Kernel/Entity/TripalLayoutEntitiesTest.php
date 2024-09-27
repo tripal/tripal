@@ -18,7 +18,7 @@ class TripalLayoutEntities extends TripalTestKernelBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system', 'field', 'user', 'tripal', 'tripal_chado', 'tripal_layout'];
+  protected static $modules = ['system', 'field', 'user', 'tripal', 'tripal_layout'];
 
 
   /**
@@ -28,8 +28,8 @@ class TripalLayoutEntities extends TripalTestKernelBase {
     parent::setUp();
 
     $this->installEntitySchema('user');
-    $this->installEntitySchema('tripal_entity');
-    $this->installEntitySchema('tripal_entity_type');
+    $this->installEntitySchema('tripal_layout_default_form');
+    $this->installEntitySchema('tripal_layout_default_view');
 
   }
 
