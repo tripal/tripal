@@ -161,7 +161,7 @@ class TripalEntityUILayoutController extends ControllerBase {
   }
 
   /**
-   * A generic funtion for getting a settings for addDetailsFieldGroup().
+   * A generic funtion for getting a setting and providing the default if its not set.
    *
    * @param string $name
    *   The setting name
@@ -179,10 +179,77 @@ class TripalEntityUILayoutController extends ControllerBase {
   }
 
   /**
+   * Adds a number of children components to a specific field group.
    *
-   * @param unknown $name
-   * @param unknown $parent
+   * @param array $children
+   *   An array of the children of a field group as defined in the layout array.
+   * @param string $group_name
+   *   The name of the field group that you want to add the children to.
+   * @param string $group_type
+   *   The type of field group you are adding the children to.
    * @param EntityDisplayBase $display
+   *   The display to are adding the children to a field group in.
+   * @param string $bundle
+   *   The TripalEntityType the display is for.
+   * @return void
+   */
+  protected function setFieldGroupChildren(array $children, string $group_name, string $group_type, EntityDisplayBase $display, string $bundle) {
+
+    /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+
+    foreach ($children as $child) {
+      // Prevent the case where the setup accidently sets the parent
+      // as a child of itself.
+      if ($child == $group_name) {
+        \Drupal::messenger()->addWarning(t(
+          'Please check the layout configuration.'
+          . 'It is trying to set a element to be a child of itself: @group_name == @child',
+          ['@group_name' => $group_name, '@child' => $child]
+        ));
+        continue;
+      }
+
+      // Before adding the child we need to distinguish between a
+      // field instance name and a field type name.  The latter begins
+      // with 'type:'.  If the former, we can simply add the child. If
+      // the latter then we have to find all of the fields of the given
+      // field type and then add each one at a time.
+      $matches = [];
+      if (preg_match('/^type:(.+)$/', $child, $matches)) {
+        $child_type = $matches[1];
+
+        // Get the fields of this bundle and if any match the type
+        // then set the child.
+        /** @var \Drupal\field\Entity\FieldConfig $entity_field_def **/
+        $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle);
+        foreach ($entity_field_defs as $entity_field_def) {
+          if ($entity_field_def->getType() == $child_type) {
+            $this->setChild($entity_field_def->getName(), $group_name, $display);
+          }
+        }
+      }
+      // We don't have a field type, so simply set the field instance.
+      else {
+        $this->setChild($child, $group_name, $display);
+      }
+    }
+  }
+
+  /**
+   * Sets the child as a child of the provided parent in the supplied display.
+   * For example, this may mean setting a field as a child of a field group.
+   *
+   * @param string $child
+   *   The name of the child component.
+   *   The child must be one of the following in order to be supported:
+   *     - an enabled field component
+   *     - a hidden field component
+   *     - a field group
+   * @param string $parent
+   *   The name of the parent component.
+   * @param EntityDisplayBase $display
+   *   The display to set the child as a child of the parent in.
    */
   protected function setChild($child, $parent, EntityDisplayBase $display) {
 
@@ -356,7 +423,7 @@ class TripalEntityUILayoutController extends ControllerBase {
    *
    * @param EntityDisplayBase $display
    */
-  protected function enableAll(EntityDisplayBase &$display) {
+  protected function enableAllComponents(EntityDisplayBase &$display) {
     $disabled_fields = $display->get('hidden');
     foreach ($disabled_fields as $field_name => $disabled) {
       $display->setComponent($field_name);
@@ -390,9 +457,6 @@ class TripalEntityUILayoutController extends ControllerBase {
     }
   }
 
-  protected function addFieldGroupChild($name, EntityDisplayBase $display) {
-
-  }
   /**
    * Hides a field from display
    *
@@ -519,7 +583,7 @@ class TripalEntityUILayoutController extends ControllerBase {
 
     // Now reset the display.
     $this->clearFieldGroups($display);
-    $this->enableAll($display);
+    $this->enableAllComponents($display);
     $this->resetComponents($display);
 
     // And save it.
@@ -545,9 +609,6 @@ class TripalEntityUILayoutController extends ControllerBase {
 
     $bundle = $tripal_entity_type->id();
 
-    /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
-    $entity_field_manager = \Drupal::service('entity_field.manager');
-
     // Load the display if it was not provided.
     if ($display === NULL) {
       $display = $this->loadDisplay($tripal_entity_type, $display_context);
@@ -564,52 +625,18 @@ class TripalEntityUILayoutController extends ControllerBase {
 
       $this->addFieldGroups($layout['field_groups'], $display);
 
-      // Now set the children.
+      // Now set the children for each field group.
       foreach ($layout['field_groups'] as $group_type => $field_groups) {
         foreach ($field_groups as $group_name => $settings) {
-          $children = $settings['children'];
-          foreach ($children as $child) {
-            // Prevent the case where the setup accidently sets the parent
-            // as a child of itself.
-            if ($child == $group_name) {
-              \Drupal::messenger()->addWarning(t(
-                'Please check the layout configuration.'
-                . 'It is trying to set a element to be a child of itself: @group_name == @child',
-                ['@group_name' => $group_name, '@child' => $child]
-              ));
-              continue;
-            }
-
-            // Before adding the child we need to distinguish between a
-            // field instance name and a field type name.  The latter begins
-            // with 'type:'.  If the former, we can simply add the child. If
-            // the latter then we have to find all of the fields of the given
-            // field type and then add each one at a time.
-            $matches = [];
-            if (preg_match('/^type:(.+)$/', $child, $matches)) {
-              $child_type = $matches[1];
-
-              // Get the fields of this bundle and if any match the type
-              // then set the child.
-              /** @var \Drupal\field\Entity\FieldConfig $entity_field_def **/
-              $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle);
-              foreach ($entity_field_defs as $entity_field_def) {
-                if ($entity_field_def->getType() == $child_type) {
-                  $this->setChild($entity_field_def->getName(), $group_name, $display);
-                }
-              }
-            }
-            // We don't have a field type, so simply set the field instance.
-            else {
-              $this->setChild($child, $group_name, $display);
-            }
-          }
+          $this->setFieldGroupChildren($settings['children'], $group_name, $group_type, $display, $bundle);
         }
       }
     }
 
     // Now hide any fields that should be hidden.
-    $this->hideComponents($layout['hidden'], $display);
+    if (array_key_exists('hidden', $layout) && is_array($layout['hidden']) && !empty($layout['hidden'])) {
+      $this->hideComponents($layout['hidden'], $display);
+    }
 
     // Save all of the changes to the display.
     $display->save();
