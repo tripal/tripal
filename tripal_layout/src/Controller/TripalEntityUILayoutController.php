@@ -364,27 +364,48 @@ class TripalEntityUILayoutController extends ControllerBase {
    * Retreives the layout configuration for the given bundle.
    *
    * @param string $bundle
+   *  The TripalEntityType to return the display for.
+   * @param string $display_context
+   *   One of 'view' or 'form' depending on whether you want the display for
+   *   the page view display or the form display.
    * @return array
-   *   The layout configuration.
+   *   The layout configuration if there is one, the first layout if there are
+   *   multiple for the TripalEntityType and FALSE if there are none.
    */
-  protected function getLayout($bundle) {
+  protected function getLayout(string $bundle, string $display_context) {
     $bundle_layouts = [];
-    $config_factory = \Drupal::service('config.factory');
-    $config_list = $config_factory->listAll('tripal_layout.tripal_layout_default_view');
 
-    // Iterate throught the configuration files and find those that have
-    // a layout for this bundle.
-    foreach($config_list as $config_item) {
-      $config = $config_factory->get($config_item);
-      $layouts = $config->get('layouts');
-      foreach ($layouts as $layout) {
-        if ($layout['tripal_entity_type'] == $bundle) {
-          $bundle_layouts[$config_item] = $layout;
-        }
+    if ($display_context === 'view') {
+      $config_entity_id = 'tripal_layout_default_view';
+    } elseif ($display_context === 'form') {
+      $config_entity_id = 'tripal_layout_default_form';
+    } else {
+      throw new \Exception("Unable to load the layout for $bundle [$display_context] as only 'view' and 'form' are supported.");
+    }
+
+
+    // Get all the layout entities of this type.
+    $entities = \Drupal::entityTypeManager()
+      ->getStorage($config_entity_id)
+      ->loadByProperties([]);
+
+    // Iterate through them and find those that have a layout for this bundle.
+    foreach($entities as $entity) {
+      if ($entity->hasLayout($bundle)) {
+        $config_id = $entity->id();
+        $bundle_layouts[$config_id] = $entity->getLayout($bundle);
       }
     }
 
-    return $bundle_layouts;
+    if (count($bundle_layouts) == 0) {
+      \Drupal::messenger()->addError(t('No default layouts could be found for this content type.'));
+      return FALSE;
+    }
+    if (count($bundle_layouts) > 1) {
+      \Drupal::messenger()->addWarning(t('There are multiple layouts for the same content type. Selecting the first. @layouts'), ['@layouts' => print_r($bundle_layouts, TRUE)]);
+    }
+
+    return array_values($bundle_layouts)[0];
   }
 
   /**
@@ -483,16 +504,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     $this->resetLayout($tripal_entity_type, $display_context, $display);
 
     // Get the layout for this bundle.
-    $bundle_layouts = $this->getLayout($bundle);
-    if (count($bundle_layouts) == 0) {
-      \Drupal::messenger()->addWarning(t('No default layouts could be found for this content type.'));
-      return FALSE;
-    }
-    if (count($bundle_layouts) > 1) {
-      \Drupal::messenger()->addWarning(t('There are multiple layouts for the same content type. '
-      . 'Selecting the first. @layouts'), ['@layouts' => print_r($bundle_layouts, TRUE)]);
-    }
-    $layout =  array_values($bundle_layouts)[0];
+    $layout = $this->getLayout($bundle, $display_context);
 
     // If there are field group definitinos then create those.
     if (array_key_exists('field_groups', $layout)) {
