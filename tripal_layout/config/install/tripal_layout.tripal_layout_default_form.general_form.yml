@@ -25,7 +25,7 @@ layouts:
             - organism_infraspecific_name
         core_details:
           label: "Core Details"
-          weight: 10
+          weight: 20
           show_empty: false
           open: true
           children:
@@ -34,14 +34,14 @@ layouts:
             - organism_comment
         organism_properties:
           label: "Additional Details"
-          weight: 0
+          weight: 30
           show_empty: false
           open: true
           children:
             - "type:chado_property_type_default"
         organism_connections:
           label: "Linkages"
-          weight: 20
+          weight: 40
           show_empty: false
           open: false
           children:
