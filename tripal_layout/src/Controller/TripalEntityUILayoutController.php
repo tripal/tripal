@@ -446,6 +446,28 @@ class TripalEntityUILayoutController extends ControllerBase {
   }
 
   /**
+   * Hides the label of all the components listed.
+   *
+   * @param array $component_names
+   *  A list of component names whose label we want to hide.
+   * @param EntityDisplayBase $display
+   *  Thne display the components belong to.
+   * @return void
+   */
+  protected function hideComponentLabels(array $component_names, EntityDisplayBase $display) {
+    $components = $display->getComponents();
+    foreach ($component_names as $name) {
+      if (array_key_exists($name, $components)) {
+        $options = $components[$name];
+        if (array_key_exists('label', $options)) {
+          $options['label'] = 'hidden';
+        }
+        $display->setComponent($name, $options);
+      }
+    }
+  }
+
+  /**
    * Removes all field groups from the display
    *
    * @param EntityDisplayBase $display
@@ -629,6 +651,11 @@ class TripalEntityUILayoutController extends ControllerBase {
       foreach ($layout['field_groups'] as $group_type => $field_groups) {
         foreach ($field_groups as $group_name => $settings) {
           $this->setFieldGroupChildren($settings['children'], $group_name, $group_type, $display, $bundle);
+
+          // We want to hide the label for all fields in a field_group_table.
+          if ($group_type == 'field_group_table') {
+            $this->hideComponentLabels($settings['children'], $display);
+          }
         }
       }
     }
