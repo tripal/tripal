@@ -486,16 +486,10 @@ class TripalEntityUILayoutController extends ControllerBase {
    *   The name of the field component
    * @param EntityDisplayBase $display
    *   The display configuration.
-   * @param array $components
-   *   An array of display components to act on.
    */
-  protected function hideComponents(array $names, EntityDisplayBase $display, array $components = []) {
-
-    $components = $components ?? $display->getComponents();
+  protected function hideComponents(array $names, EntityDisplayBase $display) {
     foreach ($names as $name) {
-      if (in_array($name, array_keys($components))) {
-        $display->removeComponent($name);
-      }
+      $display->removeComponent($name);
     }
   }
 
