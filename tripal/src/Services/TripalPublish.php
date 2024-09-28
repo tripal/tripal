@@ -1044,6 +1044,8 @@ class TripalPublish {
    */
   public function publish($filters = []) {
 
+    $published_entities = [];
+
     // Build the search values array
     $search_values = [];
     $this->addRequiredValues($search_values);
@@ -1097,27 +1099,27 @@ class TripalPublish {
       // information about it (say if we are publishing genes from a noSQL back-end but the
       // original entity was created when it was first published when using the Chado backend).
       $this->logger->notice($batch_prefix . "Step 6 of 6: Add field items to published entities...");
+
+      if (!empty($this->unsupported_fields)) {
+        $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
+      }
+
+      $total_items = 0;
+      foreach ($this->field_info as $field_name => $field_info) {
+
+        $this->logger->notice("  Checking for published items for the field: $field_name...");
+        $existing_field_items = $this->findFieldItems($field_name, $entities);
+
+        $num_inserted = $this->insertFieldItems($field_name, $matches, $titles,
+          $entities, $existing_field_items, $published_entities);
+
+        $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
+        $total_items += $num_inserted;
+      }
+      $this->logger->notice("Published " .  number_format(count(array_keys($published_entities)))
+          . " new entities, and " . number_format($total_items) . " field values.");
     }
 
-    if (!empty($this->unsupported_fields)) {
-      $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
-    }
-
-    $total_items = 0;
-    $published_entities = [];
-    foreach ($this->field_info as $field_name => $field_info) {
-
-      $this->logger->notice("  Checking for published items for the field: $field_name...");
-      $existing_field_items = $this->findFieldItems($field_name, $entities);
-
-      $num_inserted = $this->insertFieldItems($field_name, $matches, $titles,
-        $entities, $existing_field_items, $published_entities);
-
-      $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
-      $total_items += $num_inserted;
-    }
-    $this->logger->notice("Published " .  number_format(count(array_keys($published_entities)))
-        . " new entities, and " . number_format($total_items) . " field values.");
     $this->logger->notice('Done');
     return $published_entities;
   }
