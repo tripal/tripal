@@ -1044,7 +1044,10 @@ class TripalPublish {
    */
   public function publish($filters = []) {
 
+    $total_items = 0;
     $published_entities = [];
+    $total_existing_entities = 0;
+    $total_new_entities = 0;
 
     // Build the search values array
     $search_values = [];
@@ -1078,10 +1081,12 @@ class TripalPublish {
 
       $this->logger->notice($batch_prefix . "Step 3 of 6: Find existing published entities...");
       $existing = $this->findEntities($matches, $titles);
+      $total_existing_entities += count($existing);
 
       // Exclude any matches that are already published. We
       // need to publish only new matches.
       list($new_matches, $new_titles) = $this->excludeExisting($matches, $titles, $existing);
+      $total_new_entities += count($new_titles);
 
       // Note: entities are not tied to any storage backend. An entity
       // references an "object".  The information about that object
@@ -1104,23 +1109,22 @@ class TripalPublish {
         $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
       }
 
-      $total_items = 0;
       foreach ($this->field_info as $field_name => $field_info) {
 
-        $this->logger->notice("  Checking for published items for the field: $field_name...");
         $existing_field_items = $this->findFieldItems($field_name, $entities);
-
         $num_inserted = $this->insertFieldItems($field_name, $matches, $titles,
           $entities, $existing_field_items, $published_entities);
 
-        $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
+        if ($num_inserted) {
+          $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
+        }
         $total_items += $num_inserted;
       }
-      $this->logger->notice("Published " .  number_format(count(array_keys($published_entities)))
-          . " new entities, and " . number_format($total_items) . " field values.");
     }
 
-    $this->logger->notice('Done');
+    $this->logger->notice("Publish completed. Published " . number_format($total_new_entities)
+        . " new entities, checked " . number_format($total_existing_entities)
+        . " existing entities, and added " . number_format($total_items) . " field values.");
     return $published_entities;
   }
 }
