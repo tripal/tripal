@@ -93,4 +93,13 @@ trait TripalLayoutConfigEntityTrait {
       }
     }
   }
+
+  /**
+   * Clears the bundle layout cache.
+   *
+   * @return void
+   */
+  public function clearLayoutCache() {
+    $this->bundle_layouts = NULL;
+  }
 }
