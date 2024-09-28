@@ -65,14 +65,28 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
       'entity_defn' => $entity_defns['view'],
       'bundle_defn' => $bundle_defns['organism'],
       'expectations' => [
-        'num_layouts' => 1,
+        'num_layouts' => 2,
         'layouts' => [
-          'organism'
+          'organism',
+          'analysis',
         ],
       ],
     ];
-    $senarios['organism_view']['entity_defn']['yaml_file'] = __DIR__ . '/../../../fixtures/yaml_view/tripal_layout.tripal_layout_default_view.test_view.yml';
+    $senarios['organism_view']['entity_defn']['yaml_file'] = __DIR__ . '/../../../fixtures/yaml_layouts/tripal_layout.tripal_layout_default_view.test_view.yml';
 
+    $senarios['organism_form'] = [
+      'display_context' => 'form',
+      'entity_defn' => $entity_defns['form'],
+      'bundle_defn' => $bundle_defns['organism'],
+      'expectations' => [
+        'num_layouts' => 2,
+        'layouts' => [
+          'organism',
+          'analysis',
+        ],
+      ],
+    ];
+    $senarios['organism_form']['entity_defn']['yaml_file'] = __DIR__ . '/../../../fixtures/yaml_layouts/tripal_layout.tripal_layout_default_form.test_form.yml';
     return $senarios;
   }
 
