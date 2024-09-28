@@ -13,7 +13,7 @@ use \Drupal\Tests\user\Traits\UserCreationTrait;
  *
  * @group TripalLayoutDisplay
  */
-class TripalLayoutEntities extends TripalTestKernelBase {
+class TripalLayoutEntitiesTest extends TripalTestKernelBase {
 
   /**
    * {@inheritdoc}
@@ -70,7 +70,7 @@ class TripalLayoutEntities extends TripalTestKernelBase {
   }
 
   /**
-   * Tests loading a TripalLayoutEntity.
+   * Tests creating/updating/loading a test TripalLayoutEntity.
    *
    * @dataProvider provideLayoutDisplayEntitySenarios
    *
@@ -84,7 +84,20 @@ class TripalLayoutEntities extends TripalTestKernelBase {
    *   Expected keys include: id
    * @return void
    */
-  public function testTripalLayoutEntityLoad(string $display_context, array $entity_defn, array $bundle_defn) {
-    $this->markTestIncomplete('Just starting out');
+  public function testTripalLayoutEntityCRUD(string $display_context, array $entity_defn, array $bundle_defn) {
+
+    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_storage **/
+    $config_storage = \Drupal::entityTypeManager()->getStorage($entity_defn['id']);
+
+    // Create entity from valid YAML
+    // -- Get the TEST YAML file.
+    $yaml = \Symfony\Component\Yaml\Yaml::parseFile(__DIR__ . '/../../../fixtures/yaml_view/tripal_layout.tripal_layout_default_view.test_view.yml');
+    $this->assertIsArray($yaml, "Unable to pull down the test YAML file.");
+    // -- Create a config entity of the specified type from the YAML.
+    $config_entity = $config_storage->createFromStorageRecord($yaml);
+    $config_entity->save();
+    $this->assertIsObject($config_entity, "Unable to create a config entity from the test file yaml.");
+    $this->assertInstanceOf($entity_defn['class']::class, $config_entity,
+      "The created entity is not of the correct type.");
   }
 }
