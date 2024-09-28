@@ -1,12 +1,10 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\Entity;
+namespace Drupal\Tests\tripal_layout\Kernel\Entity;
 
-use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\tripal\Entity\TripalEntity;
-use Drupal\tripal\Entity\TripalEntityType;
-use \Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
 
 /**
  * Tests the TripalLayoutDefaultView and TripalLayoutDefaultForm entities.
@@ -14,6 +12,8 @@ use \Drupal\Tests\user\Traits\UserCreationTrait;
  * @group TripalLayoutDisplay
  */
 class TripalLayoutEntitiesTest extends TripalTestKernelBase {
+
+  use TripalLayoutTestTrait;
 
   /**
    * {@inheritdoc}
@@ -115,16 +115,15 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
     $config_storage = \Drupal::entityTypeManager()->getStorage($entity_defn['id']);
 
     // Create entity from valid YAML
-    // -- Get the TEST YAML file.
-    $yaml = \Symfony\Component\Yaml\Yaml::parseFile($entity_defn['yaml_file']);
-    $this->assertIsArray($yaml, "Unable to pull down the test YAML file.");
-    // -- Create a config entity of the specified type from the YAML.
-    $config_entity = $config_storage->createFromStorageRecord($yaml);
-    $config_entity->save();
-    $this->assertIsObject($config_entity, "Unable to create a config entity from the test file yaml.");
-    $this->assertInstanceOf($entity_defn['class'], $config_entity,
-      "The created entity is not of the correct type.");
+    $config_entity = $this->createLayoutEntityFromConfig(
+      $entity_defn['id'],
+      $entity_defn['yaml_file']
+    );
 
+    // Also get the TEST YAML file for validation.
+    $yaml_file = $entity_defn['yaml_file'];
+    $yaml = \Symfony\Component\Yaml\Yaml::parseFile($yaml_file);
+    $this->assertIsArray($yaml, "Unable to pull down the test YAML file ($yaml_file).");
 
     $ret_id = $config_entity->id();
     $this->assertIsString($ret_id, "Unable to retrieve the id.");
