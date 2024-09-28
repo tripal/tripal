@@ -635,6 +635,9 @@ class TripalEntityUILayoutController extends ControllerBase {
 
     // Get the layout for this bundle.
     $layout = $this->getLayout($bundle, $display_context);
+    if (!$layout) {
+      return FALSE;
+    }
 
     // If there are field group definitinos then create those.
     if (array_key_exists('field_groups', $layout)) {
