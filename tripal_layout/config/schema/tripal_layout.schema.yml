@@ -33,20 +33,7 @@ tripal_layout.tripal_layout_default_view.*:
             type: sequence
             label: "The set of field groups for this layout"
             sequence:
-              type: mapping
-              mapping:
-                details:
-                  type: sequence
-                  label: "The set of field groups of the type: 'details'."
-                  sequence:
-                    type: tripal_layout_field_group_item
-                    label: "Field Group Item"
-                field_group_table:
-                  type: sequence
-                  label: "The set of field groups of the type: 'field_group_table'."
-                  sequence:
-                    type: tripal_layout_field_group_item
-                    label: "Field Group Item"
+              type: tripal_layout_field_group_item
 
 tripal_layout.tripal_layout_default_form.*:
   type: config_entity
@@ -76,23 +63,25 @@ tripal_layout.tripal_layout_default_form.*:
           hidden:
             type: sequence
             label: "The names of fields or field groups that should be hidden. Use the format 'type:<field type>' to hide all fields of a given type (e.g., 'type:chado_property_type_default')"
+            sequence:
+              type: string
+              label: "Component Name (e.g. field, field group)"
           field_groups:
             type: sequence
             label: "The set of field groups for this layout"
             sequence:
-              type: mapping
-              mapping:
-                details:
-                  type: sequence
-                  label: "The set of field groups of the type: 'details'."
-                  sequence:
-                    type: tripal_layout_field_group_item
-                    label: "Field Group Item"
+              type: tripal_layout_field_group_item
 
 tripal_layout_field_group_item:
   type: mapping
   label: "Field Group Item"
   mapping:
+    id:
+      type: string
+      label: "unique id of the field group"
+    type:
+      type: string
+      label: "Type of field group (i.e. 'details', 'field_group_table')"
     label:
       type: string
       label: "The label of this field group"
