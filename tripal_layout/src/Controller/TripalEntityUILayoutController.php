@@ -317,16 +317,16 @@ class TripalEntityUILayoutController extends ControllerBase {
    * @return void
    */
   protected function addFieldGroups($field_groups, $display) {
-    foreach ($field_groups as $group_type => $field_groups) {
+    foreach ($field_groups as $field_group) {
+      $group_type = $field_group['type'];
+      $group_name = $field_group['id'];
+      $settings = $field_group;
+      unset($settings['type'], $settings['id']);
       if ($group_type == 'details') {
-        foreach ($field_groups as $group_name => $settings) {
-          $this->addDetailsFieldGroup($group_name, $display, $settings);
-        }
+        $this->addDetailsFieldGroup($group_name, $display, $settings);
       }
       if ($group_type == 'field_group_table') {
-        foreach ($field_groups as $group_name => $settings) {
-          $this->addTableFieldGroup($group_name, $display, $settings);
-        }
+        $this->addTableFieldGroup($group_name, $display, $settings);
       }
     }
   }
@@ -645,14 +645,16 @@ class TripalEntityUILayoutController extends ControllerBase {
       $this->addFieldGroups($layout['field_groups'], $display);
 
       // Now set the children for each field group.
-      foreach ($layout['field_groups'] as $group_type => $field_groups) {
-        foreach ($field_groups as $group_name => $settings) {
-          $this->setFieldGroupChildren($settings['children'], $group_name, $group_type, $display, $bundle);
+      foreach ($layout['field_groups'] as $field_group) {
+        $group_type = $field_group['type'];
+        $group_name = $field_group['id'];
+        $settings = $field_group;
+        unset($settings['type'], $settings['id']);
+        $this->setFieldGroupChildren($settings['children'], $group_name, $group_type, $display, $bundle);
 
-          // We want to hide the label for all fields in a field_group_table.
-          if ($group_type == 'field_group_table') {
-            $this->hideComponentLabels($settings['children'], $display);
-          }
+        // We want to hide the label for all fields in a field_group_table.
+        if ($group_type == 'field_group_table') {
+          $this->hideComponentLabels($settings['children'], $display);
         }
       }
     }
