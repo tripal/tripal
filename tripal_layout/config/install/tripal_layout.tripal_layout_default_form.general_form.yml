@@ -47,3 +47,64 @@ layouts:
           children:
             - "organism_dbxref"
             - "organism_pub"
+  - tripal_entity_type: "analysis"
+    field_groups:
+      details:
+        page_metadata:
+          label: "Page Metadata"
+          weight: 0
+          show_empty: false
+          open: true
+          children:
+            - "title"
+            - "uid"
+        core_details:
+          label: "Core Details"
+          weight: 10
+          show_empty: false
+          open: true
+          children:
+            - analysis_name
+            - analysis_description
+        uniqueid:
+          label: "Unique Identifier"
+          weight: 20
+          show_empty: false
+          open: true
+          children:
+            - "software"
+            - "data_source"
+        software:
+          label: "Software"
+          weight: 10
+          show_empty: false
+          open: true
+          children:
+            - "analysis_software"
+            - "analysis_program_version"
+            - "analysis_algorithm"
+        data_source:
+          label: "Data Source"
+          weight: 20
+          show_empty: false
+          open: true
+          children:
+            - analysis_source
+            - analysis_source_version
+            - analysis_source_uri
+        properties:
+          label: "Additional Details"
+          weight: 30
+          show_empty: false
+          open: true
+          children:
+            - "type:chado_property_type_default"
+        connections:
+          label: "Linkages"
+          weight: 40
+          show_empty: false
+          open: false
+          children:
+            - "analysis_pub"
+            - "analysis_project"
+            - "analysis_dbxref"
