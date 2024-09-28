@@ -11,3 +11,71 @@
 function tripal_layout_page_attachments(array &$attachments) {
   $attachments['#attached']['library'][] = 'tripal_layout/tripal-layout';
 }
+
+/**
+ * Implements hook_rebuild().
+ */
+function tripal_layout_rebuild() {
+  tripal_layout_sync_entities('tripal_layout_default_view');
+  tripal_layout_sync_entities('tripal_layout_default_form');
+}
+
+/**
+ * Sync's configuration entities.
+ *
+ * Specfically,
+ *  - scans all module config install directories for YAML
+ *  - creates config entity if the YAML id does not match an existing entity
+ *  - updates the config entity if the YAML id matches an existing entity
+ *
+ * This function is analogous to tripal_load_configuration() but focuses on
+ * the config entity rather then just the config files.
+ *
+ * @param string $config_entity_type
+ * @return void
+ */
+function tripal_layout_sync_entities(string $config_entity_type) {
+
+  /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_storage **/
+  $config_storage = \Drupal::entityTypeManager()->getStorage($config_entity_type);
+  /** @var \Drupal\Core\Entity\EntityTypeInterface $definition **/
+  $definition = \Drupal::entityTypeManager()->getDefinition($config_entity_type);
+
+  // Load all the existing entities of this type.
+  $existing_entities = \Drupal::entityTypeManager()
+    ->getStorage($config_entity_type)
+    ->loadByProperties([]);
+
+  // Iterate through the config/install directory of all installed modules
+  // looking for YAML files encoding this config entity type.
+  $listing = new \Drupal\Core\Extension\ExtensionDiscovery(\Drupal::root());
+  $modules = $listing->scan('module');
+  foreach ($modules as $module) {
+    $extension_path = $module->getPath();
+    $config_path = $extension_path . '/' . \Drupal\Core\Config\InstallStorage::CONFIG_INSTALL_DIRECTORY;
+    if (is_dir($config_path)) {
+      $file_storage = new \Drupal\Core\Config\FileStorage($config_path);
+      $configs = $file_storage->listAll($definition->getConfigPrefix());
+      foreach ($configs as $config_file) {
+
+        // Now for each YAML file found for our config entity type...
+        //  -- Read Config from file.
+        $current_config = $file_storage->read($config_file);
+        //  -- Extract the ID of the config entity.
+        $parts = explode('.', $config_file);
+        $config_entity_id = $parts[2];
+        //  -- If it matches an existing entity then update it.
+        if (array_key_exists($config_entity_id, $existing_entities)) {
+          $config_entity = $existing_entities[$config_entity_id];
+          $config_entity = $config_storage->updateFromStorageRecord($config_entity, $current_config);
+          $config_entity->save();
+        }
+        //  -- If it is new, then create a new entity.
+        else {
+          $config_entity = $config_storage->createFromStorageRecord($current_config);
+          $config_entity->save();
+        }
+      }
+    }
+  }
+}
