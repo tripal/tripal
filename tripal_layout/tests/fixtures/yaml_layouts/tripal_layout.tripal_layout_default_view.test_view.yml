@@ -1,5 +1,5 @@
 id: 'general_view'
-label: 'General Content Types'
+label: 'TEST VIEW'
 description: 'Layouts for general content types (analysis, organism, etc.) based on Chado and added via the Tripal Chado module.'
 layouts:
   - tripal_entity_type: "organism"

@@ -14,16 +14,20 @@ class TripalLayoutDefaultViewDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to delete %name?', ['%name' => $this->entity->label()]);
+    return $this->t('Are you sure you want to delete the Display Layout %name?', ['%name' => $this->entity->label()]);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getDescription() {
-    return $this->t('You are deleting an entire configuration that specifies how ' .
-        'content types forms should be organized by default. Rebuild the cache ' .
-        'to re-import the default settings of this configuration.');
+    $content = '<p>'
+      . $this->t('You are deleting an entire configuration that specifies how '
+      . 'tripal content pages should be organized by default.')
+      . '</p>';
+    $content .= '<p>' . $this->t('Rebuild the cache to re-import the '
+      . 'default settings of this configuration.') . '</p>';
+    return $content;
   }
 
   /**
