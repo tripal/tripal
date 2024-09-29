@@ -10,6 +10,7 @@ use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
  * Tests the TripalLayoutDefaultView and TripalLayoutDefaultForm entities.
  *
  * @group TripalLayoutDisplay
+ * @group TripalLayoutDisplayEntity
  */
 class TripalLayoutEntitiesTest extends TripalTestKernelBase {
 

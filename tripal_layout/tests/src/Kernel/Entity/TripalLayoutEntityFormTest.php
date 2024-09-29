@@ -11,6 +11,7 @@ use Drupal\tripal_layout\Entity\TripalLayoutDefaultForm;
  * Tests the TripalLayoutDefaultView and TripalLayoutDefaultForm entities.
  *
  * @group TripalLayoutDisplay
+ * @group TripalLayoutDisplayEntity
  */
 class TripalLayoutEntityFormTest extends TripalTestKernelBase {
 
