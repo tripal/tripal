@@ -1,4 +1,4 @@
-id: 'general_form'
+id: 'test_form'
 label: 'TEST FORM'
 description: 'Layouts for general content types (analysis, organism, etc.) based on Chado and added via the Tripal Chado module.'
 layouts:

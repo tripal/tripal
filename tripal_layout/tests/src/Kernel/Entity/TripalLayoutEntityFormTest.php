@@ -71,7 +71,6 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
   public function testDeleteForm(string $form_class, string $config_entity_type, string $yaml_file, array $expectations) {
 
     // Create layout entity to be used in testing.
-    $config_entity_type = 'tripal_layout_default_view';
     $config_entity = $this->createLayoutEntityFromConfig(
       $config_entity_type,
       $yaml_file

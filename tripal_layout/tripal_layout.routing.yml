@@ -55,6 +55,7 @@ entity.tripal_layout_default_view.layouts:
   path: '/admin/tripal/config/tripal_layout_default_view'
   defaults:
     _entity_list: 'tripal_layout_default_view'
+    _title: 'Tripal Default View Layouts'
   requirements:
     _permission: 'administer tripal'
 
@@ -73,6 +74,7 @@ entity.tripal_layout_default_form.layouts:
   path: '/admin/tripal/config/tripal_layout_default_form'
   defaults:
     _entity_list: 'tripal_layout_default_form'
+    _title: 'Tripal Default Form Layouts'
   requirements:
     _permission: 'administer tripal'
 
