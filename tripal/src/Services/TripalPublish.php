@@ -144,7 +144,7 @@ class TripalPublish {
   /**
    * The Entity Lookup service.
    *
-   * @var \Drupal\tripal\Services\TripalLogger $logger
+   * @var \Drupal\tripal\Services\TripalEntityLookup $entity_lookup_manager
    */
   protected $entity_lookup_manager = NULL;
 
@@ -751,11 +751,14 @@ class TripalPublish {
    *   The array of matches for each entity.
    * @param array $titles
    *   The array of entity titles keyed by the chado record ID.
+   * @param array $excluded_titles
+   *   A list of chado titles to ignore (i.e. where titles are duplicated),
+   *   the key is the chado record ID.
    * @param array $published_entities
    *   All published entities for the current bundle. The key will be
    *   the chado record ID, the values will be the entity IDs.
    */
-  protected function insertEntities($matches, $titles, &$published_entities) {
+  protected function insertEntities($matches, $titles, $excluded_titles, &$published_entities) {
 
     $sql = 'INSERT INTO {tripal_entity}'
          . ' (type, title, status, created, changed) VALUES ';
@@ -767,14 +770,16 @@ class TripalPublish {
       $i++;
       $record_id = $this->getChadoRecordID($match);
       $title = $titles[$record_id];
+      if (!in_array($title, $excluded_titles)) {
 
-      $sql .= "(:type_$i, :title_$i, :status_$i, :created_$i, :changed_$i), ";
-      $args[":type_$i"] = $this->bundle;
-      $args[":title_$i"] = $title;
-      $args[":status_$i"] = 1;
-      $args[":created_$i"] = time();
-      $args[":changed_$i"] = time();
-      $added_titles[] = $title;
+        $sql .= "(:type_$i, :title_$i, :status_$i, :created_$i, :changed_$i), ";
+        $args[":type_$i"] = $this->bundle;
+        $args[":title_$i"] = $title;
+        $args[":status_$i"] = 1;
+        $args[":created_$i"] = time();
+        $args[":changed_$i"] = time();
+        $added_titles[] = $title;
+      }
     }
 
     if (count($args) > 0) {
@@ -903,7 +908,6 @@ class TripalPublish {
     $init_sql = rtrim($init_sql, ", ");
     $init_sql .= ") VALUES\n";
 
-    $i = 0;
     $j = 0;
     $total = 0;
     $batch_num = 1;
@@ -916,9 +920,12 @@ class TripalPublish {
     // entity.
     foreach ($matches as $match) {
       $record_id = $this->getChadoRecordID($match);
-      $entity_id = $published_entities[$record_id];
-
-      $i++;
+      $entity_id = $published_entities[$record_id] ?? NULL;
+      // entity_id will be NULL in the case of an excluded match resulting
+      // from a duplicated title. In this case, skip all fields.
+      if (!$entity_id) {
+        continue;
+      }
 
       // Iterate through the "items" of each field and insert a record value
       // for each non-empty item.
@@ -1086,6 +1093,9 @@ class TripalPublish {
    */
   public function publish($filters = []) {
 
+//$transaction_chado = $this->connection->startTransaction();
+//$transaction_chado->rollback();
+
     $total_items = 0;
     $published_entities = [];
     $total_existing_entities = 0;
@@ -1104,7 +1114,7 @@ class TripalPublish {
     // content type. This allows us to divide publishing into small batches
     // to reduce the amount of memory required if there are thousands of
     // records to publish.
-    $this->logger->notice("Finding candidate record IDs...");
+    $this->logger->notice("Finding all candidate record IDs...");
     $record_ids = $this->storage->findAllRecordIds($this->base_table);
     $record_id_batches = $this->divideIntoBatches($record_ids);
     $number_of_batches = count($record_id_batches);
@@ -1133,6 +1143,7 @@ class TripalPublish {
 
       $this->logger->notice($batch_prefix . "Step 4 of 7: Validating page titles...");
       $excluded_titles = $this->validateTitles($titles);
+      // Save duplicated titles to print out at the end
       $all_excluded_titles = array_merge($all_excluded_titles, $excluded_titles);
 
       $this->logger->notice($batch_prefix . "Step 5 of 7: Updating existing page titles...");
@@ -1149,7 +1160,7 @@ class TripalPublish {
       // backends. But, if the entity with a given title for this content type
       // doesn't exist, then let's create one.
       $this->logger->notice($batch_prefix . "Step 6 of 7: Publishing " . number_format(count($new_matches))  . " new entities...");
-      $this->insertEntities($new_matches, $titles, $existing_published_entities);
+      $this->insertEntities($new_matches, $titles, $excluded_titles, $existing_published_entities);
 
       // Now we have to publish the field items. These represent storage back-end information
       // about the entity. If the entity was previously published we still may be adding new
@@ -1180,7 +1191,7 @@ class TripalPublish {
         $list .= $record_id . ':' . $title . "\n";
       }
       $this->logger->warning("The following " . number_format(count($all_excluded_titles)) . " chado records"
-          . " could not be published because the title is identical to another record\n" . $list);
+          . " could not be published because the title would be identical to another record\n" . $list);
     }
 
     $this->logger->notice("Publish completed. Published " . number_format($total_new_entities)
