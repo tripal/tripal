@@ -636,23 +636,31 @@ class TripalPublish {
    *
    * @param array $titles
    *   A list of new titles to check, key is chado record ID.
+   * @param array $published_entities
+   *   All published entities for the current bundle. The key will be
+   *   the chado record ID, the values will be the entity IDs.
    *
    * @return array
    *   Chado titles that are duplicated, key is chado record ID.
    */
-  protected function validateTitles(array $titles) {
+  protected function validateTitles(array $titles, array $published_entities) {
     $duplicated_titles = [];
 
     // Check for duplicated titles in existing entities
     $conn = \Drupal::service('database');
     $query = $conn->select('tripal_entity', 'E');
+    $query->addField('E', 'id', 'id');
     $query->addField('E', 'title', 'title');
     $query->condition('E.type', $this->bundle, '=');
     $query->condition('E.title', $titles, 'IN');
     $results = $query->execute();
     while ($record = $results->fetchObject()) {
-      $index = array_search($record->title, $titles);
-      $duplicated_titles[$index] = $record->title;
+      $record_id = array_search($record->title, $titles);
+      $entity_id = $published_entities[$record_id];
+      // If hit is to self as previously published, then this does not count as a duplicate.
+      if ($entity_id != $record->id) {
+        $duplicated_titles[$record_id] = $record->title;
+      }
     }
 
     // Check for duplicate titles within the passed $titles array
@@ -1142,7 +1150,7 @@ class TripalPublish {
       $total_existing_entities += count($existing_titles);
 
       $this->logger->notice($batch_prefix . "Step 4 of 7: Validating page titles...");
-      $excluded_titles = $this->validateTitles($titles);
+      $excluded_titles = $this->validateTitles($titles, $existing_published_entities);
       // Save duplicated titles to print out at the end
       $all_excluded_titles = array_merge($all_excluded_titles, $excluded_titles);
 
