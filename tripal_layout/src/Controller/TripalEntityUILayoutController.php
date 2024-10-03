@@ -179,6 +179,27 @@ class TripalEntityUILayoutController extends ControllerBase {
   }
 
   /**
+   * Sets the display option for a component without affecting other options.
+   *
+   * Note: this will override an existing version of that option.
+   *
+   * @param string $component_name
+   *   The name of the component you want to set a display option for.
+   * @param string $option_key
+   *   The key for the display option (e.g. 'weight')
+   * @param mixed $option_value
+   *   The value for the display option
+   * @param EntityDisplayBase $display
+   *   The display the component is in and that you want to set it for.
+   * @return void
+   */
+  protected function setDisplayOption(string $component_name, string $option_key, mixed $option_value, EntityDisplayBase $display) {
+    $options = $display->getComponent($component_name);
+    $options[$option_key] = $option_value;
+    $display->setComponent($component_name, $options);
+  }
+
+  /**
    * Adds a number of children components to a specific field group.
    *
    * @param array $children
@@ -198,6 +219,10 @@ class TripalEntityUILayoutController extends ControllerBase {
     /** @var \Drupal\Core\Entity\EntityFieldManager $entity_field_manager **/
     $entity_field_manager = \Drupal::service('entity_field.manager');
 
+    // Note: we also want to set weight to keep things in the order they were
+    // listed in the yaml. This will override weights set in another way.
+    $current_weight = 0;
+
     foreach ($children as $child) {
       // Prevent the case where the setup accidently sets the parent
       // as a child of itself.
@@ -216,6 +241,7 @@ class TripalEntityUILayoutController extends ControllerBase {
       // the latter then we have to find all of the fields of the given
       // field type and then add each one at a time.
       $matches = [];
+
       if (preg_match('/^type:(.+)$/', $child, $matches)) {
         $child_type = $matches[1];
 
@@ -225,13 +251,21 @@ class TripalEntityUILayoutController extends ControllerBase {
         $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle);
         foreach ($entity_field_defs as $entity_field_def) {
           if ($entity_field_def->getType() == $child_type) {
-            $this->setChild($entity_field_def->getName(), $group_name, $display);
+            $field_name = $entity_field_def->getName();
+            $this->setChild($field_name, $group_name, $display);
+            // Set weight.
+            $current_weight += 5;
+            $this->setDisplayOption($field_name, 'weight', $current_weight, $display);
           }
         }
       }
       // We don't have a field type, so simply set the field instance.
       else {
-        $this->setChild($child, $group_name, $display);
+        $field_name = $child;
+        $this->setChild($field_name, $group_name, $display);
+        // Set weight.
+        $current_weight += 5;
+        $this->setDisplayOption($field_name, 'weight', $current_weight, $display);
       }
     }
   }
