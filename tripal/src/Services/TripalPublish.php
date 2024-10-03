@@ -594,7 +594,6 @@ class TripalPublish {
    */
   protected function getEntityTitles($matches) {
     $titles = [];
-    $title_format = $this->entity_type->getTitleFormat();
 
     // Iterate through each match we are checking for an existing entity for.
     foreach ($matches as $match) {
@@ -632,57 +631,19 @@ class TripalPublish {
   }
 
   /**
-   * Looks for duplicate titles, each title within a bundle must be unique.
-   *
-   * @param array $titles
-   *   A list of new titles to check, key is chado record ID.
-   * @param array $published_entities
-   *   All published entities for the current bundle. The key will be
-   *   the chado record ID, the values will be the entity IDs.
-   *
-   * @return array
-   *   Chado titles that are duplicated, key is chado record ID.
-   */
-  protected function validateTitles(array $titles, array $published_entities) {
-    $duplicated_titles = [];
-
-    // Check for duplicated titles in existing entities
-    $conn = \Drupal::service('database');
-    $query = $conn->select('tripal_entity', 'E');
-    $query->addField('E', 'id', 'id');
-    $query->addField('E', 'title', 'title');
-    $query->condition('E.type', $this->bundle, '=');
-    $query->condition('E.title', $titles, 'IN');
-    $results = $query->execute();
-    while ($record = $results->fetchObject()) {
-      $record_id = array_search($record->title, $titles);
-      $entity_id = $published_entities[$record_id];
-      // If hit is to self as previously published, then this does not count as a duplicate.
-      if ($entity_id != $record->id) {
-        $duplicated_titles[$record_id] = $record->title;
-      }
-    }
-
-    // Check for duplicate titles within the passed $titles array
-    $passed_duplicates = array_unique(array_diff_key($titles, array_unique($titles)));
-    $duplicated_titles = array_merge($duplicated_titles, $passed_duplicates);
-
-    return $duplicated_titles;
-  }
-
-  /**
-   * Check if the title does not match the existing published
+   * Check if the new title does not match the existing published
    * title, and if so, update it.
-   * This can happen if title format has been changed.
-   * Array key for both input arrays is the chado record ID,
-   * array value is the title.
+   * This can happen if the title format has been changed.
+   * Array keys for both input arrays are the chado record ID,
+   * array values are the titles.
    *
    * @param array $titles
    *   A list of new titles to check, key is chado record ID.
    * @param array $existing_titles
    *   A list of already published titles, key is chado record ID.
    * @param array $published_entities
-   *   A list of published entities. The key will be the chado table record ID, the values will be the entity IDs.
+   *   A list of published entities. The key will be the chado table
+   *   record ID, the values will be the entity IDs.
    *
    * @return int
    *   Number of titles that were updated.
@@ -1097,6 +1058,7 @@ class TripalPublish {
     // records to publish.
     $this->logger->notice("Finding all candidate record IDs...");
     $record_ids = $this->storage->findAllRecordIds($this->base_table);
+    // @@@possible future use: $bundle_term_id_space = $this->entity_type->getTermIdSpace(); $bundle_term_accession = $this->entity_type->getTermAccession();
     $record_id_batches = $this->divideIntoBatches($record_ids);
     $number_of_batches = count($record_id_batches);
 

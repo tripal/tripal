@@ -4,8 +4,6 @@ namespace Drupal\tripal\Services;
 
 use Drupal\Core\Url;
 use Drupal\Core\Render\Markup;
-use Drupal\field\Entity\FieldStorageConfig;
-use \Drupal\tripal\Services\TripalEntityTitle;
 
 /**
  * This class provides functions to assist with finding a Drupal
