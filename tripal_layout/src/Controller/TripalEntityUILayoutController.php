@@ -295,14 +295,14 @@ class TripalEntityUILayoutController extends ControllerBase {
     $components = $display->getComponents();
     $hidden = $display->get('hidden');
 
-    if (in_array($child, array_keys($components))) {
+    if (in_array($child, array_keys($field_groups))) {
+      $is_field_group = TRUE;
+    }
+    elseif (in_array($child, array_keys($components))) {
       $is_field = TRUE;
     }
     else if (in_array($child, $hidden)) {
       $is_field = TRUE;
-    }
-    else if (in_array($child, array_keys($field_groups))) {
-      $is_field_group = TRUE;
     }
 
     // If this isn't a field or a field group it is something we
@@ -312,7 +312,6 @@ class TripalEntityUILayoutController extends ControllerBase {
     }
 
     // First remove the component from where it may already be a child.
-    $field_groups = $display->getThirdPartySettings('field_group');
     foreach ($field_groups as $group_name => $group_details) {
       if (is_array($group_details['children'])) {
         if (in_array($child, $group_details['children'])) {
@@ -395,7 +394,7 @@ class TripalEntityUILayoutController extends ControllerBase {
         "format_settings" => [
           "classes" => $classes,
           "show_empty_fields" => $this->getSetting('show_empty', FALSE, $settings),
-          "id" => "",
+          "id" => $name,
           "open" => $this->getSetting('open', FALSE, $settings),
           "description" => "",
         ],
@@ -442,7 +441,7 @@ class TripalEntityUILayoutController extends ControllerBase {
           "table_row_striping" => "1",
           "always_show_field_label" => "1",
           "empty_field_placeholder" => "",
-          "id" => "",
+          "id" => $name,
           "classes" => $classes,
           "always_show_field_value" => 0,
           "hide_table_if_empty" => 0
