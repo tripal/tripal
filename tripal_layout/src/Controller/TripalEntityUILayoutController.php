@@ -514,6 +514,22 @@ class TripalEntityUILayoutController extends ControllerBase {
   }
 
   /**
+   * Removes any field groups without children from the current display.
+   *
+   * @param EntityDisplayBase $display
+   *   The display to act on (i.e. the current display)
+   * @return void
+   */
+  protected function removeEmptyFieldGroups(EntityDisplayBase $display) {
+    $field_groups = $display->getThirdPartySettings('field_group');
+    foreach ($field_groups as $group_name => $group_details) {
+      if (empty($group_details['children'])) {
+        $display->unsetThirdPartySetting('field_group', $group_name);
+      }
+    }
+  }
+
+  /**
    * Hides a field from display
    *
    * @param string $name
@@ -697,6 +713,12 @@ class TripalEntityUILayoutController extends ControllerBase {
     if (array_key_exists('hidden', $layout) && is_array($layout['hidden']) && !empty($layout['hidden'])) {
       $this->hideComponents($layout['hidden'], $display);
     }
+
+    // Now as the last step we should remove any field groups that never
+    // did have children added to them. This happens when the YAML indicates a
+    // field type as the child and there are no implementations of that type
+    // for this display.
+    $this->removeEmptyFieldGroups($display);
 
     // Save all of the changes to the display.
     $display->save();
