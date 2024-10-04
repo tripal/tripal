@@ -78,6 +78,8 @@ content_types:
             - bio_data_13
         settings:
             chado_base_table: analysis
+            chado_type_table: analysisprop
+            chado_type_column: type_id
 
     -   label: Genome Annotation
         term: operation:0362
@@ -90,6 +92,8 @@ content_types:
             - bio_data_14
         settings:
             chado_base_table: analysis
+            chado_type_table: analysisprop
+            chado_type_column: type_id
 
     -   label: Genome Project
         term: local:Genome Project
@@ -102,3 +106,5 @@ content_types:
             - bio_data_15
         settings:
             chado_base_table: project
+            chado_type_table: projectprop
+            chado_type_column: type_id

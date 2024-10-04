@@ -1341,7 +1341,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   public function findAllRecordIds(string $bundle_id) {
     $records = [];
 
-    // Retrieve the base table from the bundle
+    // Retrieve relevant information from the bundle
     $entity_type_manager = \Drupal::entityTypeManager();
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle_id);
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
@@ -1359,10 +1359,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $query = $this->connection->select('1:' . $base_table, 'BT', []);
     $query->addField('BT', $pkey_column, 'pkey');
 
-    // If there is a type setting, add the bundle term as a condition
-    // to limit records to only those of this type.
+    // If there is a type setting, add this as a condition to
+    // limit records to only those of this type.
     // For example, only 'gene' SO:0000704 records from the 'feature' table.
-    if ($type_table) {
+    if ($type_table and $type_column) {
       if ($type_table == $base_table) {
         $query->join('1:cvterm', 'T', '"BT".' . $type_column . ' = "T".cvterm_id');
       }
@@ -1376,7 +1376,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $query->condition('DB.name', $termIdSpace, '=');
     }
 
-    // Retrieve results, i.e. a list of record IDs.
+    // Retrieve results, i.e. record IDs.
     $results = $query->execute();
     if ($results) {
       while ($pkey_id = $results->fetchField()) {

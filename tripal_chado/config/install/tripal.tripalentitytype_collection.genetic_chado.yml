@@ -26,6 +26,8 @@ content_types:
             - bio_data_17
         settings:
             chado_base_table: feature
+            chado_type_table: feature
+            chado_type_column: type_id
 
     -   label: Sequence Variant
         term: SO:0001060
@@ -38,6 +40,8 @@ content_types:
             - bio_data_18
         settings:
             chado_base_table: feature
+            chado_type_table: feature
+            chado_type_column: type_id
 
     -   label: Genetic Marker
         term: SO:0001645
@@ -50,6 +54,8 @@ content_types:
             - bio_data_19
         settings:
             chado_base_table: feature
+            chado_type_table: feature
+            chado_type_column: type_id
 
     -   label: Heritable Phenotypic Marker
         term: SO:0001500
@@ -62,3 +68,5 @@ content_types:
             - bio_data_20
         settings:
             chado_base_table: feature
+            chado_type_table: feature
+            chado_type_column: type_id
