@@ -1057,8 +1057,7 @@ class TripalPublish {
     // to reduce the amount of memory required if there are thousands of
     // records to publish.
     $this->logger->notice("Finding all candidate record IDs...");
-    $record_ids = $this->storage->findAllRecordIds($this->base_table);
-    // @@@possible future use: $bundle_term_id_space = $this->entity_type->getTermIdSpace(); $bundle_term_accession = $this->entity_type->getTermAccession();
+    $record_ids = $this->storage->findAllRecordIds($this->bundle);
     $record_id_batches = $this->divideIntoBatches($record_ids);
     $number_of_batches = count($record_id_batches);
 
