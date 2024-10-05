@@ -331,9 +331,9 @@ class TripalEntityTypeForm extends EntityForm {
   protected function validateTokens($format_string, $valid_tokens) {
     $invalid_token = '';
     preg_match_all('/(\[[^\]]+\])/', $format_string, $matches);
-    foreach ($matches as $match) {
-      if ($match and !array_key_exists($match[0], $valid_tokens)) {
-        $invalid_token = $match[0];
+    foreach ($matches[0] as $match) {
+      if ($match and !array_key_exists($match, $valid_tokens)) {
+        $invalid_token = $match;
         break;
       }
     }
