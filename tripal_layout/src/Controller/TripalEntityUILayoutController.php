@@ -350,11 +350,21 @@ class TripalEntityUILayoutController extends ControllerBase {
    * @return void
    */
   protected function addFieldGroups($field_groups, $display) {
+
+    // If there is not a weight set then we want to set one based on
+    // order in the YAML file.
+    $default_weight = 0;
+
     foreach ($field_groups as $field_group) {
+      $default_weight++;
+
       $group_type = $field_group['type'];
       $group_name = $field_group['id'];
       $settings = $field_group;
       unset($settings['type'], $settings['id']);
+
+      $settings['weight'] = $settings['weight'] ?? $default_weight;
+
       if ($group_type == 'details') {
         $this->addDetailsFieldGroup($group_name, $display, $settings);
       }
@@ -470,11 +480,25 @@ class TripalEntityUILayoutController extends ControllerBase {
    * @return void
    */
   protected function resetComponents(EntityDisplayBase &$display) {
+    $display_context = $display->get('displayContext');
+
+    // Get the field definitions so we can find defaults.
+    $bundle = $display->getEntityType()->id();
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+    $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle);
+
     $components = $display->getComponents();
-    foreach ($components as $field_name => $options) {
-      // setComponent resets the component to it's defaults when
-      // no options are passed as the second parameter.
-      $display->setComponent($field_name);
+    foreach ($components as $name => $current_display_options) {
+      $default_display_options = [];
+      // If the component is a field we can get its default display options.
+      if (array_key_exists($name, $entity_field_defs)) {
+        $entity_field_def = $entity_field_defs[$name];
+        $default_display_options = $entity_field_def->getDisplayOptions($display_context);
+      }
+      // Lets also reset the weights all back to 0 unless there is a default.
+      // This is needed because otherwise Drupal just keeps increasing them.
+      $default_display_options['weight'] = $default_display_options['weight'] ?? 0;
+      $display->setComponent($name, $default_display_options);
     }
   }
 
