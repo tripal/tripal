@@ -388,7 +388,7 @@ class TripalEntityUILayoutController extends ControllerBase {
         "children" => [],
         "label" => $this->getSetting('label', 'Missing Label', $settings),
         "parent_name" => $parent_name,
-        "region" => "content",
+        "region" => $this->getSetting('region', 'content', $settings),
         "weight" => $this->getSetting('weight', 0, $settings),
         "format_type" => "details",
         "format_settings" => [
@@ -396,7 +396,7 @@ class TripalEntityUILayoutController extends ControllerBase {
           "show_empty_fields" => $this->getSetting('show_empty', FALSE, $settings),
           "id" => $name,
           "open" => $this->getSetting('open', FALSE, $settings),
-          "description" => "",
+          "description" => $this->getSetting('description', '', $settings),
         ],
       ];
       $display->setThirdPartySetting('field_group', $name, $details_group);
@@ -427,24 +427,24 @@ class TripalEntityUILayoutController extends ControllerBase {
         "children" => [],
         "label" => $this->getSetting('label', 'Missing Label', $settings),
         "parent_name" => $parent_name,
-        "region" => "content",
+        "region" => $this->getSetting('region', 'content', $settings),
         "weight" => $this->getSetting('weight', 0, $settings),
         "format_type" => "field_group_table",
         "format_settings" => [
           "show_empty_fields" => $this->getSetting('show_empty', FALSE, $settings),
-          "label_visibility" => "1",
-          "desc" => "",
-          "desc_visibility" => "1",
-          "first_column" => "",
-          "second_column" => "",
-          "empty_label_behavior" => "1",
-          "table_row_striping" => "1",
-          "always_show_field_label" => "1",
-          "empty_field_placeholder" => "",
+          "label_visibility" => $this->getSetting('label_visibility', '1', $settings),
+          "desc" => $this->getSetting('description', '', $settings),
+          "desc_visibility" => $this->getSetting('desc_visibility', '1', $settings),
+          "first_column" => $this->getSetting('first_column', '', $settings),
+          "second_column" => $this->getSetting('second_column', '', $settings),
+          "empty_label_behavior" => $this->getSetting('empty_label_behavior', '1', $settings),
+          "table_row_striping" => $this->getSetting('table_row_striping', '1', $settings),
+          "always_show_field_label" => $this->getSetting('always_show_field_label', '1', $settings),
+          "empty_field_placeholder" => $this->getSetting('empty_field_placeholder', '', $settings),
           "id" => $name,
           "classes" => $classes,
-          "always_show_field_value" => 0,
-          "hide_table_if_empty" => 0
+          "always_show_field_value" => $this->getSetting('always_show_field_value', FALSE, $settings),
+          "hide_table_if_empty" => $this->getSetting('hide_table_if_empty', FALSE, $settings)
         ]
       ];
       $display->setThirdPartySetting('field_group', $name, $table_group);
