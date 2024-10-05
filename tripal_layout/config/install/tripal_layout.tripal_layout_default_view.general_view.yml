@@ -76,14 +76,14 @@ layouts:
         type: details
         label: "Data Source"
         show_empty: false
-        open: false
+        open: true
         children:
           - "analysis_source_details_table"
       - id: analysis_properties_details
         type: details
         label: "Additional Metadata"
         show_empty: false
-        open: false
+        open: true
         children:
           - analysis_properties_table
       - id: analysis_cross_ref_details
