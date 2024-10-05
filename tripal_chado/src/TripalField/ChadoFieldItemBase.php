@@ -411,6 +411,21 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $base_table);
       $entity_type->save();
     }
+
+    // If this is the additional type field, it is used to specify a subset of
+    // a chado table for this bundle, e.g. for feature table it could be 'gene'.
+    // The first time this field is entered, store third party settings for the
+    // table and column where this term will be stored, so that publish will know.
+    $type_fkey = $settings['storage_plugin_settings']['type_fkey'] ?? NULL;
+    if ($type_fkey) {
+      $type_table = $entity_type->getThirdPartySetting('tripal', 'chado_type_table');
+      if (!$type_table) {
+        list($type_table, $type_column) = explode(self::$table_column_delimiter, $type_fkey, 2);
+        $entity_type->setThirdPartySetting('tripal', 'chado_type_table', $type_table);
+        $entity_type->setThirdPartySetting('tripal', 'chado_type_column', $type_column);
+        $entity_type->save();
+      }
+    }
   }
 
   /**
