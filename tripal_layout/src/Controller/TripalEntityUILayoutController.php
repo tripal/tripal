@@ -742,6 +742,9 @@ class TripalEntityUILayoutController extends ControllerBase {
     // field type as the child and there are no implementations of that type
     // for this display.
     $this->removeEmptyFieldGroups($display);
+    // Do this two times for the case where there are empty field group tables
+    // that result in empty field group details only after being removed.
+    $this->removeEmptyFieldGroups($display);
 
     // Save all of the changes to the display.
     $display->save();
