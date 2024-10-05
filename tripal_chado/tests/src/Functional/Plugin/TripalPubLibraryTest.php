@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Functional;
 
 class TripalPubLibraryTest extends ChadoTestBrowserBase {
+
   /**
    * Confirm basic Taxonomy importer functionality.
    *
@@ -52,7 +53,9 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     ];
 
     $results = $plugin->retrieve($search_array, 1, 0);
-    $this->assertNotEquals($results, NULL, 'This should have returned one pubmed record');
+    if ($results === NULL) {
+      $this->markTestSkipped('Skipping PubMed test due to being unable to access service.');
+    }
 
     $this->assertGreaterThan(0, $results['total_records'], 'There should be more than 0 records found for this query');
 
@@ -80,8 +83,9 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     ];
 
     $results = $plugin->retrieve($search_array, 1, 0);
-    // print_r($results);
-    $this->assertNotEquals($results, NULL, 'This should have returned one pubmed record');
+    if ($results === NULL) {
+      $this->markTestSkipped('Skipping PubMed test due to being unable to access service.');
+    }
     $this->assertEquals($results['pubs'][0]['Publication Dbxref'], '30000852', 'This should have returned the PMID');
     $this->assertEquals($results['pubs'][0]['Publisher'], 'National Institute of Child Health and Human Development', 'This should have returned the Title');
 

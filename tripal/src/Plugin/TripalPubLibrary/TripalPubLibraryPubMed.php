@@ -114,7 +114,6 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     return $results;
   }
 
-
   /**
    * A function for performing the search on the PubMed database.
    *
@@ -508,9 +507,9 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
         }
       }
     }
-    $pub['Citation'] = $this->pmid_generate_citation($pub);
 
-    // $pub['raw'] = $pub_xml;
+    $pub['Citation'] = $this->pmid_generate_citation($pub);
+    
     return $pub;
   }
 
