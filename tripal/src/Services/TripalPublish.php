@@ -75,6 +75,13 @@ class TripalPublish {
   protected $datastore = '';
 
   /**
+   * The republish flag specifies whether to publish all or just new records.
+   *
+   * @var string $republish
+   */
+  protected $republish = NULL;
+
+  /**
    * A list of the fields and their information.
    *
    * This is to store the field information for fields that are attached
@@ -161,7 +168,6 @@ class TripalPublish {
    *  An optional TripalJob object.
    */
   public static function runTripalJob($bundle, $datastore, $options = [], TripalJob $job = NULL) {
-
     // Initialize the logger.
     /** @var \Drupal\tripal\Services\TripalLogger $logger **/
     $logger = \Drupal::service('tripal.logger');
@@ -197,6 +203,7 @@ class TripalPublish {
     $this->interval = 1;
     $this->job = $job;
     $this->bundle = $bundle;
+    $this->republish = $datastore_options['republish'];
     $this->datastore = $datastore;
     $this->field_info = [];
     $this->entity_type = NULL;
@@ -1036,7 +1043,7 @@ class TripalPublish {
    */
   public function publish($filters = []) {
 
-//$transaction_chado = $this->connection->startTransaction();
+//@todo $transaction_chado = $this->connection->startTransaction();
 //$transaction_chado->rollback();
 
     $total_items = 0;
@@ -1058,12 +1065,32 @@ class TripalPublish {
     // records to publish.
     $this->logger->notice("Finding all candidate record IDs...");
     $record_ids = $this->storage->findAllRecordIds($this->bundle);
-    $record_id_batches = $this->divideIntoBatches($record_ids);
-    $number_of_batches = count($record_id_batches);
 
     // Get a list of already-published entities.
     // The key will be the chado table record ID, the values will be the entity IDs.
     $existing_published_entities = $this->entity_lookup_manager->getPublishedEntityIds($this->bundle, 'tripal_entity');
+
+    // If not republishing everything, remove any already published records.
+    if (!$this->republish) {
+      $record_ids = array_diff($record_ids, array_keys($existing_published_entities));
+    }
+
+    // If there is nothing to publish, quit early
+    if (!count($record_ids)) {
+      $this->logger->notice('There are no records to publish for this content type');
+      return [];
+    }
+
+    // Divide into batches
+    $record_id_batches = $this->divideIntoBatches($record_ids);
+    $number_of_batches = count($record_id_batches);
+
+    // Let user know how much will be published
+    $message = 'Will publish ' . number_format(count($record_ids)) . ' records';
+    if ($number_of_batches > 1) {
+      $message .= ' in ' . number_format($number_of_batches) . ' batches';
+    }
+    $this->logger->notice($message);
 
     foreach ($record_id_batches as $batch_num => $record_id_batch) {
 

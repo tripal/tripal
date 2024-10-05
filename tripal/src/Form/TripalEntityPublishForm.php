@@ -102,6 +102,13 @@ class TripalEntityPublishForm extends FormBase {
       '#required' => TRUE,
     ];
 
+    $form['republish'] = [
+      '#type' => 'checkbox',
+      '#title' => 'Republish Existing Content',
+      '#description' => 'Check this if the title format has been changed, or if'
+         . ' new fields have been added to the content type.',
+    ];
+
     $form['submit_button'] = [
       '#type' => 'submit',
       '#value' => t('Publish'),
@@ -154,7 +161,7 @@ class TripalEntityPublishForm extends FormBase {
     $bundle = $form_state->getValue('bundle');
     $datastore = $form_state->getValue('datastore');
 
-    // All otehr values will be passed in as options. These should be
+    // All other values will be passed in as options. These should be
     // values provided by the storage backend form elements.  Take out
     // those items we don't need.
     $values = $form_state->getValues();
