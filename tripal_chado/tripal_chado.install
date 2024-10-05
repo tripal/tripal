@@ -578,7 +578,7 @@ function tripal_chado_update_10406() {
 
 /**
  * Adds third party settings for content types that have multiple
- * content types derived from one Chado base table. PR#1990
+ * content types derived from one Chado base table. PR#1991
  */
 function tripal_chado_update_10407() {
   $settings = [
