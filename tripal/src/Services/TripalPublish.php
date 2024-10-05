@@ -203,7 +203,7 @@ class TripalPublish {
     $this->interval = 1;
     $this->job = $job;
     $this->bundle = $bundle;
-    $this->republish = $datastore_options['republish'];
+    $this->republish = $datastore_options['republish'] ?? 1;
     $this->datastore = $datastore;
     $this->field_info = [];
     $this->entity_type = NULL;

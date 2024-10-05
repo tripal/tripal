@@ -106,7 +106,8 @@ class TripalEntityPublishForm extends FormBase {
       '#type' => 'checkbox',
       '#title' => 'Republish Existing Content',
       '#description' => 'Check this if the title format has been changed, or if'
-         . ' new fields have been added to the content type.',
+         . ' new fields have been added to the content type. The entity ID number'
+         . ' will not be changed.',
     ];
 
     $form['submit_button'] = [
