@@ -1110,6 +1110,11 @@ class TripalPublish {
       $this->logger->notice($batch_prefix . "Step 1 of 6: Find matching records...");
       $matches = $this->storage->findValues($search_values, $record_id_batch);
 
+      if (!count($matches)) {
+        $this->logger->notice('No matching records found');
+        continue;
+      }
+
       $this->logger->notice($batch_prefix . "Step 2 of 6: Generate page titles...");
       $titles = $this->getEntityTitles($matches);
 
