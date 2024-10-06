@@ -53,7 +53,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         '#type' => 'hidden',
         '#required' => TRUE,
         '#value' => $query_id,
-        '#description' => t("Required to import the publications based on query id"), 
+        '#description' => t("Required to import the publications based on query id"),
     ];
 
     // If query_id is unset, we need to display library options and an autocomplete for the search query
@@ -84,7 +84,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         ],
       ];
 
-      
+
       $form['search_query_name'] = [
         '#title' => t('Search query name'),
         '#type' => 'textfield',
@@ -140,12 +140,12 @@ class PubSearchQueryImporter extends ChadoImporterBase {
           $results = $query->execute();
           foreach ($results as $pub_query) {
             $criteria_column_array = unserialize($pub_query->criteria);
-    
+
             $search_string = "";
             foreach ($criteria_column_array['criteria'] as $criteria_row) {
               $search_string .= $criteria_row['operation'] . ' (' . $criteria_row['scope'] . ': ' . $criteria_row['search_terms'] . ') ';
             }
-    
+
             $disabled = $criteria_column_array['disabled'];
             if ($disabled <= 0) {
               $disabled = 'No';
@@ -153,7 +153,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
             else {
               $disabled = 'Yes';
             }
-    
+
             $do_contact = $criteria_column_array['do_contact'];
             if ($do_contact <= 0) {
               $do_contact = 'No';
@@ -161,9 +161,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
             else {
               $do_contact = 'Yes';
             }
-    
+
             $row = [];
-    
+
             // This should contain edit test and import pubs links @TODO
 
             $row['col-1'] = [
@@ -172,28 +172,28 @@ class PubSearchQueryImporter extends ChadoImporterBase {
             $row['col-2'] = [
               '#markup' => $criteria_column_array['remote_db']
             ];
-    
+
             // Search string
             $row['col-3'] = [
               '#markup' => $search_string
             ];
-    
+
             // Disabled
             $row['col-4'] = [
               '#markup' => $disabled
             ];
-    
+
             // Create contact
             $row['col-5'] = [
               '#markup' => $do_contact
             ];
-    
-    
+
+
             $form['pub_query_details'][] = $row;
           }
         }
       }
-      
+
     }
 
     // If the query id is set, display the data
@@ -246,8 +246,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $autocomplete_path_parts = explode('db=', $autocomplete_path);
     $autocomplete_path = base_path() . $autocomplete_path_parts[0]. '?db=' . $database;
     $response->addCommand(new InvokeCommand('#edit-search-query-name input', 'attr', ['data-autocomplete-path', $autocomplete_path]));
-    
-  
+
+
     return $response;
   }
 
@@ -282,7 +282,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $start_bracket_pos = strrpos($search_query_name, '(');
       $right_string = substr($search_query_name, $start_bracket_pos);
       $right_string = ltrim($right_string, '(');
-      $query_id = rtrim($right_string, ')');      
+      $query_id = rtrim($right_string, ')');
     }
 
     // Retrieve plugin_id from the database
@@ -292,7 +292,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     $criteria = unserialize($pub_record->criteria);
     $plugin_id = $criteria['form_state_user_input']['plugin_id'];
-    
+
     if ($criteria == NULL || $plugin_id == NULL) {
       print_r('Could not find criteria or plugin_id, could not find adequate query information');
       return;
@@ -320,11 +320,14 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
     $this->logger->notice("Step  2 of 27: Retrieving publication data from remote database ...");
     $publications = $plugin->run($query_id);
-    
+    if (!is_array($publications)) {
+      $this->logger->error("               🗸 ERROR: Unable to connect to NCBI to lookup publications!");
+      return FALSE;
+    }
     $this->logger->notice("               🗸 Found publications: " . count($publications));
-    
+
     $transaction_chado = $this->chado->startTransaction();
-    try { 
+    try {
 
       $this->logger->notice("Step  3 of 27: Check for already imported publications ...         ");
       $missing_publications_dbxref = $this->findMissingPublicationsDbxref($publications);
@@ -352,17 +355,17 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
       $this->logger->notice("Step  7 of 27: CVTERMs lookup and caching ...            ");
       $this->cachePublicationCvterms();
-      $this->logger->notice("               🗸 Cached cvterms: " . count($this->cvterm_lookups));  
+      $this->logger->notice("               🗸 Cached cvterms: " . count($this->cvterm_lookups));
 
       $this->logger->notice("Step  8 of 27: Insert new publications properties ...            ");
       $pub_props_count = $this->insertPubProps($inserted_pub_ids, $missing_publications_dbxref, $publications);
-      $this->logger->notice("               🗸 Inserted: " . $pub_props_count);  
+      $this->logger->notice("               🗸 Inserted: " . $pub_props_count);
 
       $this->logger->notice("Step  9 of 27: Insert new pub_dbxrefs ...                        ");
       $inserted_pub_dbxref_ids = [];
       $inserted_pub_dbxref_ids = $this->insertPubDbxrefs($inserted_pub_ids, $inserted_dbxref_ids);
       $this->logger->notice("               🗸 Inserted: " . count($inserted_pub_dbxref_ids));
-      
+
       // DEBUG SQL STATEMENTS TO RETURN EMPTY FOR TESTING
       // DELETE FROM chado.pubprop;
       // DELETE FROM chado.pub_dbxref;
@@ -374,7 +377,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $transaction_chado->rollback();
       throw $e;
     }
-    
+
   }
 
   function cachePublicationCvterms() {
@@ -468,9 +471,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $title = $publication['Title'];
       $series_name = trim(explode('(', $publication['Journal Name'])[0]);
       $pyear = $publication['Year'];
-      
+
       $uniquename = str_replace(',',';', @$publication['Authors']) . $title . ' ' . $series_name . '; ' . $pyear;
-      
+
       $publication['Uniquename'] = $uniquename;
 
       // Go through each publication array keys => values
@@ -499,7 +502,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
             $args[":pub_id_$i"] = $pub_id;
             $args[":type_id_$i"] = $this->cvterm_lookups[$key];
             $args[":value_$i"] = $value;
-            
+
             if ($i == $batch_size) {
               $sql = rtrim($sql, ", ");
               $sql = $init_sql . $sql;
@@ -530,7 +533,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     }
     if (count($unprocessed_array_keys) > 0) {
       $this->logger->notice("[!]   Unprocessed publication keys that are arrays: " . implode(',', array_keys($unprocessed_array_keys)) . "\n");
-    }    
+    }
 
     return $prop_count;
 
@@ -559,7 +562,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $args[":is_current_$i"] = TRUE;
 
 
-      
+
       if ($i == $batch_size or $total == $total_inserted_pub_ids) {
         $sql = rtrim($sql, ", ");
         $sql = $init_sql . $sql . ' RETURNING pub_dbxref_id';
@@ -579,7 +582,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       }
     }
     // print_r($pub_dbxref_ids);
-    return $pub_dbxref_ids;    
+    return $pub_dbxref_ids;
   }
 
   /** Inserts publications into the pub table */
@@ -598,7 +601,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $pub_ids = [];
     foreach ($missing_publications_dbxref as $accession) {
       // Find the publication structure
-      
+
       $publication = $publications[$total];
       // print_r($publication);
 
@@ -627,7 +630,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
           $type_id = $row->cvterm_id;
           // Keep in type_ids which is a temporary cache variable
           $type_ids[$publication['Publication Type'][0]] = $row->cvterm_id;
-          
+
         }
       }
       if ($type_id == NULL) {
@@ -636,7 +639,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
       $args[":type_id_$i"] = $type_id;
 
-      
+
       if ($i == $batch_size or $total == $total_missing_publications_dbxref) {
         $sql = rtrim($sql, ", ");
         $sql = $init_sql . $sql . ' RETURNING pub_id';
@@ -695,7 +698,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $args[":db_id_$i"] = $this->db_id;
       $args[":accession_$i"] = $accession;
       $args[":version_$i"] = '';
-      
+
       if ($i == $batch_size or $total == $total_missing_publications_dbxref) {
         $sql = rtrim($sql, ", ");
         $sql = $init_sql . $sql . ' RETURNING dbxref_id';
@@ -716,7 +719,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     return $dbxref_ids;
   }
 
-  
+
   /**
    * Finds PublicationDbxrefs that do not exist in the dbxref table and returns
    * an array of the accessions
@@ -746,7 +749,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
       $sql .= " accession = :accession_$i OR";
       $args[":accession_$i"] = $accession;
-      
+
       if ($i == $batch_size or $total == $total_all_publications_dbxref) {
         $sql = rtrim($sql, "OR");
         $sql .= ")";
@@ -788,5 +791,5 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    */
   public function formSubmit($form, &$form_state) {
     // $form_state->setRebuild(TRUE);
-  }  
+  }
 }

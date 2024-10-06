@@ -94,8 +94,13 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     // print_r($page_results);
     // print_r(count($page_results['pubs']));
     $publications = [];
-    if (count($page_results['pubs']) != 0) {
-      $publications = array_merge($publications, $page_results['pubs']);
+    if (is_array($page_results) && array_key_exists('pubs', $page_results)) {
+      if (count($page_results['pubs']) != 0) {
+        $publications = array_merge($publications, $page_results['pubs']);
+      }
+    }
+    else {
+      return NULL;
     }
     return $publications;
   }
@@ -509,7 +514,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     }
 
     $pub['Citation'] = $this->pmid_generate_citation($pub);
-    
+
     return $pub;
   }
 

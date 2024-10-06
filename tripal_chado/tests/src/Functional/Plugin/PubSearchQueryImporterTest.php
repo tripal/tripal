@@ -101,8 +101,10 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
       'query_id' => 2,
     ];
     $pub_search_query_loader_importer->createImportJob($run_args);
-    $pub_search_query_loader_importer->run();
-
+    $able_to_run = $pub_search_query_loader_importer->run();
+    if ($able_to_run === FALSE) {
+      $this->markTestSkipped('Unable to access NCBI to test publication importer.');
+    }
     $pub_records = $chado->query("SELECT * FROM {1:pub}",[]);
     $pub_record = NULL;
     foreach ($pub_records as $row) {
@@ -111,7 +113,7 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
 
 
 
-    $this->assertNotEquals($pub_record, NULL, 'No publication record could be found in the chado pub table 
+    $this->assertNotEquals($pub_record, NULL, 'No publication record could be found in the chado pub table
     even though an import was executed');
 
 
