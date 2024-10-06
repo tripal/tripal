@@ -1,0 +1,128 @@
+id: 'general_form'
+label: 'General Content Types'
+description: 'Layouts for general content types (analysis, organism, etc.) based on Chado and added via the Tripal Chado module.'
+layouts:
+  - tripal_entity_type: "organism"
+    field_groups:
+      - id: page_metadata
+        type: details
+        label: "Page Metadata"
+        weight: 0
+        show_empty: false
+        open: true
+        children:
+          - "title"
+          - "uid"
+      - id: scientific_name
+        type: details
+        label: "Scientific Name"
+        weight: 10
+        show_empty: false
+        open: true
+        children:
+          - organism_genus
+          - organism_species
+          - organism_infraspecific_type
+          - organism_infraspecific_name
+      - id: core_details
+        type: details
+        label: "Core Details"
+        weight: 20
+        show_empty: false
+        open: true
+        children:
+          - organism_common_name
+          - organism_abbreviation
+          - organism_comment
+      - id: organism_properties
+        type: details
+        label: "Additional Details"
+        weight: 30
+        show_empty: false
+        open: true
+        children:
+          - "type:chado_property_type_default"
+      - id: organism_connections
+        type: details
+        label: "Linkages"
+        description: "Use these fields to indicate relationships between this organism and other content already stored in this site. For example, if this organism was included in a publication, then first enter the publication into this site and then select that publication in the appropriate field below. We suggest filling in as many relationships as possible."
+        weight: 40
+        show_empty: false
+        open: false
+        children:
+          - "organism_dbxref"
+          - "organism_pub"
+  - tripal_entity_type: "analysis"
+    field_groups:
+      - id: page_metadata
+        type: details
+        label: "Page Metadata"
+        description: "These fields include core information for any page in this site. In most cases, these fields can be ignored as they will be populated with intelligent defaults based on your user information and site configuration."
+        weight: 0
+        show_empty: false
+        open: false
+        children:
+          - "title"
+          - "uid"
+      - id: core_details
+        type: details
+        label: "Core Details"
+        description: "Use these fields to fill in core information about this analysis. The more complete this information is, the more reusable and useful this page will be."
+        weight: 10
+        show_empty: false
+        open: true
+        children:
+          - analysis_name
+          - analysis_description
+      - id: uniqueid
+        type: details
+        label: "Unique Identifier"
+        description: "The combination of <strong>software name, software version, and data source name must uniquely identify this analysis</strong>. As such, please include and be specific regarding the source of the data used in this analysis."
+        weight: 20
+        show_empty: false
+        open: true
+        children:
+          - "software"
+          - "data_source"
+      - id: software
+        type: details
+        label: "Software"
+        description: "Use these fields to describe the software used to perform the analysis. In the situation where the analysis is done by a pipeline or workflow, supply its details where software is requested."
+        weight: 10
+        show_empty: false
+        open: true
+        children:
+          - "analysis_software"
+          - "analysis_program_version"
+          - "analysis_algorithm"
+      - id: data_source
+        type: details
+        label: "Data Source"
+        description: "Use these fields to describe the source of the data the analysis was performed on. If the analysis was performed on more then one dataset and you feel strongly that each dataset should not be it's own analysis, then provide a descriptive name of the combination of datasets as the name and describe each one in detail in the description of the analysis."
+        weight: 20
+        show_empty: false
+        open: true
+        children:
+          - analysis_source
+          - analysis_source_version
+          - analysis_source_uri
+      - id: properties
+        type: details
+        label: "Additional Details"
+        description: "Use these fields to fill in additional metadata about this analysis. While you do not need to fill in any unrequired fields, we suggest filling in as many of these as possible to ensure your analysis is fully described. Not all of these fields may be applicable to your particular analysis."
+        weight: 30
+        show_empty: false
+        open: true
+        children:
+          - "type:chado_property_type_default"
+      - id: connections
+        type: details
+        label: "Linkages"
+        description: "Use these fields to indicate relationships between this analysis and other content already stored in this site. For example, if this analysis was included in a publication, then first enter the publication into this site and then select that publication in the appropriate field below. Filling in as many relationships as possible will increase findability of this analysis through it's related data and more fully describe this analysis."
+        weight: 40
+        show_empty: false
+        open: false
+        children:
+          - "analysis_pub"
+          - "analysis_project"
+          - "analysis_dbxref"
