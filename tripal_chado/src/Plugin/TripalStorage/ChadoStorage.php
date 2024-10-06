@@ -1367,7 +1367,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         $query->join('1:cvterm', 'T', '"BT".' . $type_column . ' = "T".cvterm_id');
       }
       else {
-        $query->join('1:' . $type_table, 'TT', 'BT.' . $pkey_column . ' = "TT".' . $pkey_column);
+        $query->join('1:' . $type_table, 'TT', '"BT".' . $pkey_column . ' = "TT".' . $pkey_column);
         $query->join('1:cvterm', 'T', '"TT".' . $type_column . ' = "T".cvterm_id');
       }
       $query->join('1:dbxref', 'X', '"T".dbxref_id = "X".dbxref_id');

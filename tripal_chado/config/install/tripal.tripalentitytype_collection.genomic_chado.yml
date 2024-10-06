@@ -54,6 +54,8 @@ content_types:
             - bio_data_11
         settings:
             chado_base_table: featuremap
+            chado_type_table: featuremapprop
+            chado_type_column: type_id
 
     -   label: DNA Library
         term: NCIT:C16223

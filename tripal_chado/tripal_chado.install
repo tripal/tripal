@@ -592,6 +592,9 @@ function tripal_chado_update_10407() {
     'sequence_variant' => 'feature',
     'genetic_marker' => 'feature',
     'phenotypic_marker' => 'feature',
+    // featuremap table
+    'genetic_map' => 'featuremapprop',
+    'physical_map' => 'featuremapprop',
     // project table
     'genome_project' => 'projectprop',
     // stock table
