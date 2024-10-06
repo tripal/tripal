@@ -7,9 +7,9 @@ use Drupal\Core\Entity\EntityInterface;
 
 
 /**
- * Provides a listing of View Layout collections.
+ * Provides a listing of Form Layout collections.
  */
-class TripalLayoutDefaultViewListBuilder extends ConfigEntityListBuilder {
+class TripalLayoutDefaultFormListBuilder extends ConfigEntityListBuilder {
 
   /**
    * {@inheritdoc}
@@ -28,8 +28,6 @@ class TripalLayoutDefaultViewListBuilder extends ConfigEntityListBuilder {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
     $row['description'] = $entity->description();
-
-    // You probably want a few more properties here...
 
     return $row + parent::buildRow($entity);
   }
