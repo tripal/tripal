@@ -703,14 +703,14 @@ class TripalEntityUILayoutController extends ControllerBase {
       $display = $this->loadDisplay($tripal_entity_type, $display_context);
     }
 
-    // First reset the display.
-    $this->resetLayout($tripal_entity_type, $display_context, $display);
-
     // Get the layout for this bundle.
     $layout = $this->getLayout($bundle, $display_context);
     if (!$layout) {
       return FALSE;
     }
+
+    // First reset the display.
+    $this->resetLayout($tripal_entity_type, $display_context, $display);
 
     // If there are field group definitinos then create those.
     if (array_key_exists('field_groups', $layout)) {
