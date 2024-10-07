@@ -440,10 +440,10 @@ function tripal_chado_update_10401() {
     'genome_project' => 'project'
   ];
 
-  /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
   /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
   $entity_type_manager = \Drupal::entityTypeManager();
   foreach ($settings as $bundle => $chado_base_table) {
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
     if ($entity_type) {
       $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $chado_base_table);
@@ -604,10 +604,10 @@ function tripal_chado_update_10407() {
     'ril' => 'stock',
   ];
 
-  /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
   /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
   $entity_type_manager = \Drupal::entityTypeManager();
   foreach ($settings as $bundle => $type_table) {
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
     if ($entity_type) {
       $entity_type->setThirdPartySetting('tripal', 'chado_type_table', $type_table);
