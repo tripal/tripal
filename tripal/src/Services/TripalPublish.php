@@ -37,16 +37,6 @@ class TripalPublish {
   private $interval = 1;
 
   /**
-   * Specifies the maximum number of records to publish at one time.
-   * This limits memory consumption if there are many thousands of
-   * records, for example gene records in the feature table.
-   * @todo We might want to add this as an option on the publish form.
-   *
-   * @var integer $batch_size
-   */
-  private $batch_size = 1000;
-
-  /**
    * The TripalJob object.
    *
    * @var \Drupal\tripal\Services\TripalJob $job
@@ -61,25 +51,11 @@ class TripalPublish {
   protected $bundle = '';
 
   /**
-   * The base table of the bundle
-   *
-   * @var string $base_table
-   */
-  protected $base_table = '';
-
-  /**
    * The id of the TripalStorage plugin.
    *
    * @var string $datastore.
    */
   protected $datastore = '';
-
-  /**
-   * The republish flag specifies whether to publish all or just new records.
-   *
-   * @var string $republish
-   */
-  protected $republish = NULL;
 
   /**
    * A list of the fields and their information.
@@ -149,13 +125,6 @@ class TripalPublish {
   protected $logger = NULL;
 
   /**
-   * The Entity Lookup service.
-   *
-   * @var \Drupal\tripal\Services\TripalEntityLookup $entity_lookup_manager
-   */
-  protected $entity_lookup_manager = NULL;
-
-  /**
    * Publish content of a specified type. Uses a Tripal service.
    *
    * @param string $bundle
@@ -168,6 +137,7 @@ class TripalPublish {
    *  An optional TripalJob object.
    */
   public static function runTripalJob($bundle, $datastore, $options = [], TripalJob $job = NULL) {
+
     // Initialize the logger.
     /** @var \Drupal\tripal\Services\TripalLogger $logger **/
     $logger = \Drupal::service('tripal.logger');
@@ -203,7 +173,6 @@ class TripalPublish {
     $this->interval = 1;
     $this->job = $job;
     $this->bundle = $bundle;
-    $this->republish = $datastore_options['republish'] ?? NULL;
     $this->datastore = $datastore;
     $this->field_info = [];
     $this->entity_type = NULL;
@@ -229,7 +198,6 @@ class TripalPublish {
       throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
     }
     $this->entity_type = $entity_type;
-    $this->base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
 
     // Get the storage plugin used to publish.
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
@@ -239,9 +207,6 @@ class TripalPublish {
       $error_msg = 'Could not find an instance of the TripalStorage backend: "%datastore".';
       throw new \Exception(t($error_msg, ['%datastore' => $datastore]));
     }
-
-    // Get the tripal entity lookup service.
-    $this->entity_lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     $this->setFieldInfo();
 
@@ -572,25 +537,6 @@ class TripalPublish {
   }
 
   /**
-   * Retrieve the chado record ID for a single match record.
-   *
-   * @param array $match
-   *
-   * @return int
-   *   The chado record ID
-   */
-  protected function getChadoRecordID(array $match) {
-    $record_id = NULL;
-    foreach ($match as $field_info) {
-      if ($field_info[0]['record_id']['value'] ?? NULL) {
-        $record_id = $field_info[0]['record_id']['value']->getValue();
-        break;
-      }
-    }
-    return $record_id;
-  }
-
-  /**
    * Retrieves a list of titles for the entities that should be published.
    *
    * @param array $matches
@@ -601,13 +547,10 @@ class TripalPublish {
    */
   protected function getEntityTitles($matches) {
     $titles = [];
+    $title_format = $this->entity_type->getTitleFormat();
 
     // Iterate through each match we are checking for an existing entity for.
     foreach ($matches as $match) {
-
-      // Retrieve the chado record pkey ID for this match
-      $record_id = $this->getChadoRecordID($match);
-
       // Collapse match array to follow the format expected by getEntityTitle.
       $entity_values = [];
       foreach ($match as $field_name => $field_items) {
@@ -631,88 +574,71 @@ class TripalPublish {
       // Now that we've gotten the values out of the property value objects,
       // we can use the token parser to get the title!
       $entity_title = TripalTokenParser::getEntityTitle($this->entity_type, $entity_values);
-
-      $titles[$record_id] = $entity_title;
+      $titles[] = $entity_title;
     }
     return $titles;
   }
 
+
+
   /**
-   * Check if the new title does not match the existing published
-   * title, and if so, update it.
-   * This can happen if the title format has been changed.
-   * Array keys for both input arrays are the chado record ID,
-   * array values are the titles.
+   * Makes sure that we will not be adding any duplicate entities.
    *
+   * @param array $matches
+   *   The array of matches for each entity.
    * @param array $titles
-   *   A list of new titles to check, key is chado record ID.
-   * @param array $existing_titles
-   *   A list of already published titles, key is chado record ID.
-   * @param array $published_entities
-   *   A list of published entities. The key will be the chado table
-   *   record ID, the values will be the entity IDs.
-   *
-   * @return int
-   *   Number of titles that were updated.
-   */
-  protected function updateExistingTitles(array $titles, array $existing_titles, array $published_entities) {
-
-    $conn = \Drupal::service('database');
-    $num_updated = 0;
-    foreach ($titles as $record_id => $new_title) {
-      $existing_title = $existing_titles[$record_id] ?? NULL;
-      if ($existing_title and ($new_title != $existing_title)) {
-        $entity_id = $published_entities[$record_id];
-        $query = $conn->update('tripal_entity')
-          ->fields(['title' => $new_title])
-          ->condition('id', $entity_id, '=')
-          ->execute();
-        $num_updated++;
-      }
-    }
-    return $num_updated;
-  }
-
-  /**
-   * Retrieves a list of chado record IDs that have already been published.
-   *
-   * @param array $record_ids
-   *   A list of chado record IDs to process.
-   * @param array $published_entities
-   *   All published entities for the current bundle. The key will be
-   *   the chado record ID, the values will be the entity IDs.
+   *   The array of entity titles in the same order as the matches.
    *
    * @return array
-   *   An associative array of published entities keyed by the
-   *   chado record ID with a value of the existing entity title.
+   *   An associative array of matched entities keyed by the
+   *   entity title with a value of the entity id.
    */
-  protected function findEntities(array $record_ids, array $published_entities) {
+  protected function findEntities($matches, $titles) {
+    $database = \Drupal::database();
 
-    // Convert published chado record IDs to entity IDs
-    $entity_ids = [];
-    foreach ($record_ids as $record_id) {
-      $entity_id = $published_entities[$record_id] ?? NULL;
-      if ($entity_id) {
-        $entity_ids[] = $entity_id;
+    $batch_size = 1000;
+    $num_matches = count($matches);
+    $num_batches = (int) ($num_matches / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $entities = [];
+
+    $sql = "
+      SELECT id,type,title FROM {tripal_entity}\n
+      WHERE type = :type AND title in (:titles[])\n";
+
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $args = [];
+    $batch_titles = [];
+    foreach ($titles as $title) {
+      $batch_titles[] = $title;
+      $total++;
+      $i++;
+
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_matches) {
+        $args = [
+          ':type' => $this->bundle,
+          ':titles[]' => $batch_titles
+        ];
+        $results = $database->query($sql, $args);
+        while ($result = $results->fetchAssoc()) {
+          $entities[$result['title']] = $result['id'];
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the variables for the next batch.
+        $i = 0;
+        $args = [];
+        $batch_titles = [];
       }
     }
-
-    // If any published entities exist, retrieve their current titles.
-    $titles = [];
-    if ($entity_ids) {
-      $connection = \Drupal::service('database');
-      $query = $connection->select('tripal_entity', 'E');
-      $query->Fields('E', ['id', 'title']);
-      $query->condition('id', $entity_ids, 'IN');
-      $results = $query->execute();
-      while ($record = $results->fetchObject()) {
-        $entity_id = $record->id;
-        $chado_record_id = array_search($entity_id, $published_entities);
-        $titles[$chado_record_id] = $record->title;
-      }
-    }
-
-    return $titles;
+    return $entities;
   }
 
   /**
@@ -721,82 +647,125 @@ class TripalPublish {
    * @param array $matches
    *   The array of matches for each entity.
    * @param array $titles
-   *   The array of entity titles keyed by the record ID.
-   * @param array $existing_published_entities
-   *   All published entities for the current bundle. The key will be
-   *   the chado record ID, the values will be the entity IDs.
-   * @param array $new_published_entities
-   *   The first 100 published entities, key is entity ID, value is title.
-   *   This becomes the return value for the publish job.
+   *   The array of entity titles in the same order as the matches.
    */
-  protected function insertEntities($matches, $titles, &$existing_published_entities, &$new_published_entities) {
+  protected function insertEntities($matches, $titles) {
+    $database = \Drupal::database();
 
-    $connection = \Drupal::service('database');
-    $timestamp = time();
-    $query = $connection->insert('tripal_entity', [])
-      -> fields(['type', 'title', 'status', 'created', 'changed']);
-    $added_record_ids = [];
-    foreach ($matches as $match) {
-      //$i++;
-      $record_id = $this->getChadoRecordID($match);
-      $title = $titles[$record_id];
-      $added_record_ids[] = $record_id;
-      $query->values([$this->bundle, $title, 1, $timestamp, $timestamp]);
-    }
-    $first_added_entity_id = $query->execute();
+    $batch_size = 1000;
+    $num_matches = count($matches);
+    $num_batches = (int) ($num_matches / $batch_size) + 1;
 
-    // Store the new entity IDs of the newly inserted
-    // entities along with any existing ones.
-    foreach ($added_record_ids as $index => $record_id) {
-      $existing_published_entities[$record_id] = $index + $first_added_entity_id;
-      // Return only the first 100 for the publish job
-      if (count($new_published_entities) < 100) {
-        $new_published_entities[$index + $first_added_entity_id] = $titles[$record_id];
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $init_sql = "
+      INSERT INTO {tripal_entity}
+        (type, title, status, created, changed)
+      VALUES\n";
+
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($titles as $title) {
+      $total++;
+      $i++;
+
+      // Add to the list of entities to insert only those
+      // that don't already exist.  We shouldn't have any that
+      // exist because the querying to find matches should have
+      // excluded existing records that are already published, but
+      // just in case.
+      $sql .= "(:type_$i, :title_$i, :status_$i, :created_$i, :changed_$i),\n";
+      $args[":type_$i"] = $this->bundle;
+      $args[":title_$i"] = $title;
+      $args[":status_$i"] = 1;
+      $args[":created_$i"] = time();
+      $args[":changed_$i"] = time();
+
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_matches) {
+        if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          $database->query($sql, $args);
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the variables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
       }
     }
   }
 
   /**
-   * Finds existing fields so that we will not be adding any duplicate fields.
+   * Makes sure that we will not be adding any duplicate entities.
    *
    * @param string $field_name
    *   The name of the field
-   * @param array $record_ids
-   *   Chado record IDs to process
-   * @param array $published_entities
-   *   All published entities for the current bundle. The key will be
-   *   the chado record ID, the values will be the entity IDs.
+   * @param array $entities
+   *   An associative array of entities
    *
    * @return array
-   *   An associative array of matched entities keyed first by the
-   *   entity_id and then by the delta. Value is always TRUE.
+   *   An associative array of matched entities keyed by the
+   *   entity_id with a value of the entity id. This is an
+   *   associative array to take advantage of quick lookups.
    */
-  protected function findFieldItems($field_name, $record_ids, $published_entities) {
+  protected function findFieldItems($field_name, $entities) {
     $database = \Drupal::database();
     $field_table = 'tripal_entity__' . $field_name;
 
-    $items = [];
-    $sql = 'SELECT entity_id, delta FROM {' . $field_table . '}'
-         . ' WHERE bundle = :bundle AND entity_id IN (:entity_ids[]) ';
+    $batch_size = 1000;
+    $num_matches = count($entities);
+    $num_batches = (int) ($num_matches / $batch_size) + 1;
 
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $items = [];
+
+    $sql = "
+      SELECT entity_id, delta FROM {" . $field_table . "}\n
+      WHERE bundle = :bundle\n
+        AND entity_id IN (:entity_ids[])\n";
+
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $args = [];
     $batch_ids = [];
-    foreach ($record_ids as $record_id) {
-      $entity_id = $published_entities[$record_id] ?? NULL;
-      if ($entity_id) {
-        $batch_ids[] = $entity_id;
+    foreach ($entities as $title => $entity_id) {
+      $batch_ids[] = $entity_id;
+      $total++;
+      $i++;
+
+      // If we've reached the size of the batch then let's do the select.
+      if ($i == $batch_size or $total == $num_matches) {
+        $args = [
+          ':bundle' => $this->bundle,
+          ':entity_ids[]' => $batch_ids
+        ];
+        $results = $database->query($sql, $args);
+        while ($result = $results->fetchAssoc()) {
+          $entity_id = $result['entity_id'];
+          if (!array_key_exists($entity_id, $items)) {
+            $items[$entity_id] = [];
+          }
+          $items[$entity_id][$result['delta']] = TRUE;
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the variables for the next batch.
+        $i = 0;
+        $args = [];
+        $batch_ids = [];
       }
-    }
-    $args = [
-      ':bundle' => $this->bundle,
-      ':entity_ids[]' => $batch_ids
-    ];
-    $results = $database->query($sql, $args);
-    while ($result = $results->fetchAssoc()) {
-      $entity_id = $result['entity_id'];
-      if (!array_key_exists($entity_id, $items)) {
-        $items[$entity_id] = [];
-      }
-      $items[$entity_id][$result['delta']] = TRUE;
     }
     return $items;
   }
@@ -831,20 +800,17 @@ class TripalPublish {
    *   The name of the field
    * @param array $matches
    *   The array of matches for each entity.
-   * @param array $published_entities
-   *   All published entities for the current bundle. The key will be
-   *   the chado record ID, the values will be the entity IDs.
+   * @param array $titles
+   *   The array of entity titles in the same order as the matches.
+   * @param array $entities
+   *   An associative array that maps entity titles to their keys.
    * @param array $existing
    *   An associative array of entities that already have an existing item for this field.
-   * @param array $new_published_entities
-   *   The first 100 entities that have been updated
-   * @param array $titles
-   *   The array of entity titles keyed by the record ID.
    *
    * @return int
    *   The number of items inserted for the field.
    */
-  protected function insertFieldItems($field_name, $matches, $published_entities, $existing, &$new_published_entities, $titles) {
+  protected function insertFieldItems($field_name, $matches, $titles, $entities, $existing, &$published) {
 
     $database = \Drupal::database();
     $field_table = 'tripal_entity__' . $field_name;
@@ -867,6 +833,7 @@ class TripalPublish {
     $init_sql = rtrim($init_sql, ", ");
     $init_sql .= ") VALUES\n";
 
+    $i = 0;
     $j = 0;
     $total = 0;
     $batch_num = 1;
@@ -876,10 +843,13 @@ class TripalPublish {
 
 
     // Iterate through the matches. Each match corresponds to a single
-    // entity.
+    // entity. The titles provided should be in order of the entities
+    // in the matches array.
     foreach ($matches as $match) {
-      $record_id = $this->getChadoRecordID($match);
-      $entity_id = $published_entities[$record_id];
+
+      $title = $titles[$i];
+      $entity_id = $entities[$title];
+      $i++;
 
       // Iterate through the "items" of each field and insert a record value
       // for each non-empty item.
@@ -916,11 +886,9 @@ class TripalPublish {
           }
         }
         if ($add_record) {
+          $published[$entity_id] = $title;
           $this->insertOneFieldItem($sql, $args, $j, $match, $entity_id, $delta, $field_name);
           $num_inserted++;
-          if (count($new_published_entities) < 100) {
-            $new_published_entities[$entity_id] = $titles[$record_id];
-          }
         }
 
         // If we've reached the size of the batch then let's do the insert.
@@ -995,42 +963,30 @@ class TripalPublish {
    *
    * @param array $matches
    *   The array of matches for each entity.
-   * @param array $existing_published_entities
+   * @param array $titles
+   *   The array of entity titles in the same order as the matches.
+   * @param array $existing
    *   The array of existing records.
    *
    * @return array
-   *   The passed $matches with already published entities excluded.
+   *   A new array of two elements: the matches and titles arrays
+   *   but with existing records excluded.
    */
-  protected function excludeExisting($matches, $existing_published_entities) {
+  protected function excludeExisting($matches, $titles, $existing) {
     $new_matches = [];
+    $new_titles = [];
+
+    $i = 0;
     foreach ($matches as $match) {
-      $record_id = $this->getChadoRecordID($match);
-      if (!array_key_exists($record_id, $existing_published_entities)) {
+      $title = $titles[$i];
+      if (!array_key_exists($title, $existing)) {
         $new_matches[] = $match;
+        $new_titles[] = $title;
       }
+      $i++;
     }
 
-    return $new_matches;
-  }
-
-  /**
-   * Divides up a long list of record IDs into smaller batches
-   * for publishing, to reduce memory requirements.
-   *
-   * @param array $record_ids
-   *   A list of primary key values.
-   *
-   * @return array
-   *   Original array values divided into a 2-D array of several batches.
-   *   First level array key is a delta value starting at zero.
-   */
-  protected function divideIntoBatches($record_ids) {
-    $batches = [];
-    $num_batches = (int) ((count($record_ids) + $this->batch_size - 1) / $this->batch_size);
-    for ($delta = 0; $delta < $num_batches; $delta++) {
-      $batches[$delta] = array_slice($record_ids, $delta * $this->batch_size, $this->batch_size);
-    }
-    return $batches;
+    return [$new_matches, $new_titles];
   }
 
   /**
@@ -1044,20 +1000,11 @@ class TripalPublish {
    *   Filters that determine which content will be published.
    *
    * @return array
-   *   An associative array of the first 100 entities that were published,
-   *   keyed by their titles, and the value being the entity_id.
+   *   An associative array of the entities that were published, keyed
+   *   by their titles, and the value being the entity_id.
    *
    */
   public function publish($filters = []) {
-
-//@todo $transaction_chado = $this->connection->startTransaction();
-//$transaction_chado->rollback();
-
-    $total_items = 0;
-    $new_published_entities = [];
-    $total_existing_entities = 0;
-    $total_new_entities = 0;
-    $total_updated_titles = 0;
 
     // Build the search values array
     $search_values = [];
@@ -1066,104 +1013,56 @@ class TripalPublish {
     $this->addFixedTypeValues($search_values);
     $this->addNonRequiredValues($search_values);
 
-    // We retrieve a list of all primary keys for the base table of the
-    // content type. This allows us to divide publishing into small batches
-    // to reduce the amount of memory required if there are thousands of
-    // records to publish.
-    $this->logger->notice("Finding all candidate record IDs...");
-    $record_ids = $this->storage->findAllRecordIds($this->bundle);
+    $this->logger->notice("Step  1 of 6: Find matching records... ");
+    $matches = $this->storage->findValues($search_values);
 
-    // Get a list of already-published entities.
-    // The key will be the chado table record ID, the values will be the entity IDs.
-    $existing_published_entities = $this->entity_lookup_manager->getPublishedEntityIds($this->bundle, 'tripal_entity');
+    $this->logger->notice("Step  2 of 6: Generate page titles...");
+    $titles = $this->getEntityTitles($matches);
 
-    // If not republishing everything, remove any already published records.
-    if (!$this->republish) {
-      $record_ids = array_diff($record_ids, array_keys($existing_published_entities));
+    $this->logger->notice("Step  3 of 6: Find existing published entities...");
+    $existing = $this->findEntities($matches, $titles);
+
+    // Exclude any matches that are already published. We
+    // need to publish only new matches.
+    list($new_matches, $new_titles) = $this->excludeExisting($matches, $titles, $existing);
+
+    // Note: entities are not tied to any storage backend. An entity
+    // references an "object".  The information about that object
+    // is in the form of fields and can come from any number of data storage
+    // backends. But, if the entity with a given title for this content type
+    // doesn't exist, then let's create one.
+    $this->logger->notice("Step  4 of 6: Publishing " . number_format(count($new_titles))  . " new entities...");
+    $this->insertEntities($new_matches, $new_titles);
+
+    $this->logger->notice("Step  5 of 6: Find IDs of entities...");
+    $entities = $this->findEntities($matches, $titles);
+
+    // Now we have to publish the field items. These represent storage back-end information
+    // about the entity. If the entity was previously published we still may be adding new
+    // information about it (say if we are publishing genes from a noSQL back-end but the
+    // original entity was created when it was first published when using the Chado backend).
+    $this->logger->notice("Step  6 of 6: Add field items to published entities...");
+
+    if (!empty($this->unsupported_fields)) {
+      $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
     }
 
-    // If there is nothing to publish, quit early
-    if (!count($record_ids)) {
-      $this->logger->notice('There are no records to publish for this content type');
-      return [];
+    $total_items = 0;
+    $published_entities = [];
+    foreach ($this->field_info as $field_name => $field_info) {
+
+      $this->logger->notice("  Checking for published items for the field: $field_name...");
+      $existing_field_items = $this->findFieldItems($field_name, $entities);
+
+      $num_inserted = $this->insertFieldItems($field_name, $matches, $titles,
+        $entities, $existing_field_items, $published_entities);
+
+      $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
+      $total_items += $num_inserted;
     }
-
-    // Divide into batches
-    $record_id_batches = $this->divideIntoBatches($record_ids);
-    $number_of_batches = count($record_id_batches);
-
-    // Let user know how much will be published
-    $message = 'Will publish ' . number_format(count($record_ids)) . ' records';
-    if ($number_of_batches > 1) {
-      $message .= ' in ' . number_format($number_of_batches) . ' batches';
-    }
-    $this->logger->notice($message);
-
-    foreach ($record_id_batches as $batch_num => $record_id_batch) {
-
-      // Only display a batch prefix when there is more than one batch.
-      $batch_prefix = '';
-      if ($number_of_batches > 1) {
-        $batch_prefix = 'Batch ' . number_format($batch_num + 1) . ' of ' . number_format($number_of_batches) . ', ';
-      }
-
-      $this->logger->notice($batch_prefix . "Step 1 of 6: Find matching records...");
-      $matches = $this->storage->findValues($search_values, $record_id_batch);
-
-      if (!count($matches)) {
-        $this->logger->notice('No matching records found');
-        continue;
-      }
-
-      $this->logger->notice($batch_prefix . "Step 2 of 6: Generate page titles...");
-      $titles = $this->getEntityTitles($matches);
-
-      $this->logger->notice($batch_prefix . "Step 3 of 6: Find existing published entity titles...");
-      $existing_titles = $this->findEntities($record_id_batch, $existing_published_entities);
-      $total_existing_entities += count($existing_titles);
-
-      $this->logger->notice($batch_prefix . "Step 4 of 6: Updating existing page titles...");
-      $total_updated_titles += $this->updateExistingTitles($titles, $existing_titles, $existing_published_entities);
-
-      // Exclude any matches that are already published. We
-      // need to publish only new matches.
-      $new_matches = $this->excludeExisting($matches, $existing_published_entities);
-      $total_new_entities += count($new_matches);
-
-      // Note: entities are not tied to any storage backend. An entity
-      // references an "object".  The information about that object
-      // is in the form of fields and can come from any number of data storage
-      // backends. But, if the entity with a given title for this content type
-      // doesn't exist, then let's create one.
-      $this->logger->notice($batch_prefix . "Step 5 of 6: Publishing " . number_format(count($new_matches))  . " new entities...");
-      $this->insertEntities($new_matches, $titles, $existing_published_entities, $new_published_entities);
-
-      // Now we have to publish the field items. These represent storage back-end information
-      // about the entity. If the entity was previously published we still may be adding new
-      // information about it (say if we are publishing genes from a noSQL back-end but the
-      // original entity was created when it was first published when using the Chado backend).
-      $this->logger->notice($batch_prefix . "Step 6 of 6: Add field items to published entities...");
-
-      if (!empty($this->unsupported_fields)) {
-        $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
-      }
-
-      foreach ($this->field_info as $field_name => $field_info) {
-
-        $existing_field_items = $this->findFieldItems($field_name, $record_id_batch, $existing_published_entities);
-        $num_inserted = $this->insertFieldItems($field_name, $matches, $existing_published_entities,
-          $existing_field_items, $new_published_entities, $titles);
-
-        if ($num_inserted) {
-          $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
-        }
-        $total_items += $num_inserted;
-      }
-    }
-
-    $this->logger->notice("Publish completed. Published " . number_format($total_new_entities)
-        . " new entities, checked " . number_format($total_existing_entities)
-        . " existing entities, and added " . number_format($total_items) . " field values.");
-    return $new_published_entities;
+    $this->logger->notice("Published " .  number_format(count(array_keys($published_entities)))
+        . " new entities, and " . number_format($total_items) . " field values.");
+    $this->logger->notice('Done');
+    return $published_entities;
   }
 }
