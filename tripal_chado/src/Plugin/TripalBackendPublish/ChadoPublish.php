@@ -5,8 +5,18 @@ namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 use \Drupal\tripal\Services\TripalTokenParser;
 use \Drupal\tripal\Services\TripalJob;
+use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 
-class ChadoPublish {
+/**
+ * Chado-specific TripalEntity publish.
+ *
+ *  @TripalBackendPublish(
+ *    id = "chado_publish",
+ *    label = @Translation("Chado Publish"),
+ *    description = @Translation("Creates Tripal content based on records in a chado database."),
+ *  )
+ */
+class ChadoPublish extends TripalBackendPublishBase {
 
   /**
    * The number of items that this importer needs to process. A progress
