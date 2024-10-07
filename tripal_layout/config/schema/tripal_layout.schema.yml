@@ -87,13 +87,13 @@ tripal_layout_field_group_item:
       label: "The label of this field group"
     label_visibility:
       type: string
-      label: "Indicates if the label should be visable."
+      label: "Indicates if the label should be visible."
     empty_label_behavior:
       type: string
       label: "Indicates how to handle an empty label"
     region:
       type: string
-      label: "Region to put the field group in (i.e. 'Content')"
+      label: "Region to put the field group in (e.g. 'Content')"
     weight:
       type: integer
       label: "The weight to give this field group.  Field groups will be displayed in order of their weights with larger weights being lower on the list."
@@ -111,7 +111,7 @@ tripal_layout_field_group_item:
       label: "Field group caption or text description."
     desc_visibility:
       type: string
-      label: "Indicates if the description should be visable."
+      label: "Indicates if the description should be visible."
     first_column:
       type: string
       label: "First Column Header; only applies to field group tables."
