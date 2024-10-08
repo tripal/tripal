@@ -1283,7 +1283,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       WHERE uniquename = :landmark_name",
       [':landmark_name' => 'scaffold00001']);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1, 'Check to make sure landmark (scaffold0001) exists in featureloc table');
     }
 
     // Check to make sure feature orange1.1g015632m.g of type name gene
@@ -1299,7 +1299,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':name' => 'gene'
       ]);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1, 'Check to make sure feature orange1.1g015632m.g of type name gene');
     }
 
     // Check to make sure feature orange1.1g015632m.g of type name mRNA
@@ -1315,7 +1315,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':name' => 'mRNA'
       ]);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1, 'Check to make sure feature orange1.1g015632m.g of type name mRNA');
       // print_r($row);
     }
 
@@ -1332,7 +1332,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':name' => 'CDS'
       ]);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 12);
+      $this->assertEquals(12, $row->c1, 'Check to make sure feature PAC:18136217-cds of type name CDS');
     }
   }
 }

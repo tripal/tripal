@@ -1,5 +1,5 @@
-id: 'general_view'
-label: 'General Content Types'
+id: 'test_view'
+label: 'TEST VIEW'
 description: 'Layouts for general content types (analysis, organism, etc.) based on Chado and added via the Tripal Chado module.'
 layouts:
   - tripal_entity_type: "organism"
@@ -66,29 +66,24 @@ layouts:
     field_groups:
       - id: analysis_details
         type: details
-        label: "Core Details"
+        label: "Analysis Details"
+        weight: 0
         show_empty: false
         open: true
         children:
           - "analysis_details_table"
-          - "analysis_description"
-      - id: analysis_source_details
-        type: details
-        label: "Data Source"
-        show_empty: false
-        open: true
-        children:
-          - "analysis_source_details_table"
       - id: analysis_properties_details
         type: details
-        label: "Additional Metadata"
+        label: "Properties"
+        weight: 10
         show_empty: false
-        open: true
+        open: false
         children:
           - analysis_properties_table
       - id: analysis_cross_ref_details
         type: details
         label: "Cross References"
+        weight: 20
         show_empty: false
         open: false
         children:
@@ -96,13 +91,23 @@ layouts:
       - id: analysis_pub_details
         type: details
         label: "Publications"
+        weight: 30
         show_empty: false
         open: false
         children:
           - "analysis_pub"
+      - id: analysis_source_details
+        type: details
+        label: "Data Source"
+        weight: 40
+        show_empty: false
+        open: false
+        children:
+          - "analysis_source_details_table"
       - id: analysis_project_details
         type: details
-        label: "Projects"
+        label: "Data Source"
+        weight: 50
         show_empty: false
         open: false
         children:
@@ -110,15 +115,18 @@ layouts:
       - id: analysis_details_table
         type: field_group_table
         label: "Summary table"
+        weight: 0
         show_empty: false
         children:
           - "analysis_name"
-          - "analysis_software"
-          - "analysis_program_version"
           - "analysis_algorithm"
+          - "analysis_program_version"
+          - "analysis_software"
+          - "analysis_description"
       - id: analysis_source_details_table
         type: field_group_table
         label: "Data Source Table"
+        weight: 0
         show_empty: false
         children:
           - "analysis_source"
@@ -127,6 +135,7 @@ layouts:
       - id: analysis_properties_table
         type: field_group_table
         label: "Properties Table"
+        weight: 0
         show_empty: false
         children:
           - "type:chado_property_type_default"

@@ -236,18 +236,19 @@ class TripalTokenParser {
         elseif (in_array($token, array_keys($this->fields))) {
           $field = $this->fields[$token];
           $key = $field->mainPropertyName();
+          $value = NULL;
           if (array_key_exists($token, $this->values)) {
-            $value = @$this->values[$token][$key];
-            if (!is_null($value)) {
-              $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
-            }
-            else {
-              // If the value is null then we remove the token.
-              $replaced[$index] = trim(preg_replace("/\[$token\]/", '',  $replaced[$index]));
-            }
+            $value = $this->values[$token][$key] ?? NULL;
           }
-          // If we get here then this is a field related token but the token
-          // value wasn't set with addFieldValue() method. Leave the token as-is.
+          if (!is_null($value)) {
+            $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+          }
+          else {
+            // A token value may be missing either because there is no value, or
+            // because there is a typo in the token. In any case, remove the token.
+            // @todo add validation when editing title tokens to prevent the latter case.
+            $replaced[$index] = trim(preg_replace("/\[$token\]/", '',  $replaced[$index]));
+          }
         }
       }
     }

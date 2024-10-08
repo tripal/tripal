@@ -470,8 +470,9 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
       '[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]'
     ]);
     $this->assertTrue(count($replaced) == 2, 'TripalTokenParser::replaceTokens() should have returned only two replaced string');
-    $this->assertTrue($replaced[0] == 'Oryza sativa', 'TripalTokenParser did not return a correctly replaced string when multiple were provided..');
-    $this->assertTrue($replaced[1] == 'Oryza sativa [organism_infraspecific_type] [organism_infraspecific_name]', 'TripalTokenParser did not return unparsed tokens in the input string.');
+    $this->assertTrue($replaced[0] == 'Oryza sativa', 'TripalTokenParser did not return a correctly replaced string when multiple were provided.');
+    // As of PR#1977 tokens with no value are removed
+    $this->assertTrue($replaced[1] == 'Oryza sativa', 'TripalTokenParser did not remove unparsed tokens in the input string.');
 
     $token_parser->addFieldValue('organism_infraspecific_type', 'value', '');
     $replaced = $token_parser->replaceTokens([

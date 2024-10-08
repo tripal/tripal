@@ -1014,7 +1014,7 @@ class TripalPublish {
     $this->addNonRequiredValues($search_values);
 
     $this->logger->notice("Step  1 of 6: Find matching records... ");
-    $matches = $this->storage->findValues($search_values, ['check_valid' => FALSE]);
+    $matches = $this->storage->findValues($search_values);
 
     $this->logger->notice("Step  2 of 6: Generate page titles...");
     $titles = $this->getEntityTitles($matches);
