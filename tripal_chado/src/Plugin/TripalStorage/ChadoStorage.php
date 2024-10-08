@@ -7,7 +7,6 @@ use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\Services\TripalLogger;
-use Drupal\tripal\Services\TripalEntityLookup;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
@@ -342,7 +341,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * @{inheritdoc}
    */
-  public function findValues($values) {
+  public function findValues($values, $record_ids = []) {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Find');
@@ -367,7 +366,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       foreach ($base_tables as $base_table) {
 
         // First we find all matching base records.
-        $entity_matches = $this->records->findRecords($base_table, $base_table);
+        $entity_matches = $this->records->findRecords($base_table, $base_table, $record_ids);
 
         // Now for each matching base record we need to select
         // the ancillary tables.
@@ -1328,6 +1327,63 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ];
 
     return $storage_form;
+  }
+
+  /**
+   * Returns a list of all pkey_id values for a given base table.
+   *
+   * @param string $bundle_id
+   *   The name of the bundle.
+   *
+   * @return array
+   *   List of pkey_id values in no particular order.
+   */
+  public function findAllRecordIds(string $bundle_id) {
+    $records = [];
+
+    // Retrieve relevant information from the bundle
+    $entity_type_manager = \Drupal::entityTypeManager();
+    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle_id);
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $type_table = $entity_type->getThirdPartySetting('tripal', 'chado_type_table');
+    $type_column = $entity_type->getThirdPartySetting('tripal', 'chado_type_column');
+    $termIdSpace = $entity_type->getTermIdSpace();
+    $termAccession = $entity_type->getTermAccession();
+
+    // Get the name of the primary key column.
+    $schema = $this->connection->schema();
+    $table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+    $pkey_column = $table_def['primary key'];
+
+    // Set up the query
+    $query = $this->connection->select('1:' . $base_table, 'BT', []);
+    $query->addField('BT', $pkey_column, 'pkey');
+
+    // If there is a type setting, add this as a condition to
+    // limit records to only those of this type.
+    // For example, only 'gene' SO:0000704 records from the 'feature' table.
+    if ($type_table and $type_column) {
+      if ($type_table == $base_table) {
+        $query->join('1:cvterm', 'T', '"BT".' . $type_column . ' = "T".cvterm_id');
+      }
+      else {
+        $query->join('1:' . $type_table, 'TT', '"BT".' . $pkey_column . ' = "TT".' . $pkey_column);
+        $query->join('1:cvterm', 'T', '"TT".' . $type_column . ' = "T".cvterm_id');
+      }
+      $query->join('1:dbxref', 'X', '"T".dbxref_id = "X".dbxref_id');
+      $query->join('1:db', 'DB', '"X".db_id = "DB".db_id');
+      $query->condition('X.accession', $termAccession, '=');
+      $query->condition('DB.name', $termIdSpace, '=');
+    }
+
+    // Retrieve results, i.e. record IDs.
+    $results = $query->execute();
+    if ($results) {
+      while ($pkey_id = $results->fetchField()) {
+        $records[] = $pkey_id;
+      }
+    }
+    return $records;
   }
 
   /**

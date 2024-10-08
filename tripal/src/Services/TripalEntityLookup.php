@@ -4,8 +4,6 @@ namespace Drupal\tripal\Services;
 
 use Drupal\Core\Url;
 use Drupal\Core\Render\Markup;
-use Drupal\field\Entity\FieldStorageConfig;
-use \Drupal\tripal\Services\TripalEntityTitle;
 
 /**
  * This class provides functions to assist with finding a Drupal
@@ -208,6 +206,57 @@ class TripalEntityLookup {
       // @todo Look up the pkey if the $required_property exists under a different id.
     }
 
+    return $ids;
+  }
+
+  /**
+   * Find all published entities within a given bundle.
+   * Unfortunately the drupal entity API 'loadMultiple' function is too slow,
+   * taking a second or two per entity. We instead query the Drupal field
+   * tables directly, because we just want a simple list of two of the columns.
+   *
+   * @param string $bundle_id
+   *   The name of the drupal bundle, e.g. for base table 'arraydesign' it is 'array_design'
+   * @param string $entity_type
+   *   The type of entity, only 'tripal_entity' is supported.
+   *
+   * @return array
+   *   A list of all published entities in the bundle.
+   *   The key will be the chado table record ID, the values will be the entity IDs.
+   */
+  public function getPublishedEntityIds($bundle_id, $entity_type = 'tripal_entity') : array {
+
+    $ids = [];
+    $required_fields = $this->getRequiredFields($bundle_id, $entity_type);
+    if (!$required_fields) {
+      // Everything is based on the assumption that there is at least one
+      // required field for every content type. If not, we cannot continue.
+      return $ids;
+    }
+
+    // We only need to evaluate for one of the required fields,
+    // for simplicity just pick the first one.
+    $required_field = array_key_first($required_fields);
+
+    // We are assuming here that the pkey property always uses 'record_id'
+    // as the key. For core chado this is true, but someone might write a
+    // module where this is not the case, and an exception will be thrown.
+    $pkey_property_id = 'record_id';
+    $required_property = $required_field . '_' . $pkey_property_id;
+
+    // The name of the Drupal field table
+    $field_table = $entity_type . '__' . $required_field;
+
+    // Here is where we query the field table directly
+    $conn = \Drupal::service('database');
+    $query = $conn->select($field_table, 'F');
+    $query->addField('F', 'entity_id', 'entity_id');
+    $query->addField('F', $required_property, 'record_id');
+    $query->condition('F.bundle', $bundle_id, '=');
+    $results = $query->execute();
+    while ($record = $results->fetchObject()) {
+      $ids[$record->record_id] = $record->entity_id;
+    }
     return $ids;
   }
 

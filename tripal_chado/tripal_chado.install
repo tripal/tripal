@@ -424,7 +424,7 @@ function tripal_chado_update_10401() {
     'sequence_variant' => 'feature',
     'genetic_marker' => 'feature',
     'phenotypic_marker' => 'feature',
-    // Germplams types.
+    // Germplasm types.
     'germplasm' => 'stock',
     'breeding_cross' => 'stock',
     'germplasm_variety' => 'stock',
@@ -440,10 +440,10 @@ function tripal_chado_update_10401() {
     'genome_project' => 'project'
   ];
 
-  /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
   /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
   $entity_type_manager = \Drupal::entityTypeManager();
   foreach ($settings as $bundle => $chado_base_table) {
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
     if ($entity_type) {
       $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $chado_base_table);
@@ -574,4 +574,45 @@ function tripal_chado_update_10406() {
   $upgradable_types = ['chado_synonym_type_default'];
   $upgradable_properties = ['linker_synonym_fkey_id'];
   tripal_chado_field_reload($upgradable_types, $upgradable_properties, TRUE);
+}
+
+/**
+ * Adds third party settings for content types that have multiple
+ * content types derived from one Chado base table. PR#1991
+ */
+function tripal_chado_update_10407() {
+  $settings = [
+    // analysis table
+    'genome_assembly' => 'analysisprop',
+    'genome_annotation' => 'analysisprop',
+    // feature table
+    'gene' => 'feature',
+    'mrna' => 'feature',
+    'QTL' => 'feature',
+    'sequence_variant' => 'feature',
+    'genetic_marker' => 'feature',
+    'phenotypic_marker' => 'feature',
+    // featuremap table
+    'genetic_map' => 'featuremapprop',
+    'physical_map' => 'featuremapprop',
+    // project table
+    'genome_project' => 'projectprop',
+    // stock table
+    'germplasm' => 'stock',
+    'breeding_cross' => 'stock',
+    'germplasm_variety' => 'stock',
+    'ril' => 'stock',
+  ];
+
+  /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+  $entity_type_manager = \Drupal::entityTypeManager();
+  foreach ($settings as $bundle => $type_table) {
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+    if ($entity_type) {
+      $entity_type->setThirdPartySetting('tripal', 'chado_type_table', $type_table);
+      $entity_type->setThirdPartySetting('tripal', 'chado_type_column', 'type_id');
+      $entity_type->save();
+    }
+  }
 }

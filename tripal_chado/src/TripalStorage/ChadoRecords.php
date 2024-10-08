@@ -1648,13 +1648,16 @@ class ChadoRecords  {
    *   The name of the Chado table used as a base table.
    * @param string $base_table_alias
    *   The alias of the base table.
+   * @param array $pkey_ids
+   *   When specified, only return records where the primary key is in
+   *   this array. Used by publish to publish in batches.
    *
    * @return array
    *   An array of \Drupal\tripal_chado\TripalStorage\ChadoRecords objects.
    *
    * @throws \Exception
    */
-  public function findRecords(string $base_table, string $base_table_alias) {
+  public function findRecords(string $base_table, string $base_table_alias, array $pkey_ids = []) {
 
     $found_records = [];
 
@@ -1704,6 +1707,15 @@ class ChadoRecords  {
         }
         $select->condition($base_table_alias . '.' . $column_alias, $value['value'], $value['operation']);
       }
+
+      // If limiting results by using an array of primary keys, restrict
+      // the query by adding this as an IN condition.
+      if ($pkey_ids) {
+        $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
+        $chado_table_pkey = $chado_table_def['primary key'];
+        $select->condition($base_table_alias . '.' . $chado_table_pkey, $pkey_ids, 'IN');
+      }
+
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
 
       // Execute the query.

@@ -118,4 +118,35 @@ class ChadoManageCommands extends DrushCommands {
 
     $this->output()->writeln('There is no longer any need to prepare the chado test environment.');
   }
+
+  /**
+   * Publish Chado Records as Tripal Content.
+   *
+   * @command tripal-chado:publish
+   * @aliases trp-chado-publish
+   * @options schema-name
+   *   The name of the chado schema to prepare. Only a single chado schema
+   *   should be prepared with Tripal and this will become the default chado schema.
+   * @param bundle
+   *   The id of the TripalContentType you would like to publish content for.
+   * @usage drush trp-chado-publish organism
+   *   Submits a standard chado publish job for the organism content type which
+   *   publishes records in the default chado schema organism table.
+   * @usage drush trp-chado-publish organism --schema-name=prod
+   *   Submits a chado publish job for the organism content type which
+   *   publishes records in the prod.organism table.
+   */
+  public function publish(string $bundle, array $options = ['schema-name' => 'chado']) {
+
+    // @todo validate the bundle
+    // @todo if schema not supplied then grab default chado schema.
+
+    $current_user = \Drupal::currentUser();
+    $values = ["schema_name" => $options['schema-name']];
+    $bundle = $bundle;
+    $datastore = 'chado_storage';
+
+    \Drupal\tripal_chado\Plugin\TripalBackendPublish\ChadoPublish::runTripalJob($bundle, $datastore, $values);
+  }
+
 }

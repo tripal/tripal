@@ -45,5 +45,8 @@ services:
                 '@tripal.logger']
   tripal.publish:
     class: Drupal\tripal\Services\TripalPublish
+  tripal.backend_publish:
+    class: Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
+    parent: default_plugin_manager
   tripal.tripal_entity.lookup:
     class: Drupal\tripal\Services\TripalEntityLookup
