@@ -215,7 +215,6 @@ class TripalPublish {
       throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
     }
     $this->entity_type = $entity_type;
-    $this->base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
 
     // Get the storage plugin used to publish.
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
@@ -227,6 +226,21 @@ class TripalPublish {
     }
 
     $this->setFieldInfo();
+
+    // We need a way to get all the record ids for a bundle.
+    // If this is the chado storage backend then we do this using the chado table.
+    if ($datastore == 'chado_storage') {
+      $this->base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    }
+    // But if this is not chado storage then the backend needs to provide the base
+    // table for a bundle.
+    else {
+      $this->base_table = $this->storage->getBaseTable($bundle);
+    }
+    if (empty($this->base_table)) {
+      $error_msg = 'Could not find the base table for the %bundle entity type.';
+      throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
+    }
 
     // Get the required field properties that will uniquely identify an entity.
     // We only need to search on those properties.
