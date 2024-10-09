@@ -46,8 +46,8 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
 
     foreach($items as $delta => $item) {
       $value = $item->get("value")->getValue() ?? '';
-      $hide = ((($hide_condition == 'if_value') and ($value == $hide_value))
-            or (($hide_condition == 'if_zero') and !$value));
+      $hide = ((($hide_condition == '') and !$value)
+           or (($hide_condition == 'if_value') and ($value == $hide_value)));
       if (!$hide) {
         if (strlen($value) and strlen($thousand_separator)) {
           // For an integer we can hardcode the unused decimal setting to 0
@@ -95,9 +95,9 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
       '#title' => $this->t('You may provide a condition when the field is not displayed'),
       '#type' => 'radios',
       '#options' => [
-        '' => $this->t('Never hide'),
-        'if_zero' => $this->t('Hide if zero'),
+        '' => $this->t('Hide if zero'),
         'if_value' => $this->t('Hide if equal to a specific value'),
+        'never_hide' => $this->t('Never hide'),
       ],
       '#default_value' => $this->getSetting('hide_condition') ?? '',
     ];
