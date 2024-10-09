@@ -704,8 +704,10 @@ EOD;
    */
   public function getForeignKeyDef(string $left_table, string $right_table) {
     $left_def = $this->getTableDef($left_table, ['format' => 'Drupal']);
-    if (!array_key_exists($right_table, $left_def['foreign keys'])) {
-      return NULL;
+    if (
+      !array_key_exists('foreign keys', $left_def)
+      || !array_key_exists($right_table, $left_def['foreign keys'])) {
+        return NULL;
     }
     return $left_def['foreign keys'][$right_table];
   }
