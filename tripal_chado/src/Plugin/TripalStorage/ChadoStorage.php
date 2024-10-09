@@ -342,7 +342,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * @{inheritdoc}
    */
-  public function findValues($values) {
+  public function findValues($values, $record_ids = []) {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Find');
@@ -367,7 +367,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       foreach ($base_tables as $base_table) {
 
         // First we find all matching base records.
-        $entity_matches = $this->records->findRecords($base_table, $base_table);
+        $entity_matches = $this->records->findRecords($base_table, $base_table, $record_ids);
 
         // Now for each matching base record we need to select
         // the ancillary tables.
@@ -1328,6 +1328,36 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ];
 
     return $storage_form;
+  }
+
+  /**
+   * Returns a list of all pkey_id values for a given base table.
+   *
+   * @param string $base_table
+   *   The name of the base table of some content type, e.g. 'feature'.
+   *
+   * @return array
+   *   List of pkey_id values in no particular order.
+   */
+  public function findAllRecordIds(string $base_table) {
+    $records = [];
+
+    // Get the name of the primary key column.
+    $schema = $this->connection->schema();
+    $table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+    $pkey_column = $table_def['primary key'];
+
+    // Perform the query and retrieve results.
+    $query = $this->connection->select('1:'. $base_table, $base_table);
+    $query->addField($base_table, $pkey_column, 'pkey');
+    $results = $query->execute();
+    if ($results) {
+      while ($pkey_id = $results->fetchField()) {
+        $records[] = $pkey_id;
+      }
+    }
+
+    return $records;
   }
 
   /**
