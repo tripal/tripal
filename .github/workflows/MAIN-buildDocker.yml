@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - 4.x
-      - tv4g0-0-dockerBuilds
   # Allows us to manually trigger this workflow.
   # This is great if there is a change made to Tripal core that we want to test our modules on ASAP.
   workflow_dispatch:
@@ -125,7 +124,7 @@ jobs:
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }}"
+          buildArgs: "drupalversion=${{ matrix.drupal-version }},postgresqlversion=${{ matrix.pgsql-version }},phpversion=${{ matrix.php-version }},installchado=FALSE"
           labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.drupal-version }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
       ## Build Images tagged drupal{VER} focused on php 8.2 + postgresql 16
       - uses: mr-smithers-excellent/docker-build-push@v6
