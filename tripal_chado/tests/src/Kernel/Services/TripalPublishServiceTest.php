@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel;
+namespace Drupal\Tests\tripal_chado\Kernel\Services;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use \Drupal\tripal\Services\TripalPublish;
@@ -14,7 +14,7 @@ use Drupal\tripal\Services\TripalJob;
 class TripalPublishServiceTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['system', 'user', 'tripal', 'tripal_chado', 'views', 'field'];
+  protected static $modules = ['system', 'user', 'tripal', 'tripal_chado', 'views', 'field', 'file', 'image'];
 
   protected $connection;
 
