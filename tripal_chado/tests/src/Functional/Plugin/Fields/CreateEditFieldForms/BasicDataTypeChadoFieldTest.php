@@ -70,61 +70,53 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
 
     // Create the Tripal Terms we need.
     // -- SIO:000729
-    $this->createTripalTerm([
+    $term_details = [
       'vocab_name' => 'SIO',
       'id_space_name' => 'SIO',
       'term' => [
         'name' => 'record identifier',
         'definition' => 'A record identifier is an identifier for a database entry.',
         'accession' =>'000729',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-    $this->createTripalTerm([
+      ]
+    ];
+    $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
+    $term_details = [
       'vocab_name' => 'SO',
       'id_space_name' => 'SO',
       'term' => [
         'name' => 'sequence_feature',
         'definition' => 'Any extent of continuous biological sequence.',
         'accession' => '0000110',
-        ]
-      ],
-      'chado_id_space',
-      'chado_vocabulary'
-    );
-    $this->createTripalTerm([
+      ]
+    ];
+    $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
+    $term_details = [
       'vocab_name' => 'local',
       'id_space_name' => 'local',
       'term' => [
         'name' => 'is_analysis',
         'accession' => 'is_analysis',
-        ]
-      ],
-      'chado_id_space',
-      'chado_vocabulary'
-    );
-    $this->createTripalTerm([
+      ]
+    ];
+    $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
+    $term_details = [
       'vocab_name' => 'schema',
       'id_space_name' => 'schema',
       'term' => [
         'name' => 'name',
         'accession' => 'name',
-        ]
-      ],
-      'chado_id_space',
-      'chado_vocabulary'
-    );
-    $this->createTripalTerm([
+      ]
+    ];
+    $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
+    $term_details = [
       'vocab_name' => 'edam',
       'id_space_name' => 'data',
       'term' => [
         'name' => 'Identifier',
         'accession' => '0842',
-        ]
-      ],
-      'chado_id_space',
-      'chado_vocabulary'
-    );
+      ]
+    ];
+    $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
   }
 
   /**

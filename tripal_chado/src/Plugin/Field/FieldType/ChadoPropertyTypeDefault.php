@@ -7,6 +7,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of Tripal linker property field type.
@@ -44,6 +45,23 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // for this field based on the fixed value.
     $settings['fixed_value'] = FALSE;
     return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $values = [];
+
+    $random = new \Drupal\Component\Utility\Random();
+    $values['record_id'] = 1;
+    $values['prop_id'] = 1;
+    $values['linker_id'] = 1;
+    $values['value'] = 'fred';
+    $values['type_id'] = 4;
+    $values['rank'] = 0;
+
+    return $values;
   }
 
   /**
@@ -272,7 +290,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Create a field entry for each property type.
     foreach ($results as $recprop) {
       $field_list[] = [
-        'name' => self::generateFieldName($bundle, $recprop->cvterm_name),
+        'name' => self::generateFieldName($bundle, $recprop->cvterm_name, $recprop->cvterm_id),
         'content_type' => $bundle->getID(),
         'label' => ucwords($recprop->cvterm_name),
         'type' => self::$id,

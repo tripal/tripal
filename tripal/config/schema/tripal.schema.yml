@@ -330,6 +330,14 @@ tripal.tripalfield_collection.*:
                                type: string
                                label: 'Field suffix'
                                nullable: true
+                             hide_condition:
+                               type: string
+                               label: 'Hide condition'
+                               nullable: true
+                             hide_value:
+                               type: string
+                               label: 'Hide value'
+                               nullable: true
                    form:
                      type: sequence
                      label: 'Edit'
@@ -384,6 +392,14 @@ field.formatter.settings.*:
       type: string
       label: 'Field suffix'
       nullable: true
+    hide_condition:
+      type: string
+      label: 'Hide condition'
+      nullable: true
+    hide_value:
+      type: string
+      label: 'Hide value'
+      nullable: true
     thousand_separator:
       type: string
       label: 'Thousand marker'
@@ -403,3 +419,6 @@ field.widget.settings.*:
     filter_format:
       type: string
       label: 'Filter format for a filtered text field'
+    num_rows:
+      type: integer
+      label: 'Number of Rows to display in the text widget'

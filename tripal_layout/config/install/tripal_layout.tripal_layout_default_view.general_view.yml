@@ -2,140 +2,132 @@ id: 'general_view'
 label: 'General Content Types'
 description: 'Layouts for general content types (analysis, organism, etc.) based on Chado and added via the Tripal Chado module.'
 layouts:
-  - tripal_entity_type: "organism" 
+  - tripal_entity_type: "organism"
     hidden:
       - uid
-      - title     
+      - title
     field_groups:
-      details:
-        organism_details:
-          label: "Organism Details"
-          weight: 0
-          show_empty: false
-          open: true
-          children: 
-            - "organism_details_table"
-        organism_properties_details:
-          label: "Properties"
-          weight: 10
-          show_empty: false
-          open: false
-          children: 
-            - organism_properties_table
-        organism_cross_refs_details:
-          label: "Cross References"
-          weight: 20
-          show_empty: false
-          open: false
-          children: 
-            - "organism_dbxref"
-        organism_pubs_details:
-          label: "Publications"
-          weight: 30
-          show_empty: false
-          open: false
-          children: 
-            - "organism_pub"
-        organism_images_details:
-          label: "Images"
-          weight: 40
-          show_empty: false
-          open: false
-          children:
-            - "organism_image"
-      field_group_table:
-        organism_details_table:
-          label: "Details Table"
-          weight: 0  
-          show_empty: false
-          children:
-            - "organism_genus"
-            - "organism_species"
-            - "organism_infraspecific_type"
-            - "organism_infraspecific_name"
-            - "organism_abbreviation"
-            - "organism_common_name"
-            - "organism_comment"    
-        organism_properties_table:
-          label: "Properties Table"
-          weight: 0  
-          show_empty: false            
-          children:
-            - "type:chado_property_type_default"
-  - tripal_entity_type: "analysis" 
+      - id: organism_details
+        type: details
+        label: "Organism Details"
+        weight: 0
+        show_empty: false
+        open: true
+        children:
+          - "organism_details_table"
+          - "organism_image"
+          - "organism_comment"
+      - id: organism_properties_details
+        type: details
+        label: "Properties"
+        weight: 10
+        show_empty: false
+        open: false
+        children:
+          - organism_properties_table
+      - id: organism_cross_refs_details
+        type: details
+        label: "Cross References"
+        weight: 20
+        show_empty: false
+        open: false
+        children:
+          - "organism_dbxref"
+      - id: organism_pubs_details
+        type: details
+        label: "Publications"
+        weight: 30
+        show_empty: false
+        open: false
+        children:
+          - "organism_pub"
+      - id: organism_details_table
+        type: field_group_table
+        label: "Details Table"
+        weight: 0
+        show_empty: false
+        children:
+          - "organism_genus"
+          - "organism_species"
+          - "organism_infraspecific_type"
+          - "organism_infraspecific_name"
+          - "organism_abbreviation"
+          - "organism_common_name"
+      - id: organism_properties_table
+        type: field_group_table
+        label: "Properties Table"
+        weight: 0
+        show_empty: false
+        children:
+          - "type:chado_property_type_default"
+  - tripal_entity_type: "analysis"
     hidden:
       - uid
-      - title     
+      - title
     field_groups:
-      details:
-        analysis_details:
-          label: "Analysis Details"
-          weight: 0
-          show_empty: false
-          open: true
-          children: 
-            - "analysis_details_table"
-        analysis_properties_details:
-          label: "Properties"
-          weight: 10
-          show_empty: false
-          open: false
-          children: 
-            - analysis_properties_table
-        analysis_cross_ref_details:
-          label: "Cross References"
-          weight: 20
-          show_empty: false
-          open: false
-          children: 
-            - "analysis_dbxref"
-        analysis_pub_details:
-          label: "Publications"
-          weight: 30
-          show_empty: false
-          open: false
-          children: 
-            - "analysis_pub"
-        analysis_source_details:
-          label: "Data Source"
-          weight: 40
-          show_empty: false
-          open: false
-          children: 
-            - "analysis_source_details_table"
-        analysis_project_details:
-          label: "Data Source"
-          weight: 50
-          show_empty: false
-          open: false
-          children: 
-            - "analysis_project"
-      field_group_table:
-        analysis_details_table:
-          label: "Summary table"
-          weight: 0  
-          show_empty: false
-          children:
-            - "analysis_name"
-            - "analysis_algorithm"
-            - "analysis_program_version"
-            - "analysis_software"
-            - "analysis_description"
-        analysis_source_details_table:
-          label: "Data Source Table"
-          weight: 0
-          show_empty: false
-          children: 
-            - "analysis_source"
-            - "analysis_source_uri"
-            - "analysis_source_version"
-        analysis_properties_table:
-          label: "Properties Table"
-          weight: 0  
-          show_empty: false            
-          children:
-            - "type:chado_property_type_default"
-            
-            
-            
-            
+      - id: analysis_details
+        type: details
+        label: "Core Details"
+        show_empty: false
+        open: true
+        children:
+          - "analysis_details_table"
+          - "analysis_description"
+      - id: analysis_source_details
+        type: details
+        label: "Data Source"
+        show_empty: false
+        open: true
+        children:
+          - "analysis_source_details_table"
+      - id: analysis_properties_details
+        type: details
+        label: "Additional Metadata"
+        show_empty: false
+        open: true
+        children:
+          - analysis_properties_table
+      - id: analysis_cross_ref_details
+        type: details
+        label: "Cross References"
+        show_empty: false
+        open: false
+        children:
+          - "analysis_dbxref"
+      - id: analysis_pub_details
+        type: details
+        label: "Publications"
+        show_empty: false
+        open: false
+        children:
+          - "analysis_pub"
+      - id: analysis_project_details
+        type: details
+        label: "Projects"
+        show_empty: false
+        open: false
+        children:
+          - "analysis_project"
+      - id: analysis_details_table
+        type: field_group_table
+        label: "Summary table"
+        show_empty: false
+        children:
+          - "analysis_name"
+          - "analysis_software"
+          - "analysis_program_version"
+          - "analysis_algorithm"
+      - id: analysis_source_details_table
+        type: field_group_table
+        label: "Data Source Table"
+        show_empty: false
+        children:
+          - "analysis_source"
+          - "analysis_source_uri"
+          - "analysis_source_version"
+      - id: analysis_properties_table
+        type: field_group_table
+        label: "Properties Table"
+        show_empty: false
+        children:
+          - "type:chado_property_type_default"

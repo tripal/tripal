@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldItemBase;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
@@ -311,21 +312,61 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if (preg_match('/(.+?)\((.+?):(.+?)\)/', $term_str, $matches)) {
       $idSpace_name = $matches[2];
       $accession = $matches[3];
-      $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
-      $form_state->setValue(['settings', 'termAccession'], $accession);
 
-      // If this isn't a Tripal field, then add a third party setting so
-      // we know what the cvterm is.
-      if ($settings['is_tripal_field'] == 0) {
-        $field = $form_state->getFormObject()->getEntity();
-        $field->setThirdPartySetting('tripal', 'termIdSpace', $idSpace_name);
-        $field->setThirdPartySetting('tripal', 'termAccession', $accession);
+      // Validate that no other field is already using this term.
+      $form_state_storage = $form_state->getStorage();
+      $bundle = $form_state_storage['bundle'];
+      $existing_terms = self::getExistingFieldTerms($bundle);
+      $existing_field = $existing_terms[$idSpace_name . ':' . $accession] ?? NULL;
+      $current_field_name = $form_state->getFormObject()->getEntity()->getName();
+      if ($existing_field and ($existing_field != $current_field_name)) {
+        $form_state->setErrorByName('settings][field_term_fs][vocabulary_term',
+            "Another field ($existing_field) is already using this term. Please supply"
+            . ' a different term, or remove the other field from this content type.');
+      }
+      else {
+        $form_state->setValue(['settings', 'termIdSpace'], $idSpace_name);
+        $form_state->setValue(['settings', 'termAccession'], $accession);
+
+        // If this isn't a Tripal field, then add a third party setting so
+        // we know what the cvterm is.
+        if ($settings['is_tripal_field'] == 0) {
+          $field = $form_state->getFormObject()->getEntity();
+          $field->setThirdPartySetting('tripal', 'termIdSpace', $idSpace_name);
+          $field->setThirdPartySetting('tripal', 'termAccession', $accession);
+        }
       }
     }
     else {
-      $form_state->setErrorByName('field_term_fs][vocabulary_term',
+      $form_state->setErrorByName('settings][field_term_fs][vocabulary_term',
           'Please provide a valid term. It must have the ID space and accession in parentheses.');
     }
+  }
+
+  /**
+   * Returns a list of field terms for all fields on the specified
+   * bundle, including non-chado fields.
+   *
+   * @param string $bundle
+   *   The bundle id, e.g. 'project', 'analysis', etc.
+   *
+   * @return array
+   *   An associative array of existing terms. The key is the term
+   *   stored as 'IdSpace:Accession', the value is the name of the field.
+   */
+  protected static function getExistingFieldTerms(string $bundle) {
+    $existing_terms = [];
+    /** @var \Drupal\Core\Entity\EntityFieldManager $field_manager **/
+    $field_manager = \Drupal::service('entity_field.manager');
+    $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $bundle);
+    foreach ($field_defs as $field_name => $field_definition) {
+      $settings = $field_definition->getSettings();
+      if (array_key_exists('termIdSpace', $settings)) {
+        $term = $settings['termIdSpace'] . ':' . $settings['termAccession'];
+        $existing_terms[$term] = $field_name;
+      }
+    }
+    return $existing_terms;
   }
 
   /**
@@ -663,19 +704,35 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * an appropriate field name. It removes will always include the bundle
    * type as the prefix, followed by an underscore, followed by extra text
    * provided. It ensures that only alphanumeric values are present in the
-   * name and that it doesn't exceed 50 characters.
+   * name and that it doesn't exceed Drupal's maximum length.
    *
    * @param \Drupal\tripal\Entity\TripalEntityType TripalEntityType $bundle
    *   The TripalEntityType object with information about the bundle.
    * @param string $extra
    *   Extra text to add to the field name after the bundle name.
+   * @param int $cvterm_id
+   *   The cvterm_id value, only used when we need to truncate a long name.
+   *   You may leave this set to the default of zero if the cvterm_id is
+   *   not readily available, in which case a random unique ID is used,
+   *   however we recommend using the actual cvterm_id if it is available
+   *   so that the field name generated is predictable and reproducible.
+   *
    * @return string
    *   The generated field name.
    */
-  public static function generateFieldName(TripalEntityType $bundle, string $extra) {
+  public static function generateFieldName(TripalEntityType $bundle, string $extra, int $cvterm_id = 0) {
+    $max_length = FieldStorageConfig::NAME_MAX_LENGTH;
     $field_name = strtolower($bundle->getID() . '_' . $extra);
-    $field_name = preg_replace('/[^\w]/', '_', $field_name);
-    $field_name = substr($field_name, 0, 50);
+    $field_name = preg_replace('/[^\w]/u', '_', $field_name);
+    // If name is longer than Drupal allows, truncate and include the
+    // cvterm_id as a suffix to guarantee uniqueness.
+    if (mb_strlen($field_name) > $max_length) {
+      if (!$cvterm_id) {
+        $cvterm_id = uniqid();
+      }
+      $truncate_to = $max_length - strlen($cvterm_id) - 1;
+      $field_name = mb_substr($field_name, 0, $truncate_to) . '_' . $cvterm_id;
+    }
     return $field_name;
   }
 }

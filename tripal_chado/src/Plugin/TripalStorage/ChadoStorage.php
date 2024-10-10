@@ -116,23 +116,50 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getStoredTypes()
    */
   public function getStoredTypes() {
+    return $this->getStoredTypesFilter(TRUE);
+  }
+
+  /**
+   *
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getNonStoredTypes()
+   */
+  public function getNonStoredTypes() {
+    return $this->getStoredTypesFilter(FALSE);
+  }
+
+  /**
+   * Helper function for getStoredTypes() and getNonStoredTypes().
+   *
+   * @param bool $required
+   *   TRUE to return types that are required.
+   *   FALSE to return types that are not required.
+   *
+   * @return array
+   *   Array of \Drupal\tripal\Base\StoragePropertyTypeBase objects.
+   */
+  protected function getStoredTypesFilter(bool $required) {
     $ret_types = [];
     foreach ($this->property_types as $field_name => $keys) {
       $field_definition = $this->field_definitions[$field_name];
       foreach ($keys as $key => $prop_type) {
         $storage_settings = $prop_type->getStorageSettings();
 
-        // We always need to retreive any field that store a base record id
-        // a primery key or a foreign key link.
+        // Any field that stores a base record id, a primary key,
+        // or a foreign key link is required.
+        $is_required = FALSE;
         if (($storage_settings['action'] == 'store_id') or
             ($storage_settings['action'] == 'store_pkey') or
             ($storage_settings['action'] == 'store_link')) {
-          $ret_types[$field_name][$key] = $prop_type;
+          $is_required = TRUE;
         }
-        // For any other fields that have a 'drupal_store' set we need
-        // those too.
+        // For any other fields that have 'drupal_store' set,
+        // it is required too.
         elseif ((array_key_exists('drupal_store', $storage_settings)) and
                 ($storage_settings['drupal_store'] === TRUE)) {
+          $is_required = TRUE;
+        }
+        if (($is_required and $required) or (!$is_required and !$required)) {
           $ret_types[$field_name][$key] = $prop_type;
         }
       }
@@ -140,11 +167,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     return $ret_types;
   }
 
-
-
   /**
-	 * @{inheritdoc}
-	 */
+   * @{inheritdoc}
+   */
   public function insertValues(&$values) : bool {
 
     // Setup field debugging.
@@ -317,7 +342,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * @{inheritdoc}
    */
-  public function findValues($values) {
+  public function findValues($values, $record_ids = []) {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Find');
@@ -342,7 +367,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       foreach ($base_tables as $base_table) {
 
         // First we find all matching base records.
-        $entity_matches = $this->records->findRecords($base_table, $base_table);
+        $entity_matches = $this->records->findRecords($base_table, $base_table, $record_ids);
 
         // Now for each matching base record we need to select
         // the ancillary tables.
@@ -1303,6 +1328,36 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ];
 
     return $storage_form;
+  }
+
+  /**
+   * Returns a list of all pkey_id values for a given base table.
+   *
+   * @param string $base_table
+   *   The name of the base table of some content type, e.g. 'feature'.
+   *
+   * @return array
+   *   List of pkey_id values in no particular order.
+   */
+  public function findAllRecordIds(string $base_table) {
+    $records = [];
+
+    // Get the name of the primary key column.
+    $schema = $this->connection->schema();
+    $table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+    $pkey_column = $table_def['primary key'];
+
+    // Perform the query and retrieve results.
+    $query = $this->connection->select('1:'. $base_table, $base_table);
+    $query->addField($base_table, $pkey_column, 'pkey');
+    $results = $query->execute();
+    if ($results) {
+      while ($pkey_id = $results->fetchField()) {
+        $records[] = $pkey_id;
+      }
+    }
+
+    return $records;
   }
 
   /**

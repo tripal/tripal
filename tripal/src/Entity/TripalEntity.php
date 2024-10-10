@@ -12,6 +12,7 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\field\Entity\FieldConfig;
 use Symfony\Component\Routing\Route;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
+use \Drupal\tripal\Services\TripalTokenParser;
 
 /**
  * Defines the Tripal Content entity.
@@ -121,6 +122,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function setTitle($title = NULL, $cache = []) {
 
+    // Get the bundle object.
     if (isset($cache['bundle'])) {
       $bundle = $cache['bundle'];
     }
@@ -128,9 +130,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
     }
 
-    $title = $bundle->getTitleFormat();
-    $title = $this->replaceTokens($title, $bundle);
+    // Get the values of the current entity.
+    $entity_values = $this->getFieldValues();
 
+    // Use the token parser directly.
+    $title = TripalTokenParser::getEntityTitle($bundle, $entity_values);
     $this->title = $title;
   }
 
@@ -244,6 +248,37 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function setPublished($published) {
     $this->set('status', $published ? NODE_PUBLISHED : NODE_NOT_PUBLISHED);
     return $this;
+  }
+
+  /**
+   * Retrieves the values of the current entity as a nested array.
+   *
+   * @return array
+   *  This is a nested array with the first keys being field names. Within each
+   *  array for a given field the keys are delta and the values are an array of
+   *  the property names => values for that field delta.
+   */
+  public function getFieldValues() {
+    $values = [];
+
+    $field_defs = $this->getFieldDefinitions();
+    foreach ($field_defs as $field_name => $field_def) {
+      /** @var \Drupal\Core\Field\FieldItemList $items **/
+      $items = $this->get($field_name);
+      $values[$field_name] = [];
+      /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem  $item **/
+      foreach ($items as $delta => $item) {
+        $values[$field_name][$delta] = [];
+        /** @var \Drupal\Core\TypedData\TypedDataInterface $prop **/
+        $props = $item->getProperties();
+        if (is_array($props)) {
+          foreach ($props as $prop) {
+            $values[$field_name][$delta][$prop->getName()] = $prop->getValue();
+          }
+        }
+      }
+    }
+    return $values;
   }
 
   /**
@@ -526,8 +561,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
 
           // Keep track of elements that have no value.
-          foreach ($prop_values as $prop_value) {
-            if (!$prop_value->getValue()) {
+          foreach ($prop_values as $i => $prop_value) {
+            $prop_value_value = $prop_value->getValue();
+            if (is_null($prop_value_value)) {
               // A given delta should only be present once here.
               if (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name])) {
                 $delta_remove[$field_name][] = $delta;

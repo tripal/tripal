@@ -7,6 +7,7 @@ use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use Drupal\Core\Test\FunctionalTestSetupTrait;
 use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use \Drupal\tripal\Services\TripalTokenParser;
 
 /**
  * Tests the basic functions of the TripalContentTypes Service.
@@ -414,11 +415,11 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
     /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
     $token_parser = \Drupal::service('tripal.token_parser');
     $token_parser->initParser($organism);
-    $this->assertTrue($token_parser->getBunde()->getId() === 'organism', "The tripal token parser didn't set the bundle properly.");
+    $this->assertTrue($token_parser->getBundle()->getId() === 'organism', "The tripal token parser didn't set the bundle properly.");
     $this->assertTrue(is_null($token_parser->getEntity()), "The tripal token parser should have a null entity.");
     $field_names = $token_parser->getFieldNames();
 
-    // Mkae sure all of the fields are present in the token parser.
+    // Make sure all of the fields are present in the token parser.
     // This ensures that the bundle was found and it was able to
     // create instances of all the fields attached to it.
     $this->assertTrue(in_array('organism_genus', $field_names), 'The tripal token parser is missing the organism_genus field.');
@@ -469,8 +470,9 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
       '[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]'
     ]);
     $this->assertTrue(count($replaced) == 2, 'TripalTokenParser::replaceTokens() should have returned only two replaced string');
-    $this->assertTrue($replaced[0] == 'Oryza sativa', 'TripalTokenParser did not return a correctly replaced string when multiple were provided..');
-    $this->assertTrue($replaced[1] == 'Oryza sativa [organism_infraspecific_type] [organism_infraspecific_name]', 'TripalTokenParser did not return unparsed tokens in the input string.');
+    $this->assertTrue($replaced[0] == 'Oryza sativa', 'TripalTokenParser did not return a correctly replaced string when multiple were provided.');
+    // As of PR#1977 tokens with no value are removed
+    $this->assertTrue($replaced[1] == 'Oryza sativa', 'TripalTokenParser did not remove unparsed tokens in the input string.');
 
     $token_parser->addFieldValue('organism_infraspecific_type', 'value', '');
     $replaced = $token_parser->replaceTokens([
@@ -514,5 +516,15 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
     $this->assertTrue($replaced[1] == 'Organism', 'The [TripalEntityType__label] token is not being replaced.');
     $this->assertTrue($replaced[2] == '1', 'The [TripalEntity__entity_id] token is not being replaced.');
 
+    // Test calling the getFieldValues() function directly
+    $field_values = $entity->getFieldValues();
+    $this->assertIsArray($field_values, "getFieldValues did not return an array.");
+    $this->assertEquals(14, count($field_values), "getFieldValues returned an array of unexpected size.");
+    $value = $field_values['organism_infraspecific_type'][0]['value'] ?? NULL;
+    $this->assertEquals('subspecies', $value, "getFieldValues did not return the correct infraspecific type.");
+
+    // Test calling the getEntityTitle() function directly
+    $entity_title = $token_parser->getEntityTitle($token_parser->getBundle(), $field_values);
+    $this->assertEquals('Oryza sativa subspecies Japonica', $entity_title, "getEntityTitle did not return the correct title");
   }
 }

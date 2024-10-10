@@ -1,9 +1,15 @@
 name: PHPUnit
 on:
+  workflow_dispatch:
   push:
     branches:
       - 4.x
-      - tv4g9-issue1897-remove-drupal-10-0-and-10-1
+      - tv4g8-issue1950-improveTripalDocker
+  # Allows us to schedule when this workflow is run.
+  # This ensures we pick up any new changes in Drupal.
+  schedule:
+    # Run at 6am every night.
+    - cron: '0 6 * * *'
 jobs:
   running-tests:
     name: "Drupal 10.2: PHP 8.1"
@@ -20,4 +26,3 @@ jobs:
           pgsql-version: '16'
           drupal-version: '10.2.x-dev'
           build-image: true
-          dockerfile: "UseTripalDockerBackupClause"

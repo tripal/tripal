@@ -32,4 +32,14 @@ class BoolStoragePropertyType extends StoragePropertyTypeBase {
     parent::__construct($entityType, $fieldType, $key, $term_id, "bool", $storage_settings);
   }
 
+  /**
+   * Returns the default empty value of the correct type for this storage property type.
+   *
+   * @return bool
+   *   A boolean FALSE value.
+   */
+  public function getDefaultValue() {
+    return FALSE;
+  }
+
 }
