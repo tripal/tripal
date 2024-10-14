@@ -233,8 +233,20 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs);
         foreach ($discovered as $discovered_field) {
 
-          // If the discovered field already exists then mark it as existing.
-          if (array_key_exists($discovered_field['name'], $entity_field_defs)) {
+          // If the CV term for the discovered field is currently used by an
+          // existing field, then mark it as existing.
+          $existing = FALSE;
+          $discoveredIdSpace = $discovered_field['settings']['termIdSpace'];
+          $discoveredAccession = $discovered_field['settings']['termAccession'];
+          foreach ($entity_field_defs as $name => $def) {
+            $settings = $def->getSettings();
+            if ( (($settings['termIdSpace'] ?? '') == $discoveredIdSpace)
+              and (($settings['termAccession'] ?? '') == $discoveredAccession) ) {
+              $existing = TRUE;
+              break;
+            }
+          }
+          if ($existing) {
             $field_status['existing'][$discovered_field['name']] = $discovered_field;
             continue;
           }
