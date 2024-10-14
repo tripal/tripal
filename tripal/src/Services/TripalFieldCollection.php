@@ -235,17 +235,9 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
 
           // If the CV term for the discovered field is currently used by an
           // existing field, then mark it as existing.
-          $existing = FALSE;
           $discoveredIdSpace = $discovered_field['settings']['termIdSpace'];
           $discoveredAccession = $discovered_field['settings']['termAccession'];
-          foreach ($entity_field_defs as $name => $def) {
-            $settings = $def->getSettings();
-            if ( (($settings['termIdSpace'] ?? '') == $discoveredIdSpace)
-              and (($settings['termAccession'] ?? '') == $discoveredAccession) ) {
-              $existing = TRUE;
-              break;
-            }
-          }
+          $existing = $this->checkDiscoveredTerm($discoveredIdSpace, $discoveredAccession, $entity_field_defs);
           if ($existing) {
             $field_status['existing'][$discovered_field['name']] = $discovered_field;
             continue;
@@ -265,6 +257,32 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
       }
     }
     return $field_status;
+  }
+
+  /**
+   * Helper function to determine if any existing fields use a particular CV term.
+   *
+   * @param string $idSpace
+   *   ID space of term we want to check
+   * @param string $accession
+   *   Accession of term we want to check
+   * @param array $entity_field_defs
+   *   Array of field definitions returned from getFieldDefinitions()
+   *
+   * @return bool
+   *   TRUE if term already used by a field, FALSE otherwise
+   */
+  private function checkDiscoveredTerm($idSpace, $accession, $entity_field_defs) {
+    $existing = FALSE;
+    foreach ($entity_field_defs as $name => $def) {
+      $settings = $def->getSettings();
+      if ( (($settings['termIdSpace'] ?? '') == $idSpace)
+          and (($settings['termAccession'] ?? '') == $accession) ) {
+        $existing = TRUE;
+        break;
+      }
+    }
+    return $existing;
   }
 
   /**
