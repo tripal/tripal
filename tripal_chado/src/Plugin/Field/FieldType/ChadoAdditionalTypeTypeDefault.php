@@ -291,6 +291,40 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
   }
 
   /**
+   * {@inheritDoc}
+   */
+  public static function storageSettingsFormSubmitBaseTable(array $form, FormStateInterface $form_state) {
+    parent::storageSettingsFormSubmitBaseTable($form, $form_state);
+
+    $settings = self::getFormStateSettings($form_state);
+    if (!array_key_exists('storage_plugin_settings', $settings)) {
+      return;
+    }
+    // This field is used to specify a subset of a chado table for the bundle,
+    // e.g. for feature table it could be 'gene'.
+    // The first time this field is entered, store third party settings in the
+    // entity for the table and column where this term will be stored, so that
+    // publish will be able to restrict by the term.
+    $type_fkey = $settings['storage_plugin_settings']['type_fkey'] ?? NULL;
+    if ($type_fkey) {
+      $type_table = $entity_type->getThirdPartySetting('tripal', 'chado_type_table');
+      if (!$type_table) {
+        $form_state_storage = $form_state->getStorage();
+        $bundle = $form_state_storage['bundle'];
+        /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+        $entity_type_manager = \Drupal::entityTypeManager();
+        /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+        $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+
+        list($type_table, $type_column) = explode(self::$table_column_delimiter, $type_fkey, 2);
+        $entity_type->setThirdPartySetting('tripal', 'chado_type_table', $type_table);
+        $entity_type->setThirdPartySetting('tripal', 'chado_type_column', $type_column);
+        $entity_type->save();
+      }
+    }
+  }
+
+  /**
    * Return a list of candidate type tables. This is done
    * by returning tables that have a foreign key to our
    * $base_table, and have a column with a foreign key
@@ -392,6 +426,102 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     }
 
     return $compatible;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array {
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+
+    // Initialize with an empty field list.
+    $field_list = [];
+
+    // Make sure the base table setting exists.
+    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
+    if (!$base_table) {
+      return $field_list;
+    }
+
+    // For this field, we need either a "type_id" column in the base table,
+    // or else have it specified in a property table. Sometimes we have both.
+    $type_table = NULL;
+    $type_column = NULL;
+    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_type_column = 'type_id';
+    $base_type_id = $base_table_def['fields'][$base_type_column] ?? NULL;
+    $prop_type_id = NULL;
+    if ($base_type_id) {
+      $type_table = $base_table;
+      $type_column = $base_type_column;
+    }
+    else {
+      $prop_table = $base_table . 'prop';
+      $prop_type_column = 'type_id';
+      if ($chado->schema()->tableExists($prop_table)) {
+        $prop_table_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
+        $prop_type_id = $prop_table_def['fields'][$prop_type_column] ?? NULL;
+        if ($prop_type_id) {
+          $type_table = $prop_table;
+          $type_column = $prop_type_columns;
+        }
+      }
+    }
+
+    // If neither of these two type_ids are present, then this field
+    // is not discoverable for the base table.
+    if (!$type_table) {
+      return $field_list;
+    }
+
+    // Create a field entry in the list
+    $termIdSpace = $bundle->getTermIdSpace();
+    $termAccession = $bundle->getTermAccession();
+    $fixed_value = $termIdSpace . ':' . $termAccession;
+    $field_list[] = [
+      'name' => self::generateFieldName($bundle, 'type', 0),
+      'content_type' => $bundle->getID(),
+      'label' => 'Type',
+      'type' => self::$id,
+      'description' => 'This field specifies the controlled vocabulary term'
+          . ' for this content type as "' . $fixed_value . '"',
+      'cardinality' => 1,
+      'required' => TRUE,
+      'storage_settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'base_table' => $base_table,
+          'type_table' => $type_table,
+          'type_column' => $type_column,
+        ],
+      ],
+      'settings' => [
+        'termIdSpace' => $termIdSpace,
+        'termAccession' => $termAccession,
+        'fixed_value' => $fixed_value,
+      ],
+      'display' => [
+        'view' => [
+          'default' => [
+            'region' => 'content',
+            'label' => 'above',
+            'weight' => 10,
+          ],
+        ],
+        'form' => [
+          'default' => [
+            'region' => 'content',
+            'weight' => 10
+          ],
+        ],
+      ],
+    ];
+
+    return $field_list;
   }
 
 }
