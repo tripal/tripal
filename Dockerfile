@@ -7,6 +7,8 @@ ARG modules='devel devel_php field_group field_group_table'
 ARG tripalmodules='tripal tripal_biodb tripal_chado tripal_layout'
 ARG chadoschema='chado'
 ARG installchado=TRUE
+# see issue #2000 for the reason for updating the PATH:
+ENV PATH="/var/www/drupal/vendor/drush/drush:$PATH"
 
 # Label docker image
 LABEL tripal.version="4.x-dev"
