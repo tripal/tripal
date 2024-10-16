@@ -408,7 +408,7 @@ class TripalDbx {
    *
    * @param string $object_id
    *  Object name to quote if needed.
-   * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
+   * @param ?\Drupal\Core\Database\Connection $db
    *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
@@ -417,7 +417,7 @@ class TripalDbx {
    */
   public function quoteDbObjectId(
     string $object_id,
-    ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
+    ?\Drupal\Core\Database\Connection $db = NULL
   ) :string {
     $db = $db ?? \Drupal::database();
     $sql = "SELECT quote_ident(:object_id) AS \"qi\";";
@@ -443,7 +443,7 @@ class TripalDbx {
    *
    * @param string $schema_name
    *   Schema name.
-   * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
+   * @param ?\Drupal\Core\Database\Connection $db
    *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
@@ -452,7 +452,7 @@ class TripalDbx {
    */
   public function schemaExists(
     string $schema_name,
-    ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
+    ?\Drupal\Core\Database\Connection $db = NULL
   ) :bool {
     $db = $db ?? \Drupal::database();
 
@@ -493,7 +493,7 @@ class TripalDbx {
    *
    * @param string $schema_name
    *   Name of schema to create.
-   * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
+   * @param ?\Drupal\Core\Database\Connection $db
    *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
@@ -501,7 +501,7 @@ class TripalDbx {
    */
   public function createSchema(
     string $schema_name,
-    ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
+    ?\Drupal\Core\Database\Connection $db = NULL
   ) :void {
     $db = $db ?? \Drupal::database();
     $tripaldbx = \Drupal::service('tripal.dbx');
@@ -528,7 +528,7 @@ class TripalDbx {
    * @param string $target_schema
    *   Destination schema that will be created and filled with a copy of
    *   $source_schema.
-   * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
+   * @param ?\Drupal\Core\Database\Connection $db
    *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
@@ -579,7 +579,7 @@ class TripalDbx {
    *   The old schema name to rename.
    * @param string $new_schema_name
    *   New name to use.
-   * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
+   * @param ?\Drupal\Core\Database\Connection $db
    *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
@@ -588,7 +588,7 @@ class TripalDbx {
   public function renameSchema(
     string $old_schema_name,
     string $new_schema_name,
-    ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
+    ?\Drupal\Core\Database\Connection $db = NULL
   ) :void {
     $db = $db ?? \Drupal::database();
 
@@ -619,7 +619,7 @@ class TripalDbx {
    *   Name of schema to remove.
    * @param string $schema_name
    *   Schema name.
-   * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
+   * @param ?\Drupal\Core\Database\Connection $db
    *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
@@ -627,7 +627,7 @@ class TripalDbx {
    */
   public function dropSchema(
     string $schema_name,
-    ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
+    ?\Drupal\Core\Database\Connection $db = NULL
   ) :void {
     $db = $db ?? \Drupal::database();
     $tripaldbx = \Drupal::service('tripal.dbx');
@@ -648,7 +648,7 @@ class TripalDbx {
    *
    * @param string $schema_name
    *   Schema name.
-   * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
+   * @param ?\Drupal\Core\Database\Connection $db
    *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
@@ -659,7 +659,7 @@ class TripalDbx {
    */
   public function getSchemaSize(
     string $schema_name,
-    ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
+    ?\Drupal\Core\Database\Connection $db = NULL
   ) :int {
     $db = $db ?? \Drupal::database();
 
@@ -693,7 +693,7 @@ class TripalDbx {
    *   $db_size = $tripaldbx->getDatabaseSize();
    * @endcode
    *
-   * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
+   * @param ?\Drupal\Core\Database\Connection $db
    *   A Drupal PostgreSQL or Tripal DBX connection object.
    *
    * @return int

@@ -285,7 +285,12 @@
           } 
         }
       }
-      var func_name = ($.isFunction($.fn.live)) ? 'live' : 'on';
+      var func_name = 'on';
+      if ($.fn.live) {
+        if (typeof $.fn.live === 'function') {
+          func_name = 'live';
+        }
+      }
       $(submit_id)[func_name]('click', function() {
         for(var i = 0; i < categories.length; i++) {
           self.start(categories[i]);
@@ -442,7 +447,12 @@
       // function so that we can set the proper URL
       var self = this;
 
-      var func_name = ($.isFunction($.fn.live)) ? 'live' : 'on';
+      var func_name = 'on';
+      if ($.fn.live) {
+        if (typeof $.fn.live === 'function') {
+          func_name = 'live';
+        }
+      }
       $('#' + button_name)[func_name]('change', function(e) {
         var id = this.id;
         
