@@ -494,7 +494,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       return $this->url_format;
     }
     else {
-      return '[type]/[TripalEntity__entity_id]';
+      return 'bio_data/[TripalEntity__entity_id]';
     }
   }
 
