@@ -1,7 +1,7 @@
 ARG phpversion='8.3'
 FROM php:${phpversion}-apache-bullseye
 
-ARG drupalversion='~10.2.0'
+ARG drupalversion='~10.4.0'
 ARG postgresqlversion='16'
 ARG modules='devel devel_php field_group field_group_table'
 ARG chadoschema='chado'
@@ -161,7 +161,7 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 ## Use composer to install Drupal.
 WORKDIR /var/www
 ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit"
-ARG composerpackages="drupal/devel drupal/devel_php"
+ARG composerpackages="drupal/devel drupal/devel_php drupal/gin_toolbar drupal/gin"
 RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal \
   && cd drupal \
   && composer config --no-plugins allow-plugins.composer/installers true \
@@ -193,6 +193,23 @@ RUN cd /var/www/drupal \
   --account-pass=some_admin_password \
   --site-mail="drupaladmin@localhost" \
   --site-name="Tripal 4.x-dev on Drupal ${drupalversion}" \
+  && service apache2 stop \
+  && service postgresql stop
+
+## Handle Admin theme
+RUN cd /var/www/drupal \
+  && service apache2 start \
+  && service postgresql start \
+  && /var/www/drupal/vendor/drush/drush/drush pm:install gin_toolbar --yes \
+  && /var/www/drupal/vendor/drush/drush/drush theme:enable gin --yes \
+  && /var/www/drupal/vendor/drush/drush/drush config-set system.theme admin gin --yes \
+  && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings enable_darkmode auto --yes \
+  && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings preset_accent_color yellow --yes \
+  && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings preset_focus_color dark --yes \
+  && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings classic_toolbar new --yes \
+  && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings secondary_toolbar_frontend 1 --yes \
+  && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings layout_density small --yes \
+  && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings show_user_theme_settings 1 --yes \
   && service apache2 stop \
   && service postgresql stop
 
