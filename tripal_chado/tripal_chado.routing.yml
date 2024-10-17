@@ -192,47 +192,6 @@ tripal.data_loaders.publication_loaders:
   requirements:
     _permission: 'administer tripal'
 
-# Manage Pub Search Queries
-tripal.data_loaders.publication_loaders.manage_publication_search_queries:
-  path: 'admin/tripal/loaders/publications/manage_publication_search_queries'
-  defaults:
-    _form: 'Drupal\tripal_chado\Form\ChadoManagePubSearchQueriesForm'
-    _title: 'Manage Pub Search Queries'
-  requirements:
-    _permission: 'allow tripal import'
-
-tripal.data_loaders.publication_loaders.new_publication_search_query:
-  path: 'admin/tripal/loaders/publications/new_publication_search_query'
-  defaults:
-    _form: 'Drupal\tripal_chado\Form\ChadoNewPubSearchQueryForm'
-    _title: 'New publication search query'
-  requirements:
-    _permission: 'allow tripal import'
-
-tripal.data_loaders.publication_loaders.delete_publication_search_query:
-  path: 'admin/tripal/loaders/publications/delete_publication_search_query/{pub_library_query_id}'
-  defaults:
-    _form: 'Drupal\tripal_chado\Form\ChadoDeletePubSearchQueryForm'
-    _title: 'Delete publication'
-  requirements:
-    _permission: 'allow tripal import'    
-
-tripal.data_loaders.publication_loaders.edit_publication_search_query:
-  path: 'admin/tripal/loaders/publications/edit_publication_search_query/{pub_import_id}'
-  defaults:
-    _form: 'Drupal\tripal_chado\Form\ChadoNewPubSearchQueryForm'
-    _title: 'Edit publication search query'
-  requirements:
-    _permission: 'allow tripal import'  
-
-# TODO - Add the correct form here
-tripal.data_loaders.publication_loaders.run_publication_search_query:
-  path: 'admin/tripal/loaders/publications/manage_publication_search_query'
-  defaults:
-    _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
-    _title: 'Run Pub Search Query'
-  requirements:
-    _permission: 'allow tripal import'
 
 # TODO - Add the correct form here
 tripal.data_loaders.publication_loaders.import_publication_file:

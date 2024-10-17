@@ -260,6 +260,29 @@ tripal.data_loaders_tripalimporter:
   requirements:
     _permission: 'allow tripal import'
 
+# Added specifically for Chado Pub Search Query Loader but generalized for use with other loaders
+# that may need additional parameter: param_1
+tripal.data_loaders_tripalimporter_loader_params1:
+  path: 'admin/tripal/loaders/{plugin_id}/{param_1}'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalImporterForm'
+    _title: 'Tripal Importer'
+  requirements:
+    _permission: 'allow tripal import'
+
+tripal.pubsearchqueryname_autocomplete:
+  path: 'admin/tripal/autocomplete/pubsearchqueryname'
+  defaults:
+    _controller: 'Drupal\tripal\Controller\PubSearchQueryNameAutocompleteController::handleAutocomplete'
+    _title: 'Chado Vocabulary Term Autocomplete'
+    _format: json
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      string:
+        type: string
+
 # AJAX callbacks to upload files.
 tripal.upload:
   path: 'tripal/upload/{type}/{filename}/{action}'
@@ -598,3 +621,44 @@ tripal.import_tripalentitytype_collection:
     _form: 'Drupal\tripal\Form\ImportTripalEntityTypeCollection'
   requirements:
     _permission: 'manage tripal content types'
+
+# Manage Pub Search Queries
+tripal.data_loaders.publication_loaders.manage_publication_search_queries:
+  path: 'admin/tripal/loaders/publications/manage_publication_search_queries'
+  defaults:
+    _form: 'Drupal\tripal\Form\ManagePubSearchQueriesForm'
+    _title: 'Manage Publication Search Queries'
+  requirements:
+    _permission: 'allow tripal import'
+
+tripal.data_loaders.publication_loaders.new_publication_search_query:
+  path: 'admin/tripal/loaders/publications/new_publication_search_query'
+  defaults:
+    _form: 'Drupal\tripal\Form\NewPubSearchQueryForm'
+    _title: 'New publication search query'
+  requirements:
+    _permission: 'allow tripal import'
+
+tripal.data_loaders.publication_loaders.run_publication_search_query:
+  path: 'admin/tripal/loaders/publications/run_publication_search_query'
+  defaults:
+    _form: 'Drupal\tripal\Form\RunPubSearchQueryForm'
+    _title: 'Run publication search query'
+  requirements:
+    _permission: 'allow tripal import'
+
+tripal.data_loaders.publication_loaders.delete_publication_search_query:
+  path: 'admin/tripal/loaders/publications/delete_publication_search_query/{pub_library_query_id}'
+  defaults:
+    _form: 'Drupal\tripal\Form\DeletePubSearchQueryForm'
+    _title: 'Delete publication'
+  requirements:
+    _permission: 'allow tripal import'
+
+tripal.data_loaders.publication_loaders.edit_publication_search_query:
+  path: 'admin/tripal/loaders/publications/edit_publication_search_query/{pub_import_id}'
+  defaults:
+    _form: 'Drupal\tripal\Form\NewPubSearchQueryForm'
+    _title: 'Edit publication search query'
+  requirements:
+    _permission: 'allow tripal import'

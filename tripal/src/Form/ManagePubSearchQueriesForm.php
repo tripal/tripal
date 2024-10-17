@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal_chado\Form;
+namespace Drupal\tripal\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -8,7 +8,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 
-class ChadoManagePubSearchQueriesForm extends FormBase {
+class ManagePubSearchQueriesForm extends FormBase {
 
   /**
    * {@inheritdoc}
@@ -38,10 +38,11 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
       be to periodically add new publications to this Tripal site that have appeared in PubMed
       in the last 30 days.  You can import publications in one of two ways:
       <ol>
-        <li>Create a new importer by clicking the 'New Search Query' link above, and after saving it should appear in the list below.  Click the
-            link labeled 'Import Pubs' to schedule a job to import the publications</li>
-        <li>The first method only performs the import once.  However, you can schedule the
-            importer to run periodically by adding a cron job. </li>
+        <li>Create a new importer by clicking the 'New search query' link above, and
+            after saving it should appear in the list below.
+            Under 'Actions' select 'Run' to create a job to import the publications.</li>
+        <li>The first method only performs the import once. However, you can schedule the
+            importer to run periodically by adding a cron job.</li>
       </ol><br>");
     $form['heading'] = [
       '#markup' => $html
@@ -55,6 +56,7 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
       'Disabled',
       'Create Contact',
       '',
+      'Actions',
     ];
     $form['pub_manager']['table'] = [
       '#type' => 'table',
@@ -130,7 +132,9 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
         // Create contact
         $row['col-6'] = [
           '#markup' => $do_contact
-        ]; 
+        ];
+
+
 
 
         // Delete should be a button instead of markup @TODO
@@ -138,6 +142,31 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
           '#type' => 'submit',
           '#name' => 'delete-' . $pub_query->pub_library_query_id,
           '#default_value' => 'Delete',
+        ];
+
+        // Actions
+        $row['col-8'] = [
+          '#markup' => '
+            <div class="dropbutton-wrapper dropbutton-multiple" data-drupal-ajax-container="" data-once="dropbutton">
+              <div class="dropbutton-widget">
+                <ul class="dropbutton dropbutton--multiple">
+                <li class="mview-edit-link dropbutton__item dropbutton-action">
+                  <a href="/admin/tripal/storage/chado/mview/4">Edit</a>
+                </li>
+                <li class="dropbutton-toggle">
+                  <button type="button" class="dropbutton__toggle">
+                  <span class="visually-hidden">List additional actions</span>
+                  </button>
+                </li>
+                <li class="mview-populate-link dropbutton__item dropbutton-action secondary-action">
+                  <a href="/admin/tripal/storage/chado/mview_populate/4">Populate</a>
+                </li>
+                <li class="mview-delete-link dropbutton__item dropbutton-action secondary-action">
+                  <a href="/admin/tripal/storage/chado/mview_delete/4">Delete</a>
+                </li>
+                </ul>
+              </div></div>
+          '
         ];
 
         $form['pub_manager']['table'][] = $row;

@@ -57,7 +57,6 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       $this->markTestSkipped('Skipping PubMed test due to being unable to access service.');
     }
 
-
     $this->assertGreaterThan(0, $results['total_records'], 'There should be more than 0 records found for this query');
 
     $pubs_count = count($results['pubs']);
@@ -75,7 +74,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       // 'pub_import_id' => 25,
       'criteria' => [
         1 =>   [
-          'search_terms' => 'PMID:30000852',
+          'search_terms' => '30000852',
           'scope' => 'id',
           'is_phrase' => 0,
           'operation' => '',
@@ -87,7 +86,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     if ($results === NULL) {
       $this->markTestSkipped('Skipping PubMed test due to being unable to access service.');
     }
-    $this->assertEquals($results['pubs'][0]['Publication Dbxref'], 'PMID:30000852', 'This should have returned the PMID');
+    $this->assertEquals($results['pubs'][0]['Publication Dbxref'], '30000852', 'This should have returned the PMID');
     $this->assertEquals($results['pubs'][0]['Publisher'], 'National Institute of Child Health and Human Development', 'This should have returned the Title');
 
     $search_array = [

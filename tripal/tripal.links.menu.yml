@@ -170,3 +170,18 @@ tripal.files_usage:
   parent: tripal.files
   description: "Provides information on Tripal managed files currently available."
   weight: 100
+
+# -- Manage Publication Loaders
+tripal.data_loaders.publication_loaders:
+  route_name: tripal.data_loaders.publication_loaders
+  title: 'Publication Search Query Definitions'
+  description: "Create, edit, test, or delete publication search queries"
+  parent: tripal.data_loaders
+  weight: 10
+
+tripal.data_loaders.publication_loaders.import_publication_file:
+  route_name: tripal.data_loaders.publication_loaders.import_publication_file
+  title: 'Import Publication File (NOT IMPLEMENTED)'
+  description: 'Use this form if you need to upload a publication file to be imported into the database'
+  parent: tripal.data_loaders.publication_loaders
+  weight: 60

@@ -56,8 +56,8 @@ interface TripalPubLibraryInterface extends PluginInspectionInterface {
    * Performs the import.
    *
    * @param int $query_id
-   * The query_id used to lookup the database and run a full import of 
-   * publications from a particular publication repository.
+   * The query_id used to lookup the database and run query on 
+   * a particular publication repository.
    *
    * @return array
    *   The uniform publication information array.

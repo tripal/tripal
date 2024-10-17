@@ -23,7 +23,7 @@ class TripalImporterForm implements FormInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $plugin_id = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $plugin_id = NULL, $param_1 = NULL) {
 
     if (!$plugin_id) {
       return $form;
