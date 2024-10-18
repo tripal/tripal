@@ -1,5 +1,5 @@
 
-table.tripal-entity-type-list {
+table.tripal-entity-type-list, #tripal-entity-add-content {
 	--tripalcontent-category1-solid: #5C8925;
 	--tripalcontent-category1-solid-dark: #80AC49;
 	--tripalcontent-category1-med: rgba(92, 137, 37, 0.5);
