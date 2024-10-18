@@ -1,0 +1,183 @@
+/**
+  Category: General
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-General .admin-item .admin-item__title {
+  color: var(--tripalcontent-category1-solid);
+}
+html.gin--dark-mode #tripal-entity-add-content #category-General .admin-item .admin-item__title {
+  color: var(--tripalcontent-category1-solid-dark);
+}
+/** -- Arrow icon */
+#tripal-entity-add-content #category-General .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category1-solid);
+}
+html.gin--dark-mode #tripal-entity-add-content #category-General .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category1-solid-dark);
+}
+/** -- Hover effect */
+#tripal-entity-add-content #category-General .admin-item .admin-item__link:hover,
+#tripal-entity-add-content #category-General .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category1-soft);
+}
+#tripal-entity-add-content #category-General .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-General .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category1-solid);
+}
+html.gin--dark-mode #tripal-entity-add-content #category-General .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-General .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category1-solid-dark);
+}
+
+/**
+  Category: Germplasm
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-Germplasm .admin-item .admin-item__title {
+  color: var(--tripalcontent-category2-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__title {
+  color: var(--tripalcontent-category2-solid-dark);
+}
+
+/** -- Arrow icon */
+#tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category2-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category2-solid-dark);
+}
+
+/** -- Hover effect */
+#tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:hover,
+#tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category2-soft);
+}
+
+#tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category2-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category2-solid-dark);
+}
+
+/**
+  Category: Genomic
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-Genomic .admin-item .admin-item__title {
+  color: var(--tripalcontent-category3-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genomic .admin-item .admin-item__title {
+  color: var(--tripalcontent-category3-solid-dark);
+}
+
+/** -- Arrow icon */
+#tripal-entity-add-content #category-Genomic .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category3-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category3-solid-dark);
+}
+
+/** -- Hover effect */
+#tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:hover,
+#tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category3-soft);
+}
+
+#tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category3-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category3-solid-dark);
+}
+
+/**
+  Category: Genetic
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-Genetic .admin-item .admin-item__title {
+  color: var(--tripalcontent-category4-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genetic .admin-item .admin-item__title {
+  color: var(--tripalcontent-category4-solid-dark);
+}
+
+/** -- Arrow icon */
+#tripal-entity-add-content #category-Genetic .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category4-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category4-solid-dark);
+}
+
+/** -- Hover effect */
+#tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:hover,
+#tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category4-soft);
+}
+
+#tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category4-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category4-solid-dark);
+}
+
+/**
+  Category: Expression
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-Expression .admin-item .admin-item__title {
+  color: var(--tripalcontent-category5-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Expression .admin-item .admin-item__title {
+  color: var(--tripalcontent-category5-solid-dark);
+}
+
+/** -- Arrow icon */
+#tripal-entity-add-content #category-Expression .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category5-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Expression .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category5-solid-dark);
+}
+
+/** -- Hover effect */
+#tripal-entity-add-content #category-Expression .admin-item .admin-item__link:hover,
+#tripal-entity-add-content #category-Expression .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category5-soft);
+}
+
+#tripal-entity-add-content #category-Expression .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-Expression .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category5-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Expression .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-Expression .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category5-solid-dark);
+}
