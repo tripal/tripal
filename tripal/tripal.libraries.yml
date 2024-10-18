@@ -35,6 +35,13 @@ tripal-entity-add-content:
       css/tripal_entity_type.variables.css: {}
       css/tripal_entity.add_content.css: {}
 
+tripal-entity-form:
+  version: 1.x
+  css:
+    theme:
+      css/tripal_entity_type.variables.css: {}
+      css/tripal_entity.form.css: {}
+
 tripal-dashboard:
   version: 1.x
   js:
