@@ -39,9 +39,11 @@ class TripalEntityUIController extends ControllerBase {
     foreach ($bundle_entities as $entity) {
       $category = $entity->getCategory();
       $bundles[$category]['title'] = $category;
+      $bundles[$category]['class'] = str_replace(' ', '', $category);
       $bundles[$category]['members'][] = [
         'title' => $entity->getLabel(),
         'help' => $entity->getHelpText(),
+        'id' => $entity->id(),
         'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->id()]),
       ];
     }
@@ -71,6 +73,11 @@ class TripalEntityUIController extends ControllerBase {
     // Finally, let tripal-entity-content-add-list.html.twig add the markup.
     return [
       '#theme' => 'tripal_entity_content_add_list',
+      '#attached' => [
+        'library' => [
+          'tripal/tripal-entity-add-content'
+        ]
+      ],
       '#types' => $bundles,
     ];
   }
