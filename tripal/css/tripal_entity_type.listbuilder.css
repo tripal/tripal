@@ -53,166 +53,45 @@ table.tripal-entity-type-list {
 
 /** -- Background Highlight */
 table.tripal-entity-type-list tr.General td.type-category {
-	background-color: var(--tripalcontent-category1-med) !important;
+	background-color: var(--tripalcontent-category1-med);
 }
 
 table.tripal-entity-type-list tbody tr.General:focus,
 table.tripal-entity-type-list tbody tr.General:hover,
 table.tripal-entity-type-list tbody tr.General:focus td.type-category,
 table.tripal-entity-type-list tbody tr.General:hover td.type-category {
-	background: var(--tripalcontent-category1-soft) !important;
+	background: var(--tripalcontent-category1-soft);
+}
+
+/** -- Action Item Button: CLARO */
+#block-claro-content table.tripal-entity-type-list tr.General .dropbutton a {
+	color: var(--button-fg-color);
+}
+
+/** -- Action Item Button: GIN */
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton {
+	border: 2px solid var(--tripalcontent-category1-solid);
+}
+
+@media not (forced-colors: active) {
+	#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__toggle::before {
+		background-color: var(--tripalcontent-category1-solid);
+	}
+}
+
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__toggle {
+	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category1-solid) !important;
+	color: var(--tripalcontent-category1-solid);
 }
 
 /** -- Light Mode Text */
 table.tripal-entity-type-list tr.General a {
-	color: var(--tripalcontent-category1-solid) !important;
-}
-
-table.tripal-entity-type-list tr.General .dropbutton {
-	border: 2px solid var(--tripalcontent-category1-solid) !important;
-}
-
-@media not (forced-colors: active) {
-	table.tripal-entity-type-list tr.General .dropbutton__toggle::before {
-		background-color: var(--tripalcontent-category1-solid) !important;
-	}
-}
-
-table.tripal-entity-type-list tr.General .dropbutton__toggle {
-	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category1-solid) !important;
 	color: var(--tripalcontent-category1-solid);
 }
 
 /** -- Dark Mode Text */
 html.gin--dark-mode table.tripal-entity-type-list tr.General a {
-	color: var(--tripalcontent-category1-solid-dark) !important;
-}
-
-table.tripal-entity-type-list tr.General .dropbutton {
-	border: 2px solid var(--tripalcontent-category1-solid-dark) !important;
-}
-
-@media not (forced-colors: active) {
-	table.tripal-entity-type-list tr.General .dropbutton__toggle::before {
-		background-color: var(--tripalcontent-category1-solid-dark) !important;
-	}
-}
-
-table.tripal-entity-type-list tr.General .dropbutton__toggle {
-	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category1-solid-dark) !important;
 	color: var(--tripalcontent-category1-solid-dark);
-}
-
-/**
-  Category: Genomic
-*/
-
-/** -- Background Highlight */
-table.tripal-entity-type-list tr.Genomic td.type-category {
-	background-color: var(--tripalcontent-category2-med) !important;
-}
-
-table.tripal-entity-type-list tbody tr.Genomic:focus,
-table.tripal-entity-type-list tbody tr.Genomic:hover,
-table.tripal-entity-type-list tbody tr.Genomic:focus td.type-category,
-table.tripal-entity-type-list tbody tr.Genomic:hover td.type-category {
-	background: var(--tripalcontent-category2-soft) !important;
-}
-
-/** -- Light Mode Text */
-table.tripal-entity-type-list tr.Genomic a {
-	color: var(--tripalcontent-category2-solid) !important;
-}
-
-table.tripal-entity-type-list tr.Genomic .dropbutton {
-	border: 2px solid var(--tripalcontent-category2-solid) !important;
-}
-
-@media not (forced-colors: active) {
-	table.tripal-entity-type-list tr.Genomic .dropbutton__toggle::before {
-		background-color: var(--tripalcontent-category2-solid) !important;
-	}
-}
-
-table.tripal-entity-type-list tr.Genomic .dropbutton__toggle {
-	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category2-solid) !important;
-	color: var(--tripalcontent-category2-solid);
-}
-
-/** -- Dark Mode Text */
-html.gin--dark-mode table.tripal-entity-type-list tr.Genomic a {
-	color: var(--tripalcontent-category2-solid-dark) !important;
-}
-
-table.tripal-entity-type-list tr.Genomic .dropbutton {
-	border: 2px solid var(--tripalcontent-category2-solid-dark) !important;
-}
-
-@media not (forced-colors: active) {
-	table.tripal-entity-type-list tr.Genomic .dropbutton__toggle::before {
-		background-color: var(--tripalcontent-category2-solid-dark) !important;
-	}
-}
-
-table.tripal-entity-type-list tr.Genomic .dropbutton__toggle {
-	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category2-solid-dark) !important;
-	color: var(--tripalcontent-category2-solid-dark);
-}
-
-/**
-  Category: Genetic
-*/
-
-/** -- Background Highlight */
-table.tripal-entity-type-list tr.Genetic td.type-category {
-	background-color: var(--tripalcontent-category3-med) !important;
-}
-
-table.tripal-entity-type-list tbody tr.Genetic:focus,
-table.tripal-entity-type-list tbody tr.Genetic:hover,
-table.tripal-entity-type-list tbody tr.Genetic:focus td.type-category,
-table.tripal-entity-type-list tbody tr.Genetic:hover td.type-category {
-	background: var(--tripalcontent-category3-soft) !important;
-}
-
-/** -- Light Mode Text */
-table.tripal-entity-type-list tr.Genetic a {
-	color: var(--tripalcontent-category3-solid) !important;
-}
-
-table.tripal-entity-type-list tr.Genetic .dropbutton {
-	border: 2px solid var(--tripalcontent-category3-solid) !important;
-}
-
-@media not (forced-colors: active) {
-	table.tripal-entity-type-list tr.Genetic .dropbutton__toggle::before {
-		background-color: var(--tripalcontent-category3-solid) !important;
-	}
-}
-
-table.tripal-entity-type-list tr.Genetic .dropbutton__toggle {
-	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category3-solid) !important;
-	color: var(--tripalcontent-category3-solid);
-}
-
-/** -- Dark Mode Text */
-html.gin--dark-mode table.tripal-entity-type-list tr.Genetic a {
-	color: var(--tripalcontent-category3-solid-dark) !important;
-}
-
-table.tripal-entity-type-list tr.Genetic .dropbutton {
-	border: 2px solid var(--tripalcontent-category3-solid-dark) !important;
-}
-
-@media not (forced-colors: active) {
-	table.tripal-entity-type-list tr.Genetic .dropbutton__toggle::before {
-		background-color: var(--tripalcontent-category3-solid-dark) !important;
-	}
-}
-
-table.tripal-entity-type-list tr.Genetic .dropbutton__toggle {
-	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category3-solid-dark) !important;
-	color: var(--tripalcontent-category3-solid-dark);
 }
 
 /**
@@ -221,53 +100,138 @@ table.tripal-entity-type-list tr.Genetic .dropbutton__toggle {
 
 /** -- Background Highlight */
 table.tripal-entity-type-list tr.Germplasm td.type-category {
-	background-color: var(--tripalcontent-category4-med) !important;
+	background-color: var(--tripalcontent-category2-med);
 }
 
 table.tripal-entity-type-list tbody tr.Germplasm:focus,
 table.tripal-entity-type-list tbody tr.Germplasm:hover,
 table.tripal-entity-type-list tbody tr.Germplasm:focus td.type-category,
 table.tripal-entity-type-list tbody tr.Germplasm:hover td.type-category {
-	background: var(--tripalcontent-category4-soft) !important;
+	background: var(--tripalcontent-category2-soft);
+}
+
+/** -- Action Item Button: CLARO */
+#block-claro-content table.tripal-entity-type-list tr.Germplasm .dropbutton a {
+	color: var(--button-fg-color);
+}
+
+/** -- Action Item Button: GIN */
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton {
+	border: 2px solid var(--tripalcontent-category2-solid);
+}
+
+@media not (forced-colors: active) {
+	#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle::before {
+		background-color: var(--tripalcontent-category2-solid);
+	}
+}
+
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle {
+	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category2-solid) !important;
+	color: var(--tripalcontent-category2-solid);
 }
 
 /** -- Light Mode Text */
 table.tripal-entity-type-list tr.Germplasm a {
-	color: var(--tripalcontent-category4-solid) !important;
-}
-
-table.tripal-entity-type-list tr.Germplasm .dropbutton {
-	border: 2px solid var(--tripalcontent-category4-solid) !important;
-}
-
-@media not (forced-colors: active) {
-	table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle::before {
-		background-color: var(--tripalcontent-category4-solid) !important;
-	}
-}
-
-table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle {
-	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category4-solid) !important;
-	color: var(--tripalcontent-category4-solid);
+	color: var(--tripalcontent-category2-solid);
 }
 
 /** -- Dark Mode Text */
 html.gin--dark-mode table.tripal-entity-type-list tr.Germplasm a {
-	color: var(--tripalcontent-category4-solid-dark) !important;
+	color: var(--tripalcontent-category2-solid-dark);
 }
 
-table.tripal-entity-type-list tr.Germplasm .dropbutton {
-	border: 2px solid var(--tripalcontent-category4-solid-dark) !important;
+/**
+  Category: Genomic
+*/
+
+/** -- Background Highlight */
+table.tripal-entity-type-list tr.Genomic td.type-category {
+	background-color: var(--tripalcontent-category3-med);
+}
+
+table.tripal-entity-type-list tbody tr.Genomic:focus,
+table.tripal-entity-type-list tbody tr.Genomic:hover,
+table.tripal-entity-type-list tbody tr.Genomic:focus td.type-category,
+table.tripal-entity-type-list tbody tr.Genomic:hover td.type-category {
+	background: var(--tripalcontent-category3-soft);
+}
+
+/** -- Action Item Button: CLARO */
+#block-claro-content table.tripal-entity-type-list tr.Genomic .dropbutton a {
+	color: var(--button-fg-color);
+}
+
+/** -- Action Item Button: GIN */
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton {
+	border: 2px solid var(--tripalcontent-category3-solid);
 }
 
 @media not (forced-colors: active) {
-	table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle::before {
-		background-color: var(--tripalcontent-category4-solid-dark) !important;
+	#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__toggle::before {
+		background-color: var(--tripalcontent-category3-solid);
 	}
 }
 
-table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle {
-	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category4-solid-dark) !important;
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__toggle {
+	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category3-solid) !important;
+	color: var(--tripalcontent-category3-solid);
+}
+
+/** -- Light Mode Text */
+table.tripal-entity-type-list tr.Genomic a {
+	color: var(--tripalcontent-category3-solid);
+}
+
+/** -- Dark Mode Text */
+html.gin--dark-mode table.tripal-entity-type-list tr.Genomic a {
+	color: var(--tripalcontent-category3-solid-dark);
+}
+
+/**
+  Category: Genetic
+*/
+
+/** -- Background Highlight */
+table.tripal-entity-type-list tr.Genetic td.type-category {
+	background-color: var(--tripalcontent-category4-med);
+}
+
+table.tripal-entity-type-list tbody tr.Genetic:focus,
+table.tripal-entity-type-list tbody tr.Genetic:hover,
+table.tripal-entity-type-list tbody tr.Genetic:focus td.type-category,
+table.tripal-entity-type-list tbody tr.Genetic:hover td.type-category {
+	background: var(--tripalcontent-category4-soft);
+}
+
+/** -- Action Item Button: CLARO */
+#block-claro-content table.tripal-entity-type-list tr.Genetic .dropbutton a {
+	color: var(--button-fg-color);
+}
+
+/** -- Action Item Button: GIN */
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton {
+	border: 2px solid var(--tripalcontent-category4-solid);
+}
+
+@media not (forced-colors: active) {
+	#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__toggle::before {
+		background-color: var(--tripalcontent-category4-solid);
+	}
+}
+
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__toggle {
+	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category4-solid) !important;
+	color: var(--tripalcontent-category4-solid);
+}
+
+/** -- Light Mode Text */
+table.tripal-entity-type-list tr.Genetic a {
+	color: var(--tripalcontent-category4-solid);
+}
+
+/** -- Dark Mode Text */
+html.gin--dark-mode table.tripal-entity-type-list tr.Genetic a {
 	color: var(--tripalcontent-category4-solid-dark);
 }
 
@@ -277,52 +241,43 @@ table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle {
 
 /** -- Background Highlight */
 table.tripal-entity-type-list tr.Expression td.type-category {
-	background-color: var(--tripalcontent-category5-med) !important;
+	background-color: var(--tripalcontent-category5-med);
 }
 
 table.tripal-entity-type-list tbody tr.Expression:focus,
 table.tripal-entity-type-list tbody tr.Expression:hover,
 table.tripal-entity-type-list tbody tr.Expression:focus td.type-category,
 table.tripal-entity-type-list tbody tr.Expression:hover td.type-category {
-	background: var(--tripalcontent-category5-soft) !important;
+	background: var(--tripalcontent-category5-soft);
+}
+
+/** -- Action Item Button: CLARO */
+#block-claro-content table.tripal-entity-type-list tr.Expression .dropbutton a {
+	color: var(--button-fg-color);
+}
+
+/** -- Action Item Button: GIN */
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton {
+	border: 2px solid var(--tripalcontent-category5-solid);
+}
+
+@media not (forced-colors: active) {
+	#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__toggle::before {
+		background-color: var(--tripalcontent-category5-solid);
+	}
+}
+
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__toggle {
+	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category5-solid) !important;
+	color: var(--tripalcontent-category5-solid);
 }
 
 /** -- Light Mode Text */
 table.tripal-entity-type-list tr.Expression a {
-	color: var(--tripalcontent-category5-solid) !important;
-}
-
-table.tripal-entity-type-list tr.Expression .dropbutton {
-	border: 2px solid var(--tripalcontent-category5-solid) !important;
-}
-
-@media not (forced-colors: active) {
-	table.tripal-entity-type-list tr.Expression .dropbutton__toggle::before {
-		background-color: var(--tripalcontent-category5-solid) !important;
-	}
-}
-
-table.tripal-entity-type-list tr.Expression .dropbutton__toggle {
-	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category5-solid) !important;
 	color: var(--tripalcontent-category5-solid);
 }
 
 /** -- Dark Mode Text */
 html.gin--dark-mode table.tripal-entity-type-list tr.Expression a {
-	color: var(--tripalcontent-category5-solid-dark) !important;
-}
-
-table.tripal-entity-type-list tr.Expression .dropbutton {
-	border: 2px solid var(--tripalcontent-category5-solid-dark) !important;
-}
-
-@media not (forced-colors: active) {
-	table.tripal-entity-type-list tr.Expression .dropbutton__toggle::before {
-		background-color: var(--tripalcontent-category5-solid-dark) !important;
-	}
-}
-
-table.tripal-entity-type-list tr.Expression .dropbutton__toggle {
-	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category5-solid-dark) !important;
 	color: var(--tripalcontent-category5-solid-dark);
 }
