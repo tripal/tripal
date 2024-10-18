@@ -204,7 +204,7 @@ RUN cd /var/www/drupal \
   && /var/www/drupal/vendor/drush/drush/drush theme:enable gin --yes \
   && /var/www/drupal/vendor/drush/drush/drush config-set system.theme admin gin --yes \
   && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings enable_darkmode auto --yes \
-  && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings preset_accent_color yellow --yes \
+  && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings preset_accent_color neutral --yes \
   && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings preset_focus_color dark --yes \
   && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings classic_toolbar new --yes \
   && /var/www/drupal/vendor/drush/drush/drush config-set gin.settings secondary_toolbar_frontend 1 --yes \
