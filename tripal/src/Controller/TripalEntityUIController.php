@@ -33,15 +33,23 @@ class TripalEntityUIController extends ControllerBase {
       ->getStorage('tripal_entity_type')
       ->loadByProperties([]);
 
+    // Sort the entities using the entity class's sort() method.
+    // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
+    uasort($bundle_entities, array(
+      \Drupal\tripal\Entity\TripalEntityType::class,
+      'sortByCategory',
+    ));
 
     // Now compile them into variables to be used in twig.
     $bundles = [];
     foreach ($bundle_entities as $entity) {
       $category = $entity->getCategory();
       $bundles[$category]['title'] = $category;
+      $bundles[$category]['class'] = str_replace(' ', '', $category);
       $bundles[$category]['members'][] = [
         'title' => $entity->getLabel(),
         'help' => $entity->getHelpText(),
+        'id' => $entity->id(),
         'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->id()]),
       ];
     }
@@ -67,10 +75,14 @@ class TripalEntityUIController extends ControllerBase {
       $messenger->addMessage($rendered_message,'warning');
     }
 
-
     // Finally, let tripal-entity-content-add-list.html.twig add the markup.
     return [
       '#theme' => 'tripal_entity_content_add_list',
+      '#attached' => [
+        'library' => [
+          'tripal/tripal-entity-add-content'
+        ]
+      ],
       '#types' => $bundles,
     ];
   }
