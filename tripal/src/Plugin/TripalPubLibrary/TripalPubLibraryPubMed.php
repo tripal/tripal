@@ -222,6 +222,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       // now retrieve the individual record
       $pub_xml = $this->pmidFetch($query_key, $web_env, 'null', 'xml', 0, 1, ['id' => $pmid]);
       $pub = $this->parse($pub_xml);
+dpm($pub, "CP1 pub");//@@@
       $pubs[] = $pub;
     }
     return [
