@@ -1,0 +1,12 @@
+
+/* -- Header colouring for multi-value fields */
+form .field-multiple-table thead th {
+  background: transparent;
+  padding-left: var(--gin-spacing-xs) !important;
+}
+form .field-multiple-table thead .form-item__label--multiple-value-form {
+  font-size: var(--gin-font-size-m);
+  font-weight: var(--gin-font-weight-semibold);
+  color: var(--gin-color-title);
+  margin-bottom: 0;
+}

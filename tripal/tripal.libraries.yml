@@ -25,7 +25,22 @@ tripal-entity-type-listbuilder:
   version: 1.x
   css:
     theme:
+      css/tripal_entity_type.variables.css: {}
       css/tripal_entity_type.listbuilder.css: {}
+
+tripal-entity-add-content:
+  version: 1.x
+  css:
+    theme:
+      css/tripal_entity_type.variables.css: {}
+      css/tripal_entity.add_content.css: {}
+
+tripal-entity-form:
+  version: 1.x
+  css:
+    theme:
+      css/tripal_entity_type.variables.css: {}
+      css/tripal_entity.form.css: {}
 
 tripal-dashboard:
   version: 1.x
@@ -56,7 +71,7 @@ vars:
   version: 1.x
   js:
     js/tripal.vars.js: {}
-    
+
 tripal-field-ui:
   version: 1.x
   css:

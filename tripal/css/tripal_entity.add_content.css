@@ -1,0 +1,233 @@
+
+/** -- CLARO */
+#block-claro-content #tripal-entity-add-content .admin-item .admin-item__title {
+  display: none;
+}
+
+/**
+  Category: General
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-General .admin-item .admin-item__title {
+  color: var(--tripalcontent-category1-solid);
+}
+html.gin--dark-mode #tripal-entity-add-content #category-General .admin-item .admin-item__title {
+  color: var(--tripalcontent-category1-solid-dark);
+}
+/** -- Arrow icon */
+#block-gin-content #tripal-entity-add-content #category-General .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category1-solid);
+}
+html.gin--dark-mode #tripal-entity-add-content #category-General .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category1-solid-dark);
+}
+/** -- Hover effect */
+#block-gin-content #tripal-entity-add-content #category-General .admin-item .admin-item__link:hover,
+#block-gin-content #tripal-entity-add-content #category-General .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category1-soft);
+}
+#tripal-entity-add-content #category-General .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-General .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category1-solid);
+}
+html.gin--dark-mode #tripal-entity-add-content #category-General .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-General .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category1-solid-dark);
+}
+
+/** -- CLARO */
+#block-claro-content #tripal-entity-add-content #category-General .admin-item .admin-item__link {
+  color: var(--tripalcontent-category1-solid);
+}
+#block-claro-content #tripal-entity-add-content #category-General .admin-item .admin-item__link::before  {
+  background-image: url("data:image/svg+xml,%3csvg width='9' height='14' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M1.71.314L.29 1.723l5.302 5.353L.289 12.43l1.422 1.408 6.697-6.762z' fill='%235C8925'/%3e%3c/svg%3e");
+}
+
+/**
+  Category: Germplasm
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-Germplasm .admin-item .admin-item__title {
+  color: var(--tripalcontent-category2-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__title {
+  color: var(--tripalcontent-category2-solid-dark);
+}
+
+/** -- Arrow icon */
+#block-gin-content #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category2-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category2-solid-dark);
+}
+
+/** -- Hover effect */
+#block-gin-content #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:hover,
+#block-gin-content #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category2-soft);
+}
+
+#tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category2-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category2-solid-dark);
+}
+
+/** -- CLARO */
+#block-claro-content #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link {
+  color: var(--tripalcontent-category2-solid);
+}
+
+#block-claro-content #tripal-entity-add-content #category-Germplasm .admin-item .admin-item__link::before {
+  background-image: url("data:image/svg+xml,%3csvg width='9' height='14' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M1.71.314L.29 1.723l5.302 5.353L.289 12.43l1.422 1.408 6.697-6.762z' fill='%231D6C3D'/%3e%3c/svg%3e");
+}
+
+/**
+  Category: Genomic
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-Genomic .admin-item .admin-item__title {
+  color: var(--tripalcontent-category3-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genomic .admin-item .admin-item__title {
+  color: var(--tripalcontent-category3-solid-dark);
+}
+
+/** -- Arrow icon */
+#block-gin-content #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category3-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category3-solid-dark);
+}
+
+/** -- Hover effect */
+#block-gin-content #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:hover,
+#block-gin-content #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category3-soft);
+}
+
+#tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category3-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category3-solid-dark);
+}
+
+/** -- CLARO */
+#block-claro-content #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link {
+  color: var(--tripalcontent-category3-solid);
+}
+
+#block-claro-content #tripal-entity-add-content #category-Genomic .admin-item .admin-item__link::before {
+  background-image: url("data:image/svg+xml,%3csvg width='9' height='14' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M1.71.314L.29 1.723l5.302 5.353L.289 12.43l1.422 1.408 6.697-6.762z' fill='%23963E29'/%3e%3c/svg%3e");
+}
+
+/**
+  Category: Genetic
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-Genetic .admin-item .admin-item__title {
+  color: var(--tripalcontent-category4-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genetic .admin-item .admin-item__title {
+  color: var(--tripalcontent-category4-solid-dark);
+}
+
+/** -- Arrow icon */
+#block-gin-content #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category4-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category4-solid-dark);
+}
+
+/** -- Hover effect */
+#block-gin-content #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:hover,
+#block-gin-content #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category4-soft);
+}
+
+#tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category4-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category4-solid-dark);
+}
+
+/** -- CLARO */
+#block-claro-content #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link {
+  color: var(--tripalcontent-category4-solid);
+}
+
+#block-claro-content #tripal-entity-add-content #category-Genetic .admin-item .admin-item__link::before {
+  background-image: url("data:image/svg+xml,%3csvg width='9' height='14' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M1.71.314L.29 1.723l5.302 5.353L.289 12.43l1.422 1.408 6.697-6.762z' fill='%23812349'/%3e%3c/svg%3e");
+}
+
+/**
+  Category: Expression
+*/
+
+/** -- Bundle Title */
+#tripal-entity-add-content #category-Expression .admin-item .admin-item__title {
+  color: var(--tripalcontent-category5-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Expression .admin-item .admin-item__title {
+  color: var(--tripalcontent-category5-solid-dark);
+}
+
+/** -- Arrow icon */
+#block-gin-content #tripal-entity-add-content #category-Expression .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category5-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Expression .admin-item .admin-item__link::before {
+  background: var(--tripalcontent-category5-solid-dark);
+}
+
+/** -- Hover effect */
+#block-gin-content #tripal-entity-add-content #category-Expression .admin-item .admin-item__link:hover,
+#block-gin-content #tripal-entity-add-content #category-Expression .admin-item .admin-item__link:focus {
+  background: var(--tripalcontent-category5-soft);
+}
+
+#tripal-entity-add-content #category-Expression .admin-item .admin-item__link:hover~.admin-item__description,
+#tripal-entity-add-content #category-Expression .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category5-solid);
+}
+
+html.gin--dark-mode #tripal-entity-add-content #category-Expression .admin-item .admin-item__link:hover~.admin-item__description,
+html.gin--dark-mode #tripal-entity-add-content #category-Expression .admin-item .admin-item__link:focus~.admin-item__description {
+  color: var(--tripalcontent-category5-solid-dark);
+}
+
+/** -- CLARO */
+#block-claro-content #tripal-entity-add-content #category-Expression .admin-item .admin-item__link {
+  color: var(--tripalcontent-category5-solid);
+}
+
+#block-claro-content #tripal-entity-add-content #category-Expression .admin-item .admin-item__link::before {
+  background-image: url("data:image/svg+xml,%3csvg width='9' height='14' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M1.71.314L.29 1.723l5.302 5.353L.289 12.43l1.422 1.408 6.697-6.762z' fill='%23969529'/%3e%3c/svg%3e");
+}
