@@ -36,6 +36,24 @@ table.tripal-entity-type-list tbody tr.General:hover td.type-category {
 	color: var(--tripalcontent-category1-solid);
 }
 
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item> :hover,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item> :active,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item> :focus,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item>a:hover,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item>a:active,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item>a:focus,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item>input:hover,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item>input:active,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item>input:focus,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item>button:hover,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item>button:active,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__item>button:focus,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__toggle:hover,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__toggle:active,
+#block-gin-content table.tripal-entity-type-list tr.General .dropbutton__toggle:focus {
+	background-color: var(--tripalcontent-category1-med);
+}
+
 /** -- Light Mode Text */
 table.tripal-entity-type-list tr.General a {
 	color: var(--tripalcontent-category1-solid);
@@ -81,6 +99,24 @@ table.tripal-entity-type-list tbody tr.Germplasm:hover td.type-category {
 #block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle {
 	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category2-solid) !important;
 	color: var(--tripalcontent-category2-solid);
+}
+
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item> :hover,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item> :active,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item> :focus,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item>a:hover,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item>a:active,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item>a:focus,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item>input:hover,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item>input:active,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item>input:focus,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item>button:hover,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item>button:active,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__item>button:focus,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle:hover,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle:active,
+#block-gin-content table.tripal-entity-type-list tr.Germplasm .dropbutton__toggle:focus {
+	background-color: var(--tripalcontent-category2-med);
 }
 
 /** -- Light Mode Text */
@@ -130,6 +166,24 @@ table.tripal-entity-type-list tbody tr.Genomic:hover td.type-category {
 	color: var(--tripalcontent-category3-solid);
 }
 
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item> :hover,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item> :active,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item> :focus,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item>a:hover,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item>a:active,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item>a:focus,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item>input:hover,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item>input:active,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item>input:focus,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item>button:hover,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item>button:active,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__item>button:focus,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__toggle:hover,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__toggle:active,
+#block-gin-content table.tripal-entity-type-list tr.Genomic .dropbutton__toggle:focus {
+	background-color: var(--tripalcontent-category3-med);
+}
+
 /** -- Light Mode Text */
 table.tripal-entity-type-list tr.Genomic a {
 	color: var(--tripalcontent-category3-solid);
@@ -177,6 +231,24 @@ table.tripal-entity-type-list tbody tr.Genetic:hover td.type-category {
 	color: var(--tripalcontent-category4-solid);
 }
 
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item> :hover,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item> :active,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item> :focus,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item>a:hover,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item>a:active,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item>a:focus,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item>input:hover,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item>input:active,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item>input:focus,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item>button:hover,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item>button:active,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__item>button:focus,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__toggle:hover,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__toggle:active,
+#block-gin-content table.tripal-entity-type-list tr.Genetic .dropbutton__toggle:focus {
+	background-color: var(--tripalcontent-category4-med);
+}
+
 /** -- Light Mode Text */
 table.tripal-entity-type-list tr.Genetic a {
 	color: var(--tripalcontent-category4-solid);
@@ -222,6 +294,24 @@ table.tripal-entity-type-list tbody tr.Expression:hover td.type-category {
 #block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__toggle {
 	border-inline-start: var(--dropbutton-border-size, 1px) solid var(--tripalcontent-category5-solid) !important;
 	color: var(--tripalcontent-category5-solid);
+}
+
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item> :hover,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item> :active,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item> :focus,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item>a:hover,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item>a:active,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item>a:focus,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item>input:hover,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item>input:active,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item>input:focus,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item>button:hover,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item>button:active,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__item>button:focus,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__toggle:hover,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__toggle:active,
+#block-gin-content table.tripal-entity-type-list tr.Expression .dropbutton__toggle:focus {
+	background-color: var(--tripalcontent-category5-med);
 }
 
 /** -- Light Mode Text */
