@@ -130,11 +130,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
     }
 
-    // Get the values of the current entity.
-    $entity_values = $this->getFieldValues();
-
-    // Use the token parser directly.
-    $title = TripalTokenParser::getEntityTitle($bundle, $entity_values);
+    $title_format = $bundle->getTitleFormat();
+    $title = $this->replaceTokens($title_format, $bundle);
     $this->title = $title;
   }
 
@@ -293,25 +290,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Initialize the Tripal token parser service.
     /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
     $token_parser = \Drupal::service('tripal.token_parser');
-    $token_parser->initParser($bundle, $this);
-    $field_defs = $this->getFieldDefinitions();
-    foreach ($field_defs as $field_name => $field_def) {
-      /** @var \Drupal\Core\Field\FieldItemList $items **/
-      $items = $this->get($field_name);
-      if ($items->count() == 1) {
-        /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem  $item **/
-        /** @var \Drupal\Core\TypedData\TypedDataInterface $prop **/
-        $item = $items->get(0);
-        if (! $item instanceof TripalFieldItemBase) {
-          continue;
-        }
-        $props = $item->getProperties();
-        foreach ($props as $prop) {
-          $token_parser->addFieldValue($field_name, $prop->getName(), $prop->getValue());
-        }
-      }
-    }
+    $token_parser->processEntityValues($bundle, $this);
     $replaced = $token_parser->replaceTokens([$string]);
+
     return $replaced[0];
   }
 
