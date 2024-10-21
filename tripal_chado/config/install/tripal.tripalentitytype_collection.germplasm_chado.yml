@@ -14,8 +14,8 @@ content_types:
             - bio_data_21
         settings:
             chado_base_table: stock
-            chado_type_table: stock
-            chado_type_column: type_id
+            bundle_type_table: stock
+            bundle_type_column: type_id
 
     -   label: Breeding Cross
         term: CO_010:0000255
@@ -28,8 +28,8 @@ content_types:
             - bio_data_22
         settings:
             chado_base_table: stock
-            chado_type_table: stock
-            chado_type_column: type_id
+            bundle_type_table: stock
+            bundle_type_column: type_id
 
     -   label: Germplasm Variety
         term: CO_010:0000029
@@ -42,8 +42,8 @@ content_types:
             - bio_data_23
         settings:
             chado_base_table: stock
-            chado_type_table: stock
-            chado_type_column: type_id
+            bundle_type_table: stock
+            bundle_type_column: type_id
 
     -   label: Recombinant Inbred Line
         term: CO_010:0000162
@@ -56,5 +56,5 @@ content_types:
             - bio_data_24
         settings:
             chado_base_table: stock
-            chado_type_table: stock
-            chado_type_column: type_id
+            bundle_type_table: stock
+            bundle_type_column: type_id

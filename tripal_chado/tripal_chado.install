@@ -578,7 +578,7 @@ function tripal_chado_update_10406() {
 
 /**
  * Adds third party settings for content types that have multiple
- * content types derived from one Chado base table. PR#1991
+ * content types derived from one base table. PR#1991
  */
 function tripal_chado_update_10407() {
   $settings = [
@@ -610,8 +610,8 @@ function tripal_chado_update_10407() {
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
     if ($entity_type) {
-      $entity_type->setThirdPartySetting('tripal', 'chado_type_table', $type_table);
-      $entity_type->setThirdPartySetting('tripal', 'chado_type_column', 'type_id');
+      $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $type_table);
+      $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', 'type_id');
       $entity_type->save();
     }
   }

@@ -307,7 +307,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // publish will be able to restrict by the term.
     $type_fkey = $settings['storage_plugin_settings']['type_fkey'] ?? NULL;
     if ($type_fkey) {
-      $type_table = $entity_type->getThirdPartySetting('tripal', 'chado_type_table');
+      $type_table = $entity_type->getThirdPartySetting('tripal', 'bundle_type_table');
       if (!$type_table) {
         $form_state_storage = $form_state->getStorage();
         $bundle = $form_state_storage['bundle'];
@@ -317,8 +317,8 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
         $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
 
         list($type_table, $type_column) = explode(self::$table_column_delimiter, $type_fkey, 2);
-        $entity_type->setThirdPartySetting('tripal', 'chado_type_table', $type_table);
-        $entity_type->setThirdPartySetting('tripal', 'chado_type_column', $type_column);
+        $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $type_table);
+        $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', $type_column);
         $entity_type->save();
       }
     }
