@@ -232,6 +232,14 @@ class TripalTokenParser {
           $value = $this->entity->getID();
           $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
         }
+        elseif ($token == 'TripalEntityType__term_namespace') {
+          $value = $this->bundle->get('termIdSpace');
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+        }
+        elseif ($token == 'TripalEntityType__term_accession') {
+          $value = $this->bundle->get('termAccession');
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+        }
         // Look for values for field related tokens
         elseif (in_array($token, array_keys($this->fields))) {
           $field = $this->fields[$token];

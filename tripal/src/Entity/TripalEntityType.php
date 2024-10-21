@@ -494,7 +494,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       return $this->url_format;
     }
     else {
-      return 'bio_data/[TripalEntity__entity_id]';
+      return '[TripalBundle__bundle_id]/[TripalEntity__entity_id]';
     }
   }
 
@@ -541,6 +541,24 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       $tokens[$token] = [
         'label' => 'Content/Entity ID',
         'description' => 'The unique identifier for an individual piece of Tripal Content.',
+        'token' => $token,
+        'field_name' => NULL,
+        'required' => TRUE,
+      ];
+
+      $token = '[TripalEntityType__term_namespace]';
+      $tokens[$token] = [
+        'label' => 'Tripal Entity Term Name',
+        'description' => 'The database name describing the term for this Tripal Content Type.',
+        'token' => $token,
+        'field_name' => NULL,
+        'required' => TRUE,
+      ];
+
+      $token = '[TripalEntityType__term_accession]';
+      $tokens[$token] = [
+        'label' => 'Tripal Entity Term Accession',
+        'description' => 'The database accession describing the term for this Tripal Content Type.',
         'token' => $token,
         'field_name' => NULL,
         'required' => TRUE,
