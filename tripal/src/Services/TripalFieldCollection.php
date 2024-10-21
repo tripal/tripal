@@ -233,8 +233,12 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs);
         foreach ($discovered as $discovered_field) {
 
-          // If the discovered field already exists then mark it as existing.
-          if (array_key_exists($discovered_field['name'], $entity_field_defs)) {
+          // If the CV term for the discovered field is currently used by an
+          // existing field, then mark it as existing.
+          $discoveredIdSpace = $discovered_field['settings']['termIdSpace'];
+          $discoveredAccession = $discovered_field['settings']['termAccession'];
+          $existing = $this->checkDiscoveredTerm($discoveredIdSpace, $discoveredAccession, $entity_field_defs);
+          if ($existing) {
             $field_status['existing'][$discovered_field['name']] = $discovered_field;
             continue;
           }
@@ -253,6 +257,32 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
       }
     }
     return $field_status;
+  }
+
+  /**
+   * Helper function to determine if any existing fields use a particular CV term.
+   *
+   * @param string $idSpace
+   *   ID space of term we want to check
+   * @param string $accession
+   *   Accession of term we want to check
+   * @param array $entity_field_defs
+   *   Array of field definitions returned from getFieldDefinitions()
+   *
+   * @return bool
+   *   TRUE if term already used by a field, FALSE otherwise
+   */
+  private function checkDiscoveredTerm($idSpace, $accession, $entity_field_defs) {
+    $existing = FALSE;
+    foreach ($entity_field_defs as $name => $def) {
+      $settings = $def->getSettings();
+      if ( (($settings['termIdSpace'] ?? '') == $idSpace)
+          and (($settings['termAccession'] ?? '') == $accession) ) {
+        $existing = TRUE;
+        break;
+      }
+    }
+    return $existing;
   }
 
   /**
@@ -532,6 +562,21 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         $field->setTranslatable($field_def['translatable']);
         $field->setSettings($field_def['settings']);
         $field->save();
+
+        // If the additional type field specifies a fixed_value, this
+        // is used to define the bundle type. Add this setting directly
+        // to the entity for efficient access when publishing.
+        if ($field_def['type'] == 'chado_additional_type_type_default') {
+          if (!$entity_type->getThirdPartySetting('tripal', 'bundle_type_column')) {
+            $fixed_value = $field_def['settings']['fixed_value'] ?? NULL;
+            if ($fixed_value) {
+              $term_parts = explode(':', $fixed_value, 2);
+              $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $term_parts[0]);
+              $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', $term_parts[1]);
+              $entity_type->save();
+            }
+          }
+        }
 
         // Add field to the default display modes.
         $entity_display = \Drupal::service('entity_display.repository');

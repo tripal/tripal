@@ -1056,6 +1056,34 @@ fields:
               region: content
               weight: 10
 
+    -   name: physical_map_type
+        content_type: physical_map
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                type_table: featuremapprop
+                type_column: type_id
+        settings:
+            termIdSpace: "data"
+            termAccession: "1280"
+            fixed_value: "data:1280"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: physical_map_contact
         content_type: physical_map
         label: Contact
