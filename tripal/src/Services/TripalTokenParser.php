@@ -10,18 +10,20 @@ class TripalTokenParser {
 
   /**
    * The content type object.
+   *
    * @var \Drupal\tripal\Entity\TripalEntityType $bundle
    */
   protected $bundle = NULL;
 
   /**
+   * A specific piece of content containing values.
    *
    * @var \Drupal\tripal\Entity\TripalEntity $entity
    */
   protected $entity = NULL;
 
   /**
-   * An array of field instances.
+   * An array of field instances for the bundle in $bundle.
    *
    * @var array $fields
    */
@@ -30,9 +32,17 @@ class TripalTokenParser {
   /**
    * An array of field values indexed first by field name then by property key.
    *
-   * @var array $values.
+   * @var array $field_values.
    */
-  protected $values = [];
+  protected $field_values = [];
+
+  /**
+   * An array of token values where the key is the token name and the value is
+   * it's value. The value must not be an object or array.
+   *
+   * @var array $token_values.
+   */
+  protected $token_values = [];
 
   /**
    * Uses this tokenparser to get the title of an entity based on its
@@ -98,7 +108,7 @@ class TripalTokenParser {
    * @return array
    */
   public function getValues() {
-    return $this->values;
+    return $this->field_values;
   }
 
   /**
@@ -107,7 +117,7 @@ class TripalTokenParser {
    * This should be done between replacing tokens for different entities.
    */
   public function clearValues() {
-    $this->values = [];
+    $this->field_values = [];
   }
 
   /**
@@ -181,6 +191,53 @@ class TripalTokenParser {
   }
 
   /**
+   * Given an entity, prepare the token => value mapping to support token replacement.
+   *
+   * Note: Replaces initParser when you have both bundle/entity (i.e. entity crud)
+   *
+   * @param TripalEntityType $bundle
+   * @param TripalEntity $entity
+   * @return void
+   */
+  public function processEntityValues(TripalEntityType $bundle, TripalEntity $entity) {
+    $this->bundle = $bundle;
+    if ($entity) {
+      $this->setEntity($entity);
+    }
+
+    // Clear the values since we only parse for one entity at a time.
+    $this->clearValues();
+
+
+    // For each field attached to this entity...
+    $field_defs = $entity->getFieldDefinitions();
+    foreach ($field_defs as $field_name => $field_def) {
+      $this->fields[$field_name] = $field_def;
+
+      // Retrieve the items array.
+      /** @var \Drupal\Core\Field\FieldItemList $items **/
+      $items = $entity->get($field_name);
+      // Token replacement only supports single-value fields...
+      // therefore, only if the items array has a single value...
+      if (count($items) === 1) {
+        /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem  $item **/
+        $item = $items[0];
+        // Now add the value for each property to the parser.
+        /** @var \Drupal\Core\TypedData\TypedDataInterface $prop **/
+        $props = $item->getProperties();
+        if (is_array($props)) {
+          foreach ($props as $prop) {
+            $this->addFieldValue($field_name, $prop->getName(), $prop->getValue());
+          }
+        }
+      }
+    }
+
+    // Ensure there is no bleed through of values from previous substitutions.
+    $this->clearValues();
+  }
+
+  /**
    * Adds the field values that should be used for replacement.
    *
    * @param string $field_name
@@ -189,7 +246,32 @@ class TripalTokenParser {
    *   The property values
    */
   public function addFieldValue($field_name, string $key, $value){
-    $this->values[$field_name][$key] = $value;
+
+    // For field-based tokens we replace the token with the value of
+    // the main property. Thus only set the token value if this is the
+    // main property.
+    if (array_key_exists($field_name, $this->fields) && method_exists($this->fields[$field_name], 'mainPropertyName')) {
+      $field = $this->fields[$field_name];
+      $main_prop_key = $field->mainPropertyName();
+      if ($main_prop_key == $key) {
+        $this->token_values[$field_name] = $value;
+      }
+    }
+    // If we can't determine the main property but we do have a value then set
+    // this directly as the token. This could cause unexpected bahaviour if a
+    // multi-property field does not implement mainPropertyName()...
+    // BUT this should only happen in a non-Tripal field.
+    elseif (!empty($value)) {
+      $this->token_values[$field_name] = $value;
+    }
+    else {
+      $this->token_values[$field_name] = NULL;
+    }
+
+    // That said, we always set the field_values regardless of whether it is the
+    // main property.
+    // @todo in the future we should support property key specific tokens
+    $this->field_values[$field_name][$key] = $value;
   }
 
   /**
@@ -233,13 +315,8 @@ class TripalTokenParser {
           $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
         }
         // Look for values for field related tokens
-        elseif (in_array($token, array_keys($this->fields))) {
-          $field = $this->fields[$token];
-          $key = $field->mainPropertyName();
-          $value = NULL;
-          if (array_key_exists($token, $this->values)) {
-            $value = $this->values[$token][$key] ?? NULL;
-          }
+        elseif (in_array($token, array_keys($this->token_values))) {
+          $value = $this->token_values[$token];
           if (!is_null($value)) {
             $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
           }
