@@ -230,9 +230,7 @@ class TripalEntityTypeForm extends EntityForm {
 
     $term_str = $form_state->getValue('term');
     $matches = [];
-    $term_name = NULL;
     if (preg_match('/(.+?) \((.+?):(.+?)\)/', $term_str, $matches)) {
-      $term_name = $matches[1];
       $idSpace = $matches[2];
       $accession = $matches[3];
 
@@ -290,15 +288,8 @@ class TripalEntityTypeForm extends EntityForm {
           "The token \"$invalid_token\" is not a valid title token");
     }
 
-    // For the url, replace the generic 'bio_data' placeholder, if
-    // still present, with the name of the content type
-    $url_format = $form_state->getValue('url_format');
-    if ($term_name and preg_match('/^bio_data\//', $url_format)) {
-      $url_format = preg_replace('/^bio_data/', $term_name, $url_format);
-      $form_state->setValue('url_format', $url_format);
-    }
-
     // Make sure all url tokens used are valid
+    $url_format = $form_state->getValue('url_format');
     $invalid_token = $this->validateTokens($url_format, $url_tokens);
     if ($invalid_token) {
       $form_state->setErrorByName('url_format',
