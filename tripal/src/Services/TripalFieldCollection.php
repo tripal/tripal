@@ -563,6 +563,21 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         $field->setSettings($field_def['settings']);
         $field->save();
 
+        // If the additional type field specifies a fixed_value, this
+        // is used to define the bundle type. Add this setting directly
+        // to the entity for efficient access when publishing.
+        if ($field_def['type'] == 'chado_additional_type_type_default') {
+          if (!$entity_type->getThirdPartySetting('tripal', 'bundle_type_column')) {
+            $fixed_value = $field_def['settings']['fixed_value'] ?? NULL;
+            if ($fixed_value) {
+              $term_parts = explode(':', $fixed_value, 2);
+              $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $term_parts[0]);
+              $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', $term_parts[1]);
+              $entity_type->save();
+            }
+          }
+        }
+
         // Add field to the default display modes.
         $entity_display = \Drupal::service('entity_display.repository');
         $bundle_id = $entity_type->id();
