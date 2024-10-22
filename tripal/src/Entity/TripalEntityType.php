@@ -494,7 +494,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       return $this->url_format;
     }
     else {
-      return '[TripalBundle__bundle_id]/[TripalEntity__entity_id]';
+      return '[TripalEntityType__term_label]/[TripalEntity__entity_id]';
     }
   }
 
@@ -540,7 +540,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       $token = '[TripalEntity__entity_id]';
       $tokens[$token] = [
         'label' => 'Content/Entity ID',
-        'description' => 'The unique identifier for an individual piece of Tripal Content.',
+        'description' => 'The unique identifier for an individual piece of Tripal Content. This will be unique for each Tripal Content page and is an integer.',
         'token' => $token,
         'field_name' => NULL,
         'required' => TRUE,
@@ -548,8 +548,8 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
       $token = '[TripalEntityType__term_namespace]';
       $tokens[$token] = [
-        'label' => 'Tripal Entity Term Name',
-        'description' => 'The database name describing the term for this Tripal Content Type.',
+        'label' => 'Content Type Term Namespace',
+        'description' => 'The database name describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the namespace is "SO".',
         'token' => $token,
         'field_name' => NULL,
         'required' => TRUE,
@@ -557,8 +557,17 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
       $token = '[TripalEntityType__term_accession]';
       $tokens[$token] = [
-        'label' => 'Tripal Entity Term Accession',
-        'description' => 'The database accession describing the term for this Tripal Content Type.',
+        'label' => 'Content Type Term Accession',
+        'description' => 'The database accession describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the accession is "0000704".',
+        'token' => $token,
+        'field_name' => NULL,
+        'required' => TRUE,
+      ];
+
+      $token = '[TripalEntityType__term_label]';
+      $tokens[$token] = [
+        'label' => 'Content Type Term Label',
+        'description' => 'The human readable label of the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the label is "gene".',
         'token' => $token,
         'field_name' => NULL,
         'required' => TRUE,
@@ -569,7 +578,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $token = '[TripalEntityType__label]';
     $tokens[$token] = [
       'label' => 'Tripal Entity Type',
-      'description' => 'The human-readable label for this Tripal Content Type.',
+      'description' => 'The human-readable label for this Tripal Content Type (e.g. "Genome Annotation").',
       'token' => $token,
       'field_name' => NULL,
       'required' => TRUE,
