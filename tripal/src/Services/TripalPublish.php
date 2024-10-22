@@ -210,6 +210,21 @@ class TripalPublish {
 
     $this->setFieldInfo();
 
+    // We need a way to get all the record ids for a bundle.
+    // If this is the chado storage backend then we do this using the chado table.
+    if ($datastore == 'chado_storage') {
+      $this->base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    }
+    // But if this is not chado storage then the backend needs to provide the base
+    // table for a bundle.
+    else {
+      $this->base_table = $this->storage->getBaseTable($bundle);
+    }
+    if (empty($this->base_table)) {
+      $error_msg = 'Could not find the base table for the %bundle entity type.';
+      throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
+    }
+
     // Get the required field properties that will uniquely identify an entity.
     // We only need to search on those properties.
     $this->required_types = $this->storage->getStoredTypes();
@@ -1015,6 +1030,10 @@ class TripalPublish {
 
     $this->logger->notice("Step  1 of 6: Find matching records... ");
     $matches = $this->storage->findValues($search_values);
+    if (!count($matches)) {
+      $this->logger->notice('No matching records found');
+      continue;
+    }
 
     $this->logger->notice("Step  2 of 6: Generate page titles...");
     $titles = $this->getEntityTitles($matches);

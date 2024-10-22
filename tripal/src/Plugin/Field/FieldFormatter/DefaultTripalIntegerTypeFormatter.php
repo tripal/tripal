@@ -28,6 +28,8 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
     $settings['field_prefix'] = '';
     $settings['field_suffix'] = '';
     $settings['thousand_separator'] = '';
+    $settings['hide_condition'] = '';
+    $settings['hide_value'] = '';
     return $settings;
   }
 
@@ -39,12 +41,16 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
     $field_prefix = $this->getSetting('field_prefix');
     $field_suffix = $this->getSetting('field_suffix');
     $thousand_separator = $this->getSetting('thousand_separator');
+    $hide_condition = $this->getSetting('hide_condition') ?? '';
+    $hide_value = $this->getSetting('hide_value') ?? '';
 
     foreach($items as $delta => $item) {
-      $value = $item->get("value")->getValue();
-      if (!is_null($value) and strlen($value)) {
-        if (strlen($thousand_separator)) {
-          // For an integer we can hardcode the unused decimal setting
+      $value = $item->get("value")->getValue() ?? '';
+      $hide = ((($hide_condition == '') and !$value)
+           or (($hide_condition == 'if_value') and ($value == $hide_value)));
+      if (!$hide) {
+        if (strlen($value) and strlen($thousand_separator)) {
+          // For an integer we can hardcode the unused decimal setting to 0
           $value = number_format(floatval($value), 0, '.', $thousand_separator);
         }
         $elements[$delta] = [
@@ -83,6 +89,23 @@ class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
       '#description' => $this->t('Character to display every three digits'),
       '#type' => 'textfield',
       '#default_value' => $this->getSetting('thousand_separator'),
+      '#required' => FALSE,
+    ];
+    $form['hide_condition'] = [
+      '#title' => $this->t('You may provide a condition when the field is not displayed'),
+      '#type' => 'radios',
+      '#options' => [
+        '' => $this->t('Hide if zero'),
+        'if_value' => $this->t('Hide if equal to a specific value'),
+        'never_hide' => $this->t('Never hide'),
+      ],
+      '#default_value' => $this->getSetting('hide_condition') ?? '',
+    ];
+    $form['hide_value'] = [
+      '#title' => $this->t('Specific value to be hidden'),
+      '#description' => $this->t('A value that you do not want displayed, e.g. "0" or "-1"'),
+      '#type' => 'textfield',
+      '#default_value' => $this->getSetting('hide_value') ?? '',
       '#required' => FALSE,
     ];
 
