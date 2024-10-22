@@ -291,37 +291,74 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
   }
 
   /**
-   * {@inheritDoc}
+   * Saves the location of the bundle term in the entity for easy access by publish.
+   *
+   * @param string $bundle
+   *   The bundle identifier, e.g. "analysis" or "project"
+   * @param string $type_table
+   *   The table where the term is stored, usually the base table or else a property table.
+   * @param string $type_column
+   *   The name of the column where the term is stored. Usually this is "type_id".
    */
-  public static function storageSettingsFormSubmitBaseTable(array $form, FormStateInterface $form_state) {
-    parent::storageSettingsFormSubmitBaseTable($form, $form_state);
+  public static function setEntityBundleType(string $bundle, string $type_table, string $type_column) {
+    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+    $entity_type_manager = \Drupal::entityTypeManager();
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
 
-    $settings = self::getFormStateSettings($form_state);
-    if (!array_key_exists('storage_plugin_settings', $settings)) {
-      return;
-    }
-    // This field is used to specify a subset of a chado table for the bundle,
-    // e.g. for feature table it could be 'gene'.
-    // The first time this field is entered, store third party settings in the
-    // entity for the table and column where this term will be stored, so that
-    // publish will be able to restrict by the term.
-    $type_fkey = $settings['storage_plugin_settings']['type_fkey'] ?? NULL;
-    if ($type_fkey) {
-      $type_table = $entity_type->getThirdPartySetting('tripal', 'bundle_type_table');
-      if (!$type_table) {
-        $form_state_storage = $form_state->getStorage();
-        $bundle = $form_state_storage['bundle'];
-        /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
-        $entity_type_manager = \Drupal::entityTypeManager();
-        /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
-        $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+    $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $type_table);
+    $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', $type_column);
+    $entity_type->save();
+  }
 
-        list($type_table, $type_column) = explode(self::$table_column_delimiter, $type_fkey, 2);
-        $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $type_table);
-        $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', $type_column);
-        $entity_type->save();
-      }
+  /**
+   * {@inheritdoc}
+   */
+  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+    $elements = parent::fieldSettingsForm($form, $form_state);
+
+    // We add a checkbox to allow specifying that this field will be used
+    // to specify a term that is used to define the bundle, allowing a subset
+    // of content from a given base table to be published.
+    $fixed_value = $this->getSetting('fixed_value');
+    $elements['field_term_fs']['fixed_value'] = [
+      '#type' => 'checkbox',
+      '#title' => t('This term defines the bundle'),
+      '#description' => t('Check this box to indicate that the term for this field is'
+        . ' used to define the term for the bundle. For example, the "gene (SO:0000704)"'
+        . ' term defines the "Gene" bundle based on the "feature" table.'),
+      '#default_value' => $fixed_value?1:0,
+      '#element_validate' => [[static::class, 'fixedValueFieldValidate']],
+    ];
+    return $elements;
+  }
+
+ /**
+   * {@inheritdoc}
+   */
+  public static function fixedValueFieldValidate(array $form, FormStateInterface $form_state) {
+
+    $settings = $form_state->getValue('settings');
+    $storage_settings = $settings['storage_plugin_settings'] ?? [];
+    $type_table = $storage_settings['type_table'] ?? '';
+    $type_column = $storage_settings['type_column'] ?? '';
+    $fixed_value = $settings['field_term_fs']['fixed_value'];
+
+    if ($fixed_value) {
+      // The fixed value from the form checkbox is just a boolean,
+      // convert it to the term when saving.
+      $fixed_value = $settings['termIdSpace'] . ':' . $settings['termAccession'];
+      $form_state_storage = $form_state->getStorage();
+      $bundle = $form_state_storage['bundle'];
+      $form_state->setValue(['settings', 'fixed_value'], $fixed_value);
+      // Also store the fixed value storage location in the entity
+      self::setEntityBundleType($bundle, $type_table, $type_column);
     }
+    else {
+      $form_state->setValue(['settings', 'fixed_value'], 0);
+      self::setEntityBundleType($bundle, '', '');
+    }
+
   }
 
   /**
@@ -502,7 +539,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       'settings' => [
         'termIdSpace' => $termIdSpace,
         'termAccession' => $termAccession,
-        'fixed_value' => $fixed_value,
       ],
       'display' => [
         'view' => [
