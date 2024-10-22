@@ -504,7 +504,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
         $prop_type_id = $prop_table_def['fields'][$prop_type_column] ?? NULL;
         if ($prop_type_id) {
           $type_table = $prop_table;
-          $type_column = $prop_type_columns;
+          $type_column = $prop_type_column;
         }
       }
     }
