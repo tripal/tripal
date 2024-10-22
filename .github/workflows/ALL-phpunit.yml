@@ -21,6 +21,15 @@ jobs:
         drupal-version:
           - "10.2.x-dev"
           - "10.3.x-dev"
+          - "11.0.x-dev"
+        exclude:
+          - php-version: "8.1"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.2"
+            drupal-version: "11.0.x-dev"
+          - php-version: "8.3"
+            pgsql-version: "13"
+            drupal-version: "11.0.x-dev"
     steps:
       # Check out the repo
       - name: Checkout Repository

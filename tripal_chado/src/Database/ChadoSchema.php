@@ -81,19 +81,18 @@ class ChadoSchema extends TripalDbxSchema {
   }
 
   /**
-   *  Returns all chado base tables.
+   * Returns all chado base tables.
    *
-   *  Base tables are those that contain the primary record for a data type.
-   * For
-   *  example, feature, organism, stock, are all base tables.  Other tables
-   *  include linker tables (which link two or more base tables), property
+   * Base tables are those that contain the primary record for a data type.
+   * For example, feature, organism, stock, are all base tables.  Other tables
+   * include linker tables (which link two or more base tables), property
    * tables, and relationship tables.  These provide additional information
    * about primary data records and are therefore not base tables.  This
    * function retrieves only the list of tables that are considered 'base'
    * tables.
    *
    * @return
-   *    An array of base table names.
+   *   An array of base table names.
    */
   public function getMainTables() {
 
@@ -217,13 +216,13 @@ class ChadoSchema extends TripalDbxSchema {
    *
    * This method ensures that we support multiple chado instances
    * and do not make any assumptions about the name of the chado schema.
-   * 
+   *
    * Note: The admin can change the default chado instance via the UI
    * by going to Admin > Tripal > Data Storage > Chado > Chado Schemas 
    * (admin/tripal/storage/chado/manager) and clicking "Set default".
    * We DO NOT recommend setting this programmaticly as it is confusing
    * to the admin.
-   * 
+   *
    * @return string
    *   The name of the schema with Chado installed that is to be considered
    *   the default.
@@ -231,4 +230,5 @@ class ChadoSchema extends TripalDbxSchema {
   public function getDefault() {
     return \Drupal::config('tripal_chado.settings')->get('default_schema');
   }
+
 }

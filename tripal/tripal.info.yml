@@ -1,7 +1,7 @@
 name: Tripal
 type: module
 description: Tripal is a toolkit to facilitate construction of online genomic, genetic (and other biological) websites.
-core_version_requirement: ^10.2
+core_version_requirement: ^10.2 || ^11.0
 php: 8.1
 package: Tripal
 version: 4.0.alpha3
