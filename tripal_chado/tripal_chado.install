@@ -7,6 +7,7 @@
 use \Drupal\Core\Database\Database;
 use \Drupal\Core\Utility\UpdateException;
 use \Drupal\tripal_chado\Entity\ChadoTermMapping;
+use Drupal\Component\Serialization\Yaml;
 
 /**
  * Implements hook_install().
@@ -402,6 +403,24 @@ function tripal_chado_field_reload(array $upgradable_types, array $upgradable_pr
 }
 
 /**
+ * Reads a YAML file and adds the specified fields.
+ *
+ * @param string $yaml_path
+ *   Path to the YAML file to parse.
+ * @param array $field_names
+ *   One or more fields to add.
+ */
+function addFieldFromYaml(string $yaml_path, array $field_names) {
+  $fields_service = \Drupal::service('tripal.tripalfield_collection');
+  $fields = Yaml::decode(file_get_contents($yaml_path));
+  foreach ($fields['fields'] as $field) {
+    if (in_array($field['name'], $field_names)) {
+      $fields_service->addBundleField($field);
+    }
+  }
+}
+
+/**
  * Adds third party settings for Tripal content types to Chado base tables.
  */
 function tripal_chado_update_10401() {
@@ -588,8 +607,9 @@ function tripal_chado_update_10407() {
     $entityFieldManager = \Drupal::service('entity_field.manager');
     $entityTypeManager = \Drupal::entityTypeManager();
 
-    // Add missing additional type field in yaml for the two featuremap bundles
-    // @todo 'chado_additional_type_type_default', ['genetic_map', 'physical_map']
+    // Add missing additional type fields in yaml for the two featuremap bundles
+    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genetic_chado.yml', ['genetic_map_type']);
+    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml', ['physical_map_type']);
 
     // Add third party settings for bundle type using fixed_value term
     $entity_type_id = 'tripal_entity';
