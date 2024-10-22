@@ -545,33 +545,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
         'field_name' => NULL,
         'required' => TRUE,
       ];
-
-      $token = '[TripalEntityType__term_namespace]';
-      $tokens[$token] = [
-        'label' => 'Content Type Term Namespace',
-        'description' => 'The database name describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the namespace is "SO".',
-        'token' => $token,
-        'field_name' => NULL,
-        'required' => TRUE,
-      ];
-
-      $token = '[TripalEntityType__term_accession]';
-      $tokens[$token] = [
-        'label' => 'Content Type Term Accession',
-        'description' => 'The database accession describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the accession is "0000704".',
-        'token' => $token,
-        'field_name' => NULL,
-        'required' => TRUE,
-      ];
-
-      $token = '[TripalEntityType__term_label]';
-      $tokens[$token] = [
-        'label' => 'Content Type Term Label',
-        'description' => 'The human readable label of the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the label is "gene".',
-        'token' => $token,
-        'field_name' => NULL,
-        'required' => TRUE,
-      ];
     }
 
     // Term/Type Tokens:
@@ -579,6 +552,33 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $tokens[$token] = [
       'label' => 'Tripal Entity Type',
       'description' => 'The human-readable label for this Tripal Content Type (e.g. "Genome Annotation").',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
+
+    $token = '[TripalEntityType__term_namespace]';
+    $tokens[$token] = [
+      'label' => 'Content Type Term Namespace',
+      'description' => 'The database name describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the namespace is "SO".',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
+
+    $token = '[TripalEntityType__term_accession]';
+    $tokens[$token] = [
+      'label' => 'Content Type Term Accession',
+      'description' => 'The database accession describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the accession is "0000704".',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
+
+    $token = '[TripalEntityType__term_label]';
+    $tokens[$token] = [
+      'label' => 'Content Type Term Label',
+      'description' => 'The human readable label of the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the label is "gene".',
       'token' => $token,
       'field_name' => NULL,
       'required' => TRUE,
