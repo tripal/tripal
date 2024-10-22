@@ -528,10 +528,10 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
     // ID Tokens:
     if ($options['include id'] == TRUE) {
-      $token = '[TripalBundle__bundle_id]';
+      $token = '[TripalEntityType__entity_id]';
       $tokens[$token] = [
-        'label' => 'Bundle ID',
-        'description' => 'The unique identifier for this Tripal Content Type.',
+        'label' => 'Content Type/Bundle ID',
+        'description' => 'The machine name for this Tripal Content Type. By default this will be similar to the label you entered. For example, if you created a content type with the label "Genome Annoation" then it\'s machine name/id would be "genome_annotation".',
         'token' => $token,
         'field_name' => NULL,
         'required' => TRUE,

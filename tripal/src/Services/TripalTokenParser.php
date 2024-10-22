@@ -220,7 +220,7 @@ class TripalTokenParser {
         $token = preg_replace('/\]/', '', $token);
 
         // Look for values for bundle or entity related tokens.
-        if ($token === 'TripalBundle__bundle_id') {
+        if (($token === 'TripalEntityType__entity_id') OR ($token === 'TripalBundle__bundle_id')) {
           $value = $this->bundle->getID();
           $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
         }
