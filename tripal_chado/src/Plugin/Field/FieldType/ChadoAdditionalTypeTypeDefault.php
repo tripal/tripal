@@ -539,6 +539,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       'settings' => [
         'termIdSpace' => $termIdSpace,
         'termAccession' => $termAccession,
+        'fixed_value' => $fixed_value,
       ],
       'display' => [
         'view' => [
