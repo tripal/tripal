@@ -53,14 +53,14 @@ function tripal_chado_config_schema_info_alter(&$definitions) {
     'label' => 'Entity Third Party Setting for Base Chado Table',
     'nullable' => true
   ];
-  $definitions['tripal.tripalentitytype_collection.*']['mapping']['content_types']['sequence']['mapping']['settings']['mapping']['chado_type_table'] = [
+  $definitions['tripal.tripalentitytype_collection.*']['mapping']['content_types']['sequence']['mapping']['settings']['mapping']['bundle_type_table'] = [
     'type' => 'string',
-    'label' => 'Entity Third Party Setting for Chado Table Specifying Content CV Term',
+    'label' => 'Entity Third Party Setting for Table Specifying Content CV Term',
     'nullable' => true
   ];
-  $definitions['tripal.tripalentitytype_collection.*']['mapping']['content_types']['sequence']['mapping']['settings']['mapping']['chado_type_column'] = [
+  $definitions['tripal.tripalentitytype_collection.*']['mapping']['content_types']['sequence']['mapping']['settings']['mapping']['bundle_type_column'] = [
     'type' => 'string',
-    'label' => 'Entity Third Party Setting for Chado Column Specifying Content CV Term',
+    'label' => 'Entity Third Party Setting for Column Specifying Content CV Term',
     'nullable' => true
   ];
 

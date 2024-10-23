@@ -7,6 +7,7 @@
 use \Drupal\Core\Database\Database;
 use \Drupal\Core\Utility\UpdateException;
 use \Drupal\tripal_chado\Entity\ChadoTermMapping;
+use Drupal\Component\Serialization\Yaml;
 
 /**
  * Implements hook_install().
@@ -402,6 +403,24 @@ function tripal_chado_field_reload(array $upgradable_types, array $upgradable_pr
 }
 
 /**
+ * Reads a YAML file and adds the specified fields.
+ *
+ * @param string $yaml_path
+ *   Path to the YAML file to parse.
+ * @param array $field_names
+ *   One or more fields to add.
+ */
+function addFieldFromYaml(string $yaml_path, array $field_names) {
+  $fields_service = \Drupal::service('tripal.tripalfield_collection');
+  $fields = Yaml::decode(file_get_contents($yaml_path));
+  foreach ($fields['fields'] as $field) {
+    if (in_array($field['name'], $field_names)) {
+      $fields_service->addBundleField($field);
+    }
+  }
+}
+
+/**
  * Adds third party settings for Tripal content types to Chado base tables.
  */
 function tripal_chado_update_10401() {
@@ -578,41 +597,45 @@ function tripal_chado_update_10406() {
 
 /**
  * Adds third party settings for content types that have multiple
- * content types derived from one Chado base table. PR#1991
+ * content types derived from one base table. PR#1991
  */
 function tripal_chado_update_10407() {
-  $settings = [
-    // analysis table
-    'genome_assembly' => 'analysisprop',
-    'genome_annotation' => 'analysisprop',
-    // feature table
-    'gene' => 'feature',
-    'mrna' => 'feature',
-    'QTL' => 'feature',
-    'sequence_variant' => 'feature',
-    'genetic_marker' => 'feature',
-    'phenotypic_marker' => 'feature',
-    // featuremap table
-    'genetic_map' => 'featuremapprop',
-    'physical_map' => 'featuremapprop',
-    // project table
-    'genome_project' => 'projectprop',
-    // stock table
-    'germplasm' => 'stock',
-    'breeding_cross' => 'stock',
-    'germplasm_variety' => 'stock',
-    'ril' => 'stock',
-  ];
 
-  /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
-  $entity_type_manager = \Drupal::entityTypeManager();
-  foreach ($settings as $bundle => $type_table) {
-    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
-    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
-    if ($entity_type) {
-      $entity_type->setThirdPartySetting('tripal', 'chado_type_table', $type_table);
-      $entity_type->setThirdPartySetting('tripal', 'chado_type_column', 'type_id');
-      $entity_type->save();
+  try {
+    $messenger = \Drupal::messenger();
+    $bundleManager = \Drupal::service('entity_type.bundle.info');
+    $entityFieldManager = \Drupal::service('entity_field.manager');
+    $entityTypeManager = \Drupal::entityTypeManager();
+
+    // Add missing additional type fields in yaml for the two featuremap bundles
+    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genetic_chado.yml', ['genetic_map_type']);
+    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml', ['physical_map_type']);
+
+    // Add third party settings for bundle type using fixed_value term
+    $entity_type_id = 'tripal_entity';
+    $bundle_info = $bundleManager->getBundleInfo($entity_type_id);
+    foreach (array_keys($bundle_info) as $bundle) {
+      $fields = $entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
+      foreach ($fields as $field) {
+        $field_type = $field->getType();
+        if ($field_type == 'chado_additional_type_type_default') {
+          $fixed_value = $field->getSetting('fixed_value');
+          if ($fixed_value) {
+            $entity_type = $entityTypeManager->getStorage('tripal_entity_type')->load($bundle);
+            if (!$entity_type->getThirdPartySetting('tripal', 'bundle_type_column')) {
+              $term_parts = explode(':', $fixed_value, 2);
+              $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $term_parts[0]);
+              $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', $term_parts[1]);
+              $entity_type->save();
+              $messenger->addMessage(t("Added entity third party setting for bundle @bundle term @fixed_value",
+                  ['@bundle' => $bundle, '@fixed_value' => $fixed_value]));
+            }
+          }
+        }
+      }
     }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not add third party settings: ' . $e->getMessage());
   }
 }
