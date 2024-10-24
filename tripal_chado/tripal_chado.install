@@ -640,6 +640,7 @@ function tripal_chado_update_10408() {
     $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
     $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
     $cvterm_buddy->upsertCvterm(['cvterm.name' => 'lineageex',
+                                 'cvterm.definition' => 'Extended taxonomic lineage used by NCBI',
                                  'cv.name' => 'local',
                                  'dbxref.accession' => 'lineageex',
                                  'db.name' => 'local'], []);

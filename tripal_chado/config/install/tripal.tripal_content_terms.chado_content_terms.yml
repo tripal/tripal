@@ -397,6 +397,7 @@ vocabularies:
                 name: 'lineage'
             -   id: 'local:lineageex'
                 name: 'lineageex'
+                description: 'Extended taxonomic lineage used by NCBI'
             -   id: 'local:genetic_code'
                 name: 'genetic_code'
             -   id: 'local:genetic_code_name'
