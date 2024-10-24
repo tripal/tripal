@@ -386,37 +386,38 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'comment' => 'rice is nice'
     ]);
     $entities = $publish->publish();
-    $this->assertTrue(count(array_keys($entities)) == 1,
+    $this->assertCount(1, $entities,
       'The TripalPublish service should have published 1 organism.');
+    $entity_id = array_key_first($entities);
 
     // Test that entries were added for all field items and that fields that
     // shouldn't be saved in Drupal are equal to the field's default value.
     $this->checkFieldItem('organism', 'organism_genus', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_species', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_abbreviation', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_infraspecific_name', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_infraspecific_type', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'type_id' => 0]);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'type_id' => 0]);
 
     $this->checkFieldItem('organism', 'organism_comment', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => 1, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
 
     // Test that the title via token replacement is working.
-    $this->assertTrue(array_values($entities)[0] == '<em>Oryza species</em> subspecies <em>Japonica</em>',
+    $this->assertTrue($entities[$entity_id] == '<em>Oryza species</em> subspecies <em>Japonica</em>',
         'The title of a Chado organism is incorrect after publishing: ' . array_values($entities)[0] . '!=' . '<em>Oryza species</em> subspecies <em>Japonica</em>');
 
     //
@@ -429,25 +430,28 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'comment' => 'Gorilla'
     ]);
     $entities = $publish->publish();
+    $this->assertCount(1, $entities,
+      'The TripalPublish service should have published 1 organism.');
+    $entity_id = array_key_first($entities);
     // Token parser will also remove a token if it is empty, e.g. infraspecific nomenclature absent.
-    $this->assertEquals('<em>Gorilla gorilla</em>  <em></em>', array_values($entities)[0],
+    $this->assertEquals('<em>Gorilla gorilla</em>  <em></em>', $entities[$entity_id],
         'The title of Chado organism with missing tokens is incorrect after publishing');
 
     $this->checkFieldItem('organism', 'organism_genus', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_species', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_abbreviation', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
 
     $this->checkFieldItem('organism', 'organism_comment', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => 2, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
 
     // We expect no infraspecies here, so expected count is zero
     $this->checkFieldItem('organism', 'organism_infraspecific_name', 0,
@@ -498,10 +502,10 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
 
     // Now publish the organism content type again.
-    $publish->init('organism', 'chado_storage');
+    $publish->init('organism', 'chado_storage', ['republish' => 1]);
     $entities = $publish->publish();
 
-    // Because we added properties for the first organism we should set its
+    // Because we added properties for the first organism we should get its
     // entity in those returned, but not the gorilla organism.
     $this->assertEquals('<em>Oryza species</em> subspecies <em>Japonica</em>', array_values($entities)[0],
       'The Oryza species subspecies Japonica organism should appear in the published list because it has new properties.');
