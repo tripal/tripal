@@ -4466,7 +4466,6 @@ ALTER TABLE public.tripal_import_import_id_seq OWNER TO drupal;
 ALTER SEQUENCE public.tripal_import_import_id_seq OWNED BY public.tripal_import.import_id;
 
 
-
 CREATE TABLE public.tripal_jobs (
     job_id integer NOT NULL,
     uid bigint NOT NULL,

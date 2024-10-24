@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal_chado\Form;
+namespace Drupal\tripal\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -8,13 +8,13 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 
-class ChadoManagePubSearchQueriesForm extends FormBase {
+class RunPubSearchQueryForm extends FormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'chado_manage_publication_search_queries_form';
+    return 'chado_run_publication_search_query_form';
   }
 
   /**
@@ -23,29 +23,29 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
 
     // The link to add a new publication
-    $html = "<ul class='action-links'>";
-    $html .= '  <li>' . Link::fromTextAndUrl('New search query', Url::fromUri('internal:/admin/tripal/loaders/publications/new_publication_search_query'))->toString() . '</li>';
-    $html .= '</ul>';
-    $form['new_publication_link'] = [
-      '#markup' => $html
-    ];
-    unset($html); 
+    // $html = "<ul class='action-links'>";
+    // $html .= '  <li>' . Link::fromTextAndUrl('New search query', Url::fromUri('internal:/admin/tripal/loaders/publications/new_publication_search_query'))->toString() . '</li>';
+    // $html .= '</ul>';
+    // $form['new_publication_link'] = [
+    //   '#markup' => $html
+    // ];
+    // unset($html); 
 
-    $html = '<p>' . t(
-        "A publication importer is used to create a set of search criteria that can be used
-      to query a remote database, find publications that match the specified criteria
-      and then import those publications into the Chado database. An example use case would
-      be to periodically add new publications to this Tripal site that have appeared in PubMed
-      in the last 30 days.  You can import publications in one of two ways:
-      <ol>
-        <li>Create a new importer by clicking the 'New Search Query' link above, and after saving it should appear in the list below.  Click the
-            link labeled 'Import Pubs' to schedule a job to import the publications</li>
-        <li>The first method only performs the import once.  However, you can schedule the
-            importer to run periodically by adding a cron job. </li>
-      </ol><br>");
-    $form['heading'] = [
-      '#markup' => $html
-    ];
+    // $html = '<p>' . t(
+    //     "A publication importer is used to create a set of search criteria that can be used
+    //   to query a remote database, find publications that match the specified criteria
+    //   and then import those publications into the Chado database. An example use case would
+    //   be to periodically add new publications to this Tripal site that have appeared in PubMed
+    //   in the last 30 days.  You can import publications in one of two ways:
+    //   <ol>
+    //     <li>Create a new importer by clicking the 'New Importer' link above, and after saving it should appear in the list below.  Click the
+    //         link labeled 'Import Pubs' to schedule a job to import the publications</li>
+    //     <li>The first method only performs the import once.  However, you can schedule the
+    //         importer to run periodically by adding a cron job. </li>
+    //   </ol><br>");
+    // $form['heading'] = [
+    //   '#markup' => $html
+    // ];
 
     $headers = [
       '',
@@ -100,15 +100,14 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
 
         $row = [];
 
-        // This should contain edit test and import pubs links @TODO
+        // This should contain run pubs link
         $row['col-1'] = [
           '#markup' => 
             Link::fromTextAndUrl(
-              'Edit/Test', 
-              Url::fromUri('internal:/admin/tripal/loaders/publications/edit_publication_search_query/' . $pub_query->pub_library_query_id)
+              'Run', 
+              Url::fromUri('internal:/admin/tripal/loaders/pub_search_query_loader/' . $pub_query->pub_library_query_id)
             )
-            ->toString() . 
-            '<br /><a href="">Import Pubs</a>'
+            ->toString()
         ];
         $row['col-2'] = [
           '#markup' => $pub_query->name
@@ -133,12 +132,12 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
         ]; 
 
 
-        // Delete should be a button instead of markup @TODO
-        $row['col-7-delete-' . $pub_query->pub_library_query_id] = [
-          '#type' => 'submit',
-          '#name' => 'delete-' . $pub_query->pub_library_query_id,
-          '#default_value' => 'Delete',
-        ];
+        // // Delete should be a button instead of markup @TODO
+        // $row['col-7-delete-' . $pub_query->pub_library_query_id] = [
+        //   '#type' => 'submit',
+        //   '#name' => 'delete-' . $pub_query->pub_library_query_id,
+        //   '#default_value' => 'Delete',
+        // ];
 
         $form['pub_manager']['table'][] = $row;
       }
@@ -181,11 +180,11 @@ class ChadoManagePubSearchQueriesForm extends FormBase {
     $public = \Drupal::database();
     $user_input = $form_state->getUserInput();
     $trigger_element = $form_state->getTriggeringElement();
-    if (stripos($trigger_element['#name'],'delete-') !== FALSE) {
-      $pub_library_query_id = explode('delete-',$trigger_element['#name'])[1];
-      $url = Url::fromUri('internal:/admin/tripal/loaders/publications/delete_publication_search_query/' . $pub_library_query_id);
-      $form_state->setRedirectUrl($url);
-    }
+    // if (stripos($trigger_element['#name'],'delete-') !== FALSE) {
+    //   $pub_library_query_id = explode('delete-',$trigger_element['#name'])[1];
+    //   $url = Url::fromUri('internal:/admin/tripal/loaders/publications/delete_publication_search_query/' . $pub_library_query_id);
+    //   $form_state->setRedirectUrl($url);
+    // }
   }
 
 }
