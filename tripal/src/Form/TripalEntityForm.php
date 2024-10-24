@@ -23,6 +23,8 @@ class TripalEntityForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
     $entity = $this->entity;
 
+    $form['#attached']['library'][] = 'tripal/tripal-entity-form';
+
     $form['title']['#disabled'] = TRUE;
     $form['title']['widget'][0]['value']['#description'] .= ' The title will be automatically updated based on the title format defined by administrators.';
 

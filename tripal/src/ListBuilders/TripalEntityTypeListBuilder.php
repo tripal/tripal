@@ -84,7 +84,10 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
    */
   public function render() {
     $build = parent::render();
+
+    $build['table']['#attributes']['class'][] = 'tripal-entity-type-list';
     $build['table']['#attached']['library'][] = 'tripal/tripal-entity-type-listbuilder';
+
     return $build;
   }
 
