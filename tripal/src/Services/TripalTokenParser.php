@@ -220,7 +220,7 @@ class TripalTokenParser {
         $token = preg_replace('/\]/', '', $token);
 
         // Look for values for bundle or entity related tokens.
-        if ($token === 'TripalBundle__bundle_id') {
+        if (($token === 'TripalEntityType__entity_id') OR ($token === 'TripalBundle__bundle_id')) {
           $value = $this->bundle->getID();
           $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
         }
@@ -232,22 +232,35 @@ class TripalTokenParser {
           $value = $this->entity->getID();
           $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
         }
+        elseif ($token == 'TripalEntityType__term_namespace') {
+          $value = $this->bundle->get('termIdSpace');
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+        }
+        elseif ($token == 'TripalEntityType__term_accession') {
+          $value = $this->bundle->get('termAccession');
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+        }
+        elseif ($token == 'TripalEntityType__term_label') {
+          $value = $this->bundle->getTerm()->getName();
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+        }
         // Look for values for field related tokens
         elseif (in_array($token, array_keys($this->fields))) {
           $field = $this->fields[$token];
           $key = $field->mainPropertyName();
+          $value = NULL;
           if (array_key_exists($token, $this->values)) {
-            $value = @$this->values[$token][$key];
-            if (!is_null($value)) {
-              $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
-            }
-            else {
-              // If the value is null then we remove the token.
-              $replaced[$index] = trim(preg_replace("/\[$token\]/", '',  $replaced[$index]));
-            }
+            $value = $this->values[$token][$key] ?? NULL;
           }
-          // If we get here then this is a field related token but the token
-          // value wasn't set with addFieldValue() method. Leave the token as-is.
+          if (!is_null($value)) {
+            $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+          }
+          else {
+            // A token value may be missing either because there is no value, or
+            // because there is a typo in the token. In any case, remove the token.
+            // @todo add validation when editing title tokens to prevent the latter case.
+            $replaced[$index] = trim(preg_replace("/\[$token\]/", '',  $replaced[$index]));
+          }
         }
       }
     }

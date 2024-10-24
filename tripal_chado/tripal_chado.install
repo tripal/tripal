@@ -6,8 +6,9 @@
 
 use \Drupal\Core\Database\Database;
 use \Drupal\Core\Utility\UpdateException;
+use \Drupal\Component\Serialization\Yaml;
 use \Drupal\tripal_chado\Entity\ChadoTermMapping;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use \Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
  * Implements hook_install().
@@ -403,6 +404,24 @@ function tripal_chado_field_reload(array $upgradable_types, array $upgradable_pr
 }
 
 /**
+ * Reads a YAML file and adds the specified fields.
+ *
+ * @param string $yaml_path
+ *   Path to the YAML file to parse.
+ * @param array $field_names
+ *   One or more fields to add.
+ */
+function addFieldFromYaml(string $yaml_path, array $field_names) {
+  $fields_service = \Drupal::service('tripal.tripalfield_collection');
+  $fields = Yaml::decode(file_get_contents($yaml_path));
+  foreach ($fields['fields'] as $field) {
+    if (in_array($field['name'], $field_names)) {
+      $fields_service->addBundleField($field);
+    }
+  }
+}
+
+/**
  * Adds third party settings for Tripal content types to Chado base tables.
  */
 function tripal_chado_update_10401() {
@@ -425,7 +444,7 @@ function tripal_chado_update_10401() {
     'sequence_variant' => 'feature',
     'genetic_marker' => 'feature',
     'phenotypic_marker' => 'feature',
-    // Germplams types.
+    // Germplasm types.
     'germplasm' => 'stock',
     'breeding_cross' => 'stock',
     'germplasm_variety' => 'stock',
@@ -441,10 +460,10 @@ function tripal_chado_update_10401() {
     'genome_project' => 'project'
   ];
 
-  /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
   /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
   $entity_type_manager = \Drupal::entityTypeManager();
   foreach ($settings as $bundle => $chado_base_table) {
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
     if ($entity_type) {
       $entity_type->setThirdPartySetting('tripal', 'chado_base_table', $chado_base_table);
@@ -456,7 +475,7 @@ function tripal_chado_update_10401() {
 /**
  * Updates missing mapping of CV terms to some chado table columns.
  * Note: tripal_chado_update_10402 has been renumbered to
- * tripal_chado_update_10407 by PR 1927
+ * tripal_chado_update_10408 by PR 1927
  */
 
 /**
@@ -564,15 +583,60 @@ function tripal_chado_update_10406() {
 }
 
 /**
- * Updates missing mapping of CV terms to some chado table columns.
+ * Adds third party settings for content types that have multiple
+ * content types derived from one base table. PR#1991
  */
 function tripal_chado_update_10407() {
-  // This is the same as former tripal_chado_update_10402, but here we are
-  // adding a new cvterm local:lineageex for PR#1927
+
+  try {
+    $messenger = \Drupal::messenger();
+    $bundleManager = \Drupal::service('entity_type.bundle.info');
+    $entityFieldManager = \Drupal::service('entity_field.manager');
+    $entityTypeManager = \Drupal::entityTypeManager();
+
+    // Add missing additional type fields in yaml for the two featuremap bundles
+    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genetic_chado.yml', ['genetic_map_type']);
+    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml', ['physical_map_type']);
+
+    // Add third party settings for bundle type using fixed_value term
+    $entity_type_id = 'tripal_entity';
+    $bundle_info = $bundleManager->getBundleInfo($entity_type_id);
+    foreach (array_keys($bundle_info) as $bundle) {
+      $fields = $entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
+      foreach ($fields as $field) {
+        $field_type = $field->getType();
+        if ($field_type == 'chado_additional_type_type_default') {
+          $fixed_value = $field->getSetting('fixed_value');
+          if ($fixed_value) {
+            $entity_type = $entityTypeManager->getStorage('tripal_entity_type')->load($bundle);
+            if (!$entity_type->getThirdPartySetting('tripal', 'bundle_type_column')) {
+              $term_parts = explode(':', $fixed_value, 2);
+              $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $term_parts[0]);
+              $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', $term_parts[1]);
+              $entity_type->save();
+              $messenger->addMessage(t("Added entity third party setting for bundle @bundle term @fixed_value",
+                  ['@bundle' => $bundle, '@fixed_value' => $fixed_value]));
+            }
+          }
+        }
+      }
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not add third party settings: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Updates missing mapping of CV terms to some chado table columns. PR 1927
+ * This is the same as former tripal_chado_update_10402, but here we are
+ * also adding a new cvterm local:lineageex
+ */
+function tripal_chado_update_10408() {
   try {
     $messenger = \Drupal::messenger();
 
-    // create the local:lineageex term for PR#1927 if it does not exist
+    // create the local:lineageex term if it does not exist
     $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
     $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
     $cvterm_buddy->upsertCvterm(['cvterm.name' => 'lineageex',

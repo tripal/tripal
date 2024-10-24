@@ -1,7 +1,15 @@
-# -- Configuration for Tripal Content Types link.
+# -- Configuration for Tripal Default View Layouts link.
 entity.tripal_layout_default_view.layouts:
-  title: 'Tripal Default Layouts'
+  title: 'Tripal Default View Layouts'
   parent: tripal.config
   description: 'Manage configurations for Tripal content types layouts which specify the details for how content types are displayed by default.'
   route_name: entity.tripal_layout_default_view.layouts
+  weight: 20
+
+# -- Configuration for Tripal Default Form Layouts link.
+entity.tripal_layout_default_form.layouts:
+  title: 'Tripal Default Form Layouts'
+  parent: tripal.config
+  description: 'Manage configurations for Tripal content types layouts which specify the details for how content types forms are organized by default.'
+  route_name: entity.tripal_layout_default_form.layouts
   weight: 20
