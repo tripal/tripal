@@ -30,8 +30,8 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     $cvterms_count_object = $cvterms_count_query->fetchObject();
     $this->assertNotEquals($cvterms_count_object->c1, 0);
 
-    // Create an organism without any properties or an NCBI
-    // taxon id for the import_existing test, NCBI taxid=38785
+    // Create an organism without any properties and without an NCBI
+    // taxon id, to be used for the import_existing test. NCBI taxid=38785
     $results = $chado->query("INSERT INTO {1:organism} (genus, species) VALUES ('Arabidopsis', 'arenosa')");
 
     // Create a Taxonomy Importer
