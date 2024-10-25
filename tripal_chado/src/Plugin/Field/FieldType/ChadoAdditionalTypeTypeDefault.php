@@ -515,6 +515,15 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       return $field_list;
     }
 
+    // If any instance of this field already exists on this content type,
+    // we will not suggest it for discovery. If there is a need for multiple
+    // instances, then they will need to be added manually through the GUI.
+    // Note that this will also block the existing field from showing up in
+    // the "Existing Fields" list, though.
+    if (array_key_exists(self::$id, $field_definitions)) {
+      return $field_list;
+    }
+
     // Create a field entry in the list
     $termIdSpace = $bundle->getTermIdSpace();
     $termAccession = $bundle->getTermAccession();
