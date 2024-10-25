@@ -742,6 +742,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       'dbxref.accession' => $term_name,
       'cv.name' => 'local',
       'cvterm.name' => $term_name,
+      'organismprop.organism_id' => $organism_id,
       'organismprop.value' => $value,
       'organismprop.rank' => $rank,
     ];
