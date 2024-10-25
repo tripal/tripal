@@ -117,7 +117,7 @@ class TripalContentFieldsForm implements FormInterface {
       . 'discovered but which are already attached to this content type. They '
       . 'are shown here but cannot be added again.');
     if (empty($existing_fields)) {
-      $existing_fields_desc = t('No new fields were found for this content type');
+      $existing_fields_desc = t('No existing fields were found for this content type');
     }
     $form['existing_fields_details']['existing_fields_list'] = [
       '#type' => 'checkboxes',
