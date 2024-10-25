@@ -570,10 +570,12 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
           if (!$entity_type->getThirdPartySetting('tripal', 'bundle_type_column')) {
             $fixed_value = $field_def['settings']['fixed_value'] ?? NULL;
             if ($fixed_value) {
-              $term_parts = explode(':', $fixed_value, 2);
-              $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $term_parts[0]);
-              $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', $term_parts[1]);
-              $entity_type->save();
+              $storage_plugin_settings = $field_def['storage_settings']['storage_plugin_settings'] ?? [];
+              if (array_key_exists('type_table', $storage_plugin_settings) and array_key_exists('type_column', $storage_plugin_settings)) {
+                $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $storage_plugin_settings['type_table']);
+                $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', $storage_plugin_settings['type_column']);
+                $entity_type->save();
+              }
             }
           }
         }
