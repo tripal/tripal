@@ -90,20 +90,22 @@ print "CP02 TripalBackendPublishManager __construct()\n"; //@@@
    * @param string $bundle
    *   The entity type id (bundle) to be published.
    *
+   * @param string $plugin_id
+   *   The name of the publish plugin, default is 'chado_publish'.
+   *
    * @param string $datastore
-   *   The plugin id for the TripalStorage backend to publish from.
-   *   Only currently supported value is 'chado_storage'.
+   *   The plugin id for the TripalStorage backend to publish
+   *   from, default is 'chado_storage'.
    *
    * @param \Drupal\tripal\Services\TripalJob $job
    *   An optional TripalJob object.
    */
-  public static function runTripalJob($bundle, $datastore, $options = [], TripalJob $job = NULL) {
+  public static function runTripalJob($bundle, $plugin_id, $datastore, $options = [], TripalJob $job = NULL) {
 print "CP01 TripalBackendPublishManager runTripalJob()\n"; //@@@
     try {
-
-      // Load the appropriate plugin. Currently only chado is supported, $datastore = 'chado_storage'
+      // Load the specified plugin. An invalid plugin_id is caught during __construct().
       $publish_service = \Drupal::service('tripal.backend_publish');
-      $publish_instance = $publish_service->createInstance('chado_publish', []);
+      $publish_instance = $publish_service->createInstance($plugin_id, []);
 
       $publish_instance->init($bundle, $datastore, $options, $job);
       $publish_instance->publish();

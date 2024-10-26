@@ -6,6 +6,7 @@ use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 use \Drupal\tripal\Services\TripalTokenParser;
 use \Drupal\tripal\Services\TripalJob;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
+use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 
 /**
  * Chado-specific TripalEntity publish.
@@ -152,13 +153,6 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $reported = 0;
 
   /**
-   * The Entity Lookup service.
-   *
-   * @var \Drupal\tripal\Services\TripalEntityLookup $entity_lookup_manager
-   */
-  protected $entity_lookup_manager = NULL;
-
-  /**
    * Initializes the publisher service.
    *
    * @param string $bundle
@@ -191,12 +185,10 @@ print "CP11 ChadoPublish init()\n"; //@@@
 
     // Get the bundle object so we can get settings such as the title format.
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
-    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
-    $entity_type_manager = \Drupal::entityTypeManager();
-    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+    $entity_type = $this->entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
     if (!$entity_type) {
-      $error_msg = 'Could not find the entity type with an id of: "%bundle".';
-      throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
+      throw new TripalPublishException(t('Could not find the entity type with an id of: "%bundle".',
+          ['%bundle' => $bundle]));
     }
     $this->entity_type = $entity_type;
     $this->base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
@@ -204,12 +196,9 @@ print "CP11 ChadoPublish init()\n"; //@@@
     // Get the storage plugin used to publish.
     $this->storage = $this->storage_manager->getInstance(['plugin_id' => $datastore]);
     if (!$this->storage) {
-      $error_msg = 'Could not find an instance of the TripalStorage backend: "%datastore".';
-      throw new \Exception(t($error_msg, ['%datastore' => $datastore]));
+      throw new \TripalPublishException(t('Could not find an instance of the TripalStorage backend: "%datastore".',
+          ['%datastore' => $datastore]));
     }
-
-    // Get the tripal entity lookup service.
-    $this->entity_lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     $this->setFieldInfo();
 

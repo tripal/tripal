@@ -131,6 +131,7 @@ class ChadoManageCommands extends DrushCommands {
    * @param array $options
    *   Publish options. Defaults are
    *   'schema-name' => 'chado'
+   *   'plugin_id' => 'chado_publish'
    *   'datastore' => 'chado_storage'
    * @usage drush trp-chado-publish organism
    *   Submits a standard chado publish job for the organism content type which
@@ -139,18 +140,20 @@ class ChadoManageCommands extends DrushCommands {
    *   Submits a chado publish job for the organism content type which
    *   publishes records in the prod.organism table.
    */
-  public function publish(string $bundle,
-      array $options = ['schema-name' => 'chado', 'datastore' => 'chado_storage']) {
-
-    // @todo validate the bundle
-    // @todo if schema not supplied then grab default chado schema.
+  public function publish(string $bundle, array $options = [
+    'schema-name' => 'chado', 'plugin_id' => 'chado_publish', 'datastore' => 'chado_storage']) {
 
     $current_user = \Drupal::currentUser();
-    $values = ["schema_name" => $options['schema-name']];
+
+    // @todo if schema not supplied then grab default chado schema.
+    $values = ['schema_name' => $options['schema-name']];
+    // @todo validate the bundle
     $bundle = $bundle;
+    $plugin_id = $options['plugin_id'];
     $datastore = $options['datastore'];
 
-    \Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::runTripalJob($bundle, $datastore, $values);
+    \Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::runTripalJob(
+       $bundle, $plugin_id, $datastore, $values);
   }
 
 }
