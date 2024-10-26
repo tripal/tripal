@@ -614,13 +614,13 @@ print "CP11 ChadoPublish init()\n"; //@@@
    */
   protected function updateExistingTitles(array $titles, array $existing_titles, array $published_entities) {
 
-    $conn = \Drupal::service('database');
+    //@@@$conn = \Drupal::service('database');
     $num_updated = 0;
     foreach ($titles as $record_id => $new_title) {
       $existing_title = $existing_titles[$record_id] ?? NULL;
       if ($existing_title and ($new_title != $existing_title)) {
         $entity_id = $published_entities[$record_id];
-        $query = $conn->update('tripal_entity')
+        $query = $this->connection->update('tripal_entity')
           ->fields(['title' => $new_title])
           ->condition('id', $entity_id, '=')
           ->execute();
@@ -657,8 +657,8 @@ print "CP11 ChadoPublish init()\n"; //@@@
     // If any published entities exist, retrieve their current titles.
     $titles = [];
     if ($entity_ids) {
-      $connection = \Drupal::service('database');
-      $query = $connection->select('tripal_entity', 'E');
+      //@@@$connection = \Drupal::service('database');
+      $query = $this->connection->select('tripal_entity', 'E');
       $query->Fields('E', ['id', 'title']);
       $query->condition('id', $entity_ids, 'IN');
       $results = $query->execute();
@@ -688,9 +688,9 @@ print "CP11 ChadoPublish init()\n"; //@@@
    */
   protected function insertEntities($matches, $titles, &$existing_published_entities, &$new_published_entities) {
 
-    $connection = \Drupal::service('database');
+    //@@@$connection = \Drupal::service('database');
     $timestamp = time();
-    $query = $connection->insert('tripal_entity', [])
+    $query = $this->connection->insert('tripal_entity', [])
       -> fields(['type', 'title', 'status', 'created', 'changed']);
     $added_record_ids = [];
     foreach ($matches as $match) {

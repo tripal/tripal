@@ -13,6 +13,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class TripalBackendPublishBase extends PluginBase implements TripalBackendPublishInterface, ContainerFactoryPluginInterface {
 
   /**
+   * The database connection for querying Drupal tables.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $connection;
+
+  /**
    * The Drupal entity type manager service.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -60,6 +67,7 @@ print "CP03 TripalBackendPublishBase create()\n"; //@@@
       $configuration,
       $plugin_id,
       $plugin_definition,
+      $container->get('database'),
       $container->get('entity_type.manager'),
       $container->get('tripal.logger'),
       $container->get('tripal.storage'),
@@ -71,12 +79,14 @@ print "CP03 TripalBackendPublishBase create()\n"; //@@@
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition,
+    \Drupal\Core\Database\Connection $connection,
     \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager,
     \Drupal\tripal\Services\TripalLogger $logger,
     \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager,
     \Drupal\tripal\Services\TripalEntityLookup $entity_lookup_manager) {
 print "CP04 TripalBackendPublishBase __construct()\n"; //@@@
     parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->connection = $connection;
     $this->entity_type_manager = $entity_type_manager;
     $this->logger = $logger;
     $this->storage_manager = $storage_manager;
