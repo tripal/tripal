@@ -48,6 +48,30 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
   protected $entity_lookup_manager = NULL;
 
   /**
+   * Specifies the maximum number of records to publish at one time.
+   * This limits memory consumption if there are many thousands of
+   * records, for example gene records in the feature table.
+   * @todo We might want to add this as an option on the publish form.
+   *
+   * @var integer $batch_size
+   */
+  protected $batch_size = 1000;
+
+  /**
+   * The TripalJob object.
+   *
+   * @var \Drupal\tripal\Services\TripalJob $job
+   */
+  protected $job = NULL;
+
+  /**
+   * The id of the entity type (bundle)
+   *
+   * @var string $bundle
+   */
+  protected $bundle = NULL;
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
@@ -91,6 +115,16 @@ print "CP04 TripalBackendPublishBase __construct()\n"; //@@@
     $this->logger = $logger;
     $this->storage_manager = $storage_manager;
     $this->entity_lookup_manager = $entity_lookup_manager;
+  }
+
+  /**
+   * Updates the batch size variable.
+   *
+   * @param int $batch_size
+   *   A positive integer.
+   */
+  protected function setBatchSize($batch_size) {
+    $this->batch_size = $batch_size;
   }
 
 }

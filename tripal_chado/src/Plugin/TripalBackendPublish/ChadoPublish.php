@@ -48,16 +48,6 @@ class ChadoPublish extends TripalBackendPublishBase {
   private $interval = 1;
 
   /**
-   * Specifies the maximum number of records to publish at one time.
-   * This limits memory consumption if there are many thousands of
-   * records, for example gene records in the feature table.
-   * @todo We might want to add this as an option on the publish form.
-   *
-   * @var integer $batch_size
-   */
-  private $batch_size = 1000;
-
-  /**
    * The TripalJob object.
    *
    * @var \Drupal\tripal\Services\TripalJob $job
@@ -77,20 +67,6 @@ class ChadoPublish extends TripalBackendPublishBase {
    * @var string $base_table
    */
   protected $base_table = '';
-
-  /**
-   * The id of the TripalStorage plugin.
-   *
-   * @var string $datastore.
-   */
-  protected $datastore = '';
-
-  /**
-   * The republish flag specifies whether to publish all or just new records.
-   *
-   * @var string $republish
-   */
-  protected $republish = NULL;
 
   /**
    * A list of the fields and their information.
@@ -146,67 +122,26 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $unsupported_fields = [];
 
   /**
+   * All published entities for the current bundle. The key will be
+   * the chado record ID, the values will be the entity IDs.
+   *
+   * @var array $existing_published_entities
+   */
+  protected $existing_published_entities = [];
+
+  /**
+   * Array of values to search in chado storage.
+   *
+   * @var array $search_values
+   */
+  protected $search_values = [];
+
+  /**
    * Stores the last percentage that progress was reported.
    *
    * @var integer
    */
   protected $reported = 0;
-
-  /**
-   * Initializes the publisher service.
-   *
-   * @param string $bundle
-   *   The id of the bundle or entity type.
-   * @param string $datastore
-   *   The id of the TripalStorage plugin.
-   */
-  public function init($bundle, $datastore, $datastore_options = [], TripalJob $job = NULL) {
-print "CP11 ChadoPublish init()\n"; //@@@
-
-    // Initialize class variables that may persist between consecutive jobs
-    $this->total_items = 0;
-    $this->num_handled = 0;
-    $this->interval = 1;
-    $this->job = $job;
-    $this->bundle = $bundle;
-    $this->republish = $datastore_options['republish'] ?? NULL;
-    $this->datastore = $datastore;
-    $this->field_info = [];
-    $this->entity_type = NULL;
-    $this->storage = NULL;
-    $this->required_types = [];
-    $this->non_required_types = [];
-    $this->unsupported_fields = [];
-    $this->reported = 0;
-
-    if ($job) {
-      $this->logger->setJob($job);
-    }
-
-    // Get the bundle object so we can get settings such as the title format.
-    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
-    $entity_type = $this->entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
-    if (!$entity_type) {
-      throw new TripalPublishException(t('Could not find the entity type with an id of: "%bundle".',
-          ['%bundle' => $bundle]));
-    }
-    $this->entity_type = $entity_type;
-    $this->base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-
-    // Get the storage plugin used to publish.
-    $this->storage = $this->storage_manager->getInstance(['plugin_id' => $datastore]);
-    if (!$this->storage) {
-      throw new \TripalPublishException(t('Could not find an instance of the TripalStorage backend: "%datastore".',
-          ['%datastore' => $datastore]));
-    }
-
-    $this->setFieldInfo();
-
-    // Get the required field properties that will uniquely identify an entity.
-    // We only need to search on those properties.
-    $this->required_types = $this->storage->getStoredTypes();
-    $this->non_required_types = $this->storage->getNonStoredTypes();
-  }
 
   /**
    * Updates the percent interval when the job progress is updated.
@@ -291,7 +226,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
 
 
   /**
-   * Populates the $field_info variable with field information
+   * Populates the $this->field_info variable with field information
    *
    * @param string $bundle
    *   The id of the bundle or entity type.
@@ -344,10 +279,8 @@ print "CP11 ChadoPublish init()\n"; //@@@
 
   /**
    * Adds to the search values array the required property values.
-   *
-   * @param array $seach_values
    */
-  protected function addRequiredValues(&$search_values) {
+  protected function addRequiredValues() {
     // Iterate through the property types that can uniquely identify an entity.
     foreach ($this->required_types as $field_name => $keys) {
 
@@ -364,7 +297,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
       foreach ($keys as $key => $prop_type) {
         $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
             $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
-        $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
+        $this->search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
       }
     }
   }
@@ -373,10 +306,8 @@ print "CP11 ChadoPublish init()\n"; //@@@
    * Adds to the search values array properties needed for tokens in titles.
    *
    * Tokens are used in the title format and URL alias of entities.
-   *
-   * @param array $seach_values
    */
-  protected function addTokenValues(&$search_values) {
+  protected function addTokenValues() {
     // We also need to add in the properties required to build a
     // title and URL alias.
     $title_format = $this->entity_type->getTitleFormat();
@@ -397,7 +328,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
         $prop = $field_info['prop_types']['record_id'];
         $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
             $field_class::$id, 'record_id', $prop->getTerm()->getTermId(), NULL);
-        $search_values[$field_name][0]['record_id'] = ['value' => $prop_value];
+        $this->search_values[$field_name][0]['record_id'] = ['value' => $prop_value];
 
         // Add the main property.
         /** @var \Drupal\tripal\TripalField\TripalFieldItemBase $field */
@@ -407,7 +338,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
         $prop = $field_info['prop_types'][$main_prop];
         $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
             $field_class::$id, $main_prop, $prop->getTerm()->getTermId(), NULL);
-        $search_values[$field_name][0][$main_prop] = ['value' => $prop_value];
+        $this->search_values[$field_name][0][$main_prop] = ['value' => $prop_value];
       }
     }
   }
@@ -419,10 +350,8 @@ print "CP11 ChadoPublish init()\n"; //@@@
    * them.  An example of this is are cases where the ChadoAdditionalTypeDefault
    * field has a type_id that will never be changed.  Content types such as "mRNA"
    * or "gene" use these.  We need to add these to our search filter.
-   *
-   * @param array $seach_values
    */
-  protected function addFixedTypeValues(&$search_values) {
+  protected function addFixedTypeValues() {
 
     // Iterate through fields.
     foreach ($this->field_info as $field_name => $field_info) {
@@ -453,7 +382,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
       foreach ($prop_values as $prop_value) {
         if (($prop_value->getValue())) {
           $prop_key = $prop_value->getKey();
-          $search_values[$field_name][0][$prop_key] = [
+          $this->search_values[$field_name][0][$prop_key] = [
             'value' => $prop_value,
             'operation' => '=',
           ];
@@ -464,10 +393,8 @@ print "CP11 ChadoPublish init()\n"; //@@@
 
   /**
    * Adds to the search values array any remaining property values.
-   *
-   * @param array $seach_values
    */
-  protected function addNonRequiredValues(&$search_values) {
+  protected function addNonRequiredValues() {
     // Iterate through the property types that can uniquely identify an entity.
     foreach ($this->non_required_types as $field_name => $keys) {
 
@@ -483,10 +410,10 @@ print "CP11 ChadoPublish init()\n"; //@@@
 
       foreach ($keys as $key => $prop_type) {
         // Only add here if not already added in one of the previous steps
-        if (!($search_values[$field_name][0][$prop_type->getKey()]['value'] ?? FALSE)) {
+        if (!($this->search_values[$field_name][0][$prop_type->getKey()]['value'] ?? FALSE)) {
           $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
               $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
-          $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
+          $this->search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
         }
       }
     }
@@ -605,21 +532,17 @@ print "CP11 ChadoPublish init()\n"; //@@@
    *   A list of new titles to check, key is chado record ID.
    * @param array $existing_titles
    *   A list of already published titles, key is chado record ID.
-   * @param array $published_entities
-   *   A list of published entities. The key will be the chado table
-   *   record ID, the values will be the entity IDs.
    *
    * @return int
    *   Number of titles that were updated.
    */
-  protected function updateExistingTitles(array $titles, array $existing_titles, array $published_entities) {
+  protected function updateExistingTitles(array $titles, array $existing_titles) {
 
-    //@@@$conn = \Drupal::service('database');
     $num_updated = 0;
     foreach ($titles as $record_id => $new_title) {
       $existing_title = $existing_titles[$record_id] ?? NULL;
       if ($existing_title and ($new_title != $existing_title)) {
-        $entity_id = $published_entities[$record_id];
+        $entity_id = $this->existing_published_entities[$record_id];
         $query = $this->connection->update('tripal_entity')
           ->fields(['title' => $new_title])
           ->condition('id', $entity_id, '=')
@@ -635,20 +558,17 @@ print "CP11 ChadoPublish init()\n"; //@@@
    *
    * @param array $record_ids
    *   A list of chado record IDs to process.
-   * @param array $published_entities
-   *   All published entities for the current bundle. The key will be
-   *   the chado record ID, the values will be the entity IDs.
    *
    * @return array
    *   An associative array of published entities keyed by the
    *   chado record ID with a value of the existing entity title.
    */
-  protected function findEntities(array $record_ids, array $published_entities) {
+  protected function findEntities(array $record_ids) {
 
     // Convert published chado record IDs to entity IDs
     $entity_ids = [];
     foreach ($record_ids as $record_id) {
-      $entity_id = $published_entities[$record_id] ?? NULL;
+      $entity_id = $this->existing_published_entities[$record_id] ?? NULL;
       if ($entity_id) {
         $entity_ids[] = $entity_id;
       }
@@ -657,14 +577,13 @@ print "CP11 ChadoPublish init()\n"; //@@@
     // If any published entities exist, retrieve their current titles.
     $titles = [];
     if ($entity_ids) {
-      //@@@$connection = \Drupal::service('database');
       $query = $this->connection->select('tripal_entity', 'E');
       $query->Fields('E', ['id', 'title']);
       $query->condition('id', $entity_ids, 'IN');
       $results = $query->execute();
       while ($record = $results->fetchObject()) {
         $entity_id = $record->id;
-        $chado_record_id = array_search($entity_id, $published_entities);
+        $chado_record_id = array_search($entity_id, $this->existing_published_entities);
         $titles[$chado_record_id] = $record->title;
       }
     }
@@ -679,16 +598,12 @@ print "CP11 ChadoPublish init()\n"; //@@@
    *   The array of matches for each entity.
    * @param array $titles
    *   The array of entity titles keyed by the record ID.
-   * @param array $existing_published_entities
-   *   All published entities for the current bundle. The key will be
-   *   the chado record ID, the values will be the entity IDs.
    * @param array $new_published_entities
    *   The first 100 published entities, key is entity ID, value is title.
    *   This becomes the return value for the publish job.
    */
-  protected function insertEntities($matches, $titles, &$existing_published_entities, &$new_published_entities) {
+  protected function insertEntities($matches, $titles, &$new_published_entities) {
 
-    //@@@$connection = \Drupal::service('database');
     $timestamp = time();
     $query = $this->connection->insert('tripal_entity', [])
       -> fields(['type', 'title', 'status', 'created', 'changed']);
@@ -705,7 +620,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
     // Store the new entity IDs of the newly inserted
     // entities along with any existing ones.
     foreach ($added_record_ids as $index => $record_id) {
-      $existing_published_entities[$record_id] = $index + $first_added_entity_id;
+      $this->existing_published_entities[$record_id] = $index + $first_added_entity_id;
       // Return only the first 100 for the publish job
       if (count($new_published_entities) < 100) {
         $new_published_entities[$index + $first_added_entity_id] = $titles[$record_id];
@@ -720,16 +635,12 @@ print "CP11 ChadoPublish init()\n"; //@@@
    *   The name of the field
    * @param array $record_ids
    *   Chado record IDs to process
-   * @param array $published_entities
-   *   All published entities for the current bundle. The key will be
-   *   the chado record ID, the values will be the entity IDs.
    *
    * @return array
    *   An associative array of matched entities keyed first by the
    *   entity_id and then by the delta. Value is always TRUE.
    */
-  protected function findFieldItems($field_name, $record_ids, $published_entities) {
-    $database = \Drupal::database();
+  protected function findFieldItems($field_name, $record_ids) {
     $field_table = 'tripal_entity__' . $field_name;
 
     $items = [];
@@ -738,7 +649,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
 
     $batch_ids = [];
     foreach ($record_ids as $record_id) {
-      $entity_id = $published_entities[$record_id] ?? NULL;
+      $entity_id = $this->existing_published_entities[$record_id] ?? NULL;
       if ($entity_id) {
         $batch_ids[] = $entity_id;
       }
@@ -747,7 +658,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
       ':bundle' => $this->bundle,
       ':entity_ids[]' => $batch_ids
     ];
-    $results = $database->query($sql, $args);
+    $results = $this->connection->query($sql, $args);
     while ($result = $results->fetchAssoc()) {
       $entity_id = $result['entity_id'];
       if (!array_key_exists($entity_id, $items)) {
@@ -788,9 +699,6 @@ print "CP11 ChadoPublish init()\n"; //@@@
    *   The name of the field
    * @param array $matches
    *   The array of matches for each entity.
-   * @param array $published_entities
-   *   All published entities for the current bundle. The key will be
-   *   the chado record ID, the values will be the entity IDs.
    * @param array $existing
    *   An associative array of entities that already have an existing item for this field.
    * @param array $new_published_entities
@@ -801,9 +709,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
    * @return int
    *   The number of items inserted for the field.
    */
-  protected function insertFieldItems($field_name, $matches, $published_entities, $existing, &$new_published_entities, $titles) {
-
-    $database = \Drupal::database();
+  protected function insertFieldItems($field_name, $matches, $existing, &$new_published_entities, $titles) {
     $field_table = 'tripal_entity__' . $field_name;
 
     $batch_size = 1000;
@@ -836,7 +742,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
     // entity.
     foreach ($matches as $match) {
       $record_id = $this->getChadoRecordID($match);
-      $entity_id = $published_entities[$record_id];
+      $entity_id = $this->existing_published_entities[$record_id];
 
       // Iterate through the "items" of each field and insert a record value
       // for each non-empty item.
@@ -876,6 +782,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
           $this->insertOneFieldItem($sql, $args, $j, $match, $entity_id, $delta, $field_name);
           $num_inserted++;
           if (count($new_published_entities) < 100) {
+print "CP32 record_id=$record_id\n"; //@@@
             $new_published_entities[$entity_id] = $titles[$record_id];
           }
         }
@@ -885,7 +792,7 @@ print "CP11 ChadoPublish init()\n"; //@@@
           if (count($args) > 0) {
             $sql = rtrim($sql, ",\n");
             $sql = $init_sql . $sql;
-            $database->query($sql, $args);
+            $this->connection->query($sql, $args);
           }
           $this->setItemsHandled($batch_num);
           $batch_num++;
@@ -952,17 +859,16 @@ print "CP11 ChadoPublish init()\n"; //@@@
    *
    * @param array $matches
    *   The array of matches for each entity.
-   * @param array $existing_published_entities
-   *   The array of existing records.
    *
    * @return array
    *   The passed $matches with already published entities excluded.
    */
-  protected function excludeExisting($matches, $existing_published_entities) {
+  protected function excludeExisting($matches) {
+print "CP41 excludeExisting - existing is "; var_dump($this->existing_published_entities); //@@@
     $new_matches = [];
     foreach ($matches as $match) {
       $record_id = $this->getChadoRecordID($match);
-      if (!array_key_exists($record_id, $existing_published_entities)) {
+      if (!array_key_exists($record_id, $this->existing_published_entities)) {
         $new_matches[] = $match;
       }
     }
@@ -991,25 +897,148 @@ print "CP11 ChadoPublish init()\n"; //@@@
   }
 
   /**
-   * Publishes Tripal entities.
+   * Initialization for publishing.
    *
-   * Publishes content to Tripal from Chado or another
-   * specified datastore that matches the provided
-   * filters.
+   * @param array $options
+   *   An associative array defining what and how to publish. Required keys are:
+   *     'bundle' - The id of the bundle or entity type
+   *     'datastore' - The id of the TripalStorage plugin
+   *   Optional keys are:
+   *     'republish' - If true, then republish existing entitites.
+   *     'job' - A Tripal job object
+   *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
+   */
+  public function init(array $options) {
+print "CP11 ChadoPublish init()\n"; //@@@
+
+    // Required options
+    $this->bundle = $options['bundle'] ?? '';
+    $this->datastore = $options['datastore'] ?? '';
+    if (!$this->bundle) {
+      throw new TripalPublishException(t('A bundle must be specified to publish'));
+    }
+    if (!$this->datastore) {
+      throw new TripalPublishException(t('A datastore must be specified to publish'));
+    }
+    // Optional values
+    $this->republish = ($options['republish'] ?? FALSE) ? TRUE : FALSE;
+    $this->job = $options['job'] ?? NULL;
+    if ($options['batch_size'] ?? 0) {
+      $this->batch_size = $options['batch_size'];
+    }
+
+    // Initialize class variables that may persist between consecutive jobs
+    $this->total_items = 0;
+    $this->num_handled = 0;
+    $this->interval = 1;
+    //$this->job = $job;
+    //$this->bundle = $bundle;
+    //$this->republish = $datastore_options['republish'] ?? NULL;
+    //$this->datastore = $datastore;
+    $this->field_info = [];
+    $this->entity_type = NULL;
+    //$this->storage = NULL;
+    $this->required_types = [];
+    $this->non_required_types = [];
+    $this->unsupported_fields = [];
+    $this->reported = 0;
+    $this->search_values = [];
+
+    if ($this->job) {
+      $this->logger->setJob($this->job);
+    }
+
+    // Get the bundle object so we can get settings such as the title format.
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+    $this->entity_type = $this->entity_type_manager->getStorage('tripal_entity_type')->load($this->bundle);
+    if (!$this->entity_type) {
+      throw new TripalPublishException(t('Could not find the entity type with an id of: "%bundle".',
+          ['%bundle' => $this->bundle]));
+    }
+    $this->base_table = $this->entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+
+    // Get the storage plugin used to publish.
+    $this->storage = $this->storage_manager->getInstance(['plugin_id' => $this->datastore]);
+    if (!$this->storage) {
+      throw new \TripalPublishException(t('Could not find an instance of the TripalStorage backend: "%datastore".',
+          ['%datastore' => $this->datastore]));
+    }
+  }
+
+  /**
+   * Retrieves an array of chado record pkeys eligible for publishing.
    *
-   * @param array $filters
-   *   Filters that determine which content will be published.
+   * @return array
+   *   An array of chado record IDs
+   */
+  protected function getRecordIds() {
+print "CP12a getRecordIds()\n"; //@@@
+    // Populates the $this->field_info variable with field information
+    $this->setFieldInfo();
+
+    // Get the required field properties that will uniquely identify an entity.
+    // We only need to search on those properties.
+    $this->required_types = $this->storage->getStoredTypes();
+    $this->non_required_types = $this->storage->getNonStoredTypes();
+
+    // Build the $this->search_values array
+print "CP12b addReqiredValues()\n"; //@@@
+    $this->addRequiredValues();
+print "CP12c addTokenValues()\n"; //@@@
+    $this->addTokenValues();
+print "CP12d addFixedTypeValues()\n"; //@@@
+    $this->addFixedTypeValues();
+print "CP12e addNonReqiredValues()\n"; //@@@
+    $this->addNonRequiredValues();
+
+    // We retrieve a list of all primary keys for the base table of the
+    // content type. This allows us to later divide publishing into small
+    // batches to reduce the amount of memory required if there are
+    // thousands of records to publish.
+    $this->logger->notice(t("Finding all candidate records in the %table chado table",
+        ['%table' => $this->base_table]));
+    $record_ids = $this->storage->findAllRecordIds($this->bundle);
+
+    // Get a list of already-published entities.
+    // The key will be the chado table record ID, the values will be the entity IDs.
+    $this->existing_published_entities = $this->entity_lookup_manager->getPublishedEntityIds($this->bundle, 'tripal_entity');
+print "CP12f bundle ".$this->bundle." existing_published_entities is "; var_dump($this->existing_published_entities); //@@@
+
+    // If not republishing everything, remove any already published records.
+    if (!$this->republish) {
+      $record_ids = array_diff($record_ids, array_keys($this->existing_published_entities));
+    }
+
+    return $record_ids;
+  }
+
+  /**
+   * Publishes Chado content to Tripal entities.
    *
+   * @param array $options
+   *   Associative array defining what and how to publish. Required keys are:
+   *     'bundle' - The id of the bundle or entity type
+   *     'datastore' - The id of the TripalStorage plugin
+   *   Optional keys are:
+   *     'republish' - If true, then republish existing entitites.
+   *     'job' - A Tripal job object
+   *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
+   * .
    * @return array
    *   An associative array of the first 100 entities that were published,
    *   keyed by their titles, and the value being the entity_id.
    *
    */
-  public function publish($filters = []) {
+  public function publish($options) {
+print "CP10 new ChadoPublish publish()\n";//@@@
+    $this->init($options);
+    $record_ids = $this->getRecordIds();
 
-print "CP12 new ChadoPublish publish()\n";//@@@
-//@todo $transaction_chado = $this->connection->startTransaction();
-//$transaction_chado->rollback();
+    // If there is nothing to publish, we can quit early
+    if (!count($record_ids)) {
+      $this->logger->notice(t('There are no records to publish for this content type'));
+      return [];
+    }
 
     $total_items = 0;
     $new_published_entities = [];
@@ -1017,45 +1046,19 @@ print "CP12 new ChadoPublish publish()\n";//@@@
     $total_new_entities = 0;
     $total_updated_titles = 0;
 
-    // Build the search values array
-    $search_values = [];
-    $this->addRequiredValues($search_values);
-    $this->addTokenValues($search_values);
-    $this->addFixedTypeValues($search_values);
-    $this->addNonRequiredValues($search_values);
-
-    // We retrieve a list of all primary keys for the base table of the
-    // content type. This allows us to divide publishing into small batches
-    // to reduce the amount of memory required if there are thousands of
-    // records to publish.
-    $this->logger->notice("Finding all candidate record IDs...");
-    $record_ids = $this->storage->findAllRecordIds($this->bundle);
-
-    // Get a list of already-published entities.
-    // The key will be the chado table record ID, the values will be the entity IDs.
-    $existing_published_entities = $this->entity_lookup_manager->getPublishedEntityIds($this->bundle, 'tripal_entity');
-
-    // If not republishing everything, remove any already published records.
-    if (!$this->republish) {
-      $record_ids = array_diff($record_ids, array_keys($existing_published_entities));
-    }
-
-    // If there is nothing to publish, quit early
-    if (!count($record_ids)) {
-      $this->logger->notice('There are no records to publish for this content type');
-      return [];
-    }
-
     // Divide into batches
     $record_id_batches = $this->divideIntoBatches($record_ids);
     $number_of_batches = count($record_id_batches);
 
     // Let user know how much will be published
-    $message = 'Will publish ' . number_format(count($record_ids)) . ' records';
+    $message = 'Preparing to publish ' . number_format(count($record_ids)) . ' records';
     if ($number_of_batches > 1) {
       $message .= ' in ' . number_format($number_of_batches) . ' batches';
     }
     $this->logger->notice($message);
+
+    $transaction_chado = $this->connection->startTransaction();
+//$transaction_chado->rollback();
 
     foreach ($record_id_batches as $batch_num => $record_id_batch) {
 
@@ -1066,7 +1069,7 @@ print "CP12 new ChadoPublish publish()\n";//@@@
       }
 
       $this->logger->notice($batch_prefix . "Step 1 of 6: Find matching records...");
-      $matches = $this->storage->findValues($search_values, $record_id_batch);
+      $matches = $this->storage->findValues($this->search_values, $record_id_batch);
 
       if (!count($matches)) {
         $this->logger->notice('No matching records found');
@@ -1077,15 +1080,15 @@ print "CP12 new ChadoPublish publish()\n";//@@@
       $titles = $this->getEntityTitles($matches);
 
       $this->logger->notice($batch_prefix . "Step 3 of 6: Find existing published entity titles...");
-      $existing_titles = $this->findEntities($record_id_batch, $existing_published_entities);
+      $existing_titles = $this->findEntities($record_id_batch);
       $total_existing_entities += count($existing_titles);
 
       $this->logger->notice($batch_prefix . "Step 4 of 6: Updating existing page titles...");
-      $total_updated_titles += $this->updateExistingTitles($titles, $existing_titles, $existing_published_entities);
+      $total_updated_titles += $this->updateExistingTitles($titles, $existing_titles);
 
       // Exclude any matches that are already published. We
       // need to publish only new matches.
-      $new_matches = $this->excludeExisting($matches, $existing_published_entities);
+      $new_matches = $this->excludeExisting($matches);
       $total_new_entities += count($new_matches);
 
       // Note: entities are not tied to any storage backend. An entity
@@ -1094,7 +1097,7 @@ print "CP12 new ChadoPublish publish()\n";//@@@
       // backends. But, if the entity with a given title for this content type
       // doesn't exist, then let's create one.
       $this->logger->notice($batch_prefix . "Step 5 of 6: Publishing " . number_format(count($new_matches))  . " new entities...");
-      $this->insertEntities($new_matches, $titles, $existing_published_entities, $new_published_entities);
+      $this->insertEntities($new_matches, $titles, $new_published_entities);
 
       // Now we have to publish the field items. These represent storage back-end information
       // about the entity. If the entity was previously published we still may be adding new
@@ -1108,8 +1111,8 @@ print "CP12 new ChadoPublish publish()\n";//@@@
 
       foreach ($this->field_info as $field_name => $field_info) {
 
-        $existing_field_items = $this->findFieldItems($field_name, $record_id_batch, $existing_published_entities);
-        $num_inserted = $this->insertFieldItems($field_name, $matches, $existing_published_entities,
+        $existing_field_items = $this->findFieldItems($field_name, $record_id_batch);
+        $num_inserted = $this->insertFieldItems($field_name, $matches,
           $existing_field_items, $new_published_entities, $titles);
 
         if ($num_inserted) {

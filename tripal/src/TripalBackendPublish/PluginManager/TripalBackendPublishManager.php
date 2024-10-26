@@ -107,8 +107,12 @@ print "CP01 TripalBackendPublishManager runTripalJob()\n"; //@@@
       $publish_service = \Drupal::service('tripal.backend_publish');
       $publish_instance = $publish_service->createInstance($plugin_id, []);
 
-      $publish_instance->init($bundle, $datastore, $options, $job);
-      $publish_instance->publish();
+      $publish_options = $options;
+      $publish_options['bundle'] = $bundle;
+      $publish_options['datastore'] = $datastore;
+      $publish_options['job'] = $job;
+     //@@@ $publish_instance->init($bundle, $datastore, $options, $job);
+      $publish_instance->publish($publish_options);
     }
     catch (Exception $e) {
       if ($job) {
