@@ -12,6 +12,36 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 class TripalBackendPublishManager extends DefaultPluginManager {
 
   /**
+   * The TripalLogger object.
+   *
+   * @var \Drupal\tripal\Services\TripalLogger $logger
+   */
+  protected $logger = NULL;
+
+  /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static function
+   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
+   * this method is used to determine the parameters to pass to the contructor.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('tripal.logger')
+    );
+  }
+
+  /**
    * Constructs a new TripalBackendPublish manager.
    *
    * @param \Traversable $namespaces
@@ -23,11 +53,13 @@ class TripalBackendPublishManager extends DefaultPluginManager {
    *   The interface each plugin should implement.
    * @param string $plugin_definition_annotation_name
    *   The name of the annotation that contains the plugin definition.
+   * @param \Drupal\tripal\Services\TripalLogger $logger
    */
   public function __construct(
     \Traversable $namespaces,
     CacheBackendInterface $cache_backend,
-    ModuleHandlerInterface $module_handler
+    ModuleHandlerInterface $module_handler,
+    \Drupal\tripal\Services\TripalLogger $logger
   ) {
 print "CP02 TripalBackendPublishManager __construct()\n"; //@@@
     parent::__construct(
@@ -39,6 +71,17 @@ print "CP02 TripalBackendPublishManager __construct()\n"; //@@@
     );
     $this->alterInfo("tripal_backend_publish_info");
     $this->setCacheBackend($cache_backend, "tripal_backend_publish_plugins");
+    $this->logger = $logger;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * OVERRIDE: We need to override the default implementation here in order to
+   * pass in the dependencies cleanly :-)
+   */
+  public function createInstance($plugin_id, array $configuration = []) {
+    return $this->getFactory()->createInstance($plugin_id, $configuration, $this->logger);
   }
 
   /**
@@ -49,19 +92,16 @@ print "CP02 TripalBackendPublishManager __construct()\n"; //@@@
    *
    * @param string $datastore
    *   The plugin id for the TripalStorage backend to publish from.
+   *   Only currently supported value is 'chado_storage'.
    *
    * @param \Drupal\tripal\Services\TripalJob $job
-   *  An optional TripalJob object.
+   *   An optional TripalJob object.
    */
   public static function runTripalJob($bundle, $datastore, $options = [], TripalJob $job = NULL) {
-    print "CP01 TripalBackendPublishManager runTripalJob()\n"; //@@@
+print "CP01 TripalBackendPublishManager runTripalJob()\n"; //@@@
     try {
-      // Initialize the logger.
-      /** @var \Drupal\tripal\Services\TripalLogger $logger **/
-      $logger = \Drupal::service('tripal.logger');
 
       // Load the appropriate plugin. Currently only chado is supported, $datastore = 'chado_storage'
-      /** @var \Drupal\tripal\Services\TripalPublish $publish_service */
       $publish_service = \Drupal::service('tripal.backend_publish');
       $publish_instance = $publish_service->createInstance('chado_publish', []);
 
@@ -70,7 +110,7 @@ print "CP02 TripalBackendPublishManager __construct()\n"; //@@@
     }
     catch (Exception $e) {
       if ($job) {
-        $logger->error($e->getMessage());
+        self::$logger->error($e->getMessage());
       }
     }
   }

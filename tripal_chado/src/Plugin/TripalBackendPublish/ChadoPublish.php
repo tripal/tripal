@@ -152,13 +152,6 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $reported = 0;
 
   /**
-   * The TripalLogger object.
-   *
-   * @var \Drupal\tripal\Services\TripalLogger $logger
-   */
-  protected $logger = NULL;
-
-  /**
    * The Entity Lookup service.
    *
    * @var \Drupal\tripal\Services\TripalEntityLookup $entity_lookup_manager
@@ -174,7 +167,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   The id of the TripalStorage plugin.
    */
   public function init($bundle, $datastore, $datastore_options = [], TripalJob $job = NULL) {
-print "CP03 ChadoPublish init()\n"; //@@@
+print "CP11 ChadoPublish init()\n"; //@@@
 
     // Initialize class variables that may persist between consecutive jobs
     $this->total_items = 0;
@@ -192,8 +185,6 @@ print "CP03 ChadoPublish init()\n"; //@@@
     $this->unsupported_fields = [];
     $this->reported = 0;
 
-    // Initialize the logger.
-    $this->logger = \Drupal::service('tripal.logger');
     if ($job) {
       $this->logger->setJob($job);
     }
@@ -211,9 +202,7 @@ print "CP03 ChadoPublish init()\n"; //@@@
     $this->base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
 
     // Get the storage plugin used to publish.
-    /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
-    $storage_manager = \Drupal::service('tripal.storage');
-    $this->storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
+    $this->storage = $this->storage_manager->getInstance(['plugin_id' => $datastore]);
     if (!$this->storage) {
       $error_msg = 'Could not find an instance of the TripalStorage backend: "%datastore".';
       throw new \Exception(t($error_msg, ['%datastore' => $datastore]));
@@ -1029,7 +1018,7 @@ print "CP03 ChadoPublish init()\n"; //@@@
    */
   public function publish($filters = []) {
 
-print "CP04 new ChadoPublish publish()\n";//@@@
+print "CP12 new ChadoPublish publish()\n";//@@@
 //@todo $transaction_chado = $this->connection->startTransaction();
 //$transaction_chado->rollback();
 
