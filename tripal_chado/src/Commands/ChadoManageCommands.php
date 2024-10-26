@@ -131,7 +131,6 @@ class ChadoManageCommands extends DrushCommands {
    * @param array $options
    *   Publish options. Defaults are
    *   'schema-name' => 'chado'
-   *   'plugin-id' => 'chado_publish'
    *   'datastore' => 'chado_storage'
    *   'batch-size' => '1000'
    * @usage drush trp-chado-publish organism
@@ -143,7 +142,6 @@ class ChadoManageCommands extends DrushCommands {
    */
   public function publish(string $bundle, array $options = [
     'schema-name' => 'chado',
-    'plugin-id' => 'chado_publish',
     'datastore' => 'chado_storage',
     'batch-size' => '1000']) {
 
@@ -156,11 +154,10 @@ class ChadoManageCommands extends DrushCommands {
     ];
     // @todo validate the bundle
     $bundle = $bundle;
-    $plugin_id = $options['plugin-id'];
     $datastore = $options['datastore'];
 
     \Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::runTripalJob(
-       $bundle, $plugin_id, $datastore, $values);
+       $bundle, $datastore, $values);
   }
 
 }

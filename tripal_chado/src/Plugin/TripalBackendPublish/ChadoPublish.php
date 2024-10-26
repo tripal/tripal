@@ -12,7 +12,7 @@ use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
  * Chado-specific TripalEntity publish.
  *
  *  @TripalBackendPublish(
- *    id = "chado_publish",
+ *    id = "chado_storage",
  *    label = @Translation("Chado Publish"),
  *    description = @Translation("Creates Tripal content based on records in a chado database."),
  *  )
