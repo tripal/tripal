@@ -712,9 +712,9 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected function insertFieldItems($field_name, $matches, $existing, &$new_published_entities, $titles) {
     $field_table = 'tripal_entity__' . $field_name;
 
-    $batch_size = 1000;
+    $insert_batch_size = 1000;
     $num_matches = $this->countFieldMatches($field_name, $matches);
-    $num_batches = (int) ($num_matches / $batch_size) + 1;
+    $num_batches = (int) ($num_matches / $insert_batch_size) + 1;
 
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
@@ -788,7 +788,7 @@ print "CP32 record_id=$record_id\n"; //@@@
         }
 
         // If we've reached the size of the batch then let's do the insert.
-        if ($j == $batch_size or $total == $num_matches) {
+        if ($j == $insert_batch_size or $total == $num_matches) {
           if (count($args) > 0) {
             $sql = rtrim($sql, ",\n");
             $sql = $init_sql . $sql;
