@@ -100,7 +100,7 @@ print "CP02 TripalBackendPublishManager __construct()\n"; //@@@
    * @param \Drupal\tripal\Services\TripalJob $job
    *   An optional TripalJob object.
    */
-  public static function runTripalJob($bundle, $datastore, $options = [], TripalJob $job = NULL) {
+  public static function runTripalJob($bundle, $datastore, $options = [], \Drupal\tripal\Services\TripalJob $job = NULL) {
     try {
       // Load the specified plugin. An invalid plugin_id is caught during __construct().
       $publish_service = \Drupal::service('tripal.backend_publish');

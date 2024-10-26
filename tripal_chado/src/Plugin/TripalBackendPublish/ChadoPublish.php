@@ -995,8 +995,7 @@ print "CP12e addNonReqiredValues()\n"; //@@@
     // content type. This allows us to later divide publishing into small
     // batches to reduce the amount of memory required if there are
     // thousands of records to publish.
-    $this->logger->notice(t("Finding all candidate records in the %table chado table",
-        ['%table' => $this->base_table]));
+    $this->logger->notice("Finding all candidate records in the ".$this->base_table." chado table");
     $record_ids = $this->storage->findAllRecordIds($this->bundle);
 
     // Get a list of already-published entities.
