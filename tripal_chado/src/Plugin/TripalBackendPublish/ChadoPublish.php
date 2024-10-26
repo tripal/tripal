@@ -1030,7 +1030,7 @@ print "CP12f bundle ".$this->bundle." existing_published_entities is "; var_dump
    *
    */
   public function publish($options) {
-print "CP10 new ChadoPublish publish()\n";//@@@
+print "CP10 new ChadoPublish publish()\n"; //@@@
     $this->init($options);
     $record_ids = $this->getRecordIds();
 

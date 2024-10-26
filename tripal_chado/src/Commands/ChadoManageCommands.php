@@ -143,7 +143,8 @@ class ChadoManageCommands extends DrushCommands {
   public function publish(string $bundle, array $options = [
     'schema-name' => 'chado',
     'datastore' => 'chado_storage',
-    'batch-size' => '1000']) {
+    'batch-size' => '1000',
+    'republish' => 0]) {
 
     $current_user = \Drupal::currentUser();
 
@@ -151,6 +152,7 @@ class ChadoManageCommands extends DrushCommands {
     $values = [
       'schema_name' => $options['schema-name'],
       'batch_size' => $options['batch-size'],
+      'republish' => $options['republish'],
     ];
     // @todo validate the bundle
     $bundle = $bundle;
