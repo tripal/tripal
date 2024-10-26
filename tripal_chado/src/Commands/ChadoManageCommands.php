@@ -125,8 +125,7 @@ class ChadoManageCommands extends DrushCommands {
    * @command tripal-chado:publish
    * @aliases trp-chado-publish
    * @options schema-name
-   *   The name of the chado schema to prepare. Only a single chado schema
-   *   should be prepared with Tripal and this will become the default chado schema.
+   *   The name of the chado schema to use.
    * @param bundle
    *   The id of the TripalContentType you would like to publish content for.
    * @usage drush trp-chado-publish organism
