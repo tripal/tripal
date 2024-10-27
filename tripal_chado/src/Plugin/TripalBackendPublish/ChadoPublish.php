@@ -796,6 +796,8 @@ class ChadoPublish extends TripalBackendPublishBase {
     $this->required_types = [];
     $this->non_required_types = [];
     $this->unsupported_fields = [];
+    $this->existing_published_entities = [];
+    $this->published_or_updated_entities = [];
     $this->search_values = [];
 
     if ($this->job) {
@@ -845,7 +847,6 @@ class ChadoPublish extends TripalBackendPublishBase {
     // batches to reduce the amount of memory required if there are
     // thousands of records to publish.
     $this->logger->notice('Finding all candidate records in the "'.$this->base_table.'" chado table');
-print "CP01 bundle=".$this->bundle."\n";//@@@
     $record_ids = $this->storage->findAllRecordIds($this->bundle);
 
     // Get a list of already-published entities.
@@ -856,7 +857,6 @@ print "CP01 bundle=".$this->bundle."\n";//@@@
     if (!$this->republish) {
       $record_ids = array_diff($record_ids, array_keys($this->existing_published_entities));
     }
-
     return $record_ids;
   }
 
