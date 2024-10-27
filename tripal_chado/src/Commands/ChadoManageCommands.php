@@ -141,14 +141,17 @@ class ChadoManageCommands extends DrushCommands {
    *   publishes records in the prod.organism table.
    */
   public function publish(string $bundle, array $options = [
-    'schema-name' => 'chado',
+    'schema-name' => '',
     'datastore' => 'chado_storage',
     'batch-size' => '1000',
     'republish' => 0]) {
 
-    $current_user = \Drupal::currentUser();
-
-    // @todo if schema not supplied then grab default chado schema.
+    // If schema not supplied then grab default chado schema.
+    if (!$options['schema-name']) {
+      $chado = \Drupal::service('tripal_chado.database');
+      $default_chado_schema = $chado->getSchemaName();
+      $options['schema-name'] = $default_chado_schema;
+    }
     $values = [
       'schema_name' => $options['schema-name'],
       'batch_size' => $options['batch-size'],
