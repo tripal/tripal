@@ -110,13 +110,8 @@ class ChadoPublish extends TripalBackendPublishBase {
    */
   protected function setFieldInfo() {
 
-    // Get the field manager, field definitions for the bundle type, and
-    // the field type manager.
-    /** @var \Drupal\Core\Entity\EntityFieldManager $field_manager **/
-    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
-    $field_manager = \Drupal::service('entity_field.manager');
-    $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $this->bundle);
-    $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
+    // Get the field definitions for the bundle type
+    $field_defs = $this->entity_field_manager->getFieldDefinitions('tripal_entity', $this->bundle);
 
     // Iterate over the field definitions for the bundle and collect the
     // information so we can use it later.
@@ -132,7 +127,7 @@ class ChadoPublish extends TripalBackendPublishBase {
             'name' => $field_name,
             'parent' => NULL,
           ];
-          $instance = $field_type_manager->createInstance($field_definition->getType(), $configuration);
+          $instance = $this->field_type_manager->createInstance($field_definition->getType(), $configuration);
           $prop_types = $instance->tripalTypes($field_definition);
           $field_class = get_class($instance);
           $this->storage->addTypes($field_name, $prop_types);
@@ -225,8 +220,8 @@ class ChadoPublish extends TripalBackendPublishBase {
    *
    * Sometimes type values are fixed and the user cannot change
    * them.  An example of this is are cases where the ChadoAdditionalTypeDefault
-   * field has a type_id that will never be changed.  Content types such as "mRNA"
-   * or "gene" use these.  We need to add these to our search filter.
+   * field has a type_id that will never be changed. Content types such as "mRNA"
+   * or "gene" use these. We need to add these to our search filter.
    */
   protected function addFixedTypeValues() {
 
@@ -796,20 +791,11 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
 
     // Initialize class variables that may persist between consecutive jobs
-    $this->total_items = 0;
-    $this->num_handled = 0;
-    $this->interval = 1;
-    //$this->job = $job;
-    //$this->bundle = $bundle;
-    //$this->republish = $datastore_options['republish'] ?? NULL;
-    //$this->datastore = $datastore;
     $this->field_info = [];
     $this->entity_type = NULL;
-    //$this->storage = NULL;
     $this->required_types = [];
     $this->non_required_types = [];
     $this->unsupported_fields = [];
-    $this->reported = 0;
     $this->search_values = [];
 
     if ($this->job) {
@@ -859,6 +845,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // batches to reduce the amount of memory required if there are
     // thousands of records to publish.
     $this->logger->notice('Finding all candidate records in the "'.$this->base_table.'" chado table');
+print "CP01 bundle=".$this->bundle."\n";//@@@
     $record_ids = $this->storage->findAllRecordIds($this->bundle);
 
     // Get a list of already-published entities.

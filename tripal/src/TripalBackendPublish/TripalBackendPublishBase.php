@@ -27,6 +27,20 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
   protected $entity_type_manager = NULL;
 
   /**
+   * The Drupal entity field manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   */
+  protected $entity_field_manager = NULL;
+
+  /**
+   * The Drupal field type manager service.
+   *
+   * @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager
+   */
+  protected $field_type_manager = NULL;
+
+  /**
    * The TripalLogger object.
    *
    * @var \Drupal\tripal\Services\TripalLogger $logger
@@ -109,6 +123,8 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
       $plugin_definition,
       $container->get('database'),
       $container->get('entity_type.manager'),
+      $container->get('entity_field.manager'),
+      $container->get('plugin.manager.field.field_type'),
       $container->get('tripal.logger'),
       $container->get('tripal.storage'),
       $container->get('tripal.tripal_entity.lookup')
@@ -121,12 +137,16 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
   public function __construct(array $configuration, $plugin_id, $plugin_definition,
     \Drupal\Core\Database\Connection $connection,
     \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager,
+    \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager,
+    \Drupal\Core\Field\FieldTypePluginManager $field_type_manager,
     \Drupal\tripal\Services\TripalLogger $logger,
     \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager,
     \Drupal\tripal\Services\TripalEntityLookup $entity_lookup_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->connection = $connection;
     $this->entity_type_manager = $entity_type_manager;
+    $this->entity_field_manager = $entity_field_manager;
+    $this->field_type_manager = $field_type_manager;
     $this->logger = $logger;
     $this->storage_manager = $storage_manager;
     $this->entity_lookup_manager = $entity_lookup_manager;
