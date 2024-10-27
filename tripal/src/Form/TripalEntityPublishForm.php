@@ -29,6 +29,7 @@ class TripalEntityPublishForm extends FormBase {
   function buildForm(array $form, FormStateInterface $form_state) {
     $bundles = [];
     $datastores = [];
+    $default_batch_size = 1000; // @todo make a variable so we can change the default
 
     // Get a list of TripalSTorage plugins
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
@@ -110,6 +111,13 @@ class TripalEntityPublishForm extends FormBase {
          . ' will not be changed.',
     ];
 
+    $form['batch_size'] = [
+      '#type' => 'textfield',
+      '#title' => 'Batch Size',
+      '#description' => t('Divide the publish job into separate batches of the specified size to minimize memory usage'),
+      '#default_value' => $default_batch_size,
+    ];
+
     $form['submit_button'] = [
       '#type' => 'submit',
       '#value' => t('Publish'),
@@ -142,6 +150,11 @@ class TripalEntityPublishForm extends FormBase {
     // Run the form validate for the storage backend.
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
     $storage_manager = \Drupal::service('tripal.storage');
+
+    $batch_size = $form_state->getValue('batch_size');
+    if (!preg_match('/^[0-9]+$/', $batch_size) or ($batch_size < 1)) {
+      $form_state->setErrorByName('batch_size', t('The batch size must be a positive integer.'));
+    }
 
     if ($storage_manager->datastoreExists($datastore) !== TRUE) {
       $form_state->setErrorByName('datastore',t('The chosen datastore is not registered properly with TripalStorage.'));
@@ -187,7 +200,7 @@ class TripalEntityPublishForm extends FormBase {
     \Drupal::service('tripal.job')->create([
       'job_name' => $job_name,
       'modulename' => 'tripal',
-      'callback' => [\Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::class ,'runTripalJob'],
+      'callback' => [\Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::class, 'runTripalJob'],
       'arguments' => $job_args,
       'uid' => $current_user->id(),
     ]);
