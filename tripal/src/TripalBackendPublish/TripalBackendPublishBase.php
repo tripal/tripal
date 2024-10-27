@@ -93,6 +93,13 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
   protected $datastore = '';
 
   /**
+   * The database schema to publish, e.g. 'chado'.
+   *
+   * @var string $schema_name.
+   */
+  protected $schema_name = '';
+
+  /**
    * The republish flag specifies whether to publish all entities
    * if TRUE, or just publish new entities if FALSE.
    * Republish is needed when new fields have been added, or when

@@ -784,6 +784,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       throw new TripalPublishException(t('A datastore must be specified to publish'));
     }
     // Optional values
+    $this->schema_name = $options['schema_name'] ?? 'chado';
     $this->republish = ($options['republish'] ?? FALSE) ? TRUE : FALSE;
     $this->job = $options['job'] ?? NULL;
     if ($options['batch_size'] ?? 0) {
@@ -819,6 +820,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       throw new \TripalPublishException(t('Could not find an instance of the TripalStorage backend: "%datastore".',
           ['%datastore' => $this->datastore]));
     }
+    // @todo somehow set the chado schema using the value in $this->schema_name
   }
 
   /**

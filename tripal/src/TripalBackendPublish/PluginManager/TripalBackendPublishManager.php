@@ -94,7 +94,8 @@ class TripalBackendPublishManager extends DefaultPluginManager {
    *   from, for example 'chado_storage'.
    *
    * @param array $options
-   *   Additional options to pass to the publish plugin.
+   *   Associative array of additional options to pass to the publish
+   *   plugin. Valid keys are 'schema_name', 'republish', 'batch_size'.
    *
    * @param \Drupal\tripal\Services\TripalJob $job
    *   An optional TripalJob object.
