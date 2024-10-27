@@ -356,18 +356,16 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // Make sure we have the content types and fields that we want to test.
     $collection_ids = ['general_chado', 'expression_chado'];
     $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
+    $publish_service = \Drupal::service('tripal.backend_publish');
+    $chado_publish = $publish_service->createInstance('chado_storage', []);
     $fields_setup = \Drupal::service('tripal.tripalfield_collection');
     $content_type_setup->install($collection_ids);
     $fields_setup->install($collection_ids);
 
-    /** @var \Drupal\tripal\Services\TripalPublish $publish */
-    $publish = \Drupal::service('tripal.publish');
-
     //
     // Test publishing when no records are available.
     //
-    $publish->init('organism', 'chado_storage');
-    $entities = $publish->publish();
+    $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertTrue(count($entities) == 0,
       'The TripalPublish service should return 0 entities when no records are available.');
 
@@ -385,7 +383,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'infraspecific_name' => 'Japonica',
       'comment' => 'rice is nice'
     ]);
-    $entities = $publish->publish();
+    $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
       'The TripalPublish service should have published 1 organism.');
     $entity_id = array_key_first($entities);
@@ -429,7 +427,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'abbreviation' => 'G. gorilla',
       'comment' => 'Gorilla'
     ]);
-    $entities = $publish->publish();
+    $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
       'The TripalPublish service should have published 1 organism.');
     $entity_id = array_key_first($entities);
@@ -502,8 +500,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
 
     // Now publish the organism content type again.
-    $publish->init('organism', 'chado_storage', ['republish' => 1]);
-    $entities = $publish->publish();
+    $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage', 'republish' => 1]);
 
     // Because we added properties for the first organism we should get its
     // entity in those returned, but not the gorilla organism.
@@ -584,13 +581,11 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // Now publish the projects and contacts. We check that 3 items are
     // published because there is a null contact and currently there is
     // nothing to prevent that contact from being published. (Issue #1809)
-    $publish->init('contact', 'chado_storage');
-    $entities = $publish->publish();
+    $entities = $chado_publish->publish(['bundle' => 'contact', 'datastore' => 'chado_storage']);
     $this->assertCount(3, $entities,
         'Failed to publish 3 contact entities.');
 
-    $publish->init('project', 'chado_storage');
-    $entities = $publish->publish();
+    $entities = $chado_publish->publish(['bundle' => 'project', 'datastore' => 'chado_storage']);
     $this->assertCount(2, $entities,
       'Failed to publish 2 project entities.');
 
@@ -617,8 +612,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'name' => 'AD1',
       'num_of_elements' => 1,
     ]);
-    $publish->init('array_design', 'chado_storage');
-    $entities = $publish->publish();
+    $entities = $chado_publish->publish(['bundle' => 'array_design', 'datastore' => 'chado_storage']);
     $this->assertCount(1, $entities,
         'Failed to publish 1 array design entitity.');
     $this->checkFieldItem('array_design', 'array_design_num_of_elements', 1,
