@@ -19,48 +19,6 @@ use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 class ChadoPublish extends TripalBackendPublishBase {
 
   /**
-   * The number of items that this importer needs to process. A progress
-   * can be calculated by dividing the number of items process by this
-   * number.
-   *
-   * @var integer $total_items
-   */
-  private $total_items = 0;
-
-  /**
-   * The number of items that have been handled so far.  This must never
-   * be below 0 and never exceed $total_items;
-   *
-   * @var integer $num_handled
-   */
-  private $num_handled = 0;
-
-  /**
-   * The interval when the job progress should be updated. Updating the job
-   * progress incurrs a database write which takes time and if it occurs too
-   * frequently can slow down the loader.  This should be a value between
-   * 0 and 100 to indicate a percent interval (e.g. 1 means update the
-   * progress every time the num_handled increases by 1%).
-   *
-   * @var integer $interval
-   */
-  private $interval = 1;
-
-  /**
-   * The TripalJob object.
-   *
-   * @var \Drupal\tripal\Services\TripalJob $job
-   */
-  protected $job = NULL;
-
-  /**
-   * The id of the entity type (bundle)
-   *
-   * @var string $bundle
-   */
-  protected $bundle = '';
-
-  /**
    * The base table of the bundle
    *
    * @var string $base_table
@@ -143,95 +101,6 @@ class ChadoPublish extends TripalBackendPublishBase {
    * @var array $search_values
    */
   protected $search_values = [];
-
-  /**
-   * Stores the last percentage that progress was reported.
-   *
-   * @var integer
-   */
-  protected $reported = 0;
-
-  /**
-   * Updates the percent interval when the job progress is updated.
-   *
-   * Updating the job progress incurrs a database write which takes time
-   * and if it occurs to frequently can slow down the loader.  This should
-   * be a value between 0 and 100 to indicate a percent interval (e.g. 1
-   * means update the progress every time the num_handled increases by 1%).
-   *
-   * @param int $interval
-   *   A number between 0 and 100.
-   */
-  protected function setInterval($interval) {
-    $this->interval = $interval;
-  }
-
-  /**
-   * Adds to the count of the total number of items that have been handled.
-   *
-   * @param int $num_handled
-   */
-  protected function addItemsHandled($num_handled) {
-    $items_handled = $this->num_handled = $this->num_handled + $num_handled;
-    $this->setItemsHandled($items_handled);
-  }
-
-  /**
-   * Sets the total number if items to be processed.
-   *
-   * This should typically be called near the beginning of the loading process
-   * to indicate the number of items that must be processed.
-   *
-   * @param int $total_items
-   *   The total number of items to process.
-   */
-  protected function setTotalItems($total_items) {
-    $this->total_items = $total_items;
-  }
-
-  /**
-   * Sets the number of items that have been processed.
-   *
-   * This code was shamelessly copied from the TripalImporterBase class.
-   *
-   * @param int $total_handled
-   *   The total number of items that have been processed.
-   */
-  protected function setItemsHandled($total_handled) {
-    // First set the number of items handled.
-    $this->num_handled = $total_handled;
-
-    if ($total_handled == 0) {
-      $memory = number_format(memory_get_usage());
-      //$this->logger->info("    Percent complete: 0%. Memory: " . $memory . " bytes.");
-      return;
-    }
-
-    // Now see if we need to report to the user the percent done.  A message
-    // will be printed on the command-line if the job is run there.
-    if ($this->total_items) {
-      $percent = ($this->num_handled / $this->total_items) * 100;
-      $ipercent = (int) $percent;
-    }
-    else {
-      $percent = 0;
-      $ipercent = 0;
-    }
-
-    // If we've reached our interval then print update info.
-    if ($ipercent > 0 and $ipercent != $this->reported and $ipercent % $this->interval == 0) {
-      $memory = number_format(memory_get_usage());
-      $spercent = sprintf("%.2f", $percent);
-      //$this->logger->info("    Percent complete: " . $spercent . " %. Memory: " . $memory . " bytes.");
-
-      // If we have a job the update the job progress too.
-      if ($this->job) {
-        $this->job->setProgress($percent);
-      }
-      $this->reported = $ipercent;
-    }
-  }
-
 
   /**
    * Populates the $this->field_info variable with field information
@@ -717,10 +586,7 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     $insert_batch_size = 1000;
     $num_matches = $this->countFieldMatches($field_name, $matches);
-    $num_batches = (int) ($num_matches / $insert_batch_size) + 1;
-
-    $this->setItemsHandled(0);
-    $this->setTotalItems($num_batches);
+    // $num_batches = (int) ($num_matches / $insert_batch_size) + 1;
 
     // Generate the insert SQL and add to it the field-specific columns.
     $init_sql = "
@@ -739,7 +605,6 @@ class ChadoPublish extends TripalBackendPublishBase {
     $sql = '';
     $args = [];
     $num_inserted = 0;
-
 
     // Iterate through the matches. Each match corresponds to a single
     // entity.
@@ -799,7 +664,6 @@ class ChadoPublish extends TripalBackendPublishBase {
             $sql = $init_sql . $sql;
             $this->connection->query($sql, $args);
           }
-          $this->setItemsHandled($batch_num);
           $batch_num++;
 
           // Now reset all of the variables for the next batch.
