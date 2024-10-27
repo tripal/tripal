@@ -69,7 +69,24 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
    *
    * @var string $bundle
    */
-  protected $bundle = NULL;
+  protected $bundle = '';
+
+  /**
+   * The id of the TripalStorage plugin.
+   *
+   * @var string $datastore.
+   */
+  protected $datastore = '';
+
+  /**
+   * The republish flag specifies whether to publish all entities
+   * if TRUE, or just publish new entities if FALSE.
+   * Republish is needed when new fields have been added, or when
+   * the entity title format has been changed.
+   *
+   * @var boolean $republish
+   */
+  protected $republish = FALSE;
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -86,7 +103,6 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
    * @return static
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-print "CP03 TripalBackendPublishBase create()\n"; //@@@
     return new static(
       $configuration,
       $plugin_id,
@@ -108,23 +124,12 @@ print "CP03 TripalBackendPublishBase create()\n"; //@@@
     \Drupal\tripal\Services\TripalLogger $logger,
     \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager,
     \Drupal\tripal\Services\TripalEntityLookup $entity_lookup_manager) {
-print "CP04 TripalBackendPublishBase __construct()\n"; //@@@
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->connection = $connection;
     $this->entity_type_manager = $entity_type_manager;
     $this->logger = $logger;
     $this->storage_manager = $storage_manager;
     $this->entity_lookup_manager = $entity_lookup_manager;
-  }
-
-  /**
-   * Updates the batch size variable.
-   *
-   * @param int $batch_size
-   *   A positive integer.
-   */
-  protected function setBatchSize($batch_size) {
-    $this->batch_size = $batch_size;
   }
 
 }

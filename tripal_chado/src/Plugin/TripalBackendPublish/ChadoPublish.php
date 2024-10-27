@@ -4,7 +4,6 @@ namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 use \Drupal\tripal\Services\TripalTokenParser;
-use \Drupal\tripal\Services\TripalJob;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 
@@ -128,6 +127,15 @@ class ChadoPublish extends TripalBackendPublishBase {
    * @var array $existing_published_entities
    */
   protected $existing_published_entities = [];
+
+  /**
+   * The first 100 published entities, key is entity_id,
+   * value is title. These are only used for unit tests,
+   * so don't need to use memory to store them all.
+   *
+   * @var array $published_or_updated_entities
+   */
+  protected $published_or_updated_entities = [];
 
   /**
    * Array of values to search in chado storage.
@@ -598,11 +606,8 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   The array of matches for each entity.
    * @param array $titles
    *   The array of entity titles keyed by the record ID.
-   * @param array $new_published_entities
-   *   The first 100 published entities, key is entity ID, value is title.
-   *   This becomes the return value for the publish job.
    */
-  protected function insertEntities($matches, $titles, &$new_published_entities) {
+  protected function insertEntities($matches, $titles) {
 
     $timestamp = time();
     $query = $this->connection->insert('tripal_entity', [])
@@ -622,8 +627,8 @@ class ChadoPublish extends TripalBackendPublishBase {
     foreach ($added_record_ids as $index => $record_id) {
       $this->existing_published_entities[$record_id] = $index + $first_added_entity_id;
       // Return only the first 100 for the publish job
-      if (count($new_published_entities) < 100) {
-        $new_published_entities[$index + $first_added_entity_id] = $titles[$record_id];
+      if (count($this->published_or_updated_entities) < 100) {
+        $this->published_or_updated_entities[$index + $first_added_entity_id] = $titles[$record_id];
       }
     }
   }
@@ -701,15 +706,13 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   The array of matches for each entity.
    * @param array $existing
    *   An associative array of entities that already have an existing item for this field.
-   * @param array $new_published_entities
-   *   The first 100 entities that have been updated
    * @param array $titles
    *   The array of entity titles keyed by the record ID.
    *
    * @return int
    *   The number of items inserted for the field.
    */
-  protected function insertFieldItems($field_name, $matches, $existing, &$new_published_entities, $titles) {
+  protected function insertFieldItems($field_name, $matches, $existing, $titles) {
     $field_table = 'tripal_entity__' . $field_name;
 
     $insert_batch_size = 1000;
@@ -756,6 +759,7 @@ class ChadoPublish extends TripalBackendPublishBase {
         $total++;
 
         // No need to add items to those that are already published.
+        // @@@@@ todo here add new field!!!!
         $add_record = TRUE;
         if (array_key_exists($entity_id, $existing) and
             array_key_exists($delta, $existing[$entity_id])) {
@@ -781,9 +785,10 @@ class ChadoPublish extends TripalBackendPublishBase {
         if ($add_record) {
           $this->insertOneFieldItem($sql, $args, $j, $match, $entity_id, $delta, $field_name);
           $num_inserted++;
-          if (count($new_published_entities) < 100) {
-print "CP32 record_id=$record_id\n"; //@@@
-            $new_published_entities[$entity_id] = $titles[$record_id];
+          // We later only return the first 100 published entities,
+          // since they are only used for unit tests.
+          if (count($this->published_or_updated_entities) < 100) {
+            $this->published_or_updated_entities[$entity_id] = $titles[$record_id];
           }
         }
 
@@ -864,7 +869,6 @@ print "CP32 record_id=$record_id\n"; //@@@
    *   The passed $matches with already published entities excluded.
    */
   protected function excludeExisting($matches) {
-print "CP41 excludeExisting - existing is "; var_dump($this->existing_published_entities); //@@@
     $new_matches = [];
     foreach ($matches as $match) {
       $record_id = $this->getChadoRecordID($match);
@@ -908,8 +912,8 @@ print "CP41 excludeExisting - existing is "; var_dump($this->existing_published_
    *     'job' - A Tripal job object
    *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
    */
-  public function init(array $options) {
-print "CP11 ChadoPublish init()\n"; //@@@
+  public function publish_init(array $options) {
+    $this->logger->notice('Initializing publish');
 
     // Required options
     $this->bundle = $options['bundle'] ?? '';
@@ -972,7 +976,6 @@ print "CP11 ChadoPublish init()\n"; //@@@
    *   An array of chado record IDs
    */
   protected function getRecordIds() {
-print "CP12a getRecordIds()\n"; //@@@
     // Populates the $this->field_info variable with field information
     $this->setFieldInfo();
 
@@ -982,26 +985,21 @@ print "CP12a getRecordIds()\n"; //@@@
     $this->non_required_types = $this->storage->getNonStoredTypes();
 
     // Build the $this->search_values array
-print "CP12b addReqiredValues()\n"; //@@@
     $this->addRequiredValues();
-print "CP12c addTokenValues()\n"; //@@@
     $this->addTokenValues();
-print "CP12d addFixedTypeValues()\n"; //@@@
     $this->addFixedTypeValues();
-print "CP12e addNonReqiredValues()\n"; //@@@
     $this->addNonRequiredValues();
 
     // We retrieve a list of all primary keys for the base table of the
     // content type. This allows us to later divide publishing into small
     // batches to reduce the amount of memory required if there are
     // thousands of records to publish.
-    $this->logger->notice("Finding all candidate records in the ".$this->base_table." chado table");
+    $this->logger->notice('Finding all candidate records in the "'.$this->base_table.'" chado table');
     $record_ids = $this->storage->findAllRecordIds($this->bundle);
 
     // Get a list of already-published entities.
     // The key will be the chado table record ID, the values will be the entity IDs.
     $this->existing_published_entities = $this->entity_lookup_manager->getPublishedEntityIds($this->bundle, 'tripal_entity');
-print "CP12f bundle ".$this->bundle." existing_published_entities is "; var_dump($this->existing_published_entities); //@@@
 
     // If not republishing everything, remove any already published records.
     if (!$this->republish) {
@@ -1029,23 +1027,19 @@ print "CP12f bundle ".$this->bundle." existing_published_entities is "; var_dump
    *
    */
   public function publish($options) {
-print "CP10 new ChadoPublish publish()\n"; //@@@
-    $this->init($options);
+    // Initialization for publish
+    $this->publish_init($options);
+
+    // Retrieve all chado record IDs for this bundle
     $record_ids = $this->getRecordIds();
 
-    // If there is nothing to publish, we can quit early
+    // If there are no record IDs for this bundle, return early
     if (!count($record_ids)) {
-      $this->logger->notice(t('There are no records to publish for this content type'));
+      $this->logger->notice('There are no records to publish for this content type');
       return [];
     }
 
-    $total_items = 0;
-    $new_published_entities = [];
-    $total_existing_entities = 0;
-    $total_new_entities = 0;
-    $total_updated_titles = 0;
-
-    // Divide into batches
+    // Divide $record_id array into batches of $this->batch_size records
     $record_id_batches = $this->divideIntoBatches($record_ids);
     $number_of_batches = count($record_id_batches);
 
@@ -1056,8 +1050,10 @@ print "CP10 new ChadoPublish publish()\n"; //@@@
     }
     $this->logger->notice($message);
 
-    $transaction_chado = $this->connection->startTransaction();
-//$transaction_chado->rollback();
+    $total_items = 0;
+    $total_existing_entities = 0;
+    $total_new_entities = 0;
+    $total_updated_titles = 0;
 
     foreach ($record_id_batches as $batch_num => $record_id_batch) {
 
@@ -1067,63 +1063,86 @@ print "CP10 new ChadoPublish publish()\n"; //@@@
         $batch_prefix = 'Batch ' . number_format($batch_num + 1) . ' of ' . number_format($number_of_batches) . ', ';
       }
 
-      $this->logger->notice($batch_prefix . "Step 1 of 6: Find matching records...");
+      $this->logger->notice($batch_prefix . 'Step 1 of 6: Find matching records');
       $matches = $this->storage->findValues($this->search_values, $record_id_batch);
 
       if (!count($matches)) {
-        $this->logger->notice('No matching records found');
+        $this->logger->notice($batch_prefix . 'No matching records found, skipping remaining steps');
         continue;
       }
 
-      $this->logger->notice($batch_prefix . "Step 2 of 6: Generate page titles...");
+      $this->logger->notice($batch_prefix . 'Step 2 of 6: Generate page titles');
       $titles = $this->getEntityTitles($matches);
 
-      $this->logger->notice($batch_prefix . "Step 3 of 6: Find existing published entity titles...");
+      $this->logger->notice($batch_prefix . 'Step 3 of 6: Find existing published entity titles');
       $existing_titles = $this->findEntities($record_id_batch);
       $total_existing_entities += count($existing_titles);
 
-      $this->logger->notice($batch_prefix . "Step 4 of 6: Updating existing page titles...");
-      $total_updated_titles += $this->updateExistingTitles($titles, $existing_titles);
+      // At this point we start to make database updates, so wrap in a transaction
+      try {
+        $transaction_drupal = $this->connection->startTransaction();
 
-      // Exclude any matches that are already published. We
-      // need to publish only new matches.
-      $new_matches = $this->excludeExisting($matches);
-      $total_new_entities += count($new_matches);
+        $this->logger->notice($batch_prefix . 'Step 4 of 6: Updating existing page titles');
+        $total_updated_titles += $this->updateExistingTitles($titles, $existing_titles);
 
-      // Note: entities are not tied to any storage backend. An entity
-      // references an "object".  The information about that object
-      // is in the form of fields and can come from any number of data storage
-      // backends. But, if the entity with a given title for this content type
-      // doesn't exist, then let's create one.
-      $this->logger->notice($batch_prefix . "Step 5 of 6: Publishing " . number_format(count($new_matches))  . " new entities...");
-      $this->insertEntities($new_matches, $titles, $new_published_entities);
+        // Exclude any matches that are already published. We
+        // need to publish only new matches.
+        $new_matches = $this->excludeExisting($matches);
+        $total_new_entities += count($new_matches);
 
-      // Now we have to publish the field items. These represent storage back-end information
-      // about the entity. If the entity was previously published we still may be adding new
-      // information about it (say if we are publishing genes from a noSQL back-end but the
-      // original entity was created when it was first published when using the Chado backend).
-      $this->logger->notice($batch_prefix . "Step 6 of 6: Add field items to published entities...");
+        // Note: entities are not tied to any storage backend. An entity
+        // references an "object".  The information about that object
+        // is in the form of fields and can come from any number of data storage
+        // backends. But, if the entity with a given title for this content type
+        // doesn't exist, then let's create one.
+        $this->logger->notice($batch_prefix . 'Step 5 of 6: Publishing ' . number_format(count($new_matches))  . ' new entities');
+        $this->insertEntities($new_matches, $titles);
 
-      if (!empty($this->unsupported_fields)) {
-        $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
-      }
+        // Now we have to publish the field items. These represent storage back-end information
+        // about the entity. If the entity was previously published we still may be adding new
+        // information about it (say if we are publishing genes from a noSQL back-end but the
+        // original entity was created when it was first published when using the Chado backend).
+        $this->logger->notice($batch_prefix . 'Step 6 of 6: Adding field items to published entities');
 
-      foreach ($this->field_info as $field_name => $field_info) {
-
-        $existing_field_items = $this->findFieldItems($field_name, $record_id_batch);
-        $num_inserted = $this->insertFieldItems($field_name, $matches,
-          $existing_field_items, $new_published_entities, $titles);
-
-        if ($num_inserted) {
-          $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
+        if (!empty($this->unsupported_fields)) {
+          $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
         }
-        $total_items += $num_inserted;
-      }
-    }
 
-    $this->logger->notice("Publish completed. Published " . number_format($total_new_entities)
-        . " new entities, checked " . number_format($total_existing_entities)
-        . " existing entities, and added " . number_format($total_items) . " field values.");
-    return $new_published_entities;
+        foreach (array_keys($this->field_info) as $field_name) {
+
+          $existing_field_items = $this->findFieldItems($field_name, $record_id_batch);
+          $num_inserted = $this->insertFieldItems($field_name, $matches, $existing_field_items, $titles);
+
+          // To reduce clutter, a log message is not shown for fields with no items added
+          if ($num_inserted) {
+            $this->logger->notice('  Published ' . number_format($num_inserted) . " items for field \"$field_name\"");
+            $total_items += $num_inserted;
+          }
+        }
+      }
+      catch (Exception $e) {
+        $transaction_drupal->rollback();
+        $this->logger->error($e->getMessage() . " - Since an error occurred, database changes for $batch_prefix have been rolled back");
+        // In case of error, do not attempt to publish any more batches
+        break;
+      }
+    } // end of the batch loop
+
+    // Present a final summary message, cumulative for all batches
+    $message = "Publish completed.";
+    $message .= " Published " . number_format($total_new_entities) . " new entities";
+    // This summary value is displayed only when republish is specified
+    if ($this->republish) {
+      $message .= ", checked " . number_format($total_existing_entities) . " existing entities";
+    }
+    // Titles will be updated only if the entity title format was changed
+    if ($total_updated_titles) {
+      $message .= ", updated titles for " . number_format($total_updated_titles) . " entities";
+    }
+    $message .= ", and added " . number_format($total_items) . " field values.";
+    $this->logger->notice($message);
+
+    // This return value is currently only used for unit tests, so is limited to 100 records.
+    return $this->published_or_updated_entities;
   }
 }

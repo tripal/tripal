@@ -61,7 +61,6 @@ class TripalBackendPublishManager extends DefaultPluginManager {
     ModuleHandlerInterface $module_handler,
     \Drupal\tripal\Services\TripalLogger $logger
   ) {
-print "CP02 TripalBackendPublishManager __construct()\n"; //@@@
     parent::__construct(
       "Plugin/TripalBackendPublish",
       $namespaces,
@@ -92,10 +91,10 @@ print "CP02 TripalBackendPublishManager __construct()\n"; //@@@
    *
    * @param string $datastore
    *   The plugin id for the TripalStorage backend to publish
-   *   from, default is 'chado_storage'.
+   *   from, for example 'chado_storage'.
    *
    * @param array $options
-   *   Additional options to pass
+   *   Additional options to pass to the publish plugin.
    *
    * @param \Drupal\tripal\Services\TripalJob $job
    *   An optional TripalJob object.
@@ -105,7 +104,6 @@ print "CP02 TripalBackendPublishManager __construct()\n"; //@@@
       // Load the specified plugin. An invalid plugin_id is caught during __construct().
       $publish_service = \Drupal::service('tripal.backend_publish');
       $publish_instance = $publish_service->createInstance($datastore, []);
-
       $publish_options = $options;
       $publish_options['bundle'] = $bundle;
       $publish_options['datastore'] = $datastore;
