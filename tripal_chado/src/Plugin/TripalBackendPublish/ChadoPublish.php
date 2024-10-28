@@ -619,7 +619,6 @@ class ChadoPublish extends TripalBackendPublishBase {
         $total++;
 
         // No need to add items to those that are already published.
-        // @@@@@ todo here add new field!!!!
         $add_record = TRUE;
         if (array_key_exists($entity_id, $existing) and
             array_key_exists($delta, $existing[$entity_id])) {
