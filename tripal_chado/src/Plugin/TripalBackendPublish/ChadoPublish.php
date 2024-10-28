@@ -916,8 +916,8 @@ class ChadoPublish extends TripalBackendPublishBase {
     $record_id_batches = $this->divideIntoBatches($record_ids);
     $number_of_batches = count($record_id_batches);
 
-    // Let user know how much will be published
-    $message = 'Preparing to publish ' . number_format(count($record_ids)) . ' records';
+    // Let user know what and how much will be published
+    $message = 'Preparing to publish ' . number_format(count($record_ids)) . ' "' . $this->bundle . '" records';
     if ($number_of_batches > 1) {
       $message .= ' in ' . number_format($number_of_batches) . ' batches';
     }
