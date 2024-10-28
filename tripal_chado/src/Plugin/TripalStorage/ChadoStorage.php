@@ -1348,8 +1348,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       throw new \Exception('The bundle "' . $bundle_id . '" passed to findAllRecordIds is not a valid tripal entity type');
     }
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    $type_table = $entity_type->getThirdPartySetting('tripal', 'chado_type_table');
-    $type_column = $entity_type->getThirdPartySetting('tripal', 'chado_type_column');
+    $type_table = $entity_type->getThirdPartySetting('tripal', 'bundle_type_table');
+    $type_column = $entity_type->getThirdPartySetting('tripal', 'bundle_type_column');
     $termIdSpace = $entity_type->getTermIdSpace();
     $termAccession = $entity_type->getTermAccession();
 
