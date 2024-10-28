@@ -581,9 +581,8 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     $insert_batch_size = 1000;
     $num_matches = $this->countFieldMatches($field_name, $matches);
-    // $num_batches = (int) ($num_matches / $insert_batch_size) + 1;
 
-    // Generate the insert SQL and add to it the field-specific columns.
+    // Generate the insert SQL and add the field-specific columns to it.
     $init_sql = "
       INSERT INTO {" . $field_table . "}
         (bundle, deleted, entity_id, revision_id, langcode, delta, ";
@@ -591,12 +590,10 @@ class ChadoPublish extends TripalBackendPublishBase {
                                     $this->non_required_types[$field_name])) as $key) {
       $init_sql .= $field_name . '_'. $key . ', ';
     }
-    $init_sql = rtrim($init_sql, ", ");
-    $init_sql .= ") VALUES\n";
+    $init_sql = rtrim($init_sql, ', ') . ") VALUES\n";
 
     $j = 0;
     $total = 0;
-    $batch_num = 1;
     $sql = '';
     $args = [];
     $num_inserted = 0;
@@ -619,36 +616,10 @@ class ChadoPublish extends TripalBackendPublishBase {
         $total++;
 
         // No need to add items to those that are already published.
-        $add_record = TRUE;
-        if (array_key_exists($entity_id, $existing) and
-            array_key_exists($delta, $existing[$entity_id])) {
-          $add_record = FALSE;
-        }
-        // Determine if we want to add this item.
-        else {
-          foreach (array_keys($this->required_types[$field_name]) as $key) {
-            $storage_settings = $this->field_info[$field_name]['prop_types'][$key]->getStorageSettings();
-            $drupal_store = $storage_settings['drupal_store'] ?? FALSE;
-            if ($drupal_store) {
-              $value = '';
-              if (array_key_exists($key, $match[$field_name][$delta])) {
-                $value = $match[$field_name][$delta][$key]['value']->getValue();
-              }
-              if (is_null($value)) {
-                $add_record = FALSE;
-                break;
-              }
-            }
-          }
-        }
+        $add_record = $this->checkOneFieldItem($field_name, $match, $existing, $titles, $entity_id, $delta, $record_id);
         if ($add_record) {
           $this->insertOneFieldItem($sql, $args, $j, $match, $entity_id, $delta, $field_name);
           $num_inserted++;
-          // We later only return the first 100 published entities,
-          // since they are only used for unit tests.
-          if (count($this->published_or_updated_entities) < 100) {
-            $this->published_or_updated_entities[$entity_id] = $titles[$record_id];
-          }
         }
 
         // If we've reached the size of the batch then let's do the insert.
@@ -658,7 +629,6 @@ class ChadoPublish extends TripalBackendPublishBase {
             $sql = $init_sql . $sql;
             $this->connection->query($sql, $args);
           }
-          $batch_num++;
 
           // Now reset all of the variables for the next batch.
           $sql = '';
@@ -668,6 +638,57 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
     }
     return $num_inserted;
+  }
+
+  /**
+   * Determine if a particular field item needs to be published.
+   *
+   * @param string $field_name
+   *   Name of the field being published
+   * @param array $match
+   *   Contains all data to be published
+   * @param array $existing
+   *   An associative array of entities that already have an existing item for this field.
+   * @param array $titles
+   *   The array of entity titles keyed by the record ID.
+   * @param int $entity_id
+   *   Id of the entity for this field
+   * @param int $delta
+   *   Field delta
+   * @param int $record_id
+   *   The chado record ID
+   * @return bool
+   *   TRUE if item should be published.
+   */
+  private function checkOneFieldItem($field_name, $match, $existing, $titles, $entity_id, $delta, $record_id): bool {
+    $add_record = TRUE;
+    if (array_key_exists($entity_id, $existing) and
+        array_key_exists($delta, $existing[$entity_id])) {
+      $add_record = FALSE;
+    }
+    // Determine if we want to add this item.
+    else {
+      foreach (array_keys($this->required_types[$field_name]) as $key) {
+        $storage_settings = $this->field_info[$field_name]['prop_types'][$key]->getStorageSettings();
+        $drupal_store = $storage_settings['drupal_store'] ?? FALSE;
+        if ($drupal_store) {
+          $value = '';
+          if (array_key_exists($key, $match[$field_name][$delta])) {
+            $value = $match[$field_name][$delta][$key]['value']->getValue();
+          }
+          if (is_null($value)) {
+            $add_record = FALSE;
+            break;
+          }
+        }
+      }
+    }
+    // We later only return the first 100 published entities,
+    // since they are only used for unit tests.
+    if ($add_record and (count($this->published_or_updated_entities) < 100)) {
+      $this->published_or_updated_entities[$entity_id] = $titles[$record_id];
+    }
+    return $add_record;
   }
 
   /**
