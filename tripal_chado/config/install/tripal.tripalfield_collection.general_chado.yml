@@ -1232,7 +1232,7 @@ fields:
         type: chado_text_type_default
         description: The title for this publication.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
