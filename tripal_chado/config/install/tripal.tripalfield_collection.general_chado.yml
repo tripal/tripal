@@ -1365,8 +1365,8 @@ fields:
         type: chado_string_type_default
         description:
         cardinality: 1
-        # in Tripal 3 this is set as required, although the pub table does not require it.
-        required: true
+        # in Tripal 3 this was set as required, although the pub table does not require it.
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
