@@ -43,9 +43,9 @@ class TripalCitationTest extends TripalTestKernelBase {
       'Authors' => 'Chado, A.B.; Drupal, B.C.; Tripal, C.D.',
     ];
     // An unknown publication type should return the default template
-    $format1 = $citation_service->getCitationTemplate('undefined_type');
+    $format1 = $citation_service->getDefaultCitationTemplate('undefined_type');
     $this->assertEquals('{{Authors}.}{ {Title}.}{ {Publication Date|Year}.}{ {Journal Name|Journal Abbreviation|Series Name|Series Abbreviation}}{ {Volume}}{({Issue})}{:{Pages}.}',
-      $format1, 'Format 1 is not the default citation template');
+      $format1, 'Format 1 is not the expected default citation template');
 
     // Test a journal article
     $format2 = $citation_service->getCitationTemplate('Journal Article');

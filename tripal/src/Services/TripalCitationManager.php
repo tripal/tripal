@@ -84,14 +84,14 @@ class TripalCitationManager {
   }
 
   /**
-   * Returns a token string suitable for citation generation
-   * of the specified publication type
+   * Returns a default token string suitable for citation
+   * generation of the specified publication type
    *
    * @param string $pub_type
    *   The publication type.
    *
    */
-  public function getCitationTemplate(string $pub_type) {
+  public function getDefaultCitationTemplate(string $pub_type) {
     $templates = [
       'default' =>
         '{{Authors}.}{ {Title}.}{ {Publication Date|Year}.}{ {Journal Name|Journal Abbreviation|Series Name|Series Abbreviation}}{ {Volume}}{({Issue})}{:{Pages}.}',
