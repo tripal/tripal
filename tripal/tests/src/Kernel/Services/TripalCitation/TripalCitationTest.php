@@ -48,7 +48,7 @@ class TripalCitationTest extends TripalTestKernelBase {
       $format1, 'Format 1 is not the expected default citation template');
 
     // Test a journal article
-    $format2 = $citation_service->getCitationTemplate('Journal Article');
+    $format2 = $citation_service->getDefaultCitationTemplate('Journal Article');
     $c2 = $citation_service->generateCitation($pub1, $format2);
     $this->assertEquals('Chado, A.B.; Drupal, B.C.; Tripal, C.D. Some impressive publication. 2024. Journal of Science 123(4):10-20.',
       $c2, 'Citation 2 is not the expected value');
@@ -57,7 +57,7 @@ class TripalCitationTest extends TripalTestKernelBase {
     $pub3 = $pub1;
     unset($pub3['Issue']);
     unset($pub3['Journal Name']);
-    $format3 = $citation_service->getCitationTemplate('Review');
+    $format3 = $citation_service->getDefaultCitationTemplate('Review');
     $c3 = $citation_service->generateCitation($pub3, $format3);
     $this->assertEquals('Chado, A.B.; Drupal, B.C.; Tripal, C.D. Some impressive publication. The Journal of Science 2024. 123:10-20.',
       $c3, 'Citation 3 is not the expected value');
