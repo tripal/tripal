@@ -55,6 +55,11 @@ function tripal_theme() {
     'template' => 'tripal_entity',
   );
 
+  $theme['tripal_entity_edit_form'] = array(
+    'render element' => 'form',
+    'template' => 'tripal-entity-edit-form',
+  );
+
   $theme['tripal_entity_content_add_list'] = [
     'render element' => 'types',
     'variables' => ['types' => NULL],
