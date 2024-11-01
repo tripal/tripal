@@ -1,0 +1,17 @@
+
+.field--widget-chado-dbxref-widget-default .fieldset__wrapper {
+  display: flex !important;
+}
+.field--widget-chado-dbxref-widget-default .fieldset__wrapper .form-item {
+  margin: 0 var(--gin-spacing-xs);
+  flex-grow: 1;
+}
+/** -- Database Name */
+.field--widget-chado-dbxref-widget-default .fieldset__wrapper .form-item:first-of-type select {
+  flex-grow: 2;
+  width: 100%;
+}
+/** -- Accession */
+.field--widget-chado-dbxref-widget-default .fieldset__wrapper .form-item:last-of-type {
+  flex-grow: 2;
+}

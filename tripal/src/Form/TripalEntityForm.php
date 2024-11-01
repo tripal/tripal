@@ -24,6 +24,7 @@ class TripalEntityForm extends ContentEntityForm {
     $entity = $this->entity;
 
     $form['#theme'] = 'tripal_entity_edit_form';
+    $form['#attached']['library'][] = 'tripal/tripal-entity-form';
 
     // Drupal only adds this to content forms if they support revisions but we want it in general.
     if (!isset($form['advanced'])) {
