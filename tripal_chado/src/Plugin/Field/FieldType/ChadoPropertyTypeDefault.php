@@ -305,7 +305,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
           ],
         ],
         'settings' => [
-          'termIdSpace' => $recprop->cv_name,
+          'termIdSpace' => $recprop->db_name,
           'termAccession' => $recprop->accession,
         ],
         'display' => [
