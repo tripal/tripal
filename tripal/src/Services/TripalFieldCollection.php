@@ -279,7 +279,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
       'name' => $instance->getName(),
       'content_type' => $instance->getTargetBundle(),
       'label' => $instance->getLabel(),
-      'type' => self::$id,
+      'type' => $instance->getType(),
       'description' => $instance->getDescription(),
       'cardinality' => $field_storage->getCardinality(),
       'required' => $instance->isRequired(),
