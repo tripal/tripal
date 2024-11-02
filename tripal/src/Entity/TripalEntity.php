@@ -208,6 +208,21 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * {@inheritdoc}
    */
+  public function getChangedTime() {
+    return $this->get('changed')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setChangedTime($timestamp) {
+    $this->set('changed', $timestamp);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getOwner() {
     return $this->get('uid')->entity;
   }

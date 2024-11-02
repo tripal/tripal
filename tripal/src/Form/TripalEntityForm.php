@@ -30,18 +30,6 @@ class TripalEntityForm extends ContentEntityForm {
     // But also add room for our own styles.
     $form['#attached']['library'][] = 'tripal/tripal-entity-form';
 
-    // Drupal only adds this to content forms if they support revisions but we want it in general.
-    if (!isset($form['advanced'])) {
-      $form['advanced'] = [
-        '#type' => 'vertical_tabs',
-        '#weight' => 99,
-      ];
-    }
-    // -- Additional collapsed regions can be added to this group by creating
-    //    a field group of type "Details Siderbar" and adding fields to it.
-    // -- Add a metadata section to provide basic context info.
-    $form['advanced']['#attributes']['class'][] = 'entity-meta';
-    $form['meta'] = $this->buildMetadataFormElement($entity);
     // -- If the theme being used is claro we want to add it's specific brand
     // of styling. This is what it does in claro_form_node_form_alter
     $theme = \Drupal::service('theme.manager')->getActiveTheme()->getName();
@@ -51,97 +39,79 @@ class TripalEntityForm extends ContentEntityForm {
       $form['advanced']['#accordion'] = TRUE;
       $form['meta']['#type'] = 'container';
     }
-    // -- Add a "Authoring information" panel.
-    // @todo make this match the one for nodes.
-    $form['author'] = $this->buildAuthorInfoFormElement($entity, $form);
-
-    // We also want to disable the title to ensure it uses the token system.
-    $form['title']['#weight'] = 5;
-    $form['title']['#disabled'] = TRUE;
-    $form['title']['widget'][0]['value']['#description'] .= ' The title will be automatically updated based on the title format defined by administrators.';
-    $form['meta']['title'] = $form['title'];
-    unset($form['title']);
 
     return $form;
   }
 
   /**
-   * Adds a meta form element to the main form.
-   *
-   * @param TripalEntity $entity
-   *   The entity this form is for.
-   * @return array
-   *   The form elements to add to the existing entity add/edit form.
+   * {@inheritdoc}
    */
-  protected function buildMetadataFormElement(TripalEntity $entity) {
-    $element = [
+  public function form(array $form, FormStateInterface $form_state) {
+    $form = parent::form($form, $form_state);
+    $entity = $this->entity;
+
+    // -- Setup advanced sidebar.
+    // Additional collapsed regions can be added to this group by creating
+    // a field group of type "Details Siderbar" and adding fields to it.
+    if (!isset($form['advanced'])) {
+      $form['advanced'] = [
+        '#type' => 'vertical_tabs',
+        '#weight' => 99,
+      ];
+    }
+    $form['advanced']['#attributes']['class'][] = 'entity-meta';
+
+    // -- Metadata details in sidebar.
+    $form['meta'] = [
       '#type' => 'details',
       '#group' => 'advanced',
       '#weight' => -10,
       '#title' => $this->t('Status'),
-      '#attributes' => [
-        'class' => [
-          'entity-meta__header',
-        ],
-      ],
+      '#attributes' => ['class' => ['entity-meta__header']],
       '#tree' => TRUE,
     ];
-    $element['published'] = [
-      '#type' => 'item',
-      '#markup' => $entity->isPublished() ? $this->t('Published') : $this->t('Not published'),
-      '#access' => !$entity->isNew(),
-      '#wrapper_attributes' => [
-        'class' => [
-          'entity-meta__title',
-        ],
-      ],
-    ];
-    $element['changed'] = [
+    $form['meta']['changed'] = [
       '#type' => 'item',
       '#title' => $this->t('Last saved'),
-      '#markup' => !$entity->isNew() ? $this->dateFormatter
-        ->format($entity->getChangedTime(), 'short') : $this->t('Not saved yet'),
-      '#wrapper_attributes' => [
-        'class' => [
-          'entity-meta__last-saved',
-        ],
-      ],
+      '#markup' => !$entity->isNew() ? $this->dateFormatter->format($entity->getChangedTime(), 'short') : $this->t('Not saved yet'),
+      '#wrapper_attributes' => ['class' => ['entity-meta__last-saved']],
+      '#weight' => -5,
     ];
-    $element['author'] = [
+    $form['meta']['author'] = [
       '#type' => 'item',
       '#title' => $this->t('Author'),
-      '#markup' => $entity->getOwner()
-        ->getAccountName(),
-      '#wrapper_attributes' => [
-        'class' => [
-          'entity-meta__author',
-        ],
-      ],
+      '#markup' => $entity->getOwner()->getAccountName(),
+      '#wrapper_attributes' => ['class' => ['entity-meta__author']],
+      '#weight' => -4,
     ];
 
-    return $element;
-  }
+    // -- Title disabled and added to metadata
+    $form['title']['#weight'] = -2;
+    $form['title']['#disabled'] = TRUE;
+    $form['title']['widget'][0]['value']['#description'] .= ' The title will be automatically updated based on the title format defined by administrators.';
+    $form['title']['#group'] = 'meta';
 
-  /**
-   * Adds a meta form element to the main form.
-   *
-   * @param TripalEntity $entity
-   *   The entity this form is for.
-   * @return array
-   *   The form elements to add to the existing entity add/edit form.
-   */
-  protected function buildAuthorInfoFormElement(TripalEntity $entity, array &$form) {
-    $element = [
+    // -- Author information for administrators.
+    $form['author'] = [
       '#type' => 'details',
+      '#title' => $this->t('Authoring information'),
       '#group' => 'advanced',
-      '#weight' => -8,
-      '#title' => $this->t('Authoring Information'),
+      '#attributes' => [
+        'class' => ['node-form-author'],
+      ],
+      '#weight' => 90,
+      '#optional' => TRUE,
     ];
 
-    $element['uid'] = $form['uid'];
-    unset($form['uid']);
+    if (isset($form['uid'])) {
+      $form['uid']['#group'] = 'author';
+    }
 
-    return $element;
+    if (isset($form['created'])) {
+      $form['created']['#group'] = 'author';
+    }
+
+    return $form;
   }
 
   /**
