@@ -349,6 +349,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       ->setSetting('handler', 'default')
       ->setTranslatable(TRUE)
       ->setDisplayOptions('view', array(
+        'region' => 'hidden',
         'label' => 'above',
         'type' => 'author',
         'weight' => 0,
@@ -375,6 +376,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       ))
       ->setDefaultValue('')
       ->setDisplayOptions('view', array(
+        'region' => 'hidden',
         'label' => 'above',
         'type' => 'string',
         'weight' => -4,
@@ -383,7 +385,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         'type' => 'string_textfield',
         'weight' => -4,
       ))
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
@@ -396,6 +397,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     ->setDescription(t('The date and time that this Tripal Content was created.'))
       ->setTranslatable(TRUE)
       ->setDisplayOptions('view', [
+        'region' => 'hidden',
         'label' => 'hidden',
         'type' => 'timestamp',
         'weight' => 0,
