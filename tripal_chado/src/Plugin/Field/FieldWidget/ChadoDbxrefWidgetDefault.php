@@ -83,6 +83,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $machine_name = $items->getName();
 
     $elements = [];
+    $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoDbxrefWidgetDefault';
     $elements['record_id'] = [
       '#type' => 'value',
       '#default_value' => $record_id,
