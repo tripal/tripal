@@ -679,3 +679,19 @@ function tripal_preprocess_block(&$variables) {
     }
   }
 }
+
+/**
+ * Implements hook gin_content_form_routes provided by the GIN admin theme.
+ *
+ * @param array $route_names
+ *   A simple list of route names that should be considered to be content forms.
+ * @return array
+ *   The $route_names parameter with our content form routes added.
+ */
+function tripal_gin_content_form_routes() {
+  $route_names = [];
+
+  $route_names[] = 'entity.tripal_entity.add_form';
+
+  return $route_names;
+}

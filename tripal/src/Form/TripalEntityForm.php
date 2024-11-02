@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Component\Serialization\Json;
+use Drupal\tripal\Entity\TripalEntity;
 
 /**
  * Form controller for Tripal Content edit forms.
@@ -23,7 +24,10 @@ class TripalEntityForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
     $entity = $this->entity;
 
-    $form['#theme'] = 'tripal_entity_edit_form';
+    // We want to theme our form just like the node form.
+    $form['#theme'] = 'node_edit_form';
+    $form['#attached']['library'] = ['node/drupal.node'];
+    // But also add room for our own styles.
     $form['#attached']['library'][] = 'tripal/tripal-entity-form';
 
     // Drupal only adds this to content forms if they support revisions but we want it in general.
@@ -33,27 +37,43 @@ class TripalEntityForm extends ContentEntityForm {
         '#weight' => 99,
       ];
     }
-    $form['#attached']['library'] = ['node/drupal.node'];
     // -- Additional collapsed regions can be added to this group by creating
     //    a field group of type "Details Siderbar" and adding fields to it.
-    // For now we will add a metadata section to provide basic context info.
+    // -- Add a metadata section to provide basic context info.
     $form['advanced']['#attributes']['class'][] = 'entity-meta';
     $form['meta'] = $this->buildMetadataFormElement($entity);
     // -- If the theme being used is claro we want to add it's specific brand
     // of styling. This is what it does in claro_form_node_form_alter
-    $form['#attached']['library'][] = 'claro/form-two-columns';
-    $form['advanced']['#type'] = 'container';
-    $form['advanced']['#accordion'] = TRUE;
-    $form['meta']['#type'] = 'container';
+    $theme = \Drupal::service('theme.manager')->getActiveTheme()->getName();
+    if ($theme == 'claro') {
+      $form['#attached']['library'][] = 'claro/form-two-columns';
+      $form['advanced']['#type'] = 'container';
+      $form['advanced']['#accordion'] = TRUE;
+      $form['meta']['#type'] = 'container';
+    }
+    // -- Add a "Authoring information" panel.
+    // @todo make this match the one for nodes.
+    $form['author'] = $this->buildAuthorInfoFormElement($entity, $form);
 
     // We also want to disable the title to ensure it uses the token system.
+    $form['title']['#weight'] = 5;
     $form['title']['#disabled'] = TRUE;
     $form['title']['widget'][0]['value']['#description'] .= ' The title will be automatically updated based on the title format defined by administrators.';
+    $form['meta']['title'] = $form['title'];
+    unset($form['title']);
 
     return $form;
   }
 
-  protected function buildMetadataFormElement($entity) {
+  /**
+   * Adds a meta form element to the main form.
+   *
+   * @param TripalEntity $entity
+   *   The entity this form is for.
+   * @return array
+   *   The form elements to add to the existing entity add/edit form.
+   */
+  protected function buildMetadataFormElement(TripalEntity $entity) {
     $element = [
       '#type' => 'details',
       '#group' => 'advanced',
@@ -98,6 +118,28 @@ class TripalEntityForm extends ContentEntityForm {
         ],
       ],
     ];
+
+    return $element;
+  }
+
+  /**
+   * Adds a meta form element to the main form.
+   *
+   * @param TripalEntity $entity
+   *   The entity this form is for.
+   * @return array
+   *   The form elements to add to the existing entity add/edit form.
+   */
+  protected function buildAuthorInfoFormElement(TripalEntity $entity, array &$form) {
+    $element = [
+      '#type' => 'details',
+      '#group' => 'advanced',
+      '#weight' => -8,
+      '#title' => $this->t('Authoring Information'),
+    ];
+
+    $element['uid'] = $form['uid'];
+    unset($form['uid']);
 
     return $element;
   }
