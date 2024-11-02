@@ -114,7 +114,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * {@inheritdoc}
    */
   public function label() {
-    return $this->getTitle();
+    $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
+    $tripal_allowed_tags = explode(' ', $tag_string ?? '');
+
+    $title = $this->getTitle();
+    $sanitized_value = \Drupal\Component\Utility\Xss::filter($title, $tripal_allowed_tags);
+    return \Drupal\Core\Render\Markup::create($sanitized_value);
   }
 
   /**

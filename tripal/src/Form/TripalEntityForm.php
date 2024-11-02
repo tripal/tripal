@@ -7,6 +7,11 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Component\Serialization\Json;
 use Drupal\tripal\Entity\TripalEntity;
+use Drupal\Core\Entity\EntityRepositoryInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Datetime\DateFormatterInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form controller for Tripal Content edit forms.
@@ -15,6 +20,43 @@ use Drupal\tripal\Entity\TripalEntity;
  */
 class TripalEntityForm extends ContentEntityForm {
   use MessengerTrait;
+
+  /**
+   * The date formatter service.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
+   */
+  protected $dateFormatter;
+
+  /**
+   * Constructs a ContentEntityForm object.
+   *
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository service.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   *   The date formatter service.
+   */
+  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, DateFormatterInterface $date_formatter) {
+    parent::__construct($entity_repository, $entity_type_bundle_info, $time);
+
+    $this->dateFormatter = $date_formatter;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity.repository'),
+      $container->get('entity_type.bundle.info'),
+      $container->get('datetime.time'),
+      $container->get('date.formatter')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -86,9 +128,24 @@ class TripalEntityForm extends ContentEntityForm {
     ];
 
     // -- Title disabled and added to metadata
-    $form['title']['#weight'] = -2;
-    $form['title']['#disabled'] = TRUE;
-    $form['title']['#group'] = 'meta';
+    if ($entity->isNew()) {
+      $form['title']['#weight'] = -2;
+      $form['title']['#disabled'] = TRUE;
+      $form['title']['#group'] = 'meta';
+    }
+    else {
+      $form['meta']['title'] = [
+        '#type' => 'item',
+        '#title' => t('Title'),
+        '#title_display' => 'before',
+        '#description' => $form['title']['widget'][0]['#description'],
+        '#field_prefix' => '<h3>',
+        '#markup' => $entity->label(),
+        '#field_suffix' => '</h3>',
+        '#weight' => -2,
+      ];
+      $form['title']['#type'] = 'hidden';
+    }
 
     // -- Author information for administrators.
     $form['author'] = [
