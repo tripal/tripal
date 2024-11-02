@@ -88,7 +88,6 @@ class TripalEntityForm extends ContentEntityForm {
     // -- Title disabled and added to metadata
     $form['title']['#weight'] = -2;
     $form['title']['#disabled'] = TRUE;
-    $form['title']['widget'][0]['value']['#description'] .= ' The title will be automatically updated based on the title format defined by administrators.';
     $form['title']['#group'] = 'meta';
 
     // -- Author information for administrators.

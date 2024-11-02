@@ -338,7 +338,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Authored by'))
-      ->setDescription(t('The user ID of the author of the Tripal Content entity.'))
+      ->setDescription(t('The username of the content author.'))
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setSetting('handler', 'default')
@@ -363,7 +363,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     $fields['title'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Title'))
-      ->setDescription(t('The title of this entity.'))
+      ->setDescription(t('The title of this specific piece of Tripal Content. This will be automatically updated based on the title format defined by administrators.'))
       ->setSettings(array(
         'max_length' => 1024,
         'text_processing' => 0,
@@ -387,12 +387,23 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       ->setDefaultValue(TRUE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Created'))
-      ->setDescription(t('The time that the entity was created.'));
+    ->setLabel(t('Authored on'))
+    ->setDescription(t('The date and time that this Tripal Content was created.'))
+      ->setTranslatable(TRUE)
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'timestamp',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_timestamp',
+        'weight' => 10,
+      ])
+      ->setDisplayConfigurable('form', TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the entity was last edited.'));
+      ->setDescription(t('The date and time that this Tripal Content was last edited.'));
 
     return $fields;
   }
