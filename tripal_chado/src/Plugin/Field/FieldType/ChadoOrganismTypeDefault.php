@@ -7,6 +7,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\Services\TripalFieldCollection;
 
 /**
  * Plugin implementation of default Tripal organism field type.
@@ -290,7 +291,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array {
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
 
     /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
     $chado = \Drupal::service('tripal_chado.database');
@@ -309,6 +310,17 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
       return $field_list;
     }
     $fk_def = $chado->schema()->getForeignKeyDef($base_table, 'organism');
+
+    // Check for existing fields of this type.
+    if (array_key_exists(self::$id, $field_types)) {
+      // If yes, then add it to the field list.
+      foreach ($field_instances as $instance) {
+        if ($instance->getType() == self::$id) {
+          $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
+        }
+      }
+      return $field_list;
+    }
 
     // Create a field entry in the list.
     $field_list[] = [

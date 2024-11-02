@@ -10,6 +10,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\tripal\Services\TripalFieldCollection;
 
 /**
  * Plugin implementation of Tripal additional type field type.
@@ -469,7 +470,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array {
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
 
     /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
     $chado = \Drupal::service('tripal_chado.database');
@@ -515,12 +516,14 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       return $field_list;
     }
 
-    // If any instance of this field already exists on this content type,
-    // we will not suggest it for discovery. If there is a need for multiple
-    // instances, then they will need to be added manually through the GUI.
-    // Note that this will also block the existing field from showing up in
-    // the "Existing Fields" list, though.
-    if (array_key_exists(self::$id, $field_definitions)) {
+    // Check for existing fields of this type.
+    if (array_key_exists(self::$id, $field_types)) {
+      // If yes, then add it to the field list.
+      foreach ($field_instances as $instance) {
+        if ($instance->getType() == self::$id) {
+          $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
+        }
+      }
       return $field_list;
     }
 
