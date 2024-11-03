@@ -518,13 +518,15 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
     // Check for existing fields of this type.
     if (array_key_exists(self::$id, $field_types)) {
-      // If yes, then add it to the field list.
+      // If an existing field exists, then add it to the field list and return.
       foreach ($field_instances as $instance) {
         if ($instance->getType() == self::$id) {
           $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
         }
       }
-      return $field_list;
+      if ($field_list) {
+        return $field_list;
+      }
     }
 
     // Create a field entry in the list
