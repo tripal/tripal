@@ -135,6 +135,9 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
       '#autocomplete_route_name' => 'tripal_chado.dbxref_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 5, 'db_id' => $db_id],
     ];
+    // We also need these two to have a specific wrapper in addition to the fieldset.
+    // $element['db_id']['#prefix'] = '<div class="chado-dbxref-field-wrapper form-item">' . @$element['#prefix']['db_id'];
+    // $element['dbxref_accession']['#suffix'] .= '</div>';
     $elements['dbxref'] = $element;
 
     // If there are any additional columns present in the linker table,
