@@ -305,7 +305,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
       return $field_list;
     }
 
-    // Make sure the base table has a foriegn key to the organism table.
+    // Make sure the base table has a foreign key to the organism table.
     if (!$chado->schema()->foreignKeyExists($base_table, 'organism')) {
       return $field_list;
     }
@@ -319,7 +319,9 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
           $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
         }
       }
-      return $field_list;
+      if ($field_list) {
+        return $field_list;
+      }
     }
 
     // Create a field entry in the list.
