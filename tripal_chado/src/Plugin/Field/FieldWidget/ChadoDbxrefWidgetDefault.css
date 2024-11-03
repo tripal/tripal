@@ -1,8 +1,8 @@
 
-.field--widget-chado-dbxref-widget-default .fieldset__wrapper {
+.field--widget-chado-dbxref-widget-default .chado-dbxref-field-wrapper {
   display: flex !important;
 }
-.field--widget-chado-dbxref-widget-default .fieldset__wrapper .form-item {
+.field--widget-chado-dbxref-widget-default .chado-dbxref-field-wrapper .form-item {
   margin: 0 0.5rem;
   flex: 1 1 0;
 }
