@@ -54,8 +54,8 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
-    $db_id = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_id']);
-    $db_name = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_name']);
+    $db_id = $form_state->getValue([$field_name, $delta, 'db_id']);
+    $db_name = $form_state->getValue([$field_name, $delta, 'db_name']);
     if (!$db_id) {
       $db_id = $item_vals['dbxref_db_id'] ?? 0;
       $db_name = $item_vals['dbxref_db_name'] ?? '';
@@ -132,8 +132,8 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
       '#autocomplete_route_name' => 'tripal_chado.dbxref_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 5, 'db_id' => $db_id],
     ];
-    // We also need these two to have a specific wrapper in addition to the fieldset.
-    $element['db_id']['#prefix'] = '<div class="chado-dbxref-field-wrapper form-item">' . @$element['#prefix']['db_id'];
+    // We also need these two to have a specific combined wrapper in addition to the fieldset.
+    $element['db_id']['#prefix'] = '<div class="chado-dbxref-field-wrapper form-item">' . ($element['db_id']['#prefix'] ?? '');
     $element['dbxref_accession']['#suffix'] .= '</div>';
 
     // If there are any additional columns present in the linker table,
