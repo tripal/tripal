@@ -368,6 +368,15 @@ class TripalEntityUILayoutController extends ControllerBase {
       if ($group_type == 'details') {
         $this->addDetailsFieldGroup($group_name, $display, $settings);
       }
+      if ($group_type == 'details_sidebar') {
+        $this->addDetailsSidebarFieldGroup($group_name, $display, $settings);
+      }
+      if ($group_type == 'vertical_tabs') {
+        $this->addVerticalTabsFieldGroup($group_name, $display, $settings);
+      }
+      if ($group_type == 'tab') {
+        $this->addTabFieldGroup($group_name, $display, $settings);
+      }
       if ($group_type == 'field_group_table') {
         $this->addTableFieldGroup($group_name, $display, $settings);
       }
@@ -394,7 +403,7 @@ class TripalEntityUILayoutController extends ControllerBase {
       $classes .= 'tripal-layout-details';
 
       $parent_name = $this->getSetting('parent_name', '', $settings);
-      $details_group = [
+      $group = [
         "children" => [],
         "label" => $this->getSetting('label', 'Missing Label', $settings),
         "parent_name" => $parent_name,
@@ -409,7 +418,130 @@ class TripalEntityUILayoutController extends ControllerBase {
           "description" => $this->getSetting('description', '', $settings),
         ],
       ];
-      $display->setThirdPartySetting('field_group', $name, $details_group);
+      $display->setThirdPartySetting('field_group', $name, $group);
+    }
+  }
+
+  /**
+   * Adds a 'details_sidebar' field group.
+   *
+   * @param string $name
+   *   The name of the field group component.
+   * @param EntityDisplayBase $display
+   *   The display configuration to add the field group component to.
+   * @param array $settings
+   *   An array of settings to apply to the field group.
+   */
+  protected function addDetailsSidebarFieldGroup($name, EntityDisplayBase $display, $settings = []) {
+    $field_groups = $display->getThirdPartySettings('field_group');
+
+    // If the field group doesn't exist then add it.
+    if (!array_key_exists($name, array_keys($field_groups))) {
+
+      $classes = $this->getSetting('classes', '', $settings);
+      $classes .= 'tripal-layout-details-sidebar';
+
+      $parent_name = $this->getSetting('parent_name', '', $settings);
+      $group = [
+        "children" => [],
+        "label" => $this->getSetting('label', 'Missing Label', $settings),
+        "parent_name" => $parent_name,
+        "region" => $this->getSetting('region', 'content', $settings),
+        "weight" => $this->getSetting('weight', 0, $settings),
+        "format_type" => "details_sidebar",
+        "format_settings" => [
+          "classes" => $classes,
+          "show_empty_fields" => $this->getSetting('show_empty', FALSE, $settings),
+          "id" => $name,
+          "open" => $this->getSetting('open', FALSE, $settings),
+          "description" => $this->getSetting('description', '', $settings),
+          "label_as_html" => $this->getSetting('label_as_html', FALSE, $settings),
+          "required_fields" => $this->getSetting('required_fields', TRUE, $settings),
+          "weight" => $this->getSetting('weight', 0, $settings),
+        ],
+      ];
+      $display->setThirdPartySetting('field_group', $name, $group);
+    }
+  }
+
+  /**
+   * Adds a 'tabs' field group.
+   *
+   * @param string $name
+   *   The name of the field group component.
+   * @param EntityDisplayBase $display
+   *   The display configuration to add the field group component to.
+   * @param array $settings
+   *   An array of settings to apply to the field group.
+   */
+  protected function addVerticalTabsFieldGroup($name, EntityDisplayBase $display, $settings = []) {
+    $field_groups = $display->getThirdPartySettings('field_group');
+
+    // If the field group doesn't exist then add it.
+    if (!array_key_exists($name, array_keys($field_groups))) {
+
+      $classes = $this->getSetting('classes', '', $settings);
+      $classes .= 'tripal-layout-tab';
+
+      $parent_name = $this->getSetting('parent_name', '', $settings);
+      $group = [
+        "children" => [],
+        "label" => $this->getSetting('label', 'Missing Label', $settings),
+        "parent_name" => $parent_name,
+        "region" => $this->getSetting('region', 'content', $settings),
+        "weight" => $this->getSetting('weight', 0, $settings),
+        "format_type" => "tabs",
+        "format_settings" => [
+          "classes" => $classes,
+          "show_empty_fields" => $this->getSetting('show_empty', FALSE, $settings),
+          "id" => $name,
+          "label_as_html" => $this->getSetting('label_as_html', FALSE, $settings),
+          "direction" => 'vertical',
+          "width_breakpoint" => $this->getSetting('width_breakpoint', 640, $settings),
+        ],
+      ];
+      $display->setThirdPartySetting('field_group', $name, $group);
+    }
+  }
+
+  /**
+   * Adds a 'tab' field group.
+   *
+   * @param string $name
+   *   The name of the field group component.
+   * @param EntityDisplayBase $display
+   *   The display configuration to add the field group component to.
+   * @param array $settings
+   *   An array of settings to apply to the field group.
+   */
+  protected function addTabFieldGroup($name, EntityDisplayBase $display, $settings = []) {
+    $field_groups = $display->getThirdPartySettings('field_group');
+
+    // If the field group doesn't exist then add it.
+    if (!array_key_exists($name, array_keys($field_groups))) {
+
+      $classes = $this->getSetting('classes', '', $settings);
+      $classes .= 'tripal-layout-tab';
+
+      $parent_name = $this->getSetting('parent_name', '', $settings);
+      $group = [
+        "children" => [],
+        "label" => $this->getSetting('label', 'Missing Label', $settings),
+        "parent_name" => $parent_name,
+        "region" => $this->getSetting('region', 'content', $settings),
+        "weight" => $this->getSetting('weight', 0, $settings),
+        "format_type" => "tab",
+        "format_settings" => [
+          "classes" => $classes,
+          "show_empty_fields" => $this->getSetting('show_empty', FALSE, $settings),
+          "id" => $name,
+          "label_as_html" => $this->getSetting('label_as_html', FALSE, $settings),
+          "formatter" => $this->getSetting('formatter', 'open', $settings),
+          "description" => $this->getSetting('description', '', $settings),
+          "required_fields" => $this->getSetting('required_fields', TRUE, $settings),
+        ],
+      ];
+      $display->setThirdPartySetting('field_group', $name, $group);
     }
   }
 
