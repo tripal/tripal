@@ -54,6 +54,7 @@ trait ChadoFieldTestTrait {
 
     // Setup the test environment based on the Entity kernel test base.
     $this->installSchema('system', 'sequences');
+    $this->installEntitySchema('path_alias');
     // -- we need terms for TripalEntityType, fields and field properties.
     $this->installSchema('tripal', ['tripal_id_space_collection', 'tripal_terms_idspaces', 'tripal_vocabulary_collection', 'tripal_terms_vocabs', 'tripal_terms']);
     // -- we need a user to create an entity.

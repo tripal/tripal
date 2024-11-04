@@ -14,7 +14,7 @@ use Drupal\tripal_chado\Plugin\TripalBackendPublish\ChadoPublish;
 class ChadoPublishTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['system', 'user', 'tripal', 'tripal_chado', 'views', 'field'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal', 'tripal_chado', 'views', 'field'];
 
   protected $connection;
 
@@ -33,6 +33,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $container = \Drupal::getContainer();
 
     $this->installConfig('system');
+    $this->installEntitySchema('path_alias');
     // ... we need entity types to publish them.
     $this->installEntitySchema('tripal_entity_type');
     $this->installEntitySchema('tripal_entity');

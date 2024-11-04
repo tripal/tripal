@@ -18,7 +18,7 @@ class TripalEntityTest extends TripalTestKernelBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system', 'field', 'user', 'tripal'];
+  protected static $modules = ['system', 'field', 'user', 'path', 'path_alias', 'tripal'];
 
   protected string $bundle_name = 'fake_organism_bundle_028519';
 
@@ -31,6 +31,7 @@ class TripalEntityTest extends TripalTestKernelBase {
     parent::setUp();
 
     $this->installEntitySchema('user');
+    $this->installEntitySchema('path_alias');
     $this->installEntitySchema('tripal_entity');
     $this->installEntitySchema('tripal_entity_type');
 

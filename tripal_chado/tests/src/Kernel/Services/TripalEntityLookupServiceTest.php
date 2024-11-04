@@ -12,7 +12,7 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['system', 'user', 'tripal', 'tripal_chado', 'views', 'field'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal', 'tripal_chado', 'views', 'field'];
 
   protected $connection;
 
@@ -40,6 +40,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
     $this->installConfig('system');
+    $this->installEntitySchema('path_alias');
     // ... we need entity types to publish them.
     $this->installEntitySchema('tripal_entity_type');
     $this->installEntitySchema('tripal_entity');
