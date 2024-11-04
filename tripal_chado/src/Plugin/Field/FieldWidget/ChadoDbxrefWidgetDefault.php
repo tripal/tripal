@@ -162,8 +162,8 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
     // If the accession does not exist in the DB, then create it.
     foreach ($values as $val_key => $value) {
-      $db_id = $value['dbxref']['db_id'];
-      $accession = $value['dbxref']['dbxref_accession'];
+      $db_id = $value['db_id'];
+      $accession = $value['dbxref_accession'];
       if ($accession != '') {
         // See if we can convert the returned string to its dbxref_id value
         $dbxref_autocomplete = new ChadoDbxrefAutocompleteController();
