@@ -3,20 +3,22 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use \Drupal\tripal\Services\TripalPublish;
-use Drupal\tripal\Services\TripalJob;
+use Drupal\tripal_chado\Plugin\TripalBackendPublish\ChadoPublish;
 
 /**
  * Tests the publish service for chado-based content types.
  *
- * @group TripalPublish
+ * @group TripalBackendPublish
+ * @group ChadoPublish
  */
-class TripalPublishServiceTest extends ChadoTestKernelBase {
+class ChadoPublishTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
   protected static $modules = ['system', 'user', 'tripal', 'tripal_chado', 'views', 'field'];
 
   protected $connection;
+
+  protected $chado_publish;
 
   /**
    * {@inheritdoc}
@@ -108,6 +110,9 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     $this->createContentTypeFromConfig('general_chado', 'project', TRUE);
     $this->createContentTypeFromConfig('general_chado', 'contact', TRUE);
 
+    $publish_service = \Drupal::service('tripal.backend_publish');
+    $this->chado_publish = $publish_service->createInstance('chado_storage', []);
+
   }
 
   /**
@@ -120,18 +125,14 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
    * publishing of chado-focused content types.
    */
   public function testTripalPublishServiceSingleJob() {
-    $drupal = \Drupal::service('database');
-
-    // Submit the Tripal job by calling the callback directly.
-    $current_user = \Drupal::currentUser();
-    $values = ["schema_name" => $this->testSchemaName];
-    $bundle = 'organism';
-    $datastore = 'chado_storage';
-    TripalPublish::runTripalJob($bundle, $datastore, $values);
+    $publish_options = ['bundle' => 'organism', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(3, $published_entities,
+      "We did not publish the expected number of entities.");
 
     // confirm the entities are added.
-    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
-    $this->assertCount(3, $entities,
+    $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
+    $this->assertCount(3, $confirmed_entities,
       "We expected there to be the same number of organism entities as we inserted.");
   }
 
@@ -147,28 +148,26 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
    * publishing of chado-focused content types.
    */
   public function testTripalPublishService2Jobs() {
-    $drupal = \Drupal::service('database');
-
-    // Submit the Tripal job by calling the callback directly.
-    $current_user = \Drupal::currentUser();
-    $values = ["schema_name" => $this->testSchemaName];
-    $datastore = 'chado_storage';
-    $bundle = 'project';
-    TripalPublish::runTripalJob($bundle, $datastore, $values);
+    $publish_options = ['bundle' => 'project', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(3, $published_entities,
+      "We did not publish the expected number of entities.");
 
     // confirm the entities are added.
-    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'project']);
-    $this->assertCount(3, $entities,
+    $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'project']);
+    $this->assertCount(3, $confirmed_entities,
       "We expected there to be the same number of project entities as we inserted.");
 
     // Submit the Tripal job by calling the callback directly.
-    $bundle = 'contact';
-    TripalPublish::runTripalJob($bundle, $datastore, $values);
+    $publish_options = ['bundle' => 'contact', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertContains(count($published_entities), [3, 4],
+      "We did not publish the expected number of entities.");
 
     // confirm the entities are added. Chado defines a default "null" contact, which
     // may also get published, so expect 4 instead of 3. (Issue #1809)
-    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
-    $this->assertContains(count($entities), [3, 4],
+    $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
+    $this->assertContains(count($confirmed_entities), [3, 4],
       "We expected there to be the same number of contact entities as we inserted plus the null contact.");
 
     // Verify that a field table was populated
