@@ -131,10 +131,10 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * configuration file during installation of a module.  In some cases,
    * however, not all possible instances of a field can be added to a content
    * type at installation of the module.  This function can be called to discover
-   * if new instances of a field are appropraite for a given content type.  An
+   * if new instances of a field are appropriate for a given content type.  An
    * example of this is the `chado_property_type_default` field.  This function
    * should examine its storage backend and return a list of new fields
-   * instnaces that could be added to the content type (i.e., bundle).
+   * instances that could be added to the content type (i.e., bundle).
    *
    * @param \Drupal\tripal\Entity\TripalEntityType $bundle
    *   The entity type object for which new field instances should be found.
@@ -142,12 +142,22 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * @param string $field_id
    *   The id of the field.
    *
-   * @param array $field_definitions
-   *   The field definition array.
+   * @param array $field_types
+   *   An array where each item defines a field type that is attached to this
+   *   bundle. Each item is itself an array of the annotation defined at the top
+   *   of that particular field type class.
+   *
+   * @param array $field_instances
+   *   An array of FieldConfig objects where each object defines a field attached
+   *   to this content type. This differs from $field_types in that (1) there
+   *   will be multiple entries if there a multiple instances of a single field
+   *   type and (2) it includes the specific settings needed to create the field.
+   *   As such, the FieldConfig object can be used to add existing fields to the
+   *   field list returned by this method.
    *
    * @return array
-   *   An associative array that follows the same structure as expected by `
+   *   An associative array that follows the same structure as expected by
    *   tripal.tripalfield_collection.* configuration.
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array;
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array;
 }
