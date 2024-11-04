@@ -115,7 +115,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * {@inheritdoc}
    */
   public function label() {
-    return $this->getTitle();
+    $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
+    $tripal_allowed_tags = explode(' ', $tag_string ?? '');
+
+    $title = $this->getTitle();
+    $sanitized_value = \Drupal\Component\Utility\Xss::filter($title, $tripal_allowed_tags);
+    return \Drupal\Core\Render\Markup::create($sanitized_value);
   }
 
   /**
@@ -220,6 +225,21 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function setCreatedTime($timestamp) {
     $this->set('created', $timestamp);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getChangedTime() {
+    return $this->get('changed')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setChangedTime($timestamp) {
+    $this->set('changed', $timestamp);
     return $this;
   }
 
@@ -341,12 +361,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Authored by'))
-      ->setDescription(t('The user ID of the author of the Tripal Content entity.'))
+      ->setDescription(t('The username of the content author.'))
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setSetting('handler', 'default')
       ->setTranslatable(TRUE)
       ->setDisplayOptions('view', array(
+        'region' => 'hidden',
         'label' => 'above',
         'type' => 'author',
         'weight' => 0,
@@ -366,13 +387,14 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     $fields['title'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Title'))
-      ->setDescription(t('The title of this entity.'))
+      ->setDescription(t('The title of this specific piece of Tripal Content. This will be automatically updated based on the title format defined by administrators.'))
       ->setSettings(array(
         'max_length' => 1024,
         'text_processing' => 0,
       ))
       ->setDefaultValue('')
       ->setDisplayOptions('view', array(
+        'region' => 'hidden',
         'label' => 'above',
         'type' => 'string',
         'weight' => -4,
@@ -381,7 +403,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         'type' => 'string_textfield',
         'weight' => -4,
       ))
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['path'] = BaseFieldDefinition::create('path')
@@ -400,12 +421,24 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       ->setDefaultValue(TRUE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Created'))
-      ->setDescription(t('The time that the entity was created.'));
+    ->setLabel(t('Authored on'))
+    ->setDescription(t('The date and time that this Tripal Content was created.'))
+      ->setTranslatable(TRUE)
+      ->setDisplayOptions('view', [
+        'region' => 'hidden',
+        'label' => 'hidden',
+        'type' => 'timestamp',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_timestamp',
+        'weight' => 10,
+      ])
+      ->setDisplayConfigurable('form', TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the entity was last edited.'));
+      ->setDescription(t('The date and time that this Tripal Content was last edited.'));
 
     return $fields;
   }
@@ -589,8 +622,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
 
           // Keep track of elements that have no value.
-          foreach ($prop_values as $prop_value) {
-            if (!$prop_value->getValue()) {
+          foreach ($prop_values as $i => $prop_value) {
+            $prop_value_value = $prop_value->getValue();
+            if (is_null($prop_value_value)) {
               // A given delta should only be present once here.
               if (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name])) {
                 $delta_remove[$field_name][] = $delta;

@@ -15,8 +15,12 @@
     <include>
       <directory suffix=".php">tripal/src</directory>
       <file>tripal/tripal.module</file>
+      <directory suffix=".php">tripal_biodb/src</directory>
+      <file>tripal_biodb/tripal_biodb.module</file>
       <directory suffix=".php">tripal_chado/src</directory>
       <file>tripal_chado/tripal_chado.module</file>
+      <directory suffix=".php">tripal_layout/src</directory>
+      <file>tripal_layout/tripal_layout.module</file>
     </include>
     <exclude>
       <!-- Exclude Interface classes from coverage -->

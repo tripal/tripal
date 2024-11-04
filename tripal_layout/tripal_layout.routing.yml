@@ -1,8 +1,8 @@
-# Adds a +Apply Default Layout link on the 'Tripal Content Field Display' page.
+# Adds an "+Apply Tripal Layout" link on the Tripal Content "Manage Display" page.
 tripal_layout.content_type_field_layout:
-  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/layout'
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/display/layout'
   defaults:
-    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::applyLayout'
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::applyViewLayout'
     _title: 'Apply Default Layout'
   options:
     parameters:
@@ -12,9 +12,9 @@ tripal_layout.content_type_field_layout:
     _permission: 'administer tripal'
 
 tripal_layout.content_type_field_layout_reset:
-  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/layout/reset'
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/display/reset-layout'
   defaults:
-    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::resetLayout'
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::resetViewLayout'
     _title: 'Reset Layout'
   options:
     parameters:
@@ -22,15 +22,40 @@ tripal_layout.content_type_field_layout_reset:
         type: entity:tripal_entity_type
   requirements:
     _permission: 'administer tripal'
-    
+
+# Adds a +Apply Default Layout link on the 'Tripal Content Field Display' page.
+tripal_layout.content_type_form_layout:
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/form-display/layout'
+  defaults:
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::applyFormLayout'
+    _title: 'Apply Default Layout'
+  options:
+    parameters:
+      tripal_entity_type:
+        type: entity:tripal_entity_type
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_layout.content_type_form_layout_reset:
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/form-display/reset-layout'
+  defaults:
+    _controller: '\Drupal\tripal_layout\Controller\TripalEntityUILayoutController::resetFormLayout'
+    _title: 'Reset Layout'
+  options:
+    parameters:
+      tripal_entity_type:
+        type: entity:tripal_entity_type
+  requirements:
+    _permission: 'administer tripal'
+
 ##
 # Tripal Layout Default View entity.
 ##
-
 entity.tripal_layout_default_view.layouts:
   path: '/admin/tripal/config/tripal_layout_default_view'
   defaults:
     _entity_list: 'tripal_layout_default_view'
+    _title: 'Tripal Default View Layouts'
   requirements:
     _permission: 'administer tripal'
 
@@ -38,6 +63,25 @@ entity.tripal_layout_default_view.delete_form:
   path: '/admin/tripal/config/tripal_layout_default_view/{tripal_layout_default_view}/delete'
   defaults:
     _entity_form: 'tripal_layout_default_view.delete'
+    _title: 'Delete Configuration'
+  requirements:
+    _permission: 'administer tripal'
+
+##
+# Tripal Default Form Layout entity.
+##
+entity.tripal_layout_default_form.layouts:
+  path: '/admin/tripal/config/tripal_layout_default_form'
+  defaults:
+    _entity_list: 'tripal_layout_default_form'
+    _title: 'Tripal Default Form Layouts'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.tripal_layout_default_form.delete_form:
+  path: '/admin/tripal/config/tripal_layout_default_form/{tripal_layout_default_form}/delete'
+  defaults:
+    _entity_form: 'tripal_layout_default_form.delete'
     _title: 'Delete Configuration'
   requirements:
     _permission: 'administer tripal'

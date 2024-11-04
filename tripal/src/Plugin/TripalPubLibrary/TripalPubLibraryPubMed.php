@@ -24,7 +24,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     // is needed to receive and process the criteria data. See below.
   }
 
-  /** 
+  /**
    * Plugin specific form submit to add form values for example to criteria array
    * The criteria array eventually gets serialized and stored in the tripal_pub_import
    * database table. (This code gets called from ChadoNewPublicationForm)
@@ -81,7 +81,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    * @TODO - This will need to retrieve the publications AND save to CHADO
    */
   public function run(int $query_id) {
-    
+
   }
 
   /**
@@ -101,7 +101,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
 
   /** THIS IS FROM 7.x-3.x/tripal_chado/includes/loaders/tripal_chado.pub_importer_PMID.inc */
   /** UPGRADED FOR TRIPAL 4 USE */
-  
+
   /**
    * A function for performing the search on the PubMed database.
    * T4 - this is not a hook any longer but can still be used
@@ -128,19 +128,19 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     if (isset($search_array['days'])) {
       $days = $search_array['days'];
     }
-  
+
     $search_str = '';
-  
+
     for ($i = 1; $i <= $num_criteria; $i++) {
       $search_terms = trim($search_array['criteria'][$i]['search_terms']);
       $scope = $search_array['criteria'][$i]['scope'];
       $is_phrase = $search_array['criteria'][$i]['is_phrase'];
       $op = $search_array['criteria'][$i]['operation'];
-  
+
       if ($op) {
         $search_str .= "$op ";
       }
-  
+
       // if this is phrase make sure the search terms are surrounded by quotes
       if ($is_phrase) {
         $search_str .= "(\"$search_terms\" |SCOPE|)";
@@ -167,7 +167,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
         }
         $search_str .= ')';
       }
-  
+
       if ($scope == 'title') {
         $search_str = preg_replace('/\|SCOPE\|/', '[Title]', $search_str);
       }
@@ -194,16 +194,16 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       $past_date = getdate($past_timestamp);
       $search_str .= " AND (\"" . sprintf("%04d/%02d/%02d", $past_date['year'], $past_date['mon'], $past_date['mday']) . "\"[Date - Create] : \"3000\"[Date - Create]))";
     }
-  
+
     // now initialize the query
     $results = $this->pmidSearchInit($search_str, $num_to_retrieve);
     $total_records = $results['Count'];
     $query_key = $results['QueryKey'];
     $web_env = $results['WebEnv'];
-  
+
     // initialize the pager
     $start = $page * $num_to_retrieve;
- 
+
     // if we have no records then return an empty array
     if ($total_records == 0) {
       return [
@@ -214,7 +214,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     }
     // now get the list of PMIDs from the initialized search
     $pmids_txt = $this->pmidFetch($query_key, $web_env, 'uilist', 'text', $start, $num_to_retrieve);
-  
+
     // iterate through each PMID and get the publication record. This requires a new search and new fetch
     $pmids = explode("\n", trim($pmids_txt));
     $pubs = [];
@@ -230,7 +230,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       'pubs' => $pubs,
     ];
   }
-  
+
   /**
    * Initailizes a PubMed Search using a given search string
    *
@@ -246,7 +246,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    * @ingroup tripal_pub
    */
   private function pmidSearchInit($search_str, $retmax) {
-  
+
     // do a search for a single result so that we can establish a history, and get
     // the number of records. Once we have the number of records we can retrieve
     // those requested in the range.
@@ -255,14 +255,14 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       "&retmax=$retmax" .
       "&usehistory=y" .
       "&term=" . urlencode($search_str);
-  
+
     $api_key = \Drupal::state()->get('tripal_pub_importer_ncbi_api_key', NULL);
     $sleep_time = 333334;
     if (!empty($api_key)) {
       $query_url .= "&api_key=" . $api_key;
       $sleep_time = 100000;
     }
-  
+
     usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
     $rfh = fopen($query_url, "r");
     if (!$rfh) {
@@ -270,7 +270,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       \Drupal::service('tripal.logger')->error("Could not perform Pubmed query. Cannot connect to Entrez.");
       return 0;
     }
-  
+
     // retrieve the XML results
     $query_xml = '';
     while (!feof($rfh)) {
@@ -279,19 +279,19 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     fclose($rfh);
     $xml = new \XMLReader();
     $xml->xml($query_xml);
-  
+
     // iterate though the child nodes of the <eSearchResult> tag and get the count, history and query_id
     $result = [];
     while ($xml->read()) {
       $element = $xml->name;
-  
+
       if ($xml->nodeType == \XMLReader::END_ELEMENT and $element == 'WebEnv') {
         // we've read as much as we need. If we go too much further our counts
         // will get messed up by other 'Count' elements.  so we're done.
         break;
       }
       if ($xml->nodeType == \XMLReader::ELEMENT) {
-  
+
         switch ($element) {
           case 'Count':
             $xml->read();
@@ -310,7 +310,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     }
     return $result;
   }
-  
+
   /**
    * Retrieves from PubMed a set of publications from the
    * previously initiated query.
@@ -338,7 +338,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    */
   private function pmidFetch($query_key, $web_env, $rettype = 'null',
                                  $retmod = 'null', $start = 0, $limit = 10, $args = []) {
-  
+
     // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
     // the PMID's within the range specied.  The PMIDs will be returned as a text list
     $fetch_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" .
@@ -349,14 +349,14 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       "&db=Pubmed" .
       "&query_key=$query_key" .
       "&WebEnv=$web_env";
-  
+
     $api_key = \Drupal::state()->get('tripal_pub_importer_ncbi_api_key', NULL);
     $sleep_time = 333334;
     if (!empty($api_key)) {
       $fetch_url .= "&api_key=" . $api_key;
       $sleep_time = 100000;
     }
-  
+
     foreach ($args as $key => $value) {
       if (is_array($value)) {
         $fetch_url .= "&$key=";
@@ -383,10 +383,10 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       }
       fclose($rfh);
     }
-  
+
     return $results;
   }
-  
+
   /**
    * This function parses the XML containing details of a publication and
    * converts it into an associative array of where keys are Tripal Pub
@@ -409,18 +409,18 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    */
   public function parse($pub_xml) {
     $pub = [];
-  
+
     if (!$pub_xml) {
       return $pub;
     }
-  
+
     // read the XML and iterate through it.
     $xml = new \XMLReader();
     $xml->xml(trim($pub_xml));
     while ($xml->read()) {
       $element = $xml->name;
       if ($xml->nodeType == \XMLReader::ELEMENT) {
-  
+
         switch ($element) {
           case 'ERROR':
             $xml->read(); // get the value for this element
@@ -448,7 +448,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
             break;
           case 'BookDocument':
             $this->pmidParseBookDocument($xml, $pub);
-            break;            
+            break;
           case 'ChemicalList':
             // TODO: handle this
             break;
@@ -498,7 +498,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     }
     // @TODO refer to T3 tripal_chado module, tripal_chado.pub.api.inc
     // $pub['Citation'] = chado_pub_create_citation($pub);
-  
+
     $pub['raw'] = $pub_xml;
     return $pub;
   }
@@ -618,7 +618,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
         }
       }
     }
-  }  
+  }
 
   /**
    * Parses the section from the XML returned from PubMed that contains
@@ -652,7 +652,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     }
   }
 
-  
+
   /**
    * Parses the section from the XML returned from PubMed that contains
    * information about the Journal
@@ -668,7 +668,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
     while ($xml->read()) {
       // get this element name
       $element = $xml->name;
-  
+
       // if we're at the </Article> element then we're done with the article...
       if ($xml->nodeType == \XMLReader::END_ELEMENT and $element == 'MedlineJournalInfo') {
         return;
@@ -695,7 +695,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       }
     }
   }
-  
+
   /**
    * Parses the section from the XML returned from PubMed that contains
    * information about an article.
@@ -708,11 +708,11 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    * @ingroup tripal_pub
    */
   private function pmidParseArticle($xml, &$pub) {
-  
+
     while ($xml->read()) {
       // get this element name
       $element = $xml->name;
-  
+
       // if we're at the </Article> element then we're done with the article...
       if ($xml->nodeType == \XMLReader::END_ELEMENT and $element == 'Article') {
         return;
@@ -788,7 +788,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       }
     }
   }
-  
+
   /**
    * Parses the section from the XML returned from PubMed that contains
    * information about a publication
@@ -829,15 +829,15 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       ];
       $pub_cvterm = chado_get_cvterm($identifiers, $options, $chado->getSchemaName());
       if (!$pub_cvterm) {
-        \Drupal::service('tripal.logger')->error('Cannot find a valid vocabulary term for the publication type: "' . 
+        \Drupal::service('tripal.logger')->error('Cannot find a valid vocabulary term for the publication type: "' .
           $value . '"');
       }
     }
     else {
       $pub['Publication Type'][] = $pub_cvterm->name;
     }
-  }  
-  
+  }
+
   /**
    * Parses the section from the XML returned from PubMed that contains
    * information about the abstract
@@ -851,10 +851,10 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    */
   private function pmidParseAbstract($xml, &$pub) {
     $abstract = '';
-  
+
     while ($xml->read()) {
       $element = $xml->name;
-  
+
       if ($xml->nodeType == \XMLReader::END_ELEMENT and $element == 'Abstract') {
         // we've reached the </Abstract> element so return
         $pub['Abstract'] = $abstract;
@@ -887,7 +887,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       }
     }
   }
-  
+
   /**
    * Parses the section from the XML returned from PubMed that contains
    * information about pagination
@@ -902,7 +902,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
   private function pmidParsePagination($xml, &$pub) {
     while ($xml->read()) {
       $element = $xml->name;
-  
+
       if ($xml->nodeType == \XMLReader::END_ELEMENT and $element == 'Pagination') {
         // we've reached the </Pagination> element so we're done.
         return;
@@ -921,7 +921,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       }
     }
   }
-  
+
   /**
    * Parses the section from the XML returned from PubMed that contains
    * information about a journal
@@ -934,10 +934,10 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    * @ingroup tripal_pub
    */
   private function pmidParseJournal($xml, &$pub) {
-  
+
     while ($xml->read()) {
       $element = $xml->name;
-  
+
       if ($xml->nodeType == \XMLReader::END_ELEMENT and $element == 'Journal') {
         return;
       }
@@ -974,7 +974,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       }
     }
   }
-  
+
   /**
    * Parses the section from the XML returned from PubMed that contains
    * information about a journal issue
@@ -987,10 +987,10 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    * @ingroup tripal_pub
    */
   private function pmidParseJournalIssue($xml, &$pub) {
-  
+
     while ($xml->read()) {
       $element = $xml->name;
-  
+
       if ($xml->nodeType == \XMLReader::END_ELEMENT and $element == 'JournalIssue') {
         // if we're at the </JournalIssue> element then we're done
         return;
@@ -1011,7 +1011,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
             $month = array_key_exists('month', $date) ? $date['month'] : '';
             $day = array_key_exists('day', $date) ? $date['day'] : '';
             $medline = array_key_exists('medline', $date) ? $date['medline'] : '';
-  
+
             $pub['Year'] = $year;
             if ($month and $day and $year) {
               $pub['Publication Date'] = "$year $month $day";
@@ -1035,7 +1035,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       }
     }
   }
-  
+
   /**
    * Parses the section from the XML returned from PubMed that contains
    * information regarding to dates
@@ -1049,10 +1049,10 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    */
   private function pmidParseDate($xml, $element_name) {
     $date = [];
-  
+
     while ($xml->read()) {
       $element = $xml->name;
-  
+
       if ($xml->nodeType == \XMLReader::END_ELEMENT and $element == $element_name) {
         // if we're at the </$element_name> then we're done
         return $date;
@@ -1086,7 +1086,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       }
     }
   }
-  
+
   /**
    * Parses the section from the XML returned from PubMed that contains
    * information about the author list for a publication
@@ -1100,10 +1100,10 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
    */
   private function pmidParseAuthorlist($xml, &$pub) {
     $num_authors = 0;
-  
+
     while ($xml->read()) {
       $element = $xml->name;
-  
+
       if ($xml->nodeType == \XMLReader::END_ELEMENT) {
         // if we're at the </AuthorList> element then we're done with the article...
         if ($element == 'AuthorList') {
@@ -1167,7 +1167,7 @@ class TripalPubLibraryPubmed extends TripalPubLibraryBase {
       }
     }
   }
-  
+
   /**
    * Get the name of the language based on an abbreviation
    *

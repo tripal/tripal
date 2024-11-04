@@ -22,6 +22,7 @@ class TripalEntityTypeForm extends EntityForm {
 
     $tripal_entity_type = $this->entity;
     $tripal_entity_type->setDefaults();
+    list($url_tokens, $title_tokens) = $this->getValidTokens($tripal_entity_type);
 
     // We need to choose a term if this is a new content type.
     // The term cannot be changed later!
@@ -135,12 +136,6 @@ class TripalEntityTypeForm extends EntityForm {
       '#title' => t('Advanced Settings'),
     );
 
-    $tokens = $tripal_entity_type->getTokens();
-    $title_tokens = $tokens;
-    unset($title_tokens['[title]']);
-    unset($title_tokens['[TripalBundle__bundle_id]']);
-    unset($title_tokens['[TripalEntity__entity_id]']);
-
     // Page title options:
     $form['title_settings'] = [
       '#type' => 'details',
@@ -151,7 +146,7 @@ class TripalEntityTypeForm extends EntityForm {
     $form['title_settings']['msg'] = [
       '#type' => 'item',
       '#markup' => t('
-<p>The format below is used to determine the title displayed on content pages of the current type. This ensures all content of this type is consistent while still allowing you to indicate which data you want represented in the title (ie: which data would most identify your content).</p>
+<p>The format below is used to determine the title displayed on content pages of the current type. This ensures all content of this type is consistent while still allowing you to indicate which data you want represented in the title (i.e.: which data would most identify your content).</p>
 
 <p>Keep in mind that it might be confusing to users if more than one page has the same title. <strong>We recommend you choose a combination of tokens that will uniquely identify your content</strong>.</p>'),
     ];
@@ -206,7 +201,7 @@ class TripalEntityTypeForm extends EntityForm {
       '#markup' => 'Copy the token and paste it into the "URL Alias Pattern" text field above.'
     ];
 
-    $form['url_settings']['tokens']['content'] = theme_token_list($tokens);
+    $form['url_settings']['tokens']['content'] = theme_token_list($url_tokens);
 
     return $form;
   }
@@ -283,6 +278,66 @@ class TripalEntityTypeForm extends EntityForm {
       $form_state->setErrorByName('term',
           'Please select a term from the autocomplete drop-down. It must have the ID space and accession in parenthesis.');
     }
+    list($url_tokens, $title_tokens) = $this->getValidTokens($tripal_entity_type);
+
+    // Make sure all title tokens used are valid
+    $title_format = $form_state->getValue('title_format');
+    $invalid_token = $this->validateTokens($title_format, $title_tokens);
+    if ($invalid_token) {
+      $form_state->setErrorByName('title_format',
+          "The token \"$invalid_token\" is not a valid title token");
+    }
+
+    // Make sure all url tokens used are valid
+    $url_format = $form_state->getValue('url_format');
+    $invalid_token = $this->validateTokens($url_format, $url_tokens);
+    if ($invalid_token) {
+      $form_state->setErrorByName('url_format',
+          "The token \"$invalid_token\" is not a valid url token");
+    }
+
+  }
+
+  /**
+   * Returns an array of valid tokens that may be used in an entity title.
+   *
+   * @param object $tripal_entity_type
+   *
+   * @return array
+   *   The list of valid tokens for URLs, and the list of valid tokens for entity titles.
+   */
+  protected function getValidTokens($tripal_entity_type) {
+    $url_tokens = $tripal_entity_type->getTokens();
+    $title_tokens = $url_tokens;
+    unset($title_tokens['[title]']);
+    unset($title_tokens['[TripalBundle__bundle_id]']);
+    unset($title_tokens['[TripalEntity__entity_id]']);
+    return [$url_tokens, $title_tokens];
+  }
+
+  /**
+   * Validate that all tokens present in a passed string are valid.
+   * A token is anything enclosed in square brackets [xxx].
+   *
+   * @param string $format_string
+   *   The string to be validated containing any number of tokens.
+   * @param array $valid_tokens
+   *   A list of valid tokens. The token is the array key.
+   *
+   * @return string
+   *   An empty string if all tokens are valid, otherwise return
+   *   the first invalid token found.
+   */
+  protected function validateTokens($format_string, $valid_tokens) {
+    $invalid_token = '';
+    preg_match_all('/(\[[^\]]+\])/', $format_string, $matches);
+    foreach ($matches[0] as $match) {
+      if ($match and !array_key_exists($match, $valid_tokens)) {
+        $invalid_token = $match;
+        break;
+      }
+    }
+    return $invalid_token;
   }
 
   /**
