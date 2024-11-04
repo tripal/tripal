@@ -230,11 +230,15 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
     foreach ($all_field_defs as $field_id => $field_def) {
       $field_class = $field_def['class'];
       if (is_subclass_of($field_class, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
-        $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs);
+        $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs, $entity_field_defs);
         foreach ($discovered as $discovered_field) {
 
-          // If the discovered field already exists then mark it as existing.
-          if (array_key_exists($discovered_field['name'], $entity_field_defs)) {
+          // If the CV term for the discovered field is currently used by an
+          // existing field, then mark it as existing.
+          $discoveredIdSpace = $discovered_field['settings']['termIdSpace'];
+          $discoveredAccession = $discovered_field['settings']['termAccession'];
+          $existing = $this->checkDiscoveredTerm($discoveredIdSpace, $discoveredAccession, $entity_field_defs);
+          if ($existing) {
             $field_status['existing'][$discovered_field['name']] = $discovered_field;
             continue;
           }
@@ -253,6 +257,64 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
       }
     }
     return $field_status;
+  }
+
+  /**
+   * Provides a compatible array for a field based on it's Field Config.
+   *
+   * This is to be used in the discover process to add existing fields to the
+   * field list in a standardized way.
+   *
+   * @param FieldConfig $instance
+   *   The existing field to generate an array for so it can be added to the
+   *   field list as an existing field.
+   * @return array
+   *   An array which matches the form expected to be a single item in the
+   *   discover method.
+   */
+  public static function getFieldArrayFromFieldInstance(FieldConfig $instance) {
+    $field_storage = $instance->getFieldStorageDefinition();
+    $settings = $instance->getSettings();
+    return [
+      'name' => $instance->getName(),
+      'content_type' => $instance->getTargetBundle(),
+      'label' => $instance->getLabel(),
+      'type' => $instance->getType(),
+      'description' => $instance->getDescription(),
+      'cardinality' => $field_storage->getCardinality(),
+      'required' => $instance->isRequired(),
+      'storage_settings' => [
+        'storage_plugin_id' => $settings['storage_plugin_id'],
+        'storage_plugin_settings' => $settings['storage_plugin_settings'],
+      ],
+      'settings' => $settings,
+    ];
+  }
+
+  /**
+   * Helper function to determine if any existing fields use a particular CV term.
+   *
+   * @param string $idSpace
+   *   ID space of term we want to check
+   * @param string $accession
+   *   Accession of term we want to check
+   * @param array $entity_field_defs
+   *   Array of field definitions returned from getFieldDefinitions()
+   *
+   * @return bool
+   *   TRUE if term already used by a field, FALSE otherwise
+   */
+  private function checkDiscoveredTerm($idSpace, $accession, $entity_field_defs) {
+    $existing = FALSE;
+    foreach ($entity_field_defs as $name => $def) {
+      $settings = $def->getSettings();
+      if ( (($settings['termIdSpace'] ?? '') == $idSpace)
+          and (($settings['termAccession'] ?? '') == $accession) ) {
+        $existing = TRUE;
+        break;
+      }
+    }
+    return $existing;
   }
 
   /**
@@ -532,6 +594,23 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         $field->setTranslatable($field_def['translatable']);
         $field->setSettings($field_def['settings']);
         $field->save();
+
+        // If the additional type field specifies a fixed_value, this
+        // is used to define the bundle type. Add this setting directly
+        // to the entity for efficient access when publishing.
+        if ($field_def['type'] == 'chado_additional_type_type_default') {
+          if (!$entity_type->getThirdPartySetting('tripal', 'bundle_type_column')) {
+            $fixed_value = $field_def['settings']['fixed_value'] ?? NULL;
+            if ($fixed_value) {
+              $storage_plugin_settings = $field_def['storage_settings']['storage_plugin_settings'] ?? [];
+              if (array_key_exists('type_table', $storage_plugin_settings) and array_key_exists('type_column', $storage_plugin_settings)) {
+                $entity_type->setThirdPartySetting('tripal', 'bundle_type_table', $storage_plugin_settings['type_table']);
+                $entity_type->setThirdPartySetting('tripal', 'bundle_type_column', $storage_plugin_settings['type_column']);
+                $entity_type->save();
+              }
+            }
+          }
+        }
 
         // Add field to the default display modes.
         $entity_display = \Drupal::service('entity_display.repository');

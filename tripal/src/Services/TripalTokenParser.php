@@ -220,7 +220,7 @@ class TripalTokenParser {
         $token = preg_replace('/\]/', '', $token);
 
         // Look for values for bundle or entity related tokens.
-        if ($token === 'TripalBundle__bundle_id') {
+        if (($token === 'TripalEntityType__entity_id') OR ($token === 'TripalBundle__bundle_id')) {
           $value = $this->bundle->getID();
           $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
         }
@@ -230,6 +230,18 @@ class TripalTokenParser {
         }
         elseif ($token === 'TripalEntity__entity_id' and !is_null($this->entity)) {
           $value = $this->entity->getID();
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+        }
+        elseif ($token == 'TripalEntityType__term_namespace') {
+          $value = $this->bundle->get('termIdSpace');
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+        }
+        elseif ($token == 'TripalEntityType__term_accession') {
+          $value = $this->bundle->get('termAccession');
+          $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+        }
+        elseif ($token == 'TripalEntityType__term_label') {
+          $value = $this->bundle->getTerm()->getName();
           $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
         }
         // Look for values for field related tokens

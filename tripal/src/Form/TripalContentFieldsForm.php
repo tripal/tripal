@@ -54,29 +54,11 @@ class TripalContentFieldsForm implements FormInterface {
           . 'validation checks are also shown but cannot be added'),
     ];
 
-    // Add the vertical tab element.
+    // Add the vertical tab element for discovered fields.
     $form['field_type_tabs'] = [
       '#type' => 'vertical_tabs',
       '#title' => 'Discovered Fields',
     ];
-
-    // Add the tabs.
-    $form['new_fields_details'] = [
-      '#type' => 'details',
-      '#title' => 'New Fields',
-      '#group' => 'field_type_tabs',
-    ];
-    $form['existing_fields_details'] = [
-      '#type' => 'details',
-      '#title' => 'Existing Fields',
-      '#group' => 'field_type_tabs',
-    ];
-    $form['invalid_fields_details'] = [
-      '#type' => 'details',
-      '#title' => 'Invalid Fields',
-      '#group' => 'field_type_tabs',
-    ];
-
 
     // Add elements for the new fields tab.
     $new_fields = [];
@@ -88,6 +70,11 @@ class TripalContentFieldsForm implements FormInterface {
       }
       $new_defaults[] = $field['name'];
     }
+    $form['new_fields_details'] = [
+      '#type' => 'details',
+      '#title' => 'New Fields (' . ($new_fields?number_format(count($new_fields)):t('None')) . ')',
+      '#group' => 'field_type_tabs',
+    ];
     $new_fields_desc = t('The following is a list of new fields that are '
       . 'compatible with this content type. Select those you want to add.');
     if (empty($new_fields)) {
@@ -113,11 +100,16 @@ class TripalContentFieldsForm implements FormInterface {
       }
       $existing_defaults[] = $field['name'];
     }
+    $form['existing_fields_details'] = [
+      '#type' => 'details',
+      '#title' => 'Existing Fields (' . ($existing_fields?number_format(count($existing_fields)):t('None')) . ')',
+      '#group' => 'field_type_tabs',
+    ];
     $existing_fields_desc = t('The following is a list of fields that were '
       . 'discovered but which are already attached to this content type. They '
       . 'are shown here but cannot be added again.');
     if (empty($existing_fields)) {
-      $existing_fields_desc = t('No new fields were found for this content type');
+      $existing_fields_desc = t('No existing fields were found for this content type');
     }
     $form['existing_fields_details']['existing_fields_list'] = [
       '#type' => 'checkboxes',
@@ -139,6 +131,11 @@ class TripalContentFieldsForm implements FormInterface {
       }
       $invalid_fields[$field['name']] .= '. Invalid Reason: ' . $field['invalid_reason'];
     }
+    $form['invalid_fields_details'] = [
+      '#type' => 'details',
+      '#title' => 'Invalid Fields (' . ($invalid_fields?number_format(count($invalid_fields)):t('None')) . ')',
+      '#group' => 'field_type_tabs',
+    ];
     $invalid_fields_desc = t('The following fields do not pass validation tests. '
       . 'They need correction by the module developer and cannot be added.');
     if (empty($invalid_fields_desc)) {

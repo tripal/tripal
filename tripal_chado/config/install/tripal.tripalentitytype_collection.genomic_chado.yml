@@ -14,6 +14,8 @@ content_types:
             - bio_data_8
         settings:
             chado_base_table: feature
+            bundle_type_table: feature
+            bundle_type_column: type_id
 
     -   label: mRNA
         term: SO:0000234
@@ -26,6 +28,8 @@ content_types:
             - bio_data_9
         settings:
             chado_base_table: feature
+            bundle_type_table: feature
+            bundle_type_column: type_id
 
     -   label: Phylogenetic Tree
         term: data:0872
@@ -50,6 +54,8 @@ content_types:
             - bio_data_11
         settings:
             chado_base_table: featuremap
+            bundle_type_table: featuremapprop
+            bundle_type_column: type_id
 
     -   label: DNA Library
         term: NCIT:C16223
@@ -74,6 +80,8 @@ content_types:
             - bio_data_13
         settings:
             chado_base_table: analysis
+            bundle_type_table: analysisprop
+            bundle_type_column: type_id
 
     -   label: Genome Annotation
         term: operation:0362
@@ -86,6 +94,8 @@ content_types:
             - bio_data_14
         settings:
             chado_base_table: analysis
+            bundle_type_table: analysisprop
+            bundle_type_column: type_id
 
     -   label: Genome Project
         term: local:Genome Project
@@ -98,3 +108,5 @@ content_types:
             - bio_data_15
         settings:
             chado_base_table: project
+            bundle_type_table: projectprop
+            bundle_type_column: type_id
