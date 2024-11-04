@@ -147,6 +147,22 @@ class TripalEntityForm extends ContentEntityForm {
       $form['title']['#type'] = 'hidden';
     }
 
+    // -- URL Alias
+    $form['url_alias'] = [
+      '#type' => 'details',
+      '#title' => $this->t('URL alias'),
+      '#group' => 'advanced',
+      '#attributes' => [
+        'class' => ['path-form'],
+      ],
+      '#attached' => [
+        'library' => ['path/drupal.path'],
+      ],
+      '#weight' => 90,
+      '#optional' => TRUE,
+    ];
+    $form['path']['#group'] = 'url_alias';
+
     // -- Author information for administrators.
     $form['author'] = [
       '#type' => 'details',

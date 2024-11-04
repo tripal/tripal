@@ -407,7 +407,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     $fields['path'] = BaseFieldDefinition::create('path')
       ->setLabel(t('URL alias'))
-      ->setTranslatable(TRUE)
+      ->setDescription(t('The cannonical pretty URL for this page. This will be set using the URL pattern set for this content type by default but can also be changed to something more specific on a page-by-page basis. Note: the default alias is added when the content is first saved so this will only be filled out on edit unless you choose to override it on create.'))
       ->setDisplayOptions('form', [
         'type' => 'path',
         'weight' => 100,
