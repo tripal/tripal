@@ -30,19 +30,8 @@ trait TripalFieldTestTrait {
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
     // Setup the test environment based on the Entity kernel test base.
-    $this->installSchema('system', 'sequences');
-    $this->installEntitySchema('path_alias');
-    // -- we need terms for TripalEntityType, fields and field properties.
-    $this->installSchema('tripal', ['tripal_id_space_collection', 'tripal_terms_idspaces', 'tripal_vocabulary_collection', 'tripal_terms_vocabs', 'tripal_terms']);
-    // -- we need a user to create an entity.
-    $this->installEntitySchema('user');
+    $this->prepareEnvironment(['TripalTerm', 'TripalEntity', 'TripalField']);
     $this->setUpCurrentUser();
-    // -- we need our tripal content entity to attach the fields to.
-    $this->installEntitySchema('tripal_entity');
-    // -- we need a tripal content type for our tripal content entity to belong to.
-    $this->installEntitySchema('tripal_entity_type');
-    // -- we need the field module configuration.
-    $this->installConfig(['field']);
 
   }
 

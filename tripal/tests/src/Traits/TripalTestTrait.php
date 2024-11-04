@@ -33,6 +33,8 @@ trait TripalTestTrait {
    */
   public function createTripalField(string $entity_type, array $values = []) {
 
+    $this->suggestRequiredModules(['TripalTerm', 'TripalField']);
+
     // Setting the default values:
     $random = $this->getRandomGenerator();
     $values['field_name'] = $values['field_name'] ?? $random->word(6) . '_' . $random->word(15);
@@ -100,6 +102,8 @@ trait TripalTestTrait {
    *   Returns the tripal term that was created.
    */
   public function createTripalTerm(&$values, $idspace_plugin_id, $vocab_plugin_id) {
+
+    $this->suggestRequiredModules(['TripalTerm']);
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
@@ -171,6 +175,8 @@ trait TripalTestTrait {
    */
   public function createTripalContent($values = []) {
 
+    $this->suggestRequiredModules(['TripalTerm', 'TripalEntity', 'TripalField']);
+
     // Setting the default values:
     $random = $this->getRandomGenerator();
     // Provides a title with ~8 latin capitalized words.
@@ -217,6 +223,8 @@ trait TripalTestTrait {
    *   The Tripal content type that was created based on the parameters.
    */
   public function createTripalContentType($values = []) {
+
+    $this->suggestRequiredModules(['TripalTerm', 'TripalEntity', 'TripalField']);
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
@@ -269,6 +277,8 @@ trait TripalTestTrait {
     $config_factory = \Drupal::service('config.factory');
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity_type');
+
+    $this->suggestRequiredModules(['TripalTerm', 'TripalEntity', 'TripalField']);
 
     // FIRST THE CONTENT TYPE.
     $yaml_contentTypes = 'tripal.tripalentitytype_collection.' . $config_id;

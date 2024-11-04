@@ -108,14 +108,8 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
-    // Ensure we can access file_managed related functionality from Drupal.
-    // ... users need access to system.action config?
-    $this->installConfig('system');
-    // ... managed files are associated with a user.
-    $this->installEntitySchema('user');
-    // ... Finally the file module + tables itself.
-    $this->installEntitySchema('file');
-    $this->installSchema('file', ['file_usage']);
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalImporter']);
 
   }
 

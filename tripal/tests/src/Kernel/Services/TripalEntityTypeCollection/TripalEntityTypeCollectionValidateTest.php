@@ -21,7 +21,7 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['user', 'tripal'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal', 'field'];
 
   /**
    * A dummy Tripal Term.
@@ -51,6 +51,9 @@ class TripalEntityTypeCollectionValidateTest extends TripalTestKernelBase {
 
     // Grab the container.
     $container = \Drupal::getContainer();
+
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalEntity']);
 
     // We need a term for property types so we will create a generic mocked one
     // here which will be pulled from the container any time a term is requested.
