@@ -40,6 +40,7 @@ abstract class TripalTestKernelBase extends KernelTestBase {
    *   - TripalTerm
    *   - TripalEntity
    *   - TripalField
+   *   - TripalImporter
    * @return void
    */
   protected function suggestRequiredModules(array $functionality) {
@@ -102,6 +103,7 @@ abstract class TripalTestKernelBase extends KernelTestBase {
    *   - TripalTerm
    *   - TripalEntity
    *   - TripalField
+   *   - TripalImporter
    *
    * @return void
    */

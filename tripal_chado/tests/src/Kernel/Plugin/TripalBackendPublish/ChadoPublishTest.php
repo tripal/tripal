@@ -32,15 +32,10 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     // Grab the container.
     $container = \Drupal::getContainer();
 
-    $this->installConfig('system');
-    $this->installEntitySchema('path_alias');
-    // ... we need entity types to publish them.
-    $this->installEntitySchema('tripal_entity_type');
-    $this->installEntitySchema('tripal_entity');
-    // ... we need the config for tripal_chado since it defines the content types we will install.
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalTerm','TripalEntity']);
+    // -- additionally we need tripal_chado config to access the yaml files.
     $this->installConfig('tripal_chado');
-    // ... we need the tripal term tables
-    $this->installSchema('tripal', ['tripal_id_space_collection', 'tripal_terms_idspaces', 'tripal_vocabulary_collection', 'tripal_terms_vocabs', 'tripal_terms']);
 
     // Get Chado in place
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
