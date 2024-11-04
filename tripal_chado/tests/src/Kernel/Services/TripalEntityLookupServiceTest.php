@@ -3,8 +3,6 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use \Drupal\tripal\Services\TripalPublish;
-use Drupal\tripal\Services\TripalJob;
 
 /**
  * Tests the entity lookup service for chado-based content types.
@@ -17,6 +15,8 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
   protected static $modules = ['system', 'user', 'tripal', 'tripal_chado', 'views', 'field'];
 
   protected $connection;
+
+  protected $chado_publish;
 
   // The terms for the content types we will be testing here
   protected $project_termIdSpace = 'NCIT';
@@ -99,6 +99,10 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     $this->createContentTypeFromConfig('general_chado', 'analysis', TRUE);
     $this->createContentTypeFromConfig('general_chado', 'contact', TRUE);
     $this->createContentTypeFromConfig('expression_chado', 'array_design', TRUE);
+
+    $publish_service = \Drupal::service('tripal.backend_publish');
+    $this->chado_publish = $publish_service->createInstance('chado_storage', []);
+
   }
 
   /**
@@ -107,25 +111,24 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
    *
    */
   public function testTripalEntityLookupService() {
-    $drupal = \Drupal::service('database');
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
-    $current_user = \Drupal::currentUser();
-    $publish_options = ["schema_name" => $this->testSchemaName];
-    $datastore = 'chado_storage';
 
     // Publish the test content entities and confirm that they have been created.
     // Submit the Tripal jobs by calling the callback directly.
-    $bundle = 'project';
-    TripalPublish::runTripalJob($bundle, $datastore, $publish_options);
-    $project_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
-
-    $this->assertCount(3, $project_entities,
+    $publish_options = ['bundle' => 'project', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(3, $published_entities,
+      "We did not publish the expected number of entities.");
+    $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'project']);
+    $this->assertCount(3, $confirmed_entities,
       "We expected there to be the same number of project entities as we inserted.");
 
-    $bundle = 'analysis';
-    TripalPublish::runTripalJob($bundle, $datastore, $publish_options);
-    $analysis_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
-    $this->assertCount(3, $analysis_entities,
+    $publish_options = ['bundle' => 'analysis', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(3, $published_entities,
+      "We did not publish the expected number of entities.");
+    $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'analysis']);
+    $this->assertCount(3, $confirmed_entities,
       "We expected there to be the same number of analysis entities as we inserted.");
 
     // Tests the entity lookup service directly.
@@ -206,19 +209,20 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     // a foreign key to the contact table column contact_id.
 
     // Publish the null contact entity and confirm that it has been created. Issue #1809
-    $bundle = 'contact';
-    TripalPublish::runTripalJob($bundle, $datastore, $publish_options);
-    $contact_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
+    $publish_options = ['bundle' => 'contact', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+
+    $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
     // Expect 2 here instead of 1 because the null contact will also be published - Issue #1809
-    $this->assertCount(2, $contact_entities,
+    $this->assertCount(2, $confirmed_entities,
       "We expected there to be two contacts created, including the null contact.");
 
     // Publish the arraydesign entity and confirm that it has been created.
-    $bundle = 'array_design';  // not the same as the table name
-    TripalPublish::runTripalJob($bundle, $datastore, $publish_options);
-    $arraydesign_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => $bundle]);
-    $this->assertCount(1, $arraydesign_entities,
-      "We expected there to be the same number of $bundle entities as we inserted.");
+    $publish_options = ['bundle' => 'array_design', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'array_design']);
+    $this->assertCount(1, $confirmed_entities,
+      "We expected there to be the same number of array_design entities as we inserted.");
 
     // The entity lookup from arraydesign manufacturer_id should
     // retrieve the entity for the contact_id we published, internally
