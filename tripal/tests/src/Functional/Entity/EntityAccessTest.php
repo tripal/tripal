@@ -17,7 +17,7 @@ use Drupal\Core\Access\AccessResultForbidden;
 class EntityAccessTest extends BrowserTestBase {
     protected $defaultTheme = 'stark';
 
-    protected static $modules = ['tripal'];
+    protected static $modules = ['user','path','tripal'];
 
   /**
    * Test TripalAccessOwnContentCheck
