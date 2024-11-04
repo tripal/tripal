@@ -230,7 +230,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
     foreach ($all_field_defs as $field_id => $field_def) {
       $field_class = $field_def['class'];
       if (is_subclass_of($field_class, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
-        $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs);
+        $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs, $entity_field_defs);
         foreach ($discovered as $discovered_field) {
 
           // If the CV term for the discovered field is currently used by an
@@ -257,6 +257,38 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
       }
     }
     return $field_status;
+  }
+
+  /**
+   * Provides a compatible array for a field based on it's Field Config.
+   *
+   * This is to be used in the discover process to add existing fields to the
+   * field list in a standardized way.
+   *
+   * @param FieldConfig $instance
+   *   The existing field to generate an array for so it can be added to the
+   *   field list as an existing field.
+   * @return array
+   *   An array which matches the form expected to be a single item in the
+   *   discover method.
+   */
+  public static function getFieldArrayFromFieldInstance(FieldConfig $instance) {
+    $field_storage = $instance->getFieldStorageDefinition();
+    $settings = $instance->getSettings();
+    return [
+      'name' => $instance->getName(),
+      'content_type' => $instance->getTargetBundle(),
+      'label' => $instance->getLabel(),
+      'type' => $instance->getType(),
+      'description' => $instance->getDescription(),
+      'cardinality' => $field_storage->getCardinality(),
+      'required' => $instance->isRequired(),
+      'storage_settings' => [
+        'storage_plugin_id' => $settings['storage_plugin_id'],
+        'storage_plugin_settings' => $settings['storage_plugin_settings'],
+      ],
+      'settings' => $settings,
+    ];
   }
 
   /**
