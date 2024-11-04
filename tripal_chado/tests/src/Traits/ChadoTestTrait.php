@@ -376,4 +376,66 @@ trait ChadoTestTrait  {
     }
   }
 
+
+  /**
+   * Warns test developers if they are missing required modules in a kernel test.
+   *
+   * This is needed because otherwise the exceptions thrown are not as obvious
+   * and complicate debbugging kernel tests.
+   *
+   * @param array $functionality
+   *  A list of functionality you need to support. Although this method handles
+   *  dependencies, you should include all items in the supported keys below
+   *  that you need. This is because in some cases you will want to mock rather
+   *  then include in your kernel tests and this way, this method supports that.
+   *  Supported keys are:
+   *   - TripalTerm
+   *   - TripalEntity
+   *   - ChadoField
+   * @return void
+   */
+  protected function suggestRequiredModules(array $functionality) {
+    $suggested_modules = [];
+
+    // We need to do the suggested modules first so that you get better
+    // warnings if you do not have the right combination.
+    if (in_array('TripalTerm', $functionality)) {
+      $suggested_modules['system'] = 'system';
+      $suggested_modules['tripal'] = 'tripal';
+      $suggested_modules['tripal'] = 'tripal_chado';
+    }
+    if (in_array('TripalEntity', $functionality)) {
+      $suggested_modules['system'] = 'system';
+      $suggested_modules['user'] = 'user';
+      $suggested_modules['path'] = 'path';
+      $suggested_modules['path_alias'] = 'path_alias';
+      $suggested_modules['tripal'] = 'tripal';
+      $suggested_modules['tripal'] = 'tripal_chado';
+      $suggested_modules['field'] = 'field';
+    }
+    if (in_array('TripalField', $functionality)) {
+      $suggested_modules['system'] = 'system';
+      $suggested_modules['user'] = 'user';
+      $suggested_modules['tripal'] = 'tripal';
+      $suggested_modules['tripal'] = 'tripal_chado';
+      $suggested_modules['field'] = 'field';
+    }
+    if (in_array('TripalImporter', $functionality)) {
+      $suggested_modules['system'] = 'system';
+      $suggested_modules['user'] = 'user';
+      $suggested_modules['tripal'] = 'tripal';
+      $suggested_modules['tripal'] = 'tripal_chado';
+      $suggested_modules['file'] = 'file';
+    }
+
+    // Now warn you about your modules array.
+    $missing_modules = [];
+    foreach ($suggested_modules as $check) {
+      if (!in_array($check, static::$modules)) {
+        $missing_modules[] = $check;
+      }
+    }
+    $modules_array_code = 'protected static $modules = [\'' . implode("','", $suggested_modules) . '\'];';
+    $this->assertEmpty($missing_modules, 'You are missing some modules in your static $modules array. For the functionality you requested, we suggest the following: ' . $modules_array_code);
+  }
 }
