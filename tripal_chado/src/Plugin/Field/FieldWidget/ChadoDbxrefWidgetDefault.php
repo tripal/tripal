@@ -225,7 +225,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-' . $machine_name . '-accession-' . $delta,
-        $form[$machine_name]['widget'][$delta]['dbxref']['dbxref_accession']));
+        $form[$machine_name]['widget'][$delta]['dbxref_accession']));
     return $response;
   }
 }
