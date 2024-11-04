@@ -9,3 +9,4 @@ dependencies:
   - drupal:pgsql
   - drupal:views
   - drupal:file
+  - drupal:path
