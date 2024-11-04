@@ -43,6 +43,12 @@ layouts:
         children:
           - "organism_dbxref"
           - "organism_pub"
+      - id: author
+        type: details_sidebar
+        label: "Authoring Information"
+        children:
+          - uid
+          - created
   - tripal_entity_type: "analysis"
     field_groups:
       - id: core_details
@@ -107,3 +113,9 @@ layouts:
           - "analysis_pub"
           - "analysis_project"
           - "analysis_dbxref"
+      - id: author
+        type: details_sidebar
+        label: "Authoring Information"
+        children:
+          - uid
+          - created
