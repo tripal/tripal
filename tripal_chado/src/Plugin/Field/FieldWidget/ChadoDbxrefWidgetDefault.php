@@ -54,8 +54,8 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
-    $db_id = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_id']);
-    $db_name = $form_state->getValue([$field_name, $delta, 'dbxref', 'db_name']);
+    $db_id = $form_state->getValue([$field_name, $delta, 'db_id']);
+    $db_name = $form_state->getValue([$field_name, $delta, 'db_name']);
     if (!$db_id) {
       $db_id = $item_vals['dbxref_db_id'] ?? 0;
       $db_name = $item_vals['dbxref_db_name'] ?? '';
@@ -82,37 +82,32 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     $accession = $item_vals['dbxref_accession'] ?? '';
     $machine_name = $items->getName();
 
-    $elements = [];
-    $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoDbxrefWidgetDefault';
-    $elements['record_id'] = [
+    $element['#type'] = 'item';
+
+    $element['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoDbxrefWidgetDefault';
+    $element['record_id'] = [
       '#type' => 'value',
       '#default_value' => $record_id,
     ];
-    $elements['linker_id'] = [
+    $element['linker_id'] = [
       '#type' => 'value',
       '#default_value' => $linker_id,
     ];
-    $elements['link'] = [
+    $element['link'] = [
       '#type' => 'value',
       '#default_value' => $link,
     ];
     // pass the field machine name through the form for massageFormValues()
-    $elements['field_name'] = [
+    $element['field_name'] = [
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-
-    // The next two fields are inserted into the passed $element so they
-    // will be grouped, and we need to indicate that this is a fieldset.
-    $element['#type'] = 'fieldset';
-
     $element['db_id'] = [
       '#type' => 'select',
-      '#title' => t('Database Name'),
+      '#empty_option' => t('Database Name'),
       '#required' => FALSE,
       '#weight' => 1,
       '#options' => $databases,
-      '#empty_option' => t('-- Select --'),
       '#default_value' => $db_id,
       '#ajax' => [
         'callback' =>  [$this, 'widgetAjaxCallback'],
@@ -126,7 +121,9 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     ];
     $element['dbxref_accession'] = [
       '#type' => 'textfield',
-      '#title' => 'Database Accession',
+      '#attributes' => [
+        'placeholder' => t('Database Accession'),
+      ],
       '#prefix' => '<div id="edit-' . $machine_name . '-accession-' . $delta . '">',
       '#suffix' => '</div>',
       '#weight' => 2,
@@ -135,7 +132,9 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
       '#autocomplete_route_name' => 'tripal_chado.dbxref_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 5, 'db_id' => $db_id],
     ];
-    $elements['dbxref'] = $element;
+    // We also need these two to have a specific combined wrapper in addition to the fieldset.
+    $element['db_id']['#prefix'] = '<div class="chado-dbxref-field-wrapper form-item">' . ($element['db_id']['#prefix'] ?? '');
+    $element['dbxref_accession']['#suffix'] .= '</div>';
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
@@ -143,7 +142,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     foreach ($property_definitions as $property => $definition) {
       if (($property != 'linker_id') and preg_match('/^linker_/', $property)) {
         $default_value = $item_vals[$property] ?? 1;
-        $elements[$property] = [
+        $element[$property] = [
           '#type' => 'value',
           '#default_value' => $default_value,
         ];
@@ -153,7 +152,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
     // Save some initial values to allow later handling of the "Remove" button
     $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
 
-    return $elements;
+    return $element;
   }
 
   /**
@@ -163,8 +162,8 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
     // If the accession does not exist in the DB, then create it.
     foreach ($values as $val_key => $value) {
-      $db_id = $value['dbxref']['db_id'];
-      $accession = $value['dbxref']['dbxref_accession'];
+      $db_id = $value['db_id'];
+      $accession = $value['dbxref_accession'];
       if ($accession != '') {
         // See if we can convert the returned string to its dbxref_id value
         $dbxref_autocomplete = new ChadoDbxrefAutocompleteController();
@@ -226,7 +225,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-' . $machine_name . '-accession-' . $delta,
-        $form[$machine_name]['widget'][$delta]['dbxref']['dbxref_accession']));
+        $form[$machine_name]['widget'][$delta]['dbxref_accession']));
     return $response;
   }
 }
