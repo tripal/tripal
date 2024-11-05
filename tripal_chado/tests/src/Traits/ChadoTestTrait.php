@@ -380,8 +380,8 @@ trait ChadoTestTrait  {
   /**
    * Warns test developers if they are missing required modules in a kernel test.
    *
-   * This is needed because otherwise the exceptions thrown are not as obvious
-   * and complicate debbugging kernel tests.
+   * This is needed because otherwise the exceptions thrown are not very obvious
+   * and complicate debugging kernel tests.
    *
    * @param array $functionality
    *  A list of functionality you need to support. Although this method handles

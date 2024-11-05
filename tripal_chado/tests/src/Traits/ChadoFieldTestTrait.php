@@ -53,7 +53,7 @@ trait ChadoFieldTestTrait {
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
     // Ensure we install the schema/modules we need.
-    $this->prepareEnvironment(['TripalTerm','TripalEntity','ChadoField']);
+    $this->prepareEnvironment(['TripalTerm', 'TripalEntity', 'ChadoField']);
     // -- we need the chado term mapping for our properties.
     $this->installEntitySchema('chado_term_mapping');
     // -- we need access to the core term mappings.
