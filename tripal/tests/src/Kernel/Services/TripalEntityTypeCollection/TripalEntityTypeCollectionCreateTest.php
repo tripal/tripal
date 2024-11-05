@@ -21,7 +21,7 @@ class TripalEntityTypeCollectionCreateTest extends TripalTestKernelBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['user', 'tripal'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal', 'field'];
 
   /**
    * A dummy Tripal Term.
@@ -48,6 +48,9 @@ class TripalEntityTypeCollectionCreateTest extends TripalTestKernelBase {
 
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
+
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalEntity']);
 
     // Grab the container.
     $container = \Drupal::getContainer();
