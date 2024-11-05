@@ -119,10 +119,12 @@ class TripalEntityForm extends ContentEntityForm {
       '#wrapper_attributes' => ['class' => ['entity-meta__last-saved']],
       '#weight' => -5,
     ];
+    $owner = $entity->getOwner();
+    $author = $owner?$owner->getAccountName():'';
     $form['meta']['author'] = [
       '#type' => 'item',
       '#title' => $this->t('Author'),
-      '#markup' => $entity->getOwner()->getAccountName(),
+      '#markup' => $author,
       '#wrapper_attributes' => ['class' => ['entity-meta__author']],
       '#weight' => -4,
     ];
