@@ -37,7 +37,7 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
-class ChadoPropertyDefaultTest extends ChadoTestKernelBase {
+class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
 

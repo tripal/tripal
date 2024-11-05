@@ -22,7 +22,7 @@ use Drupal\Core\Form\FormState;
 class ChadoPropertyTypeSimpleCRUDTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['system', 'user', 'field', 'tripal', 'tripal_chado'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'tripal', 'tripal_chado'];
 
   use ChadoFieldTestTrait;
 

@@ -20,10 +20,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
-    'tripal',
-    'tripal_chado',
-  ];
+  protected static $modules = ['user', 'path', 'tripal', 'tripal_chado'];
 
   /**
    * A helper function for adding an organism record to Chado.
