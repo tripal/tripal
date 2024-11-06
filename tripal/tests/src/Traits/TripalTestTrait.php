@@ -33,6 +33,8 @@ trait TripalTestTrait {
    */
   public function createTripalField(string $entity_type, array $values = []) {
 
+    $this->suggestRequiredModules(['TripalTerm', 'TripalField']);
+
     // Setting the default values:
     $random = $this->getRandomGenerator();
     $values['field_name'] = $values['field_name'] ?? $random->word(6) . '_' . $random->word(15);
@@ -100,6 +102,8 @@ trait TripalTestTrait {
    *   Returns the tripal term that was created.
    */
   public function createTripalTerm(&$values, $idspace_plugin_id, $vocab_plugin_id) {
+
+    $this->suggestRequiredModules(['TripalTerm']);
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
@@ -171,6 +175,8 @@ trait TripalTestTrait {
    */
   public function createTripalContent($values = []) {
 
+    $this->suggestRequiredModules(['TripalTerm', 'TripalEntity', 'TripalField']);
+
     // Setting the default values:
     $random = $this->getRandomGenerator();
     // Provides a title with ~8 latin capitalized words.
@@ -217,6 +223,8 @@ trait TripalTestTrait {
    *   The Tripal content type that was created based on the parameters.
    */
   public function createTripalContentType($values = []) {
+
+    $this->suggestRequiredModules(['TripalTerm', 'TripalEntity', 'TripalField']);
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
@@ -269,6 +277,8 @@ trait TripalTestTrait {
     $config_factory = \Drupal::service('config.factory');
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity_type');
+
+    $this->suggestRequiredModules(['TripalTerm', 'TripalEntity', 'TripalField']);
 
     // FIRST THE CONTENT TYPE.
     $yaml_contentTypes = 'tripal.tripalentitytype_collection.' . $config_id;
@@ -330,5 +340,65 @@ trait TripalTestTrait {
     }
 
     return 1;
+  }
+
+
+  /**
+   * Warns test developers if they are missing required modules in a kernel test.
+   *
+   * This is needed because otherwise the exceptions thrown are not very obvious
+   * and complicate debugging kernel tests.
+   *
+   * @param array $functionality
+   *  A list of functionality you need to support. Although this method handles
+   *  dependencies, you should include all items in the supported keys below
+   *  that you need. This is because in some cases you will want to mock rather
+   *  then include in your kernel tests and this way, this method supports that.
+   *  Supported keys are:
+   *   - TripalTerm
+   *   - TripalEntity
+   *   - TripalField
+   *   - TripalImporter
+   * @return void
+   */
+  protected function suggestRequiredModules(array $functionality) {
+    $suggested_modules = [];
+
+    // We need to do the suggested modules first so that you get better
+    // warnings if you do not have the right combination.
+    if (in_array('TripalTerm', $functionality)) {
+      $suggested_modules['system'] = 'system';
+      $suggested_modules['tripal'] = 'tripal';
+    }
+    if (in_array('TripalEntity', $functionality)) {
+      $suggested_modules['system'] = 'system';
+      $suggested_modules['user'] = 'user';
+      $suggested_modules['path'] = 'path';
+      $suggested_modules['path_alias'] = 'path_alias';
+      $suggested_modules['tripal'] = 'tripal';
+      $suggested_modules['field'] = 'field';
+    }
+    if (in_array('TripalField', $functionality)) {
+      $suggested_modules['system'] = 'system';
+      $suggested_modules['user'] = 'user';
+      $suggested_modules['tripal'] = 'tripal';
+      $suggested_modules['field'] = 'field';
+    }
+    if (in_array('TripalImporter', $functionality)) {
+      $suggested_modules['system'] = 'system';
+      $suggested_modules['user'] = 'user';
+      $suggested_modules['tripal'] = 'tripal';
+      $suggested_modules['file'] = 'file';
+    }
+
+    // Now warn you about your modules array.
+    $missing_modules = [];
+    foreach ($suggested_modules as $check) {
+      if (!in_array($check, static::$modules)) {
+        $missing_modules[] = $check;
+      }
+    }
+    $modules_array_code = 'protected static $modules = [\'' . implode("','", $suggested_modules) . '\'];';
+    $this->assertEmpty($missing_modules, 'You are missing some modules in your static $modules array. For the functionality you requested, we suggest the following: ' . $modules_array_code);
   }
 }

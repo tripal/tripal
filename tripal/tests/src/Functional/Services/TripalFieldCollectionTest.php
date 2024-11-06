@@ -19,10 +19,11 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
    * {@inheritdoc}
    */
   protected static $modules = [
+    'user',
+    'path',
     'tripal',
     'tripal_test',
   ];
-
 
   /**
    * Tests the TripalContentTypes class public functions.
