@@ -4,15 +4,6 @@ description: 'Layouts for general content types (analysis, organism, etc.) based
 layouts:
   - tripal_entity_type: "organism"
     field_groups:
-      - id: page_metadata
-        type: details
-        label: "Page Metadata"
-        weight: 0
-        show_empty: false
-        open: true
-        children:
-          - "title"
-          - "uid"
       - id: scientific_name
         type: details
         label: "Scientific Name"
@@ -54,16 +45,6 @@ layouts:
           - "organism_pub"
   - tripal_entity_type: "analysis"
     field_groups:
-      - id: page_metadata
-        type: details
-        label: "Page Metadata"
-        description: "These fields include core information for any page in this site. In most cases, these fields can be ignored as they will be populated with intelligent defaults based on your user information and site configuration."
-        weight: 0
-        show_empty: false
-        open: false
-        children:
-          - "title"
-          - "uid"
       - id: core_details
         type: details
         label: "Core Details"
