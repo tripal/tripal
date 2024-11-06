@@ -28,17 +28,8 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
-    // Ensure we can access file_managed related functionality from Drupal.
-    // ... users need access to system.action config?
-    $this->installConfig('system');
-    // ... managed files are associated with a user.
-    $this->installEntitySchema('user');
-    // ... Finally the file module + tables itself.
-    $this->installEntitySchema('file');
-    $this->installSchema('file', ['file_usage']);
-
-    // Ensure we have our tripal import tables.
-    $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalImporter']);
 
     // Create and log-in a user.
     $this->setUpCurrentUser();
