@@ -6,8 +6,9 @@
 
 use \Drupal\Core\Database\Database;
 use \Drupal\Core\Utility\UpdateException;
+use \Drupal\Component\Serialization\Yaml;
 use \Drupal\tripal_chado\Entity\ChadoTermMapping;
-use Drupal\Component\Serialization\Yaml;
+use \Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
  * Implements hook_install().
@@ -472,24 +473,10 @@ function tripal_chado_update_10401() {
 }
 
 /**
- * Updates missing mapping of CV terms to some chado table columns
+ * Updates missing mapping of CV terms to some chado table columns.
+ * Note: tripal_chado_update_10402 has been renumbered to
+ * tripal_chado_update_10408 by PR 1927
  */
-function tripal_chado_update_10402() {
-  try {
-    $messenger = \Drupal::messenger();
-
-    $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
-    ChadoTermMapping::refreshMapping($id);
-    $messenger->addMessage('Reloaded Chado content terms');
-
-    $id = 'config/install/tripal_chado.chado_term_mapping.core_mapping';
-    ChadoTermMapping::refreshMapping($id);
-    $messenger->addMessage('Reloaded Chado term mapping');
-  }
-  catch (\Exception $e) {
-    throw new UpdateException('Could not reload Chado terms and mappings: ' . $e->getMessage());
-  }
-}
 
 /**
  * Updates entity_id properties added to linking fields in PR 1782
@@ -637,5 +624,36 @@ function tripal_chado_update_10407() {
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not add third party settings: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Updates missing mapping of CV terms to some chado table columns. PR 1927
+ * This is the same as former tripal_chado_update_10402, but here we are
+ * also adding a new cvterm local:lineageex
+ */
+function tripal_chado_update_10408() {
+  try {
+    $messenger = \Drupal::messenger();
+
+    // create the local:lineageex term if it does not exist
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $cvterm_buddy->upsertCvterm(['cvterm.name' => 'lineageex',
+                                 'cvterm.definition' => 'Extended taxonomic lineage used by NCBI',
+                                 'cv.name' => 'local',
+                                 'dbxref.accession' => 'lineageex',
+                                 'db.name' => 'local'], []);
+
+    $id = 'config/install/tripal.tripal_content_terms.chado_content_terms';
+    ChadoTermMapping::refreshMapping($id);
+    $messenger->addMessage('Reloaded Chado content terms');
+
+    $id = 'config/install/tripal_chado.chado_term_mapping.core_mapping';
+    ChadoTermMapping::refreshMapping($id);
+    $messenger->addMessage('Reloaded Chado term mapping');
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not reload Chado terms and mappings: ' . $e->getMessage());
   }
 }
