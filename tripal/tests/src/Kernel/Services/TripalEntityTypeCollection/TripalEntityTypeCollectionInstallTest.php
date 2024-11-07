@@ -17,11 +17,10 @@ use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
  */
 class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
 
-
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['user', 'tripal'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal', 'field'];
 
   /**
    * A made-up set of details for some collection types to be used in testing
@@ -96,6 +95,9 @@ class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
     foreach ($this->config_array as $config_item => $config) {
       $active_storage->write($config_item, $config);
     }
+
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalEntity']);
 
     // Grab the container.
     $container = \Drupal::getContainer();

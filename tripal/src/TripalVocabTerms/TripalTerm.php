@@ -92,7 +92,7 @@ class TripalTerm {
       $this->setAccession($details['accession']);
     }
     if (array_key_exists('definition', $details)) {
-      $this->setDefinition($details['definition']);
+      $this->setDefinition($details['definition'] ?? '');
     }
     if (array_key_exists('idSpace', $details)) {
       $this->setIdSpace($details['idSpace']);

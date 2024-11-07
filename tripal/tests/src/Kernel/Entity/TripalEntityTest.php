@@ -18,7 +18,7 @@ class TripalEntityTest extends TripalTestKernelBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system', 'field', 'user', 'tripal'];
+  protected static $modules = ['system', 'field', 'user', 'path', 'path_alias', 'tripal'];
 
   protected string $bundle_name = 'fake_organism_bundle_028519';
 
@@ -30,9 +30,8 @@ class TripalEntityTest extends TripalTestKernelBase {
   protected function setUp() : void {
     parent::setUp();
 
-    $this->installEntitySchema('user');
-    $this->installEntitySchema('tripal_entity');
-    $this->installEntitySchema('tripal_entity_type');
+    // Add any schema needed for the functionality I am testing.
+    $this->prepareEnvironment(['TripalEntity']);
 
     // Create a Tripal Entity Type to be used in the following tests.
     // Note: We can't mock one since they both use SqlContentEntityStorage

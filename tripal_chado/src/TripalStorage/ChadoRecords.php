@@ -1648,16 +1648,18 @@ class ChadoRecords  {
    *   The name of the Chado table used as a base table.
    * @param string $base_table_alias
    *   The alias of the base table.
-   * @param array $pkey_ids
-   *   When specified, only return records where the primary key is in
-   *   this array. Used by publish to publish in batches.
+   * @param int|null $minimum_id
+   *   When specified, only return records where the primary key is >= this value
+   * @param int|null $maximum_id
+   *   When specified, only return records where the primary key is <= this value
+   *   Used by publish to publish in batches.
    *
    * @return array
    *   An array of \Drupal\tripal_chado\TripalStorage\ChadoRecords objects.
    *
    * @throws \Exception
    */
-  public function findRecords(string $base_table, string $base_table_alias, array $pkey_ids = []) {
+  public function findRecords(string $base_table, string $base_table_alias, int|null $minimum_id, int|null $maximum_id) {
 
     $found_records = [];
 
@@ -1708,12 +1710,17 @@ class ChadoRecords  {
         $select->condition($base_table_alias . '.' . $column_alias, $value['value'], $value['operation']);
       }
 
-      // If limiting results by using an array of primary keys, restrict
-      // the query by adding this as an IN condition.
-      if ($pkey_ids) {
+      // If limiting results by using a range of primary keys, restrict
+      // the query by adding this as acondition.
+      if ($minimum_id or $maximum_id) {
         $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
         $chado_table_pkey = $chado_table_def['primary key'];
-        $select->condition($base_table_alias . '.' . $chado_table_pkey, $pkey_ids, 'IN');
+        if ($minimum_id) {
+          $select->condition($base_table_alias . '.' . $chado_table_pkey, $minimum_id, '>=');
+        }
+        if ($maximum_id) {
+          $select->condition($base_table_alias . '.' . $chado_table_pkey, $maximum_id, '<=');
+        }
       }
 
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
