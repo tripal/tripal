@@ -59,6 +59,7 @@ class ImporterFormTest extends ChadoTestKernelBase {
 
     // Ensure we install the schema/modules we need.
     $this->prepareEnvironment(['TripalImporter']);
+    $this->installSchema('tripal_chado', ['tripal_cv_obo']);
   }
 
   /**
