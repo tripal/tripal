@@ -397,7 +397,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     $field_groups = $display->getThirdPartySettings('field_group');
 
     // If the field group doesn't exist then add it.
-    if (!array_key_exists($name, array_keys($field_groups))) {
+    if (!array_key_exists($name, $field_groups)) {
 
       $classes = $this->getSetting('classes', '', $settings);
       $classes .= 'tripal-layout-details';
@@ -436,7 +436,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     $field_groups = $display->getThirdPartySettings('field_group');
 
     // If the field group doesn't exist then add it.
-    if (!array_key_exists($name, array_keys($field_groups))) {
+    if (!array_key_exists($name, $field_groups)) {
 
       $classes = $this->getSetting('classes', '', $settings);
       $classes .= 'tripal-layout-details-sidebar';
@@ -478,7 +478,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     $field_groups = $display->getThirdPartySettings('field_group');
 
     // If the field group doesn't exist then add it.
-    if (!array_key_exists($name, array_keys($field_groups))) {
+    if (!array_key_exists($name, $field_groups)) {
 
       $classes = $this->getSetting('classes', '', $settings);
       $classes .= 'tripal-layout-tab';
@@ -518,7 +518,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     $field_groups = $display->getThirdPartySettings('field_group');
 
     // If the field group doesn't exist then add it.
-    if (!array_key_exists($name, array_keys($field_groups))) {
+    if (!array_key_exists($name, $field_groups)) {
 
       $classes = $this->getSetting('classes', '', $settings);
       $classes .= 'tripal-layout-tab';
@@ -559,7 +559,7 @@ class TripalEntityUILayoutController extends ControllerBase {
     $field_groups = $display->getThirdPartySettings('field_group');
 
     // If the field group doesn't exist then add it.
-    if (!array_key_exists($name, array_keys($field_groups))) {
+    if (!array_key_exists($name, $field_groups)) {
 
       $classes = $this->getSetting('classes', '', $settings);
       $classes .= 'tripal-layout-table';
