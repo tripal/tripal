@@ -137,7 +137,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     $title_format = $bundle->getTitleFormat();
-    $title = $this->replaceTokens($title_format, $bundle);
+    $title = $this->replaceEntityTokens($title_format, $bundle);
     $this->title = $title;
   }
 
@@ -158,7 +158,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Generate an alias using the default format set by admins.
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
     $default_alias = $bundle->getURLFormat();
-    $default_alias = $this->replaceTokens($default_alias, $bundle);
+    $default_alias = $this->replaceEntityTokens($default_alias, $bundle);
 
     // Ensure there is a leading slash.
     if ($default_alias[0] != '/') {
@@ -323,13 +323,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The string to replace.
    * @param array $cache
    */
-  protected function replaceTokens($string, $bundle) {
+  protected function replaceEntityTokens($string, $bundle) {
 
     // Initialize the Tripal token parser service.
     /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
     $token_parser = \Drupal::service('tripal.token_parser');
     $token_parser->processEntityValues($bundle, $this);
-    $replaced = $token_parser->replaceTokens([$string]);
+    $replaced = $token_parser->replaceEntityTokens([$string]);
 
     return $replaced[0];
   }
