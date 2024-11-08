@@ -28,17 +28,8 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
-    // Ensure we can access file_managed related functionality from Drupal.
-    // ... users need access to system.action config?
-    $this->installConfig('system');
-    // ... managed files are associated with a user.
-    $this->installEntitySchema('user');
-    // ... Finally the file module + tables itself.
-    $this->installEntitySchema('file');
-    $this->installSchema('file', ['file_usage']);
-
-    // Ensure we have our tripal import tables.
-    $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalImporter']);
 
     // Create and log-in a user.
     $this->setUpCurrentUser();
@@ -60,9 +51,9 @@ class ChadoImporterBaseTest extends ChadoTestKernelBase {
   public function testTripalImporterManagerForChadoImporters() {
 
     // These are the importers we expect to have.
-    $expected_importers = ['chado_obo_loader', 'chado_taxonomy_loader', 'chado_newick_tree_loader', 'chado_fasta_loader', 'chado_gff3_loader'];
+    $expected_importers = ['chado_obo_loader', 'chado_taxonomy_loader', 'chado_tree_generator', 'chado_newick_tree_loader', 'chado_fasta_loader', 'chado_gff3_loader'];
     $expected_count = count($expected_importers);
-    $expected_annotation = ['id', 'label','description','file_types', 'upload_description', 'upload_title', 'use_analysis', 'require_analysis', 'use_button', 'submit_disabled', 'button_text', 'file_upload', 'file_local', 'file_remote', 'file_required'];
+    $expected_annotation = ['id', 'label', 'description', 'file_types', 'use_analysis', 'require_analysis', 'use_button', 'submit_disabled', 'button_text', 'file_upload', 'file_local', 'file_remote', 'file_required'];
 
     // Test the Tripal Importer Plugin Manager.
     // --Ensure we can instantiate the plugin manager.

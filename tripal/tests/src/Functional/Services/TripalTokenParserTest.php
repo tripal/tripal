@@ -19,6 +19,8 @@ use \Drupal\tripal\Services\TripalTokenParser;
  */
 class TripalTokenParserTest extends TripalTestBrowserBase {
 
+  protected static $modules = ['user', 'path', 'tripal'];
+
   public TripalEntityType $organism;
 
   /**
@@ -26,6 +28,12 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
    */
   protected function setUp(): void {
     parent::setUp();
+  }
+
+  /**
+   * Tests the TripalContentTypes class public functions.
+   */
+  public function testTripalTokenParser() {
 
     //
     // Create an organism content type.
@@ -531,7 +539,7 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
     // Test calling the getFieldValues() function directly
     $field_values = $entity->getFieldValues();
     $this->assertIsArray($field_values, "getFieldValues did not return an array.");
-    $this->assertEquals(14, count($field_values), "getFieldValues returned an array of unexpected size.");
+    $this->assertEquals(15, count($field_values), "getFieldValues returned an array of unexpected size.");
     $value = $field_values['organism_infraspecific_type'][0]['value'] ?? NULL;
     $this->assertEquals('subspecies', $value, "getFieldValues did not return the correct infraspecific type.");
 

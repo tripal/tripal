@@ -41,13 +41,13 @@
 /* GIN Tripal toolbar icons */
 .toolbar-icon-tripal::before,
 .toolbar-button--icon--tripal::before {
-  --icon: url("../miscellaneous/icons/bebebe/tripal.svg");
+  --icon: url("../miscellaneous/icons/tripal-outline.svg");
 }
 
 .toolbar-icon-tripal-admin::before,
 .toolbar-link--tripal-admin::before,
 .toolbar-button--icon--tripal-admin::before {
-  --icon: url("../miscellaneous/icons/bebebe/tripal.svg");
+  --icon: url("../miscellaneous/icons/tripal-outline.svg");
 }
 
 /* CLARO Tripal toolbar icons - main menu item */

@@ -52,21 +52,10 @@ trait ChadoFieldTestTrait {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
-    // Setup the test environment based on the Entity kernel test base.
-    $this->installSchema('system', 'sequences');
-    // -- we need terms for TripalEntityType, fields and field properties.
-    $this->installSchema('tripal', ['tripal_id_space_collection', 'tripal_terms_idspaces', 'tripal_vocabulary_collection', 'tripal_terms_vocabs', 'tripal_terms']);
-    // -- we need a user to create an entity.
-    $this->installEntitySchema('user');
-    $this->setUpCurrentUser();
-    // -- we need our tripal content entity to attach the fields to.
-    $this->installEntitySchema('tripal_entity');
-    // -- we need a tripal content type for our tripal content entity to belong to.
-    $this->installEntitySchema('tripal_entity_type');
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalTerm', 'TripalEntity', 'ChadoField']);
     // -- we need the chado term mapping for our properties.
     $this->installEntitySchema('chado_term_mapping');
-    // -- we need the field module configuration.
-    $this->installConfig(['field']);
     // -- we need access to the core term mappings.
     tripal_chado_rebuild_chado_term_mappings();
 

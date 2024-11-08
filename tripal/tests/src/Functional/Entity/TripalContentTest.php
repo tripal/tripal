@@ -13,6 +13,8 @@ use Drupal\Core\Url;
  */
 class TripalContentTest extends TripalTestBrowserBase {
 
+  protected static $modules = ['user', 'path', 'tripal'];
+
   /**
    * Test the CRUD actions for Tripal Content Type and Tripal Content Entities.
    */
