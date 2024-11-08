@@ -1,17 +1,12 @@
 
-.field--widget-chado-dbxref-widget-default .fieldset__wrapper {
+.field--widget-chado-dbxref-widget-default .chado-dbxref-field-wrapper {
   display: flex !important;
 }
-.field--widget-chado-dbxref-widget-default .fieldset__wrapper .form-item {
-  margin: 0 var(--gin-spacing-xs);
-  flex-grow: 1;
+.field--widget-chado-dbxref-widget-default .chado-dbxref-field-wrapper .form-item {
+  margin: 0 0.5rem;
+  flex: 1 1 0;
 }
-/** -- Database Name */
-.field--widget-chado-dbxref-widget-default .fieldset__wrapper .form-item:first-of-type select {
-  flex-grow: 2;
+.field--widget-chado-dbxref-widget-default .chado-dbxref-field-wrapper .form-item select {
   width: 100%;
-}
-/** -- Accession */
-.field--widget-chado-dbxref-widget-default .fieldset__wrapper .form-item:last-of-type {
-  flex-grow: 2;
+  min-width: max-content;
 }

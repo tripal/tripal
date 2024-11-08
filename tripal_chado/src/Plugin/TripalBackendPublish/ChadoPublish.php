@@ -43,6 +43,13 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $entity_type = NULL;
 
   /**
+   * Stores the user that is publishing content.
+   *
+   * @var int $uid
+   **/
+  protected $uid = NULL;
+
+  /**
    * The TripalStorage object.
    *
    * @var \Drupal\tripal\TripalStorage\TripalStorageBase $storage
@@ -475,14 +482,13 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     $timestamp = time();
     $query = $this->connection->insert('tripal_entity', [])
-      -> fields(['type', 'title', 'status', 'created', 'changed']);
+      -> fields(['type', 'uid', 'title', 'status', 'created', 'changed']);
     $added_record_ids = [];
     foreach ($matches as $match) {
-      //$i++;
       $record_id = $this->getChadoRecordID($match);
       $title = $titles[$record_id];
       $added_record_ids[] = $record_id;
-      $query->values([$this->bundle, $title, 1, $timestamp, $timestamp]);
+      $query->values([$this->bundle, $this->uid, $title, 1, $timestamp, $timestamp]);
     }
     $first_added_entity_id = $query->execute();
 
@@ -815,6 +821,9 @@ class ChadoPublish extends TripalBackendPublishBase {
     if ($options['batch_size'] ?? 0) {
       $this->batch_size = $options['batch_size'];
     }
+
+    // Current user will be the author of newly published entitites
+    $this->uid = \Drupal::currentUser()->id();
 
     // Initialize class variables that may persist between consecutive jobs
     $this->field_info = [];

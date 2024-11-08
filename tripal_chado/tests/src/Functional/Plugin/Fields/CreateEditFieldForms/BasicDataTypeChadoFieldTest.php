@@ -18,7 +18,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
 
 	protected $defaultTheme = 'stark';
 
-	protected static $modules = ['system', 'user', 'field_ui', 'tripal', 'tripal_chado'];
+	protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'field_ui', 'tripal', 'tripal_chado'];
 
   /**
    * Provides a list of the field types we are testing with this class.
