@@ -2,27 +2,17 @@
 
 # Tripal 4 (Drupal 10)
 
-                   _   _                 _____                 _                                  _
-         /\       | | (_)               |  __ \               | |                                | |
-        /  \   ___| |_ ___   _____      | |  | | _____   _____| | ___  _ __  _ __ ___   ___ _ __ | |_
-       / /\ \ / __| __| \ \ / / _ \     | |  | |/ _ \ \ / / _ \ |/ _ \| '_ \| '_ ` _ \ / _ \ '_ \| __|
-      / ____ \ (__| |_| |\ V /  __/     | |__| |  __/\ V /  __/ | (_) | |_) | | | | | |  __/ | | | |_
-     /_/    \_\___|\__|_| \_/ \___|     |_____/ \___| \_/ \___|_|\___/| .__/|_| |_| |_|\___|_| |_|\__|
-                                                                      | |
-                                                                      |_|
-
-
 ## Compatibility
 
-![Target Drupal Version 10.2.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-10.2.x-informational)
+![Target Drupal Version 10.4.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-10.2.x-informational)
 
-Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) + ![PostgreSQL 16](https://img.shields.io/badge/PostreSQL-16-success)
+Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) - ![PostgreSQL 16](https://img.shields.io/badge/PostreSQL-16-success)
 
-| Drupal      | 10.2.x              | 10.3.x              | 10.4.x              |
-|-------------|---------------------|---------------------|---------------------|
-| **PHP 8.1** | ![Grid81-102-Badge] | ![Grid81-103-Badge] | ![Grid81-104-Badge] |
-| **PHP 8.2** | ![Grid82-102-Badge] | ![Grid82-103-Badge] | ![Grid82-104-Badge] |
-| **PHP 8.3** | ![Grid83-102-Badge] | ![Grid83-103-Badge] | ![Grid83-104-Badge] |
+| Drupal      | 10.2.x              | 10.3.x              | 10.4.x              | 11.0.x              | 11.0.x              |
+|-------------|---------------------|---------------------|---------------------|---------------------|---------------------|
+| **PHP 8.1** | ![Grid81-102-Badge] | ![Grid81-103-Badge] | ![Grid81-104-Badge] |                     |                     |
+| **PHP 8.2** | ![Grid82-102-Badge] | ![Grid82-103-Badge] | ![Grid82-104-Badge] |                     |                     |
+| **PHP 8.3** | ![Grid83-102-Badge] | ![Grid83-103-Badge] | ![Grid83-104-Badge] | ![Grid83-110-Badge] | ![Grid83-111-Badge] |
 
 [Grid81-102-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_2x.yml/badge.svg
 [Grid81-103-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_3x.yml/badge.svg
@@ -35,6 +25,9 @@ Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) + 
 [Grid83-102-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_2x.yml/badge.svg
 [Grid83-103-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_3x.yml/badge.svg
 [Grid83-104-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_4x.yml/badge.svg
+
+[Grid83-110-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_0x.yml/badge.svg
+[Grid83-111-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_1x.yml/badge.svg
 
 ### Code Coverage
 
