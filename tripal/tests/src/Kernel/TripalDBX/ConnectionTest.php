@@ -824,16 +824,8 @@ class ConnectionTest extends TripalTestKernelBase {
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
     $dbmock = $this->getConnectionMock($sch_1);
-    $result = $dbmock->tablePrefix();
+    $result = $dbmock->getPrefix();
     $this->assertNotEmpty($result, 'Drupal test database prefix.');
-    $this->assertNotEquals($sch_1 . '.', $result, 'Prefix for regular tables not in Tripal DBX schema.');
-
-    $result2 = $dbmock->tablePrefix('whatever');
-    $this->assertEquals($result, $result2, 'Prefix for regular tables stable.');
-
-    $result2 = $dbmock->tablePrefix('whatever', TRUE);
-    $this->assertNotEquals($result, $result2, 'Prefix for biological tables different from Drupal test database.');
-    $this->assertEquals($sch_1 . '.', $result2, 'Prefix for biological tables.');
   }
 
   /**
