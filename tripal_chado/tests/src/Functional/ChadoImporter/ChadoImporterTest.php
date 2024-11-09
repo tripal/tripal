@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\ChadoImporter;
 
-use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\Core\Url;
 
 /**
