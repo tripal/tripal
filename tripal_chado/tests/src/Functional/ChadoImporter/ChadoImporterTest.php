@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Functional\ChadoImporter;
 
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Url;
@@ -10,7 +10,7 @@ use Drupal\Core\Url;
  *
  * Functionality for specific importers will be tested in their own test classes.
  */
-class TripalImporterTest extends ChadoTestBrowserBase {
+class ChadoImporterTest extends ChadoTestBrowserBase {
 
 	/**
    * Tests focusing on the Tripal Importer plugin system and chado importers.
