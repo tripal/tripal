@@ -228,12 +228,6 @@ abstract class TripalDbxSchema extends PgSchema {
       return [];
     }
 
-    // Load all the tables up front in order to take into account per-table
-    // prefixes. The actual matching is done at the bottom of the method.
-    $individually_prefixed_tables = $this->connection
-      ->getUnprefixedTablesMap();
-    $tables = [];
-
     // Normally, we would heartily discourage the use of string
     // concatenation for conditionals like this however, we
     // couldn't use \Drupal::database()->select() here because it would prefix
@@ -247,17 +241,6 @@ abstract class TripalDbxSchema extends PgSchema {
       ->query("SELECT table_name AS table_name FROM information_schema.tables WHERE " . (string) $condition, $condition
       ->arguments());
     foreach ($results as $table) {
-
-      // Take into account tables that have an individual prefix.
-      $prefix_length = 0;
-      if (isset($individually_prefixed_tables[$table->table_name])) {
-        $prefix = $this->connection
-          ->tablePrefix($individually_prefixed_tables[$table->table_name], TRUE);
-
-        if (!empty($prefix)) {
-          $prefix_length = strlen($prefix);
-        }
-      }
 
       // Remove the prefix from the returned tables.
       $unprefixed_table_name = substr($table->table_name, $prefix_length);
