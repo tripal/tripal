@@ -28,9 +28,9 @@ jobs:
           - "15"
           - "16"
         drupal-version:
-          - "10.2.x-dev"
           - "10.3.x-dev"
           - "10.4.x-dev"
+          - "10.5.x-dev"
           - "11.0.x-dev"
           - "11.1.x-dev"
           - "11.x-dev"

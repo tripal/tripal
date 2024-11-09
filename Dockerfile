@@ -11,6 +11,14 @@ ARG postgresqlversion='16'
 ## Now define the args only needed within the build scope.
 ARG modules='devel devel_php field_group'
 ARG tripalmodules='tripal tripal_biodb tripal_chado'
+## Redefine the core args so that they are within the build scope.
+ARG phpversion='8.3'
+ARG drupalversion='10.3.x-dev'
+ARG postgresqlversion='16'
+
+## Now define the args only needed within the build scope.
+ARG modules='devel devel_php field_group'
+ARG tripalmodules='tripal tripal_biodb tripal_chado'
 ARG chadoschema='chado'
 ARG installchado=TRUE
 # see issue #2000 for the reason for updating the PATH:
@@ -31,7 +39,9 @@ RUN service apache2 start \
   && mkdir -p /var/www/drupal/web/modules/contrib \
   && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
   && allmodules="${tripalmodules} ${modules}" \
-  && if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); then allmodules="$allmodules field_group_table"; fi \
+  && if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); then \
+  allmodules="$allmodules field_group_table"; \
+  fi \
   && vendor/bin/drush en ${allmodules} -y \
   && service apache2 stop \
   && service postgresql stop
