@@ -13,9 +13,6 @@
 
 ### Issue #
 
-<!--- Enter the Tripal version this PR applies to (i.e. either 3 or 4 ;-p) --->
-### Tripal Version: 
-
 ## Description
 <!--- Describe your changes in detail -->
 <!--- Why is this change required? What problem does it solve? -->
