@@ -1,6 +1,5 @@
 name: Build and Publish Drupal Docker
 on:
-  push:
   # Allows us to manually trigger this workflow.
   # This is great if there is a change made to Tripal core that we want to test our modules on ASAP.
   workflow_dispatch:
