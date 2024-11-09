@@ -346,10 +346,10 @@ class ConnectionTest extends TripalTestKernelBase {
     $this->assertNotEquals($search_path_drupal, $search_path_tdbx, 'Different search paths.');
     $tripaldbx = \Drupal::service('tripal.dbx');
     $drupal_schema = $tripaldbx->getDrupalSchemaName();
-    $this->assertRegexp('/^test\W/', $search_path_tdbx, 'TripalDbx search_path has test schema.');
-    $this->assertRegexp("/,\\s*$drupal_schema(?:\W|$)/", $search_path_tdbx, 'TripalDbx search_path has Drupal schema as well.');
-    $this->assertNotRegexp('/(?:^|\W)test(?:\W|$)/', $search_path_drupal, 'Drupal search_path has not test schema.');
-    $this->assertRegexp("/(?:^|\\W)$drupal_schema(?:\W|$)/", $search_path_drupal, 'Drupal search_path has Drupal schema.');
+    $this->assertMatchesRegularExpression('/^test\W/', $search_path_tdbx, 'TripalDbx search_path has test schema.');
+    $this->assertMatchesRegularExpression("/,\\s*$drupal_schema(?:\W|$)/", $search_path_tdbx, 'TripalDbx search_path has Drupal schema as well.');
+    $this->assertDoesNotMatchRegularExpression('/(?:^|\W)test(?:\W|$)/', $search_path_drupal, 'Drupal search_path has not test schema.');
+    $this->assertMatchesRegularExpression("/(?:^|\\W)$drupal_schema(?:\W|$)/", $search_path_drupal, 'Drupal search_path has Drupal schema.');
   }
 
   /**
