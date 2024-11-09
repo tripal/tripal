@@ -19,7 +19,7 @@ use Drupal\Core\Form\FormState;
 class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['system', 'user', 'field', 'tripal'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'tripal'];
 
   use TripalFieldTestTrait;
 

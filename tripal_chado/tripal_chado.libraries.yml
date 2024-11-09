@@ -5,10 +5,15 @@ tripal_chado.chado_table:
   js:
     js/chado_table.js: {}
 
+tripal_chado.field.ChadoDbxrefWidgetDefault:
+  css:
+    component:
+      src/Plugin/Field/FieldWidget/ChadoDbxrefWidgetDefault.css: {}
+
 tripal_chado.field.ChadoSequenceFormatterDefault:
   css:
     component:
-      src/Plugin/Field/FieldFormatter/ChadoSequenceFormatterDefault.css: {} 
+      src/Plugin/Field/FieldFormatter/ChadoSequenceFormatterDefault.css: {}
 
 tripal_chado-field-ui:
   version: 1.x

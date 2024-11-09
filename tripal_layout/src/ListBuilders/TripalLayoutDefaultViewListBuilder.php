@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityInterface;
 
 
 /**
- * Provides a listing of Content Types configurations.
+ * Provides a listing of View Layout collections.
  */
 class TripalLayoutDefaultViewListBuilder extends ConfigEntityListBuilder {
 

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Functional;
 
 class TripalPubLibraryTest extends ChadoTestBrowserBase {
+
   /**
    * Confirm basic Taxonomy importer functionality.
    *
@@ -28,7 +29,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     }
     asort($plugins);
     $this->assertEquals($plugins['tripal_pub_library_pubmed'], 'NIH PubMed database');
-    
+
 
     $plugin_id = 'tripal_pub_library_pubmed';
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
@@ -46,14 +47,16 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
           'search_terms' => 'Populus trichocarpa',
           'scope' => 'abstract',
           'is_phrase' => 0,
-          'operation' => '', 
+          'operation' => '',
         ]
       ],
     ];
 
     $results = $plugin->retrieve($search_array, 1, 0);
-    $this->assertNotEquals($results, NULL, 'This should have returned one pubmed record');
-    
+    if ($results === NULL) {
+      $this->markTestSkipped('Skipping PubMed test due to being unable to access service.');
+    }
+
 
     $this->assertGreaterThan(0, $results['total_records'], 'There should be more than 0 records found for this query');
 
@@ -75,14 +78,15 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
           'search_terms' => 'PMID:30000852',
           'scope' => 'id',
           'is_phrase' => 0,
-          'operation' => '', 
+          'operation' => '',
         ]
       ],
     ];
 
     $results = $plugin->retrieve($search_array, 1, 0);
-    // print_r($results);
-    $this->assertNotEquals($results, NULL, 'This should have returned one pubmed record');
+    if ($results === NULL) {
+      $this->markTestSkipped('Skipping PubMed test due to being unable to access service.');
+    }
     $this->assertEquals($results['pubs'][0]['Publication Dbxref'], 'PMID:30000852', 'This should have returned the PMID');
     $this->assertEquals($results['pubs'][0]['Publisher'], 'National Institute of Child Health and Human Development', 'This should have returned the Title');
 
@@ -98,7 +102,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
           'search_terms' => 'Populus trichocarpa',
           'scope' => 'abstract',
           'is_phrase' => 0,
-          'operation' => '', 
+          'operation' => '',
         ]
       ],
     ];
@@ -127,10 +131,10 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
 
     // Get all search queries test
     $results = $pub_library_manager->getSearchQueries(); // returns results
-    $this->assertNotEquals($results, NULL, 
+    $this->assertNotEquals($results, NULL,
       'Tripal Pub Library Query tables contains no query by test-query, this is an error - issue with getSearchQueries');
     $row = $results[0];
-    $this->assertEquals($row->name, 'test-query', 
+    $this->assertEquals($row->name, 'test-query',
       'The Tripal Pub Library Query name is not test-query, this is an error - issue with getSearchQueries');
 
     // --- Update search query test
@@ -146,7 +150,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
           'search_terms' => 'Populus trichocarpa',
           'scope' => 'abstract',
           'is_phrase' => 0,
-          'operation' => '', 
+          'operation' => '',
         ]
       ],
     ];
@@ -155,9 +159,9 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       'criteria' => serialize($search_array),
       'disabled' => 0,
       'do_contact' => 0,
-    ];    
+    ];
 
-    // This should update the search query 
+    // This should update the search query
     $pub_library_manager->updateSearchQuery($query_id, $db_fields);
     $row = $pub_library_manager->getSearchQuery($query_id); // returns object
     $this->assertEquals($row->name, 'test-query-updated',

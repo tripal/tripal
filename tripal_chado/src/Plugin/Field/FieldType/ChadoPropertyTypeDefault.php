@@ -253,7 +253,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array {
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
 
     /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
     $chado = \Drupal::service('tripal_chado.database');
@@ -305,7 +305,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
           ],
         ],
         'settings' => [
-          'termIdSpace' => $recprop->cv_name,
+          'termIdSpace' => $recprop->db_name,
           'termAccession' => $recprop->accession,
         ],
         'display' => [

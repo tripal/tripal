@@ -1,5 +1,5 @@
 ARG phpversion='8.3'
-ARG drupalversion='10.3.x-dev'
+ARG drupalversion='10.4.x-dev'
 ARG postgresqlversion='16'
 FROM tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-pgsql${postgresqlversion}
 
@@ -13,6 +13,8 @@ ARG modules='devel devel_php field_group'
 ARG tripalmodules='tripal tripal_biodb tripal_chado'
 ARG chadoschema='chado'
 ARG installchado=TRUE
+# see issue #2000 for the reason for updating the PATH:
+ENV PATH="/var/www/drupal/vendor/drush/drush:$PATH"
 
 # Label docker image
 LABEL tripal.version="4.x-dev"
