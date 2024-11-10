@@ -441,8 +441,10 @@ function chado_generate_var($table, $values, $base_options = [], $schema_name = 
 
   // Convert the results into an array.
   $results_arr = [];
-  foreach ($results as $record) {
-    $results_arr[] = $record;
+  if (is_array($results)) {
+    foreach ($results as $record) {
+      $results_arr[] = $record;
+    }
   }
   // Check only one result returned.
   if (!$return_array) {
