@@ -39,8 +39,9 @@ RUN service apache2 start \
   && mkdir -p /var/www/drupal/web/modules/contrib \
   && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
   && allmodules="${tripalmodules} ${modules}" \
-  && if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); then \
-  allmodules="$allmodules field_group_table"; \
+  && if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); \
+  then allmodules="$allmodules field_group_table" \
+  && cp /var/www/drupal/web/modules/contrib/tripal/tripaldocker/phpunit.9.6.xml /var/www/drupal/web/modules/contrib/tripal/phpunit.xml; \
   fi \
   && vendor/bin/drush en ${allmodules} -y \
   && service apache2 stop \
