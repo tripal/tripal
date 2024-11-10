@@ -50,7 +50,7 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
   /**
    * Data Provider: Test invalid parameters.
    */
-  public function provideInvalidParameters() {
+  public static function provideInvalidParameters() {
     $test_set = [];
 
     $test_set[] = [

@@ -90,7 +90,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
   /**
    * Data Provider: Test both the current store_link model and the old one.
    */
-  public function provideSinglePropFieldNames() {
+  public static function provideSinglePropFieldNames() {
     return [
       ['testpropertyfieldA']
     ];
@@ -325,7 +325,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
   /**
    * Data Provider: Provide values for testing multiple property fields.
    */
-  public function provideMultiplePropFields() {
+  public static function provideMultiplePropFields() {
     return [
       [
         'fields' => [

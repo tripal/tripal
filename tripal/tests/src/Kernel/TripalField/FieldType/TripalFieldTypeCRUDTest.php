@@ -32,7 +32,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
     $this->setupFieldTestEnvironment();
   }
 
-  public function provideFieldsToTest() {
+  public static function provideFieldsToTest() {
     $senarios =  [];
 
     // BOOLEAN
