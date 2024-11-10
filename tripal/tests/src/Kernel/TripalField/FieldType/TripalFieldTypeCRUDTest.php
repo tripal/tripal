@@ -37,15 +37,15 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
 
     // BOOLEAN
     $senarios[] = [
-      'type' => [
+      'field_type' => [
         'id' => 'tripal_boolean_type',
         'class' => 'Drupal\tripal\Plugin\Field\FieldType\TripalBooleanTypeItem',
       ],
-      'widget' => [
+      'field_widget' => [
         'id' => 'default_tripal_boolean_type_widget',
         'class' => 'Drupal\tripal\Plugin\Field\FieldWidget\TripalBooleanTypeWidget',
       ],
-      'formatter' => [
+      'field_formatter' => [
         'id' => 'default_tripal_boolean_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalBooleanTypeFormatter',
       ],
@@ -54,15 +54,15 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
 
     // INTEGER
     $senarios[] = [
-      'type' => [
+      'field_type' => [
         'id' => 'tripal_integer_type',
         'class' => 'Drupal\tripal\Plugin\Field\FieldType\TripalIntegerTypeItem',
       ],
-      'widget' => [
+      'field_widget' => [
         'id' => 'default_tripal_integer_type_widget',
         'class' => 'Drupal\tripal\Plugin\Field\FieldWidget\TripalIntegerTypeWidget',
       ],
-      'formatter' => [
+      'field_formatter' => [
         'id' => 'default_tripal_integer_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalIntegerTypeFormatter',
       ],
@@ -71,15 +71,15 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
 
     // STRING
     $senarios[] = [
-      'type' => [
+      'field_type' => [
         'id' => 'tripal_string_type',
         'class' => 'Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem',
       ],
-      'widget' => [
+      'field_widget' => [
         'id' => 'default_tripal_string_type_widget',
         'class' => 'Drupal\tripal\Plugin\Field\FieldWidget\TripalStringTypeWidget',
       ],
-      'formatter' => [
+      'field_formatter' => [
         'id' => 'default_tripal_string_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalStringTypeFormatter',
       ],
@@ -88,15 +88,15 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
 
     // TEXT
     $senarios[] = [
-      'type' =>[
+      'field_type' =>[
         'id' => 'tripal_text_type',
         'class' => 'Drupal\tripal\Plugin\Field\FieldType\TripalTextTypeItem',
       ],
-      'widget' => [
+      'field_widget' => [
         'id' => 'default_tripal_text_type_widget',
         'class' => 'Drupal\tripal\Plugin\Field\FieldWidget\TripalTextTypeWidget',
       ],
-      'formatter' => [
+      'field_formatter' => [
         'id' => 'default_tripal_text_type_formatter',
         'class' => ' Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalTextTypeFormatter',
       ],
