@@ -90,9 +90,7 @@
     </testsuite>
     <testsuite name="functional">
       <directory>tripal/tests/src/Functional</directory>
-      <directory>tripal_biodb/tests/src/Functional</directory>
       <directory>tripal_chado/tests/src/Functional</directory>
-      <directory>tripal_layout/tests/src/Functional</directory>
     </testsuite>
     <testsuite name="kernel">
       <directory>tripal/tests/src/Kernel</directory>
