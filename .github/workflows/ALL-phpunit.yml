@@ -71,4 +71,4 @@ jobs:
             -e SIMPLETEST_DB=$SIMPLETEST_DB \
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
             --workdir=/var/www/drupal/web/modules/contrib/tripal \
-            tripaldocker phpunit
+            tripaldocker phpunit --display-deprecations
