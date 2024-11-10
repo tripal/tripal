@@ -243,6 +243,7 @@ abstract class TripalDbxSchema extends PgSchema {
     foreach ($results as $table) {
 
       // Remove the prefix from the returned tables.
+      $prefix_length = 0;
       $unprefixed_table_name = substr($table->table_name, $prefix_length);
 
       // The pattern can match a table which is the same as the prefix. That
