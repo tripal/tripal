@@ -328,7 +328,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
   public static function provideMultiplePropFields() {
     return [
       [
-        'fields' => [
+        [
           'testpropertyfieldA' => [
             'type' => ['rdfs', 'comment'],
             'value_prefix' => 'RDFS Comment #',

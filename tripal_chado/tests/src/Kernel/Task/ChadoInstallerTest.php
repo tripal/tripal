@@ -55,48 +55,48 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
 
     $test_set[] = [
       'test_name' => 'Version not a string',
-      'parameters' => [
+      'paramset' => [
         'output_schemas' => [ 'chado' . uniqid() ],
         'version' => ['fred' => 'sarah'],
       ],
-      'messages' => 'version must be a string; whereas, you passed an array or object'
+      'expected_message' => 'version must be a string; whereas, you passed an array or object'
     ];
 
     $test_set[] = [
       'test_name' => 'Version not valid',
-      'parameters' => [
+      'paramset' => [
         'output_schemas' => [ 'chado' . uniqid() ],
         'version' => 5.9,
       ],
-      'messages' => 'version .*is not supported by this installer'
+      'expected_message' => 'version .*is not supported by this installer'
     ];
 
     $test_set[] = [
       'test_name' => 'Schema already exists.',
-      'parameters' => [
+      'paramset' => [
         'output_schemas' => [ 'testchadoschemaexists' ],
         'version' => 1.3,
       ],
-      'messages' => 'Target schema ".*" already exists.',
+      'expected_message' => 'Target schema ".*" already exists.',
     ];
 
     $test_set[] = [
       'test_name' => 'Input schema not supported.',
-      'parameters' => [
+      'paramset' => [
         'input_schemas' => [ 'fred' ],
         'output_schemas' => [ 'chado' . uniqid() ],
         'version' => 1.3,
       ],
-      'messages' => 'Chado installer does not take input schemas',
+      'expected_message' => 'Chado installer does not take input schemas',
     ];
 
     $test_set[] = [
       'test_name' => 'Too many output schema.',
-      'parameters' => [
+      'paramset' => [
         'output_schemas' => [ 'chado' . uniqid(), 'chado' . uniqid() ],
         'version' => 1.3,
       ],
-      'messages' => 'Invalid number of output schemas',
+      'expected_message' => 'Invalid number of output schemas',
     ];
 
     return $test_set;
