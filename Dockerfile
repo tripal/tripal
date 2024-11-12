@@ -5,20 +5,12 @@ FROM tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-p
 
 ## Redefine the core args so that they are within the build scope.
 ARG phpversion='8.3'
-ARG drupalversion='10.3.x-dev'
+ARG drupalversion='11.0.x-dev'
 ARG postgresqlversion='16'
 
 ## Now define the args only needed within the build scope.
-ARG modules='devel devel_php field_group'
-ARG tripalmodules='tripal tripal_biodb tripal_chado'
-## Redefine the core args so that they are within the build scope.
-ARG phpversion='8.3'
-ARG drupalversion='10.3.x-dev'
-ARG postgresqlversion='16'
-
-## Now define the args only needed within the build scope.
-ARG modules='devel devel_php field_group'
-ARG tripalmodules='tripal tripal_biodb tripal_chado'
+ARG modules='devel devel_php field_group field_group_table'
+ARG tripalmodules='tripal tripal_biodb tripal_chado tripal_layout'
 ARG chadoschema='chado'
 ARG installchado=TRUE
 # see issue #2000 for the reason for updating the PATH:
@@ -40,8 +32,7 @@ RUN service apache2 start \
   && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
   && allmodules="${tripalmodules} ${modules}" \
   && if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); \
-  then allmodules="$allmodules field_group_table" \
-  && cp /var/www/drupal/web/modules/contrib/tripal/tripaldocker/phpunit.9.6.xml /var/www/drupal/web/modules/contrib/tripal/phpunit.xml; \
+  then cp /var/www/drupal/web/modules/contrib/tripal/tripaldocker/phpunit.9.6.xml /var/www/drupal/web/modules/contrib/tripal/phpunit.xml; \
   fi \
   && vendor/bin/drush en ${allmodules} -y \
   && service apache2 stop \
