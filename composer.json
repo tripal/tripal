@@ -25,8 +25,5 @@
     "php": "^8.1",
     "drupal/core": "^10.3"
   },
-  "require-dev": {
-    "drupal/field_group_table": "^8.x-1.x-dev"
-  }
   "lock": false
 }
