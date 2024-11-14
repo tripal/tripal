@@ -116,12 +116,12 @@ abstract class TripalDbxConnection extends PgConnection {
    *  being used to open new connections.
    * NOTE: the pgsql driver changed namespace in 9.4.x
    *  Drupal\Core\Database\Driver\pgsql\Connection => Drupal\pgsql\Driver\Database\pgsql\Connection
+   *  so there is now only one supported class
    *
    * @var array
    */
   protected static $supported_classes = [
-    'Drupal\pgsql\Driver\Database\pgsql\Connection',
-    'Drupal\Core\Database\Driver\pgsql\Connection'
+    'Drupal\pgsql\Driver\Database\pgsql\Connection'
   ];
 
   /**

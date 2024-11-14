@@ -298,7 +298,7 @@ class ConnectionTest extends TripalTestKernelBase {
    * @cover ::__construct
    */
   public function testConnectionConstructorTestSchemaInvalidDatabase() {
-    $mocked_mysqldb = $this->getMockBuilder(\Drupal\Core\Database\Driver\mysql\Connection::class)
+    $mocked_mysqldb = $this->getMockBuilder(\Drupal\mysql\Driver\Database\mysql\Connection::class)
       ->disableOriginalConstructor()
       ->getMock()
     ;
