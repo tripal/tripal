@@ -71,4 +71,5 @@ jobs:
             -e SIMPLETEST_DB=$SIMPLETEST_DB \
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
             --workdir=/var/www/drupal/web/modules/contrib/tripal \
+            --configuration=$(/var/www/drupal/web/modules/contrib/tripal/select_phpunit.sh) \
             tripaldocker phpunit
