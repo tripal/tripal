@@ -7,6 +7,7 @@
 use \Drupal\Core\Database\Database;
 use \Drupal\Core\Utility\UpdateException;
 use \Drupal\Component\Serialization\Yaml;
+use \Drupal\field\Entity\FieldConfig;
 use \Drupal\tripal_chado\Entity\ChadoTermMapping;
 use \Drupal\tripal\TripalVocabTerms\TripalTerm;
 
@@ -584,7 +585,7 @@ function tripal_chado_update_10406() {
 
 /**
  * Adds third party settings for content types that have multiple
- * content types derived from one base table. PR#1991
+ * content types derived from one base table. PR 1991
  */
 function tripal_chado_update_10407() {
 
@@ -655,5 +656,29 @@ function tripal_chado_update_10408() {
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not reload Chado terms and mappings: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Sets publication 'title' and 'pyear' fields as non-required, to be
+ * consistent with chado. PR 2029
+ */
+function tripal_chado_update_10409() {
+  try {
+    $messenger = \Drupal::messenger();
+    $field_ids = ['tripal_entity.pub.pub_title', 'tripal_entity.pub.pub_pyear'];
+    foreach ($field_ids as $field_id) {
+      /** Drupal\field\Entity\FieldConfig **/
+      $field = FieldConfig::load($field_id);
+      $required = $field->isRequired();
+      if ($required) {
+        $field->setRequired(FALSE);
+        $field->save();
+        $messenger->addMessage("Changed field $field_id to be not required");
+      }
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not set title and publication year required setting: ' . $e->getMessage());
   }
 }
