@@ -88,16 +88,6 @@
     <testsuite name="tripal_layout">
       <directory>tripal_layout/tests</directory>
     </testsuite>
-    <testsuite name="functional">
-      <directory>tripal/tests/src/Functional</directory>
-      <directory>tripal_chado/tests/src/Functional</directory>
-    </testsuite>
-    <testsuite name="kernel">
-      <directory>tripal/tests/src/Kernel</directory>
-      <directory>tripal_biodb/tests/src/Kernel</directory>
-      <directory>tripal_chado/tests/src/Kernel</directory>
-      <directory>tripal_layout/tests/src/Kernel</directory>
-    </testsuite>
   </testsuites>
   <!-- Settings for coverage reports. -->
   <source ignoreSuppressionOfDeprecations="true">
