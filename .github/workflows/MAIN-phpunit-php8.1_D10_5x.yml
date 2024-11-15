@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - 4.x
-      - tv4g8-issue1950-improveTripalDocker
+      - tv4g0-1953-dockerUpdatesOnly
   # Allows us to schedule when this workflow is run.
   # This ensures we pick up any new changes in Drupal.
   schedule:
@@ -12,7 +12,7 @@ on:
     - cron: '0 6 * * *'
 jobs:
   running-tests:
-    name: "Drupal 10.2: PHP 8.2"
+    name: "Drupal 10.5: PHP 8.1"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -22,7 +22,7 @@ jobs:
         with:
           directory-name: 'tripal'
           modules: 'tripal tripal_biodb tripal_chado'
-          php-version: '8.2'
+          php-version: '8.1'
           pgsql-version: '16'
-          drupal-version: '10.2.x-dev'
+          drupal-version: '10.5.x-dev'
           build-image: true
