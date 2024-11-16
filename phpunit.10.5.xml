@@ -76,9 +76,17 @@
     </bootstrap>
   </extensions>
   <testsuites>
-    <testsuite name="unit">
-      <directory>tripal/tests/src/Unit</directory>
-      <directory>tripal_biodb/tests/src/Unit</directory>
+    <testsuite name="tripal">
+      <directory>tripal/tests</directory>
+    </testsuite>
+    <testsuite name="tripal_biodb">
+      <directory>tripal_biodb/tests</directory>
+    </testsuite>
+    <testsuite name="tripal_chado">
+      <directory>tripal_chado/tests</directory>
+    </testsuite>
+    <testsuite name="tripal_layout">
+      <directory>tripal_layout/tests</directory>
     </testsuite>
     <testsuite name="functional">
       <directory>tripal/tests/src/Functional</directory>
