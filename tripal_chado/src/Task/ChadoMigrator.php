@@ -42,6 +42,13 @@ class Chadomigrator extends ChadoTaskBase {
   protected int $tripal3maxid = 0;
 
   /**
+   * Tripal entity lookup service object.
+   *
+   * @var object \Drupal\tripal\Services\TripalEntityLookup
+   */
+  protected $lookup_manager = NULL;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
@@ -51,7 +58,8 @@ class Chadomigrator extends ChadoTaskBase {
     ?\Drupal\Core\State\StateInterface $state = NULL
   ) {
     parent::__construct($database, $logger, $locker, $state);
-//@@@    $this->tripalDbxApi = \Drupal::service('tripal.dbx');
+    $this->lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
+
   }
 
   /**
@@ -251,6 +259,13 @@ class Chadomigrator extends ChadoTaskBase {
    */
   protected function migrate() {
     $ntables = count($this->tripal3ids);
+
+    $label_to_bundle = [];
+    $bundle_info = \Drupal::service('entity_type.bundle.info')->getBundleInfo('tripal_entity');
+    foreach ($bundle_info as $bundle_name => $bundle_def) {
+      $label_to_bundle[$bundle_def['label']] = $bundle_name;
+    }
+
     foreach (array_keys($this->tripal3ids) as $bundle_label) {
       foreach (array_keys($this->tripal3ids[$bundle_label]) as $chado_table) {
         $this->logger->notice(t("Migrating bundle @bundle_label table @table",
@@ -258,10 +273,37 @@ class Chadomigrator extends ChadoTaskBase {
         ));
         // There is only ever one pkey for any given table
         $pkey = array_key_first($this->tripal3ids[$bundle_label][$chado_table]);
-        foreach ($this->tripal3ids[$bundle_label][$chado_table][$pkey] as $pkey_id => $entity_id) {
-          $this->logger->warning("todo: $bundle_label $chado_table $pkey $pkey_id $entity_id"); //@@@
+        if (!array_key_exists($bundle_label, $label_to_bundle)) {
+          $this->logger->warning(t("A bundle with label \"@label\" does not exist on this site, skipping this bundle",
+            ['@label' => $bundle_label]));
+        }
+        else {
+          $bundle_id = $label_to_bundle[$bundle_label];
+
+          // Key is chado pkey ID, value is entity ID
+          $entity_lookup = $this->lookup_manager->getPublishedEntityIds($bundle_id, 'tripal_entity');
+
+          foreach ($this->tripal3ids[$bundle_label][$chado_table][$pkey] as $pkey_id => $t3_entity_id) {
+            $t4_entity_id = $entity_lookup[$pkey_id] ?? NULL;
+            $this->migrateOne($chado_table, $pkey_id, $t3_entity_id, $t4_entity_id); //@todo parameters to be determined...
+          }
         }
       }
+    }
+  }
+
+  /**
+   * Update entity ID for a single entity
+   *
+   * @param string $chado_table
+   * @param int $pkey_id
+   * @param int $t3_entity_id
+   * @param int $t4_entity_id
+   */
+  protected function migrateOne($chado_table, $pkey_id, $t3_entity_id, $t4_entity_id) {
+    if ($t4_entity_id) {
+$this->logger->warning("CP10 @todo convert $t4_entity_id to $t3_entity_id"); //@@@
+      // @todo implement
     }
   }
 
