@@ -207,14 +207,14 @@ class Chadomigrator extends ChadoTaskBase {
     while (($line = fgets($this->parameters['fh'])) !== false) {
       $nlines++;
       $cols = explode("\t", rtrim($line));
-      if (count($cols) != 4) {
+      if (count($cols) != 5) {
         throw new TaskException(
-          "Invalid file format line $nlines, expected exactly 4 columns \"$line\"\n"
+          "Invalid file format line $nlines, expected exactly 5 columns \"$line\"\n"
         );
       }
-      $this->tripal3ids[$cols[0]][$cols[1]][$cols[2]] = $cols[3];
-      if ($cols[3] > $this->tripal3maxid) {
-        $this->tripal3maxid = $cols[3];
+      $this->tripal3ids[$cols[0]][$cols[1]][$cols[2]][$cols[3]] = $cols[4];
+      if ($cols[4] > $this->tripal3maxid) {
+        $this->tripal3maxid = $cols[4];
       }
     }
     fclose($this->parameters['fh']);
@@ -245,21 +245,22 @@ class Chadomigrator extends ChadoTaskBase {
   }
 
   /**
-   * Performs the entity ID migration.
+   * Main loop to perform the entity ID migration.
    *
    * @return void
    */
   protected function migrate() {
     $ntables = count($this->tripal3ids);
-    foreach (array_keys($this->tripal3ids) as $chado_table) {
-      $this->logger->notice(t("Migrating table @table",
-        ['@table' => $chado_table]
-      ));
-      // There is only ever one pkey for any given table
-      $pkey = array_key_first($this->tripal3ids[$chado_table]);
-      foreach ($this->tripal3ids[$chado_table][$pkey] as $pkey_id => $entity_id) {
-        $this->logger->warning("todo: $chado_table $pkey $pkey_id $entity_id"); //@@@
-
+    foreach (array_keys($this->tripal3ids) as $bundle_label) {
+      foreach (array_keys($this->tripal3ids[$bundle_label]) as $chado_table) {
+        $this->logger->notice(t("Migrating bundle @bundle_label table @table",
+          ['@bundle_label' => $bundle_label, '@table' => $chado_table]
+        ));
+        // There is only ever one pkey for any given table
+        $pkey = array_key_first($this->tripal3ids[$bundle_label][$chado_table]);
+        foreach ($this->tripal3ids[$bundle_label][$chado_table][$pkey] as $pkey_id => $entity_id) {
+          $this->logger->warning("todo: $bundle_label $chado_table $pkey $pkey_id $entity_id"); //@@@
+        }
       }
     }
   }
