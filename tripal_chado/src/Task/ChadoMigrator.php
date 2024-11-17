@@ -150,11 +150,32 @@ class Chadomigrator extends ChadoTaskBase {
       $this->loadMigrationData();
       $this->setProgress(0.02);
 
-      // @todo next, get minimum tripal 4 entity ID and validate range is available
+      // Get minimum tripal 4 entity ID and validate range is available
+      $min_id = $this->getLowestEntityId();
 
+      // Cannot continue if there is no published content
+      if (!$min_id) {
+        $this->logger->error("There is no published content on this site, cannot continue");
+        return FALSE;
+      }
+      $this->logger->notice(t(
+        "Maximum Tripal 3 entity ID was @max_id, minimum existing entity ID is @min_id",
+        [
+          '@max_id' => $this->tripal3maxid,
+          '@min_id' => $min_id,
+        ]
+      ));
 
+      if ($this->tripal3maxid > $min_id) {
+        $this->logger->error("There is an existing entity with an ID lower than the highest Tripal 3 entity ID."
+          . " Cannot continue. See https://tripaldoc.readthedocs.io/en/latest/upgrade_guide/site/migrating_chado.html"
+          . " for instructions on how to reserve an entity ID range.");
+        return FALSE;
+      }
+      $this->setProgress(0.04);
 
-
+      //@todo write this next
+      $this->migrate();
 
       $this->setProgress(1);
       $task_success = TRUE;
@@ -181,7 +202,7 @@ class Chadomigrator extends ChadoTaskBase {
    * Reads the Tripal 3 data file and stores it at $this->tripal3ids
    * and also stores the maximum entity ID value at $this->tripal3maxid
    */
-  private function loadMigrationData() {
+  protected function loadMigrationData() {
     $nlines = 0;
     while (($line = fgets($this->parameters['fh'])) !== false) {
       $nlines++;
@@ -199,13 +220,48 @@ class Chadomigrator extends ChadoTaskBase {
     fclose($this->parameters['fh']);
     $this->logger->notice(
       t(
-        "Ready to migrate @n entity IDs, maximum Tripal 3 ID was @max",
+        "Ready to migrate @n entity IDs",
         [
          '@n' => number_format($nlines),
-         '@max' => number_format($this->tripal3maxid),
         ]
       )
     );
+  }
+
+  /**
+   * Finds the lowest entity ID value. To be used for validation.
+   *
+   * @return int
+   *   The lowest entity ID value on this site.
+   */
+  protected function getLowestEntityId() {
+    $min_id = 0;
+    $result = $this->connection->query("SELECT id FROM tripal_entity ORDER BY id DESC LIMIT 1")->fetch();
+    // $result will be FALSE if there is no published content
+    if ($result) {
+      $min_id = $result->id;
+    }
+    return $min_id;
+  }
+
+  /**
+   * Performs the entity ID migration.
+   *
+   * @return void
+   */
+  protected function migrate() {
+    $ntables = count($this->tripal3ids);
+    foreach (array_keys($this->tripal3ids) as $chado_table) {
+      $this->logger->notice(t("Migrating table @table",
+        ['@table' => $chado_table]
+      ));
+      // There is only ever one pkey for any given table
+      $pkey = array_key_first($this->tripal3ids[$chado_table]);
+      foreach ($this->tripal3ids[$chado_table][$pkey] as $pkey_id => $entity_id) {
+        $this->logger->warning("todo: $chado_table $pkey $pkey_id $entity_id"); //@@@
+
+      }
+    }
   }
 
   /**
