@@ -27,6 +27,7 @@ class DefaultTripalBooleanTypeFormatter extends TripalFormatterBase {
     $settings = parent::defaultSettings();
     $settings['true_string'] = t('True');
     $settings['false_string'] = t('False');
+    $settings['hide_condition'] = '';
     return $settings;
   }
 
@@ -36,12 +37,18 @@ class DefaultTripalBooleanTypeFormatter extends TripalFormatterBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $true_string = $this->getSetting('true_string');
     $false_string = $this->getSetting('false_string');
+    $hide_condition = $this->getSetting('hide_condition') ?? '';
     $elements = [];
 
     foreach($items as $delta => $item) {
-      $elements[$delta] = [
-        "#markup" => $item->get("value")->getValue() ? $true_string : $false_string,
-      ];
+      $value = $item->get("value")->getValue() ?? '';
+      $hide = ((($hide_condition == 'if_true') and $value)
+            or (($hide_condition == 'if_false') and !$value));
+      if (!$hide) {
+        $elements[$delta] = [
+          "#markup" => $value ? $true_string : $false_string,
+        ];
+      }
     }
 
     return $elements;
@@ -70,6 +77,16 @@ class DefaultTripalBooleanTypeFormatter extends TripalFormatterBase {
       '#default_value' => $this->getSetting('false_string'),
       '#required' => TRUE,
       '#element_validate' => [[static::class, 'settingsFormValidateBoolean']],
+    ];
+    $form['hide_condition'] = [
+      '#title' => $this->t('You may provide a condition when the field is not displayed'),
+      '#type' => 'radios',
+      '#options' => [
+        '' => $this->t('Never hide'),
+        'if_true' => $this->t('Hide if TRUE'),
+        'if_false' => $this->t('Hide if FALSE'),
+      ],
+      '#default_value' => $this->getSetting('hide_condition') ?? '',
     ];
 
     return $form;

@@ -1,0 +1,23 @@
+ ________          __                      __
+|        \        |  \                    |  \
+ \########______   \##  ______    ______  | ##
+   | ##  /      \ |  \ /      \  |      \ | ##
+   | ## |  ######\| ##|  ######\  \######\| ##
+   | ## | ##   \##| ##| ##  | ## /      ##| ##
+   | ## | ##      | ##| ##__/ ##|  #######| ##
+   | ## | ##      | ##| ##    ## \##    ##| ##
+    \##  \##       \##| #######   \####### \##
+                      | ##
+                      | ##
+                       \##
+
+Welcome to TripalDocker!
+
+This container houses a Apache2 PostgreSQL PHP Server with both Drupal
++ Tripal installed.
+
+USER ACCOUNT:
++-----------+-----------------------+
+| Username  | drupaladmin           |
+| Password  | some_admin_password   |
++-----------+-----------------------+

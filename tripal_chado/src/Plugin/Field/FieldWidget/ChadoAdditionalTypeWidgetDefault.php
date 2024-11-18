@@ -138,22 +138,27 @@ class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
 
     $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     foreach ($values as $delta => $item) {
-       $matches = [];
-       $values[$delta]['type_id'] = NULL;
-       if (preg_match('/(.+?)\(([^\(]+?):(.+?)\)/', $item['term_autoc'], $matches)) {
-         $termIdSpace = $matches[2];
-         $termAccession = $matches[3];
+      if ($item['term_autoc']) {
+        $matches = [];
+        $values[$delta]['type_id'] = NULL;
+        if (preg_match('/(.+?)\(([^\(]+?):(.+?)\)/', $item['term_autoc'], $matches)) {
+          $termIdSpace = $matches[2];
+          $termAccession = $matches[3];
 
-         /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term **/
-         $idSpace = $idSpace_manager->loadCollection($termIdSpace);
-         $term = $idSpace->getTerm($termAccession);
-         $cvterm_id = $term->getInternalId();
-         $values[$delta]['type_id'] = $cvterm_id;
-         $values[$delta]['value'] = $term->getName();
-         $values[$delta]['term_name'] = $term->getName();
-         $values[$delta]['id_space'] = $term->getIdSpace();
-         $values[$delta]['accession'] = $term->getAccession();
-       }
+          /** @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term **/
+          $idSpace = $idSpace_manager->loadCollection($termIdSpace);
+          $term = $idSpace->getTerm($termAccession);
+          $cvterm_id = $term->getInternalId();
+          $values[$delta]['type_id'] = $cvterm_id;
+          $values[$delta]['value'] = $term->getName();
+          $values[$delta]['term_name'] = $term->getName();
+          $values[$delta]['id_space'] = $term->getIdSpace();
+          $values[$delta]['accession'] = $term->getAccession();
+        }
+      }
+      else {
+        unset($values[$delta]);
+      }
     }
     return $values;
   }

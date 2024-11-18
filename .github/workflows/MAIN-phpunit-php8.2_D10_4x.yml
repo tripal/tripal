@@ -1,12 +1,18 @@
 name: PHPUnit
 on:
+  workflow_dispatch:
   push:
     branches:
       - 4.x
-      - tv4g9-issue1897-remove-drupal-10-0-and-10-1
+      - tv4g0-1953-dockerUpdatesOnly
+  # Allows us to schedule when this workflow is run.
+  # This ensures we pick up any new changes in Drupal.
+  schedule:
+    # Run at 6am every night.
+    - cron: '0 6 * * *'
 jobs:
   running-tests:
-    name: "Drupal 10.2: PHP 8.1"
+    name: "Drupal 10.4: PHP 8.2"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -16,8 +22,7 @@ jobs:
         with:
           directory-name: 'tripal'
           modules: 'tripal tripal_biodb tripal_chado'
-          php-version: '8.1'
+          php-version: '8.2'
           pgsql-version: '16'
-          drupal-version: '10.2.x-dev'
+          drupal-version: '10.4.x-dev'
           build-image: true
-          dockerfile: "UseTripalDockerBackupClause"

@@ -3,20 +3,22 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use \Drupal\tripal\Services\TripalPublish;
-use Drupal\tripal\Services\TripalJob;
+use Drupal\tripal_chado\Plugin\TripalBackendPublish\ChadoPublish;
 
 /**
  * Tests the publish service for chado-based content types.
  *
- * @group TripalPublish
+ * @group TripalBackendPublish
+ * @group ChadoPublish
  */
-class TripalPublishServiceTest extends ChadoTestKernelBase {
+class ChadoPublishTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['system', 'user', 'tripal', 'tripal_chado', 'views', 'field'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal', 'tripal_chado', 'views', 'field'];
 
   protected $connection;
+
+  protected $chado_publish;
 
   /**
    * {@inheritdoc}
@@ -30,14 +32,10 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     // Grab the container.
     $container = \Drupal::getContainer();
 
-    $this->installConfig('system');
-    // ... we need entity types to publish them.
-    $this->installEntitySchema('tripal_entity_type');
-    $this->installEntitySchema('tripal_entity');
-    // ... we need the config for tripal_chado since it defines the content types we will install.
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalTerm','TripalEntity']);
+    // -- additionally we need tripal_chado config to access the yaml files.
     $this->installConfig('tripal_chado');
-    // ... we need the tripal term tables
-    $this->installSchema('tripal', ['tripal_id_space_collection', 'tripal_terms_idspaces', 'tripal_vocabulary_collection', 'tripal_terms_vocabs', 'tripal_terms']);
 
     // Get Chado in place
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
@@ -81,37 +79,35 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
     }
 
     // Create terms for organism_dbxref since it seems to be missing.
-    $this->createTripalTerm(
-      [
-        'vocab_name' => 'sbo',
-        'id_space_name' => 'SBO',
-        'term' => [
-          'name' => 'reference annotation',
-          'definition' => 'Additional information that supplements existing data, usually in a document, by providing a link to more detailed information, which is held externally, or elsewhere.',
-          'accession' => '0000552',
-        ],
+    $term_details = [
+      'vocab_name' => 'sbo',
+      'id_space_name' => 'SBO',
+      'term' => [
+        'name' => 'reference annotation',
+        'definition' => 'Additional information that supplements existing data, usually in a document, by providing a link to more detailed information, which is held externally, or elsewhere.',
+        'accession' => '0000552',
       ],
-      'chado_id_space',
-      'chado_vocabulary'
-    );
-     $this->createTripalTerm(
-      [
-        'vocab_name' => 'ero',
-        'id_space_name' => 'ERO',
-        'term' => [
-          'name' => 'database',
-          'definition' => 'A database is an organized collection of data, today typically in digital form.',
-          'accession' => '0001716',
-        ],
+    ];
+    $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
+
+    $term_details = [
+      'vocab_name' => 'ero',
+      'id_space_name' => 'ERO',
+      'term' => [
+        'name' => 'database',
+        'definition' => 'A database is an organized collection of data, today typically in digital form.',
+        'accession' => '0001716',
       ],
-      'chado_id_space',
-      'chado_vocabulary'
-    );
+    ];
+    $this->createTripalTerm($term_details, 'chado_id_space', 'chado_vocabulary');
 
     // Create the content types + fields that we need.
     $this->createContentTypeFromConfig('general_chado', 'organism', TRUE);
     $this->createContentTypeFromConfig('general_chado', 'project', TRUE);
     $this->createContentTypeFromConfig('general_chado', 'contact', TRUE);
+
+    $publish_service = \Drupal::service('tripal.backend_publish');
+    $this->chado_publish = $publish_service->createInstance('chado_storage', []);
 
   }
 
@@ -125,18 +121,14 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
    * publishing of chado-focused content types.
    */
   public function testTripalPublishServiceSingleJob() {
-    $drupal = \Drupal::service('database');
-
-    // Submit the Tripal job by calling the callback directly.
-    $current_user = \Drupal::currentUser();
-    $values = ["schema_name" => $this->testSchemaName];
-    $bundle = 'organism';
-    $datastore = 'chado_storage';
-    TripalPublish::runTripalJob($bundle, $datastore, $values);
+    $publish_options = ['bundle' => 'organism', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(3, $published_entities,
+      "We did not publish the expected number of entities.");
 
     // confirm the entities are added.
-    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
-    $this->assertCount(3, $entities,
+    $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
+    $this->assertCount(3, $confirmed_entities,
       "We expected there to be the same number of organism entities as we inserted.");
   }
 
@@ -152,28 +144,26 @@ class TripalPublishServiceTest extends ChadoTestKernelBase {
    * publishing of chado-focused content types.
    */
   public function testTripalPublishService2Jobs() {
-    $drupal = \Drupal::service('database');
-
-    // Submit the Tripal job by calling the callback directly.
-    $current_user = \Drupal::currentUser();
-    $values = ["schema_name" => $this->testSchemaName];
-    $datastore = 'chado_storage';
-    $bundle = 'project';
-    TripalPublish::runTripalJob($bundle, $datastore, $values);
+    $publish_options = ['bundle' => 'project', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(3, $published_entities,
+      "We did not publish the expected number of entities.");
 
     // confirm the entities are added.
-    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'project']);
-    $this->assertCount(3, $entities,
+    $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'project']);
+    $this->assertCount(3, $confirmed_entities,
       "We expected there to be the same number of project entities as we inserted.");
 
     // Submit the Tripal job by calling the callback directly.
-    $bundle = 'contact';
-    TripalPublish::runTripalJob($bundle, $datastore, $values);
+    $publish_options = ['bundle' => 'contact', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
+    $published_entities = $this->chado_publish->publish($publish_options);
+    $this->assertContains(count($published_entities), [3, 4],
+      "We did not publish the expected number of entities.");
 
     // confirm the entities are added. Chado defines a default "null" contact, which
     // may also get published, so expect 4 instead of 3. (Issue #1809)
-    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
-    $this->assertContains(count($entities), [3, 4],
+    $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
+    $this->assertContains(count($confirmed_entities), [3, 4],
       "We expected there to be the same number of contact entities as we inserted plus the null contact.");
 
     // Verify that a field table was populated

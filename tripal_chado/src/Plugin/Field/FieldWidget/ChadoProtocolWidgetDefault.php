@@ -31,6 +31,7 @@ class ChadoProtocolWidgetDefault extends ChadoWidgetBase {
     $linker_fkey_column = $storage_settings['linker_fkey_column']
       ?? $storage_settings['base_column'] ?? 'protocol_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
+    $field_name = $items->getFieldDefinition()->get('field_name');
 
     // Get the list of protocols.
     $protocols = [];
@@ -69,6 +70,11 @@ class ChadoProtocolWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $linker_fkey_column,
     ];
+    // pass the field machine name through the form for massageFormValues()
+    $elements['field_name'] = [
+      '#type' => 'value',
+      '#default_value' => $field_name,
+    ];
     $elements[$linker_fkey_column] = $element + [
       '#type' => 'select',
       '#options' => $protocols,
@@ -89,6 +95,9 @@ class ChadoProtocolWidgetDefault extends ChadoWidgetBase {
       }
     }
 
+    // Save some initial values to allow later handling of the "Remove" button
+    $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
+
     return $elements;
   }
 
@@ -96,33 +105,6 @@ class ChadoProtocolWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-
-    // Handle any empty values.
-    foreach ($values as $val_key => $value) {
-      // Foreign key is protocol_id.
-      $linker_fkey_column = $value['linker_fkey_column'];
-      if ($value[$linker_fkey_column] == '') {
-        if ($value['record_id']) {
-          // If there is a record_id, but no protocol_id, this means
-          // we need to pass in this record to chado storage to
-          // have the linker record be deleted there. To do this,
-          // we need to have the correct primitive type for this
-          // field, so change from empty string to zero.
-          $values[$val_key][$linker_fkey_column] = 0;
-        }
-        else {
-          unset($values[$val_key]);
-        }
-      }
-    }
-
-    // Reset the weights
-    $i = 0;
-    foreach ($values as $val_key => $value) {
-      $values[$val_key]['_weight'] = $i;
-      $i++;
-    }
-
-    return $values;
+    return $this->massageLinkingFormValues('protocol_id', $values, $form_state);
   }
 }

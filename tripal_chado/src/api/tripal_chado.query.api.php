@@ -2199,7 +2199,13 @@ function hook_chado_get_schema_name_alter($schema_name, $context) {
  *
  * @ingroup tripal_chado_query_api
  * @see \ChadoPrefixExtender::select()
+ *  
+ * @deprecated and is removed from tripal:4.5.0.
+ *   Instead, see https://github.com/tripal/tripal/issues/1343 and https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations.html
  */
 function chado_db_select($table, $alias = NULL, array $options = []) {
+
+  @trigger_error('chado_db_select() is deprecated and is removed from drupal:4.5.0. Instead, see https://github.com/tripal/tripal/issues/1343 and https://tripaldoc.readthedocs.io/en/latest/dev_guide/deprecations.html', E_USER_DEPRECATED);
+
   return ChadoPrefixExtender::select($table, $alias, $options);
 }

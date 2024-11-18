@@ -7,6 +7,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of Tripal linker property field type.
@@ -49,6 +50,23 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+    $values = [];
+
+    $random = new \Drupal\Component\Utility\Random();
+    $values['record_id'] = 1;
+    $values['prop_id'] = 1;
+    $values['linker_id'] = 1;
+    $values['value'] = 'fred';
+    $values['type_id'] = 4;
+    $values['rank'] = 0;
+
+    return $values;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
 
     // Create variables for easy access to settings.
@@ -75,10 +93,10 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-    $link_term = $mapping->getColumnTermId($prop_table, $prop_fk_col);
-    $value_term = $mapping->getColumnTermId($prop_table, 'value');
-    $rank_term = $mapping->getColumnTermId($prop_table, 'rank');
-    $type_id_term = $mapping->getColumnTermId($prop_table, 'type_id');
+    $link_term = $mapping->getColumnTermId($prop_table, $prop_fk_col) ?: self::$record_id_term;
+    $value_term = $mapping->getColumnTermId($prop_table, 'value') ?: 'NCIT:C25712';
+    $rank_term = $mapping->getColumnTermId($prop_table, 'rank') ?: 'OBCS:0000117';
+    $type_id_term = $mapping->getColumnTermId($prop_table, 'type_id') ?: 'schema:additionalType';
 
     // We need to create a table alias for our prop table in order to ensure
     // values of other property types are not combined.
@@ -235,7 +253,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_definitions) : array {
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
 
     /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
     $chado = \Drupal::service('tripal_chado.database');
@@ -272,7 +290,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     // Create a field entry for each property type.
     foreach ($results as $recprop) {
       $field_list[] = [
-        'name' => self::generateFieldName($bundle, $recprop->cvterm_name),
+        'name' => self::generateFieldName($bundle, $recprop->cvterm_name, $recprop->cvterm_id),
         'content_type' => $bundle->getID(),
         'label' => ucwords($recprop->cvterm_name),
         'type' => self::$id,
@@ -287,7 +305,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
           ],
         ],
         'settings' => [
-          'termIdSpace' => $recprop->cv_name,
+          'termIdSpace' => $recprop->db_name,
           'termAccession' => $recprop->accession,
         ],
         'display' => [

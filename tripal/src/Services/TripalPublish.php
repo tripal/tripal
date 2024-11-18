@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Services;
 
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
+use \Drupal\tripal\Services\TripalTokenParser;
 use \Drupal\tripal\Services\TripalJob;
 
 class TripalPublish {
@@ -36,6 +37,16 @@ class TripalPublish {
   private $interval = 1;
 
   /**
+   * Specifies the maximum number of records to publish at one time.
+   * This limits memory consumption if there are many thousands of
+   * records, for example gene records in the feature table.
+   * @todo We might want to add this as an option on the publish form.
+   *
+   * @var integer $batch_size
+   */
+  private $batch_size = 1000;
+
+  /**
    * The TripalJob object.
    *
    * @var \Drupal\tripal\Services\TripalJob $job
@@ -48,6 +59,13 @@ class TripalPublish {
    * @var string $bundle
    */
   protected $bundle = '';
+
+  /**
+   * The base table of the bundle
+   *
+   * @var string $base_table
+   */
+  protected $base_table = '';
 
   /**
    * The id of the TripalStorage plugin.
@@ -86,6 +104,13 @@ class TripalPublish {
    * @var array $required_types
    */
   protected $required_types = [];
+
+  /**
+   *  A list of property types that are not one of the required types.
+   *
+   * @var array $non_required_types
+   */
+  protected $non_required_types = [];
 
   /**
    * Supported actions during publishing.
@@ -170,6 +195,7 @@ class TripalPublish {
     $this->entity_type = NULL;
     $this->storage = NULL;
     $this->required_types = [];
+    $this->non_required_types = [];
     $this->unsupported_fields = [];
     $this->reported = 0;
 
@@ -201,9 +227,25 @@ class TripalPublish {
 
     $this->setFieldInfo();
 
+    // We need a way to get all the record ids for a bundle.
+    // If this is the chado storage backend then we do this using the chado table.
+    if ($datastore == 'chado_storage') {
+      $this->base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    }
+    // But if this is not chado storage then the backend needs to provide the base
+    // table for a bundle.
+    else {
+      $this->base_table = $this->storage->getBaseTable($bundle);
+    }
+    if (empty($this->base_table)) {
+      $error_msg = 'Could not find the base table for the %bundle entity type.';
+      throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
+    }
+
     // Get the required field properties that will uniquely identify an entity.
     // We only need to search on those properties.
     $this->required_types = $this->storage->getStoredTypes();
+    $this->non_required_types = $this->storage->getNonStoredTypes();
   }
 
   /**
@@ -346,47 +388,23 @@ class TripalPublish {
    * @param array $seach_values
    */
   protected function addRequiredValues(&$search_values) {
-
     // Iterate through the property types that can uniquely identify an entity.
     foreach ($this->required_types as $field_name => $keys) {
+
+      // Skip any fields not supported by publish.
+      if (!$this->checkFieldIsSupported($field_name)) {
+        unset($this->required_types[$field_name]);
+        continue;
+      }
+
+      // Add this property value to the search values array.
+      $field_definition = $this->field_info[$field_name]['definition'];
+      $field_class = $this->field_info[$field_name]['class'];
+
       foreach ($keys as $key => $prop_type) {
-        $not_supported = FALSE;
-
-        // This property may be part of a field which has already been marked
-        // as unsupported. If so then it won't be in the field_info and we
-        // should skip it.
-        if (!array_key_exists($field_name, $this->field_info)) {
-          // Add it to the list of unsupported fields just in case
-          // it wasn't added before...
-          $this->unsupported_fields[$field_name] = $field_name;
-          continue;
-        }
-
-        // Add this property value to the search values array.
-        $field_definition = $this->field_info[$field_name]['definition'];
-        $field_class = $this->field_info[$field_name]['class'];
-
-        // We only want to add fields where we support the action for all property types in it.
-        foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
-          $settings = $checking_prop_type->getStorageSettings();
-          if (!in_array($settings['action'], $this->supported_actions)) {
-            $not_supported = TRUE;
-          }
-        }
-
-        if ($not_supported !== TRUE) {
-          $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
-              $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
-          $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
-        }
-        // If it is not supported then we need to remove it from the required types list.
-        else {
-          // Note: We are adding the field to the unsupported list
-          // and will let the admin know later on in this job.
-          $this->unsupported_fields[$field_name] = $field_name;
-          unset($this->required_types[$field_name]);
-          unset($this->field_info[$field_name]);
-        }
+        $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
+            $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+        $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
       }
     }
   }
@@ -439,7 +457,7 @@ class TripalPublish {
    *
    * Sometimes type values are fixed and the user cannot change
    * them.  An example of this is are cases where the ChadoAdditionalTypeDefault
-   * field has a type_id that will never changed.  Content types such as "mRNA"
+   * field has a type_id that will never be changed.  Content types such as "mRNA"
    * or "gene" use these.  We need to add these to our search filter.
    *
    * @param array $seach_values
@@ -485,6 +503,72 @@ class TripalPublish {
   }
 
   /**
+   * Adds to the search values array any remaining property values.
+   *
+   * @param array $seach_values
+   */
+  protected function addNonRequiredValues(&$search_values) {
+    // Iterate through the property types that can uniquely identify an entity.
+    foreach ($this->non_required_types as $field_name => $keys) {
+
+      // Skip any fields not supported by publish.
+      if (!$this->checkFieldIsSupported($field_name)) {
+        unset($this->non_required_types[$field_name]);
+        continue;
+      }
+
+      // Add this property value to the search values array.
+      $field_definition = $this->field_info[$field_name]['definition'];
+      $field_class = $this->field_info[$field_name]['class'];
+
+      foreach ($keys as $key => $prop_type) {
+        // Only add here if not already added in one of the previous steps
+        if (!($search_values[$field_name][0][$prop_type->getKey()]['value'] ?? FALSE)) {
+          $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
+              $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+          $search_values[$field_name][0][$prop_type->getKey()] = ['value' => $prop_value];
+        }
+      }
+    }
+  }
+
+  /**
+   * Determines whether a field is supported for publishing.
+   *
+   * @param string $field_name
+   *   The name of the field to check.
+   *
+   * @return bool
+   *   TRUE if supported, FALSE if not.
+   */
+  protected function checkFieldIsSupported(string $field_name): bool {
+
+    // This property may be part of a field which has already been marked
+    // as unsupported. If so then it won't be in the field_info and we
+    // should skip it.
+    if (!array_key_exists($field_name, $this->field_info)) {
+      // Add it to the list of unsupported fields just in case
+      // it wasn't added before.
+      $this->unsupported_fields[$field_name] = $field_name;
+      return FALSE;
+    }
+
+    // We only want to add fields where we support the action for all property types in it.
+    foreach ($this->field_info[$field_name]['prop_types'] as $checking_prop_key => $checking_prop_type) {
+      $settings = $checking_prop_type->getStorageSettings();
+      if (!in_array($settings['action'], $this->supported_actions)) {
+        // Add it to the list of unsupported fields just in case
+        // it wasn't added before.
+        $this->unsupported_fields[$field_name] = $field_name;
+        unset($this->field_info[$field_name]);
+        return FALSE;
+      }
+    }
+
+    return TRUE;
+  }
+
+  /**
    * Retrieves a list of titles for the entities that should be published.
    *
    * @param array $matches
@@ -497,32 +581,31 @@ class TripalPublish {
     $titles = [];
     $title_format = $this->entity_type->getTitleFormat();
 
-    // Iterate through the results and build the bulk SQL statements that
-    // will publish the records.
+    // Iterate through each match we are checking for an existing entity for.
     foreach ($matches as $match) {
-      $entity_title = $title_format;
-      foreach ($match as $field_name => $deltas) {
-        if (preg_match("/\[$field_name\]/", $title_format)) {
-
-          // There should only be one delta for the fields that
-          // are used for title formats so default this to 0.
-          $delta = 0;
-          $field = $this->field_info[$field_name]['instance'];
-          $main_prop = $field->mainPropertyName();
-          $value = '';
-          if (array_key_exists($delta, $match[$field_name])) {
-            $value = $match[$field_name][$delta][$main_prop]['value']->getValue();
+      // Collapse match array to follow the format expected by getEntityTitle.
+      $entity_values = [];
+      foreach ($match as $field_name => $field_items) {
+        if ($field_items) {
+          foreach($field_items as $delta => $properties) {
+            foreach ($properties as $property_name => $prop_deets) {
+              $entity_values[$field_name][$delta][$property_name] = $prop_deets['value']->getValue();
+            }
           }
-          if ($value === NULL) {
-            $value = '';
+        }
+        else {
+          // Any fields without values are also included as NULL, although only
+          // as delta zero. This is because these might be part of the entity
+          // title but are missing, e.g. organism_infraspecific_name.
+          foreach ($this->field_info[$field_name]['prop_types'] as $property_name => $prop_deets) {
+            $entity_values[$field_name][0][$property_name] = NULL;
           }
-          $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
         }
       }
-      // Trim any trailing spaces and remove double spaces. Double spaces
-      // can occur if a token replacement has no value but there are spaces
-      // around it.
-      $entity_title = trim(preg_replace('/\s\s+/', ' ', $entity_title));
+
+      // Now that we've gotten the values out of the property value objects,
+      // we can use the token parser to get the title!
+      $entity_title = TripalTokenParser::getEntityTitle($this->entity_type, $entity_values);
       $titles[] = $entity_title;
     }
     return $titles;
@@ -693,7 +776,7 @@ class TripalPublish {
       $total++;
       $i++;
 
-      // If we've reached the size of the batch then let's do the insert.
+      // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_matches) {
         $args = [
           ':bundle' => $this->bundle,
@@ -775,7 +858,8 @@ class TripalPublish {
     $init_sql = "
       INSERT INTO {" . $field_table . "}
         (bundle, deleted, entity_id, revision_id, langcode, delta, ";
-    foreach (array_keys($this->required_types[$field_name]) as $key) {
+    foreach (array_keys(array_merge($this->required_types[$field_name],
+                                    $this->non_required_types[$field_name])) as $key) {
       $init_sql .= $field_name . '_'. $key . ', ';
     }
     $init_sql = rtrim($init_sql, ", ");
@@ -799,34 +883,43 @@ class TripalPublish {
       $entity_id = $entities[$title];
       $i++;
 
-      // Iterate through the "items" of each feild and insert a record value
-      // for each item.
+      // Iterate through the "items" of each field and insert a record value
+      // for each non-empty item.
       $num_items = count(array_keys($match[$field_name]));
       for ($delta = 0; $delta < $num_items; $delta++) {
+        // Leave these increments outside the add_record check
+        // to keep our count predictable, just note that some
+        // values of $j may not be used, however, $num_inserted
+        // will be accurate.
         $j++;
         $total++;
 
         // No need to add items to those that are already published.
-        if (!array_key_exists($entity_id, $existing) or
-            !array_key_exists($delta, $existing[$entity_id])) {
-
-          $published[$entity_id] = $title;
-
-          // Add items to those that are not already published.
-          $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
-          $args[":bundle_$j"] = $this->bundle;
-          $args[":deleted_$j"] = 0;
-          $args[":entity_id_$j"] = $entity_id;
-          $args[":revision_id_$j"] = 1;
-          $args[":langcode_$j"] = 'und';
-          $args[":delta_$j"] = $delta;
+        $add_record = TRUE;
+        if (array_key_exists($entity_id, $existing) and
+            array_key_exists($delta, $existing[$entity_id])) {
+          $add_record = FALSE;
+        }
+        // Determine if we want to add this item.
+        else {
           foreach (array_keys($this->required_types[$field_name]) as $key) {
-            $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
-            $sql .=  $placeholder . ', ';
-            $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+            $storage_settings = $this->field_info[$field_name]['prop_types'][$key]->getStorageSettings();
+            $drupal_store = $storage_settings['drupal_store'] ?? FALSE;
+            if ($drupal_store) {
+              $value = '';
+              if (array_key_exists($key, $match[$field_name][$delta])) {
+                $value = $match[$field_name][$delta][$key]['value']->getValue();
+              }
+              if (is_null($value)) {
+                $add_record = FALSE;
+                break;
+              }
+            }
           }
-          $sql = rtrim($sql, ", ");
-          $sql .= "),\n";
+        }
+        if ($add_record) {
+          $published[$entity_id] = $title;
+          $this->insertOneFieldItem($sql, $args, $j, $match, $entity_id, $delta, $field_name);
           $num_inserted++;
         }
 
@@ -848,6 +941,53 @@ class TripalPublish {
       }
     }
     return $num_inserted;
+  }
+
+  /**
+   * Add a single field item to the sql and args.
+   * This is a helper function for insertFieldItems().
+   *
+   * @param string &$sql
+   *   The sql command under construction
+   * @param array &$args
+   *   Values for the placeholders
+   * @param int $j
+   *   Index for the placeholders
+   * @param array $match
+   *   Contains all data to be published
+   * @param int $entity_id
+   *   Id of the entity for this field
+   * @param int $delta
+   *   Field delta
+   * @param string $field_name
+   *   Name of the field being published
+   */
+  private function insertOneFieldItem(&$sql, &$args, $j, $match, $entity_id, $delta, $field_name) {
+    $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
+    $args[":bundle_$j"] = $this->bundle;
+    $args[":deleted_$j"] = 0;
+    $args[":entity_id_$j"] = $entity_id;
+    $args[":revision_id_$j"] = $entity_id;  // For an unversioned entity this is the same as the entity id
+    $args[":langcode_$j"] = 'und';
+    $args[":delta_$j"] = $delta;
+    foreach ($this->required_types[$field_name] as $key => $properties) {
+      $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
+      $sql .=  $placeholder . ', ';
+      $value = $match[$field_name][$delta][$key]['value']->getValue();
+      // If there is no value, use a placeholder of the correct type, string '', int 0, etc.
+      if (is_null($value)) {
+        $value = $properties->getDefaultValue();
+      }
+      $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+    }
+    // Non-required types never have a value stored, just a placeholder.
+    foreach ($this->non_required_types[$field_name] as $key => $properties) {
+      $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
+      $sql .=  $placeholder . ', ';
+      $args[$placeholder] = $properties->getDefaultValue();
+    }
+    $sql = rtrim($sql, ", ");
+    $sql .= "),\n";
   }
 
   /**
@@ -882,6 +1022,26 @@ class TripalPublish {
   }
 
   /**
+   * Divides up a long list of record IDs into smaller batches
+   * for publishing, to reduce memory requirements.
+   *
+   * @param array $record_ids
+   *   A list of primary key values.
+   *
+   * @return array
+   *   Original array values divided into a 2-D array of several batches.
+   *   First level array key is a delta value starting at zero.
+   */
+  protected function divideIntoBatches($record_ids) {
+    $batches = [];
+    $num_batches = (int) ((count($record_ids) + $this->batch_size - 1) / $this->batch_size);
+    for ($delta = 0; $delta < $num_batches; $delta++) {
+      $batches[$delta] = array_slice($record_ids, $delta * $this->batch_size, $this->batch_size);
+    }
+    return $batches;
+  }
+
+  /**
    * Publishes Tripal entities.
    *
    * Publishes content to Tripal from Chado or another
@@ -898,62 +1058,92 @@ class TripalPublish {
    */
   public function publish($filters = []) {
 
+    $total_items = 0;
+    $published_entities = [];
+    $total_existing_entities = 0;
+    $total_new_entities = 0;
+
     // Build the search values array
     $search_values = [];
     $this->addRequiredValues($search_values);
     $this->addTokenValues($search_values);
     $this->addFixedTypeValues($search_values);
+    $this->addNonRequiredValues($search_values);
 
-    $this->logger->notice("Step  1 of 6: Find matching records... ");
-    $matches = $this->storage->findValues($search_values);
+    // We retrieve a list of all primary keys for the base table of the
+    // content type. This allows us to divide publishing into small batches
+    // to reduce the amount of memory required if there are thousands of
+    // records to publish.
+    $this->logger->notice("Finding candidate record IDs...");
+    $record_ids = $this->storage->findAllRecordIds($this->base_table);
+    $record_id_batches = $this->divideIntoBatches($record_ids);
+    $number_of_batches = count($record_id_batches);
 
-    $this->logger->notice("Step  2 of 6: Generate page titles...");
-    $titles = $this->getEntityTitles($matches);
+    foreach ($record_id_batches as $batch_num => $record_id_batch) {
 
-    $this->logger->notice("Step  3 of 6: Find existing published entities...");
-    $existing = $this->findEntities($matches, $titles);
+      // Only display a batch prefix when there is more than one batch.
+      $batch_prefix = '';
+      if ($number_of_batches > 1) {
+        $batch_prefix = 'Batch ' . number_format($batch_num + 1) . ' of ' . number_format($number_of_batches) . ', ';
+      }
 
-    // Exclude any matches that are already published. We
-    // need to publish these matches.
-    list($new_matches, $new_titles) = $this->excludeExisting($matches, $titles, $existing);
+      $this->logger->notice($batch_prefix . "Step 1 of 6: Find matching records...");
+      $matches = $this->storage->findValues($search_values, $record_id_batch);
 
-    // Note: entities are not tied to any storage backend. An entity
-    // references an "object".  The information about that object
-    // is in the form of fields and can come from any number of data storage
-    // backends. But, if the entity with a given title for this content type
-    // doesn't exist, then let's create one.
-    $this->logger->notice("Step  4 of 6: Publishing " . number_format(count($new_titles))  . " new entities...");
-    $this->insertEntities($new_matches, $new_titles);
+      if (!count($matches)) {
+        $this->logger->notice('No matching records found');
+        continue;
+      }
 
-    $this->logger->notice("Step  5 of 6: Find IDs of entities...");
-    $entities = $this->findEntities($matches, $titles);
+      $this->logger->notice($batch_prefix . "Step 2 of 6: Generate page titles...");
+      $titles = $this->getEntityTitles($matches);
 
-    // Now we have to publish the field items. These represent storage back-end information
-    // about the entity. If the entity was previously published we still may be adding new
-    // information about it (say if we are publishing genes from a noSQL back-end but the
-    // original entity was created when it was first published when using the Chado backend).
-    $this->logger->notice("Step  6 of 6: Add field items to published entities...");
+      $this->logger->notice($batch_prefix . "Step 3 of 6: Find existing published entities...");
+      $existing = $this->findEntities($matches, $titles);
+      $total_existing_entities += count($existing);
 
-    if (!empty($this->unsupported_fields)) {
-      $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
+      // Exclude any matches that are already published. We
+      // need to publish only new matches.
+      list($new_matches, $new_titles) = $this->excludeExisting($matches, $titles, $existing);
+      $total_new_entities += count($new_titles);
+
+      // Note: entities are not tied to any storage backend. An entity
+      // references an "object".  The information about that object
+      // is in the form of fields and can come from any number of data storage
+      // backends. But, if the entity with a given title for this content type
+      // doesn't exist, then let's create one.
+      $this->logger->notice($batch_prefix . "Step 4 of 6: Publishing " . number_format(count($new_titles))  . " new entities...");
+      $this->insertEntities($new_matches, $new_titles);
+
+      $this->logger->notice($batch_prefix . "Step 5 of 6: Find IDs of entities...");
+      $entities = $this->findEntities($matches, $titles);
+
+      // Now we have to publish the field items. These represent storage back-end information
+      // about the entity. If the entity was previously published we still may be adding new
+      // information about it (say if we are publishing genes from a noSQL back-end but the
+      // original entity was created when it was first published when using the Chado backend).
+      $this->logger->notice($batch_prefix . "Step 6 of 6: Add field items to published entities...");
+
+      if (!empty($this->unsupported_fields)) {
+        $this->logger->warning("  The following fields are not supported by publish at this time: " . implode(', ', $this->unsupported_fields));
+      }
+
+      foreach ($this->field_info as $field_name => $field_info) {
+
+        $existing_field_items = $this->findFieldItems($field_name, $entities);
+        $num_inserted = $this->insertFieldItems($field_name, $matches, $titles,
+          $entities, $existing_field_items, $published_entities);
+
+        if ($num_inserted) {
+          $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
+        }
+        $total_items += $num_inserted;
+      }
     }
 
-    $total_items = 0;
-    $published_entities = [];
-    foreach ($this->field_info as $field_name => $field_info) {
-
-      $this->logger->notice("  Checking for published items for the field: $field_name...");
-      $existing_field_items = $this->findFieldItems($field_name, $entities);
-
-      $num_inserted = $this->insertFieldItems($field_name, $matches, $titles,
-        $entities, $existing_field_items, $published_entities);
-
-      $this->logger->notice("  Published " . number_format($num_inserted) . " items for field: $field_name...");
-      $total_items += $num_inserted;
-    }
-    $this->logger->notice("Published " .  number_format(count(array_keys($published_entities)))
-        . " new entities, and " . number_format($total_items) . " field values.");
-    $this->logger->notice('Done');
+    $this->logger->notice("Publish completed. Published " . number_format($total_new_entities)
+        . " new entities, checked " . number_format($total_existing_entities)
+        . " existing entities, and added " . number_format($total_items) . " field values.");
     return $published_entities;
   }
 }

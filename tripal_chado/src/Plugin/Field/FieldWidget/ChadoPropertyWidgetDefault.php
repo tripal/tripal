@@ -29,6 +29,8 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_settings = $field_definition->getSettings();
+    $field_name = $field_definition->get('field_name');
+    $required = $field_definition->get('required');
 
     // Get the default values.
     $item_vals = $items[$delta]->getValue();
@@ -62,50 +64,138 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#value' => $term_id,
     ];
+    // pass the field machine name through the form for massageFormValues()
+    $elements['field_name'] = [
+      '#type' => 'value',
+      '#default_value' => $field_name,
+    ];
     $elements['value'] = $element + [
-      '#type' => 'textarea',
+      '#base_type' => 'textarea',
+      '#type' => 'text_format',
+      '#format' => $this->getSetting('filter_format'),
       '#default_value' => $default_value,
-      '#title' => '',
-      '#description' => '',
-      '#rows' => '',
-      '#required' => FALSE,
+      '#rows' => $this->getSetting('num_rows'),
+      '#required' => $required,
     ];
     $elements['rank'] = [
       '#type' => 'value',
       '#value' => $delta,
     ];
+
+    // Save some initial values to allow later handling of the "Remove" button
+    $this->saveInitialValues($delta, $field_name, $prop_id, $form_state);
+
     return $elements;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function afterBuild(array $element, FormStateInterface $form_state) {
+    parent::afterBuild($element, $form_state);
+
+    // Alter the format drop down so that it is hidden.
+    // We do this because any changes here are not actually saved and thus
+    // having it enabled is misleading.
+    // Note: We couldn't disable it or the text format element would stop working ;-)
+    // This loops through the delta.
+    foreach (\Drupal\Core\Render\Element::children($element) as $key) {
+      // We only want to change the text_format subelement.
+      if (array_key_exists('value', $element[$key]) && array_key_exists('format', $element[$key]['value'])) {
+        $element[$key]['value']['format']['#attributes']['class'][] = 'hidden';
+      }
+    }
+
+    return $element;
   }
 
   /**
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+
+    // The text_format element returns an item consisting of both a value and a
+    // format. We only want to keep the format.
+    foreach ($values as $key => $item) {
+      $values[$key]['value'] = $item['value']['value'];
+    }
+
+    // Look up the rank term
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-
     $storage_settings = $this->getFieldSetting('storage_plugin_settings');
     $prop_table = $storage_settings['prop_table'];
     $rank_term = $this->sanitizeKey($mapping->getColumnTermId($prop_table, 'rank'));
 
-    // Remove any empty values that aren't mapped to a record id.
-    foreach ($values as $val_key => $value) {
-      if ($value['value'] == '' and $value['record_id'] == 0) {
-        unset($values[$val_key]);
-      }
-    }
-
-    // Reset the weights
-    $i = 0;
-    foreach ($values as $val_key => $value) {
-      if ($value['value'] == '') {
-        continue;
-      }
-      $values[$val_key]['_weight'] = $i;
-      $values[$val_key][$rank_term] = $i;
-      $i++;
-    }
+    // Call parent massage helper function
+    $values = $this->massagePropertyFormValues('value', $values, $form_state, $rank_term, 'prop_id');
 
     return $values;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return [
+      'filter_format' => 'basic_html',
+      'num_rows' => 3,
+    ] + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+
+    // Get all the filter formats available for the current site.
+    $options = [];
+    foreach (filter_formats() as $name => $object) {
+      $options[$name] = $object->get('name');
+    }
+
+    $element['num_rows'] = [
+      '#type' => 'number',
+      '#title' => t('Number of Rows'),
+      '#description' => t('Indicate the number of lines to display in the widget by default. A larger number will make for a longer textarea.'),
+      '#required' => TRUE,
+      '#default_value' => $this->getSetting('num_rows'),
+      '#min' => 1,
+      '#max' => 100,
+    ];
+
+    $element['filter_format'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Text Filter Format'),
+      '#options' => $options,
+      '#description' => $this->t("Select the text filter format you want applied
+        to this field. Everyone will use the same format. If a user does not have
+        permission to the format chosen for this field then they won't be able to
+        edit it. Please keep in mind there are security concerns with choosing
+        'full_html' and thus this should only be your choice if you have
+        restricted all people able to edit this field to those you trust."),
+      '#default_value' => $this->getSetting('filter_format'),
+      '#required' => TRUE,
+    ];
+
+    return $element;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $summary = [];
+
+    $format = $this->getSetting('filter_format');
+    $all_formats = filter_formats();
+    $format_label = $all_formats[$format]->get('name');
+
+    $num_rows = $this->getSetting('num_rows');
+
+    $summary[] = $this->t("Text Format: @format", ['@format' => $format_label]);
+    $summary[] = $this->t("Number of Rows: @rows", ['@rows' => $num_rows]);
+
+    return $summary;
   }
 }

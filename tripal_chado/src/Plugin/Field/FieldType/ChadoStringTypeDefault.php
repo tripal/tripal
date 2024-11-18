@@ -108,7 +108,7 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-    $value_term = $mapping->getColumnTermId($base_table, $base_column);
+    $value_term = $mapping->getColumnTermId($base_table, $base_column) ?: 'NCIT:C25712';
 
     return [
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [

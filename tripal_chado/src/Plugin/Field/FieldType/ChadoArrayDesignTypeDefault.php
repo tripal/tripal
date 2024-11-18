@@ -90,31 +90,31 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
-    $name_term = $mapping->getColumnTermId($object_table, 'name');  // text
-    $description_term = $mapping->getColumnTermId($object_table, 'description');  // text
-    $version_term = $mapping->getColumnTermId($object_table, 'version');  // text
-    $array_dimensions_term = $mapping->getColumnTermId($object_table, 'array_dimensions');  // text
-    $element_dimensions_term = $mapping->getColumnTermId($object_table, 'element_dimensions');  // text
-    $num_of_elements_term = $mapping->getColumnTermId($object_table, 'num_of_elements');
-    $num_array_rows_term = $mapping->getColumnTermId($object_table, 'num_array_rows');
-    $num_array_columns_term = $mapping->getColumnTermId($object_table, 'num_array_columns');
-    $num_grid_columns_term = $mapping->getColumnTermId($object_table, 'num_grid_columns');
-    $num_grid_rows_term = $mapping->getColumnTermId($object_table, 'num_grid_rows');
-    $num_sub_columns_term = $mapping->getColumnTermId($object_table, 'num_sub_columns');
-    $num_sub_rows_term = $mapping->getColumnTermId($object_table, 'num_sub_rows');
+    $name_term = $mapping->getColumnTermId($object_table, 'name') ?: 'schema:name';  // text
+    $description_term = $mapping->getColumnTermId($object_table, 'description') ?: 'schema:description';  // text
+    $version_term = $mapping->getColumnTermId($object_table, 'version') ?: 'IAO:0000129';  // text
+    $array_dimensions_term = $mapping->getColumnTermId($object_table, 'array_dimensions') ?: 'local:array_dimensions';  // text
+    $element_dimensions_term = $mapping->getColumnTermId($object_table, 'element_dimensions') ?: 'local:element_dimensions';  // text
+    $num_of_elements_term = $mapping->getColumnTermId($object_table, 'num_of_elements') ?: 'local:num_of_elements';
+    $num_array_rows_term = $mapping->getColumnTermId($object_table, 'num_array_rows') ?: 'local:num_array_rows';
+    $num_array_columns_term = $mapping->getColumnTermId($object_table, 'num_array_columns') ?: 'local:num_array_columns';
+    $num_grid_columns_term = $mapping->getColumnTermId($object_table, 'num_grid_columns') ?: 'local:num_grid_columns';
+    $num_grid_rows_term = $mapping->getColumnTermId($object_table, 'num_grid_rows') ?: 'local:num_grid_rows';
+    $num_sub_columns_term = $mapping->getColumnTermId($object_table, 'num_sub_columns') ?: 'local:num_sub_columns';
+    $num_sub_rows_term = $mapping->getColumnTermId($object_table, 'num_sub_rows') ?: 'local:num_sub_rows';
 
     // Columns from linked tables
     // both platformtype and substratetype reference the cvterm table
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $type_term = $mapping->getColumnTermId('cvterm', 'name');
+    $type_term = $mapping->getColumnTermId('cvterm', 'name') ?: 'rdfs:type';
     $type_len = $cvterm_schema_def['fields']['name']['size'];
     $contact_schema_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
-    $manufacturer_term = $mapping->getColumnTermId('contact', 'name');
+    $manufacturer_term = $mapping->getColumnTermId('contact', 'name') ?: 'EFO:0001728';
     $manufacturer_len = $contact_schema_def['fields']['name']['size'];
-    $protocol_term = $mapping->getColumnTermId('protocol', 'name');  // text
-    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession');
+    $protocol_term = $mapping->getColumnTermId('protocol', 'name') ?: 'sep:00101';  // text
+    $dbxref_term = $mapping->getColumnTermId('dbxref', 'accession') ?: 'data:2091';
     $db_schema_def = $schema->getTableDef('db', ['format' => 'Drupal']);
-    $db_term = $mapping->getColumnTermId('db', 'name');
+    $db_term = $mapping->getColumnTermId('db', 'name') ?: 'schema:name';
 
     // Linker table, when used, requires specifying the linker table and column.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
@@ -125,15 +125,15 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col);
-      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column);
+      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col) ?: self::$record_id_term;
+      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column) ?: self::$record_id_term;
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
-          $term = $mapping->getColumnTermId($linker_table, $column);
+          $term = $mapping->getColumnTermId($linker_table, $column) ?: 'NCIT:C25712';
           if ($term) {
             $extra_linker_columns[$column] = $term;
           }
@@ -141,7 +141,7 @@ class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
       }
     }
     else {
-      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column);
+      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column) ?: self::$record_id_term;
     }
 
     $properties = [];

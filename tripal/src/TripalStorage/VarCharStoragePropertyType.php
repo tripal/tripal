@@ -37,6 +37,16 @@ class VarCharStoragePropertyType extends StoragePropertyTypeBase {
   }
 
   /**
+   * Returns the default empty value of the correct type for this storage property type.
+   *
+   * @return string
+   *   An empty string.
+   */
+  public function getDefaultValue() {
+    return '';
+  }
+
+  /**
    * Returns the maximum character size of this storage property type.
    *
    * @return int

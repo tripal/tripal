@@ -91,20 +91,20 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
-    $name_term = $mapping->getColumnTermId($object_table, 'name');
+    $name_term = $mapping->getColumnTermId($object_table, 'name') ?: 'schema:name';
     $name_len = $object_schema_def['fields']['name']['size'];
-    $description_term = $mapping->getColumnTermId($object_table, 'description'); // text
-    $program_term = $mapping->getColumnTermId($object_table, 'program');
+    $description_term = $mapping->getColumnTermId($object_table, 'description') ?: 'schema:description'; // text
+    $program_term = $mapping->getColumnTermId($object_table, 'program') ?: 'SWO:0000001';
     $program_len = $object_schema_def['fields']['program']['size'];
-    $programversion_term = $mapping->getColumnTermId($object_table, 'programversion');
+    $programversion_term = $mapping->getColumnTermId($object_table, 'programversion') ?: 'IAO:0000129';
     $programversion_len = $object_schema_def['fields']['programversion']['size'];
-    $algorithm_term = $mapping->getColumnTermId($object_table, 'algorithm');
+    $algorithm_term = $mapping->getColumnTermId($object_table, 'algorithm') ?: 'IAO:0000064';
     $algorithm_len = $object_schema_def['fields']['algorithm']['size'];
-    $sourcename_term = $mapping->getColumnTermId($object_table, 'sourcename');
+    $sourcename_term = $mapping->getColumnTermId($object_table, 'sourcename') ?: 'schema:name';
     $sourcename_len = $object_schema_def['fields']['sourcename']['size'];
-    $sourceversion_term = $mapping->getColumnTermId($object_table, 'sourceversion');
+    $sourceversion_term = $mapping->getColumnTermId($object_table, 'sourceversion') ?: 'IAO:0000129';
     $sourceversion_len = $object_schema_def['fields']['sourceversion']['size'];
-    $sourceuri_term = $mapping->getColumnTermId($object_table, 'sourceuri'); // text    
+    $sourceuri_term = $mapping->getColumnTermId($object_table, 'sourceuri') ?: 'data:1047'; // text
     // @todo timeexecuted not yet implemented
 
     // Linker table, when used, requires specifying the linker table and column.
@@ -116,15 +116,15 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col);
-      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column);
+      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col) ?: self::$record_id_term;
+      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column) ?: self::$record_id_term;
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
-          $term = $mapping->getColumnTermId($linker_table, $column);
+          $term = $mapping->getColumnTermId($linker_table, $column) ?: 'NCIT:C25712';
           if ($term) {
             $extra_linker_columns[$column] = $term;
           }
@@ -132,7 +132,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       }
     }
     else {
-      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column);
+      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column) ?: self::$record_id_term;
     }
 
     $properties = [];
