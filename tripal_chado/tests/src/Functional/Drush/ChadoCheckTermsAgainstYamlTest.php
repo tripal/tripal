@@ -12,7 +12,7 @@ use Drush\TestTraits\DrushTestTrait;
  * @group Tripal Chado
  * @group Drush
  */
-class ChadoCheckTermsAgainstYaml extends ChadoTestBrowserBase {
+class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
   protected $defaultTheme = 'stark';
 
   protected static $modules = ['system', 'tripal', 'tripal_chado'];

@@ -1,7 +1,8 @@
 ARG phpversion='8.3'
 FROM php:${phpversion}-apache-bullseye
 
-ARG drupalversion='~10.4.0'
+ARG phpversion='8.3'
+ARG drupalversion='11.0.x-dev'
 ARG postgresqlversion='16'
 ARG modules='devel devel_php field_group field_group_table'
 ARG chadoschema='chado'
@@ -160,7 +161,7 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 
 ## Use composer to install Drupal.
 WORKDIR /var/www
-ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit"
+ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit drupal/field_group drupal/field_group_table"
 ARG composerpackages="drupal/devel drupal/devel_php drupal/gin_toolbar drupal/gin"
 RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal \
   && cd drupal \
@@ -170,7 +171,6 @@ RUN composer create-project drupal/recommended-project:${drupalversion} --stabil
   && composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
   && rm composer.lock \
   && packages="${requiredcomposerpackages} ${composerpackages}" \
-  && if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); then packages="$packages drupal/field_group drupal/field_group_table"; fi \
   && composer require --dev $packages \
   && composer install
 

@@ -55,6 +55,25 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
   protected $state;
 
   /**
+   * A variable set by our custom error handler when an E_USER_WARNING is thrown.
+   *
+   * If it's TRUE it means a warning was thrown.
+   * Remember to reset this variable back to false after a warning is asserted.
+   *
+   * @var bool
+   */
+  protected bool $warning_thrown = FALSE;
+
+  /**
+   * Paired with $warning_thrown above to indicate the message of the warning.
+   *
+   * Remember to reset this variable back to false after a warning is asserted.
+   *
+   * @var string
+   */
+  protected string $warning_message = '';
+
+  /**
    * Tests setup method.
    */
   protected function setUp(): void {
@@ -68,6 +87,26 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
       $this->internalLocker,
       $this->state
     );
+
+    // We want to override the error handler so that it sets some variables.
+    // This is needed because PersistentDatabaseSharedLockBackend::acquire()
+    // throws a warning in specific cases and some of our tests check for that.
+    $this->warning_thrown = FALSE;
+    $this->warning_message = '';
+    set_error_handler(function (int $errno, string $errstr) {
+      $this->warning_thrown = TRUE;
+      $this->warning_message = $errstr;
+    }, E_USER_WARNING);
+  }
+
+  /**
+   * Tears down the test environment.
+   *
+   * @return void
+   */
+  protected function tearDown(): void {
+    // Restore the original error handler now that we are done our tests.
+    restore_error_handler();
   }
 
   /**
@@ -97,9 +136,17 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
     $this->assertFalse($is_free, 'First lock is locked.');
 
     // Try to steal lock.
-    $this->expectException(\PHPUnit\Framework\Error\Warning::class);
     $success = $other_locker->acquire($lock_name);
     $this->assertFalse($success, 'First lock is protected while in use.');
+    $this->assertTrue($this->warning_thrown, "We expected a warning to be thrown but it was not");
+    $this->assertEquals(
+      'Unable to lock state "tripal_shared_lock_exclusive" for modifications.',
+      $this->warning_message,
+      "We did not get the warning we expected."
+    );
+    // Reset warning handler
+    $this->warning_thrown = FALSE;
+    $this->warning_message = '';
 
     // Try to force lock sharing.
     $success = $other_locker->acquireShared($lock_name);
@@ -277,9 +324,18 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
     $this->assertTrue($success, 'Could lock states.');
 
     // Acquire a lock.
-    $this->expectException(\PHPUnit\Framework\Error\Warning::class);
     $success = $this->sharedLocker->acquire($lock_name, 180);
     $this->assertTrue($success, 'Could acquire a lock.');
+    $this->assertTrue($this->warning_thrown, "We expected a warning to be thrown but it was not");
+    $this->assertEquals(
+      'Unable to lock state "tripal_shared_lock_exclusive" for modifications.',
+      $this->warning_message,
+      "We did not get the warning we expected."
+    );
+    // Reset warning handler
+    $this->warning_thrown = FALSE;
+    $this->warning_message = '';
+
 
     // Make sure state lock was not released.
     $this->assertFalse($other_locker->lockMayBeAvailable(PersistentDatabaseSharedLockBackend::STATE_KEY_EXCLUSIVE), 'States still locked.');
@@ -311,9 +367,17 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
     $other_locker->acquire(PersistentDatabaseSharedLockBackend::STATE_KEY_SHARED, 180);
 
     // Acquire a lock.
-    $this->expectException(\PHPUnit\Framework\Error\Warning::class);
     $owner = $this->sharedLocker->acquireShared($lock_name);
     $this->assertFalse($owner, 'Could not acquire a shared lock.');
+    $this->assertTrue($this->warning_thrown, "We expected a warning to be thrown but it was not");
+    $this->assertEquals(
+      'Unable to acquire a shared lock: unable to lock state "tripal_shared_lock_shared" for modifications.',
+      $this->warning_message,
+      "We did not get the warning we expected."
+    );
+    // Reset warning handler
+    $this->warning_thrown = FALSE;
+    $this->warning_message = '';
 
     // Release lock.
     $other_locker->release(PersistentDatabaseSharedLockBackend::STATE_KEY_EXCLUSIVE);
@@ -661,5 +725,4 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
     // Release shared lock.
     $this->sharedLocker->releaseShared($lock_name, $owner);
   }
-
 }

@@ -41,7 +41,7 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
    * @return array
    *   An array of senarios to test.
    */
-  public function provideLayoutDisplayEntitySenarios() {
+  public static function provideLayoutDisplayEntitySenarios() {
     $senarios = [];
 
     $entity_defns = [

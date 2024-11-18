@@ -16,7 +16,7 @@ use Drupal\Core\Render\Markup;
  *
  * @ViewsField("chado_mviews_delete_link")
  */
-class ChadoMviewsDeleteLink extends FieldPluginBase {
+class ChadoMViewsDeleteLink extends FieldPluginBase {
 
   /**
    * {@inheritdoc}

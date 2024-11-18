@@ -298,7 +298,7 @@ class ConnectionTest extends TripalTestKernelBase {
    * @cover ::__construct
    */
   public function testConnectionConstructorTestSchemaInvalidDatabase() {
-    $mocked_mysqldb = $this->getMockBuilder(\Drupal\Core\Database\Driver\mysql\Connection::class)
+    $mocked_mysqldb = $this->getMockBuilder(\Drupal\mysql\Driver\Database\mysql\Connection::class)
       ->disableOriginalConstructor()
       ->getMock()
     ;
@@ -346,10 +346,10 @@ class ConnectionTest extends TripalTestKernelBase {
     $this->assertNotEquals($search_path_drupal, $search_path_tdbx, 'Different search paths.');
     $tripaldbx = \Drupal::service('tripal.dbx');
     $drupal_schema = $tripaldbx->getDrupalSchemaName();
-    $this->assertRegexp('/^test\W/', $search_path_tdbx, 'TripalDbx search_path has test schema.');
-    $this->assertRegexp("/,\\s*$drupal_schema(?:\W|$)/", $search_path_tdbx, 'TripalDbx search_path has Drupal schema as well.');
-    $this->assertNotRegexp('/(?:^|\W)test(?:\W|$)/', $search_path_drupal, 'Drupal search_path has not test schema.');
-    $this->assertRegexp("/(?:^|\\W)$drupal_schema(?:\W|$)/", $search_path_drupal, 'Drupal search_path has Drupal schema.');
+    $this->assertMatchesRegularExpression('/^test\W/', $search_path_tdbx, 'TripalDbx search_path has test schema.');
+    $this->assertMatchesRegularExpression("/,\\s*$drupal_schema(?:\W|$)/", $search_path_tdbx, 'TripalDbx search_path has Drupal schema as well.');
+    $this->assertDoesNotMatchRegularExpression('/(?:^|\W)test(?:\W|$)/', $search_path_drupal, 'Drupal search_path has not test schema.');
+    $this->assertMatchesRegularExpression("/(?:^|\\W)$drupal_schema(?:\W|$)/", $search_path_drupal, 'Drupal search_path has Drupal schema.');
   }
 
   /**
@@ -824,16 +824,8 @@ class ConnectionTest extends TripalTestKernelBase {
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
     $dbmock = $this->getConnectionMock($sch_1);
-    $result = $dbmock->tablePrefix();
+    $result = $dbmock->getPrefix();
     $this->assertNotEmpty($result, 'Drupal test database prefix.');
-    $this->assertNotEquals($sch_1 . '.', $result, 'Prefix for regular tables not in Tripal DBX schema.');
-
-    $result2 = $dbmock->tablePrefix('whatever');
-    $this->assertEquals($result, $result2, 'Prefix for regular tables stable.');
-
-    $result2 = $dbmock->tablePrefix('whatever', TRUE);
-    $this->assertNotEquals($result, $result2, 'Prefix for biological tables different from Drupal test database.');
-    $this->assertEquals($sch_1 . '.', $result2, 'Prefix for biological tables.');
   }
 
   /**
