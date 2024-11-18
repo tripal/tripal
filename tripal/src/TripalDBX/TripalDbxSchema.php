@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\TripalDBX;
 
-use Drupal\Core\Database\Driver\pgsql\Schema as PgSchema;
+use Drupal\pgsql\Driver\Database\pgsql\Schema as PgSchema;
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
@@ -224,18 +224,13 @@ abstract class TripalDbxSchema extends PgSchema {
    */
   public function findTables($table_expression) {
 
+    $tables = [];
     if ($table_expression === NULL) {
-      return [];
+      return $tables;
     }
 
-    // Load all the tables up front in order to take into account per-table
-    // prefixes. The actual matching is done at the bottom of the method.
-    $individually_prefixed_tables = $this->connection
-      ->getUnprefixedTablesMap();
-    $tables = [];
-
     // Normally, we would heartily discourage the use of string
-    // concatenation for conditionals like this however, we
+    // concatenation for conditionals like this, however, we
     // couldn't use \Drupal::database()->select() here because it would prefix
     // information_schema.tables and the query would fail.
     // Don't use {} around information_schema.tables table.
@@ -247,28 +242,7 @@ abstract class TripalDbxSchema extends PgSchema {
       ->query("SELECT table_name AS table_name FROM information_schema.tables WHERE " . (string) $condition, $condition
       ->arguments());
     foreach ($results as $table) {
-
-      // Take into account tables that have an individual prefix.
-      $prefix_length = 0;
-      if (isset($individually_prefixed_tables[$table->table_name])) {
-        $prefix = $this->connection
-          ->tablePrefix($individually_prefixed_tables[$table->table_name], TRUE);
-
-        if (!empty($prefix)) {
-          $prefix_length = strlen($prefix);
-        }
-      }
-
-      // Remove the prefix from the returned tables.
-      $unprefixed_table_name = substr($table->table_name, $prefix_length);
-
-      // The pattern can match a table which is the same as the prefix. That
-      // will become an empty string when we remove the prefix, which will
-      // probably surprise the caller, besides not being a prefixed table. So
-      // remove it.
-      if (!empty($unprefixed_table_name)) {
-        $tables[$unprefixed_table_name] = $unprefixed_table_name;
-      }
+      $tables[$table->table_name] = $table->table_name;
     }
 
     // Convert the table expression from its SQL LIKE syntax to a regular

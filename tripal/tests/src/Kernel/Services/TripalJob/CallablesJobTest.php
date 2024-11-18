@@ -72,7 +72,7 @@ class CallablesJobTest extends TripalTestKernelBase {
    *          already exists then this object will reference the job already in the
    *          queue rather than a new submission.  The default is TRUE.
    */
-  public function provideValidJobs() {
+  public static function provideValidJobs() {
     $sets = [];
 
     $sets[] = [

@@ -319,7 +319,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   /**
    * {@inheritdoc}
    */
-  public function setTermAccession($termAccession) {
+  public function setTermAccession(string $termAccession) {
     $this->termAccession = $termAccession;
     return $this;
   }

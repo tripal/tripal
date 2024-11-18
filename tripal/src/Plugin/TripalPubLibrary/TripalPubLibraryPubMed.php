@@ -16,7 +16,7 @@ use Drupal\Core\Url;
  *    description = @Translation("Retrieves and parses publication data from the NIH PubMed database"),
  *  )
  */
-class TripalPubLibraryPubmed extends TripalPubLibraryBase {
+class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
   public function formSubmit($form, &$form_state) {
     // DUMMY function from inheritance so it had to be kept.

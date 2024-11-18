@@ -46,7 +46,7 @@ class BioTaskBaseTest extends TripalTestKernelBase {
     // Create a mock for the abstract class
     // but specify not to run the contructor + mention this is an abstract class.
     $tmock = $this->getMockBuilder(\Drupal\tripal_biodb\Task\BioTaskBase::class)
-      ->setMethods(['getTripalDbxClass'])
+      ->onlyMethods(['getTripalDbxClass'])
       ->getMockForAbstractClass();
     // Ensure when getTripalDbxClass() is asked for the connection class, it returns our fake class.
     $tmock

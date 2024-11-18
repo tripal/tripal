@@ -47,9 +47,6 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   /**
    * Returns a single propertyType object based on the parameters.
    *
-   * @param string $bundle_name
-   *   The name of the bundle on which the field is attached that the properties
-   *   belong to.
    * @param string $field_name
    *   The name of the field the properties belong to.
    * @param string $key
