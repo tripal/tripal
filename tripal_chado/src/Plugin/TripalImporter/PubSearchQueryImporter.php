@@ -116,10 +116,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
           }
           else {
             $search_query_name = $form_state_values['search_query_name'];
-            $start_bracket_pos = strrpos($search_query_name, '(');
-            $right_string = substr($search_query_name, $start_bracket_pos);
-            $right_string = ltrim($right_string, '(');
-            $query_id = rtrim($right_string, ')');
+            if (preg_match('/\((\d+)\)/', $search_query_name, $matches)) {
+              $query_id = $matches[1];
+            }
           }
           $headers = [
             'Importer Name',
@@ -279,10 +278,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $search_query_name = $arguments['search_query_name'];
 
       // This will extract the query id from the query name selected from the autocomplete field
-      $start_bracket_pos = strrpos($search_query_name, '(');
-      $right_string = substr($search_query_name, $start_bracket_pos);
-      $right_string = ltrim($right_string, '(');
-      $query_id = rtrim($right_string, ')');
+      if (preg_match('/\((\d+)\)/', $search_query_name, $matches)) {
+        $query_id = $matches[1];
+      }
     }
 
     // Retrieve plugin_id from the database
