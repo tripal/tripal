@@ -299,7 +299,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     // Initialize chado variable (used in other helper functions within this class)
     $chado = $this->getChadoConnection();
     $this->chado = $chado;
-    $this->logger->notice("Step  1 of 27: Find db_id for remote database (table: db) ...");
+    $this->logger->notice("Step 1 of 9: Find db_id for remote database (table: db) ...");
     $results = $this->chado->query('SELECT * FROM {1:db} WHERE lower(description) LIKE :remote_db', [
       ':remote_db' => $criteria['remote_db']
     ]);
@@ -316,7 +316,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     // Run a pull from the remote database and return publications in an array
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
-    $this->logger->notice("Step  2 of 27: Retrieving publication data from remote database ...");
+    $this->logger->notice("Step 2 of 9: Retrieving publication data from remote database ...");
     $publications = $plugin->run($query_id);
     if (!is_array($publications)) {
       $this->logger->error("               🗸 ERROR: Unable to connect to NCBI to lookup publications!");
@@ -327,49 +327,42 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $transaction_chado = $this->chado->startTransaction();
     try {
 
-      $this->logger->notice("Step  3 of 27: Check for already imported publications ...         ");
+      $this->logger->notice("Step 3 of 9: Check for already imported publications ...         ");
       $missing_publications_dbxref = $this->findMissingPublicationsDbxref($publications);
       $missing_publications_dbxref_count = count($missing_publications_dbxref);
       $this->logger->notice("               🗸 Missing publications to be inserted: " . $missing_publications_dbxref_count);
 
 
       // Filter publications to only contains the one we need for inserting data
-      $this->logger->notice("Step  4 of 27: Check for already imported publications ...         ");
+      $this->logger->notice("Step 4 of 9: Check for already imported publications ...         ");
       $publications = $this->filterOnlyMissingPublications($publications, $missing_publications_dbxref);
       $this->logger->notice("               🗸 Filtered: " . count($publications));
 
       // Insert missingPublicationsDbxref
-      $this->logger->notice("Step  5 of 27: Insert new publication dbxrefs ...                ");
+      $this->logger->notice("Step 5 of 9: Insert new publication dbxrefs ...                ");
       $inserted_dbxref_ids = [];
       if ($missing_publications_dbxref_count > 0) {
         $inserted_dbxref_ids = $this->insertMissingPublicationsDbxref($missing_publications_dbxref);
         $this->logger->notice("               🗸 Inserted: " . count($inserted_dbxref_ids));
       }
 
-      $this->logger->notice("Step  6 of 27: Insert new publications ...                       ");
+      $this->logger->notice("Step 6 of 9: Insert new publications ...                       ");
       $inserted_pub_ids = [];
       $inserted_pub_ids = $this->insertPublications($missing_publications_dbxref, $publications);
       $this->logger->notice("               🗸 Inserted: " . count($inserted_pub_ids));
 
-      $this->logger->notice("Step  7 of 27: CVTERMs lookup and caching ...            ");
+      $this->logger->notice("Step 7 of 9: CVTERMs lookup and caching ...            ");
       $this->cachePublicationCvterms();
       $this->logger->notice("               🗸 Cached cvterms: " . count($this->cvterm_lookups));
 
-      $this->logger->notice("Step  8 of 27: Insert new publications properties ...            ");
+      $this->logger->notice("Step 8 of 9: Insert new publications properties ...            ");
       $pub_props_count = $this->insertPubProps($inserted_pub_ids, $missing_publications_dbxref, $publications);
       $this->logger->notice("               🗸 Inserted: " . $pub_props_count);
 
-      $this->logger->notice("Step  9 of 27: Insert new pub_dbxrefs ...                        ");
+      $this->logger->notice("Step 9 of 9: Insert new pub_dbxrefs ...                        ");
       $inserted_pub_dbxref_ids = [];
       $inserted_pub_dbxref_ids = $this->insertPubDbxrefs($inserted_pub_ids, $inserted_dbxref_ids);
       $this->logger->notice("               🗸 Inserted: " . count($inserted_pub_dbxref_ids));
-
-      // DEBUG SQL STATEMENTS TO RETURN EMPTY FOR TESTING
-      // DELETE FROM chado.pubprop;
-      // DELETE FROM chado.pub_dbxref;
-      // DELETE FROM chado.pub;
-      // DELETE FROM chado.dbxref WHERE db_id = 17;
-      // throw new \Exception('DEBUG');
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
