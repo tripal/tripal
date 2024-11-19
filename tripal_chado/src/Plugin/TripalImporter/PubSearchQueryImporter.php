@@ -378,71 +378,21 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
   }
 
+  /**
+   * Caches cvterm_id values for all cvterms in the "tripal_pub"
+   * vocabulary in the class variable $this->cvterm_lookups
+   */
   function cachePublicationCvterms() {
-    $this->cvterm_lookups = [];
-    // $props
-    $cvterm_names = [
-      'Title',
-      'Volume Title',
-      'Volume',
-      'Series Name',
-      'Issue',
-      'Year',
-      'Pages',
-      // 'Mini Ref',
-      // 'Uniquename',
-      'Citation',
-      // 'Publication Title',
-      'Authors',
-      'Journal Name',
-      'Journal Abbreviation',
-      'Elocation',
-      'Media Code',
-      'Conference Name',
-      'Keywords',
-      'Series Name',
-      'pISSN',
-      'Publication Date',
-      'Journal Code',
-      'Journal Alias',
-      'Journal Country',
-      'Published Location',
-      'Publication Model',
-      'Language Abbr',
-      'Alias',
-      'Publication Dbxref',
-      'Copyright',
-      'Abstract',
-      'Notes',
-      'Citation',
-      'Language',
-      'URL',
-      'eISSN',
-      'DOI',
-      'ISSN',
-      'Publication Code',
-      'Comments',
-      'Publisher',
-      'Media Alias',
-      'Original Title',
+    $sql = 'SELECT T.cvterm_id, T.name FROM {1:cvterm} T WHERE T.cv_id ='
+         . ' (SELECT cv_id FROM {1:cv} WHERE name = :name)';
+    $args = [
+      ':name' => 'tripal_pub',
     ];
-
-    foreach ($cvterm_names as $cvterm_name) {
-      $sql = "SELECT * FROM {1:cvterm} WHERE name = :name";
-      $args = [
-        ':name' => $cvterm_name
-      ];
-      $result = $this->chado->query($sql, $args);
-      $cvterm_id = NULL;
-      foreach ($result as $row) {
-        $cvterm_id = $row->cvterm_id;
-      }
-      if ($cvterm_id != NULL && $cvterm_id != "") {
-        $this->cvterm_lookups[$cvterm_name] = $cvterm_id;
-      }
-      else {
-        throw new \Exception('[FATAL] CVTERM ' . $cvterm_name . ' could not be found in database.');
-      }
+    $result = $this->chado->query($sql, $args);
+    foreach ($result as $row) {
+      $cvterm_id = $row->cvterm_id;
+      $cvterm_name = $row->name;
+      $this->cvterm_lookups[$cvterm_name] = $cvterm_id;
     }
   }
 
