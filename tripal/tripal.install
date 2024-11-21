@@ -17,7 +17,7 @@ function tripal_install() {
   $tripaldbx = \Drupal::service('tripal.dbx');
   $drupal_schema = $tripaldbx->getDrupalSchemaName();
   $config = \Drupal::service('config.factory')
-    ->getEditable('tripaldbx.settings');
+    ->getEditable('tripal.settings');
   $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
   $reserved_schema_patterns[$drupal_schema] = 'Drupal installation';
   $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
@@ -67,7 +67,7 @@ function tripal_uninstall() {
   // Remove configuration.
   // -- Reserves Drupal schema in 'reserved_schema_patterns' settings.
   $config = \Drupal::service('config.factory')
-    ->getEditable('tripaldbx.settings');
+    ->getEditable('tripal.settings');
   $config->delete();
 
 }
