@@ -44,6 +44,11 @@ class Chadomigrator extends ChadoTaskBase {
   protected int $tripal3maxid = 0;
 
   /**
+   * Lookup to convert bundle label to bundle ID
+   */
+  protected array $label_to_bundle = [];
+
+  /**
    * Tripal entity lookup service object.
    *
    * @var object \Drupal\tripal\Services\TripalEntityLookup
@@ -186,6 +191,9 @@ class Chadomigrator extends ChadoTaskBase {
       }
       $this->setProgress(0.04);
 
+      // Populate the bundle label to bundle ID lookup table
+      $this->populate_label_to_bundle();
+
       //@todo write this next
       $this->migrate();
 
@@ -257,6 +265,19 @@ class Chadomigrator extends ChadoTaskBase {
   }
 
   /**
+   * Populates the lookup table to map bundle labels to bundle name
+   * e.g. 'Organism' => 'organism', 'mRNA' => 'mrna', 'Array Design' => 'array_design'
+   *
+   * @return void
+   */
+  protected function populate_label_to_bundle() {
+    $bundle_info = \Drupal::service('entity_type.bundle.info')->getBundleInfo('tripal_entity');
+    foreach ($bundle_info as $bundle_name => $bundle_def) {
+      $this->label_to_bundle[$bundle_def['label']] = $bundle_name;
+    }
+  }
+
+  /**
    * Main loop to perform the entity ID migration.
    *
    * @return void
@@ -265,14 +286,6 @@ class Chadomigrator extends ChadoTaskBase {
     $ntables = count($this->tripal3ids);
     $errormsg = '';
 
-    // Create a lookup table to map bundle labels to bundle name
-    // e.g. 'Organism' => 'organism', 'mRNA' => 'mrna', 'Array Design' => 'array_design'
-    $label_to_bundle = [];
-    $bundle_info = \Drupal::service('entity_type.bundle.info')->getBundleInfo('tripal_entity');
-    foreach ($bundle_info as $bundle_name => $bundle_def) {
-      $label_to_bundle[$bundle_def['label']] = $bundle_name;
-    }
-
     foreach (array_keys($this->tripal3ids) as $bundle_label) {
       foreach (array_keys($this->tripal3ids[$bundle_label]) as $chado_table) {
         $this->logger->notice(t("Migrating bundle @bundle_label table @table",
@@ -280,12 +293,12 @@ class Chadomigrator extends ChadoTaskBase {
         ));
         // There is only ever one pkey for any given table
         $pkey = array_key_first($this->tripal3ids[$bundle_label][$chado_table]);
-        if (!array_key_exists($bundle_label, $label_to_bundle)) {
+        if (!array_key_exists($bundle_label, $this->label_to_bundle)) {
           $this->logger->warning(t("A bundle with label \"@label\" does not exist on this site, skipping this bundle",
             ['@label' => $bundle_label]));
         }
         else {
-          $bundle_id = $label_to_bundle[$bundle_label];
+          $bundle_id = $this->label_to_bundle[$bundle_label];
 
           // Key is chado pkey ID, value is entity ID
           $entity_lookup_table = $this->lookup_manager->getPublishedEntityIds($bundle_id, 'tripal_entity');
