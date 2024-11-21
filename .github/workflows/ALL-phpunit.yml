@@ -67,8 +67,10 @@ jobs:
           BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal/web/sites/default/files/simpletest"
         run: |
           docker exec tripaldocker service postgresql restart
+          PHPUNIT_CONFIG=$(docker exec tripaldocker /var/www/drupal/web/modules/contrib/tripal/tripaldocker/select_phpunit.sh)
           docker exec -e SIMPLETEST_BASE_URL=$SIMPLETEST_BASE_URL \
             -e SIMPLETEST_DB=$SIMPLETEST_DB \
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
             --workdir=/var/www/drupal/web/modules/contrib/tripal \
-            tripaldocker phpunit
+            tripaldocker phpunit \
+            --configuration=$PHPUNIT_CONFIG

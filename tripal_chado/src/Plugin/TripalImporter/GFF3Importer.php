@@ -1057,10 +1057,10 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $matches = [];
     preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?\-\|]*/', $ret['landmark'], $matches);
     if ($matches[0] != $ret['landmark']) {
-      throw new \Exception(t("Landmark/seqid !landmark contains invalid
+      throw new \Exception(t("Landmark/seqid :landmark contains invalid
         characters. Only characters included in this regular expression are
         allowed [a-zA-Z0-9.:^*$@!+_?-|]",
-        ['!landmark' => $ret['landmark']]));
+        [':landmark' => $ret['landmark']]));
     }
 
     // Check to make sure strand has a valid character
@@ -3213,7 +3213,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       }
       // If this feature has already been added but as a target of a previous
       // feature then we'll let it go through and replace the target feature.
-      elseif ($prev_feature['is_target'] == TRUE) {
+      elseif (array_key_exists('is_target', $prev_feature) && $prev_feature['is_target'] == TRUE) {
         // Do nothing.
       }
       else {

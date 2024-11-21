@@ -30,7 +30,7 @@ class ChadoSchemaTest extends ChadoTestBrowserBase {
 
     // Test if the reported Chado version matches the test chado format,
     // e.g. _test_chado_h87g97hkln64vy76
-    $this->assertRegExp('/(\_test\_chado\_[\w]{16})\b/', $default_chado_schema, "The default Chado schema returned did not match the format we expected within the testing environment.");
+    $this->assertMatchesRegularExpression('/(\_test\_chado\_[\w]{16})\b/', $default_chado_schema, "The default Chado schema returned did not match the format we expected within the testing environment.");
 
     // Test if the default chado schema returned matches the
     // one we created.

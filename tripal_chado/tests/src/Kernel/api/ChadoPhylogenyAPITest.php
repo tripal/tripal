@@ -14,7 +14,7 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group Tripal API
  * @group Tripal Phylotree
  */
-class ChadoPhylotreeAPITest extends ChadoTestKernelBase {
+class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
   /**
    * Modules to enable.

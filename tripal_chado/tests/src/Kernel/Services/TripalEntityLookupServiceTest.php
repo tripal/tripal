@@ -185,7 +185,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     $this->assertArrayHasKey('#url', $renderable_item, 'getRenderableItem should return a url if entity_id provided');
     $this->assertIsObject($renderable_item['#url'], 'getRenderableItem should return an object for the url');
     $this->assertArrayNotHasKey('#markup', $renderable_item, 'getRenderableItem should not return plain markup if entity_id provided');
-    $this->assertEquals($displayed_string, $renderable_item['#title'], 'getRenderableItem title is not the value we supplied');
+    $this->assertEquals($displayed_string, (string) $renderable_item['#title'], 'getRenderableItem title is not the value we supplied');
 
     // Query a Drupal entity table to confirm that it stores the Chado record ID, and that it is correct.
     $entity_table_name = 'tripal_entity__analysis_name';

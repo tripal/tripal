@@ -220,6 +220,11 @@ function chado_generate_var($table, $values, $base_options = [], $schema_name = 
   // and the values being strings to be executed using php's eval() to determine
   // whether to exclude the field (evaluates to TRUE) or not (evaluates to FALSE)
   $fields_to_remove = \Drupal::moduleHandler()->invokeAll('exclude_field_from_' . $table . '_by_default');
+  // The module defining the hook can no longer implement it. As such, we add
+  // the residues here manually.
+  if ($table === 'feature') {
+    $fields_to_remove['residues'] = TRUE;
+  }
 
   // Now, for each field to be removed
   foreach ($fields_to_remove as $field_name => $criteria) {
@@ -265,6 +270,10 @@ function chado_generate_var($table, $values, $base_options = [], $schema_name = 
   // whether to exclude the field (evaluates to TRUE) or not (evaluates to FALSE)
   // (ie: array('text' => 'strlen("<field_value> ") > 100');
   $types_to_remove = \Drupal::moduleHandler()->invokeAll('exclude_type_by_default');
+
+  // The module that defined the hook can no longer implement it. As such, we add
+  // our restriction for text fields manually here.
+  $types_to_remove['text'] = 'strlen("<field_value>") > 250';
 
   // Get a list of all the types of fields
   // the key is the type of field and the value is an array of fields of this
@@ -432,8 +441,10 @@ function chado_generate_var($table, $values, $base_options = [], $schema_name = 
 
   // Convert the results into an array.
   $results_arr = [];
-  foreach ($results as $record) {
-    $results_arr[] = $record;
+  if (is_array($results)) {
+    foreach ($results as $record) {
+      $results_arr[] = $record;
+    }
   }
   // Check only one result returned.
   if (!$return_array) {

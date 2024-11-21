@@ -45,7 +45,7 @@ class SchemaTest extends TripalTestKernelBase {
    * It should be set if not set in any test function that adds schema names to
    * $testSchemas: `self::$db = self::$db ?? \Drupal::database();`
    *
-   * @var \Drupal\Core\Database\Driver\pgsql\Connection
+   * @var \Drupal\Core\Database\Connection
    */
   protected static $db = NULL;
 

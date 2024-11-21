@@ -64,7 +64,7 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
    * supplied and when it's not. Thus we are using a data provider to do that
    * without duplicating code.
    */
-  public function provideFieldNames() {
+  public static function provideFieldNames() {
     return [
       [
         'testStorePKeyAction',
