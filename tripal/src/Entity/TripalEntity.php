@@ -134,32 +134,18 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title = NULL, $cache = []) {
+  public function setTitle($title = NULL) {
     // If no title was passed, construct an entity title
     if (!$title) {
       // Get the bundle object.
-//@todo if this is actually used, make cache a class variable
-      if (isset($cache['bundle'])) {
-        $bundle = $cache['bundle'];
-      }
-      else {
-$t1 = microtime(TRUE); //@@@
-        $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
-$t2 = microtime(TRUE); dpm("CP01E time to load bundle = ".sprintf('%0.6f', $t2-$t1)); //@@@
-      }
-
-$t1 = microtime(TRUE); //@@@
-      $title_format = $bundle->getTitleFormat();
-$t2 = microtime(TRUE); dpm("CP01F time to load title format = ".sprintf('%0.6f', $t2-$t1)); //@@@
+      $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
 
       // Initialize the Tripal token parser service.
       /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
-$t1 = microtime(TRUE); //@@@
       $token_parser = \Drupal::service('tripal.token_parser');
-$t2 = microtime(TRUE); dpm("CP01G time to load token parser service = ".sprintf('%0.6f', $t2-$t1)); //@@@
-$t1 = microtime(TRUE); //@@@
+
+      $title_format = $bundle->getTitleFormat();
       $token_values = $this->getBundleEntityTokenValues($title_format, $bundle);
-$t2 = microtime(TRUE); dpm("CP01H time to load token values = ".sprintf('%0.6f', $t2-$t1)); //@@@
       $title = $token_parser->replaceTokens($title_format, $token_values);
     }
 
@@ -183,21 +169,17 @@ $t2 = microtime(TRUE); dpm("CP01H time to load token values = ".sprintf('%0.6f',
    *   The default entity alias, e.g. "/project/1234"
    */
   public function getDefaultAlias(string $default_alias = '') {
-    // Generate an alias using the default format set by admins.
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+
+    // Generate an alias using the default format set by admins.
     if (!$default_alias) {
       $default_alias = $bundle->getURLFormat();
     }
-//    $default_alias = $this->replaceEntityTokens($default_alias, $bundle, TRUE);
 
     // Initialize the Tripal token parser service.
     /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
-$t1 = microtime(TRUE); //@@@
     $token_parser = \Drupal::service('tripal.token_parser');
-$t2 = microtime(TRUE); dpm("CP51G time to load token parser service = ".sprintf('%0.6f', $t2-$t1)); //@@@
-$t1 = microtime(TRUE); //@@@
     $token_values = $this->getBundleEntityTokenValues($default_alias, $bundle);
-$t2 = microtime(TRUE); dpm("CP51H time to load token values = ".sprintf('%0.6f', $t2-$t1)); //@@@
     $default_alias = $token_parser->replaceTokens($default_alias, $token_values);
 
     // Ensure there is a leading slash.
