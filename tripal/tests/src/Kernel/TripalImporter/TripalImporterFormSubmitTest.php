@@ -175,7 +175,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
     $this->assertIsArray($messages,
       "We expect to have status messages to the user on submission of the form.");
     $this->assertArrayNotHasKey('error', $messages,
-      "There should not be any error messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+      "There should not be any error messages from this form. Instead we received: " . print_r($messages, TRUE));
     //   Now delete drupal messages so we start the next test clean.
     \Drupal::messenger()->deleteAll();
 
@@ -203,7 +203,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
       //   Looking for form validation errors
       $form_validation_messages = $form_state->getErrors();
       $this->assertCount(1, $form_validation_messages,
-        "We expect validation errors for '$test_file_path' but did not recieve them.");
+        "We expect validation errors for '$test_file_path' but did not receive them.");
       $this->assertArrayHasKey('file_local', $form_validation_messages,
         "There should be an entry for file_local in the validation errors for '$test_file_path'.");
       //   Looking for drupal message errors.
@@ -211,13 +211,13 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
       $this->assertIsArray($messages,
         "We expect to have status messages to the user on submission of the form.");
       $this->assertArrayHasKey('error', $messages,
-        "There should be an error message from this form but we didn't recieve any.");
+        "There should be an error message from this form but we didn't receive any.");
       $this->assertCount(1, $messages['error'],
         "There should be only one error message.");
       $this->assertStringContainsString('Cannot find the file', (string) $messages['error'][0],
         "The error did not match the one we expected for an file which doesn't exist for file_local.");
       $this->assertArrayNotHasKey('status', $messages,
-        "There should not be any success/status messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+        "There should not be any success/status messages from this form. Instead we received: " . print_r($messages, TRUE));
       //   Now delete drupal messages so we start the next test clean.
       \Drupal::messenger()->deleteAll();
     }
@@ -266,7 +266,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
     $this->assertIsArray($messages,
       "We expect to have status messages to the user on submission of the form.");
     $this->assertArrayNotHasKey('error', $messages,
-      "There should not be any error messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+      "There should not be any error messages from this form. Instead we received: " . print_r($messages, TRUE));
     //   Now delete drupal messages so we start the next test clean.
     \Drupal::messenger()->deleteAll();
 
@@ -296,7 +296,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
       //   Looking for form validation errors
       $form_validation_messages = $form_state->getErrors();
       $this->assertCount(1, $form_validation_messages,
-        "We expect validation errors for '$test_file_path' but did not recieve them.");
+        "We expect validation errors for '$test_file_path' but did not receive them.");
       $this->assertArrayHasKey('file_remote', $form_validation_messages,
         "There should be an entry for file_remote in the validation errors for '$test_file_path'.");
       //   Looking for drupal message errors.
@@ -304,13 +304,13 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
       $this->assertIsArray($messages,
         "We expect to have status messages to the user on submission of the form.");
       $this->assertArrayHasKey('error', $messages,
-        "There should be an error message from this form but we didn't recieve any.");
+        "There should be an error message from this form but we didn't receive any.");
       $this->assertCount(1, $messages['error'],
         "There should be only one error message.");
       $this->assertStringContainsString('not a valid URI', (string) $messages['error'][0],
         "The error did not match the one we expected for an invalid URL passed to file_remote.");
       $this->assertArrayNotHasKey('status', $messages,
-        "There should not be any success/status messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+        "There should not be any success/status messages from this form. Instead we received: " . print_r($messages, TRUE));
       //   Now delete drupal messages so we start the next test clean.
       \Drupal::messenger()->deleteAll();
     }
@@ -338,7 +338,7 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
       //   Looking for form validation errors
       $form_validation_messages = $form_state->getErrors();
       $this->assertCount(1, $form_validation_messages,
-        "We expect validation errors for '$test_file_path' but did not recieve them.");
+        "We expect validation errors for '$test_file_path' but did not receive them.");
       $this->assertArrayHasKey('file_remote', $form_validation_messages,
         "There should be an entry for file_remote in the validation errors for '$test_file_path'.");
       //   Looking for drupal message errors.
@@ -346,13 +346,13 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
       $this->assertIsArray($messages,
         "We expect to have status messages to the user on submission of the form.");
       $this->assertArrayHasKey('error', $messages,
-        "There should be an error message from this form but we didn't recieve any.");
+        "There should be an error message from this form but we didn't receive any.");
       $this->assertCount(1, $messages['error'],
         "There should be only one error message.");
       $this->assertStringContainsString('cannot be accessed', (string) $messages['error'][0],
         "The error did not match the one we expected for an invalid URL passed to file_remote.");
       $this->assertArrayNotHasKey('status', $messages,
-        "There should not be any success/status messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+        "There should not be any success/status messages from this form. Instead we received: " . print_r($messages, TRUE));
       //   Now delete drupal messages so we start the next test clean.
       \Drupal::messenger()->deleteAll();
     }
