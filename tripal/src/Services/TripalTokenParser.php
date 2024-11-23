@@ -91,7 +91,7 @@ class TripalTokenParser {
   public function replaceTokens(string $tokenized_string, array $token_values, bool $strict = FALSE) {
 
     // Match double tokens e.g. [([issue])] or [ [title|name].]
-    if (preg_match_all('/\[[^\[\]]*\[[^\]]+\][^\]]*\]/', $tokenized_string, $matches)) {
+    if (preg_match_all('/\[[^\[\]]*\[[^\[\]]+\][^\]\]]*\]/', $tokenized_string, $matches)) {
       foreach ($matches[0] as $token_string) {
         // separate into prefix, key, suffix
         preg_match('/\[([^\[\]]*)\[([^\]]+)\]([^\]]*)\]/', $token_string, $submatches);
