@@ -285,7 +285,7 @@ class TripalEntityTypeForm extends EntityForm {
     $invalid_token = $this->validateTokens($title_format, $tokens);
     if ($invalid_token) {
       $form_state->setErrorByName('title_format',
-          "The token \"$invalid_token\" is not a valid title token");
+          "One or more invalid title tokens detected: " . $invalid_token);
     }
 
     // Make sure all url tokens used are valid
@@ -293,7 +293,7 @@ class TripalEntityTypeForm extends EntityForm {
     $invalid_token = $this->validateTokens($url_format, $tokens);
     if ($invalid_token) {
       $form_state->setErrorByName('url_format',
-          "The token \"$invalid_token\" is not a valid url token");
+          "One or more invalid url tokens detected: " . $invalid_token);
     }
 
   }
@@ -325,25 +325,25 @@ class TripalEntityTypeForm extends EntityForm {
    * @param string $format_string
    *   The string to be validated containing any number of tokens.
    * @param array $valid_tokens
-   *   A list of valid tokens. The token is the array key.
+   *   A list of valid tokens without square brackets.
+   *   The token is the array key, array values are not used.
    *
    * @return string
    *   An empty string if all tokens are valid, otherwise return
-   *   the first invalid token found.
+   *   a quoted list of all invalid tokens found.
    */
   protected function validateTokens($format_string, $valid_tokens) {
-    $invalid_token = '';
-    preg_match_all('/\[([^\[\]]+)\]/', $format_string, $matches);
-    foreach ($matches[1] as $match) {
-      $parts = explode('|', $match);
-      foreach ($parts as $part) {
-        if (!array_key_exists($part, $valid_tokens)) {
-          $invalid_token = $part;
-          break;
-        }
-      }
+    // Initialize the Tripal token parser service.
+    /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
+    $token_parser = \Drupal::service('tripal.token_parser');
+    $invalid_tokens_arr = $token_parser->validateTokens($format_string, $valid_tokens);
+
+    // The message will be a string which is a list of all invalid tokens
+    $message = '';
+    if ($invalid_tokens_arr) {
+      $message = '"[' . implode(']", "[', $invalid_tokens_arr) . ']"';
     }
-    return $invalid_token;
+    return $message;
   }
 
   /**

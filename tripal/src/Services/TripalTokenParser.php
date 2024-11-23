@@ -139,7 +139,8 @@ class TripalTokenParser {
    * @param string $tokenized_string
    *   A string containing tokens to validate.
    * @param array $valid_tokens
-   *   An array whose values are valid tokens, without brackets.
+   *   An array whose keys are valid tokens, without brackets.
+   *   Array values are not used here.
    *
    * @return array
    *   A list of all tokens not present in the $valid_tokens array.
@@ -152,7 +153,7 @@ class TripalTokenParser {
       foreach ($matches[1] as $token_string) {
         $parts = explode('|', $token_string);
         foreach ($parts as $token) {
-          if (!in_array($token, $valid_tokens)) {
+          if (!array_key_exists($token, $valid_tokens)) {
             $invalid_tokens[] = $token;
           }
         }
