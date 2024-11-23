@@ -38,180 +38,6 @@ use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 class TripalTokenParser {
 
   /**
-   * The content type object.
-   *
-   * @var \Drupal\tripal\Entity\TripalEntityType $bundle
-   */
-  protected $bundle = NULL;
-
-  /**
-   * A specific piece of content containing values.
-   *
-   * @var \Drupal\tripal\Entity\TripalEntity $entity
-   */
-  protected $entity = NULL;
-
-  /**
-   * An array of field instances for the bundle in $bundle.
-   *
-   * @var array $fields
-   */
-  protected $fields = [];
-
-  /**
-   * An array of field values indexed first by field name then by property key.
-   *
-   * @var array $field_values.
-   */
-  protected $field_values = [];
-
-  /**
-   * Uses this tokenparser to get the title of an entity based on its
-   * bundle title format and the fields values in the entity.
-   *
-   * @param TripalEntityType $bundle
-   *  The bundle for the entity whose title we want to generate.
-   * @param array $entity_values
-   *  The field values for the entity whom we want to generate the title for.
-   *  This is a nested array with the first keys being field names. Within each
-   *  array for a given field the keys are delta and the values are an array of
-   *  the property names => values for that field delta.
-   *
-   * @return string
-   *  The title format string with all the tokens replaced.
-   */
-  public static function deprecatedgetEntityTitle(TripalEntityType $bundle, array $entity_values) {
-
-    // Initialize the Tripal token parser service.
-    /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
-    $token_parser = \Drupal::service('tripal.token_parser');
-    $token_parser->initParser($bundle);
-    $token_parser->clearValues();
-
-    // Iterate through each field to add its property values to the token parser.
-    foreach ($entity_values as $field_name => $field_values) {
-      // We currently only support single value fields so check for that here.
-      if (sizeof($field_values) == 1) {
-        // Grab the first and only delta for this field.
-        $item = $field_values[0];
-        // Iterate through the properties and add each to the token parser.
-        foreach ($item as $property_name => $property_value) {
-          $token_parser->addFieldValue(
-            $field_name,
-            $property_name,
-            $property_value
-          );
-        }
-      }
-    }
-
-    // Now that the token parser is set up, we can get the title by replacing
-    // the tokens in the title format.
-    $title = $bundle->getTitleFormat();
-    $replaced = $token_parser->replaceEntityTokens([$title]);
-
-    // Since this is a single entity, we return the only title.
-    // Replace tokens returns an array to handle recursive situations.
-    return $replaced[0];
-  }
-
-  /**
-   * Returns bundle object given to the parser.
-   *
-   * @return \Drupal\tripal\Entity\TripalEntityType
-   */
-  public function deprecatedgetBundle() {
-    return $this->bundle;
-  }
-
-  /**
-   * Returns the array of values given to the parser.
-   * @return array
-   */
-  public function deprecatedgetValues() {
-    return $this->field_values;
-  }
-
-  /**
-   * Empties the values saved for each token.
-   *
-   * This should be done between replacing tokens for different entities.
-   */
-  public function deprecatedclearValues() {
-    $this->field_values = [];
-  }
-
-  /**
-   * Returns the entity given to the parser.
-   *
-   * @return \Drupal\tripal\Entity\TripalEntity
-   */
-  public function deprecatedgetEntity() {
-    return $this->entity;
-  }
-
-  /**
-   * Returns the names of the fields that have been added.
-   *
-   * @return array
-   */
-  public function deprecatedgetFieldNames() {
-    return array_keys($this->fields);
-  }
-
-  /**
-   *
-   * @param TripalEntity $entity
-   */
-  public function deprecatedsetEntity(TripalEntity $entity) {
-    if ($entity->getType() != $this->bundle->getId()) {
-      throw new \Exception(t('TripalTokenParser: The entity provided is not of the same type as the bundle'));
-    }
-
-    $this->entity = $entity;
-  }
-
-
-  /**
-   * Initializes the token parser service
-   *
-   * The content type or bundle Id.
-   * @param string \Drupal\tripal\Entity\TripalEntityType $bundle
-   */
-  public function deprecatedinitParser(TripalEntityType $bundle, TripalEntity $entity = NULL) {
-    $this->bundle = $bundle;
-    if ($entity) {
-      $this->setEntity($entity);
-    }
-
-    // Get the field manager, field definitions for the bundle type, and
-    // the field type manager.
-    /** @var \Drupal\Core\Entity\EntityFieldManager $field_manager **/
-    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
-    $field_manager = \Drupal::service('entity_field.manager');
-    $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $bundle->getID());
-    $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
-
-    // Iterate over the field definitions for the bundle and create a field instance.
-    /** @var \Drupal\Core\Field\BaseFieldDefinition $field_definition **/
-    $field_definition = NULL;
-    foreach ($field_defs as $field_name => $field_definition) {
-      if (!empty($field_definition->getTargetBundle())) {
-        $configuration = [
-          'field_definition' => $field_definition,
-          'name' => $field_name,
-          'parent' => NULL,
-        ];
-        $field = $field_type_manager->createInstance($field_definition->getType(), $configuration);
-        $this->fields[$field_name] = $field;
-      }
-    }
-
-    // Ensure there is no bleed through of values from previous substitutions.
-    $this->clearValues();
-  }
-
-  /**
    * Replaces tokens within multiple tokenized strings with corresponding values.
    *
    * @param array $tokenized_strings
@@ -304,6 +130,35 @@ class TripalTokenParser {
       }
     }
     return $tokenized_string;
+  }
+
+  /**
+   * Finds any tokens in the passed string that are not valid.
+   * This can be used to validate user input on a form.
+   *
+   * @param string $tokenized_string
+   *   A string containing tokens to validate.
+   * @param array $valid_tokens
+   *   An array whose values are valid tokens, without brackets.
+   *
+   * @return array
+   *   A list of all tokens not present in the $valid_tokens array.
+   *   An empty array indicates that validation has passed.
+   */
+  public function validateTokens(string $tokenized_string, array $valid_tokens): array {
+    $invalid_tokens = [];
+    // We only need to examine the inner tokens
+    if (preg_match_all('/\[([^\[\]]+)\]/', $tokenized_string, $matches)) {
+      foreach ($matches[1] as $token_string) {
+        $parts = explode('|', $token_string);
+        foreach ($parts as $token) {
+          if (!in_array($token, $valid_tokens)) {
+            $invalid_tokens[] = $token;
+          }
+        }
+      }
+    }
+    return $invalid_tokens;
   }
 
   /**
