@@ -356,7 +356,6 @@ $t2 = microtime(TRUE); dpm("CP51H time to load token values = ".sprintf('%0.6f',
    *   the property names => values for that field delta.
    */
   public function getFieldValues() {
-
     $values = [];
     $field_defs = $this->getFieldDefinitions();
     foreach ($field_defs as $field_name => $field_def) {
@@ -368,9 +367,20 @@ $t2 = microtime(TRUE); dpm("CP51H time to load token values = ".sprintf('%0.6f',
         $values[$field_name][$delta] = [];
         /** @var \Drupal\Core\TypedData\TypedDataInterface $prop **/
         $props = $item->getProperties();
+        $main_prop_key = NULL;
+        if (method_exists($item, 'mainPropertyName')) {
+          $main_prop_key = $item->mainPropertyName();
+        }
         if (is_array($props)) {
           foreach ($props as $prop) {
-            $values[$field_name][$delta][$prop->getName()] = $prop->getValue();
+            $prop_name = $prop->getName();
+            $prop_value = $prop->getValue();
+            $values[$field_name][$delta][$prop_name] = $prop_value;
+            // For field-based tokens we replace the token with the value of
+            // the main property. We will store this as the 'value' key.
+            if ($main_prop_key and ($prop_name == $main_prop_key)) {
+              $values[$field_name][$delta]['value'] = $prop_value;
+            }
           }
         }
       }
