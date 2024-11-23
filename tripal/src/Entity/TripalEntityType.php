@@ -449,29 +449,10 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       }
       $format = $suggestions[$lightest_key]['format'];
     }
-    // B) Generate our own ugly title by simply comma-separating all the
-    //    required fields.
+    // B) Generate our own ugly title by simply using the entity ID to
+    //    guarantee uniqueness.
     else {
-      $tmp = [];
-
-      // Check which tokens are required fields and join them into a default
-      // format.
-      if (sizeof($tokens) > 0) {
-        foreach ($tokens as $token) {
-
-          // Exclude the type & term since it is not unique.
-          if ($token['token'] == '[type]') {
-            continue;
-          }
-
-          // If it is required then add it to the default title
-          // since we know it has a value.
-          if ($token['required']) {
-            $tmp[] = $token['token'];
-          }
-        }
-        $format = implode(', ', $tmp);
-      }
+      $format = 'Entity [TripalEntity__entity_id]';
     }
 
     return $format;
