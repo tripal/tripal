@@ -141,7 +141,7 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
   /**
    * Data Provider: define each test case.
    */
-  public function provideTestCases() {
+  public static function provideTestCases() {
     return [
       // synonymfield: feature > feature_synonym
       [

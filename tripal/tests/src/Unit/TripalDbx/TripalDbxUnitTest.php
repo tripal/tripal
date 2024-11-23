@@ -187,7 +187,7 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Schema name provider.
    */
-  public function schemaNamesProvider() {
+  public static function schemaNamesProvider() {
     return [
       [
         'nameok',

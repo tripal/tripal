@@ -60,7 +60,7 @@ trait ChadoTestTrait  {
    * be possible to instantiate a new connection so it needs to be instantiated
    * before, when a test schema is created.
    *
-   * @var \Drupal\Core\Database\Driver\pgsql\Connection
+   * @var \Drupal\Core\Database\Connection
    */
   protected static $db = NULL;
 

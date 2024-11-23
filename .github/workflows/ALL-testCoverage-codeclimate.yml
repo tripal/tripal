@@ -1,5 +1,5 @@
 # Run some PHPUnit tests
-name: Test Coverage on Drupal 10.3.x-dev + PHP 8.3
+name: Test Coverage on Drupal 11.0.x-dev + PHP 8.3
 on:
   workflow_dispatch:
   pull_request:
@@ -23,7 +23,7 @@ jobs:
         run: |
           docker build --tag=tripaldocker:localdocker \
             --build-arg phpversion="8.3" \
-            --build-arg drupalversion="10.3.x-dev" \
+            --build-arg drupalversion="11.0.x-dev" \
             --build-arg postgresqlversion="16" \
             --build-arg chadoschema='teacup' ./
       # Just spin up docker the good ol' fashion way.

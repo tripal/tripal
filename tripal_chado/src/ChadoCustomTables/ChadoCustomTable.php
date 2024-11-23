@@ -214,7 +214,7 @@ class ChadoCustomTable {
    * schema does not properly match the table problems may occur when using
    * the table later.
    *
-   * @param array $schema
+   * @param array $table_schema
    *   The Drupal table schema array defining the table.
    * @param boolean $force
    *   True if the custom table should be dropped and recreated if it already
@@ -222,7 +222,7 @@ class ChadoCustomTable {
    * @return boolean
    *   True on successfu
    */
-  public function setTableSchema($table_schema, $force = False) {
+  public function setTableSchema(array $table_schema, bool $force = False) {
 
     $logger = \Drupal::service('tripal.logger');
     if (!$this->table_id) {

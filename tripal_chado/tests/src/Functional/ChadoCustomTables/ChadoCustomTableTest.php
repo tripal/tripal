@@ -11,7 +11,7 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  * @group Tripal Chado
  * @group Tripal Chado Custom Tables
  */
-class ChadoCustomTablesTest extends ChadoTestBrowserBase {
+class ChadoCustomTableTest extends ChadoTestBrowserBase {
 
   /**
    * Tests focusing on the Tripal Importer plugin system and chado importers.
