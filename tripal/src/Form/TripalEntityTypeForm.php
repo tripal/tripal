@@ -22,7 +22,7 @@ class TripalEntityTypeForm extends EntityForm {
 
     $tripal_entity_type = $this->entity;
     $tripal_entity_type->setDefaults();
-    list($url_tokens, $title_tokens) = $this->getValidTokens($tripal_entity_type);
+    list($url_tokens, $title_tokens) = $this->getValidTokens($tripal_entity_type, TRUE);
 
     // We need to choose a term if this is a new content type.
     // The term cannot be changed later!
@@ -278,7 +278,7 @@ class TripalEntityTypeForm extends EntityForm {
       $form_state->setErrorByName('term',
           'Please select a term from the autocomplete drop-down. It must have the ID space and accession in parenthesis.');
     }
-    list($url_tokens, $title_tokens) = $this->getValidTokens($tripal_entity_type);
+    list($url_tokens, $title_tokens) = $this->getValidTokens($tripal_entity_type, FALSE);
 
     // Make sure all title tokens used are valid
     $title_format = $form_state->getValue('title_format');
@@ -302,12 +302,19 @@ class TripalEntityTypeForm extends EntityForm {
    * Returns an array of valid tokens that may be used in an entity title.
    *
    * @param object $tripal_entity_type
+   * @param bool $brackets
+   *   If TRUE, returned list of tokens is wrapped in square brackets
    *
    * @return array
    *   The list of valid tokens for URLs, and the list of valid tokens for entity titles.
    */
-  protected function getValidTokens($tripal_entity_type) {
+  protected function getValidTokens($tripal_entity_type, bool $brackets) {
     $url_tokens = $tripal_entity_type->getTokens();
+    if ($brackets) {
+      foreach ($url_tokens as $key => $token) {
+        $url_tokens[$key]['token'] = '[' . $token['token'] . ']';
+      }
+    }
     $title_tokens = $url_tokens;
     unset($title_tokens['[title]']);
     unset($title_tokens['[TripalBundle__bundle_id]']);
@@ -330,11 +337,14 @@ class TripalEntityTypeForm extends EntityForm {
    */
   protected function validateTokens($format_string, $valid_tokens) {
     $invalid_token = '';
-    preg_match_all('/(\[[^\]]+\])/', $format_string, $matches);
-    foreach ($matches[0] as $match) {
-      if ($match and !array_key_exists($match, $valid_tokens)) {
-        $invalid_token = $match;
-        break;
+    preg_match_all('/\[([^\[\]]+)\]/', $format_string, $matches);
+    foreach ($matches[1] as $match) {
+      $parts = explode('|', $match);
+      foreach ($parts as $part) {
+        if (!array_key_exists($part, $valid_tokens)) {
+          $invalid_token = $part;
+          break;
+        }
       }
     }
     return $invalid_token;
