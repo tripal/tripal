@@ -318,8 +318,8 @@ class TripalImporterFormSubmitTest extends TripalTestKernelBase {
     // --- CASE ERROR
     // --- Supply a URI that is valid but does not resolve to a web page.
     $bad_remote_uri = [
-      'http://notreallyasite.com/',
-      'https://notreallyatripalsite.github.com',
+      'http://notreallyasite002039.com/',
+      'https://notreallyatripalsite002039.github.com',
     ];
     foreach ($bad_remote_uri as $test_file_path) {
       // Now setup the form_state.
