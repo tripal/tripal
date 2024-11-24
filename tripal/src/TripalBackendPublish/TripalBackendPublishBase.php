@@ -62,6 +62,13 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
   protected $entity_lookup_manager = NULL;
 
   /**
+   * The Tripal Token Parser service.
+   *
+   * @var \Drupal\tripal\Services\TripalTokenParser $token_parser
+   */
+  protected $token_parser = NULL;
+
+  /**
    * Specifies the maximum number of records to publish at one time.
    * This limits memory consumption if there are many thousands of
    * records, for example gene records in the feature table.
@@ -134,7 +141,8 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
       $container->get('plugin.manager.field.field_type'),
       $container->get('tripal.logger'),
       $container->get('tripal.storage'),
-      $container->get('tripal.tripal_entity.lookup')
+      $container->get('tripal.tripal_entity.lookup'),
+      $container->get('tripal.token_parser')
       );
   }
 
@@ -148,7 +156,8 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
     \Drupal\Core\Field\FieldTypePluginManager $field_type_manager,
     \Drupal\tripal\Services\TripalLogger $logger,
     \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager,
-    \Drupal\tripal\Services\TripalEntityLookup $entity_lookup_manager) {
+    \Drupal\tripal\Services\TripalEntityLookup $entity_lookup_manager,
+    \Drupal\tripal\Services\TripalTokenParser $token_parser) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->connection = $connection;
     $this->entity_type_manager = $entity_type_manager;
@@ -157,6 +166,7 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
     $this->logger = $logger;
     $this->storage_manager = $storage_manager;
     $this->entity_lookup_manager = $entity_lookup_manager;
+    $this->token_parser = $token_parser;
   }
 
 }
