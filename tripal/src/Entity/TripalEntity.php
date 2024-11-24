@@ -200,7 +200,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The URL alias e.g. "/organism/123"
    */
   public function getAlias() {
-    $system_path = "/bio_data/" . $this->getID();
+    $system_path = '/bio_data/' . $this->getID();
     $langcode = $this->defaultLangcode;
     $existing_alias = \Drupal::service('path_alias.repository')->lookupBySystemPath($system_path, $langcode);
     return $existing_alias;
@@ -229,6 +229,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     if (!$existing_alias) {
       // Returns default, or replaces tokens if alias was supplied.
       $new_alias = $this->getDefaultAlias($path_alias);
+      $system_path = '/bio_data/' . $this->getID();
       $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
         'path' => $system_path,
         'alias' => $new_alias,
