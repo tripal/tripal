@@ -33,7 +33,7 @@ class TripalLayoutEntityFormTest extends TripalTestKernelBase {
     $this->installEntitySchema('tripal_layout_default_view');
   }
 
-  public function provideConfigEntities() {
+  public static function provideConfigEntities() {
     $scenarios = [];
 
     $scenarios['basic_view'] = [

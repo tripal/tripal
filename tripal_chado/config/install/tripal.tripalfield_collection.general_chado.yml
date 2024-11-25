@@ -1232,7 +1232,8 @@ fields:
         type: chado_text_type_default
         description: The title for this publication.
         cardinality: 1
-        required: true
+        # in Tripal 3 this was set as required, although the pub table does not require it.
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
@@ -1365,8 +1366,8 @@ fields:
         type: chado_string_type_default
         description:
         cardinality: 1
-        # in Tripal 3 this is set as required, although the pub table does not require it.
-        required: true
+        # in Tripal 3 this was set as required, although the pub table does not require it.
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
