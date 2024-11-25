@@ -496,12 +496,24 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // Store the new entity IDs of the newly inserted
     // entities along with any existing ones.
+    $entity_ids = [];
     foreach ($added_record_ids as $index => $record_id) {
-      $this->existing_published_entities[$record_id] = $index + $first_added_entity_id;
+      $entity_id = $index + $first_added_entity_id;
+      $entity_ids[] = $entity_id;
+      $this->existing_published_entities[$record_id] = $entity_id;
       // Return only the first 100 for the publish job
       if (count($this->published_or_updated_entities) < 100) {
         $this->published_or_updated_entities[$index + $first_added_entity_id] = $titles[$record_id];
       }
+    }
+
+    // Insert the default URL alias for each new entity
+    $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
+    $entities = $storage->loadMultiple($entity_ids);
+    foreach ($entities as $entity_id => $entity) {
+      $entity->setTokenValues();
+      $entity->setAlias();
+      $entity->save();
     }
   }
 
