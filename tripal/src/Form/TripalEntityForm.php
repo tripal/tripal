@@ -199,14 +199,22 @@ class TripalEntityForm extends ContentEntityForm {
     $entity = $this->entity;
     $bundle = $entity->getType();
     $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle);
-
-    $entity->setTitle($values['title'][0]['value']);
     $entity->setOwnerId($values['uid'][0]['target_id']);
-    $status = parent::save($form, $form_state);
 
-    // If no alias was specified, then create a default alias.
-    // We couldn't do this earlier, because the entity ID was not yet known.
-    $entity->setDefaultAlias();
+    $status = parent::save($form, $form_state);
+    $entity_id = $entity->id();
+
+    // Entity ID is only available post-save, so we have waited
+    // to set the title and path alias until after saving.
+    // Fetch the saved version of the entity.
+    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['id' => $entity_id]);
+    $entity = $entities[$entity_id];
+
+    // Update remaining items and save.
+    $entity->setTokenValues();
+    $entity->setTitle($values['title'][0]['value']);
+    $entity->setAlias($values['path'][0]['alias']);
+    $entity->save();
 
     switch ($status) {
       case SAVED_NEW:
@@ -220,7 +228,7 @@ class TripalEntityForm extends ContentEntityForm {
           '%label' => $bundle_entity->label(),
         ]));
     }
-    $form_state->setRedirect('entity.tripal_entity.canonical', ['tripal_entity' => $entity->id()]);
+    $form_state->setRedirect('entity.tripal_entity.canonical', ['tripal_entity' => $entity_id]);
   }
 
   /**

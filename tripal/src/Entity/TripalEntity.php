@@ -68,6 +68,14 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
 
   /**
+   * An array of potential token replacement values where the key is
+   * the token name and the value is its value.
+   *
+   * @var array $token_values.
+   */
+  protected $token_values = [];
+
+  /**
    * Constructs a new Tripal entity object, without permanently saving it.
    *
    * @code
@@ -126,18 +134,21 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title = NULL, $cache = []) {
-
-    // Get the bundle object.
-    if (isset($cache['bundle'])) {
-      $bundle = $cache['bundle'];
-    }
-    else {
+  public function setTitle($title = NULL) {
+    // If no title was passed, construct an entity title
+    if (!$title) {
+      // Get the bundle object.
       $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+
+      // Initialize the Tripal token parser service.
+      /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
+      $token_parser = \Drupal::service('tripal.token_parser');
+
+      $title_format = $bundle->getTitleFormat();
+      $token_values = $this->getBundleEntityTokenValues($title_format, $bundle);
+      $title = $token_parser->replaceTokens($title_format, $token_values);
     }
 
-    $title_format = $bundle->getTitleFormat();
-    $title = $this->replaceTokens($title_format, $bundle);
     $this->title = $title;
   }
 
@@ -151,14 +162,25 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * Generates a default URL alias for the current entity.
    *
+   * @param string $default_alias
+   *   Either an empty string or a fully or a partially completed alias
+   *
    * @return string
    *   The default entity alias, e.g. "/project/1234"
    */
-  public function getDefaultAlias() {
-    // Generate an alias using the default format set by admins.
+  public function getDefaultAlias(string $default_alias = '') {
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
-    $default_alias = $bundle->getURLFormat();
-    $default_alias = $this->replaceTokens($default_alias, $bundle);
+
+    // Generate an alias using the default format set by admins.
+    if (!$default_alias) {
+      $default_alias = $bundle->getURLFormat();
+    }
+
+    // Initialize the Tripal token parser service.
+    /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
+    $token_parser = \Drupal::service('tripal.token_parser');
+    $token_values = $this->getBundleEntityTokenValues($default_alias, $bundle);
+    $default_alias = $token_parser->replaceTokens($default_alias, $token_values);
 
     // Ensure there is a leading slash.
     if ($default_alias[0] != '/') {
@@ -172,35 +194,50 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Returns the URL alias for the current entity.
+   *
+   * @return string
+   *   The URL alias e.g. "/organism/123"
+   */
+  public function getAlias() {
+    $system_path = '/bio_data/' . $this->getID();
+    $langcode = $this->defaultLangcode;
+    $existing_alias = \Drupal::service('path_alias.repository')->lookupBySystemPath($system_path, $langcode);
+    return $existing_alias;
+  }
+
+  /**
    * Sets a URL alias for the current entity if one does not already exist.
    *
    * @param string $path_alias
    *   The alias to use. It can contain tokens that correspond to field values.
    *   Tokens should be be compatible with those returned by
-   *   tripal_get_entity_tokens(). If NULL, then use the default alias.
+   *   tripal_get_entity_tokens(). If empty, then use the default alias.
+   *   If $path_alias is specified, then any existing alias will be updated.
+   *
+   * @return string
+   *   Returns the path alias that was used with tokens replaced
    */
-  public function setDefaultAlias($path_alias = NULL) {
+  public function setAlias(string $path_alias = ''): string {
+    // Check if an alias already exists for this entitie's system path
+    $existing_alias = $this->getAlias();
 
-    if (!$path_alias) {
-      $path_alias = $this->getDefaultAlias();
-    }
-    $system_path = "/bio_data/" . $this->getID();
-    $langcode = $this->defaultLangcode;
+    // @todo check if alias exists for somthing else?
 
-    // Check if an alias already exists.
-    $alias_exists = FALSE;
-    if (\Drupal::service('path_alias.repository')->lookupBySystemPath($system_path, $langcode)) {
-      $alias_exists = TRUE;
-    }
-
-    // If an alias does not exist, then create a default alias.
-    if (!$alias_exists) {
+    // If an alias does not exist, then create one.
+    // @todo implement updating the alias if it already exists
+    if (!$existing_alias) {
+      // Returns default, or replaces tokens if alias was supplied.
+      $new_alias = $this->getDefaultAlias($path_alias);
+      $system_path = '/bio_data/' . $this->getID();
       $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
         'path' => $system_path,
-        'alias' => $path_alias,
+        'alias' => $new_alias,
       ]);
       $path->save();
+      $existing_alias = $new_alias;
     }
+    return $existing_alias;
   }
 
   /**
@@ -286,16 +323,33 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Stores token replacement values for the current entity.
+   *
+   * @param array
+   *   Any additional key value pairs to store along with the
+   *   values retrieved here, as generated by getBundleEntityTokenValues()
+   *
+   * @return void
+   *   Values are stored in the class variable $this->token_values
+   */
+  public function setTokenValues($extra_values = []) {
+    $field_values = $this->getFieldValues();
+    // Convert to a simple key=>value array
+    $processed_values = $this->processFieldValues($field_values);
+    // Merge in any passed values and store
+    $this->token_values = array_merge($processed_values, $extra_values);
+  }
+
+  /**
    * Retrieves the values of the current entity as a nested array.
    *
    * @return array
-   *  This is a nested array with the first keys being field names. Within each
-   *  array for a given field the keys are delta and the values are an array of
-   *  the property names => values for that field delta.
+   *   This is a nested array with the first keys being field names. Within each
+   *   array for a given field the keys are delta and the values are an array of
+   *   the property names => values for that field delta.
    */
   public function getFieldValues() {
     $values = [];
-
     $field_defs = $this->getFieldDefinitions();
     foreach ($field_defs as $field_name => $field_def) {
       /** @var \Drupal\Core\Field\FieldItemList $items **/
@@ -306,9 +360,20 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $values[$field_name][$delta] = [];
         /** @var \Drupal\Core\TypedData\TypedDataInterface $prop **/
         $props = $item->getProperties();
+        $main_prop_key = NULL;
+        if (method_exists($item, 'mainPropertyName')) {
+          $main_prop_key = $item->mainPropertyName();
+        }
         if (is_array($props)) {
           foreach ($props as $prop) {
-            $values[$field_name][$delta][$prop->getName()] = $prop->getValue();
+            $prop_name = $prop->getName();
+            $prop_value = $prop->getValue();
+            $values[$field_name][$delta][$prop_name] = $prop_value;
+            // For field-based tokens we replace the token with the value of
+            // the main property. We will store this as the 'value' key.
+            if ($main_prop_key and ($prop_name == $main_prop_key)) {
+              $values[$field_name][$delta]['value'] = $prop_value;
+            }
           }
         }
       }
@@ -317,21 +382,84 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * Replaces tokens in URL Aliases and Titles.
+   * Flattens the field values to be suitable for use as values
+   * for token replacement. Values with cardinality > 1 are
+   * excluded.
    *
-   * @param string $string
-   *   The string to replace.
-   * @param array $cache
+   * @param array $field_values
+   *   Values nested array from $this->getFieldValues()
+   * @return array
+   *   Associative array of key => value pairs
    */
-  protected function replaceTokens($string, $bundle) {
+  protected function processFieldValues(array $field_values): array {
+    $processed_values = [];
+    foreach ($field_values as $field => $value_array) {
+      // Token replacement only supports single-value fields,
+      // therefore, only add if the items array has a single value.
+      if (count($value_array) == 1) {
+        if (array_key_exists('value', $value_array[0])) {
+          $processed_values[$field] = $value_array[0]['value'];
+        }
+      }
+    }
+    return $processed_values;
+  }
 
-    // Initialize the Tripal token parser service.
-    /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
-    $token_parser = \Drupal::service('tripal.token_parser');
-    $token_parser->processEntityValues($bundle, $this);
-    $replaced = $token_parser->replaceTokens([$string]);
+  /**
+   * Retrieve values for tokens that are specific to bundles or
+   * entities and include them with existing token values.
+   * These are special tokens like '[TripalEntityType__entity_id]',
+   * and for efficiency we only retrieve the value if the token is
+   * present in the tokenized string.
+   *
+   * @param string $tokenized_string
+   *   The string containing tokens
+   * @param \Drupal\tripal\Entity\TripalEntityType $bundle
+   *   The bundle
+   *
+   * @return array
+   *   Associative array of all tokens and their values,
+   *   ready to use for token replacement.
+   */
+  protected function getBundleEntityTokenValues(string $tokenized_string, TripalEntityType $bundle) : array {
+    // Retrieve the values obtained by $this->setTokenValues()
+    $values = $this->token_values;
 
-    return $replaced[0];
+    // Get the innermost tokens in the string.
+    $tokens = [];
+    $matches = [];
+    if (preg_match_all('/\[([^\[\]]+)\]/', $tokenized_string, $matches)) {
+      $tokens = $matches[1];
+      foreach ($tokens as $token) {
+        $value = NULL;
+
+        // Look for values for bundle or entity related tokens.
+        if (($token === 'TripalEntityType__entity_id') OR ($token === 'TripalBundle__bundle_id')) {
+          $value = $bundle->getID();
+        }
+        elseif ($token == 'TripalEntityType__label') {
+          $value = $bundle->getLabel();
+        }
+        elseif ($token === 'TripalEntity__entity_id') {
+          $value = $this->getID();
+        }
+        elseif ($token == 'TripalEntityType__term_namespace') {
+          $value = $bundle->get('termIdSpace');
+        }
+        elseif ($token == 'TripalEntityType__term_accession') {
+          $value = $bundle->get('termAccession');
+        }
+        elseif ($token == 'TripalEntityType__term_label') {
+          $value = $bundle->getTerm()->getName();
+        }
+        // We skip over any tokens other than those defined here
+        if (!is_null($value)) {
+          $values[$token] = $value;
+        }
+      }
+    }
+
+    return $values;
   }
 
   /**
@@ -424,7 +552,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * Returns an associative array of property type value for the entity.
+   * Returns an associative array of property type values for the entity.
    *
    * The array is keyed in the following levels:
    * - 1st: Tripal Stroage Plugin ID

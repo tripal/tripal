@@ -449,29 +449,10 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       }
       $format = $suggestions[$lightest_key]['format'];
     }
-    // B) Generate our own ugly title by simply comma-separating all the
-    //    required fields.
+    // B) Generate our own ugly title by simply using the entity ID to
+    //    guarantee uniqueness.
     else {
-      $tmp = [];
-
-      // Check which tokens are required fields and join them into a default
-      // format.
-      if (sizeof($tokens) > 0) {
-        foreach ($tokens as $token) {
-
-          // Exclude the type & term since it is not unique.
-          if ($token['token'] == '[type]') {
-            continue;
-          }
-
-          // If it is required then add it to the default title
-          // since we know it has a value.
-          if ($token['required']) {
-            $tmp[] = $token['token'];
-          }
-        }
-        $format = implode(', ', $tmp);
-      }
+      $format = 'Entity [TripalEntity__entity_id]';
     }
 
     return $format;
@@ -528,7 +509,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
     // ID Tokens:
     if ($options['include id'] == TRUE) {
-      $token = '[TripalEntityType__entity_id]';
+      $token = 'TripalEntityType__entity_id';
       $tokens[$token] = [
         'label' => 'Content Type/Bundle ID',
         'description' => 'The machine name for this Tripal Content Type. By default this will be similar to the label you entered. For example, if you created a content type with the label "Genome Annoation" then it\'s machine name/id would be "genome_annotation".',
@@ -537,7 +518,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
         'required' => TRUE,
       ];
 
-      $token = '[TripalEntity__entity_id]';
+      $token = 'TripalEntity__entity_id';
       $tokens[$token] = [
         'label' => 'Content/Entity ID',
         'description' => 'The unique identifier for an individual piece of Tripal Content. This will be unique for each Tripal Content page and is an integer.',
@@ -548,7 +529,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     }
 
     // Term/Type Tokens:
-    $token = '[TripalEntityType__label]';
+    $token = 'TripalEntityType__label';
     $tokens[$token] = [
       'label' => 'Tripal Entity Type',
       'description' => 'The human-readable label for this Tripal Content Type (e.g. "Genome Annotation").',
@@ -561,7 +542,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     //       This if should be removed when that issue is closed, to allow these
     //       tokens to be used in titles.
     if ($options['include id'] == TRUE) {
-      $token = '[TripalEntityType__term_namespace]';
+      $token = 'TripalEntityType__term_namespace';
       $tokens[$token] = [
         'label' => 'Content Type Term Namespace',
         'description' => 'The database name describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the namespace is "SO".',
@@ -570,7 +551,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
         'required' => TRUE,
       ];
 
-      $token = '[TripalEntityType__term_accession]';
+      $token = 'TripalEntityType__term_accession';
       $tokens[$token] = [
         'label' => 'Content Type Term Accession',
         'description' => 'The database accession describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the accession is "0000704".',
@@ -579,7 +560,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
         'required' => TRUE,
       ];
 
-      $token = '[TripalEntityType__term_label]';
+      $token = 'TripalEntityType__term_label';
       $tokens[$token] = [
         'label' => 'Content Type Term Label',
         'description' => 'The human readable label of the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the label is "gene".',
@@ -613,7 +594,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       // If we have no elements to add then just add the field as is.
       if ($use_field) {
         // Build the token from the field information.
-        $token = '[' . $field_name . ']';
+        $token = $field_name;
         $tokens[$token] = [
           'label' => $instance->getLabel(),
           'description' => $instance->getDescription(),
