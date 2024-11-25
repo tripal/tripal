@@ -3,7 +3,6 @@
 namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
-use \Drupal\tripal\Services\TripalTokenParser;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 
@@ -34,6 +33,13 @@ class ChadoPublish extends TripalBackendPublishBase {
    * @var \Drupal\Core\Field\BaseFieldDefinition $field_definition
    */
   protected $field_info = [];
+
+  /**
+   * Stores the main property for each field on an entity
+   *
+   * @var array $main_properties
+   **/
+  protected $main_properties = [];
 
   /**
    * Stores the bundle (entity type) object.
@@ -191,6 +197,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // title and URL alias.
     $title_format = $this->entity_type->getTitleFormat();
     $url_format = $this->entity_type->getURLFormat();
+    $this->main_properties = [];
     foreach ($this->field_info as $field_name => $field_info) {
       if (preg_match("/\[$field_name\]/", $title_format) or
           preg_match("/\[$field_name\]/", $url_format)) {
@@ -214,6 +221,7 @@ class ChadoPublish extends TripalBackendPublishBase {
         /** @var \Drupal\tripal\TripalStorage\StoragePropertyBase $prop **/
         $field = $this->field_info[$field_name]['instance'];
         $main_prop = $field->mainPropertyName();
+        $this->main_properties[$field_name] = $main_prop;
         $prop = $field_info['prop_types'][$main_prop];
         $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
             $field_class::$id, $main_prop, $prop->getTerm()->getTermId(), NULL);
@@ -364,6 +372,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    */
   protected function getEntityTitles($matches) {
     $titles = [];
+    $title_format = $this->entity_type->getTitleFormat();
 
     // Iterate through each match we are checking for an existing entity for.
     foreach ($matches as $match) {
@@ -371,30 +380,23 @@ class ChadoPublish extends TripalBackendPublishBase {
       // Retrieve the chado record pkey ID for this match
       $record_id = $this->getChadoRecordID($match);
 
-      // Collapse match array to follow the format expected by getEntityTitle.
-      $entity_values = [];
+      // Build an array of token keys and values to use for token replacement.
+      $token_values = [];
       foreach ($match as $field_name => $field_items) {
         if ($field_items) {
           foreach($field_items as $delta => $properties) {
             foreach ($properties as $property_name => $prop_deets) {
-              $entity_values[$field_name][$delta][$property_name] = $prop_deets['value']->getValue();
+              $prop_value = $prop_deets['value']->getValue();
+              if ($property_name == ($this->main_properties[$field_name]??'')) {
+                $token_values[$field_name] = $prop_value;
+              }
             }
           }
         }
-        else {
-          // Any fields without values are also included as NULL, although only
-          // as delta zero. This is because these might be part of the entity
-          // title but are missing, e.g. organism_infraspecific_name.
-          foreach ($this->field_info[$field_name]['prop_types'] as $property_name => $prop_deets) {
-            $entity_values[$field_name][0][$property_name] = NULL;
-          }
-        }
       }
-
       // Now that we've gotten the values out of the property value objects,
       // we can use the token parser to get the title!
-      $entity_title = TripalTokenParser::getEntityTitle($this->entity_type, $entity_values);
-
+      $entity_title = $this->token_parser->replaceTokens($title_format, $token_values);
       $titles[$record_id] = $entity_title;
     }
     return $titles;
