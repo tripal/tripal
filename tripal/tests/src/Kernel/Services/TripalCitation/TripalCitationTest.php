@@ -28,7 +28,7 @@ class TripalCitationTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests the TripalEntityTypeCollection::generateCitation() method.
+   * Tests the Tripal Citation service.
    */
   public function testTripalCitation_generateCitation() {
     $citation_service = \Drupal::service('tripal.citation');
@@ -49,7 +49,7 @@ class TripalCitationTest extends TripalTestKernelBase {
 
     // Test a journal article
     $format2 = $citation_service->getDefaultCitationTemplate('Journal Article');
-    $c2 = $citation_service->generateCitation($pub1, $format2);
+    $c2 = $citation_service->generateCitation($format2, $pub1);
     $this->assertEquals('Chado, A.B.; Drupal, B.C.; Tripal, C.D. Some impressive publication. 2024. Journal of Science 123(4):10-20.',
       $c2, 'Citation 2 is not the expected value');
 
@@ -58,7 +58,7 @@ class TripalCitationTest extends TripalTestKernelBase {
     unset($pub3['Issue']);
     unset($pub3['Journal Name']);
     $format3 = $citation_service->getDefaultCitationTemplate('Review');
-    $c3 = $citation_service->generateCitation($pub3, $format3);
+    $c3 = $citation_service->generateCitation($format3, $pub3);
     $this->assertEquals('Chado, A.B.; Drupal, B.C.; Tripal, C.D. Some impressive publication. The Journal of Science 2024. 123:10-20.',
       $c3, 'Citation 3 is not the expected value');
   }
