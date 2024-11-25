@@ -8,6 +8,23 @@ use Exception;
 class TripalCitationManager {
 
   /**
+   * The Tripal Token Parser service.
+   *
+   * @var \Drupal\tripal\Services\TripalTokenParser $token_parser
+   */
+  protected $token_parser = NULL;
+
+  /**
+   * TripalCitationManager constructor.
+   *
+   * @param  \Drupal\tripal\Services\TripalTokenParser
+   *   The token parser service.
+   */
+  public function __construct(TripalTokenParser $token_parser) {
+    $this->token_parser = $token_parser;
+  }
+
+  /**
    * Generate citation
    *
    * @param array $publication
