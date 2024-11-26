@@ -3,9 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\Services\TripalTokenParser;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\Core\Url;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
+
 
 /**
  * Tests the TripalTokenParser service functions.
