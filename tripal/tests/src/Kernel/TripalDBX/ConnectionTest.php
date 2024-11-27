@@ -63,7 +63,7 @@ class ConnectionTest extends TripalTestKernelBase {
       $typed_config
     );
     // Get real config elements.
-    $config = $config_factory->get('tripaldbx.settings');
+    $config = $config_factory->get('tripal.settings');
     $reserved_schema_patterns = $config->get('reserved_schema_patterns');
     $this->assertNotEmpty($reserved_schema_patterns, 'Reserved schema patterns not empty.');
     $test_schema_base_names = $config
@@ -89,7 +89,7 @@ class ConnectionTest extends TripalTestKernelBase {
 
     // Mock the ConfigFactory service.
     $this->proConfigFactory = $this->prophesize(\Drupal\Core\Config\ConfigFactory::class);
-    $this->proConfigFactory->get('tripaldbx.settings')->willReturn($this->config);
+    $this->proConfigFactory->get('tripal.settings')->willReturn($this->config);
     $this->configFactory = $this->proConfigFactory->reveal();
 
     \Drupal::getContainer()->set('config.factory', $this->configFactory);
@@ -125,7 +125,7 @@ class ConnectionTest extends TripalTestKernelBase {
    * Allow a test to use reserved default test schema names.
    */
   protected function allowTestSchemas() {
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
     $tripaldbx = \Drupal::service('tripal.dbx');
@@ -544,7 +544,7 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testPrefixNoExtraSchema() {
     $drupal_prefix = $this->get_drupal_prefix();
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -600,7 +600,7 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testConnectionScenario1() {
     $drupal_prefix = $this->get_drupal_prefix();
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -682,7 +682,7 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testConnectionScenario2() {
     $drupal_prefix = $this->get_drupal_prefix();
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -741,7 +741,7 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testConnectionScenario3() {
     $drupal_prefix = $this->get_drupal_prefix();
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -818,7 +818,7 @@ class ConnectionTest extends TripalTestKernelBase {
    * @cover ::tablePrefix
    */
   public function testTablePrefix() {
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -834,7 +834,7 @@ class ConnectionTest extends TripalTestKernelBase {
    * @cover ::__toString
    */
   public function testToString() {
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -857,7 +857,7 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testExecuteSqlQueries() {
     // Get a test schema.
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -904,7 +904,7 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testExecuteSqlQueriesForceSearchPath() {
     // Get a test schema.
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -964,7 +964,7 @@ class ConnectionTest extends TripalTestKernelBase {
    */
   public function testExecuteSqlFile() {
     // Get a test schema.
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
