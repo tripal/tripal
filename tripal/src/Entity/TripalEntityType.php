@@ -246,7 +246,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   //                          MAIN SETTER / GETTERS
   //
   // The following methods allow the main properties of the Tripal Entity Type
-  // to be set or retrieved. These properties include ID, macine name, term
+  // to be set or retrieved. These properties include machine name, term
   // help text and category.
   // --------------------------------------------------------------------------
 
@@ -422,7 +422,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
     // Retrieve all available tokens.
     $tokens = $this->getTokens([
-      'include id' => FALSE,
       'include title' => FALSE,
     ]);
 
@@ -504,29 +503,26 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
     // Set default options.
     $options['required only'] = (isset($options['required only'])) ? $options['required only'] : FALSE;
-    $options['include id'] = (isset($options['include id'])) ? $options['include id'] : TRUE;
     $options['include title'] = (isset($options['include title'])) ? $options['include title'] : TRUE;
 
     // ID Tokens:
-    if ($options['include id'] == TRUE) {
-      $token = 'TripalEntityType__entity_id';
-      $tokens[$token] = [
-        'label' => 'Content Type/Bundle ID',
-        'description' => 'The machine name for this Tripal Content Type. By default this will be similar to the label you entered. For example, if you created a content type with the label "Genome Annoation" then it\'s machine name/id would be "genome_annotation".',
-        'token' => $token,
-        'field_name' => NULL,
-        'required' => TRUE,
-      ];
+    $token = 'TripalEntityType__entity_id';
+    $tokens[$token] = [
+      'label' => 'Content Type/Bundle ID',
+      'description' => 'The machine name for this Tripal Content Type. By default this will be similar to the label you entered. For example, if you created a content type with the label "Genome Annoation" then it\'s machine name/id would be "genome_annotation".',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
 
-      $token = 'TripalEntity__entity_id';
-      $tokens[$token] = [
-        'label' => 'Content/Entity ID',
-        'description' => 'The unique identifier for an individual piece of Tripal Content. This will be unique for each Tripal Content page and is an integer.',
-        'token' => $token,
-        'field_name' => NULL,
-        'required' => TRUE,
-      ];
-    }
+    $token = 'TripalEntity__entity_id';
+    $tokens[$token] = [
+      'label' => 'Content/Entity ID',
+      'description' => 'The unique identifier for an individual piece of Tripal Content. This will be unique for each Tripal Content page and is an integer.',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
 
     // Term/Type Tokens:
     $token = 'TripalEntityType__label';
@@ -538,37 +534,32 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       'required' => TRUE,
     ];
 
-    // @todo currently we are only including these for URLS due to issue #2009
-    //       This if should be removed when that issue is closed, to allow these
-    //       tokens to be used in titles.
-    if ($options['include id'] == TRUE) {
-      $token = 'TripalEntityType__term_namespace';
-      $tokens[$token] = [
-        'label' => 'Content Type Term Namespace',
-        'description' => 'The database name describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the namespace is "SO".',
-        'token' => $token,
-        'field_name' => NULL,
-        'required' => TRUE,
-      ];
+    $token = 'TripalEntityType__term_namespace';
+    $tokens[$token] = [
+      'label' => 'Content Type Term Namespace',
+      'description' => 'The database name describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the namespace is "SO".',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
 
-      $token = 'TripalEntityType__term_accession';
-      $tokens[$token] = [
-        'label' => 'Content Type Term Accession',
-        'description' => 'The database accession describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the accession is "0000704".',
-        'token' => $token,
-        'field_name' => NULL,
-        'required' => TRUE,
-      ];
+    $token = 'TripalEntityType__term_accession';
+    $tokens[$token] = [
+      'label' => 'Content Type Term Accession',
+      'description' => 'The database accession describing the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the accession is "0000704".',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
 
-      $token = 'TripalEntityType__term_label';
-      $tokens[$token] = [
-        'label' => 'Content Type Term Label',
-        'description' => 'The human readable label of the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the label is "gene".',
-        'token' => $token,
-        'field_name' => NULL,
-        'required' => TRUE,
-      ];
-    }
+    $token = 'TripalEntityType__term_label';
+    $tokens[$token] = [
+      'label' => 'Content Type Term Label',
+      'description' => 'The human readable label of the term for this Tripal Content Type. For example, if this content type uses the term "gene (SO:0000704)" then the label is "gene".',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
 
     $instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
     foreach ($instances as $instance_name => $instance) {
