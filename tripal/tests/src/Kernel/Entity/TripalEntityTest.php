@@ -37,10 +37,20 @@ class TripalEntityTest extends TripalTestKernelBase {
     parent::setUp();
 
     // Add any schema needed for the functionality I am testing.
-    $this->prepareEnvironment(['TripalEntity']);
+    $this->prepareEnvironment(['TripalEntity', 'TripalTerm']);
 
     // Get the token parser service
     $this->token_parser = \Drupal::service('tripal.token_parser');
+
+    // Create a term to use for the entity
+    $term_values = [
+      'id_space_name' => 'FAKE',
+      'accession' => 'ORGANISM',
+    ];
+    // @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term //
+    $term = $this->createTripalTerm($term_values, 'tripal_default_id_space', 'tripal_default_vocabulary');
+    $this->assertIsObject($term,
+      'We were unable to create a tripal term during test setup');
 
     // Create a Tripal Entity Type to be used in the following tests.
     // Note: We can't mock one since they both use SqlContentEntityStorage
@@ -48,8 +58,7 @@ class TripalEntityTest extends TripalTestKernelBase {
     $entityType = TripalEntityType::create([
       'id' => $this->bundle_name,
       'label' => 'FAKE Organism For Testing',
-      'termIdSpace' => 'FAKE',
-      'termAccession' => 'ORGANISM',
+      'term' => $term,
       'help_text' => 'You are on your own here',
       'category' => '',
       'title_format' => '',
@@ -58,7 +67,7 @@ class TripalEntityTest extends TripalTestKernelBase {
       'ajax_field' => '',
     ]);
     $this->assertIsObject($entityType,
-      "We were unable to create our Tripal Entity type during test setup.");
+      'We were unable to create our Tripal Entity type during test setup');
     $entityType->save();
   }
 
@@ -86,7 +95,8 @@ class TripalEntityTest extends TripalTestKernelBase {
 
     // Finally Save it. This should call preSave() and Save().
     $entity_id = $entity->save();
-    $this->assertEquals(1, $entity_id, "We were unable to save the tripal entity.");
+    $this->assertEquals(1, $entity_id,
+      "We were unable to save the tripal entity.");
 
     $ret_title = $entity->getTitle();
     $this->assertEquals($details['title'], $ret_title,
@@ -122,7 +132,7 @@ class TripalEntityTest extends TripalTestKernelBase {
     $this->assertInstanceOf(\Drupal\user\Entity\User::class, $ret_owner,
       "The owner returned should be a Drupal User object.");
     $this->assertEquals($user->id(), $ret_owner->id(),
-      "The onwer returned should be the current user.");
+      "The owner returned should be the current user.");
   }
 
   /**
@@ -131,7 +141,14 @@ class TripalEntityTest extends TripalTestKernelBase {
   public function testTripalEntityTokenParser() {
 
     // Values to use for the tests
-    $tokens = ['TripalEntity__entity_id', 'TripalEntityType__entity_id'];
+    $tokens = [
+      'TripalEntity__entity_id',
+      'TripalEntityType__entity_id',
+      'TripalEntityType__label',
+      'TripalEntityType__term_namespace',
+      'TripalEntityType__term_accession',
+      'TripalEntityType__term_label'
+    ];
     $token_string = '[' . implode('] [', $tokens) . ']';
     $title_format = '[TripalEntity__entity_id] <i>[organism_genus] [organism_species]</i>'
                   . '[ [organism_infraspecific_type]][ <i>[organism_infraspecific_name]</i>]';
@@ -150,12 +167,12 @@ class TripalEntityTest extends TripalTestKernelBase {
     $values['organism_common_name'] = [['value' => 'Japonica rice']];
     $values['organism_comment'] = [['value' => 'rice is nice']];
     $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
-    $this->assertIsObject($entity, 'Unable to create an organism entity');
+    $this->assertIsObject($entity,
+      'Unable to create an organism entity');
     $entity->save();
 
     // We don't have any fields on our test content type, but adding fields is overkill
     // for these tests, we can simply add some values here.
-    // This function then populates the token values stored within the TripalEntity class
     $test_values = [
       'organism_genus' => 'Oryza',
       'organism_species' => 'sativa',
@@ -164,45 +181,61 @@ class TripalEntityTest extends TripalTestKernelBase {
       'organism_common_name' => 'Japonica rice',
       'extra_value' => 42,
     ];
+    // Populate the token values stored within the TripalEntity class
     $entity->setTokenValues($test_values);
 
     $organism_bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->bundle_name);
+
+    // Test the getBundleEntityTokenValues() method which returns special token values for entities
     $entity_reflection = new \ReflectionClass($entity);
     $getBundleEntityTokenValuesMethod = $entity_reflection->getMethod('getBundleEntityTokenValues');
     $token_values = $getBundleEntityTokenValuesMethod->invokeArgs($entity, [$token_string, $organism_bundle]);
-
-    $this->assertIsArray($token_values, 'getBundleEntityTokenValues() did not return an array');
+    $this->assertIsArray($token_values,
+      'getBundleEntityTokenValues() did not return an array');
     foreach ($tokens as $token) {
-      $this->assertArrayHasKey($token, $token_values, "token_values does not have a \"$token\" element");
+      $this->assertArrayHasKey($token, $token_values,
+        "token_values does not have a \"$token\" element");
     }
 
-    // Test setting the entity title with the default title format
+    // Test setting the entity title using the default title format
     $expected_title = 'Entity 1';
     $entity->setTitle();
     $entity_title = $entity->getTitle();
-    $this->assertEquals($expected_title, $entity_title, 'setTitle did not create the expected title');
+    $this->assertEquals($expected_title, $entity_title,
+      'setTitle did not create the expected title');
 
     // Test setting the entity title with a custom title format
     $organism_bundle->setTitleFormat($title_format);
     $organism_bundle->save();
     $current_format = $organism_bundle->getTitleFormat();
-    $this->assertEquals($title_format, $current_format, 'setTitleFormat did not save the expected format');
+    $this->assertEquals($title_format, $current_format,
+      'setTitleFormat did not save the expected format');
     $expected_title = '1 <i>Oryza sativa</i> subspecies <i>Japonica</i>';
     $entity->setTitle();
     $entity_title = $entity->getTitle();
-    $this->assertEquals($expected_title, $entity_title, 'setTitle did not create the expected title');
+    $this->assertEquals($expected_title, $entity_title,
+      'setTitle did not create the expected title');
+
+    // Test setting the entity URL alias using the default alias format
+    $entity->setAlias();
+    $entity_alias = $entity->getAlias()['alias'];
+    // In this test environment the bundle name will be random
+    $this->assertMatchesRegularExpression('/\/.*\/1$/', $entity_alias,
+      'setAlias did not create an alias of the expected format');
 
     // Test setting the entity URL alias with a custom alias format
-    // (We don't test the default format because a term is not set up)
+    // This also tests changing an existing alias
     $organism_bundle->setURLFormat($alias_format);
     $organism_bundle->save();
     $current_format = $organism_bundle->getURLFormat();
-    $this->assertEquals($alias_format, $current_format, 'setAliasFormat did not save the expected format');
+    $this->assertEquals($alias_format, $current_format,
+      'setAliasFormat did not save the expected format');
     // Parentheses will be url escaped, spaces become dashes
     $expected_alias = '/tripal_entity_test/1-%28Japonica-rice%29';
     $entity->setAlias();
     $entity_alias = $entity->getAlias()['alias'];
-    $this->assertEquals($expected_alias, $entity_alias, 'setAlias did not create the expected alias');
+    $this->assertEquals($expected_alias, $entity_alias,
+      'setAlias did not create the expected alias');
   }
 
 }
