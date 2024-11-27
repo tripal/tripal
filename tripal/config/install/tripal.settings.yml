@@ -18,7 +18,7 @@ files:
 # 'reserved_schema_patterns' must be an associative array where keys are
 # schema name patterns to reserve and values are the reservation descriptions.
 # If you need wildcards, you can use '*'. It is also possible to use regex
-# without delimitation characters (ie. starting and indening '/').
+# without delimitation characters (ie. starting and ending '/').
 # Note that any '*' not preceded by a dot '.' will be replaced by '.*' so
 # both of the syntax above are supported (ie. simple '*' wildcards and regex).
 reserved_schema_patterns:
