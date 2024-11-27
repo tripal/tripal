@@ -212,32 +212,42 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @param string $path_alias
    *   The alias to use. It can contain tokens that correspond to field values.
    *   Tokens should be be compatible with those returned by
-   *   tripal_get_entity_tokens(). If empty, then use the default alias.
-   *   If $path_alias is specified, then any existing alias will be updated.
+   *   tripal_get_entity_tokens(). If empty, then use the default alias template.
+   *   @todo If $path_alias is specified, then any existing alias will be updated.
    *
    * @return string
    *   Returns the path alias that was used with tokens replaced
    */
   public function setAlias(string $path_alias = ''): string {
-    // Check if an alias already exists for this entitie's system path
+    // Check if an alias already exists for this entity's system path
     $existing_alias = $this->getAlias();
 
-    // @todo check if alias exists for somthing else?
+    // @todo check if  alias exists for somthing else?
 
-    // If an alias does not exist, then create one.
-    // @todo implement updating the alias if it already exists
-    if (!$existing_alias) {
-      // Returns default, or replaces tokens if alias was supplied.
-      $new_alias = $this->getDefaultAlias($path_alias);
+    // Gets and uses default template, or replaces tokens
+    // in the supplied $path_alias.
+    $new_alias = $this->getDefaultAlias($path_alias);
+
+    // If alias does not exist, or if it is being changed
+    if (!$existing_alias or ($existing_alias['alias'] != $new_alias)) {
+
+      // If an alias already exists, we first need to remove it
+      if ($existing_alias) {
+        $alias_objects = \Drupal::entityTypeManager()->getStorage('path_alias')->loadByProperties([
+          'alias' => $existing_alias['alias'],
+        ]);
+        $alias_objects[array_key_first($alias_objects)]->delete();
+      }
+
+      // Create the alias
       $system_path = '/bio_data/' . $this->getID();
-      $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+      $alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
         'path' => $system_path,
         'alias' => $new_alias,
       ]);
-      $path->save();
-      $existing_alias = $new_alias;
+      $alias_object->save();
     }
-    return $existing_alias;
+    return $new_alias;
   }
 
   /**
