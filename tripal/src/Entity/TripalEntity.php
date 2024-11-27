@@ -163,7 +163,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * Generates a default URL alias for the current entity.
    *
    * @param string $default_alias
-   *   Either an empty string or a fully or a partially completed alias
+   *   Either an empty string if default alias is desired,
+   *   or an alias that may optionally contain tokens
    *
    * @return string
    *   The default entity alias, e.g. "/project/1234"
@@ -213,7 +214,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The alias to use. It can contain tokens that correspond to field values.
    *   Tokens should be be compatible with those returned by
    *   tripal_get_entity_tokens(). If empty, then use the default alias template.
-   *   @todo If $path_alias is specified, then any existing alias will be updated.
+   *   If $path_alias is specified, then any existing alias will be updated.
    *
    * @return string
    *   Returns the path alias that was used with tokens replaced

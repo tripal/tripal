@@ -449,7 +449,8 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       $format = $suggestions[$lightest_key]['format'];
     }
     // B) Generate our own ugly title by simply using the entity ID to
-    //    guarantee uniqueness.
+    //    guarantee uniqueness. This will happen when a site admin is
+    //    creating a new content type through the UI.
     else {
       $format = 'Entity [TripalEntity__entity_id]';
     }
