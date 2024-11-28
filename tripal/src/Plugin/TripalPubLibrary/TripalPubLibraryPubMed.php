@@ -530,12 +530,12 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * @param $pub
    *   An array structure containing publication details where the keys
    *   are the publication ontology term names and values are the
-   *   corresponding details.  The pub array can contain the following
+   *   corresponding details. The pub array can contain the following
    *   keys with corresponding values:
-   *     - Publication Type:  an array of publication types. a publication can
+   *     - Publication Type: an array of publication types. a publication can
    *       have more than one type.
-   *     - Authors: a  string containing all of the authors of a publication.
-   *     - Journal Name:  a string containing the journal name.
+   *     - Authors: a string containing all of the authors of a publication.
+   *     - Journal Name: a string containing the journal name.
    *     - Journal Abbreviation: a string containing the journal name
    *       abbreviation.
    *     - Series Name: a string containing the series (e.g. conference
@@ -544,13 +544,44 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    *     - Volume: the serives volume number.
    *     - Issue: the series issue number.
    *     - Pages: the page numbers for the publication.
-   *     - Publication Date:  A date in the format "Year Month Day".
+   *     - Publication Date: a date in the format "Year Month Day".
    *
    * @return
    *   A text string containing the citation.
    */
-  private function pmid_generate_citation(&$pub) {
+  private function pmid_generate_citation($pub) {
+
+    $pub_type = $this->pmid_get_pub_type($pub);
+
+    // The citation manager uses a default citation format if the passed
+    // $pub_type is not known.
+    $citation_format = $this->citation_manager->getDefaultCitationTemplate($pub_type);
+    $citation = $this->citation_manager->generateCitation($citation_format, $pub);
+
+    return $citation;
+  }
+
+  /**
+   * Determines the type of publication
+   *
+   * @param $pub
+   *   An array structure containing publication details where the keys
+   *   are the publication ontology term names and values are the
+   *   corresponding details.
+   *
+   * @return string
+   *   The publication type, e.g. "Journal Article", "Book", etc.
+   */
+  private function pmid_get_pub_type($pub): string {
     $pub_type = '';
+    $known_types = [
+      'Journal Article',
+      'Conference Proceedings',
+      'Review',
+      'Book',
+      'Letter',
+      'Book Chapter',
+    ];
 
     // An article may have more than one publication type. For example,
     // a publication type can be 'Journal Article' but also a 'Clinical Trial'.
@@ -559,46 +590,14 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     // and select the one that matches best.
     if (is_array($pub['Publication Type'])) {
       foreach ($pub['Publication Type'] as $ptype) {
-        if ($ptype == 'Journal Article') {
+        if (in_array($ptype, $known_types)) {
           $pub_type = $ptype;
           break;
         }
-        else {
-          if ($ptype == 'Conference Proceedings') {
-            $pub_type = $ptype;
-            break;
-          }
-          else {
-            if ($ptype == 'Review') {
-              $pub_type = $ptype;
-              break;
-            }
-            else {
-              if ($ptype == 'Book') {
-                $pub_type = $ptype;
-                break;
-              }
-              else {
-                if ($ptype == 'Letter') {
-                  $pub_type = $ptype;
-                  break;
-                }
-                else {
-                  if ($ptype == 'Book Chapter') {
-                    $pub_type = $ptype;
-                    break;
-                  }
-                  else {
-                    if ($ptype == "Research Support, Non-U.S. Gov't") {
-                      $pub_type = $ptype;
-                      // We don't break because if the article is also a Journal Article
-                      // we prefer that type.
-                    }
-                  }
-                }
-              }
-            }
-          }
+        elseif ($ptype == "Research Support, Non-U.S. Gov't") {
+          $pub_type = $ptype;
+          // We don't break because if the article is also a Journal Article
+          // we prefer that type.
         }
       }
       // If we don't have a recognized publication type, then just use the
@@ -610,13 +609,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     else {
       $pub_type = $pub['Publication Type'];
     }
-
-    // The citation manager uses a default citation format if the passed
-    // $pub_type is not known.
-    $citation_format = $this->citation_manager->getDefaultCitationTemplate($pub_type);
-    $citation = $this->citation_manager->generateCitation($citation_format, $pub);
-
-    return $citation;
+    return $pub_type;
   }
 
   /**
