@@ -17,6 +17,13 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
   protected $public;
 
   /**
+   * The Tripal Citation generation service.
+   *
+   * @var \Drupal\tripal\Services\TripalCitationManager $citation_manager
+   */
+  protected $citation_manager = NULL;
+
+  /**
    * The ID of this plugin.
    *
    * @var string
@@ -50,17 +57,20 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
       $plugin_id,
       $plugin_definition,
       $container->get('database'),
+      $container->get('tripal.citation'),
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Connection $public) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition,
+                              Connection $public, \Drupal\tripal\Services\TripalCitationManager $citation_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     // Dependency injection for public schema
     $this->public = $public;
+    $this->citation_manager = $citation_manager;
   }
 
 }
