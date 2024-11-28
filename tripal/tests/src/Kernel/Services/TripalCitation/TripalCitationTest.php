@@ -44,13 +44,15 @@ class TripalCitationTest extends TripalTestKernelBase {
     ];
     // An unknown publication type should return the default template
     $format1 = $citation_service->getDefaultCitationTemplate('undefined_type');
-    $this->assertEquals('[[Authors].][ [Title].][ [Publication Date|Year].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation]][ [Volume]][([Issue])][:[Pages].]',
+    $expected1 = '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation].][ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].';
+    $this->assertEquals($expected1,
       $format1, 'Format 1 is not the expected default citation template');
 
     // Test a journal article
     $format2 = $citation_service->getDefaultCitationTemplate('Journal Article');
     $c2 = $citation_service->generateCitation($format2, $pub1);
-    $this->assertEquals('Chado, A.B.; Drupal, B.C.; Tripal, C.D. Some impressive publication. 2024. Journal of Science 123(4):10-20.',
+    $expected2 = 'Chado, A.B.; Drupal, B.C.; Tripal, C.D. Some impressive publication. Journal of Science. 2024; 123(4):10-20.';
+    $this->assertEquals($expected2,
       $c2, 'Citation 2 is not the expected value');
 
     // Test a review, with missing issue value, and missing Journal Name, use fallback Series Name
@@ -59,7 +61,8 @@ class TripalCitationTest extends TripalTestKernelBase {
     unset($pub3['Journal Name']);
     $format3 = $citation_service->getDefaultCitationTemplate('Review');
     $c3 = $citation_service->generateCitation($format3, $pub3);
-    $this->assertEquals('Chado, A.B.; Drupal, B.C.; Tripal, C.D. Some impressive publication. The Journal of Science 2024. 123:10-20.',
+    $expected3 = 'Chado, A.B.; Drupal, B.C.; Tripal, C.D. Some impressive publication. The Journal of Science. 2024; 123:10-20.';
+    $this->assertEquals($expected3,
       $c3, 'Citation 3 is not the expected value');
   }
 

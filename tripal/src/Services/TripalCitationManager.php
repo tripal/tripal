@@ -54,19 +54,31 @@ class TripalCitationManager {
   public function getDefaultCitationTemplate(string $pub_type) {
     $templates = [
       'default' =>
-        '[[Authors].][ [Title].][ [Publication Date|Year].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation]][ [Volume]][([Issue])][:[Pages].]',
+        '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation].]'
+        . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
       // These five templates implement equivalent citations as done by Tripal 3
       // as found in tripal_chado/api/modules/tripal_chado.pub.api.inc
       'Journal Article' =>
-        '[[Authors].][ [Title].][ [Publication Date|Year].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation]][ [Volume]][([Issue])][:[Pages].]',
+        '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation].]'
+        . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
       'Review' =>
-        '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation]][ [Publisher].][ [Publication Date|Year].][ [Volume]][([Issue])][:[Pages].]',
+        '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation].][ [Publisher].]'
+        . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
       "Research Support, Non-U.S. Gov't" =>
-        '[[Authors].][ [Title].][ [Journal Name]][ [Publication Date|Year].]',
+        '[[Authors].][ [Title].][ [Journal Name].][ [Publication Date|Year]].',
       'Letter' =>
-        '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation]][ [Publication Date|Year].][ [Volume]][([Issue])][:[Pages].]',
+        '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation].]'
+        . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
       'Conference Proceedings' =>
-        '[[Authors].][ [Title].][ [Conference Name|Series Name|Series Abbreviation]][ [Publication Date|Year].][ [Volume]][([Issue])][:[Pages].]',
+        '[[Authors].][ [Title].][ [Conference Name|Series Name|Series Abbreviation].]'
+        . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
+      // The publication importer also supports "Book" and "Book Chapter", so include those
+      'Book' =>
+        '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation].][ [Publisher].]'
+        . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
+      'Book Chapter' =>
+        '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation].][ [Publisher].]'
+        . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
     ];
     if (array_key_exists($pub_type, $templates)) {
       return $templates[$pub_type];
