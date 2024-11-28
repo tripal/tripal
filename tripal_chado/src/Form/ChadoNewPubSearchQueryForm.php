@@ -459,14 +459,7 @@ class ChadoNewPubSearchQueryForm extends FormBase {
   public function form_elements_importer_selection($form, FormStateInterface $form_state) {
     // Retrieve a sorted list of available pub library plugins.
     $pub_library_manager = \Drupal::service('tripal.pub_library');
-    $pub_library_defs = $pub_library_manager->getDefinitions();
-    $plugins = [];
-    foreach ($pub_library_defs as $plugin_id => $def) {
-      $plugin_key = $def['id'];
-      $plugin_value = $def['label']->render();
-      $plugins[$plugin_key] = $plugin_value;
-    }
-    asort($plugins);
+    $plugins = $pub_library_manager->getLibraryOptions();
 
     $form['#prefix'] = '<div id="pub_importer_main_form">';
     $form['#suffix'] = '</div>';

@@ -96,23 +96,13 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   private function formQueryIdNotSet(&$form) {
     // Get list of database/libraries
     $pub_library_manager = \Drupal::service('tripal.pub_library');
-    $pub_library_defs = $pub_library_manager->getDefinitions();
-    $plugins = [];
-    foreach ($pub_library_defs as $plugin_id => $def) {
-      $plugin_key = $def['id'];
-      $plugin_value = $def['label']->render();
-      $plugins[$plugin_key] = $plugin_value;
-    }
-    asort($plugins);
-    foreach ($plugins as $plugin_key => $plugin) {
-      $library_options[$plugin_key] = $plugin;
-    }
+    $plugins = $pub_library_manager->getLibraryOptions();
 
     $form['database'] = [
       '#title' => t('Database'),
       '#type' => 'select',
       '#required' => TRUE,
-      '#options' => $library_options,
+      '#options' => $plugins,
       '#description' => 'The database of the search query',
       '#ajax' => [
         'callback' =>  [$this::class, 'database_on_change'],
@@ -176,21 +166,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
             $search_string .= $criteria_row['operation'] . ' (' . $criteria_row['scope'] . ': ' . $criteria_row['search_terms'] . ') ';
           }
 
-          $disabled = $criteria_column_array['disabled'];
-          if ($disabled <= 0) {
-            $disabled = 'No';
-          }
-          else {
-            $disabled = 'Yes';
-          }
+          $disabled = ($criteria_column_array['disabled'] <= 0) ? 'No' : 'Yes';
 
-          $do_contact = $criteria_column_array['do_contact'];
-          if ($do_contact <= 0) {
-            $do_contact = 'No';
-          }
-          else {
-            $do_contact = 'Yes';
-          }
+          $do_contact = ($criteria_column_array['do_contact'] <= 0) ? 'No' : 'Yes';
 
           $row = [];
 
