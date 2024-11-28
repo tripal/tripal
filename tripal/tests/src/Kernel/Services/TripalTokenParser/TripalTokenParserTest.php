@@ -3,9 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\Services\TripalTokenParser;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\Core\Url;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
+
 
 /**
  * Tests the TripalTokenParser service functions.
@@ -19,7 +17,7 @@ class TripalTokenParserTest extends TripalTestKernelBase {
   protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal'];
 
   /**
-   * The token parser service
+   * The tripal token parser service
    *
    * @var \Drupal\tripal\Services\TripalTokenParser
    */
@@ -35,7 +33,7 @@ class TripalTokenParserTest extends TripalTestKernelBase {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
-    /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
+    /** @var \Drupal\tripal\Services\TripalTokenParser $this->token_parser **/
     $this->token_parser = \Drupal::service('tripal.token_parser');
   }
 
@@ -44,7 +42,13 @@ class TripalTokenParserTest extends TripalTestKernelBase {
    */
   public function testTripalTokenParser() {
 
-    $token_values = ['abc' => 'a1', 'def' => 'd2', 'ghi' => 'g3', 'empty' => '', 'null' => NULL];
+    $token_values = [
+      'abc' => 'a1',
+      'def' => 'd2',
+      'ghi' => 'g3',
+      'empty' => '',
+      'null' => NULL
+    ];
 
     // String with no tokens
     $token_string = 'String with no tokens';
@@ -61,7 +65,7 @@ class TripalTokenParserTest extends TripalTestKernelBase {
     $replaced_string = $this->token_parser->replaceTokens($token_string, $token_values);
     $this->assertEquals($expected_string, $replaced_string, 'Did not get the expected token replacement for valid tokens');
 
-    // String with invalid and valid tokens
+    // String with both invalid and valid tokens
     $token_string = 'String with [nope] [ [morenope]]invalid and valid[-[abc]] tokens';
     $expected_string = 'String with  invalid and valid-a1 tokens';
     $expected_invalid = ['nope', 'morenope'];
@@ -78,6 +82,14 @@ class TripalTokenParserTest extends TripalTestKernelBase {
     $this->assertEquals($expected_invalid, $invalid_tokens, 'Expected one invalid token from validation');
     $replaced_string = $this->token_parser->replaceTokens($token_string, $token_values);
     $this->assertEquals($expected_string, $replaced_string, 'Did not get the expected token replacement for tokens with multiple options');
+
+    // Prefix or suffix matches beginning or end of token value
+    $token_string = 'Prefix matches token value [a[abc],] suffix matches token value [:[ghi]g3].';
+    $expected_string = 'Prefix matches token value a1, suffix matches token value :g3.';
+    $invalid_tokens = $this->token_parser->validateTokens($token_string, $token_values);
+    $this->assertEmpty($invalid_tokens, 'All tokens should be valid');
+    $replaced_string = $this->token_parser->replaceTokens($token_string, $token_values);
+    $this->assertEquals($expected_string, $replaced_string, 'Did not get the expected token replacement for prefix suffix test');
 
     // Replace an array of token strings
     $token_string_array = ['String [abc] 1', 'String [def] 2', 'String [empty] 3'];

@@ -39,7 +39,7 @@ class TripalCitationManager {
    *   An associative array defining the publication properties
    */
   public function generateCitation(string $format, array $values) {
-    $citation = $this->token_parser($format, $values);
+    $citation = $this->token_parser->replaceTokens($format, $values);
     return $citation;
   }
 
