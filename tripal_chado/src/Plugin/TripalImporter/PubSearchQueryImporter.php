@@ -5,7 +5,6 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
-use Drupal\Core\Render\Markup;
 
 
 /**
@@ -37,9 +36,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    // Always call the parent form to ensure Chado is handled properly.
+    // Always call the parent form to ensure selection of Chado schema is handled properly.
     $form = parent::form($form, $form_state);
-    $form_state_values = $form_state->getValues();
 
     $query_id = "";
     $build_args = $form_state->getBuildInfo();
@@ -58,141 +56,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     // If query_id is unset, we need to display library options and an autocomplete for the search query
     if ($query_id == "") {
-      // Get list of database/libraries
-      $pub_library_manager = \Drupal::service('tripal.pub_library');
-      $pub_library_defs = $pub_library_manager->getDefinitions();
-      $plugins = [];
-      foreach ($pub_library_defs as $plugin_id => $def) {
-        $plugin_key = $def['id'];
-        $plugin_value = $def['label']->render();
-        $plugins[$plugin_key] = $plugin_value;
-      }
-      asort($plugins);
-      foreach ($plugins as $plugin_key => $plugin) {
-        $library_options[$plugin_key] = $plugin;
-      }
-
-      $form['database'] = [
-        '#title' => t('Database'),
-        '#type' => 'select',
-        '#required' => TRUE,
-        '#options' => $library_options,
-        '#description' => 'The database of the search query',
-        '#ajax' => [
-          'callback' =>  [$this::class, 'database_on_change'],
-          'wrapper' => 'edit-output',
-        ],
-      ];
-
-
-      $form['search_query_name'] = [
-        '#title' => t('Search query name'),
-        '#type' => 'textfield',
-        '#required' => TRUE,
-        '#autocomplete_path' => 'admin/tripal/autocomplete/pubsearchqueryname',
-        '#autocomplete_route_name' => 'tripal.pubsearchqueryname_autocomplete',
-        '#autocomplete_query_parameters' => ['db' => 'dummyval'],
-        '#description' => t("The search query name"),
-        '#prefix' => '<div id="edit-search-query-name">',
-        '#suffix' => '</div>',
-      ];
-
-
-
-      $form['button_view_query_details'] = [
-        '#type' => 'button',
-        '#button_type' => 'button',
-        '#value' => 'Preview query details'
-      ];
-
-
-
-      if (isset($form_state_values['op'])) {
-        $op = $form_state_values['op'];
-        if ($op = 'Preview query details') {
-          $query_id = -1;
-          if ($form_state_values['query_id'] != "") {
-            $query_id = $form_state_values['query_id'];
-          }
-          else {
-            $search_query_name = $form_state_values['search_query_name'];
-            if (preg_match('/\((\d+)\)/', $search_query_name, $matches)) {
-              $query_id = $matches[1];
-            }
-          }
-          $headers = [
-            'Importer Name',
-            'Database',
-            'Search String',
-            'Disabled',
-            'Create Contact',
-          ];
-          $form['pub_query_details'] = [
-            '#type' => 'table',
-            '#header' => $headers,
-            '#prefix' => '<div id="pub_manager_table">',
-            '#suffix' => '</div>',
-          ];
-
-          $public = \Drupal::database();
-          $query = $public->select('tripal_pub_library_query','tpi')->fields('tpi')->condition('pub_library_query_id', $query_id, '=');
-          $results = $query->execute();
-          foreach ($results as $pub_query) {
-            $criteria_column_array = unserialize($pub_query->criteria);
-
-            $search_string = "";
-            foreach ($criteria_column_array['criteria'] as $criteria_row) {
-              $search_string .= $criteria_row['operation'] . ' (' . $criteria_row['scope'] . ': ' . $criteria_row['search_terms'] . ') ';
-            }
-
-            $disabled = $criteria_column_array['disabled'];
-            if ($disabled <= 0) {
-              $disabled = 'No';
-            }
-            else {
-              $disabled = 'Yes';
-            }
-
-            $do_contact = $criteria_column_array['do_contact'];
-            if ($do_contact <= 0) {
-              $do_contact = 'No';
-            }
-            else {
-              $do_contact = 'Yes';
-            }
-
-            $row = [];
-
-            // This should contain edit test and import pubs links @TODO
-
-            $row['col-1'] = [
-              '#markup' => $pub_query->name
-            ];
-            $row['col-2'] = [
-              '#markup' => $criteria_column_array['remote_db']
-            ];
-
-            // Search string
-            $row['col-3'] = [
-              '#markup' => $search_string
-            ];
-
-            // Disabled
-            $row['col-4'] = [
-              '#markup' => $disabled
-            ];
-
-            // Create contact
-            $row['col-5'] = [
-              '#markup' => $do_contact
-            ];
-
-
-            $form['pub_query_details'][] = $row;
-          }
-        }
-      }
-
+      $this->formQueryIdNotSet($form);
     }
 
     // If the query id is set, display the data
@@ -220,6 +84,144 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     }
 
     return $form;
+  }
+
+  /**
+   * Helper function for form(), code to handle the case
+   * where the query ID is not yet set.
+   *
+   * @param array &$form
+   *   The form array definition.
+   */
+  private function formQueryIdNotSet(&$form) {
+    // Get list of database/libraries
+    $pub_library_manager = \Drupal::service('tripal.pub_library');
+    $pub_library_defs = $pub_library_manager->getDefinitions();
+    $plugins = [];
+    foreach ($pub_library_defs as $plugin_id => $def) {
+      $plugin_key = $def['id'];
+      $plugin_value = $def['label']->render();
+      $plugins[$plugin_key] = $plugin_value;
+    }
+    asort($plugins);
+    foreach ($plugins as $plugin_key => $plugin) {
+      $library_options[$plugin_key] = $plugin;
+    }
+
+    $form['database'] = [
+      '#title' => t('Database'),
+      '#type' => 'select',
+      '#required' => TRUE,
+      '#options' => $library_options,
+      '#description' => 'The database of the search query',
+      '#ajax' => [
+        'callback' =>  [$this::class, 'database_on_change'],
+        'wrapper' => 'edit-output',
+      ],
+    ];
+
+    $form['search_query_name'] = [
+      '#title' => t('Search query name'),
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#autocomplete_path' => 'admin/tripal/autocomplete/pubsearchqueryname',
+      '#autocomplete_route_name' => 'tripal.pubsearchqueryname_autocomplete',
+      '#autocomplete_query_parameters' => ['db' => 'dummyval'],
+      '#description' => t("The search query name"),
+      '#prefix' => '<div id="edit-search-query-name">',
+      '#suffix' => '</div>',
+    ];
+
+    $form['button_view_query_details'] = [
+      '#type' => 'button',
+      '#button_type' => 'button',
+      '#value' => 'Preview query details'
+    ];
+
+    if (isset($form_state_values['op'])) {
+      $op = $form_state_values['op'];
+      if ($op == 'Preview query details') {
+        $query_id = -1;
+        if ($form_state_values['query_id'] != "") {
+          $query_id = $form_state_values['query_id'];
+        }
+        else {
+          $search_query_name = $form_state_values['search_query_name'];
+          if (preg_match('/\((\d+)\)/', $search_query_name, $matches)) {
+            $query_id = $matches[1];
+          }
+        }
+        $headers = [
+          'Importer Name',
+          'Database',
+          'Search String',
+          'Disabled',
+          'Create Contact',
+        ];
+        $form['pub_query_details'] = [
+          '#type' => 'table',
+          '#header' => $headers,
+          '#prefix' => '<div id="pub_manager_table">',
+          '#suffix' => '</div>',
+        ];
+
+        $public = \Drupal::database();
+        $query = $public->select('tripal_pub_library_query','tpi')->fields('tpi')->condition('pub_library_query_id', $query_id, '=');
+        $results = $query->execute();
+        foreach ($results as $pub_query) {
+          $criteria_column_array = unserialize($pub_query->criteria);
+
+          $search_string = "";
+          foreach ($criteria_column_array['criteria'] as $criteria_row) {
+            $search_string .= $criteria_row['operation'] . ' (' . $criteria_row['scope'] . ': ' . $criteria_row['search_terms'] . ') ';
+          }
+
+          $disabled = $criteria_column_array['disabled'];
+          if ($disabled <= 0) {
+            $disabled = 'No';
+          }
+          else {
+            $disabled = 'Yes';
+          }
+
+          $do_contact = $criteria_column_array['do_contact'];
+          if ($do_contact <= 0) {
+            $do_contact = 'No';
+          }
+          else {
+            $do_contact = 'Yes';
+          }
+
+          $row = [];
+
+          // This should contain edit test and import pubs links @TODO
+
+          $row['col-1'] = [
+            '#markup' => $pub_query->name
+          ];
+          $row['col-2'] = [
+            '#markup' => $criteria_column_array['remote_db']
+          ];
+
+          // Search string
+          $row['col-3'] = [
+            '#markup' => $search_string
+          ];
+
+          // Disabled
+          $row['col-4'] = [
+            '#markup' => $disabled
+          ];
+
+          // Create contact
+          $row['col-5'] = [
+            '#markup' => $do_contact
+          ];
+
+          $form['pub_query_details'][] = $row;
+        }
+      }
+    }
   }
 
   public static function test_click_on_change(array &$form, $form_state) {
@@ -399,62 +401,37 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $batch_num = 1;
     $sql = '';
     $args = [];
-    $total_publications = count($publications); // may not need this
     $missing_cvterms = []; // will keep track of keys that do not have cvterms, helpful for continuous debugging
     $unprocessed_array_keys = []; //  keys that are arrays that we did not process, helpful for continuous debugging
+
     foreach ($publications as $publication) {
       // Get pub id from inserted_pub_ids
       $pub_id = $inserted_pub_ids[$total];
 
       $total++;
 
-#      // Here for the uniquename field in the pub table we use the citation,
-#      // which for all importers we should have already generated.
-#      $uniquename = $publication['Citation'] ?? $pub_id;
-#      $publication['Uniquename'] = $uniquename;
-#
       // Go through each publication array keys => values
       foreach ($publication as $key => $value) {
-        // Check if the $key also exists in the list of cached cvterms
-        // This key is the cvterm name
-        if (isset($this->cvterm_lookups[$key])) {
-          $add_to_insert = true;
-          if (is_array($value)) {
-            $add_to_insert = false;
-            if ($key == 'Language') {
-              if (isset($value[0])) {
-                $value = $value[0]; // select the first element
-                $add_to_insert = true;
-              }
-            }
-            else {
-              $unprocessed_array_keys[$key] = true;
-            }
+        $value = $this->checkIfSupportedProperty($key, $value, $missing_cvterms, $unprocessed_array_keys);
+        if (!is_null($value)) {
+          $i++;
+          $prop_count++; // keep count of inserted prop (return this just for details)
+          $sql .= " (:pub_id_$i, :type_id_$i, :value_$i), ";
+          $args[":pub_id_$i"] = $pub_id;
+          $args[":type_id_$i"] = $this->cvterm_lookups[$key];
+          $args[":value_$i"] = $value;
+
+          if ($i == $batch_size) {
+            $sql = rtrim($sql, ", ");
+            $sql = $init_sql . $sql;
+            $this->chado->query($sql, $args);
+
+            $batch_num++;
+            // Now reset all of the variables for the next batch.
+            $sql = '';
+            $i = 0;
+            $args = [];
           }
-
-          if ($add_to_insert) {
-            $i++;
-            $prop_count++; // keep count of inserted prop (return this just for details)
-            $sql .= " (:pub_id_$i, :type_id_$i, :value_$i), ";
-            $args[":pub_id_$i"] = $pub_id;
-            $args[":type_id_$i"] = $this->cvterm_lookups[$key];
-            $args[":value_$i"] = $value;
-
-            if ($i == $batch_size) {
-              $sql = rtrim($sql, ", ");
-              $sql = $init_sql . $sql;
-              $this->chado->query($sql, $args);
-
-              $batch_num++;
-              // Now reset all of the variables for the next batch.
-              $sql = '';
-              $i = 0;
-              $args = [];
-            }
-          }
-        }
-        else {
-          $missing_cvterms[$key] = true;
         }
       }
 
@@ -466,14 +443,55 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     }
 
     if (count($missing_cvterms) > 0) {
-      $this->logger->notice("[!]   Overall missing CVTERMS for this set of publications: " . implode(',', array_keys($missing_cvterms)) . "\n");
+      $this->logger->notice("[!]   Overall missing CVTERMS for this set of publications: " . implode(', ', array_keys($missing_cvterms)) . "\n");
     }
     if (count($unprocessed_array_keys) > 0) {
-      $this->logger->notice("[!]   Unprocessed publication keys that are arrays: " . implode(',', array_keys($unprocessed_array_keys)) . "\n");
+      $this->logger->notice("[!]   Unprocessed publication keys that are arrays: " . implode(', ', array_keys($unprocessed_array_keys)) . "\n");
     }
 
     return $prop_count;
+  }
 
+  /**
+   * Helper function for insertPubProps to determine if the
+   * property CV term is supported.
+   *
+   * @param string $key
+   *   The property key, which is a CV term.
+   * @param string|array $value
+   *   The property value or values.
+   * @param array &$missing_cvterms
+   *   Array keys define a list of non-supported CV terms.
+   * @param array &$unprocessed_array_keys
+   *   Array keys define a list of supported CV terms, but where
+   *   the value was an array instead of a scalar.
+   *
+   * @return ?string
+   *   The value to be saved, or NULL if the $key is not supported.
+   */
+  private function checkIfSupportedProperty(string $key, string|array $value,
+                   array &$missing_cvterms, array &$unprocessed_array_keys) : ?string {
+    $prop_value = NULL;
+    if (isset($this->cvterm_lookups[$key])) {
+      if (is_array($value)) {
+        // The only supported array of values is 'Language'
+        if ($key == 'Language') {
+          if (isset($value[0])) {
+            $prop_value = $value[0]; // select the first element
+          }
+        }
+        else {
+          $unprocessed_array_keys[$key] = TRUE;
+        }
+      }
+      else {
+        $prop_value = $value;
+      }
+    }
+    else {
+      $missing_cvterms[$key] = TRUE;
+    }
+    return $prop_value;
   }
 
   function insertPubDbxrefs($inserted_pub_ids, $inserted_dbxref_ids) {
