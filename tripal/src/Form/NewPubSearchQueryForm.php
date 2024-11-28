@@ -90,7 +90,6 @@ class NewPubSearchQueryForm extends FormBase {
       // Disable the click radio options
       $form['plugin_id']['#attributes'] = array('onclick' => 'return false;');
 
-
       // add the elements for the specific importer (below function initialized plugin and calls form function)
       $form = $this->form_elements_specific_importer($form, $form_state);
 
@@ -107,67 +106,75 @@ class NewPubSearchQueryForm extends FormBase {
       // If the test button was clicked - run the TripalPubLibrary Plugin specific test function
       if (isset($_SESSION['tripal_pub_import'])) {
         if ($_SESSION['tripal_pub_import']['perform_test'] == 1) {
-          $plugin_id = $form['plugin_id']['#default_value'];
-          if ($plugin_id) {
-            // Instantiate the selected plugin
-            // Pub Library Manager is found in tripal module:
-            // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
-            $pub_library_manager = \Drupal::service('tripal.pub_library');
-            $plugin = $pub_library_manager->createInstance($plugin_id, []);
-
-            // The selected plugin defines a test specific to itself.
-            $criteria_column_array = $_SESSION['tripal_pub_import']['perform_test_criteria_array'];
-
-            // Perform a retrieve aka test lookup (retrieve 5 items, page 0)
-            $results = $plugin->retrieve($criteria_column_array, 5, 0);
-
-            // On successful results, it should return array with keys total_records, search_str, pubs(array)
-            $headers = ['', 'Publication', 'Authors'];
-            $form['test_results_table'] = [
-              '#type' => 'table',
-              '#header' => $headers,
-              '#prefix' => '<div id="test_results_table">',
-              '#suffix' => '</div>',
-              '#weight' => 1000, // arbitrary heavier number so table is below most options
-            ];
-
-            if ($results != NULL) {
-
-              $form['test_results_count_info'] = [
-                '#markup' => '<h1>Test results</h1><div>Found ' . $results['total_records'] .
-                  ' publications.' . ($results['total_records']>5?' Showing the first 5 publications.':'') . '</div>',
-                '#weight' => 998
-              ];
-
-              $form['test_results_search_string'] = [
-                '#markup' => 'Search String: ' .  $results['search_str'],
-                '#weight' => 999,
-              ];
-
-              $index = 0;
-              foreach ($results['pubs'] as $pubs_row) {
-                $index++;
-                $row["index"] = [
-                  '#markup' => $index,
-                ];
-                $row["publication"] = [
-                  '#markup' => $pubs_row['Title'],
-                ];
-                $row["authors"] = [
-                  '#markup' => $pubs_row['Authors'] ?? '',
-                ];
-                $form['test_results_table'][$index - 1] = $row;
-              }
-            }
-
-            // Set the session variable perform_test back to 0 since the test has finished
-            $_SESSION['tripal_pub_import']['perform_test'] = 0;
-            $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = [];
-          }
+          $this->buildFormRunTest($form);
         }
       }
     }
     return $form;
+  }
+
+  /**
+   * Helper function for the buildForm() function to handle the test button click
+   *
+   */
+  private function buildFormRunTest(array &$form) {
+    $plugin_id = $form['plugin_id']['#default_value'];
+    if ($plugin_id) {
+      // Instantiate the selected plugin
+      // Pub Library Manager is found in tripal module:
+      // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+      $pub_library_manager = \Drupal::service('tripal.pub_library');
+      $plugin = $pub_library_manager->createInstance($plugin_id, []);
+
+      // The selected plugin defines a test specific to itself.
+      $criteria_column_array = $_SESSION['tripal_pub_import']['perform_test_criteria_array'];
+
+      // Perform a retrieve aka test lookup (retrieve 5 items, page 0)
+      $results = $plugin->retrieve($criteria_column_array, 5, 0);
+
+      // On successful results, it should return array with keys total_records, search_str, pubs(array)
+      $headers = ['', 'Publication', 'Authors'];
+      $form['test_results_table'] = [
+        '#type' => 'table',
+        '#header' => $headers,
+        '#prefix' => '<div id="test_results_table">',
+        '#suffix' => '</div>',
+        '#weight' => 1000, // arbitrary heavier number so table is below most options
+      ];
+
+      if ($results != NULL) {
+
+        $form['test_results_count_info'] = [
+          '#markup' => '<h1>Test results</h1><div>Found ' . $results['total_records'] .
+            ' publications.' . ($results['total_records']>5?' Showing the first 5 publications.':'') . '</div>',
+          '#weight' => 998
+        ];
+
+        $form['test_results_search_string'] = [
+          '#markup' => 'Search String: ' .  $results['search_str'],
+          '#weight' => 999,
+        ];
+
+        $index = 0;
+        foreach ($results['pubs'] as $pubs_row) {
+          $index++;
+          $row["index"] = [
+            '#markup' => $index,
+          ];
+          $row["publication"] = [
+            '#markup' => $pubs_row['Title'],
+          ];
+          $row["authors"] = [
+            '#markup' => $pubs_row['Authors'] ?? '',
+          ];
+          $form['test_results_table'][$index - 1] = $row;
+        }
+      }
+
+      // Set the session variable perform_test back to 0 since the test has finished
+      $_SESSION['tripal_pub_import']['perform_test'] = 0;
+      $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = [];
+    }
   }
 
   /**
