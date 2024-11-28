@@ -88,7 +88,7 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     $this->assertEquals('10.3390/ijms25158314', $results['pubs'][0]['DOI'], 'DOI should have been 10.3390/ijms25158314 but it is not - parsing issue?');
     $this->assertEquals('2024', $results['pubs'][0]['Year'], 'Year should have been 2024 but it is not - parsing issue?');
     $this->assertEquals('Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.', $results['pubs'][0]['Title'], 'Title should have been Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus. but it is not - parsing issue?');
-    $this->assertEquals('Yang X, Zhu P, Gui J. Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.. International journal of molecular sciences. 2024 Jul 30; 25(15).', $results['pubs'][0]['Citation'], 'Citation does not look correct, review test for details');
+    $this->assertEquals('Yang X, Zhu P, Gui J. Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus. International journal of molecular sciences. 2024 Jul 30; 25(15).', $results['pubs'][0]['Citation'], 'Citation does not look correct, review test for details');
     $this->assertGreaterThan(2, count($results['pubs'][0]['Author List']), 'Author List should have more than 2 elements but does not');
 
 
