@@ -112,7 +112,6 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     }
 
 
-
     $this->assertNotEquals($pub_record, NULL, 'No publication record could be found in the chado pub table
     even though an import was executed');
 
@@ -184,4 +183,3 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
 
   }
 }
-?>
