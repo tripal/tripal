@@ -6,8 +6,6 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
-use Drupal\Core\Render\Markup;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 
 class NewPubSearchQueryForm extends FormBase {
@@ -28,7 +26,6 @@ class NewPubSearchQueryForm extends FormBase {
     if ($pub_import_id != null) {
       // used to keep track of whether this is a new query or edit query
       $this->pub_import_id = $pub_import_id;
-      $public = \Drupal::database();
 
       // This is the edit version of the form, we need to lookup the current pub_import_id
       $pub_library_manager = \Drupal::service('tripal.pub_library');
@@ -116,6 +113,8 @@ class NewPubSearchQueryForm extends FormBase {
   /**
    * Helper function for the buildForm() function to handle the test button click
    *
+   * @param array &$form
+   *   The form array definition.
    */
   private function buildFormRunTest(array &$form) {
     $plugin_id = $form['plugin_id']['#default_value'];
@@ -196,7 +195,6 @@ class NewPubSearchQueryForm extends FormBase {
 
 
   public function form_elements_common($form, FormStateInterface &$form_state) {
-    $form_state_values = $form_state->getValues();
 
     $disabled = '';
     $do_contact = '';
@@ -256,9 +254,7 @@ class NewPubSearchQueryForm extends FormBase {
       '#default_value' => $num_criteria,
     ];
 
-
     $criteria = [];
-
 
     $form = $this->tripal_pub_importer_setup_add_criteria_fields($form, $form_state, $num_criteria, $criteria);
 
@@ -273,7 +269,6 @@ class NewPubSearchQueryForm extends FormBase {
       '#value' => t('Save Search Query'),
       '#weight' => 51,
     ];
-
 
     $form['pub_library']['test'] = [
       '#type' => 'submit',
@@ -467,7 +462,7 @@ class NewPubSearchQueryForm extends FormBase {
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $pub_library_defs = $pub_library_manager->getDefinitions();
     $plugins = [];
-    foreach ($pub_library_defs as $plugin_id => $def) {
+    foreach ($pub_library_defs as $def) {
       $plugin_key = $def['id'];
       $plugin_value = $def['label']->render();
       $plugins[$plugin_key] = $plugin_value;
@@ -511,7 +506,6 @@ class NewPubSearchQueryForm extends FormBase {
    * {@inheritDoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $public = \Drupal::database();
     $user_input = $form_state->getUserInput();
     $form_mode = $user_input['mode'] ?? NULL;
     $trigger = $form_state->getTriggeringElement()['#name'];
@@ -684,7 +678,7 @@ class NewPubSearchQueryForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     // We can't make the criteria fields required as it will prevent the "Remove"
-    // button from working, but we can validate this here for any other action.
+    // button from working, but we can validate them here for any other action.
     $trigger = @$form_state->getTriggeringElement()['#name'];
     if ($trigger != 'remove') {
       $user_input = $form_state->getUserInput();
