@@ -513,10 +513,7 @@ class NewPubSearchQueryForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $public = \Drupal::database();
     $user_input = $form_state->getUserInput();
-    $form_mode = NULL;
-    if (isset($user_input['mode'])) {
-      $form_mode = $user_input['mode'];
-    }
+    $form_mode = $user_input['mode'] ?? NULL;
     $trigger = $form_state->getTriggeringElement()['#name'];
 
     if ($trigger == 'op') {
