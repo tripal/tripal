@@ -408,15 +408,11 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
       $total++;
 
-      // Generate Uniquename which is a special field that isn't in the publication array
-      $title = $publication['Title'];
-      $series_name = trim(explode('(', $publication['Journal Name'])[0]);
-      $pyear = $publication['Year'];
-
-      $uniquename = str_replace(',',';', @$publication['Authors']) . $title . ' ' . $series_name . '; ' . $pyear;
-
-      $publication['Uniquename'] = $uniquename;
-
+#      // Here for the uniquename field in the pub table we use the citation,
+#      // which for all importers we should have already generated.
+#      $uniquename = $publication['Citation'] ?? $pub_id;
+#      $publication['Uniquename'] = $uniquename;
+#
       // Go through each publication array keys => values
       foreach ($publication as $key => $value) {
         // Check if the $key also exists in the list of cached cvterms
@@ -550,7 +546,12 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $title = $publication['Title'];
       $series_name = trim(explode('(', $publication['Journal Name'])[0]);
       $pyear = $publication['Year'];
-      $uniquename = str_replace(',',';', @$publication['Authors']) . $title . ' ' . $series_name . '; ' . $pyear;
+
+      // Here for the uniquename field in the pub table we use the citation,
+      // which should be unique, and which for all importers we should have
+      // already generated it, but a simple default is provided as a fallback.
+      $uniquename = $publication['Citation']
+        ?? str_replace(',',';', @$publication['Authors']) . ' ' . $title . ' ' . $series_name . '; ' . $pyear;
 
       $total++;
       $i++;
