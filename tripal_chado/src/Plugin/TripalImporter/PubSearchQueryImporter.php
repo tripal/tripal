@@ -371,7 +371,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
   function insertPubProps($inserted_pub_ids, $missing_publications_dbxref, &$publications) {
     $batch_size = 100;
-    $init_sql = "INSERT INTO {1:pubprop} (pub_id, type_id, value) ";
+    $init_sql = "INSERT INTO {1:pubprop} (pub_id, type_id, value, rank) ";
     $init_sql .= "VALUES \n";
     $i = 0;
     $total = 0;
@@ -385,7 +385,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     foreach ($publications as $publication) {
       // Get pub id from inserted_pub_ids
       $pub_id = $inserted_pub_ids[$total];
-
+      $delta = 0;  // @todo We don't currently support more than one property of each type
       $total++;
 
       // Go through each publication array keys => values
@@ -394,10 +394,11 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         if (!is_null($value)) {
           $i++;
           $prop_count++; // keep count of inserted prop (return this just for details)
-          $sql .= " (:pub_id_$i, :type_id_$i, :value_$i), ";
+          $sql .= " (:pub_id_$i, :type_id_$i, :value_$i, :rank_$i), ";
           $args[":pub_id_$i"] = $pub_id;
           $args[":type_id_$i"] = $this->cvterm_lookups[$key];
           $args[":value_$i"] = $value;
+          $args[":rank_$i"] = $delta;
 
           if ($i == $batch_size) {
             $sql = rtrim($sql, ", ");
