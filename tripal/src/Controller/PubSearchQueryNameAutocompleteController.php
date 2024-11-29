@@ -22,10 +22,17 @@ class PubSearchQueryNameAutocompleteController extends ControllerBase {
 
     $query = $public->select('tripal_pub_library_query', 'tplq')
         ->fields('tplq');
-    $andGroup = $query->andConditionGroup()
-        ->condition('criteria', '"plugin_id";s:\d+:"' . $db . '"', 'REGEXP')
-        ->condition('criteria', '"loader_name";s:\d+:"' . $q, 'REGEXP');
-    $query->condition($andGroup);
+    // We support entering search text without first specifying the
+    // database, in which case all databases are queried.
+    if ($db == '*') {
+      $query->condition('criteria', '"loader_name";s:\d+:"[^"]' . $q, 'REGEXP');
+    }
+    else {
+      $andGroup = $query->andConditionGroup()
+          ->condition('criteria', '"plugin_id";s:\d+:"' . $db . '"', 'REGEXP')
+          ->condition('criteria', '"loader_name";s:\d+:"[^"]*' . $q, 'REGEXP');
+      $query->condition($andGroup);
+    }
     $results = $query->execute();
     foreach ($results as $row) {
         $criteria_data = unserialize($row->criteria);

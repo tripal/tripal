@@ -101,9 +101,11 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $form['database'] = [
       '#title' => t('Database'),
       '#type' => 'select',
-      '#required' => TRUE,
+      '#required' => FALSE,
       '#options' => $plugins,
-      '#description' => 'The database of the search query',
+      '#empty_option' => t('- Select -'),
+      '#description' => 'Select the database of the search query to'
+        . ' limit "Search query name" to only queries for that database',
       '#ajax' => [
         'callback' =>  [$this::class, 'database_on_change'],
         'wrapper' => 'edit-output',
@@ -116,11 +118,19 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       '#required' => TRUE,
       '#autocomplete_path' => 'admin/tripal/autocomplete/pubsearchqueryname',
       '#autocomplete_route_name' => 'tripal.pubsearchqueryname_autocomplete',
-      '#autocomplete_query_parameters' => ['db' => 'dummyval'],
+      '#autocomplete_query_parameters' => ['db' => '*'],
       '#description' => t("The search query name"),
       '#prefix' => '<div id="edit-search-query-name">',
       '#suffix' => '</div>',
     ];
+
+    // In 2024 we only have one database option, make it the default.
+    // We can remove this section later if we create a second importer.
+    if (count($plugins) == 1) {
+      $form['database']['#default_option'] = array_key_first($plugins);
+      unset($form['database']['#empty_option']);
+      $form['search_query_name']['#autocomplete_query_parameters']['db'] = array_key_first($plugins);
+    }
 
     $form['button_view_query_details'] = [
       '#type' => 'button',
