@@ -384,7 +384,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $tables = $this->records->getAncillaryTablesWithCond($base_table);
           foreach ($tables as $table_alias) {
 
-
             // Now find any items for this linked table.
             $num_items_found = $match->selectItems($base_table, $table_alias);
             if ($num_items_found == 0) {
@@ -609,13 +608,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param integer $delta
    *   The field item's delta value.
    * @param array $values
-   *  An array of field values.
+   *   An array of field values.
    * @return boolean
    *   returns TRUE if the field has all necessary elements for inserting
    *   into the Drupal tables for publishing. FALSE otherwise.
    */
   protected function isFieldValid($field_name, $delta, $values) {
 
+    $is_required = $this->getFieldDefinition($field_name)->isRequired();
     foreach ($values[$field_name][$delta] as $key => $prop_value) {
       /** @var \Drupal\tripal\TripalStorage\StoragePropertyTypeBase $prop_type **/
       $prop_type = $this->getPropertyType($field_name, $key);
@@ -623,11 +623,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $action = $prop_settings['action'];
       $is_store = preg_match('/^store/', $action);
       $value = $prop_value['value']->getValue();
-      $is_required = $prop_type->getRequired();
-      if ($is_store and $value === NULL) {
-        return FALSE;
-      }
-      if ($is_required and $value === NULL) {
+      if ($is_store and $is_required and $value === NULL) {
         return FALSE;
       }
     }
