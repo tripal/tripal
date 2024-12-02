@@ -76,6 +76,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   protected $token_values = [];
 
   /**
+   * Save bundles to avoid repeated lookup.
+   *
+   * @var array $bundle_cache.
+   */
+  protected $bundle_cache = [];
+
+  /**
    * Constructs a new Tripal entity object, without permanently saving it.
    *
    * @code
@@ -137,8 +144,14 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function setTitle($title = NULL) {
     // If no title was passed, construct an entity title
     if (!$title) {
-      // Get the bundle object.
-      $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+      // Get the bundle object and cache it.
+      if (array_key_exists($this->getType(), $this->bundle_cache)) {
+        $bundle = $this->bundle_cache[$this->getType()];
+      }
+      else {
+        $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+        $this->bundle_cache[$this->getType()] = $bundle;
+      }
 
       // Initialize the Tripal token parser service.
       /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
@@ -170,6 +183,14 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The default entity alias, e.g. "/project/1234"
    */
   public function getDefaultAlias(string $default_alias = '') {
+    // Get the bundle object and cache it.
+    if (array_key_exists($this->getType(), $this->bundle_cache)) {
+      $bundle = $this->bundle_cache[$this->getType()];
+    }
+    else {
+      $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+      $this->bundle_cache[$this->getType()] = $bundle;
+    }
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
 
     // Generate an alias using the default format set by admins.
