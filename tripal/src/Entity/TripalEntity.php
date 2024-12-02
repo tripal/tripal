@@ -258,16 +258,24 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $alias_objects = \Drupal::entityTypeManager()->getStorage('path_alias')->loadByProperties([
           'alias' => $existing_alias['alias'],
         ]);
-        $alias_objects[array_key_first($alias_objects)]->delete();
+        if (!count($alias_objects)) {
+          throw new \Exception('Unable to retrieve existing alias "' . $existing_alias['alias'] . '"');
+        }
+        /** @var Drupal\path_alias\Entity\PathAlias $existing_alias_object **/
+        $existing_alias_object = $alias_objects[array_key_first($alias_objects)];
+        if (!is_object($existing_alias_object)) {
+          throw new \Exception('Did not retrieve a PathAlias object for "' . $existing_alias['alias'] . '"');
+        }
+        $existing_alias_object->delete();
       }
 
       // Create the alias
       $system_path = '/bio_data/' . $this->getID();
-      $alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+      $new_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
         'path' => $system_path,
         'alias' => $new_alias,
       ]);
-      $alias_object->save();
+      $new_alias_object->save();
     }
     return $new_alias;
   }
