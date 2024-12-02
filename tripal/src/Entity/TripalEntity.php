@@ -275,6 +275,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         'path' => $system_path,
         'alias' => $new_alias,
       ]);
+      if (!is_object($new_alias_object)) {
+        throw new \Exception('Did not create a PathAlias object for "' . $new_alias . '"');
+      }
       $new_alias_object->save();
     }
     return $new_alias;
