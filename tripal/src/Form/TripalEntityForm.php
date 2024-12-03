@@ -196,25 +196,24 @@ class TripalEntityForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
-    $entity = $this->entity;
-    $bundle = $entity->getType();
+    $bundle = $this->entity->getType();
     $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle);
-    $entity->setOwnerId($values['uid'][0]['target_id']);
+    $this->entity->setOwnerId($values['uid'][0]['target_id']);
 
     $status = parent::save($form, $form_state);
-    $entity_id = $entity->id();
 
     // Entity ID is only available post-save, so we have waited
-    // to set the title and path alias until after saving.
-    // Fetch the saved version of the entity.
-    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['id' => $entity_id]);
-    $entity = $entities[$entity_id];
-
-    // Update remaining items and save.
-    $entity->setTokenValues();
-    $entity->setTitle($values['title'][0]['value']);
-    $entity->setAlias($values['path'][0]['alias']);
-    $entity->save();
+    // to set the title and URL path alias until after saving.
+    // Unfortunately we have to re-load the entity as it is not
+    // fully updated post-save.
+    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['id' => $this->entity->id()]);
+    $this->entity = $entities[$this->entity->id()];
+    $this->entity->setTokenValues();
+    $this->entity->setTitle();
+    // We need to save the title, but the alias will be saved with setAlias
+    // (If we save after setAlias, the value reverts to the form value)
+    $this->entity->save();
+    $this->entity->setAlias($values['path'][0]['alias']);
 
     switch ($status) {
       case SAVED_NEW:
@@ -228,7 +227,7 @@ class TripalEntityForm extends ContentEntityForm {
           '%label' => $bundle_entity->label(),
         ]));
     }
-    $form_state->setRedirect('entity.tripal_entity.canonical', ['tripal_entity' => $entity_id]);
+    $form_state->setRedirect('entity.tripal_entity.canonical', ['tripal_entity' => $this->entity->id()]);
   }
 
   /**
