@@ -456,8 +456,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
   /**
    * Flattens the field values to be suitable for use as values
-   * for token replacement. Values with cardinality > 1 are
-   * excluded.
+   * for token replacement. Only returns the first value for
+   * Values with cardinality > 1.
    *
    * @param array $field_values
    *   Values nested array from $this->getFieldValues()
@@ -467,9 +467,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   protected function processFieldValues(array $field_values): array {
     $processed_values = [];
     foreach ($field_values as $field => $value_array) {
-      // Token replacement only supports single-value fields,
-      // therefore, only add if the items array has a single value.
-      if (count($value_array) == 1) {
+      // Token replacement currently only supports single-value fields,
+      // therefore, only add the first value if there are more than one.
+      if (count($value_array) >= 1) {
         if (array_key_exists('value', $value_array[0])) {
           $processed_values[$field] = $value_array[0]['value'];
         }
