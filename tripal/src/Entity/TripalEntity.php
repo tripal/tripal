@@ -193,6 +193,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
 
+    // If editing, we should undo urlencode before processing tokens
+    $default_alias = urldecode($default_alias);
+
     // Generate an alias using the default format set by admins.
     if (!$default_alias) {
       $default_alias = $bundle->getURLFormat();
