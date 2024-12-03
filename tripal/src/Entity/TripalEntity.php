@@ -242,6 +242,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function setAlias(string $path_alias = ''): string {
     // Check if an alias already exists for this entity's system path
+    /** @var array $existing_alias **/
     $existing_alias = $this->getAlias();
 
     // @todo check if  alias exists for somthing else?
@@ -250,26 +251,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // in the supplied $path_alias.
     $new_alias = $this->getDefaultAlias($path_alias);
 
-    // If alias does not exist, or if it is being changed
-    if (!$existing_alias or ($existing_alias['alias'] != $new_alias)) {
-
-      // If an alias already exists, we first need to remove it
-      if ($existing_alias) {
-        $alias_objects = \Drupal::entityTypeManager()->getStorage('path_alias')->loadByProperties([
-          'alias' => $existing_alias['alias'],
-        ]);
-        if (!count($alias_objects)) {
-          throw new \Exception('Unable to retrieve existing alias "' . $existing_alias['alias'] . '"');
-        }
-        /** @var Drupal\path_alias\Entity\PathAlias $existing_alias_object **/
-        $existing_alias_object = $alias_objects[array_key_first($alias_objects)];
-        if (!is_object($existing_alias_object)) {
-          throw new \Exception('Did not retrieve a PathAlias object for "' . $existing_alias['alias'] . '"');
-        }
-        $existing_alias_object->delete();
-      }
-
-      // Create the alias
+    // If an alias does not exist, then create one
+    if (!$existing_alias) {
       $system_path = '/bio_data/' . $this->getID();
       $new_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
         'path' => $system_path,
@@ -280,6 +263,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       }
       $new_alias_object->save();
     }
+    // If an alias already exists, and is different, we can just update it
+    elseif ($existing_alias['alias'] != $new_alias) {
+      $existing_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->load($existing_alias['id']);
+      if (!is_object($existing_alias_object)) {
+        throw new \Exception('Did not retrieve a PathAlias object for "' . $existing_alias['alias'] . '"');
+      }
+      $existing_alias_object->setAlias($new_alias);
+      $existing_alias_object->save();
+    }
+
     return $new_alias;
   }
 
