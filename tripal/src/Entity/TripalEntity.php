@@ -301,6 +301,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       if (!is_object($existing_alias_object)) {
         throw new \Exception('Did not update the PathAlias object for "' . $existing_alias['alias'] . '"');
       }
+      // $new alias will be empty here if there was a conflict with an
+      // already existing one. Here we just remove the alias, the
+      // form will display an error message if our return value is empty.
       if ($new_alias) {
         $existing_alias_object->setAlias($new_alias);
         $existing_alias_object->save();
