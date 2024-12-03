@@ -213,11 +213,20 @@ class TripalEntityForm extends ContentEntityForm {
     // We need to save the title, but the alias will be saved with setAlias
     // (If we save after setAlias, the value reverts to the form value)
     $this->entity->save();
-    $this->entity->setAlias($values['path'][0]['alias']);
+    $set_value = $this->entity->setAlias($values['path'][0]['alias']);
+    if (!$set_value) {
+      $status = 'duplicate_alias';
+    }
 
     switch ($status) {
       case SAVED_NEW:
         $this->messenger()->addMessage($this->t('Created the %label.', [
+          '%label' => $bundle_entity->label(),
+        ]));
+        break;
+
+      case 'duplicate_alias':
+        $this->messenger()->addError($this->t('Saved the %label, but the processed value for the URL alias already exists so an alias has not been set.', [
           '%label' => $bundle_entity->label(),
         ]));
         break;
