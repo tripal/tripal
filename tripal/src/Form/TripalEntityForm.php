@@ -206,16 +206,27 @@ class TripalEntityForm extends ContentEntityForm {
     // to set the title and URL path alias until after saving.
     // Unfortunately we have to re-load the entity as it is not
     // fully updated post-save.
-    $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['id' => $this->entity->id()]);
-    $this->entity = $entities[$this->entity->id()];
-    $this->entity->setTokenValues();
-    $this->entity->setTitle();
-    // We need to save the title, but the alias will be saved with setAlias
-    // (If we save after setAlias, the value reverts to the form value)
-    $this->entity->save();
-    $set_value = $this->entity->setAlias($values['path'][0]['alias']);
-    if (!$set_value) {
-      $status = 'duplicate_alias';
+    $msg = '';
+    try {
+      $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['id' => $this->entity->id()]);
+      $this->entity = $entities[$this->entity->id()];
+      $this->entity->setTokenValues();
+      $this->entity->setTitle();
+      // We need to save here to save the title, but the alias will be saved
+      // with setAlias(). We save now, because if we save after setAlias(),
+      // the saved alias reverts to the form value!
+      $this->entity->save();
+      $set_value = $this->entity->setAlias($values['path'][0]['alias']);
+      // The $set_value will be an empty string if the alias, after
+      // token replacement and HTML tag removal, now matches an existing
+      // alias. In this case, the alias will not be set to anything.
+      if (!$set_value) {
+        $status = 'duplicate_alias';
+      }
+    }
+    catch (\Exception $e) {
+      $status = 'exception';
+      $msg = $e->getMessage();
     }
 
     switch ($status) {
@@ -228,6 +239,12 @@ class TripalEntityForm extends ContentEntityForm {
       case 'duplicate_alias':
         $this->messenger()->addError($this->t('Saved the %label, but the processed value for the URL alias already exists so an alias has not been set.', [
           '%label' => $bundle_entity->label(),
+        ]));
+        break;
+
+      case 'exception':
+        $this->messenger()->addError($this->t('Error, title or alias may be incorrect: %msg', [
+          '%msg' => $msg,
         ]));
         break;
 

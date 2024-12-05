@@ -291,19 +291,22 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         'alias' => $new_alias,
       ]);
       if (!is_object($new_alias_object)) {
-        throw new \Exception('Did not create a PathAlias object for "' . $new_alias . '"');
+        throw new \Exception(t('Did not create a PathAlias object for ":new_alias"',
+          [':new_alias' => $new_alias]));
       }
       $new_alias_object->save();
     }
     // If an alias already exists, and is different, we can just update it
-    elseif ($existing_alias['alias'] != $new_alias) {
+    elseif ($existing_alias and ($existing_alias['alias'] != $new_alias)) {
       $existing_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->load($existing_alias['id']);
       if (!is_object($existing_alias_object)) {
-        throw new \Exception('Did not update the PathAlias object for "' . $existing_alias['alias'] . '"');
+        throw new \Exception(t('Unable to load the PathAlias object for ":existing_alias"',
+          [':existing_alias' => $existing_alias['alias']]));
       }
-      // $new alias will be empty here if there was a conflict with an
-      // already existing one. Here we just remove the alias, the
-      // form will display an error message if our return value is empty.
+      // $new_alias will be an empty string here if there was a conflict
+      // with an already existing alias. Here we just remove the alias,
+      // the entity form is responsible for displaying an error message
+      // if the return value is an empty string.
       if ($new_alias) {
         $existing_alias_object->setAlias($new_alias);
         $existing_alias_object->save();
