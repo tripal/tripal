@@ -36,6 +36,14 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $field_info = [];
 
   /**
+   * A list of the main properties for each field.
+   * The key is the field name, and the value is the name of the main property.
+   *
+   * @var array $main_property_names
+   */
+  protected $main_property_names = [];
+
+  /**
    * Stores the bundle (entity type) object.
    *
    * @var \Drupal\tripal\Entity\TripalEntityType $entity_type
@@ -151,6 +159,8 @@ class ChadoPublish extends TripalBackendPublishBase {
           }
           $this->field_info[$field_name] = $field_info;
 
+          // Store the main properties for later
+          $this->main_property_names[$field_name] = $instance->mainPropertyName();
         }
       }
     }
@@ -951,7 +961,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
 
       $this->logger->notice($batch_prefix . 'Step 1 of 6: Find matching records');
-      $matches = $this->storage->findValues($this->search_values, $record_id_batch[0], end($record_id_batch));
+      $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch[0], end($record_id_batch));
 
       if (!count($matches)) {
         $this->logger->notice($batch_prefix . 'No matching records found, skipping remaining steps');
