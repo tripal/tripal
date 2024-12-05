@@ -341,12 +341,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * @{inheritdoc}
    *
+   * @param array $main_property_names
+   *   Associative array where key is field name, value is name of the main property.
    * @param int|null $minimum_id
    *   When specified, only return records where the primary key is >= this value
    * @param int|null $maximum_id
    *   When specified, only return records where the primary key is <= this value
    */
-  public function findValues($values, $minimum_id = NULL, $maximum_id = NULL) {
+  public function findValues($values, array $main_property_names = [], ?int $minimum_id = NULL, ?int $maximum_id = NULL) {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Find');
@@ -358,7 +360,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // Start an array to keep track of the results we find.
     // Each element in this array will be a clone of the full $values array
-    // passed into this method with it's propertyValue objects set to match
+    // passed into this method with its propertyValue objects set to match
     // the values in chado for a single record.
     $found_list = [];
 
@@ -384,7 +386,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $tables = $this->records->getAncillaryTablesWithCond($base_table);
           foreach ($tables as $table_alias) {
 
-
             // Now find any items for this linked table.
             $num_items_found = $match->selectItems($base_table, $table_alias);
             if ($num_items_found == 0) {
@@ -409,7 +410,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Remove any values that are not valid.
           foreach ($new_values as $field_name => $deltas) {
             foreach ($deltas as $delta => $properties) {
-              $is_valid = $this->isFieldValid($field_name, $delta, $new_values);
+              $main_prop = $main_property_names[$field_name] ?? 'value';
+              $is_valid = $this->isFieldValid($field_name, $delta, $main_prop, $new_values);
               if (!$is_valid) {
                 unset($new_values[$field_name][$delta]);
               }
@@ -608,14 +610,17 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   The name of the field.
    * @param integer $delta
    *   The field item's delta value.
+   * @param string $main_property_name
+   *   The name of the field's main property.
    * @param array $values
-   *  An array of field values.
+   *   An array of field values.
    * @return boolean
    *   returns TRUE if the field has all necessary elements for inserting
    *   into the Drupal tables for publishing. FALSE otherwise.
    */
-  protected function isFieldValid($field_name, $delta, $values) {
+  protected function isFieldValid($field_name, $delta, $main_property_name, $values) {
 
+    $is_required = $this->getFieldDefinition($field_name)->isRequired();
     foreach ($values[$field_name][$delta] as $key => $prop_value) {
       /** @var \Drupal\tripal\TripalStorage\StoragePropertyTypeBase $prop_type **/
       $prop_type = $this->getPropertyType($field_name, $key);
@@ -623,11 +628,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $action = $prop_settings['action'];
       $is_store = preg_match('/^store/', $action);
       $value = $prop_value['value']->getValue();
-      $is_required = $prop_type->getRequired();
-      if ($is_store and $value === NULL) {
+      if ($is_store and $is_required and ($value === NULL)) {
         return FALSE;
       }
-      if ($is_required and $value === NULL) {
+      if (($key == $main_property_name) and ($value === NULL)) {
         return FALSE;
       }
     }
@@ -712,7 +716,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $context['property_settings'] = $prop_storage_settings;
           $context['delta'] = $delta;
           $context['action'] = $action;
-
 
           // Get the path array for this field and add any joins if any are needed.
           if (array_key_exists('path', $prop_storage_settings)) {
