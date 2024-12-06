@@ -76,6 +76,14 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   protected $token_values = [];
 
   /**
+   * Save bundles to avoid repeated lookup.
+   *
+   * @var array $bundle_cache.
+   *   Key is bundle ID, value is instance of Drupal\tripal\Entity\TripalEntityType
+   */
+  protected $bundle_cache = [];
+
+  /**
    * Constructs a new Tripal entity object, without permanently saving it.
    *
    * @code
@@ -112,6 +120,42 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Allows bundles to be stored in the bundle cache for better performance
+   *
+   * @param string $bundle_id
+   *   The bundle identifier, e.g. 'organism'
+   * @param Drupal\tripal\Entity\TripalEntityType $bundle
+   *   The bundle object, or NULL can be passed to invalidate current cached value.
+   */
+  public function setBundleCache(string $bundle_id, ?TripalEntityType $bundle) {
+    if ($bundle) {
+      $this->bundle_cache[$bundle_id] = $bundle;
+    }
+    else {
+      unset($this->bundle_cache[$bundle_id]);
+    }
+  }
+
+  /**
+   * Get the bundle object for the current type, and cache it.
+   *
+   * @return Drupal\tripal\Entity\TripalEntityType
+   *   The bundle object
+   */
+  protected function getBundle() {
+    $bundle_id = $this->getType();
+    $bundle = NULL;
+    if (array_key_exists($this->getType(), $this->bundle_cache)) {
+      $bundle = $this->bundle_cache[$bundle_id];
+    }
+    if (!$bundle) {
+      $bundle = \Drupal\tripal\Entity\TripalEntityType::load($bundle_id);
+      $this->setBundleCache($bundle_id, $bundle);
+    }
+    return $bundle;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getID() {
@@ -137,8 +181,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function setTitle($title = NULL) {
     // If no title was passed, construct an entity title
     if (!$title) {
-      // Get the bundle object.
-      $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+      $bundle = $this->getBundle();
 
       // Initialize the Tripal token parser service.
       /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
@@ -170,26 +213,29 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The default entity alias, e.g. "/project/1234"
    */
   public function getDefaultAlias(string $default_alias = '') {
-    $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+    $bundle = $this->getBundle();
 
     // Generate an alias using the default format set by admins.
     if (!$default_alias) {
       $default_alias = $bundle->getURLFormat();
     }
 
-    // Initialize the Tripal token parser service.
+    // Initialize the Tripal token parser service and replace tokens.
     /** @var \Drupal\tripal\Services\TripalTokenParser $token_parser **/
     $token_parser = \Drupal::service('tripal.token_parser');
     $token_values = $this->getBundleEntityTokenValues($default_alias, $bundle);
     $default_alias = $token_parser->replaceTokens($default_alias, $token_values);
+
+    // We don't allow HTML tags in the alias
+    $default_alias = strip_tags($default_alias);
 
     // Ensure there is a leading slash.
     if ($default_alias[0] != '/') {
       $default_alias = '/' . $default_alias;
     }
 
-    // Make sure the path alias is URL friendly.
-    $default_alias = str_replace(['%2F', '+'], ['/', '-'], urlencode($default_alias));
+    // Drupal handles url escaping, but we prefer to replace spaces with dashes
+    $default_alias = str_replace(' ', '-', $default_alias);
 
     return $default_alias;
   }
@@ -221,33 +267,55 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function setAlias(string $path_alias = ''): string {
     // Check if an alias already exists for this entity's system path
+    /** @var array $existing_alias **/
     $existing_alias = $this->getAlias();
-
-    // @todo check if  alias exists for somthing else?
 
     // Gets and uses default template, or replaces tokens
     // in the supplied $path_alias.
     $new_alias = $this->getDefaultAlias($path_alias);
 
-    // If alias does not exist, or if it is being changed
-    if (!$existing_alias or ($existing_alias['alias'] != $new_alias)) {
+    // Check if the specified alias already exists for a different entity.
+    // Drupal will check for this for the value from the entity form, but we
+    // need to check again for our processed value after token replacement, etc.
+    // If it is a duplicate, we remove the alias, and the entity form can complain.
+    $entities = \Drupal::entityTypeManager()->getStorage('path_alias')->loadByProperties(['alias' => $new_alias]);
+    if ($entities) {
+      $new_alias = '';
+    }
 
-      // If an alias already exists, we first need to remove it
-      if ($existing_alias) {
-        $alias_objects = \Drupal::entityTypeManager()->getStorage('path_alias')->loadByProperties([
-          'alias' => $existing_alias['alias'],
-        ]);
-        $alias_objects[array_key_first($alias_objects)]->delete();
-      }
-
-      // Create the alias
+    // If an alias does not exist, then create one
+    if (!$existing_alias and $new_alias) {
       $system_path = '/bio_data/' . $this->getID();
-      $alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+      $new_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
         'path' => $system_path,
         'alias' => $new_alias,
       ]);
-      $alias_object->save();
+      if (!is_object($new_alias_object)) {
+        throw new \Exception(t('Did not create a PathAlias object for ":new_alias"',
+          [':new_alias' => $new_alias]));
+      }
+      $new_alias_object->save();
     }
+    // If an alias already exists, and is different, we can just update it
+    elseif ($existing_alias and ($existing_alias['alias'] != $new_alias)) {
+      $existing_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->load($existing_alias['id']);
+      if (!is_object($existing_alias_object)) {
+        throw new \Exception(t('Unable to load the PathAlias object for ":existing_alias"',
+          [':existing_alias' => $existing_alias['alias']]));
+      }
+      // $new_alias will be an empty string here if there was a conflict
+      // with an already existing alias. Here we just remove the alias,
+      // the entity form is responsible for displaying an error message
+      // if the return value is an empty string.
+      if ($new_alias) {
+        $existing_alias_object->setAlias($new_alias);
+        $existing_alias_object->save();
+      }
+      else {
+        $existing_alias_object->delete();
+      }
+    }
+
     return $new_alias;
   }
 
@@ -394,8 +462,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
   /**
    * Flattens the field values to be suitable for use as values
-   * for token replacement. Values with cardinality > 1 are
-   * excluded.
+   * for token replacement. Only returns the first value for
+   * Values with cardinality > 1.
    *
    * @param array $field_values
    *   Values nested array from $this->getFieldValues()
@@ -405,9 +473,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   protected function processFieldValues(array $field_values): array {
     $processed_values = [];
     foreach ($field_values as $field => $value_array) {
-      // Token replacement only supports single-value fields,
-      // therefore, only add if the items array has a single value.
-      if (count($value_array) == 1) {
+      // Token replacement currently only supports single-value fields,
+      // therefore, only add the first value if there are more than one.
+      if (count($value_array) >= 1) {
         if (array_key_exists('value', $value_array[0])) {
           $processed_values[$field] = $value_array[0]['value'];
         }

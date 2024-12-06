@@ -35,11 +35,12 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $field_info = [];
 
   /**
-   * Stores the main property for each field on an entity
+   * A list of the main properties for each field.
+   * The key is the field name, and the value is the name of the main property.
    *
-   * @var array $main_properties
-   **/
-  protected $main_properties = [];
+   * @var array $main_property_names
+   */
+  protected $main_property_names = [];
 
   /**
    * Stores the bundle (entity type) object.
@@ -157,6 +158,8 @@ class ChadoPublish extends TripalBackendPublishBase {
           }
           $this->field_info[$field_name] = $field_info;
 
+          // Store the main properties for later
+          $this->main_property_names[$field_name] = $instance->mainPropertyName();
         }
       }
     }
@@ -197,7 +200,6 @@ class ChadoPublish extends TripalBackendPublishBase {
     // title and URL alias.
     $title_format = $this->entity_type->getTitleFormat();
     $url_format = $this->entity_type->getURLFormat();
-    $this->main_properties = [];
     foreach ($this->field_info as $field_name => $field_info) {
       if (preg_match("/\[$field_name\]/", $title_format) or
           preg_match("/\[$field_name\]/", $url_format)) {
@@ -221,7 +223,6 @@ class ChadoPublish extends TripalBackendPublishBase {
         /** @var \Drupal\tripal\TripalStorage\StoragePropertyBase $prop **/
         $field = $this->field_info[$field_name]['instance'];
         $main_prop = $field->mainPropertyName();
-        $this->main_properties[$field_name] = $main_prop;
         $prop = $field_info['prop_types'][$main_prop];
         $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
             $field_class::$id, $main_prop, $prop->getTerm()->getTermId(), NULL);
@@ -387,7 +388,7 @@ class ChadoPublish extends TripalBackendPublishBase {
           foreach($field_items as $delta => $properties) {
             foreach ($properties as $property_name => $prop_deets) {
               $prop_value = $prop_deets['value']->getValue();
-              if ($property_name == ($this->main_properties[$field_name]??'')) {
+              if ($property_name == ($this->main_property_names[$field_name]??'')) {
                 $token_values[$field_name] = $prop_value;
               }
             }
@@ -965,7 +966,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
 
       $this->logger->notice($batch_prefix . 'Step 1 of 6: Find matching records');
-      $matches = $this->storage->findValues($this->search_values, $record_id_batch[0], end($record_id_batch));
+      $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch[0], end($record_id_batch));
 
       if (!count($matches)) {
         $this->logger->notice($batch_prefix . 'No matching records found, skipping remaining steps');
