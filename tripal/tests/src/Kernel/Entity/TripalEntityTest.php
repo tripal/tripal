@@ -211,7 +211,10 @@ class TripalEntityTest extends TripalTestKernelBase {
     $this->assertEquals($title_format, $current_format,
       'setTitleFormat did not save the expected format');
     $expected_title = '1 <i>Oryza sativa</i> subspecies <i>Japonica</i>';
+    // Need to invalidate the entity bundle cache whenever we modify the bundle itself.
+    $entity->setBundleCache($this->bundle_name, NULL);
     $entity->setTitle();
+    $entity->save();  // Need to save after setting title, but not for alias
     $entity_title = $entity->getTitle();
     $this->assertEquals($expected_title, $entity_title,
       'setTitle did not create the expected title');
@@ -227,11 +230,12 @@ class TripalEntityTest extends TripalTestKernelBase {
     // This also tests changing an existing alias
     $organism_bundle->setURLFormat($alias_format);
     $organism_bundle->save();
+    $entity->setBundleCache($this->bundle_name, NULL);
     $current_format = $organism_bundle->getURLFormat();
     $this->assertEquals($alias_format, $current_format,
       'setAliasFormat did not save the expected format');
-    // Parentheses will be url escaped, spaces become dashes
-    $expected_alias = '/tripal_entity_test/1-%28Japonica-rice%29';
+    // Spaces become dashes
+    $expected_alias = '/tripal_entity_test/1-(Japonica-rice)';
     $entity->setAlias();
     $entity_alias = $entity->getAlias()['alias'];
     $this->assertEquals($expected_alias, $entity_alias,
