@@ -367,13 +367,14 @@ class ChadoPublish extends TripalBackendPublishBase {
    *
    * @param array $matches
    *   The array of matches for each entity.
+   * @param string $title_format
+   *   The format for titles for this bundle, contains one or more tokens.
    *
    * @return array
    *   A list of titles in order of the entities provided by the $matches array.
    */
-  protected function getEntityTitles($matches) {
+  protected function getEntityTitles(array $matches, string $title_format) {
     $titles = [];
-    $title_format = $this->entity_type->getTitleFormat();
 
     // Iterate through each match we are checking for an existing entity for.
     foreach ($matches as $match) {
@@ -401,6 +402,35 @@ class ChadoPublish extends TripalBackendPublishBase {
       $titles[$record_id] = $entity_title;
     }
     return $titles;
+  }
+
+  /**
+   * Makes sure the title format is not the generic default. For publishing
+   * a user-created content type, we enforce that the title format has been
+   * set by the site admin.
+   *
+   * @param string $title_format
+   *   A string containing one or more tokens
+   *
+   * @return bool
+   *   TRUE if title_format is valid, FALSE if not valid.
+   */
+  private function validateTitleFormat(string $title_format) {
+    $message = '';
+    if (!preg_match('/\[.*\]/', $title_format)) {
+      $message = 'The Page Title Format for this content type does not contain any tokens.';
+    }
+    elseif ($title_format == 'Entity [TripalEntity__entity_id]') {
+      $message = 'The Page Title Format for this content type is the default generic format.';
+    }
+    if ($message) {
+      $message .= ' You must update the format before publishing content.';
+      $this->logger->error($message);
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
   }
 
   /**
@@ -941,6 +971,12 @@ class ChadoPublish extends TripalBackendPublishBase {
       return [];
     }
 
+    // Retrieve and validate the page title format
+    $title_format = $this->entity_type->getTitleFormat();
+    if (!$this->validateTitleFormat($title_format)) {
+      return [];
+    }
+
     // Sort and divide $record_id array into batches of $this->batch_size records
     $record_id_batches = $this->divideIntoBatches($record_ids);
     $number_of_batches = count($record_id_batches);
@@ -974,7 +1010,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
 
       $this->logger->notice($batch_prefix . 'Step 2 of 6: Generate page titles');
-      $titles = $this->getEntityTitles($matches);
+      $titles = $this->getEntityTitles($matches, $title_format);
 
       $this->logger->notice($batch_prefix . 'Step 3 of 6: Find existing published entity titles');
       $existing_titles = $this->findEntities($record_id_batch);
