@@ -57,6 +57,7 @@ class TripalTerm {
     $this->is_relationship_type = False;
     $this->idSpace = '';
     $this->vocabulary = '';
+    $this->vocabulary_plugin_id = '';
     $this->parents = [];
     $this->altIds = [];
     $this->synonyms = [];
@@ -97,6 +98,9 @@ class TripalTerm {
     if (array_key_exists('idSpace', $details)) {
       $this->setIdSpace($details['idSpace']);
     }
+    if (array_key_exists('vocabulary_plugin_id', $details)) {
+      $this->setVocabularyPlugin($details['vocabulary_plugin_id']);
+    }
     if (array_key_exists('vocabulary', $details)) {
       $this->setVocabulary($details['vocabulary']);
     }
@@ -104,7 +108,7 @@ class TripalTerm {
       foreach ($details['synonyms'] as $entry) {
         if (is_array($entry)) {
           if (count($entry) != 2) {
-            $this->messageLogger->error('TripalTerm::__construct(). An synonym tuple is not the correct size.');
+            $this->messageLogger->error('TripalTerm::__construct(). A synonym tuple is not the correct size.');
             continue;
           }
           $this->addSynonym($entry[0], $entry[1]);
@@ -192,6 +196,16 @@ class TripalTerm {
   /**
    * Sets the vocabulary for the term.
    *
+   * @param string $vocabulary_plugin_id
+   *   The name of the vocabulary plugin, e.g. "chado_vocabulary".
+   */
+  public function setVocabularyPlugin(string $vocabulary_plugin_id) {
+    $this->vocabulary_plugin_id = $vocabulary_plugin_id;
+  }
+
+  /**
+   * Sets the vocabulary for the term.
+   *
    * @param string $vocabulary
    *   The name of the vocabulary.
    */
@@ -200,9 +214,21 @@ class TripalTerm {
     $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     $vocab = $manager->loadCollection($vocabulary);
     if (!$vocab) {
-      $this->messageLogger->error(T('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" does not exist.',
-          ['@vocab' => $vocabulary]));
-      return;
+      // A vocabulary added to a site by an importer or used for a new content
+      // type may not yet have been added to the appropriate Tripal collection,
+      // so add it, but this requires $this->vocabulary_plugin_id has been set.
+      if ($this->vocabulary_plugin_id and $manager->createCollection($vocabulary, $this->vocabulary_plugin_id)) {
+        $vocab = $manager->loadCollection($vocabulary);
+      }
+      if ($vocab) {
+        $this->messageLogger->notice(t('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" has been added.',
+            ['@vocab' => $vocabulary]));
+      }
+      else {
+        $this->messageLogger->error(t('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" does not exist.',
+            ['@vocab' => $vocabulary]));
+        return;
+      }
     }
     $this->vocabulary = $vocabulary;
   }
@@ -801,6 +827,13 @@ class TripalTerm {
    * @var string
    */
   private $accession;
+
+  /**
+   * The vocabulary plugin, e.g. "chado_vocabulary".
+   *
+   * @var string
+   */
+  private $vocabulary_plugin_id;
 
   /**
    * The vocabulary this term belongs to.
