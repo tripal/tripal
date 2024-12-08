@@ -273,6 +273,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       'definition' => $cvterm->definition,
       'accession' => $accession,
       'idSpace' => $this->getName(),
+      'id_space_plugin_id' => 'chado_id_space',
       'vocabulary' => $cvterm->CV_name ? $cvterm->CV_name : $this->getDefaultVocabulary(),
       'vocabulary_plugin_id' => 'chado_vocabulary',
       'is_obsolete' => $cvterm->is_obsolete == 1 ? True : False,

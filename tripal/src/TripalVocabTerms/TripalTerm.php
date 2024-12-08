@@ -58,6 +58,7 @@ class TripalTerm {
     $this->idSpace = '';
     $this->vocabulary = '';
     $this->vocabulary_plugin_id = '';
+    $this->id_space_plugin_id = '';
     $this->parents = [];
     $this->altIds = [];
     $this->synonyms = [];
@@ -94,6 +95,9 @@ class TripalTerm {
     }
     if (array_key_exists('definition', $details)) {
       $this->setDefinition($details['definition'] ?? '');
+    }
+    if (array_key_exists('id_space_plugin', $details)) {
+      $this->setIdSpacePlugin($details['id_space_plugin']);
     }
     if (array_key_exists('idSpace', $details)) {
       $this->setIdSpace($details['idSpace']);
@@ -176,6 +180,16 @@ class TripalTerm {
   }
 
   /**
+   * Sets the ID space plugin for the term.
+   *
+   * @param string $id_space_plugin_id
+   *   The name of the ID space plugin, e.g. "chado_id_space".
+   */
+  public function setVocabularyPlugin(string $id_space_plugin_id) {
+    $this->id_space_plugin_id = $id_space_plugin_id;
+  }
+
+  /**
    * Sets the ID space for the term.
    *
    * @param string setIdSpace
@@ -186,15 +200,27 @@ class TripalTerm {
     $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $idsp = $manager->loadCollection($idSpace);
     if (!$idsp) {
-      $this->messageLogger->error(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", does not exist.',
-          ['@idSpace' => $idSpace]));
-      return;
+      // An ID space added to a site by an importer may not yet have been added
+      // to the appropriate Tripal collection, so add it, but this requires
+      // $this->id_space_plugin_id has been set.
+      if ($this->id_space_plugin_id and $manager->createCollection($idSpace, $this->id_space_plugin_id)) {
+        $idsp = $manager->loadCollection($idSpace);
+      }
+      if ($idsp) {
+        $this->messageLogger->notice(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", has been added.',
+            ['@idSpace' => $idSpace]));
+      }
+      else {
+        $this->messageLogger->error(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", does not exist.',
+            ['@idSpace' => $idSpace]));
+        return;
+      }
     }
     $this->idSpace = $idSpace;
   }
 
   /**
-   * Sets the vocabulary for the term.
+   * Sets the vocabulary plugin for the term.
    *
    * @param string $vocabulary_plugin_id
    *   The name of the vocabulary plugin, e.g. "chado_vocabulary".
@@ -813,6 +839,13 @@ class TripalTerm {
    * @var string
    */
   private $definition;
+
+  /**
+   * The ID space plugin, e.g. "chado_id_space".
+   *
+   * @var string
+   */
+  private $id_space_plugin_id;
 
   /**
    * The ID space this terms belongs to.
