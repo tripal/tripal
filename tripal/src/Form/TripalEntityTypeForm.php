@@ -43,8 +43,10 @@ class TripalEntityTypeForm extends EntityForm {
       $term = $tripal_entity_type->getTerm();
       if ($term) {
         $vocab = $term->getVocabularyObject();
+        if ($vocab) {
+          $vocab_label = $vocab->getLabel();
+        }
 
-        $vocab_label = $vocab->getLabel();
         $term_name = $term->getName();
         $term_accession = $term->getTermId();
 
