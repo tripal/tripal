@@ -1,9 +1,9 @@
 ARG phpversion='8.3'
-FROM php:${phpversion}-apache-bullseye
+FROM php:${phpversion}-apache-bookworm
 
 ARG phpversion='8.3'
 ARG drupalversion='11.0.x-dev'
-ARG postgresqlversion='16'
+ARG postgresqlversion='17'
 ARG modules='devel devel_php field_group field_group_table'
 ARG chadoschema='chado'
 ARG installchado=TRUE
@@ -14,7 +14,7 @@ LABEL drupal.version=${drupalversion}
 LABEL drupal.stability="production"
 LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
-LABEL os.version="bullseye"
+LABEL os.version="bookworm"
 LABEL postgresql.version="${postgresqlversion}"
 
 COPY . /app
@@ -33,7 +33,7 @@ RUN mkdir -p /usr/share/man/man1 && mkdir -p /usr/share/man/man7
 RUN if [ "$postgresqlversion" > "13" ] ; then \
   apt-get install -y curl apt-transport-https gpg --yes -qq 1>> ~/aptget.extras.log \
   && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg \
-  && echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/postgresql.list \
+  && echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" > /etc/apt/sources.list.d/postgresql.list \
   && apt-get update 1>> ~/aptget.update.log ; \
   fi
 
@@ -72,7 +72,7 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/${postgresqlversion}/main/pos
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 ## Xdebug
-RUN pecl install xdebug-3.3.2 \
+RUN pecl install xdebug-3.4.0 \
   && docker-php-ext-enable xdebug \
   && cat /app/tripaldocker/default_files/xdebug/xdebug-coverage.ini >> /usr/local/etc/php/php.ini \
   && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
@@ -98,7 +98,11 @@ RUN set -eux; \
   libzip-dev \
   ; \
   \
-  docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp; \
+  docker-php-ext-configure gd \
+  --with-freetype \
+  --with-jpeg=/usr \
+  --with-webp \
+  ; \
   \
   docker-php-ext-install -j "$(nproc)" \
   gd \
@@ -113,7 +117,7 @@ RUN set -eux; \
   apt-mark auto '.*' > /dev/null; \
   apt-mark manual $savedAptMark; \
   ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
-  | awk '/=>/ { print $3 }' \
+  | awk '/=>/ { so = $(NF-1); if (index(so, "/usr/local/") == 1) { next }; gsub("^/(usr/)?", "", so); printf "*%s\n", so }' \
   | sort -u \
   | xargs -r dpkg-query -S \
   | cut -d: -f1 \
