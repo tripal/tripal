@@ -1,12 +1,12 @@
 ARG phpversion='8.3'
 ARG drupalversion='10.4.x-dev'
-ARG postgresqlversion='16'
+ARG postgresqlversion='17'
 FROM tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-pgsql${postgresqlversion}
 
 ## Redefine the core args so that they are within the build scope.
 ARG phpversion='8.3'
 ARG drupalversion='11.0.x-dev'
-ARG postgresqlversion='16'
+ARG postgresqlversion='17'
 
 ## Now define the args only needed within the build scope.
 ARG modules='devel devel_php field_group field_group_table'
