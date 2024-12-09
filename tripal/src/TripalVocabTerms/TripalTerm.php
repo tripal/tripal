@@ -185,7 +185,7 @@ class TripalTerm {
    * @param string $id_space_plugin_id
    *   The name of the ID space plugin, e.g. "chado_id_space".
    */
-  public function setVocabularyPlugin(string $id_space_plugin_id) {
+  public function setIdSpacePlugin(string $id_space_plugin_id) {
     $this->id_space_plugin_id = $id_space_plugin_id;
   }
 
