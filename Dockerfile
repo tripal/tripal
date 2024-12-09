@@ -1,5 +1,5 @@
 ARG phpversion='8.3'
-ARG drupalversion='10.4.x-dev'
+ARG drupalversion='11.0.x-dev'
 ARG postgresqlversion='17'
 FROM tripalproject/tripaldocker-drupal:drupal${drupalversion}-php${phpversion}-pgsql${postgresqlversion}
 
