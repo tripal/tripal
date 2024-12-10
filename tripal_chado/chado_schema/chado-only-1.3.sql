@@ -313,7 +313,7 @@ CREATE FUNCTION boxquery(bigint, bigint, bigint) RETURNS box
 
 CREATE FUNCTION boxrange(bigint, bigint) RETURNS box
     LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT
-    AS $_$SELECT box (create_point(0, $1), create_point($2,500000000))$_$;
+    AS $_$SELECT box (create_point(CAST(0 AS bigint), $1), create_point($2,500000000))$_$;
 
 CREATE FUNCTION boxrange(bigint, bigint, bigint) RETURNS box
     LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT

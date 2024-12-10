@@ -218,7 +218,7 @@ LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
 -- create a range box
 -- (make this immutable so we can index it)
 CREATE OR REPLACE FUNCTION boxrange (bigint, bigint) RETURNS box AS
- 'SELECT box (create_point(0, $1), create_point($2,500000000))'
+ 'SELECT box (create_point(CAST(0 AS bigint), $1), create_point($2,500000000))'
 LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
 
 -- create a query box
