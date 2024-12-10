@@ -230,6 +230,7 @@ LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
 SET search_path = chado,public,pg_catalog;
 CREATE INDEX binloc_boxrange ON featureloc USING GIST (boxrange(fmin, fmax));
 
+
 CREATE OR REPLACE FUNCTION featureloc_slice(bigint, bigint) RETURNS setof featureloc AS
   'SELECT * from featureloc where boxquery($1, $2) <@ boxrange(fmin,fmax)'
 LANGUAGE 'sql';
@@ -286,6 +287,7 @@ LANGUAGE 'sql';
 --             The goal here is to push this logic further and to include the srcfeature_id filter directly into the boxrange object. We propose to consider the following boxs : 
 --             boxrange : ((srcfeature_id,fmin),(srcfeature_id,fmax))
 --             boxquery : ((srcfeature_id,fmin),(srcfeature_id,fmax))
+
 
 
 SET search_path = public;

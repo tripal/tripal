@@ -821,7 +821,7 @@ BEGIN
         PERFORM _fill_cvtermpath4root(root.cvterm_id, root.cv_id);
     END LOOP;
     RETURN 1;
-END;
+END;   
 '
 LANGUAGE 'plpgsql' SET SEARCH_PATH FROM CURRENT;
 

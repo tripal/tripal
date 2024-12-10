@@ -334,7 +334,6 @@ LANGUAGE SQL;
 -- functions for creating coordinate based functions
 --
 -- create a point
-
 SET search_path = public,chado,pg_catalog;
 DROP FUNCTION IF EXISTS featureslice(bigint, bigint);
 CREATE OR REPLACE FUNCTION featureslice(bigint, bigint) RETURNS setof featureloc AS
