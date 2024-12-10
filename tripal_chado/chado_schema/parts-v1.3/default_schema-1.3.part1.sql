@@ -821,9 +821,9 @@ BEGIN
         PERFORM _fill_cvtermpath4root(root.cvterm_id, root.cv_id);
     END LOOP;
     RETURN 1;
-END;   
+END;
 '
-LANGUAGE 'plpgsql';
+LANGUAGE 'plpgsql' SET SEARCH_PATH FROM CURRENT;
 
 CREATE OR REPLACE FUNCTION fill_cvtermpath(cv.name%TYPE) RETURNS INTEGER AS
 '
@@ -838,7 +838,7 @@ BEGIN
     RETURN rtn;
 END;   
 '
-LANGUAGE 'plpgsql';
+LANGUAGE 'plpgsql' SET SEARCH_PATH FROM CURRENT;
 
 CREATE OR REPLACE FUNCTION _fill_cvtermpath4node2detect_cycle(BIGINT, BIGINT, BIGINT, BIGINT, INTEGER) RETURNS BIGINT AS
 '
