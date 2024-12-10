@@ -336,6 +336,7 @@ LANGUAGE SQL;
 -- create a point
 
 SET search_path = public,chado,pg_catalog;
+DROP FUNCTION IF EXISTS featureslice(bigint, bigint);
 CREATE OR REPLACE FUNCTION featureslice(bigint, bigint) RETURNS setof featureloc AS
   'SELECT * from featureloc where boxquery($1, $2) <@ boxrange(fmin,fmax)'
 LANGUAGE 'sql';
