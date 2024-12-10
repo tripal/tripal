@@ -46,13 +46,6 @@ class ChadoInstaller extends ChadoTaskBase {
   ];
 
   /**
-   * Any patch files to be applied
-   */
-  protected array $patchFiles = [
-    '1.3' => ['V1.3.3.007__fix_search_path.sql'],
-  ];
-
-  /**
    * Validate task parameters.
    *
    * Parameter array provided to the class constructor must include one output
@@ -222,7 +215,7 @@ class ChadoInstaller extends ChadoTaskBase {
 
         if (!$success) {
           throw new TaskException(
-            "Schema installation part $i of $num_chunks Failed...\nInstallation (Step 1 of 3) problems!"
+            "Schema installation part $i of $num_chunks Failed...\nInstallation (Step 1 of 2) problems!"
           );
         }
         $this->logger->info("Import part $i of $num_chunks Successful!");
@@ -231,25 +224,7 @@ class ChadoInstaller extends ChadoTaskBase {
       }
       $this->logger->info("Install of Chado v1.3 (Step 1 of 3) successful.");
 
-      // 4) Apply any patch files
-      $path = $module_path . '/chado_schema/';
-      $patch_files = $this->patchFiles[$version] ?? [];
-      foreach ($patch_files as $patch_file) {
-        $patch_file = $path . $patch_file;
-        $success = $target_schema->executeSqlFile(
-          $patch_file,
-          ['chado' => $target_schema->getSchemaName(),]
-        );
-
-        if (!$success) {
-          throw new TaskException(
-            "Schema installation patch $patch_file Failed...\nInstallation (Step 2 of 3) problems!"
-          );
-        }
-        $this->logger->info("Import patch $patch_file (Step 2 of 3) Successful!");
-      }
-
-      // 5) Initialize the schema with basic data.
+      // 4) Initialize the schema with basic data.
       $init_file =
         $module_path
         . '/chado_schema/initialize-'
@@ -261,13 +236,13 @@ class ChadoInstaller extends ChadoTaskBase {
         ['chado' => $target_schema->getSchemaName(),]
       );
       if (!$success) {
-        throw new TaskException("Installation (Step 3 of 3) problems!");
+        throw new TaskException("Installation (Step 2 of 3) problems!");
       }
-      $this->logger->info("Install of Chado v1.3 (Step 3 of 3) successful.");
+      $this->logger->info("Install of Chado v1.3 (Step 2 of 3) successful.");
       $data = ['progress' => 0.90];
       $this->state->set(static::STATE_KEY_DATA_PREFIX . $this->id, $data);
 
-      // 6) Finally set the version and tell Tripal.
+      // 5) Finally set the version and tell Tripal.
       $vsql = "
         INSERT INTO {1:chadoprop} (type_id, value)
           VALUES (
