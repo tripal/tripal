@@ -304,19 +304,19 @@ END;
 $_$;
 
 CREATE FUNCTION boxquery(bigint, bigint) RETURNS box
-    LANGUAGE sql IMMUTABLE
+    LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT
     AS $_$SELECT box (create_point($1, $2), create_point($1, $2))$_$;
 
 CREATE FUNCTION boxquery(bigint, bigint, bigint) RETURNS box
-    LANGUAGE sql IMMUTABLE
+    LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT
     AS $_$SELECT box (create_point($1, $2), create_point($1, $3))$_$;
 
 CREATE FUNCTION boxrange(bigint, bigint) RETURNS box
-    LANGUAGE sql IMMUTABLE
+    LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT
     AS $_$SELECT box (create_point(0, $1), create_point($2,500000000))$_$;
 
 CREATE FUNCTION boxrange(bigint, bigint, bigint) RETURNS box
-    LANGUAGE sql IMMUTABLE
+    LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT
     AS $_$SELECT box (create_point($1, $2), create_point($1,$3))$_$;
 
 CREATE FUNCTION complement_residues(text) RETURNS text
