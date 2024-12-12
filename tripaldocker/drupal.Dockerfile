@@ -29,8 +29,8 @@ RUN chmod -R +x /app && apt-get update 1> ~/aptget.update.log \
 ## See https://stackoverflow.com/questions/51033689/how-to-fix-error-on-postgres-install-ubuntu
 RUN mkdir -p /usr/share/man/man1 && mkdir -p /usr/share/man/man7
 
-## Add the PostgreSQL Package Source for versions > 13
-RUN if [ "$postgresqlversion" > "13" ] ; then \
+## Add the PostgreSQL Package Source for versions > 15, default for debian 12 bookworm
+RUN if [ "$postgresqlversion" > "15" ] ; then \
   apt-get install -y curl apt-transport-https gpg --yes -qq 1>> ~/aptget.extras.log \
   && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg \
   && echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" > /etc/apt/sources.list.d/postgresql.list \
