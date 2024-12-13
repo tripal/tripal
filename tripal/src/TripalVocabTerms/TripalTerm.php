@@ -198,23 +198,15 @@ class TripalTerm {
   public function setIdSpace(string $idSpace) {
 
     $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idsp = $manager->loadCollection($idSpace);
+    // An ID space added to a site by an importer may not yet have been added
+    // to the appropriate Tripal collection, so configure the load to optionally
+    // create it. This requires $this->id_space_plugin_id has been previously set.
+    $idsp = $manager->loadCollection($idSpace,
+        ['collection_plugin_id' => $this->id_space_plugin_id]);
     if (!$idsp) {
-      // An ID space added to a site by an importer may not yet have been added
-      // to the appropriate Tripal collection, so add it, but this requires
-      // $this->id_space_plugin_id has been set.
-      if ($this->id_space_plugin_id and $manager->createCollection($idSpace, $this->id_space_plugin_id)) {
-        $idsp = $manager->loadCollection($idSpace);
-      }
-      if ($idsp) {
-        $this->messageLogger->notice(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", has been added.',
-            ['@idSpace' => $idSpace]));
-      }
-      else {
-        $this->messageLogger->error(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", does not exist.',
-            ['@idSpace' => $idSpace]));
-        return;
-      }
+      $this->messageLogger->error(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", does not exist.',
+          ['@idSpace' => $idSpace]));
+      return;
     }
     $this->idSpace = $idSpace;
   }
