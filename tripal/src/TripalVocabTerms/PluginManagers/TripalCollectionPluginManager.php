@@ -147,17 +147,16 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *
    * @param string $name
    *   The name.
-   * @param array $options
-   *   Optional parameters.
-   *     string 'collection_plugin_id': An optional name of a collection plugin,
-   *       e.g. 'chado_id_space', 'chado_vocabulary'. When this is specified,
-   *       an ID space or a vocabulary that is not yet a collection can be
-   *       automatically made into a collection.
+   * @param string $pluginId
+   *   An optional name of a collection plugin, e.g. 'chado_id_space',
+   *   'chado_vocabulary'. When this is specified, an ID space or a
+   *   vocabulary that is not yet a collection can be automatically
+   *   made into a collection.
    *
    * @return \Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase|NULL
    *   The loaded collection plugin or NULL.
    */
-  public function loadCollection($name, array $options = []) {
+  public function loadCollection($name, string $pluginId = '') {
     $collection = NULL;
     if (!is_string($name)) {
       return NULL;
@@ -172,8 +171,8 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
       $collection = $this->createInstance($first["plugin_id"], ["collection_name" => $name]);
     }
     else {
-      if ($options['collection_plugin_id'] ?? '') {
-        $collection = $this->createCollection($name, $options['collection_plugin_id']);
+      if ($pluginId) {
+        $collection = $this->createCollection($name, $pluginId);
       }
     }
     if ($collection) {

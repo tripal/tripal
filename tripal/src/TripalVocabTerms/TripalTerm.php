@@ -201,8 +201,7 @@ class TripalTerm {
     // An ID space added to a site by an importer may not yet have been added
     // to the appropriate Tripal collection, so configure the load to optionally
     // create it. This requires $this->id_space_plugin_id has been previously set.
-    $idsp = $manager->loadCollection($idSpace,
-        ['collection_plugin_id' => $this->id_space_plugin_id]);
+    $idsp = $manager->loadCollection($idSpace, $this->id_space_plugin_id);
     if (!$idsp) {
       $this->messageLogger->error(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", does not exist.',
           ['@idSpace' => $idSpace]));
@@ -230,23 +229,14 @@ class TripalTerm {
   public function setVocabulary(string $vocabulary) {
 
     $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $vocab = $manager->loadCollection($vocabulary);
+    // A vocabulary added to a site by an importer may not yet have been added
+    // to the appropriate Tripal collection, so configure the load to optionally
+    // create it. This requires $this->vocabulary_plugin_id has been previously set.
+    $vocab = $manager->loadCollection($vocabulary, $this->vocabulary_plugin_id);
     if (!$vocab) {
-      // A vocabulary added to a site by an importer or used for a new content
-      // type may not yet have been added to the appropriate Tripal collection,
-      // so add it, but this requires $this->vocabulary_plugin_id has been set.
-      if ($this->vocabulary_plugin_id and $manager->createCollection($vocabulary, $this->vocabulary_plugin_id)) {
-        $vocab = $manager->loadCollection($vocabulary);
-      }
-      if ($vocab) {
-        $this->messageLogger->notice(t('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" has been added.',
-            ['@vocab' => $vocabulary]));
-      }
-      else {
-        $this->messageLogger->error(t('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" does not exist.',
-            ['@vocab' => $vocabulary]));
-        return;
-      }
+      $this->messageLogger->error(t('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" does not exist.',
+          ['@vocab' => $vocabulary]));
+      return;
     }
     $this->vocabulary = $vocabulary;
   }
