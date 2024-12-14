@@ -21,6 +21,10 @@ use Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage;
  * is set this variable to TRUE in your field and debuggin information will be
  * displayed on the screen and in the drupal logs when you create, edit,
  * and load content that has you field attached.
+ *
+ * For nicely formatted debugging information, installing the drupal/devel
+ * module is recommended. If that module is not installed, then we fall
+ * back to slightly more primitive print_r output.
  */
 class ChadoFieldDebugger {
 
@@ -28,6 +32,11 @@ class ChadoFieldDebugger {
    * The chado connection used to query chado.
    */
   public ChadoConnection $chado_connection;
+
+  /**
+   * The module handler class, used to check if devel module is enabled.
+   */
+  public \Drupal\Core\Extension\ModuleHandler $module_handler;
 
   /**
    * The logger class to use to providing our debugging messages to the developer.
@@ -46,17 +55,57 @@ class ChadoFieldDebugger {
    * for performances sake.
    */
   public bool $has_fields2debug = FALSE;
+
+  /**
+   * Store status so it only needs to be looked up once
+   *
+   * @var bool|NULL $develIsInstalled
+   */
+  protected bool|NULL $develIsInstalled = NULL;
+
   /**
    * Object constructor for the Chado Field debugger
    *
    * @param Drupal\tripal_chado\Database\ChadoConnection
    *   The chado connection used to query chado.
+   * @param Drupal\Core\Extension\ModuleHandler
+   *   The drupal module handler service.
    * @param Drupal\tripal\Services\TripalLogger
    *   The logger class to use to providing our debugging messages to the developer.
    */
-  public function __construct(ChadoConnection $connection, TripalLogger $logger) {
+  public function __construct(ChadoConnection $connection, \Drupal\Core\Extension\ModuleHandler $module_handler, TripalLogger $logger) {
     $this->chado_connection = $connection;
+    $this->module_handler = $module_handler;
     $this->logger = $logger;
+  }
+
+  /**
+   * A wrapper for the devel module dpm() function.
+   * If that module is not installed and enabled, we will
+   * do slightly more primitive output with print_r statements.
+   *
+   * @param mixed $variable
+   *   The variable to print out, can be any type.
+   * @param string $message
+   *   An optional message to display with the variable.
+   * @return void
+   */
+  protected function cfd_dpm(mixed $variable, string $message = '') {
+    // Devel module status only needs to be retrieved once, but rebuilding
+    // cache will reset this if necessary if the module status changes.
+    if (is_null($this->develIsInstalled)) {
+      $this->develIsInstalled = $this->module_handler->moduleExists('drupal/devel');
+    }
+
+    // Select the method to display the debugging information
+    if ($this->develIsInstalled) {
+      dpm($variable, $message);
+    }
+    else {
+      \Drupal::messenger()->addMessage(
+        $message . '<pre>' . print_r($variable, TRUE) . '</pre>'
+      );
+    }
   }
 
   /**
@@ -92,7 +141,7 @@ class ChadoFieldDebugger {
       }
     }
 
-    dpm($all_fields, $message);
+    $this->cfd_dpm($all_fields, $message);
   }
 
   /**
@@ -136,7 +185,7 @@ class ChadoFieldDebugger {
       }
     }
 
-    dpm($state, $message);
+    $this->cfd_dpm($state, $message);
   }
 
   /**
@@ -153,8 +202,8 @@ class ChadoFieldDebugger {
       return;
     }
 
-    dpm($records->getRecordsArray(), 'The array describing the record queries to be generated');
-    dpm($records->getBaseTables(), 'The known primary keys for our base records');
+    $this->cfd_dpm($records->getRecordsArray(), 'The array describing the record queries to be generated');
+    $this->cfd_dpm($records->getBaseTables(), 'The known primary keys for our base records');
   }
 
   /**
@@ -196,7 +245,7 @@ class ChadoFieldDebugger {
     $sql = strtr($sql, $quoted);
     */
 
-    dpm($sql, $message . ' (See Records for parameters)');
+    $this->cfd_dpm($sql, $message . ' (See Records for parameters)');
 
   }
 
