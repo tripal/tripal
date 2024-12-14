@@ -94,7 +94,7 @@ class ChadoFieldDebugger {
     // Devel module status only needs to be retrieved once, but rebuilding
     // cache will reset this if necessary if the module status changes.
     if (is_null($this->develIsInstalled)) {
-      $this->develIsInstalled = $this->module_handler->moduleExists('drupal/devel');
+      $this->develIsInstalled = $this->module_handler->moduleExists('devel');
     }
 
     // Select the method to display the debugging information
