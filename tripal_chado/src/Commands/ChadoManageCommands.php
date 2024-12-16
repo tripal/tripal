@@ -132,6 +132,7 @@ class ChadoManageCommands extends DrushCommands {
    *   Publish options. Defaults are
    *   'schema-name' => 'chado'
    *   'datastore' => 'chado_storage'
+   *   'migrate' => ''
    *   'batch-size' => '1000'
    * @usage drush trp-chado-publish organism
    *   Submits a standard chado publish job for the organism content type which
@@ -144,6 +145,7 @@ class ChadoManageCommands extends DrushCommands {
     'schema-name' => '',
     'datastore' => 'chado_storage',
     'batch-size' => '1000',
+    'migrate' => '',
     'republish' => 0]) {
 
     // If schema not supplied then grab default chado schema.
@@ -156,6 +158,7 @@ class ChadoManageCommands extends DrushCommands {
       'schema_name' => $options['schema-name'],
       'batch_size' => $options['batch-size'],
       'republish' => $options['republish'],
+      'migrate' => $options['migrate'],
     ];
     // @todo validate the bundle
     $bundle = $bundle;

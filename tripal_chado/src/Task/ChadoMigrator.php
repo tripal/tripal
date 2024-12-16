@@ -158,7 +158,7 @@ class Chadomigrator extends ChadoTaskBase {
     // Acquire locks.
     $success = $this->acquireTaskLocks();
     if (!$success) {
-      throw new LockException("Unable to acquire all locks for task. See logs for details.");
+      throw new LockException('Unable to acquire all locks for task. See logs for details.');
     }
 
     try {
@@ -176,7 +176,7 @@ class Chadomigrator extends ChadoTaskBase {
         return FALSE;
       }
       $this->logger->notice(t(
-        "Maximum Tripal 3 entity ID was @max_id, minimum existing Tripal 4 entity ID is @min_id",
+        'Maximum Tripal 3 entity ID was @max_id, minimum existing Tripal 4 entity ID is @min_id',
         [
           '@max_id' => $this->tripal3maxid,
           '@min_id' => $min_id,
@@ -184,20 +184,21 @@ class Chadomigrator extends ChadoTaskBase {
       ));
 
       if ($this->tripal3maxid > $min_id) {
-        $this->logger->error("There is an existing entity with an ID lower than the highest Tripal 3 entity ID."
-          . " Cannot continue. See https://tripaldoc.readthedocs.io/en/latest/upgrade_guide/site/migrating_chado.html"
-          . " for instructions on how to reserve an entity ID range.");
+        $this->logger->error('There is an existing entity with an ID lower than the highest Tripal 3 entity ID.'
+          . ' Cannot continue. See https://tripaldoc.readthedocs.io/en/latest/upgrade_guide/site/migrating_chado.html'
+          . ' for instructions on how to reserve an entity ID range.');
         return FALSE;
       }
       $this->setProgress(0.04);
 
       // Populate the bundle label to bundle ID lookup table
       $this->populate_label_to_bundle();
+      $this->setProgress(0.06);
 
       //@todo write this next
       $this->migrate();
 
-      $this->setProgress(1);
+      $this->setProgress(1.0);
       $task_success = TRUE;
 
       // Release all locks.
@@ -210,7 +211,7 @@ class Chadomigrator extends ChadoTaskBase {
       $this->releaseTaskLocks();
 
       throw new TaskException(
-        "Failed to complete Chado entity migration task.\n"
+        'Failed to complete Chado entity migration task: '
         . $e->getMessage()
       );
     }
@@ -224,12 +225,13 @@ class Chadomigrator extends ChadoTaskBase {
    */
   protected function loadMigrationData() {
     $nlines = 0;
-    while (($line = fgets($this->parameters['fh'])) !== false) {
+    while (($line = fgets($this->parameters['fh'])) !== FALSE) {
       $nlines++;
       $cols = explode("\t", rtrim($line));
       if (count($cols) != 5) {
         throw new TaskException(
-          "Invalid file format line $nlines, expected exactly 5 columns \"$line\"\n"
+          "Invalid file format line $nlines, expected exactly 5 columns, "
+              . count($cols) . " observed: \"$line\"\n"
         );
       }
       $this->tripal3ids[$cols[0]][$cols[1]][$cols[2]][$cols[3]] = $cols[4];
@@ -254,7 +256,7 @@ class Chadomigrator extends ChadoTaskBase {
    * @return int
    *   The lowest entity ID value on this site.
    */
-  protected function getLowestEntityId() {
+  protected function getLowestEntityId() : int {
     $min_id = 0;
     $result = $this->connection->query("SELECT id FROM tripal_entity ORDER BY id DESC LIMIT 1")->fetch();
     // $result will be FALSE if there is no published content
@@ -282,7 +284,7 @@ class Chadomigrator extends ChadoTaskBase {
    *
    * @return void
    */
-  protected function migrate() {
+  protected function migrateAliases() {
     $ntables = count($this->tripal3ids);
     $errormsg = '';
 
@@ -300,12 +302,12 @@ class Chadomigrator extends ChadoTaskBase {
         else {
           $bundle_id = $this->label_to_bundle[$bundle_label];
 
-          // Key is chado pkey ID, value is entity ID
+          // Lookup table key is chado pkey ID, value is entity ID
           $entity_lookup_table = $this->lookup_manager->getPublishedEntityIds($bundle_id, 'tripal_entity');
 
           foreach ($this->tripal3ids[$bundle_label][$chado_table][$pkey] as $pkey_id => $t3_entity_id) {
             $t4_entity_id = $entity_lookup_table[$pkey_id] ?? NULL;
-            $errormsg = $this->migrateOne($t3_entity_id, $t4_entity_id);
+            $errormsg = $this->migrateOneAlias($t3_entity_id, $t4_entity_id);
             if ($errormsg) {
               $this->logger->error(t('Migration of @bundle_label entity @t4_entity_id'
                                      . ' to @t3_entity_id failed with error @errormsg',
@@ -340,15 +342,13 @@ class Chadomigrator extends ChadoTaskBase {
    * @return string
    *   An exception message if anything went wrong, empty string for success.
    */
-  protected function migrateOne($t3_entity_id, $t4_entity_id): string {
-$t1 = microtime(TRUE);
+  protected function migrateOneAlias($t3_entity_id, $t4_entity_id): string {
     $errormsg = '';
     if ($t4_entity_id and ($t3_entity_id != $t4_entity_id)) {
       // Load the entity using its current tripal4 id
       $entities = $this->entity_type_manager->getStorage('tripal_entity')->loadByProperties(['id' => $t4_entity_id]);
       $entity = $entities[$t4_entity_id] ?? NULL;
       if ($entity) {
-$t2 = microtime(TRUE); print "CP90 Entity ".$entity->id()." retrieved Elapsed time: ".sprintf('%0.6f', $t2 - $t1)."\n";
         try {
           // Update the path alias to use the tripal 3 entity id.
           $path = $entity->get('path');
@@ -361,7 +361,6 @@ $t2 = microtime(TRUE); print "CP90 Entity ".$entity->id()." retrieved Elapsed ti
                 $new_alias = preg_replace('/\/' . $t4_entity_id . '$/', '/' . $t3_entity_id, $old_alias);
                 $alias_object->alias = $new_alias;
                 $alias_object->save();
-$t2 = microtime(TRUE); print "CP93 saved new alias Elapsed time: ".sprintf('%0.6f', $t2 - $t1)."\n";
               }
             }
           }
@@ -372,7 +371,6 @@ $t2 = microtime(TRUE); print "CP93 saved new alias Elapsed time: ".sprintf('%0.6
       }
     }
 
-$t2 = microtime(TRUE); print "CP99 Elapsed time: ".sprintf('%0.6f', $t2 - $t1)."\n";
     return $errormsg;
   }
 

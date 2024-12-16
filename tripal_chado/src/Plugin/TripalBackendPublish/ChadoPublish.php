@@ -118,6 +118,52 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $search_values = [];
 
   /**
+   * Array information used to migrate Tripal 3 entity values
+   * when first publishing a migrated chado instance.
+   *
+   * @var array $migration_data
+   */
+  protected array $migration_data = [];
+
+  /**
+   * Populates the $this->field_info variable with field information
+   *
+   * @param string $filename
+   *   If not an empty string, load this data file.
+   *   If an empty string, do nothing.
+   *
+   * @return string
+   *   Empty string if successful, including no file specified.
+   *   Error message if something went wrong.
+   */
+  protected function loadMigrationData(string $filename) : bool {
+    $errormsg = '';
+    if ($filename) {
+      try {
+        $fh = fopen($filename, 'r');
+        $nlines = 0;
+        while ( !feof($fh) ) {
+          $nlines++;
+          $line = fgets($fp, 2048);
+          $cols = str_getcsv($line, "\t");
+          if (count($cols) != 5) {
+            $errormsg = 'Incorrect number of columns line $nlines, expected 5, found ' . count($cols);
+            return $errormsg;
+          }
+          // Currently the columns are Organism        organism        organism_id     51      172635
+//@@@ use 0 or 1?
+          $this->migration_data[$cols[1]][$cols[3]] = $cols[4];
+        }
+      }
+      catch (\Exception $e) {
+        $errormsg = $this->t('Unable to load migration data from file ":filename" '. $e->getMessage(),
+          [':filename' => $filename]);
+      }
+    }
+    return $errormsg;
+  }
+
+  /**
    * Populates the $this->field_info variable with field information
    *
    * @param string $bundle
@@ -491,14 +537,28 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected function insertEntities($matches, $titles) {
 
     $timestamp = time();
+
+//@todo @@@
+//    if ($this->migration_data) {
+//      $success = $this->validateMigrationData($matches);
+//    }
+
+    $fields = ['type', 'uid', 'title', 'status', 'created', 'changed'];
+    if ($this->migration_data) {
+      $fields[] = 'id';
+    }
     $query = $this->connection->insert('tripal_entity', [])
-      -> fields(['type', 'uid', 'title', 'status', 'created', 'changed']);
+      -> fields($fields);
     $added_record_ids = [];
     foreach ($matches as $match) {
       $record_id = $this->getChadoRecordID($match);
       $title = $titles[$record_id];
       $added_record_ids[] = $record_id;
-      $query->values([$this->bundle, $this->uid, $title, 1, $timestamp, $timestamp]);
+      $values = [$this->bundle, $this->uid, $title, 1, $timestamp, $timestamp];
+      if ($this->migration_data) {
+        $values[] = $this->migration_data[$this->bundle][$record_id];
+      }
+      $query->values($values);
     }
     $first_added_entity_id = $query->execute();
 
@@ -811,8 +871,11 @@ class ChadoPublish extends TripalBackendPublishBase {
    *     'republish' - If true, then republish existing entitites.
    *     'job' - A Tripal job object
    *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
+   *
+   * @return bool
+   *   TRUE if successful, FALSE if error occurred
    */
-  public function publish_init(array $options) {
+  public function publish_init(array $options) : bool {
     $this->logger->notice('Initializing publish');
 
     // Required options
@@ -830,6 +893,13 @@ class ChadoPublish extends TripalBackendPublishBase {
     $this->job = $options['job'] ?? NULL;
     if ($options['batch_size'] ?? 0) {
       $this->batch_size = $options['batch_size'];
+    }
+
+    // If $options['migration'] is set, load the specified data file
+    $errormsg = $this->loadMigrationData($options['migration'] ?? '');
+    if ($errormsg) {
+      $this->logger->error($errormsg);
+      return FALSE;
     }
 
     // Current user will be the author of newly published entitites
@@ -865,6 +935,7 @@ class ChadoPublish extends TripalBackendPublishBase {
           ['@datastore' => $this->datastore]));
     }
     // @todo somehow set the chado schema using the value in $this->schema_name
+    return TRUE;
   }
 
   /**
@@ -874,6 +945,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   An array of chado record IDs in no particular order
    */
   protected function getRecordIds() {
+
     // Populates the $this->field_info variable with field information
     $this->setFieldInfo();
 
@@ -910,13 +982,18 @@ class ChadoPublish extends TripalBackendPublishBase {
    * Publishes Chado content to Tripal entities.
    *
    * @param array $options
-   *   Associative array defining what and how to publish. Required keys are:
+   *   Associative array defining what and how to publish.
+   *   Required keys are:
    *     'bundle' - The id of the bundle or entity type
    *     'datastore' - The id of the TripalStorage plugin
    *   Optional keys are:
    *     'republish' - If true, then republish existing entitites.
    *     'job' - A Tripal job object
    *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
+   *     'migration' - During migration of a Tripal 3 site, we would like to preserve
+   *         the numeric entity IDs. This option specifies the name of a file generated
+   *         by the tripal_chado/migration/export_tripal3_entity_mapping.php utility
+   *         that was run on the Tripal 3 site.
    * .
    * @return array
    *   An associative array of the first 100 entities that were published,
@@ -925,7 +1002,10 @@ class ChadoPublish extends TripalBackendPublishBase {
    */
   public function publish($options) {
     // Initialization for publish
-    $this->publish_init($options);
+    $success = $this->publish_init($options);
+    if (!$success) {
+      return [];
+    }
 
     // Retrieve all chado record IDs for this bundle
     $record_ids = $this->getRecordIds();
