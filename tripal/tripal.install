@@ -4,6 +4,7 @@
  * Contains functions used to install/uninstall tripal.
  */
 
+use Drupal\Core\Database\ConnectionNotDefinedException;
 use \Drupal\Core\Database\Database;
 
 /**
@@ -125,7 +126,12 @@ function tripal_uninstall() {
 function tripal_requirements($phase) {
   $checks = [];
   // Make sure the current install does not use per-table prefixes.
-  $connection_options = \Drupal::database()->getConnectionOptions();
+  try {
+    $connection_options = \Drupal::database()->getConnectionOptions();
+  }
+  catch (ConnectionNotDefinedException $ex) {
+    $connection_options = [];
+  }
   if (!empty($connection_options['extra_prefix'])
       || ((!empty($connection_options['prefix']))
           && (is_array($connection_options['prefix']))
