@@ -1036,9 +1036,7 @@ function tripal_update_10401() {
 }
 
 /**
- * Implements hook_update_N().
- ()
- * Removes tripaldbx.settings and 
+ * Removes tripaldbx.settings, these have been moved to tripal.settings
  */
 function tripal_update_10402() {
   // Load the configuration for the module.
