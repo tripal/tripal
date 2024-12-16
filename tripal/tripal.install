@@ -1034,3 +1034,18 @@ function tripal_update_10401() {
     throw new DrupalUpdateException('Could not add the tripal_pub_library_query table:' . $error);
   }
 }
+
+/**
+ * Implements hook_update_N().
+ ()
+ * Removes tripaldbx.settings and 
+ */
+function tripal_update_10402() {
+  // Load the configuration for the module.
+  $config = \Drupal::config('tripaldbx.settings');
+
+  // Delete the configuration.
+  if ($config) {
+    \Drupal::configFactory()->getEditable('tripaldbx.settings')->delete();
+  }
+}
