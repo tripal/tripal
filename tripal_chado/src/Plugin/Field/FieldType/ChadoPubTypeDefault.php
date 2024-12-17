@@ -114,7 +114,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
 
     // Cvterm table, to retrieve the name for the publication type
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionaType');
+    $type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $type_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.

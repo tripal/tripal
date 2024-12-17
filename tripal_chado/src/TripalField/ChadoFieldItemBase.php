@@ -756,7 +756,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
-   *  Get the column's term ID
+   *  Get the column's term ID.
    * 
    * @param string $table
    *   The table name.
