@@ -397,8 +397,11 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
       return FALSE;
     }
 
-    // Make sure the term exists.
-    $idSpace = $this->idSpaceManager->loadCollection($field_def['settings']['termIdSpace']);
+    // Make sure the ID space exists. If it is not yet a collection, and a
+    // plugin is specified, then we can create it.
+    $collection_plugin_id = $field_def['settings']['id_space_plugin_id'] ?? '';
+    /** @var Drupal\tripal_chado\Plugin\TripalIdSpace\ChadoIdSpace */
+    $idSpace = $this->idSpaceManager->loadCollection($field_def['settings']['termIdSpace'], $collection_plugin_id);
     if (!$idSpace) {
       $reason = t('The term Id Space "@idspace" is not known. Check the "termIdSpace" element.',
           ['@idspace' => $field_def['settings']['termIdSpace']]);
