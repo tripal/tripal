@@ -756,7 +756,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
-   *  Get the column's term ID.
+   *  Get the column's term ID
    * 
    * @param string $table
    *   The table name.
@@ -767,7 +767,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param string $default_term
    *   The default term to use.
    */
-  public static function getColumnTermId(string $table, string $column, string $default_term): string {
+  protected static function getColumnTermId(string $table, string $column, string $default_term): string {
     $id = $default_term;
     if (is_null(self::$mapping)) {
       $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
