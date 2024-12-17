@@ -145,7 +145,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   protected function getBundle() {
     $bundle_id = $this->getType();
     $bundle = NULL;
-    if (array_key_exists($this->getType(), $this->bundle_cache)) {
+    if (array_key_exists($bundle_id, $this->bundle_cache)) {
       $bundle = $this->bundle_cache[$bundle_id];
     }
     if (!$bundle) {
