@@ -278,9 +278,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Drupal will check for this for the value from the entity form, but we
     // need to check again for our processed value after token replacement, etc.
     // If it is a duplicate, we remove the alias, and the entity form can complain.
-    $entities = \Drupal::entityTypeManager()->getStorage('path_alias')->loadByProperties(['alias' => $new_alias]);
-    if ($entities) {
-      $new_alias = '';
+    if (!$existing_alias or ($existing_alias['alias'] != $new_alias)) {
+      $entities = \Drupal::entityTypeManager()->getStorage('path_alias')->loadByProperties(['alias' => $new_alias]);
+      if ($entities) {
+        $new_alias = '';
+      }
     }
 
     // If an alias does not exist, then create one
