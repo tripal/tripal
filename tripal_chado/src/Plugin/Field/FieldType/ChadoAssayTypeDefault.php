@@ -89,19 +89,19 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
-    $name_term = this::getColumnTermId($object_table, 'name', 'schema:name');
-    $description_term = this::getColumnTermId($object_table, 'description', 'schema_description');
-    $arrayidentifier_term = this::getColumnTermId($object_table, 'arrayidentifier', 'data:0842');
-    $arraybatchidentifier_term = this::getColumnTermId($object_table, 'arraybatchidentifier', 'local:array_batch_identifier');
+    $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
+    $description_term = self::getColumnTermId($object_table, 'description', 'schema_description');
+    $arrayidentifier_term = self::getColumnTermId($object_table, 'arrayidentifier', 'data:0842');
+    $arraybatchidentifier_term = self::getColumnTermId($object_table, 'arraybatchidentifier', 'local:array_batch_identifier');
 
     // Columns from linked tables
-    $arraydesign_term = this::getColumnTermId('arraydesign', 'name', 'schema:name');
-    $protocol_term = this::getColumnTermId('protocol', 'name', 'sep:00101');
+    $arraydesign_term = self::getColumnTermId('arraydesign', 'name', 'schema:name');
+    $protocol_term = self::getColumnTermId('protocol', 'name', 'sep:00101');
     $contact_schema_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
-    $operator_term = this::getColumnTermId('contact', 'name', 'schema:name');
+    $operator_term = self::getColumnTermId('contact', 'name', 'schema:name');
     $operator_len = $contact_schema_def['fields']['name']['size'];
-    $dbxref_term = this::getColumnTermId('dbxref', 'accession', 'data:2091');
-    $db_term = this::getColumnTermId('db', 'name', 'ERO:0001716');
+    $dbxref_term = self::getColumnTermId('dbxref', 'accession', 'data:2091');
+    $db_term = self::getColumnTermId('db', 'name', 'ERO:0001716');
 
     // Linker table, when used, requires specifying the linker table and column.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
@@ -112,15 +112,15 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-      $linker_left_term = this::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
-      $linker_fkey_term = this::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
+      $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
+      $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
-          $term = this::getColumnTermId($linker_table, $column, 'NCIT:C25712');
+          $term = self::getColumnTermId($linker_table, $column, 'NCIT:C25712');
           if ($term) {
             $extra_linker_columns[$column] = $term;
           }
@@ -128,7 +128,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       }
     }
     else {
-      $linker_fkey_term = this::getColumnTermId($base_table, $linker_fkey_column, self::$record_id_term);
+      $linker_fkey_term = self::getColumnTermId($base_table, $linker_fkey_column, self::$record_id_term);
     }
 
     $properties = [];

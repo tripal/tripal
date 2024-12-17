@@ -91,30 +91,30 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
-    $title_term = this::getColumnTermId($object_table, 'title', 'TPUB:0000039'); // text
-    $volumetitle_term = this::getColumnTermId($object_table, 'volumetitle', 'TPUB:0000243'); // text
-    $volume_term = this::getColumnTermId($object_table, 'volume', 'TPUB:0000042');
+    $title_term = self::getColumnTermId($object_table, 'title', 'TPUB:0000039'); // text
+    $volumetitle_term = self::getColumnTermId($object_table, 'volumetitle', 'TPUB:0000243'); // text
+    $volume_term = self::getColumnTermId($object_table, 'volume', 'TPUB:0000042');
     $volume_len = $object_schema_def['fields']['volume']['size'];
-    $series_name_term = this::getColumnTermId($object_table, 'series_name', 'TPUB:0000256');
+    $series_name_term = self::getColumnTermId($object_table, 'series_name', 'TPUB:0000256');
     $series_name_len = $object_schema_def['fields']['series_name']['size'];
-    $issue_term = this::getColumnTermId($object_table, 'issue', 'TPUB:0000043');
+    $issue_term = self::getColumnTermId($object_table, 'issue', 'TPUB:0000043');
     $issue_len = $object_schema_def['fields']['issue']['size'];
-    $pyear_term = this::getColumnTermId($object_table, 'pyear', 'TPUB:0000059');
+    $pyear_term = self::getColumnTermId($object_table, 'pyear', 'TPUB:0000059');
     $pyear_len = $object_schema_def['fields']['pyear']['size'];
-    $pages_term = this::getColumnTermId($object_table, 'pages', 'TPUB:0000044');
+    $pages_term = self::getColumnTermId($object_table, 'pages', 'TPUB:0000044');
     $pages_len = $object_schema_def['fields']['pages']['size'];
-    $miniref_term = this::getColumnTermId($object_table, 'miniref', 'local:miniref');
+    $miniref_term = self::getColumnTermId($object_table, 'miniref', 'local:miniref');
     $miniref_len = $object_schema_def['fields']['miniref']['size'];
-    $uniquename_term = this::getColumnTermId($object_table, 'uniquename', 'data:0842'); // text
-    $is_obsolete_term = this::getColumnTermId($object_table, 'is_obsolete', 'local:is_obsolete'); // boolean
-    $publisher_term = this::getColumnTermId($object_table, 'publisher', 'TPUB:0000244');
+    $uniquename_term = self::getColumnTermId($object_table, 'uniquename', 'data:0842'); // text
+    $is_obsolete_term = self::getColumnTermId($object_table, 'is_obsolete', 'local:is_obsolete'); // boolean
+    $publisher_term = self::getColumnTermId($object_table, 'publisher', 'TPUB:0000244');
     $publisher_len = $object_schema_def['fields']['publisher']['size'];
-    $pubplace_term = this::getColumnTermId($object_table, 'pubplace', 'TPUB:0000245');
+    $pubplace_term = self::getColumnTermId($object_table, 'pubplace', 'TPUB:0000245');
     $pubplace_len = $object_schema_def['fields']['pubplace']['size'];
 
     // Cvterm table, to retrieve the name for the publication type
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $type_term = this::getColumnTermId('cvterm', 'name', 'schema:additionaType');
+    $type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionaType');
     $type_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
@@ -125,15 +125,15 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
       $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
       $linker_pkey_col = $linker_schema_def['primary key'];
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-      $linker_left_term = this::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
-      $linker_fkey_term = this::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
+      $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
+      $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
-          $term = this::getColumnTermId($linker_table, $column, 'NCIT:C25712');
+          $term = self::getColumnTermId($linker_table, $column, 'NCIT:C25712');
           if ($term) {
             $extra_linker_columns[$column] = $term;
           }
@@ -141,7 +141,7 @@ class ChadoPubTypeDefault extends ChadoFieldItemBase {
       }
     }
     else {
-      $linker_fkey_term = this::getColumnTermId($base_table, $linker_fkey_column, self::$record_id_term);
+      $linker_fkey_term = self::getColumnTermId($base_table, $linker_fkey_column, self::$record_id_term);
     }
 
     $properties = [];
