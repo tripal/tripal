@@ -2,9 +2,20 @@
 
 namespace Drupal\tripal\Services;
 
-use Exception;
 
-
+/**
+ * The citation manager class is used to generate citations for
+ * publications of various types. The primary function is
+ * generateCitation(), and input consists of two parts, a
+ * citation template containing various tokens in a particular
+ * order with appropriate punctuation, and an associative array
+ * of key => value pairs that will be used to replace the
+ * tokens in the template.
+ *
+ * This class can also provide default templates for several
+ * types of publications.
+ *
+ */
 class TripalCitationManager {
 
   /**
@@ -37,6 +48,7 @@ class TripalCitationManager {
    *   no issue number, then the parentheses will not be included.
    * @param array $values
    *   An associative array defining the publication properties
+   *   used to replace the tokens.
    */
   public function generateCitation(string $format, array $values) {
     $citation = $this->token_parser->replaceTokens($format, $values);
@@ -56,8 +68,8 @@ class TripalCitationManager {
       'default' =>
         '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation].]'
         . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
-      // These five templates implement equivalent citations as done by Tripal 3
-      // as found in tripal_chado/api/modules/tripal_chado.pub.api.inc
+      // The next five templates implement nearly equivalent citations as done by
+      // Tripal 3 as found in tripal_chado/api/modules/tripal_chado.pub.api.inc
       'Journal Article' =>
         '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation].]'
         . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
@@ -72,7 +84,8 @@ class TripalCitationManager {
       'Conference Proceedings' =>
         '[[Authors].][ [Title].][ [Conference Name|Series Name|Series Abbreviation].]'
         . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
-      // The publication importer also supports "Book" and "Book Chapter", so include those
+      // The publication importer also supports "Book" and "Book Chapter",
+      // so include those.
       'Book' =>
         '[[Authors].][ [Title].][ [Journal Name|Journal Abbreviation|Series Name|Series Abbreviation].][ [Publisher].]'
         . '[ [Publication Date|Year];][ [Volume]][([Issue])][:[Pages]].',
