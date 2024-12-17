@@ -115,11 +115,11 @@ function tripal_get_entity_tokens($bundle, $options = []) {
  */
 function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) {
   if ($bundle_entity) {
-    return $entity->replaceTokens($string,
+    return $entity->replaceEntityTokens($string,
       ['tripal_entity_type' => $bundle_entity]);
   }
   else {
-    return $entity->replaceTokens($string);
+    return $entity->replaceEntityTokens($string);
   }
 }
 

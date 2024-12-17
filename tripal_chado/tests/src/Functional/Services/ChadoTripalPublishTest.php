@@ -429,7 +429,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'The TripalPublish service should have published 1 organism.');
     $entity_id = array_key_first($entities);
     // Token parser will also remove a token if it is empty, e.g. infraspecific nomenclature absent.
-    $this->assertEquals('<em>Gorilla gorilla</em>  <em></em>', $entities[$entity_id],
+    $this->assertEquals('<em>Gorilla gorilla</em>', $entities[$entity_id],
         'The title of Chado organism with missing tokens is incorrect after publishing');
 
     $this->checkFieldItem('organism', 'organism_genus', 1,
