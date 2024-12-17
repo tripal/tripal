@@ -72,19 +72,19 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
 
-    $ft_uniqname_term = $mapping->getColumnTermId('feature', 'name') ?: 'schema_name';
+    $ft_uniqname_term = this::getColumnTermId('feature', 'name', 'schema_name');
 
-    $feature_id_term = $mapping->getColumnTermId('featureloc', 'feature_id') ?: 'SO:0000110';
-    $srcfeature_id_term = $mapping->getColumnTermId('featureloc', 'srcfeature_id') ?: 'data:3002';
-    $fmin_term = $mapping->getColumnTermId('featureloc', 'fmin') ?: 'local:fmin';
-    $is_fmin_partial_term = $mapping->getColumnTermId('featureloc', 'is_fmin_partial') ?: 'local:is_fmin_partial';
-    $fmax_term = $mapping->getColumnTermId('featureloc', 'fmax') ?: 'local:fmax';
-    $is_fmax_partial_term = $mapping->getColumnTermId('featureloc', 'is_fmax_partial') ?: 'local:is_fmax_partial';
-    $strand_term = $mapping->getColumnTermId('featureloc', 'strand') ?: 'data:0853';
-    $phase_term = $mapping->getColumnTermId('featureloc', 'phase') ?: 'data:2336';
-    $residue_info_term = $mapping->getColumnTermId('featureloc', 'residue_info') ?: 'local:residue_info';
-    $locgroup_term = $mapping->getColumnTermId('featureloc', 'locgroup') ?: 'local:locgroup';
-    $rank_term = $mapping->getColumnTermId('featureloc', 'rank') ?: 'OBCS:0000117';
+    $feature_id_term = this::getColumnTermId('featureloc', 'feature_id', 'SO:0000110');
+    $srcfeature_id_term = this::getColumnTermId('featureloc', 'srcfeature_id', 'data:3002');
+    $fmin_term = this::getColumnTermId('featureloc', 'fmin', 'local:fmin');
+    $is_fmin_partial_term = this::getColumnTermId('featureloc', 'is_fmin_partial', 'local:is_fmin_partial');
+    $fmax_term = this::getColumnTermId('featureloc', 'fmax', 'local:fmax');
+    $is_fmax_partial_term = this::getColumnTermId('featureloc', 'is_fmax_partial', 'local:is_fmax_partial');
+    $strand_term = this::getColumnTermId('featureloc', 'strand', 'data:0853');
+    $phase_term = this::getColumnTermId('featureloc', 'phase', 'data:2336');
+    $residue_info_term = this::getColumnTermId('featureloc', 'residue_info', 'local:residue_info');
+    $locgroup_term = this::getColumnTermId('featureloc', 'locgroup', 'local:locgroup');
+    $rank_term = this::getColumnTermId('featureloc', 'rank', 'OBCS:0000117');
 
     // Get property terms using Chado table columns they map to. Return the properties for this field.
     $properties = [];
