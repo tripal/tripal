@@ -98,7 +98,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
 
     // Columns from linked tables
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $protocol_type_term = self::getColumnTermId('cvterm', 'name', 'schema:aditionalType');
+    $protocol_type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $protocol_type_len = $cvterm_schema_def['fields']['name']['size'];
     $pub_title_term = self::getColumnTermId('pub', 'title', 'schema:publication');
     $dbxref_term = self::getColumnTermId('dbxref', 'accession', 'data:2091');
