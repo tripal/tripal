@@ -72,7 +72,7 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
 
-    $ft_uniqname_term = self::getColumnTermId('feature', 'name', 'schema_name');
+    $ft_uniqname_term = self::getColumnTermId('feature', 'name', 'schema:name');
 
     $feature_id_term = self::getColumnTermId('featureloc', 'feature_id', 'SO:0000110');
     $srcfeature_id_term = self::getColumnTermId('featureloc', 'srcfeature_id', 'data:3002');
