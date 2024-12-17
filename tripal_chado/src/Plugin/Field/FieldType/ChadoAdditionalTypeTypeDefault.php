@@ -351,9 +351,19 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       $fixed_value = $settings['termIdSpace'] . ':' . $settings['termAccession'];
       $form_state_storage = $form_state->getStorage();
       $bundle = $form_state_storage['bundle'];
-      $form_state->setValue(['settings', 'fixed_value'], $fixed_value);
-      // Also store the fixed value storage location in the entity
-      self::setEntityBundleType($bundle, $type_table, $type_column);
+      $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle);
+      $bundle_term = $bundle_entity->getTermIdSpace() . ':' . $bundle_entity->getTermAccession();
+      if ($fixed_value != $bundle_term) {
+        $form_state->setErrorByName('settings][field_term_fs][vocabulary_term',
+            t('The "Controlled Vocabulary Term" must be the same term as the'
+            . ' bundle term (@bundle_term) when "This term defines the bundle" is set',
+            ['@bundle_term' => $bundle_term]));
+      }
+      else {
+        $form_state->setValue(['settings', 'fixed_value'], $fixed_value);
+        // Also store the fixed value storage location in the entity
+        self::setEntityBundleType($bundle, $type_table, $type_column);
+      }
     }
     else {
       $form_state->setValue(['settings', 'fixed_value'], 0);
@@ -572,6 +582,8 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
       ],
     ];
 
+    // The parent class adds collection plugin IDs
+    $field_list = self::discoverPostprocess($field_list);
     return $field_list;
   }
 

@@ -919,5 +919,46 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Try to save a term that doesn't belong to the idSpace
     $this->assertFalse($rdfs_id->saveTerm($dummy), 'A term that did not belong to an idSpace should not have been saved.');
 
+    //
+    // Testing idSpace and Vocabulary collection with new db or cv.
+    // Importers may create new ID spaces and vocabularies. Test that these work (issue #2032).
+    //
+    $chado = $this->getTestSchema();
+    $db_name = 'imported_db';
+    $cv_name = 'imported_cv';
+
+    $query = $chado->insert('1:db');
+    $query->fields(['name' => $db_name]);
+    $db_id = $query->execute();
+    $this->assertTrue(is_numeric($db_id), "Unable to insert new DB $db_name");
+
+    $query = $chado->insert('1:cv');
+    $query->fields(['name' => $cv_name]);
+    $cv_id = $query->execute();
+    $this->assertTrue(is_numeric($cv_id), "Unable to insert new vocabulary $cv_name");
+
+    $imported_term = new TripalTerm();
+    $this->assertIsObject($imported_term, "Failure to create an empty TripalTerm");
+    $imported_term->setName('imported_term');
+    $imported_term->setIdSpace($db_name);
+    $imported_term->setVocabulary($cv_name);
+    $imported_term->setAccession('imported_term');
+    // Expect not valid because plugins are not yet specified
+    $is_valid = $imported_term->isValid();
+    $this->assertFalse($is_valid, "Term is valid but should not be valid");
+
+    // Now specify the plugins and try again
+    $imported_term->setIdSpacePlugin('chado_id_space');
+    $imported_term->setVocabularyPlugin('chado_vocabulary');
+    $imported_term->setIdSpace($db_name);
+    $imported_term->setVocabulary($cv_name);
+    // Expect things to work now
+    $id_space = $imported_term->getIdSpace();
+    $this->assertEquals($db_name, $id_space, "ID space does not match DB name");
+    $vocabulary = $imported_term->getVocabulary();
+    $this->assertEquals($cv_name, $vocabulary, "Vocabulary does not match CV name");
+    $is_valid = $imported_term->isValid();
+    $this->assertTrue($is_valid, "Term is not valid but should be");
+
   }
 }
