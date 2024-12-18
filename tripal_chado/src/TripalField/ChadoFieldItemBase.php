@@ -774,7 +774,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       self::$mapping = $storage->load('core_mapping');
     }
     if (self::$mapping) {
-      $id = $mapping->getColumnTermId($table, $column);
+      $id = self::$mapping->getColumnTermId($table, $column);
       if (!$id) {
         $id = $default_term;
       }
