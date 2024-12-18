@@ -751,4 +751,22 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $fields[$machine_name]->delete();
     }
   }
+
+  /**
+   * Adds tripal term plugin IDs for the field's term.
+   * Used for the field discovery process if a DB or CV
+   * is not a tripal collection yet.
+   *
+   * @param array $field_list
+   *   Discoverd field definitions.
+   * @return array
+   *   The same array with plugin IDs added.
+   */
+  static public function discoverPostprocess(array $field_list): array {
+    foreach ($field_list as $key => $field) {
+      $field_list[$key]['settings']['id_space_plugin_id'] = 'chado_id_space';
+      $field_list[$key]['settings']['vocabulary_plugin_id'] = 'chado_vocabulary';
+    }
+    return $field_list;
+  }
 }

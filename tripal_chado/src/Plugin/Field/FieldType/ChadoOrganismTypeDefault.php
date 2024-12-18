@@ -360,6 +360,9 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
         ],
       ],
     ];
+
+    // The parent class adds collection plugin IDs
+    $field_list = self::discoverPostprocess($field_list);
     return $field_list;
   }
 }
