@@ -147,11 +147,17 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *
    * @param string $name
    *   The name.
+   * @param string $pluginId
+   *   An optional name of a collection plugin, e.g. 'chado_id_space',
+   *   'chado_vocabulary'. When this is specified, an ID space or a
+   *   vocabulary that is not yet a collection can be automatically
+   *   made into a collection.
    *
    * @return \Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase|NULL
    *   The loaded collection plugin or NULL.
    */
-  public function loadCollection($name) {
+  public function loadCollection($name, string $pluginId = '') {
+    $collection = NULL;
     if (!is_string($name)) {
       return NULL;
     }
@@ -161,15 +167,19 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
       ->fields('n', ['name', 'plugin_id'])
       ->execute();
     $first = $result->fetchAssoc();
-    if (!$first) {
-      return NULL;
+    if ($first) {
+      $collection = $this->createInstance($first["plugin_id"], ["collection_name" => $name]);
     }
-    $collection = $this->createInstance($first["plugin_id"], ["collection_name" => $name]);
-
-    if ($collection->isValid() and $collection->recordExists() == False) {
-      $collection->createRecord();
+    else {
+      if ($pluginId) {
+        $collection = $this->createCollection($name, $pluginId);
+      }
     }
-
+    if ($collection) {
+      if ($collection->isValid() and $collection->recordExists() == FALSE) {
+        $collection->createRecord();
+      }
+    }
     return $collection;
   }
 
