@@ -91,8 +91,6 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     $prop_fk_col = array_keys($prop_schema_def['foreign keys'][$base_table]['columns'])[0];
 
     // Get the property terms by using the Chado table columns they map to.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
     $link_term = self::getColumnTermId($prop_table, $prop_fk_col, self::$record_id_term);
     $value_term = self::getColumnTermId($prop_table, 'value', 'NCIT:C25712');
     $rank_term = self::getColumnTermId($prop_table, 'rank', 'OBCS:0000117');

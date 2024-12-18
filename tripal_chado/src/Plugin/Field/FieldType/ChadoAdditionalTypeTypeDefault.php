@@ -94,8 +94,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
     // Create variables to store the terms for the properties. We can use terms
     // from Chado tables if appropriate.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
     $type_id_term = self::getColumnTermId($type_table, $type_column, 'rdfs:type');
     $name_term = self::getColumnTermId('cvterm', 'name', 'schema:name');
     $idspace_term = 'SIO:000067';

@@ -60,8 +60,6 @@ class ChadoBooleanTypeDefault extends ChadoFieldItemBase {
     $base_pkey_col = $base_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
     $value_term = self::getColumnTermId($base_table, $base_column, 'NCIT:C25712');
 
     return [

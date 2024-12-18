@@ -69,8 +69,6 @@ class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
     }
 
     // Get the property terms by using the Chado table columns they map to.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
 
     $ft_uniqname_term = self::getColumnTermId('feature', 'name', 'schema:name');
 

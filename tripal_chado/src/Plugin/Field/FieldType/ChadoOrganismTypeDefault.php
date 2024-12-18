@@ -76,8 +76,6 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     // Get the various tables and columns needed for this field.
     // We will get the property terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table

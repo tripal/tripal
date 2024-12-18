@@ -60,8 +60,6 @@ class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Get the property terms by using the Chado table columns they map to.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
 
     $src_uri_term = self::getColumnTermId('analysis', 'sourceuri', 'data:1047');
     $src_name_term = self::getColumnTermId('analysis', 'sourcename', 'schema:name');

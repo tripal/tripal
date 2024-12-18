@@ -81,8 +81,6 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
     // We will get the property terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table

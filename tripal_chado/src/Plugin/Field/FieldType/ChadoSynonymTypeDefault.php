@@ -138,8 +138,6 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
 
     // Create variables to store the terms for the properties. We can use terms
     // from Chado tables if appropriate.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
 
     // Synonym table fields
     $syn_name_term = self::getColumnTermId('synonym', 'name', 'schema:name');
