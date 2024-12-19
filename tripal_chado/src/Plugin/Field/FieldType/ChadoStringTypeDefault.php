@@ -32,7 +32,7 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
   protected static $select_base_column = TRUE;
 
   // Valid column types to pass to the ChadoFieldItemBase parent class.
-  protected static $valid_base_column_types = ['character varying'];
+  protected static $valid_base_column_types = ['character', 'character varying'];
 
   /**
    * {@inheritdoc}
