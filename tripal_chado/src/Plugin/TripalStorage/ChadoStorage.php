@@ -343,12 +343,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *
    * @param array $main_property_names
    *   Associative array where key is field name, value is name of the main property.
-   * @param int|null $minimum_id
-   *   When specified, only return records where the primary key is >= this value
-   * @param int|null $maximum_id
-   *   When specified, only return records where the primary key is <= this value
+   * @param array $record_ids
+   *   When specified, only return records where the primary key is present in this array.
+   *   Used by publish to publish in batches.
    */
-  public function findValues($values, array $main_property_names = [], ?int $minimum_id = NULL, ?int $maximum_id = NULL) {
+  public function findValues($values, array $main_property_names = [], array $record_ids = []) {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Find');
@@ -373,7 +372,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       foreach ($base_tables as $base_table) {
 
         // First we find all matching base records.
-        $entity_matches = $this->records->findRecords($base_table, $base_table, $minimum_id, $maximum_id);
+        $entity_matches = $this->records->findRecords($base_table, $base_table, $record_ids);
 
         // Now for each matching base record we need to select
         // the ancillary tables.
