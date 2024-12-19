@@ -1648,10 +1648,8 @@ class ChadoRecords  {
    *   The name of the Chado table used as a base table.
    * @param string $base_table_alias
    *   The alias of the base table.
-   * @param int|null $minimum_id
-   *   When specified, only return records where the primary key is >= this value
-   * @param int|null $maximum_id
-   *   When specified, only return records where the primary key is <= this value
+   * @param array $record_ids
+   *   When specified, only return records where the primary key is present in this array.
    *   Used by publish to publish in batches.
    *
    * @return array
@@ -1659,7 +1657,7 @@ class ChadoRecords  {
    *
    * @throws \Exception
    */
-  public function findRecords(string $base_table, string $base_table_alias, int|null $minimum_id, int|null $maximum_id) {
+  public function findRecords(string $base_table, string $base_table_alias, array $record_ids) {
 
     $found_records = [];
 
@@ -1710,17 +1708,12 @@ class ChadoRecords  {
         $select->condition($base_table_alias . '.' . $column_alias, $value['value'], $value['operation']);
       }
 
-      // If limiting results by using a range of primary keys, restrict
-      // the query by adding this as acondition.
-      if ($minimum_id or $maximum_id) {
+      // If limiting results to a set of primary keys, restrict the
+      // query by adding this as acondition.
+      if ($record_ids) {
         $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
         $chado_table_pkey = $chado_table_def['primary key'];
-        if ($minimum_id) {
-          $select->condition($base_table_alias . '.' . $chado_table_pkey, $minimum_id, '>=');
-        }
-        if ($maximum_id) {
-          $select->condition($base_table_alias . '.' . $chado_table_pkey, $maximum_id, '<=');
-        }
+        $select->condition($base_table_alias . '.' . $chado_table_pkey, $record_ids, 'IN');
       }
 
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
