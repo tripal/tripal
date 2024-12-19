@@ -248,7 +248,7 @@ class ChadoConnection extends TripalDbxConnection {
     // Get test schema prefix. If none set, we use '0' so we can test the prefix
     // and avoid false-positive since no schema name is allowed to start by a
     // number.
-    $test_prefixes = \Drupal::config('tripaldbx.settings')
+    $test_prefixes = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names', '0')
     ;
     // Get default schema name.
@@ -328,7 +328,7 @@ class ChadoConnection extends TripalDbxConnection {
    */
   public static function removeAllTestSchemas() :void {
     // Get Chado test schema prefix.
-    $test_schema = \Drupal::config('tripaldbx.settings')
+    $test_schema = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names', [])['chado']
     ;
     // Remove all matching schemas.

@@ -3,7 +3,6 @@
 namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
-use \Drupal\tripal\Services\TripalTokenParser;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 
@@ -374,6 +373,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    */
   protected function getEntityTitles($matches) {
     $titles = [];
+    $title_format = $this->entity_type->getTitleFormat();
 
     // Iterate through each match we are checking for an existing entity for.
     foreach ($matches as $match) {
@@ -381,30 +381,23 @@ class ChadoPublish extends TripalBackendPublishBase {
       // Retrieve the chado record pkey ID for this match
       $record_id = $this->getChadoRecordID($match);
 
-      // Collapse match array to follow the format expected by getEntityTitle.
-      $entity_values = [];
+      // Build an array of token keys and values to use for token replacement.
+      $token_values = [];
       foreach ($match as $field_name => $field_items) {
         if ($field_items) {
           foreach($field_items as $delta => $properties) {
             foreach ($properties as $property_name => $prop_deets) {
-              $entity_values[$field_name][$delta][$property_name] = $prop_deets['value']->getValue();
+              $prop_value = $prop_deets['value']->getValue();
+              if ($property_name == ($this->main_property_names[$field_name]??'')) {
+                $token_values[$field_name] = $prop_value;
+              }
             }
           }
         }
-        else {
-          // Any fields without values are also included as NULL, although only
-          // as delta zero. This is because these might be part of the entity
-          // title but are missing, e.g. organism_infraspecific_name.
-          foreach ($this->field_info[$field_name]['prop_types'] as $property_name => $prop_deets) {
-            $entity_values[$field_name][0][$property_name] = NULL;
-          }
-        }
       }
-
       // Now that we've gotten the values out of the property value objects,
       // we can use the token parser to get the title!
-      $entity_title = TripalTokenParser::getEntityTitle($this->entity_type, $entity_values);
-
+      $entity_title = $this->token_parser->replaceTokens($title_format, $token_values);
       $titles[$record_id] = $entity_title;
     }
     return $titles;
@@ -504,12 +497,24 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // Store the new entity IDs of the newly inserted
     // entities along with any existing ones.
+    $entity_ids = [];
     foreach ($added_record_ids as $index => $record_id) {
-      $this->existing_published_entities[$record_id] = $index + $first_added_entity_id;
+      $entity_id = $index + $first_added_entity_id;
+      $entity_ids[] = $entity_id;
+      $this->existing_published_entities[$record_id] = $entity_id;
       // Return only the first 100 for the publish job
       if (count($this->published_or_updated_entities) < 100) {
         $this->published_or_updated_entities[$index + $first_added_entity_id] = $titles[$record_id];
       }
+    }
+
+    // Insert the default URL alias for each new entity
+    $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
+    $entities = $storage->loadMultiple($entity_ids);
+    foreach ($entities as $entity_id => $entity) {
+      $entity->setTokenValues();
+      $entity->setAlias();
+      $entity->save();
     }
   }
 

@@ -149,7 +149,7 @@ class TripalDbx {
    * Check that the given schema name is a valid schema name.
    *
    * Schema name validation can be altered through the configuration variable
-   * reserved_schema_patterns of tripaldbx.settings. This configuration
+   * reserved_schema_patterns of tripal.settings. This configuration
    * variable contains a list of regex with their description, used to reserve
    * schema name patterns. For instance, the key '_chado*' with the value
    * 'external (non-Drupal) chado instances' will make this function returns a
@@ -162,7 +162,7 @@ class TripalDbx {
    *   function <module name>_install($is_syncing) {
    *     // Reserves 'myschema' schema in 'reserved_schema_patterns' settings.
    *     $config = \Drupal::service('config.factory')
-   *       ->getEditable('tripaldbx.settings');
+   *       ->getEditable('tripal.settings');
    *     $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
    *     $reserved_schema_patterns['myschema'] = 'my schema';
    *     $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
@@ -171,7 +171,7 @@ class TripalDbx {
    *   function <module name>_uninstall() {
    *     // Unreserves 'myschema' schemas in 'reserved_schema_patterns' settings.
    *     $config = \Drupal::service('config.factory')
-   *       ->getEditable('tripaldbx.settings')
+   *       ->getEditable('tripal.settings')
    *     ;
    *     $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
    *     unset($reserved_schema_patterns['myschema']);
@@ -261,7 +261,7 @@ class TripalDbx {
    */
   protected function initSchemaReservation(bool $reload_config = FALSE) :void {
     if ($reload_config || !isset(static::$reservedSchemaPatterns)) {
-      $reserved_schema_patterns = \Drupal::config('tripaldbx.settings')
+      $reserved_schema_patterns = \Drupal::config('tripal.settings')
         ->get('reserved_schema_patterns')
         ?? [];
       static::$reservedSchemaPatterns = $reserved_schema_patterns;

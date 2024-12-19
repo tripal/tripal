@@ -18,3 +18,13 @@ tripal.settings:
           type: integer
         expiration:
           type: integer
+    reserved_schema_patterns:
+      type: sequence
+      label: 'Reserved schema patterns'
+      sequence:
+        type: string
+    test_schema_base_names:
+      type: sequence
+      label: 'Test schema base names'
+      sequence:
+        type: string
