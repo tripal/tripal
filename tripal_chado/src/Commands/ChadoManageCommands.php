@@ -148,6 +148,14 @@ class ChadoManageCommands extends DrushCommands {
     'migration-file' => '',
     'republish' => 0]) {
 
+    if ($options['migration-file'] and !file_exists($options['migration-file'])) {
+      $this->output()->writeln('The specified file "' . $options['migration-file'] . '" does not exist');
+      return;
+    }
+    if ($options['migration-file'] and $options['republish']) {
+      $this->output()->writeln('The options --republish and --migration-file cannot be combined');
+      return;
+    }
     // If schema not supplied then grab default chado schema.
     if (!$options['schema-name']) {
       $chado = \Drupal::service('tripal_chado.database');
@@ -182,7 +190,7 @@ class ChadoManageCommands extends DrushCommands {
    */
   public function migrate_entity_ids(string $filename) {
     if (!file_exists($filename)) {
-      $this->output()->writeln("The specified file \"$filename\" does not exist");
+      $this->output()->writeln('The specified file "' . $filename . '" does not exist');
     }
     else {
       $this->output()->writeln('Migrating Tripal 3 Entity ID numeric values...');
