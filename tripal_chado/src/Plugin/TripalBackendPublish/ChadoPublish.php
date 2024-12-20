@@ -820,14 +820,9 @@ class ChadoPublish extends TripalBackendPublishBase {
    * @return array
    *   Original array values divided into a 2-D array of several batches.
    *   First level array key is a delta value starting at zero.
-   *   Array values are in ascending order, so that the first and last
-   *   elements can later be used to define a range.
    */
   protected function divideIntoBatches($record_ids) {
     $batches = [];
-    // This sort is fairly quick, only around 20 ms for 30,000 records,
-    // but needed to later perform the sql query limiting to a range.
-    sort($record_ids);
     $num_batches = (int) ((count($record_ids) + $this->batch_size - 1) / $this->batch_size);
     for ($delta = 0; $delta < $num_batches; $delta++) {
       $batches[$delta] = array_slice($record_ids, $delta * $this->batch_size, $this->batch_size);
@@ -1002,7 +997,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
 
       $this->logger->notice($batch_prefix . 'Step 1 of 6: Find matching records');
-      $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch[0], end($record_id_batch));
+      $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch);
 
       if (!count($matches)) {
         $this->logger->notice($batch_prefix . 'No matching records found, skipping remaining steps');

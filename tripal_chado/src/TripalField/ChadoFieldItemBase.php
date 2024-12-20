@@ -40,6 +40,9 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   protected static $chadostorage_namespace = 'Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage';
   protected static $drupal_entity_callback = 'drupalEntityIdLookupCallback';
 
+  // The term mapping as defined by Chado
+  protected static $mapping = NULL;
+
   /**
    * {@inheritdoc}
    */
@@ -768,5 +771,32 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $field_list[$key]['settings']['vocabulary_plugin_id'] = 'chado_vocabulary';
     }
     return $field_list;
+  }
+
+  /**
+   *  Get the column's term ID.
+   * 
+   * @param string $table
+   *   The table name.
+   * 
+   * @param string column
+   *   The column name.
+   * 
+   * @param string $default_term
+   *   The default term to use.
+   */
+  protected static function getColumnTermId(string $table, string $column, string $default_term): string {
+    $id = $default_term;
+    if (is_null(self::$mapping)) {
+      $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+      self::$mapping = $storage->load('core_mapping');
+    }
+    if (self::$mapping) {
+      $id = self::$mapping->getColumnTermId($table, $column);
+      if (!$id) {
+        $id = $default_term;
+      }
+    }
+    return $id;
   }
 }
