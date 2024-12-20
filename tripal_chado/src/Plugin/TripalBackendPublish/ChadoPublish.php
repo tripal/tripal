@@ -551,7 +551,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       // Validate that we have migration data for all records to be published.
       foreach ($matches as $match) {
         $record_id = $this->getChadoRecordID($match);
-        $old_entity_id = $this->migration_data[$this->bundle][$record_id] ?? NULL;
+        $old_entity_id = $this->migration_data[$this->base_table][$record_id] ?? NULL;
         if (!$old_entity_id) {
           $problem = 'Encountered missing migration data for bundle ' . $this->bundle
                       . ' record ' . $record_id . ', cannot continue';
@@ -607,7 +607,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $added_record_ids[] = $record_id;
       $values = [$this->bundle, $this->uid, $title, 1, $timestamp, $timestamp];
       if ($this->migration_data) {
-        $values[] = $this->migration_data[$this->bundle][$record_id];
+        $values[] = $this->migration_data[$this->base_table][$record_id];
       }
       $query->values($values);
     }
