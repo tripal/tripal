@@ -156,7 +156,7 @@ trait ChadoTestTrait  {
     };
     $clear->call(new TripalDbx());
     // Adds live schema reservation.
-    $reserved_schema_patterns = $this->realConfigFactory->get('tripaldbx.settings')
+    $reserved_schema_patterns = $this->realConfigFactory->get('tripal.settings')
       ->get('reserved_schema_patterns', [])
     ;
     foreach ($reserved_schema_patterns as $pattern => $description) {
@@ -169,7 +169,7 @@ trait ChadoTestTrait  {
    */
   protected function allowTestSchemas() {
     $this->testSchemaBaseNames = $this->realConfigFactory
-      ->get('tripaldbx.settings')
+      ->get('tripal.settings')
       ->get('test_schema_base_names', [])
     ;
     $this->tripal_dbx->freeSchemaPattern(

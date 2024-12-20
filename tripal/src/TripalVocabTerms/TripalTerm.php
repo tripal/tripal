@@ -57,6 +57,8 @@ class TripalTerm {
     $this->is_relationship_type = False;
     $this->idSpace = '';
     $this->vocabulary = '';
+    $this->vocabulary_plugin_id = '';
+    $this->id_space_plugin_id = '';
     $this->parents = [];
     $this->altIds = [];
     $this->synonyms = [];
@@ -94,8 +96,14 @@ class TripalTerm {
     if (array_key_exists('definition', $details)) {
       $this->setDefinition($details['definition'] ?? '');
     }
+    if (array_key_exists('id_space_plugin', $details)) {
+      $this->setIdSpacePlugin($details['id_space_plugin']);
+    }
     if (array_key_exists('idSpace', $details)) {
       $this->setIdSpace($details['idSpace']);
+    }
+    if (array_key_exists('vocabulary_plugin_id', $details)) {
+      $this->setVocabularyPlugin($details['vocabulary_plugin_id']);
     }
     if (array_key_exists('vocabulary', $details)) {
       $this->setVocabulary($details['vocabulary']);
@@ -104,7 +112,7 @@ class TripalTerm {
       foreach ($details['synonyms'] as $entry) {
         if (is_array($entry)) {
           if (count($entry) != 2) {
-            $this->messageLogger->error('TripalTerm::__construct(). An synonym tuple is not the correct size.');
+            $this->messageLogger->error('TripalTerm::__construct(). A synonym tuple is not the correct size.');
             continue;
           }
           $this->addSynonym($entry[0], $entry[1]);
@@ -172,6 +180,16 @@ class TripalTerm {
   }
 
   /**
+   * Sets the ID space plugin for the term.
+   *
+   * @param string $id_space_plugin_id
+   *   The name of the ID space plugin, e.g. "chado_id_space".
+   */
+  public function setIdSpacePlugin(string $id_space_plugin_id) {
+    $this->id_space_plugin_id = $id_space_plugin_id;
+  }
+
+  /**
    * Sets the ID space for the term.
    *
    * @param string setIdSpace
@@ -180,13 +198,26 @@ class TripalTerm {
   public function setIdSpace(string $idSpace) {
 
     $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idsp = $manager->loadCollection($idSpace);
+    // An ID space added to a site by an importer may not yet have been added
+    // to the appropriate Tripal collection, so configure the load to optionally
+    // create it. This requires $this->id_space_plugin_id has been previously set.
+    $idsp = $manager->loadCollection($idSpace, $this->id_space_plugin_id);
     if (!$idsp) {
       $this->messageLogger->error(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", does not exist.',
           ['@idSpace' => $idSpace]));
       return;
     }
     $this->idSpace = $idSpace;
+  }
+
+  /**
+   * Sets the vocabulary plugin for the term.
+   *
+   * @param string $vocabulary_plugin_id
+   *   The name of the vocabulary plugin, e.g. "chado_vocabulary".
+   */
+  public function setVocabularyPlugin(string $vocabulary_plugin_id) {
+    $this->vocabulary_plugin_id = $vocabulary_plugin_id;
   }
 
   /**
@@ -198,9 +229,12 @@ class TripalTerm {
   public function setVocabulary(string $vocabulary) {
 
     $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $vocab = $manager->loadCollection($vocabulary);
+    // A vocabulary added to a site by an importer may not yet have been added
+    // to the appropriate Tripal collection, so configure the load to optionally
+    // create it. This requires $this->vocabulary_plugin_id has been previously set.
+    $vocab = $manager->loadCollection($vocabulary, $this->vocabulary_plugin_id);
     if (!$vocab) {
-      $this->messageLogger->error(T('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" does not exist.',
+      $this->messageLogger->error(t('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" does not exist.',
           ['@vocab' => $vocabulary]));
       return;
     }
@@ -789,6 +823,13 @@ class TripalTerm {
   private $definition;
 
   /**
+   * The ID space plugin, e.g. "chado_id_space".
+   *
+   * @var string
+   */
+  private $id_space_plugin_id;
+
+  /**
    * The ID space this terms belongs to.
    *
    * @var string
@@ -801,6 +842,13 @@ class TripalTerm {
    * @var string
    */
   private $accession;
+
+  /**
+   * The vocabulary plugin, e.g. "chado_vocabulary".
+   *
+   * @var string
+   */
+  private $vocabulary_plugin_id;
 
   /**
    * The vocabulary this term belongs to.

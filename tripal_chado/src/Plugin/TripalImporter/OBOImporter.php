@@ -792,9 +792,6 @@ class OBOImporter extends ChadoImporterBase {
   private function getIdSpace($name) {
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $idSpace = $idsmanager->loadCollection($name, 'chado_id_space');
-    if (!$idSpace) {
-      $idSpace = $idsmanager->createCollection($name, 'chado_id_space');
-    }
     return $idSpace;
   }
 
@@ -809,9 +806,6 @@ class OBOImporter extends ChadoImporterBase {
   private function getVocabulary($name) {
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     $vocabulary = $vmanager->loadCollection($name, 'chado_vocabulary');
-    if (!$vocabulary) {
-      $vocabulary = $vmanager->createCollection($name, 'chado_vocabulary');
-    }
     return $vocabulary;
   }
 

@@ -5,7 +5,7 @@ services:
     arguments: ['']
   tripal_chado.field_debugger:
     class: Drupal\tripal_chado\Services\ChadoFieldDebugger
-    arguments: ['@tripal_chado.database', '@tripal.logger']
+    arguments: ['@tripal_chado.database', '@module_handler', '@tripal.logger']
   tripal_chado.custom_tables:
     class: Drupal\tripal_chado\Services\ChadoCustomTableManager
     arguments: ['@database', '@tripal_chado.database']
