@@ -936,7 +936,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
 
     // If $options['migration'] is set, load the specified data file
-    $errormsg = $this->loadMigrationData($options['migration'] ?? '');
+    $errormsg = $this->loadMigrationData($options['migration_file'] ?? '');
     if ($errormsg) {
       $this->logger->error($errormsg);
       return FALSE;
