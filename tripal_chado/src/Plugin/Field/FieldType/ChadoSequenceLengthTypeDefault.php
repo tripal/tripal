@@ -58,9 +58,7 @@ class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Get the property terms by using the Chado table columns they map to.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
-    $seqlen_term = $mapping->getColumnTermId('feature', 'seqlen') ?: 'data:1249';
+    $seqlen_term = self::getColumnTermId('feature', 'seqlen', 'data:1249');
 
     // Return the properties for this field.
     $properties = [];
