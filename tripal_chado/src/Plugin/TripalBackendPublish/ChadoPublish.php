@@ -136,28 +136,36 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   Empty string if successful, including no file specified.
    *   Error message if something went wrong.
    */
-  protected function loadMigrationData(string $filename) : bool {
+  protected function loadMigrationData(string $filename): string {
     $errormsg = '';
     if ($filename) {
-      try {
-        $fh = fopen($filename, 'r');
-        $nlines = 0;
-        while ( !feof($fh) ) {
-          $nlines++;
-          $line = fgets($fp, 2048);
-          $cols = str_getcsv($line, "\t");
-          if (count($cols) != 5) {
-            $errormsg = 'Incorrect number of columns line $nlines, expected 5, found ' . count($cols);
-            return $errormsg;
-          }
-          // Currently the columns are Organism        organism        organism_id     51      172635
-//@@@ use 0 or 1?
-          $this->migration_data[$cols[1]][$cols[3]] = $cols[4];
-        }
+      if (!file_exists($filename)) {
+        $errormsg = 'The specified file "' . $filename . '" does not exist';
       }
-      catch (\Exception $e) {
-        $errormsg = $this->t('Unable to load migration data from file ":filename" '. $e->getMessage(),
-          [':filename' => $filename]);
+      else {
+        try {
+          $fh = fopen($filename, 'r');
+          $nlines = 0;
+          while (!feof($fh)) {
+            $nlines++;
+            $line = fgets($fh, 2048);
+            if ($line) {
+              $cols = str_getcsv($line, "\t");
+              if (count($cols) != 5) {
+                $errormsg = 'Incorrect number of columns line ' . $nlines
+                            . ', expected 5, found ' . count($cols);
+                return $errormsg;
+              }
+            }
+            // Currently the columns are Organism        organism        organism_id     51      172635
+//@@@ use 0 or 1?
+            $this->migration_data[$cols[1]][$cols[3]] = $cols[4];
+          }
+        }
+        catch (\Exception $e) {
+          $errormsg = $this->t('Unable to load migration data from file ":filename" '. $e->getMessage(),
+            [':filename' => $filename]);
+        }
       }
     }
     return $errormsg;
