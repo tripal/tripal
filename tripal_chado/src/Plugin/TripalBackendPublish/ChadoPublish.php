@@ -527,6 +527,54 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
+   * When using migration data, validate that all values are
+   * present and available.
+   *
+   * @param array $matches
+   *   The array of matches for each entity.
+   *
+   * @return bool
+   *   Returns TRUE if validation passes, FALSE if not.
+   */
+  protected function validateMigrationData(array $matches): bool {
+    $problem = '';
+    if ($this->migration_data) {
+      $entity_ids = [];
+      // Validate that we have migration data for all records to be published.
+      foreach ($matches as $match) {
+        $record_id = $this->getChadoRecordID($match);
+        $old_entity_id = $this->migration_data[$this->bundle][$record_id] ?? NULL;
+        if (!$old_entity_id) {
+          $problem = 'Encountered missing migration data for bundle ' . $this->bundle
+                      . ' record ' . $record_id . ', cannot continue';
+          break;
+        }
+        $entity_ids[] = $old_entity_id;
+      }
+      if (!$problem) {
+        // Validate that all entity ID values are currently available.
+        $query = $this->connection->select('tripal_entity', 'E');
+        $query->Fields('E', ['id']);
+        $query->condition('id', $entity_ids, 'IN');
+        $count = $query->countQuery()->execute()->fetchField();
+        if ($count > 0) {
+          $first_record = $query->execute()->fetchField();
+          $problem = $count . ' migrated entity ID values are already'
+                      . ' present on this site, cannot continue.'
+                      . ' First instance = ' . $first_record;
+        }
+      }
+    }
+    if ($problem) {
+      $this->logger->error($problem);
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
+  }
+
+  /**
    * Performs bulk insert of new entities into the tripal_entity table
    *
    * @param array $matches
@@ -537,11 +585,6 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected function insertEntities($matches, $titles) {
 
     $timestamp = time();
-
-//@todo @@@
-//    if ($this->migration_data) {
-//      $success = $this->validateMigrationData($matches);
-//    }
 
     $fields = ['type', 'uid', 'title', 'status', 'created', 'changed'];
     if ($this->migration_data) {
@@ -1031,6 +1074,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     $total_existing_entities = 0;
     $total_new_entities = 0;
     $total_updated_titles = 0;
+    $success = TRUE;
 
     foreach ($record_id_batches as $batch_num => $record_id_batch) {
 
@@ -1042,6 +1086,11 @@ class ChadoPublish extends TripalBackendPublishBase {
 
       $this->logger->notice($batch_prefix . 'Step 1 of 6: Find matching records');
       $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch[0], end($record_id_batch));
+
+      $success = $this->validateMigrationData($matches);
+      if (!$success) {
+        break;
+      }
 
       if (!count($matches)) {
         $this->logger->notice($batch_prefix . 'No matching records found, skipping remaining steps');
@@ -1101,12 +1150,13 @@ class ChadoPublish extends TripalBackendPublishBase {
         $transaction_drupal->rollback();
         $this->logger->error($e->getMessage() . " - Since an error occurred, database changes for $batch_prefix have been rolled back");
         // In case of error, do not attempt to publish any more batches
+        $success = FALSE;
         break;
       }
     } // end of the batch loop
 
     // Present a final summary message, cumulative for all batches
-    $message = "Publish completed.";
+    $message = "Publish " . ($success?'completed.':'encountered errors.');
     $message .= " Published " . number_format($total_new_entities) . " new entities";
     // This summary value is displayed only when republish is specified
     if ($this->republish) {
