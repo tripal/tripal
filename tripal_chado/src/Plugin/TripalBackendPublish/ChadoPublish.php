@@ -861,6 +861,46 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
+   * Retrieves an array of chado record pkeys eligible for publishing.
+   *
+   * @return array
+   *   An array of chado record IDs in no particular order
+   */
+  protected function getRecordIds() {
+
+    // Populates the $this->field_info variable with field information
+    $this->setFieldInfo();
+
+    // Get the required field properties that will uniquely identify an entity.
+    // We only need to search on those properties.
+    $this->required_types = $this->storage->getStoredTypes();
+    $this->non_required_types = $this->storage->getNonStoredTypes();
+
+    // Build the $this->search_values array
+    $this->addRequiredValues();
+    $this->addTokenValues();
+    $this->addFixedTypeValues();
+    $this->addNonRequiredValues();
+
+    // We retrieve a list of all primary keys for the base table of the
+    // content type. This allows us to later divide publishing into small
+    // batches to reduce the amount of memory required if there are
+    // thousands of records to publish.
+    $this->logger->notice('Finding all candidate records in the "'.$this->base_table.'" chado table');
+    $record_ids = $this->storage->findAllRecordIds($this->bundle);
+
+    // Get a list of already-published entities.
+    // The key will be the chado table record ID, the values will be the entity IDs.
+    $this->existing_published_entities = $this->entity_lookup_manager->getPublishedEntityIds($this->bundle, 'tripal_entity');
+
+    // If not republishing everything, remove any already published records.
+    if (!$this->republish) {
+      $record_ids = array_diff($record_ids, array_keys($this->existing_published_entities));
+    }
+    return $record_ids;
+  }
+
+  /**
    * Initialization for publishing.
    *
    * @param array $options
@@ -936,46 +976,6 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
     // @todo somehow set the chado schema using the value in $this->schema_name
     return TRUE;
-  }
-
-  /**
-   * Retrieves an array of chado record pkeys eligible for publishing.
-   *
-   * @return array
-   *   An array of chado record IDs in no particular order
-   */
-  protected function getRecordIds() {
-
-    // Populates the $this->field_info variable with field information
-    $this->setFieldInfo();
-
-    // Get the required field properties that will uniquely identify an entity.
-    // We only need to search on those properties.
-    $this->required_types = $this->storage->getStoredTypes();
-    $this->non_required_types = $this->storage->getNonStoredTypes();
-
-    // Build the $this->search_values array
-    $this->addRequiredValues();
-    $this->addTokenValues();
-    $this->addFixedTypeValues();
-    $this->addNonRequiredValues();
-
-    // We retrieve a list of all primary keys for the base table of the
-    // content type. This allows us to later divide publishing into small
-    // batches to reduce the amount of memory required if there are
-    // thousands of records to publish.
-    $this->logger->notice('Finding all candidate records in the "'.$this->base_table.'" chado table');
-    $record_ids = $this->storage->findAllRecordIds($this->bundle);
-
-    // Get a list of already-published entities.
-    // The key will be the chado table record ID, the values will be the entity IDs.
-    $this->existing_published_entities = $this->entity_lookup_manager->getPublishedEntityIds($this->bundle, 'tripal_entity');
-
-    // If not republishing everything, remove any already published records.
-    if (!$this->republish) {
-      $record_ids = array_diff($record_ids, array_keys($this->existing_published_entities));
-    }
-    return $record_ids;
   }
 
   /**
