@@ -234,7 +234,7 @@ class TripalPubParserManager extends DefaultPluginManager {
             // but we need it or Drupal will run the default validate anyway.
             // We also set #limit_validation_errors to empty so fields that are
             // required that don't have values won't generate warnings.
-            
+
             // RISH REMOVED FOR TESTING (9/23/2023)
             // '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
             // '#validate' => ['tripal_pub_setup_form_ajax_button_validate'], 
@@ -259,7 +259,7 @@ class TripalPubParserManager extends DefaultPluginManager {
           // but we need it or Drupal will run the default validate anyway.
           // we also set #limit_validation_errors to empty so fields that
           // are required that don't have values won't generate warnings.
-          
+
           //@to-do this submit function is not being called - why?
 
           // RISH REMOVED FOR TESTING (9/23/2023)
