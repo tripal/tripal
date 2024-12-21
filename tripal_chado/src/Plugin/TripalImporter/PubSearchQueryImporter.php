@@ -5,6 +5,8 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 
 
 /**
@@ -112,14 +114,16 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       ],
     ];
 
+    $url = Link::fromTextAndUrl('create new or edit existing search queries.',
+        Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries'))->toString();
     $form['search_query_name'] = [
-      '#title' => t('Search query name'),
+      '#title' => t('Existing search query name'),
       '#type' => 'textfield',
       '#required' => TRUE,
       '#autocomplete_path' => 'admin/tripal/autocomplete/pubsearchqueryname',
       '#autocomplete_route_name' => 'tripal.pubsearchqueryname_autocomplete',
       '#autocomplete_query_parameters' => ['db' => '*'],
-      '#description' => t("The search query name"),
+      '#description' => t('Enter the name of an existing search query. You can also ') . $url,
       '#prefix' => '<div id="edit-search-query-name">',
       '#suffix' => '</div>',
     ];
