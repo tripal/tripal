@@ -1,5 +1,6 @@
 CREATE FUNCTION create_point(bigint, bigint) RETURNS point
     LANGUAGE sql
+    SET SEARCH_PATH FROM CURRENT
     AS $_$SELECT point ($1, $2)$_$;
 
 CREATE FUNCTION boxrange(bigint, bigint) RETURNS box
@@ -144,4 +145,3 @@ CREATE TABLE chadoprop (
     value text,
     rank integer DEFAULT 0 NOT NULL
 );
-
