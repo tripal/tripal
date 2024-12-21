@@ -1,6 +1,8 @@
 
 # Chado version 1.31
 
+**NOTE: Not yet being used!**
+
 This directory contains a number of SQL files that combined originate from the
 official GMOD Chado 1.31. More specifically, these files originate from
 https://github.com/GMOD/Chado/blob/1.4/schemas/1.31/default_schema.sql.
