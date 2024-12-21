@@ -248,11 +248,23 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-    // $chado = \Drupal::service('tripal_chado.database');
-
-    // $form_state_values = $form_state->getValues();
-
-    // $organism_id = $form_state_values['organism_id'];
+    $form_state_values = $form_state->getValues();
+    $search_query_name = $form_state_values['search_query_name'] ?? '';
+    // This will extract the query id from the query name selected from the autocomplete field
+    $query_id = NULL;
+    if (preg_match('/\((\d+)\)/', $search_query_name, $matches)) {
+      $query_id = $matches[1];
+    }
+    if (!$query_id) {
+      $form_state->setErrorByName('search_query_name', t('The query name must include its ID value in parentheses'));
+    }
+    else {
+      $pub_library_manager = \Drupal::service('tripal.pub_library');
+      $pub_record = $pub_library_manager->getSearchQuery($query_id);
+      if (!$pub_record) {
+        $form_state->setErrorByName('search_query_name', t('There is no query with an ID value of @id', ['@id' => $query_id]));
+      }
+    }
   }
 
   /**
