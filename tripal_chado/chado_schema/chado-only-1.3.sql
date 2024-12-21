@@ -304,19 +304,19 @@ END;
 $_$;
 
 CREATE FUNCTION boxquery(bigint, bigint) RETURNS box
-    LANGUAGE sql IMMUTABLE
+    LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT
     AS $_$SELECT box (create_point($1, $2), create_point($1, $2))$_$;
 
 CREATE FUNCTION boxquery(bigint, bigint, bigint) RETURNS box
-    LANGUAGE sql IMMUTABLE
+    LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT
     AS $_$SELECT box (create_point($1, $2), create_point($1, $3))$_$;
 
 CREATE FUNCTION boxrange(bigint, bigint) RETURNS box
-    LANGUAGE sql IMMUTABLE
-    AS $_$SELECT box (create_point(0, $1), create_point($2,500000000))$_$;
+    LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT
+    AS $_$SELECT box (create_point(CAST(0 AS bigint), $1), create_point($2,500000000))$_$;
 
 CREATE FUNCTION boxrange(bigint, bigint, bigint) RETURNS box
-    LANGUAGE sql IMMUTABLE
+    LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT
     AS $_$SELECT box (create_point($1, $2), create_point($1,$3))$_$;
 
 CREATE FUNCTION complement_residues(text) RETURNS text
@@ -331,6 +331,7 @@ CREATE FUNCTION concat_pair(text, text) RETURNS text
 
 CREATE FUNCTION create_point(bigint, bigint) RETURNS point
     LANGUAGE sql
+    SET SEARCH_PATH FROM CURRENT
     AS $_$SELECT point ($1, $2)$_$;
 
 CREATE FUNCTION create_soi() RETURNS integer
@@ -717,6 +718,7 @@ CREATE FUNCTION featureslice(bigint, bigint) RETURNS SETOF featureloc
 
 CREATE FUNCTION fill_cvtermpath(bigint) RETURNS integer
     LANGUAGE plpgsql
+    SET SEARCH_PATH FROM CURRENT
     AS $_$
 DECLARE
     cvid alias for $1;
@@ -735,6 +737,7 @@ $_$;
 
 CREATE FUNCTION fill_cvtermpath(character varying) RETURNS integer
     LANGUAGE plpgsql
+    SET SEARCH_PATH FROM CURRENT
     AS $_$
 DECLARE
     cvname alias for $1;
@@ -11046,10 +11049,10 @@ ALTER TABLE ONLY treatment
 
 ALTER TABLE ONLY treatment
     ADD CONSTRAINT treatment_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
-    
+
 ---
 --- The following additions are part of the pull request on Chado:
---- https://github.com/GMOD/Chado/pull/105 
+--- https://github.com/GMOD/Chado/pull/105
 --- Once a new version of Chado is made these changes will be integrated
 --- but we need them now to prevent create_point errors when deleting features
 --- or cloning Chado.
@@ -11057,6 +11060,7 @@ ALTER TABLE ONLY treatment
 
 CREATE OR REPLACE FUNCTION fill_cvtermpath(INTEGER) RETURNS INTEGER
     LANGUAGE plpgsql
+    SET SEARCH_PATH FROM CURRENT
     AS $_$
 DECLARE
     cvid alias for $1;
@@ -11072,6 +11076,7 @@ $_$;
 
 CREATE OR REPLACE FUNCTION fill_cvtermpath(cv.name%TYPE) RETURNS INTEGER
     LANGUAGE plpgsql
+    SET SEARCH_PATH FROM CURRENT
     AS $_$
 DECLARE
     cvname alias for $1;
@@ -11088,9 +11093,10 @@ $_$;
 -- (make this immutable so we can index it)
 CREATE OR REPLACE FUNCTION boxrange (bigint, bigint) RETURNS box AS
  'SELECT box (create_point(CAST(0 AS bigint), $1), create_point($2,500000000))'
-LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
+LANGUAGE 'sql' IMMUTABLE
+SET SEARCH_PATH FROM CURRENT;
 
 CREATE OR REPLACE FUNCTION boxrange (bigint, bigint, bigint) RETURNS box AS
  'SELECT box (create_point($1, $2), create_point($1,$3))'
-LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
-
+LANGUAGE 'sql' IMMUTABLE
+SET SEARCH_PATH FROM CURRENT;
