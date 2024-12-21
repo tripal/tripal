@@ -58,7 +58,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     // If query_id is unset, we need to display library options and an autocomplete for the search query
     if ($query_id == "") {
-      $this->formQueryIdNotSet($form);
+      $this->formQueryIdNotSet($form, $form_state);
     }
 
     // If the query id is set, display the data
@@ -94,11 +94,14 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    *
    * @param array &$form
    *   The form array definition.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
    */
-  private function formQueryIdNotSet(&$form) {
+  private function formQueryIdNotSet(&$form, $form_state) {
     // Get list of database/libraries
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugins = $pub_library_manager->getLibraryOptions();
+    $form_state_values = $form_state->getValues();
 
     $form['database'] = [
       '#title' => t('Database'),
@@ -146,11 +149,11 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $op = $form_state_values['op'];
       if ($op == 'Preview query details') {
         $query_id = -1;
-        if ($form_state_values['query_id'] != "") {
+        if ($form_state_values['query_id'] != '') {
           $query_id = $form_state_values['query_id'];
         }
         else {
-          $search_query_name = $form_state_values['search_query_name'];
+          $search_query_name = $form_state_values['search_query_name'] ?? '';
           if (preg_match('/\((\d+)\)/', $search_query_name, $matches)) {
             $query_id = $matches[1];
           }
