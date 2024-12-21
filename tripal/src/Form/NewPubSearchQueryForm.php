@@ -132,7 +132,7 @@ class NewPubSearchQueryForm extends FormBase {
       $results = $plugin->retrieve($criteria_column_array, 5, 0);
 
       // On successful results, it should return array with keys total_records, search_str, pubs(array)
-      $headers = ['', 'Publication', 'Authors'];
+      $headers = ['', 'Publication'];
       $form['test_results_table'] = [
         '#type' => 'table',
         '#header' => $headers,
@@ -154,17 +154,21 @@ class NewPubSearchQueryForm extends FormBase {
           '#weight' => 999,
         ];
 
+        $citation_service = \Drupal::service('tripal.citation');
         $index = 0;
         foreach ($results['pubs'] as $pubs_row) {
           $index++;
+          $pub_type = $pubs_row['Publication Type'] ?? '';
+          if (is_array($pub_type)) {
+            $pub_type = $pub_type[array_key_first($pub_type)];
+          }
+          $citation_template = $citation_service->getDefaultCitationTemplate($pub_type);
+          $citation = $citation_service->generateCitation($citation_template, $pubs_row);
           $row["index"] = [
             '#markup' => $index,
           ];
           $row["publication"] = [
-            '#markup' => $pubs_row['Title'],
-          ];
-          $row["authors"] = [
-            '#markup' => $pubs_row['Authors'] ?? '',
+            '#markup' => $citation,
           ];
           $form['test_results_table'][$index - 1] = $row;
         }
