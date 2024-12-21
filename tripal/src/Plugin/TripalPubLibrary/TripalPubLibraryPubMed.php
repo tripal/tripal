@@ -92,8 +92,6 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
     // Go through all results until pubs is empty
     $page_results = $this->retrieve($query);
-    // print_r($page_results);
-    // print_r(count($page_results['pubs']));
     $publications = [];
     if (is_array($page_results) && array_key_exists('pubs', $page_results)) {
       if (count($page_results['pubs']) != 0) {
