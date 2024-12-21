@@ -8,7 +8,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 
-class ChadoManagePubSearchQueriesForm extends FormBase {
+class UNUSED_DELETE_ChadoManagePubSearchQueriesForm extends FormBase {
 
   /**
    * {@inheritdoc}

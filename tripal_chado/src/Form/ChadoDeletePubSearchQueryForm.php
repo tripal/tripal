@@ -8,7 +8,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 
-class ChadoDeletePubSearchQueryForm extends FormBase {
+class UNUSED_DELETE_ChadoDeletePubSearchQueryForm extends FormBase {
 
   private $form_state_previous_user_input = null;
   /**

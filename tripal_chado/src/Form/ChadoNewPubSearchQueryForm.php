@@ -10,7 +10,7 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 
-class ChadoNewPubSearchQueryForm extends FormBase {
+class UNUSED_DELETE_ChadoNewPubSearchQueryForm extends FormBase {
   private $pub_import_id = null;
   private $form_state_previous_user_input = null;
 
