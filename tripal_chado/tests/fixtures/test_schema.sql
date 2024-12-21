@@ -1,10 +1,11 @@
 CREATE FUNCTION create_point(bigint, bigint) RETURNS point
     LANGUAGE sql
+    SET SEARCH_PATH FROM CURRENT
     AS $_$SELECT point ($1, $2)$_$;
 
 CREATE FUNCTION boxrange(bigint, bigint) RETURNS box
-    LANGUAGE sql IMMUTABLE
-    AS $_$SELECT box (create_point(0, $1), create_point($2,500000000))$_$;
+    LANGUAGE sql IMMUTABLE SET SEARCH_PATH FROM CURRENT
+    AS $_$SELECT box (create_point(CAST(0 AS bigint), $1), create_point($2,500000000))$_$;
 
 CREATE TABLE db (
   db_id serial,
@@ -144,4 +145,3 @@ CREATE TABLE chadoprop (
     value text,
     rank integer DEFAULT 0 NOT NULL
 );
-
