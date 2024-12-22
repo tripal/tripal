@@ -334,9 +334,12 @@ LANGUAGE SQL;
 -- functions for creating coordinate based functions
 --
 -- create a point
+SET search_path = public,chado,pg_catalog;
+DROP FUNCTION IF EXISTS featureslice(bigint, bigint);
 CREATE OR REPLACE FUNCTION featureslice(bigint, bigint) RETURNS setof featureloc AS
   'SELECT * from featureloc where boxquery($1, $2) <@ boxrange(fmin,fmax)'
 LANGUAGE 'sql';
+SET search_path = chado,pg_catalog;
 
 --uses the gff3atts to create a GFF3 compliant attribute string
 CREATE OR REPLACE FUNCTION gffattstring (bigint) RETURNS varchar AS
