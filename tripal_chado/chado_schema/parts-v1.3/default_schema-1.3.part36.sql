@@ -2666,6 +2666,7 @@ CREATE INDEX featuregroup_idx4 ON featuregroup (srcfeature_id);
 CREATE INDEX featuregroup_idx5 ON featuregroup (strand);
 CREATE INDEX featuregroup_idx6 ON featuregroup (is_root);
 
+SET search_path = public,frange,chado,pg_catalog;
 CREATE OR REPLACE FUNCTION groupoverlaps(bigint, bigint, varchar) RETURNS setof featuregroup AS '
   SELECT g2.*
   FROM  featuregroup g1,
