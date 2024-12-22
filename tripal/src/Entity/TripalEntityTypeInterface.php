@@ -59,13 +59,13 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
   /**
    * Sets the Tripal Entity Type CV Term Accession.
    *
-   * @param string $termIdSpace
+   * @param string $termAccession
    *   The new Tripal Controlled Vocabulary Term Accession
    *
    * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
    *   The called Tripal Entity Type entity.
    */
-  public function setTermAccession($termAccession);
+  public function setTermAccession(string $termAccession);
 
   /**
    * Gets the Tripal Entity Type CV Term Object based off its CV Term ID Space and Accession.

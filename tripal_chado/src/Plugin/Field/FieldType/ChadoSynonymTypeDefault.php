@@ -138,21 +138,19 @@ class ChadoSynonymTypeDefault extends ChadoFieldItemBase {
 
     // Create variables to store the terms for the properties. We can use terms
     // from Chado tables if appropriate.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
 
     // Synonym table fields
-    $syn_name_term = $mapping->getColumnTermId('synonym', 'name') ?: 'schema:name';
+    $syn_name_term = self::getColumnTermId('synonym', 'name', 'schema:name');
     $syn_name_len = $synonym_table_def['fields']['name']['size'];
-    $syn_type_id_term = $mapping->getColumnTermId('synonym', 'type_id') ?: 'schema:additionalType';
+    $syn_type_id_term = self::getColumnTermId('synonym', 'type_id', 'schema:additionalType');
     $syn_type_name_len = $cvterm_table_def['fields']['name']['size'];
 
     // Synonym linker table fields
-    $linker_fkey_id_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column) ?: self::$record_id_term;
-    $linker_synonym_id_term = $mapping->getColumnTermId($linker_table, 'synonym_id') ?: 'schema:alternateName';
-    $linker_is_current_term = $mapping->getColumnTermId($linker_table, 'is_current') ?: 'local:is_current';
-    $linker_is_internal_term = $mapping->getColumnTermId($linker_table, 'is_internal') ?: 'local:is_internal';
-    $linker_pub_id_term = $mapping->getColumnTermId($linker_table, 'pub_id') ?: 'schema:publication';
+    $linker_fkey_id_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
+    $linker_synonym_id_term = self::getColumnTermId($linker_table, 'synonym_id', 'schema:alternateName');
+    $linker_is_current_term = self::getColumnTermId($linker_table, 'is_current', 'local:is_current');
+    $linker_is_internal_term = self::getColumnTermId($linker_table, 'is_internal', 'local:is_internal');
+    $linker_pub_id_term = self::getColumnTermId($linker_table, 'pub_id', 'schema:publication');
 
     // Always store the record id of the base record that this field is
     // associated with in Chado.

@@ -122,7 +122,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   /**
    * Data Provider: provides a list of the basic fields to test.
    */
-  public function provideFieldsToTest() {
+  public static function provideFieldsToTest() {
     $sets = [];
 
     $sets[] = [

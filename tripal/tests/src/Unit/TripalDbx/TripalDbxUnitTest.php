@@ -54,7 +54,7 @@ class TripalDbxUnitTest extends UnitTestCase {
 
     // Mock the ConfigFactory service.
     $this->proConfigFactory = $this->prophesize(\Drupal\Core\Config\ConfigFactory::class);
-    $this->proConfigFactory->get('tripaldbx.settings')->willReturn($this->config);
+    $this->proConfigFactory->get('tripal.settings')->willReturn($this->config);
     $this->configFactory = $this->proConfigFactory->reveal();
 
     // Mock the module handler.
@@ -187,7 +187,7 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Schema name provider.
    */
-  public function schemaNamesProvider() {
+  public static function schemaNamesProvider() {
     return [
       [
         'nameok',

@@ -81,14 +81,14 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
       $this->initTripalDbx();
       $this->allowTestSchemas();
 
-      // We also lose the tripaldbx.settings config in Kernel tests
+      // We also lose the tripal.settings config in Kernel tests
       // This is needed when getting available schema, for example.
       // As such we are going to manually set some needed ones within
       // the test config based on the real config.
-      $fromReal = $this->realConfigFactory->get('tripaldbx.settings')
+      $fromReal = $this->realConfigFactory->get('tripal.settings')
       ->get('test_schema_base_names', []);
       \Drupal::configFactory()
-        ->getEditable('tripaldbx.settings')
+        ->getEditable('tripal.settings')
         ->set('test_schema_base_names', $fromReal)
         ->save();
     }
@@ -136,7 +136,9 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
     }
 
     if (in_array('TripalField', $functionality)) {
-      $this->installSchema('system', 'sequences');
+      if (floatval(\Drupal::VERSION) < 11) {
+        $this->installSchema('system', 'sequences');
+      }
       $this->installConfig(['field']);
     }
 

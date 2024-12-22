@@ -42,7 +42,7 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
    * It should be set if not set in any test function that adds schema names to
    * $testSchemas: `self::$db = self::$db ?? \Drupal::database();`
    *
-   * @var \Drupal\Core\Database\Driver\pgsql\Connection
+   * @var \Drupal\Core\Database\Connection
    */
   protected static $db = NULL;
 
@@ -88,7 +88,7 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
       $typed_config
     );
     // Get real config elements.
-    $config = $config_factory->get('tripaldbx.settings');
+    $config = $config_factory->get('tripal.settings');
     $reserved_schema_patterns = $config->get('reserved_schema_patterns');
     $this->assertNotEmpty($reserved_schema_patterns, 'Reserved schema patterns not empty.');
     $test_schema_base_names = $config
@@ -114,7 +114,7 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
 
     // Mock the ConfigFactory service.
     $this->proConfigFactory = $this->prophesize(\Drupal\Core\Config\ConfigFactory::class);
-    $this->proConfigFactory->get('tripaldbx.settings')->willReturn($this->config);
+    $this->proConfigFactory->get('tripal.settings')->willReturn($this->config);
     $this->configFactory = $this->proConfigFactory->reveal();
 
     \Drupal::getContainer()->set('config.factory', $this->configFactory);
@@ -218,7 +218,7 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
     $tripaldbx->freeSchemaPattern('.*', TRUE);
 
     // Get test schema  base name for BioDb from (real) settings (see ::setUp).
-    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
+    $test_schema_base_names = \Drupal::config('tripal.settings')
       ->get('test_schema_base_names')
     ;
 

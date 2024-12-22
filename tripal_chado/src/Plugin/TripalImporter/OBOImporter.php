@@ -792,9 +792,6 @@ class OBOImporter extends ChadoImporterBase {
   private function getIdSpace($name) {
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $idSpace = $idsmanager->loadCollection($name, 'chado_id_space');
-    if (!$idSpace) {
-      $idSpace = $idsmanager->createCollection($name, 'chado_id_space');
-    }
     return $idSpace;
   }
 
@@ -809,9 +806,6 @@ class OBOImporter extends ChadoImporterBase {
   private function getVocabulary($name) {
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     $vocabulary = $vmanager->loadCollection($name, 'chado_vocabulary');
-    if (!$vocabulary) {
-      $vocabulary = $vmanager->createCollection($name, 'chado_vocabulary');
-    }
     return $vocabulary;
   }
 
@@ -1361,7 +1355,7 @@ class OBOImporter extends ChadoImporterBase {
       // array with the correct style
       foreach ($ontology_results['response']['docs'] as $each ) {
         $obo_id = $each['obo_id'];
-        $defining_ontology = $each['is_defining_ontology'];
+        $defining_ontology = $each['is_defining_ontology'] ?? $each['isDefiningOntology'] ?? 'false';
         // First result should have defining_ontology=true, but if
         // it doesn't, use the first result with obo_id=$id
         if ($defining_ontology == 'false' and $obo_id != $id) {
@@ -1386,7 +1380,7 @@ class OBOImporter extends ChadoImporterBase {
       if ($ontology_results) {
         foreach ($ontology_results['response']['docs'] as $each ){
           $obo_id = $each['obo_id'];
-          $defining_ontology = $each['is_defining_ontology'];
+          $defining_ontology = $each['is_defining_ontology'] ?? $each['isDefiningOntology'] ?? 'false';
           if (!$defining_ontology and $obo_id != $id ) {
             continue;
           }
@@ -1418,7 +1412,7 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     // What do we do if the term is not defined by this ontology?
-    if ($results['is_defining_ontology'] != 1) {
+    if (($results['is_defining_ontology'] ?? $results['isDefiningOntology'] ?? 'false') != 1) {
 
     }
 

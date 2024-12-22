@@ -75,8 +75,6 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     // We will get the property terms by using the Chado table columns they map to.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
@@ -89,14 +87,14 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Columns specific to the object table
-    $name_term = $mapping->getColumnTermId($object_table, 'name') ?: 'schema:name';
+    $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
     $name_len = $object_schema_def['fields']['name']['size'];
-    $description_term = $mapping->getColumnTermId($object_table, 'description') ?: 'schema:description';
+    $description_term = self::getColumnTermId($object_table, 'description', 'schema:description');
     $description_len = $object_schema_def['fields']['description']['size'];
 
     // Cvterm table, to retrieve the name for the contact type
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $contact_type_term = $mapping->getColumnTermId('cvterm', 'name') ?: 'schema:additionalType';
+    $contact_type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $contact_type_len = $cvterm_schema_def['fields']['name']['size'];
 
     // Linker table, when used, requires specifying the linker table and column.
@@ -108,15 +106,15 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       $linker_pkey_col = $linker_schema_def['primary key'];
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
-      $linker_left_term = $mapping->getColumnTermId($linker_table, $linker_left_col) ?: self::$record_id_term;
-      $linker_fkey_term = $mapping->getColumnTermId($linker_table, $linker_fkey_column) ?: self::$record_id_term;
+      $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
+      $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
 
       // Some but not all linker tables contain rank, type_id, and maybe other columns.
       // These are conditionally added only if they exist in the linker
       // table, and if a term is defined for them.
       foreach (array_keys($linker_schema_def['fields']) as $column) {
         if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
-          $term = $mapping->getColumnTermId($linker_table, $column) ?: 'NCIT:C25712';
+          $term = self::getColumnTermId($linker_table, $column, 'NCIT:C25712');
           if ($term) {
             $extra_linker_columns[$column] = $term;
           }
@@ -124,7 +122,7 @@ class ChadoContactTypeDefault extends ChadoFieldItemBase {
       }
     }
     else {
-      $linker_fkey_term = $mapping->getColumnTermId($base_table, $linker_fkey_column) ?: self::$record_id_term;
+      $linker_fkey_term = self::getColumnTermId($base_table, $linker_fkey_column, self::$record_id_term);
     }
 
     $properties = [];

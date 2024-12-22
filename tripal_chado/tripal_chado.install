@@ -17,7 +17,7 @@ use \Drupal\tripal\TripalVocabTerms\TripalTerm;
 function tripal_chado_install($is_syncing) {
   // Reserves Chado common schemas in 'reserved_schema_patterns' settings.
   $config = \Drupal::service('config.factory')
-    ->getEditable('tripaldbx.settings')
+    ->getEditable('tripal.settings')
   ;
   $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
   $reserved_schema_patterns['frange'] = 'feature range (chado)';
@@ -37,7 +37,7 @@ function tripal_chado_install($is_syncing) {
 function tripal_chado_uninstall() {
   // Unreserves Chado common schemas in 'reserved_schema_patterns' settings.
   $config = \Drupal::service('config.factory')
-    ->getEditable('tripaldbx.settings')
+    ->getEditable('tripal.settings')
   ;
   $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
   unset($reserved_schema_patterns['frange']);

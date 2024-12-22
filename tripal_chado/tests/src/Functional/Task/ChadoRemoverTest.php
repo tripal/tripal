@@ -16,7 +16,7 @@ use Drupal\tripal_chado\Task\ChadoRemover;
  * @group Tripal Chado Task
  * @group Tripal Chado Remover
  */
-class ChadoRemoverFunctionalTest extends ChadoTestBrowserBase {
+class ChadoRemoverTest extends ChadoTestBrowserBase {
 
   /**
    * Tests task.

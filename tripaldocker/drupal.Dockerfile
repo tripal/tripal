@@ -1,8 +1,9 @@
 ARG phpversion='8.3'
-FROM php:${phpversion}-apache-bullseye
+FROM php:${phpversion}-apache-bookworm
 
-ARG drupalversion='~10.4.0'
-ARG postgresqlversion='16'
+ARG phpversion='8.3'
+ARG drupalversion='11.0.x-dev'
+ARG postgresqlversion='17'
 ARG modules='devel devel_php field_group field_group_table'
 ARG chadoschema='chado'
 ARG installchado=TRUE
@@ -13,7 +14,7 @@ LABEL drupal.version=${drupalversion}
 LABEL drupal.stability="production"
 LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
-LABEL os.version="bullseye"
+LABEL os.version="bookworm"
 LABEL postgresql.version="${postgresqlversion}"
 
 COPY . /app
@@ -28,11 +29,11 @@ RUN chmod -R +x /app && apt-get update 1> ~/aptget.update.log \
 ## See https://stackoverflow.com/questions/51033689/how-to-fix-error-on-postgres-install-ubuntu
 RUN mkdir -p /usr/share/man/man1 && mkdir -p /usr/share/man/man7
 
-## Add the PostgreSQL Package Source for versions > 13
-RUN if [ "$postgresqlversion" > "13" ] ; then \
+## Add the PostgreSQL Package Source for versions > 15, default for debian 12 bookworm
+RUN if [ "$postgresqlversion" > "15" ] ; then \
   apt-get install -y curl apt-transport-https gpg --yes -qq 1>> ~/aptget.extras.log \
   && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg \
-  && echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" > /etc/apt/sources.list.d/postgresql.list \
+  && echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" > /etc/apt/sources.list.d/postgresql.list \
   && apt-get update 1>> ~/aptget.update.log ; \
   fi
 
@@ -71,7 +72,7 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/${postgresqlversion}/main/pos
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 ## Xdebug
-RUN pecl install xdebug-3.3.2 \
+RUN pecl install xdebug-3.4.0 \
   && docker-php-ext-enable xdebug \
   && cat /app/tripaldocker/default_files/xdebug/xdebug-coverage.ini >> /usr/local/etc/php/php.ini \
   && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
@@ -97,7 +98,11 @@ RUN set -eux; \
   libzip-dev \
   ; \
   \
-  docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp; \
+  docker-php-ext-configure gd \
+  --with-freetype \
+  --with-jpeg=/usr \
+  --with-webp \
+  ; \
   \
   docker-php-ext-install -j "$(nproc)" \
   gd \
@@ -112,7 +117,7 @@ RUN set -eux; \
   apt-mark auto '.*' > /dev/null; \
   apt-mark manual $savedAptMark; \
   ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
-  | awk '/=>/ { print $3 }' \
+  | awk '/=>/ { so = $(NF-1); if (index(so, "/usr/local/") == 1) { next }; gsub("^/(usr/)?", "", so); printf "*%s\n", so }' \
   | sort -u \
   | xargs -r dpkg-query -S \
   | cut -d: -f1 \
@@ -160,7 +165,7 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 
 ## Use composer to install Drupal.
 WORKDIR /var/www
-ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit drupal/field_group"
+ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit drupal/field_group drupal/field_group_table"
 ARG composerpackages="drupal/devel drupal/devel_php drupal/gin_toolbar drupal/gin"
 RUN composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal \
   && cd drupal \
@@ -170,7 +175,6 @@ RUN composer create-project drupal/recommended-project:${drupalversion} --stabil
   && composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
   && rm composer.lock \
   && packages="${requiredcomposerpackages} ${composerpackages}" \
-  && if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); then packages="$packages drupal/field_group_table"; fi \
   && composer require --dev $packages \
   && composer install
 

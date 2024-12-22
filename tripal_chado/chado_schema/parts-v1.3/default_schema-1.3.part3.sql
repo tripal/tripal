@@ -209,23 +209,25 @@ SET search_path = chado,pg_catalog;
 -- functions operating on featureloc ranges
 --
 
+SET search_path = public;
 -- create a point
 CREATE OR REPLACE FUNCTION create_point (bigint, bigint) RETURNS point AS
  'SELECT point ($1, $2)'
-LANGUAGE 'sql';
+LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
 
 -- create a range box
 -- (make this immutable so we can index it)
 CREATE OR REPLACE FUNCTION boxrange (bigint, bigint) RETURNS box AS
- 'SELECT box (create_point(0, $1), create_point($2,500000000))'
-LANGUAGE 'sql' IMMUTABLE;
+ 'SELECT box (create_point(CAST(0 AS bigint), $1), create_point($2,500000000))'
+LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
 
 -- create a query box
 CREATE OR REPLACE FUNCTION boxquery (bigint, bigint) RETURNS box AS
  'SELECT box (create_point($1, $2), create_point($1, $2))'
-LANGUAGE 'sql' IMMUTABLE;
+LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
 
 --functional index that depends on the above functions
+SET search_path = chado,public,pg_catalog;
 CREATE INDEX binloc_boxrange ON featureloc USING GIST (boxrange(fmin, fmax));
 
 
@@ -288,14 +290,17 @@ LANGUAGE 'sql';
 
 
 
+SET search_path = public;
 CREATE OR REPLACE FUNCTION boxrange (bigint, bigint, bigint) RETURNS box AS
  'SELECT box (create_point($1, $2), create_point($1,$3))'
-LANGUAGE 'sql' IMMUTABLE;
+LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
 
 -- create a query box
 CREATE OR REPLACE FUNCTION boxquery (bigint, bigint, bigint) RETURNS box AS
  'SELECT box (create_point($1, $2), create_point($1, $3))'
-LANGUAGE 'sql' IMMUTABLE;
+LANGUAGE 'sql' IMMUTABLE SET SEARCH_PATH FROM CURRENT;
+
+SET search_path = chado,public,pg_catalog;
 
 CREATE INDEX binloc_boxrange_src ON featureloc USING GIST (boxrange(srcfeature_id,fmin, fmax));
 

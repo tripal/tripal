@@ -459,7 +459,7 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    *
    * @return array
    */
-  public function knownTableProvider() {
+  public static function knownTableProvider() {
     // chado version, array of 3 tables specific to version.
 
     return [
@@ -472,7 +472,7 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    *
    * @return array
    */
-  public function knownBaseTableProvider() {
+  public static function knownBaseTableProvider() {
     // chado version, array of 3 tables specific to version.
 
     return [

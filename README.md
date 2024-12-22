@@ -6,7 +6,7 @@
 
 ![Target Drupal Version 10.4.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-10.4.x-informational)
 
-Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) - ![PostgreSQL 16](https://img.shields.io/badge/PostreSQL-16-success)
+Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) - ![PostgreSQL 17](https://img.shields.io/badge/PostreSQL-17-success)
 
 | Drupal      | 10.3.x              | 10.4.x              | 10.5.x              | 11.0.x              | 11.1.x              |
 |-------------|---------------------|---------------------|---------------------|---------------------|---------------------|

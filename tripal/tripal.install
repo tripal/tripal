@@ -4,6 +4,7 @@
  * Contains functions used to install/uninstall tripal.
  */
 
+use Drupal\Core\Database\ConnectionNotDefinedException;
 use \Drupal\Core\Database\Database;
 
 /**
@@ -17,7 +18,7 @@ function tripal_install() {
   $tripaldbx = \Drupal::service('tripal.dbx');
   $drupal_schema = $tripaldbx->getDrupalSchemaName();
   $config = \Drupal::service('config.factory')
-    ->getEditable('tripaldbx.settings');
+    ->getEditable('tripal.settings');
   $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
   $reserved_schema_patterns[$drupal_schema] = 'Drupal installation';
   $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
@@ -67,7 +68,7 @@ function tripal_uninstall() {
   // Remove configuration.
   // -- Reserves Drupal schema in 'reserved_schema_patterns' settings.
   $config = \Drupal::service('config.factory')
-    ->getEditable('tripaldbx.settings');
+    ->getEditable('tripal.settings');
   $config->delete();
 
 }
@@ -125,7 +126,12 @@ function tripal_uninstall() {
 function tripal_requirements($phase) {
   $checks = [];
   // Make sure the current install does not use per-table prefixes.
-  $connection_options = \Drupal::database()->getConnectionOptions();
+  try {
+    $connection_options = \Drupal::database()->getConnectionOptions();
+  }
+  catch (ConnectionNotDefinedException $ex) {
+    $connection_options = [];
+  }
   if (!empty($connection_options['extra_prefix'])
       || ((!empty($connection_options['prefix']))
           && (is_array($connection_options['prefix']))
@@ -1026,5 +1032,18 @@ function tripal_update_10401() {
     $transaction->rollback();
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not add the tripal_pub_library_query table:' . $error);
+  }
+}
+
+/**
+ * Removes tripaldbx.settings, these have been moved to tripal.settings
+ */
+function tripal_update_10402() {
+  // Load the configuration for the module.
+  $config = \Drupal::config('tripaldbx.settings');
+
+  // Delete the configuration.
+  if ($config) {
+    \Drupal::configFactory()->getEditable('tripaldbx.settings')->delete();
   }
 }
