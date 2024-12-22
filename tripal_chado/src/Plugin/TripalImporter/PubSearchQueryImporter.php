@@ -252,11 +252,13 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    */
   public function formValidate($form, &$form_state) {
     $form_state_values = $form_state->getValues();
-    $search_query_name = $form_state_values['search_query_name'] ?? '';
-    // This will extract the query id from the query name selected from the autocomplete field
-    $query_id = NULL;
-    if (preg_match('/\((\d+)\)/', $search_query_name, $matches)) {
-      $query_id = $matches[1];
+    $query_id = $form_state_values['query_id'] ?? NULL;
+    if (!$query_id) {
+      $search_query_name = $form_state_values['search_query_name'] ?? '';
+      // This will extract the query id from the query name selected from the autocomplete field
+      if (preg_match('/\((\d+)\)/', $search_query_name, $matches)) {
+        $query_id = $matches[1];
+      }
     }
     if (!$query_id) {
       $form_state->setErrorByName('search_query_name', t('The query name must include its ID value in parentheses'));
@@ -409,27 +411,29 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $sql = '';
     $args = [];
     $missing_cvterms = []; // will keep track of keys that do not have cvterms, helpful for continuous debugging
-    $unprocessed_array_keys = []; //  keys that are arrays that we did not process, helpful for continuous debugging
 
     foreach ($publications as $publication) {
       // Get pub id from inserted_pub_ids
       $pub_id = $inserted_pub_ids[$total];
-      $delta = 0;  // @todo We don't currently support more than one property of each type
       $total++;
 
       // Go through each publication array keys => values
       foreach ($publication as $key => $value) {
-        $value = $this->checkIfSupportedProperty($key, $value, $missing_cvterms, $unprocessed_array_keys);
-        if (!is_null($value)) {
-          $i++;
-          $prop_count++; // keep count of inserted prop (return this just for details)
-          $sql .= " (:pub_id_$i, :type_id_$i, :value_$i, :rank_$i), ";
-          $args[":pub_id_$i"] = $pub_id;
-          $args[":type_id_$i"] = $this->cvterm_lookups[$key];
-          $args[":value_$i"] = $value;
-          $args[":rank_$i"] = $delta;
+        $values = $this->checkIfSupportedProperty($key, $value, $missing_cvterms);
+        if ($values) {
+          $delta = 0;
+          foreach ($values as $value) {
+            $i++;
+            $prop_count++; // keep count of inserted prop (return this just for details)
+            $sql .= " (:pub_id_$i, :type_id_$i, :value_$i, :rank_$i), ";
+            $args[":pub_id_$i"] = $pub_id;
+            $args[":type_id_$i"] = $this->cvterm_lookups[$key];
+            $args[":value_$i"] = $value;
+            $args[":rank_$i"] = $delta;
+            $delta++;
+          }
 
-          if ($i == $batch_size) {
+          if ($i >= $batch_size) {
             $sql = rtrim($sql, ", ");
             $sql = $init_sql . $sql;
             $this->chado->query($sql, $args);
@@ -453,9 +457,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     if (count($missing_cvterms) > 0) {
       $this->logger->notice("[!]   Overall missing CVTERMS for this set of publications: " . implode(', ', array_keys($missing_cvterms)) . "\n");
     }
-    if (count($unprocessed_array_keys) > 0) {
-      $this->logger->notice("[!]   Unprocessed publication keys that are arrays: " . implode(', ', array_keys($unprocessed_array_keys)) . "\n");
-    }
 
     return $prop_count;
   }
@@ -470,36 +471,24 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    *   The property value or values.
    * @param array &$missing_cvterms
    *   Array keys define a list of non-supported CV terms.
-   * @param array &$unprocessed_array_keys
-   *   Array keys define a list of supported CV terms, but where
-   *   the value was an array instead of a scalar.
    *
-   * @return ?string
-   *   The value to be saved, or NULL if the $key is not supported.
+   * @return array
+   *   An array of values to be saved, or NULL if the $key is not supported.
    */
-  private function checkIfSupportedProperty(string $key, string|array $value,
-                   array &$missing_cvterms, array &$unprocessed_array_keys) : ?string {
-    $prop_value = NULL;
+  private function checkIfSupportedProperty(string $key, string|array $value, array &$missing_cvterms): array {
+    $prop_values = [];
     if (isset($this->cvterm_lookups[$key])) {
       if (is_array($value)) {
-        // The only supported array of values is 'Language'
-        if ($key == 'Language') {
-          if (isset($value[0])) {
-            $prop_value = $value[0]; // select the first element
-          }
-        }
-        else {
-          $unprocessed_array_keys[$key] = TRUE;
-        }
+        $prop_values = $value;
       }
       else {
-        $prop_value = $value;
+        $prop_values[] = $value;
       }
     }
     else {
       $missing_cvterms[$key] = TRUE;
     }
-    return $prop_value;
+    return $prop_values;
   }
 
   function insertPubDbxrefs($inserted_pub_ids, $inserted_dbxref_ids) {
