@@ -20,6 +20,11 @@ class TripalEntityTypeForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
+    // Display an error message if the title format is not valid.
+    // Note: We don't want to stop saving of this form because they may need
+    // more fields before they can complete this form.
+    $this->validateTitleFormat();
+
     $tripal_entity_type = $this->entity;
     $tripal_entity_type->setDefaults();
     $tokens = $this->getValidTokens($tripal_entity_type, TRUE);
@@ -346,6 +351,33 @@ class TripalEntityTypeForm extends EntityForm {
       $message = '"[' . implode(']", "[', $invalid_tokens_arr) . ']"';
     }
     return $message;
+  }
+
+  /**
+   * Check the title format for this content type for validity.
+   *
+   * @return bool
+   *   TRUE if title_format is valid, FALSE if not valid.
+   */
+  private function validateTitleFormat() {
+    $bundle_id = $this->entity->id();
+    $bundle_entity = $this->entity;
+    $title_format = $bundle_entity->getTitleFormat();
+
+    $message = '';
+    if (!preg_match('/\[.*\]/', $title_format)) {
+      $message = 'The Page Title Format for this content type does not contain any tokens.';
+    } elseif ($title_format == 'Entity [TripalEntity__entity_id]') {
+      $message = 'The Page Title Format for this content type is the default generic format.';
+    }
+    if ($message) {
+      $url = '/admin/structure/bio_data/manage/' . $bundle_id . '/fields';
+      $message .= ' You must update the title format before creating any new content. You can do so by scrolling down to the "Page title options" section of this form and adding more readable tokens. If the tokens you want to use are not available, you may need to add more fields first by going to the <a href=":url">Manage Fields page for this content type</a>.';
+      \Drupal::messenger()->addError($this->t($message, [':url' => $url]));
+      return FALSE;
+    } else {
+      return TRUE;
+    }
   }
 
   /**
