@@ -184,8 +184,9 @@ class Chadomigrator extends ChadoTaskBase {
       ));
 
       if ($this->tripal3maxid > $min_id) {
-        $this->logger->error('There is an existing entity with an ID lower than the highest Tripal 3 entity ID.'
-          . ' Cannot continue. See https://tripaldoc.readthedocs.io/en/latest/upgrade_guide/site/migrating_chado.html'
+        $this->logger->error('There is an existing entity (' . $min_id . ') with an ID lower than the'
+          . ' highest Tripal 3 entity ID (' . $this->tripal3maxid . '). Cannot continue. See'
+          . ' https://tripaldoc.readthedocs.io/en/latest/upgrade_guide/site/migrating_chado.html'
           . ' for instructions on how to reserve an entity ID range.');
         return FALSE;
       }
@@ -230,7 +231,7 @@ class Chadomigrator extends ChadoTaskBase {
       $cols = explode("\t", rtrim($line));
       if (count($cols) != 4) {
         throw new TaskException(
-          "Invalid file format line $nlines, expected exactly 5 columns, "
+          "Invalid file format line $nlines, expected exactly 4 columns, "
               . count($cols) . " observed: \"$line\"\n"
         );
       }
