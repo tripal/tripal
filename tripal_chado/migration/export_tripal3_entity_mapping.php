@@ -36,6 +36,7 @@ function find_all_published(string $output_file_name) {
       while ($record = $results->fetchAssoc()) {
         fwrite($outf, implode("\t",
           [
+            $bundle_label,
             $table,
             $record[$pkey_field],
             $record['entity_id']

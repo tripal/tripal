@@ -10,7 +10,7 @@ use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Chado entity ID migrator.
+ * Chado URL alias migrator.
  *
  * Usage:
  * @code
@@ -228,15 +228,15 @@ class Chadomigrator extends ChadoTaskBase {
     while (($line = fgets($this->parameters['fh'])) !== FALSE) {
       $nlines++;
       $cols = explode("\t", rtrim($line));
-      if (count($cols) != 5) {
+      if (count($cols) != 4) {
         throw new TaskException(
           "Invalid file format line $nlines, expected exactly 5 columns, "
               . count($cols) . " observed: \"$line\"\n"
         );
       }
-      $this->tripal3ids[$cols[0]][$cols[1]][$cols[2]][$cols[3]] = $cols[4];
-      if ($cols[4] > $this->tripal3maxid) {
-        $this->tripal3maxid = $cols[4];
+      $this->tripal3ids[$cols[0]][$cols[1]][$cols[2]] = $cols[3];
+      if ($cols[3] > $this->tripal3maxid) {
+        $this->tripal3maxid = $cols[3];
       }
     }
     fclose($this->parameters['fh']);
@@ -280,7 +280,7 @@ class Chadomigrator extends ChadoTaskBase {
   }
 
   /**
-   * Main loop to perform the entity ID migration.
+   * Main loop to perform the URL alias migration.
    *
    * @return void
    */
@@ -293,8 +293,6 @@ class Chadomigrator extends ChadoTaskBase {
         $this->logger->notice(t("Migrating bundle @bundle_label table @table",
           ['@bundle_label' => $bundle_label, '@table' => $chado_table]
         ));
-        // There is only ever one pkey for any given table
-        $pkey = array_key_first($this->tripal3ids[$bundle_label][$chado_table]);
         if (!array_key_exists($bundle_label, $this->label_to_bundle)) {
           $this->logger->warning(t("A bundle with label \"@label\" does not exist on this site, skipping this bundle",
             ['@label' => $bundle_label]));
@@ -302,10 +300,10 @@ class Chadomigrator extends ChadoTaskBase {
         else {
           $bundle_id = $this->label_to_bundle[$bundle_label];
 
-          // Lookup table key is chado pkey ID, value is entity ID
+          // Returned lookup table key is chado pkey ID, value is entity ID
           $entity_lookup_table = $this->lookup_manager->getPublishedEntityIds($bundle_id, 'tripal_entity');
 
-          foreach ($this->tripal3ids[$bundle_label][$chado_table][$pkey] as $pkey_id => $t3_entity_id) {
+          foreach ($this->tripal3ids[$bundle_label][$chado_table] as $pkey_id => $t3_entity_id) {
             $t4_entity_id = $entity_lookup_table[$pkey_id] ?? NULL;
             $errormsg = $this->migrateOneAlias($t3_entity_id, $t4_entity_id);
             if ($errormsg) {

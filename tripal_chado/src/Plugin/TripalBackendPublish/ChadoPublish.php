@@ -159,17 +159,17 @@ class ChadoPublish extends TripalBackendPublishBase {
             $line = fgets($fh, 2048);
             if ($line) {
               $cols = str_getcsv($line, "\t");
-              if (count($cols) != 3) {
+              if (count($cols) != 4) {
                 $errormsg = 'Incorrect number of columns line ' . $nlines
-                            . ', expected 3, found ' . count($cols);
+                            . ', expected 4, found ' . count($cols);
                 return $errormsg;
               }
             }
-            // The three columns are chado_table, pkey_id, entity_id
-            $this->migration_data[$cols[0]][$cols[1]] = $cols[2];
+            // The columns are bundle_name(not used), chado_table, pkey_id, entity_id
+            $this->migration_data[$cols[1]][$cols[2]] = $cols[3];
             $n_records++;
-            if ($cols[2] > $this->max_migrated_entity_id) {
-              $this->max_migrated_entity_id = $cols[2];
+            if ($cols[3] > $this->max_migrated_entity_id) {
+              $this->max_migrated_entity_id = $cols[3];
             }
           }
         }
