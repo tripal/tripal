@@ -33,6 +33,9 @@ services:
   tripal.pub_parser:
     class: Drupal\tripal\TripalPubParser\PluginManagers\TripalPubParserManager
     parent: default_plugin_manager
+  tripal.citation:
+    class: Drupal\tripal\Services\TripalCitationManager
+    arguments: ['@tripal.token_parser']
   tripal.tripalfield_collection:
     class: Drupal\tripal\Services\TripalFieldCollection
     arguments: ['@tripal.collection_plugin_manager.idspace',
