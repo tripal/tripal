@@ -92,6 +92,11 @@ class TripalEntityForm extends ContentEntityForm {
     $form = parent::form($form, $form_state);
     $entity = $this->entity;
 
+    // Display an error message if the title format is not valid.
+    if (!$this->validateTitleFormat()) {
+      // @todo I would like to disable the save button here, but it's not in the form yet.
+    }
+
     // -- Setup advanced sidebar.
     // Additional collapsed regions can be added to this group by creating
     // a field group of type "Details Siderbar" and adding fields to it.
@@ -189,6 +194,35 @@ class TripalEntityForm extends ContentEntityForm {
     }
 
     return $form;
+  }
+
+  /**
+   * Check the title format for this content type for validity.
+   *
+   * @return bool
+   *   TRUE if title_format is valid, FALSE if not valid.
+   */
+  private function validateTitleFormat() {
+    $bundle_id = $this->entity->getType();
+    $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle_id);
+    $title_format = $bundle_entity->getTitleFormat();
+    $message = '';
+    if (!preg_match('/\[.*\]/', $title_format)) {
+      $message = 'The Page Title Format for this content type does not contain any tokens.';
+    }
+    elseif ($title_format == 'Entity [TripalEntity__entity_id]') {
+      $message = 'The Page Title Format for this content type is the default generic format.';
+    }
+    if ($message) {
+      $url = '/admin/structure/bio_data/manage/' . $bundle_id;
+      $message .= ' You must update the title format before creating any new content.'
+        . ' <a href=":url">Click here</a> to update the title format.';
+      \Drupal::messenger()->addError($this->t($message, [':url' => $url]));
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
   }
 
   /**

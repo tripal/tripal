@@ -288,9 +288,11 @@ class ChadoConnection extends TripalDbxConnection {
         $has_data = (static::EMPTY_CHADO_SIZE < $schema_size);
         // Check for test schema.
         $is_test = FALSE;
-        foreach ($test_prefixes as $key => $prefix) {
-          if (str_starts_with($schema->name, $prefix)) {
-            $is_test = $key;
+        if ($test_prefixes) {
+          foreach ($test_prefixes as $key => $prefix) {
+            if (str_starts_with($schema->name, $prefix)) {
+              $is_test = $key;
+            }
           }
         }
         // Check if part of Tripal.
