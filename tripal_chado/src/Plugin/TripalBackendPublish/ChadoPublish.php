@@ -125,6 +125,13 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected array $migration_data = [];
 
   /**
+   * Stores the maximum entity ID value present in $this->migration_data
+   *
+   * @var int $max_migrated_entity_id
+   */
+  protected int $max_migrated_entity_id = 0;
+
+  /**
    * Populates the $this->field_info variable with field information
    *
    * @param string $filename
@@ -138,7 +145,7 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected function loadMigrationData(string $filename): string {
     $errormsg = '';
     $n_records = 0;
-    $max_eid = 0;
+    $this->max_migrated_entity_id = 0;
     if ($filename) {
       if (!file_exists($filename)) {
         $errormsg = 'The specified file "' . $filename . '" does not exist';
@@ -161,8 +168,8 @@ class ChadoPublish extends TripalBackendPublishBase {
             // The three columns are chado_table, pkey_id, entity_id
             $this->migration_data[$cols[0]][$cols[1]] = $cols[2];
             $n_records++;
-            if ($cols[2] > $max_eid) {
-              $max_eid = $cols[2];
+            if ($cols[2] > $this->max_migrated_entity_id) {
+              $this->max_migrated_entity_id = $cols[2];
             }
           }
         }
@@ -171,13 +178,31 @@ class ChadoPublish extends TripalBackendPublishBase {
             [':filename' => $filename]);
         }
       }
+      // Makes sure value of next entity ID is above any in the migration data
+      $this->set_tripal_entity_id_seq();
     }
 
     if (!$errormsg) {
       $this->logger->notice(t('Loaded @n_records records of migration data, maximum entity ID is @max_eid',
-                              ['@n_records' => $n_records, '@max_eid' => $max_eid]));
+                              ['@n_records' => $n_records, '@max_eid' => $this->max_migrated_entity_id]));
     }
     return $errormsg;
+  }
+
+  /**
+   * When migrating, makes sure the "tripal_entity_id_seq" next value
+   * is higher than the maximum from the migration data.
+   */
+  protected function set_tripal_entity_id_seq() {
+    if ($this->max_migrated_entity_id) {
+      $sql = "SELECT NEXTVAL('tripal_entity_id_seq')";
+      $nextval = $this->connection->query($sql, [])->fetchField();
+      if ($nextval <= $this->max_migrated_entity_id) {
+        $sql = "ALTER SEQUENCE tripal_entity_id_seq RESTART :next";
+        $args = [':next' => ($this->max_migrated_entity_id + 1)];
+        $this->connection->query($sql, $args);
+      }
+    }
   }
 
   /**
