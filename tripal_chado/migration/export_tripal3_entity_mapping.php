@@ -36,9 +36,7 @@ function find_all_published(string $output_file_name) {
       while ($record = $results->fetchAssoc()) {
         fwrite($outf, implode("\t",
           [
-            $bundle_label,
             $table,
-            $pkey_field,
             $record[$pkey_field],
             $record['entity_id']
           ]) . "\n");
@@ -93,7 +91,7 @@ function query_one_bundle(string $bundle_name) {
   $table_schema = chado_get_schema($table);
   $pkey_field = $table_schema['primary key'][0];
 
-  // Construct the SQL for identifying which records should be published.
+  // Construct the SQL for identifying which records should be used.
   $args = [];
   $from = "
     FROM {" . $table . "} T
