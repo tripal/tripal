@@ -137,6 +137,8 @@ class ChadoPublish extends TripalBackendPublishBase {
    */
   protected function loadMigrationData(string $filename): string {
     $errormsg = '';
+    $n_records = 0;
+    $max_eid = 0;
     if ($filename) {
       if (!file_exists($filename)) {
         $errormsg = 'The specified file "' . $filename . '" does not exist';
@@ -150,15 +152,18 @@ class ChadoPublish extends TripalBackendPublishBase {
             $line = fgets($fh, 2048);
             if ($line) {
               $cols = str_getcsv($line, "\t");
-              if (count($cols) != 5) {
+              if (count($cols) != 3) {
                 $errormsg = 'Incorrect number of columns line ' . $nlines
-                            . ', expected 5, found ' . count($cols);
+                            . ', expected 3, found ' . count($cols);
                 return $errormsg;
               }
             }
-            // Currently the columns are Organism        organism        organism_id     51      172635
-//@@@ use 0 or 1?
-            $this->migration_data[$cols[1]][$cols[3]] = $cols[4];
+            // The three columns are chado_table, pkey_id, entity_id
+            $this->migration_data[$cols[0]][$cols[1]] = $cols[2];
+            $n_records++;
+            if ($cols[2] > $max_eid) {
+              $max_eid = $cols[2];
+            }
           }
         }
         catch (\Exception $e) {
@@ -166,6 +171,11 @@ class ChadoPublish extends TripalBackendPublishBase {
             [':filename' => $filename]);
         }
       }
+    }
+
+    if (!$errormsg) {
+      $this->logger->notice(t('Loaded @n_records records of migration data, maximum entity ID is @max_eid',
+                              ['@n_records' => $n_records, '@max_eid' => $max_eid]));
     }
     return $errormsg;
   }
@@ -962,6 +972,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    *     'republish' - If true, then republish existing entitites.
    *     'job' - A Tripal job object
    *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
+   *     'migration_file' - Used to migrate Tripal 3 bio_data entity IDs.
    *
    * @return bool
    *   TRUE if successful, FALSE if error occurred
@@ -1041,7 +1052,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    *     'republish' - If true, then republish existing entitites.
    *     'job' - A Tripal job object
    *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
-   *     'migration' - During migration of a Tripal 3 site, we would like to preserve
+   *     'migration_file' - During migration of a Tripal 3 site, we would like to preserve
    *         the numeric entity IDs. This option specifies the name of a file generated
    *         by the tripal_chado/migration/export_tripal3_entity_mapping.php utility
    *         that was run on the Tripal 3 site.
