@@ -4,6 +4,8 @@ namespace Drupal\tripal\Services;
 
 
 /**
+ * Generates citations for publications.
+ *
  * The citation manager class is used to generate citations for
  * publications of various types. The primary function is
  * generateCitation(), and input consists of two parts, a
@@ -13,8 +15,8 @@ namespace Drupal\tripal\Services;
  * tokens in the template.
  *
  * This class can also provide default templates for several
- * types of publications.
- *
+ * types of publications. See getDefaultCitationTemplate() for
+ * the types of publications supported.
  */
 class TripalCitationManager {
 
@@ -48,7 +50,12 @@ class TripalCitationManager {
    *   no issue number, then the parentheses will not be included.
    * @param array $values
    *   An associative array defining the publication properties
-   *   used to replace the tokens.
+   *   used to replace the tokens. The keys are the case-sensitive
+   *   name of the token and the value is the value of that property.
+   *
+   * @return string
+   *   The citation which is the result of the $format string with all
+   *   tokens replaced by the value provided in $values.
    */
   public function generateCitation(string $format, array $values) {
     $citation = $this->token_parser->replaceTokens($format, $values);
@@ -56,12 +63,25 @@ class TripalCitationManager {
   }
 
   /**
-   * Returns a default token string suitable for citation
-   * generation of the specified publication type
+   * Provides a default format string based on publication type.
+   *
+   * To use, call this method with the publication type and then pass in the result
+   * as the format string for generateCitation().
    *
    * @param string $pub_type
-   *   The publication type.
+   *   The publication type. This is the name, not the term accession.
+   *   Supported types include:
+   *    - Journal Article
+   *    - Review
+   *    - Research Support, Non-U.S. Gov't
+   *    - Letter
+   *    - Conference Proceedings
+   *    - Book
+   *    - Book Chapter
    *
+   * @return string
+   *   The citation format for this publication type or the default format if the
+   *   type is not supported. Includes tokens for use with generateCitation().
    */
   public function getDefaultCitationTemplate(string $pub_type) {
     $templates = [
