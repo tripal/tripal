@@ -8,7 +8,7 @@ dependencies:
     - tripal
     - user
 _core:
-  default_config_hash: MPlwU4VjMncEPMpn2HhcJwEerwFSaaCnWCy7V98kSBc
+  default_config_hash: Oh86o6oV5xIWufoDe6Of41BGowCTBtqm7AqHcdZSnf0
 id: manage_pub_search_queries
 label: 'Manage Publication Search Queries'
 module: views
@@ -551,55 +551,6 @@ display:
             criteria: '0'
             disabled: '0'
             do_contact: '0'
-        nothing_3:
-          id: nothing_3
-          table: views
-          field: nothing
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: custom
-          label: 'Add a new search query link'
-          exclude: false
-          alter:
-            alter_text: true
-            text: '<a href="/admin/tripal/loaders/publications/new_publication_search_query">+ Add a new search query</a>'
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: true
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: false
       pager:
         type: mini
         options:
@@ -856,9 +807,9 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: text
-          empty: false
+          empty: true
           content:
-            value: "<form method=\"GET\" action=\"/admin/tripal/loaders/publications/new_publication_search_query\">\r\n<input type=\"submit\" value=\"+ Add a new search query\">\r\n</form>"
+            value: "<form method=\"GET\" action=\"/admin/tripal/loaders/publications/new_publication_search_query\">\r\n<input type=\"submit\" class=\"button form-submit\" value=\"+ Add a new search query\">\r\n</form>"
             format: full_html
           tokenize: false
       display_extenders: {  }
