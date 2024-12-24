@@ -126,6 +126,7 @@ class TripalEntityPublishForm extends FormBase {
     ];
 
     // Add Tripal 3 Migration Settings to the form
+    // in a closed-by-default fieldset
     $form = $this->migration_form($form);
 
     return $form;
@@ -158,7 +159,7 @@ class TripalEntityPublishForm extends FormBase {
          [':prog' => 'export_tripal3_entity_mapping.php']) . $url . '</p>',
     ];
     $user = \Drupal::currentUser();
-    $existing_files = tripal_get_user_uploads($user->id(), $allowed_types);
+    $existing_files = $this->getUploadedFiles($user->id(), '34-tripal_migration', $allowed_types, 'tripal');
     if (count($existing_files) > 0) {
       $fids = [0 => '--Select a file--'];
       foreach ($existing_files as $fid => $file) {
@@ -176,7 +177,7 @@ class TripalEntityPublishForm extends FormBase {
       '#title' => $this->t('Upload a migration data file'),
       '#description' => 'Specify the name of the migration data file here if you wish to upload it.',
       '#usage_type' => 'tripal_migration',
-      '#usage_id' => 0,
+      '#usage_id' => 34,
       '#allowed_types' => $allowed_types,
       '#cardinality' => 1,
     ];
@@ -189,6 +190,53 @@ class TripalEntityPublishForm extends FormBase {
     ];
 
     return $form;
+  }
+
+  /**
+   * Get a list of uploaded files
+   *
+   * This is planned to be added to a new class to be shared with the
+   * importer base class to handle file upload form elements. This
+   * function would replace the api function tripal_get_user_uploads().
+   *
+   * @param int $uid
+   *   The file owner
+   * @param string $type
+   *   The usage id and type, e.g. "34-tripal_migration"
+   * @param array $allowed_types
+   *   Optional filter for allowed file extensions
+   * @param string $module
+   *   Optional since this will always be 'tripal'
+   *
+   * @return array
+   *   Associative array, key is fid, value is file object
+   */
+  protected function getUploadedFiles(int $uid, string $type, array $allowed_types = [], string $module = 'tripal'): array {
+    $uploaded_files = [];
+
+    $db = \Drupal::database();
+    $query = $db->select('file_usage', 'F');
+    $query->condition('F.type', $type);
+    $query->condition('F.module', $module);
+    $query->fields('F', ['fid']);
+    $files = $query->execute();
+    while ($fid = $files->fetchField()) {
+      /** @var Drupal\file\Entity\File **/
+      $file_obj = \Drupal\file\Entity\File::load($fid);
+      if ($file_obj->getOwnerId() == $uid) {
+        $valid = $allowed_types?FALSE:TRUE;
+        foreach ($allowed_types as $type) {
+          if (preg_match('/\.' . $type . '$/', $file_obj->getFilename())) {
+            $valid = TRUE;
+          }
+        }
+        if ($valid) {
+          $uploaded_files[$fid] = $file_obj;
+        }
+      }
+    }
+
+    return $uploaded_files;
   }
 
   /**
