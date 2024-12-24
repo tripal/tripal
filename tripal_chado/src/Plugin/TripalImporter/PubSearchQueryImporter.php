@@ -261,13 +261,15 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       }
     }
     if (!$query_id) {
-      $form_state->setErrorByName('search_query_name', t('The query name must include its ID value in parentheses'));
+      $form_state->setErrorByName('search_query_name',
+          t('The query name must include its ID value in parentheses'));
     }
     else {
       $pub_library_manager = \Drupal::service('tripal.pub_library');
       $pub_record = $pub_library_manager->getSearchQuery($query_id);
       if (!$pub_record) {
-        $form_state->setErrorByName('search_query_name', t('There is no query with an ID value of @id', ['@id' => $query_id]));
+        $form_state->setErrorByName('search_query_name',
+            t('There is no query with an ID value of @id', ['@id' => $query_id]));
       }
     }
   }
@@ -401,6 +403,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   }
 
   function insertPubProps($inserted_pub_ids, $missing_publications_dbxref, &$publications) {
+    // Handle some special cases for properties, e.g. create a URL from the DOI
+    $this->specialCaseProps($publications);
+
     $batch_size = 100;
     $init_sql = "INSERT INTO {1:pubprop} (pub_id, type_id, value, rank) ";
     $init_sql .= "VALUES \n";
@@ -459,6 +464,36 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     }
 
     return $prop_count;
+  }
+  /**
+   * Special case handling for specific properties
+   *
+   * @param array &$publications
+   *   The array of publications to be imported
+   */
+  protected function specialCaseProps(&$publications) {
+    foreach ($publications as $index => $publication) {
+
+      // Case 1. If there is no URL property, but there
+      // is a DOI property, then construct a URL from that.
+      if (!array_key_exists('URL', $publication)) {
+        if (array_key_exists('DOI', $publication)) {
+          $publications[$index]['URL'] =  'https://doi.org/' . $publication['DOI'];
+        }
+      }
+
+      // Case 2. The "Author List" property. This is a
+      // expanded array of keyed parts of author names.
+      // If there is a "regular" list of authors, then
+      // we will ignore it. There is no cv term for
+      // "Author List", so unsetting it avoids a notification.
+      if (array_key_exists('Author List', $publication)) {
+        if (array_key_exists('Authors', $publication)) {
+          unset($publications[$index]['Author List']);
+        }
+      }
+
+    }
   }
 
   /**
