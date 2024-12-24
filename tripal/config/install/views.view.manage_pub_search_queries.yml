@@ -1,3 +1,4 @@
+uuid: 5d06b3e7-c7d0-4eda-a312-cf2dc8be0936
 langcode: en
 status: true
 dependencies:
@@ -7,7 +8,7 @@ dependencies:
     - tripal
     - user
 _core:
-  default_config_hash: _E1_O1oLo39mGKB45jyriip-fw8MDBKiJMCvGB8CKho
+  default_config_hash: MPlwU4VjMncEPMpn2HhcJwEerwFSaaCnWCy7V98kSBc
 id: manage_pub_search_queries
 label: 'Manage Publication Search Queries'
 module: views
@@ -550,6 +551,55 @@ display:
             criteria: '0'
             disabled: '0'
             do_contact: '0'
+        nothing_3:
+          id: nothing_3
+          table: views
+          field: nothing
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: custom
+          label: 'Add a new search query link'
+          exclude: false
+          alter:
+            alter_text: true
+            text: '<a href="/admin/tripal/loaders/publications/new_publication_search_query">+ Add a new search query</a>'
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: false
       pager:
         type: mini
         options:
@@ -795,9 +845,22 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: "<ul class='action-links'>\r\n<li><a href=\"/admin/tripal/loaders/publications/new_publication_search_query\">New search query</a></li>\r\n</ul>\r\n<p>\r\n    A publication importer is used to create a set of search criteria that can be used\r\n      to query a remote database, find publications that match the specified criteria\r\n      and then import those publications into the Chado database. An example use case would\r\n      be to periodically add new publications to this Tripal site that have appeared in PubMed\r\n      in the last 30 days.  You can import publications in one of two ways:\r\n      <ol>\r\n        <li>            Create a new importer by clicking the 'New search query' link above, and\r\n                        after saving it should appear in the list below.\r\n                        Under 'Actions' select 'Run' to create a job to import the publications.</li>\r\n        <li>The first method only performs the import once.  However, you can schedule the\r\n            importer to run periodically by adding a cron job. </li>\r\n      </ol>\r\n</p>"
+          content: "<p>\r\nA publication importer is used to create a set of search criteria that can be used\r\nto query a remote database, find publications that match the specified criteria and\r\nthen import those publications into the Chado database. An example use case would\r\nbe to periodically add new publications to this Tripal site that have appeared in\r\nPubMed in the last 30 days. You can import publications in one of two ways:\r\n<ol>\r\n  <li>Create a new importer by clicking the '+ Add a new search query' button below, and\r\n    after saving it should appear in the list below.\r\n    Under 'Actions' select 'Run' to create a job to import the publications.</li>\r\n  <li>The first method only performs the import once. However, you can schedule the\r\n    importer to run periodically by adding a cron job. </li>\r\n  </ol>\r\n</p>"
           tokenize: false
-      footer: {  }
+      footer:
+        area:
+          id: area
+          table: views
+          field: area
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: text
+          empty: false
+          content:
+            value: "<form method=\"GET\" action=\"/admin/tripal/loaders/publications/new_publication_search_query\">\r\n<input type=\"submit\" value=\"+ Add a new search query\">\r\n</form>"
+            format: full_html
+          tokenize: false
       display_extenders: {  }
     cache_metadata:
       max-age: -1
