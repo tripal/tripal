@@ -188,6 +188,13 @@ class TripalEntityPublishForm extends FormBase {
       '#description' => t('If the migration data file is local to the Tripal server,'
                           . ' please provide the full path here.'),
     ];
+    $form['migration_options']['lenient_migration'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Lenient Migration'),
+      '#description' => t('This allows skipping over missing records in the migration data file.'
+                          . ' This can happen if there were records on the Tripal 3 site that'
+                          . ' had not been published.'),
+    ];
 
     return $form;
   }
@@ -314,7 +321,7 @@ class TripalEntityPublishForm extends FormBase {
     // those items from the form values that publish will need.
     $values = $form_state->getValues();
     $options = [];
-    $publish_options = ['republish', 'batch_size', 'migration_file'];
+    $publish_options = ['republish', 'batch_size', 'migration_file', 'lenient_migration'];
     foreach ($publish_options as $key) {
       $options[$key] = $values[$key];
     }

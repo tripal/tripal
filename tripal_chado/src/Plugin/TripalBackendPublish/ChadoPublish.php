@@ -117,7 +117,7 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $search_values = [];
 
   /**
-   * Array information used to migrate Tripal 3 entity values
+   * Information used to migrate Tripal 3 entity values
    * when first publishing a migrated chado instance.
    *
    * @var array $migration_data
@@ -130,6 +130,14 @@ class ChadoPublish extends TripalBackendPublishBase {
    * @var int $max_migrated_entity_id
    */
   protected int $max_migrated_entity_id = 0;
+
+  /**
+   * Flag to permit a more lenient Tripal 3 migration.
+   * If a record is missing in the migration data, then skip it.
+   *
+   * @var bool $lenient_migration
+   */
+  protected bool $lenient_migration = FALSE;
 
   /**
    * Populates the $this->field_info variable with field information
@@ -190,17 +198,20 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * When migrating, makes sure the "tripal_entity_id_seq" next value
-   * is higher than the maximum from the migration data.
+   * When migrating Tripal 3 entity ID values, makes sure the
+   * sequence "tripal_entity_id_seq" next value is higher than
+   * the maximum from the migration data.
    */
   protected function set_tripal_entity_id_seq() {
     if ($this->max_migrated_entity_id) {
       $sql = "SELECT NEXTVAL('tripal_entity_id_seq')";
       $nextval = $this->connection->query($sql, [])->fetchField();
       if ($nextval <= $this->max_migrated_entity_id) {
-        $sql = "ALTER SEQUENCE tripal_entity_id_seq RESTART :next";
-        $args = [':next' => ($this->max_migrated_entity_id + 1)];
-        $this->connection->query($sql, $args);
+        $start = $this->max_migrated_entity_id + 1;
+        $this->logger->notice('Updating tripal entity sequence to start at @start',
+            ['@start' => $start]);
+        $sql = "ALTER SEQUENCE tripal_entity_id_seq RESTART " . $start;
+        $this->connection->query($sql, []);
       }
     }
   }
@@ -593,58 +604,77 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * When using migration data, validate that all values are
-   * present and available.
+   * When using Tripal 3 migration data, validate that all
+   * values are present and available.
    *
-   * @param array $matches
+   * @param array &$matches
    *   The array of matches for each entity.
+   * @param bool $lenient
+   *   If TRUE, allow records to be missing from migration data.
+   *   This can happen if you had unpublished records on your
+   *   Tripal 3 site.
    *
    * @return bool
    *   Returns TRUE if validation passes, FALSE if not.
    */
-  protected function validateMigrationData(array $matches): bool {
-    $problem = '';
+  protected function validateMigrationData(array &$matches, bool $lenient): bool {
+    $success = TRUE;
     if ($this->migration_data) {
       $entity_ids = [];
+      $n_skipped = 0;
       // Validate that we have migration data for all records to be published.
-      foreach ($matches as $match) {
+      foreach ($matches as $index => $match) {
         $record_id = $this->getChadoRecordID($match);
         $old_entity_id = $this->migration_data[$this->base_table][$record_id] ?? NULL;
         if (!$old_entity_id) {
-          $problem = 'Encountered missing migration data for bundle ' . $this->bundle
-                      . ' record ' . $record_id . ', cannot continue';
-          break;
+          if (!$lenient) {
+            $this->logger->error('Encountered missing migration data for bundle'
+                . ' @bundle record @record_id, cannot continue. Consider using'
+                . ' the "--lenient-migration" option if you had unpublished'
+                . ' records on your Tripal 3 site.',
+                ['@bundle' => $this->bundle, '@record_id' => $record_id]);
+            $success = FALSE;
+            break;
+          }
+          else {
+            // In lenient mode, remove this record from the $matches
+            // array, it will not be published.
+            unset($matches[$index]);
+            $n_skipped++;
+          }
         }
-        $entity_ids[] = $old_entity_id;
+        else {
+          $entity_ids[] = $old_entity_id;
+        }
       }
-      if (!$problem) {
-        // Validate that all entity ID values are currently available.
+      if ($n_skipped) {
+        $this->logger->notice('@n records without migration data were skipped',
+            ['@n' => number_format($n_skipped)]);
+      }
+      if ($success and $entity_ids) {
+        // Validate that all migrated entity ID values are currently available.
         $query = $this->connection->select('tripal_entity', 'E');
         $query->Fields('E', ['id']);
         $query->condition('id', $entity_ids, 'IN');
         $count = $query->countQuery()->execute()->fetchField();
         if ($count > 0) {
           $first_record = $query->execute()->fetchField();
-          $problem = $count . ' migrated entity ID values are already'
-                      . ' present on this site, cannot continue.'
-                      . ' First instance = ' . $first_record;
+          $this->logger->error('@count migrated entity ID values are'
+              . ' already present on this site, cannot continue.'
+              . ' First instance is @first_record',
+              ['@count' => $count, '@first_record' => $first_record]);
+          $success = FALSE;
         }
       }
     }
-    if ($problem) {
-      $this->logger->error($problem);
-      return FALSE;
-    }
-    else {
-      return TRUE;
-    }
+    return $success;
   }
 
   /**
    * Performs bulk insert of new entities into the tripal_entity table
    *
    * @param array $matches
-   *   The array of matches for each entity.
+   *   The array of new matches for each entity.
    * @param array $titles
    *   The array of entity titles keyed by the record ID.
    */
@@ -1031,6 +1061,8 @@ class ChadoPublish extends TripalBackendPublishBase {
    *     'job' - A Tripal job object
    *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
    *     'migration_file' - Used to migrate Tripal 3 bio_data entity IDs.
+   *     'lenient_migration' - Do not stop if there are missing records in the migration
+   *         data, rather just skip over them.
    *
    * @return bool
    *   TRUE if successful, FALSE if error occurred
@@ -1056,6 +1088,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
 
     // If $options['migration'] is set, load the specified data file
+    $this->lenient_migration = $options['lenient_migration'] ?? FALSE;
     $errormsg = $this->loadMigrationData($options['migration_file'] ?? '');
     if ($errormsg) {
       $this->logger->error($errormsg);
@@ -1114,6 +1147,8 @@ class ChadoPublish extends TripalBackendPublishBase {
    *         the numeric entity IDs. This option specifies the name of a file generated
    *         by the tripal_chado/migration/export_tripal3_entity_mapping.php utility
    *         that was run on the Tripal 3 site.
+   *     'lenient_migration' - Do not stop if there are missing records in the migration
+   *         data, rather just skip over them.
    * .
    * @return array
    *   An associative array of the first 100 entities that were published,
@@ -1170,7 +1205,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $this->logger->notice($batch_prefix . 'Step 1 of 6: Find matching records');
       $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch);
 
-      $success = $this->validateMigrationData($matches);
+      $success = $this->validateMigrationData($matches, $this->lenient_migration);
       if (!$success) {
         break;
       }

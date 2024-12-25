@@ -133,6 +133,7 @@ class ChadoManageCommands extends DrushCommands {
    *   'schema-name' => 'chado'
    *   'datastore' => 'chado_storage'
    *   'migration-file' => ''
+   *   'lenient-migration' => FALSE
    *   'batch-size' => '1000'
    * @usage drush trp-chado-publish organism
    *   Submits a standard chado publish job for the organism content type which
@@ -146,7 +147,8 @@ class ChadoManageCommands extends DrushCommands {
     'datastore' => 'chado_storage',
     'batch-size' => '1000',
     'migration-file' => '',
-    'republish' => 0]) {
+    'lenient-migration' => FALSE,
+    'republish' => FALSE]) {
 
     if ($options['migration-file'] and !file_exists($options['migration-file'])) {
       $this->output()->writeln('The specified file "' . $options['migration-file'] . '" does not exist');
@@ -167,6 +169,7 @@ class ChadoManageCommands extends DrushCommands {
       'batch_size' => $options['batch-size'],
       'republish' => $options['republish'],
       'migration_file' => $options['migration-file'],
+      'lenient_migration' => $options['lenient-migration'],
     ];
     // @todo validate the bundle
     $bundle = $bundle;
