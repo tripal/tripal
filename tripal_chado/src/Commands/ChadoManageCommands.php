@@ -179,37 +179,4 @@ class ChadoManageCommands extends DrushCommands {
        $bundle, $datastore, $values);
   }
 
-  /**
-   * Update Entity URL Aliases based on a mapping file.
-   *
-   * @command tripal-chado:migrate-url-aliases
-   * @aliases trp-chado-migrate-aliases
-   * @options file-name
-   *   The name of the data file containg tripal 3 entity mapping.
-   * @usage drush tripal-chado:migrate-url-aliases tripal3_entity_mapping.tsv
-   *   Using the file named "tripal3_entity_mapping.tsv", change existing
-   *   published url aliases to use the entity ID numbers from the tripal 3
-   *   site.
-   */
-  public function migrate_entity_ids(string $filename) {
-    if (!file_exists($filename)) {
-      $this->output()->writeln('The specified file "' . $filename . '" does not exist');
-    }
-    else {
-      $this->output()->writeln('Migrating Tripal 3 Entity URL Aliases.');
-      $migrator = \Drupal::service('tripal_chado.migrator');
-      $migrator->setParameters([
-        'filename' => $filename,
-      ]);
-      if ($migrator->performTask()) {
-        $this->output()->writeln('<info>[Success]</info> Migration complete.');
-      }
-      else {
-        throw new \Exception(dt(
-          'Unable to migrate entity ID values',
-          []
-        ));
-      }
-    }
-  }
 }

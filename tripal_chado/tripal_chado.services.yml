@@ -28,8 +28,6 @@ services:
     class: Drupal\tripal_chado\Task\ChadoRemover
   tripal_chado.preparer:
     class: Drupal\tripal_chado\Task\ChadoPreparer
-  tripal_chado.migrator:
-    class: Drupal\tripal_chado\Task\ChadoMigrator
 
   tripal_chado.chado_buddy:
     class: Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
