@@ -188,11 +188,11 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
       // Makes sure value of next entity ID is above any in the migration data
       $this->set_tripal_entity_id_seq();
-    }
 
-    if (!$errormsg) {
-      $this->logger->notice(t('Loaded @n_records records of migration data, maximum entity ID is @max_eid',
-                              ['@n_records' => $n_records, '@max_eid' => $this->max_migrated_entity_id]));
+      if (!$errormsg) {
+        $this->logger->notice(t('Loaded @n_records records of migration data, maximum entity ID is @max_eid',
+                                ['@n_records' => $n_records, '@max_eid' => $this->max_migrated_entity_id]));
+      }
     }
     return $errormsg;
   }
