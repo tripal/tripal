@@ -30,7 +30,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
       $plugins[$plugin_key] = $plugin_value;
     }
     asort($plugins);
-    $this->assertEquals($plugins['tripal_pub_library_pubmed'], 'NIH PubMed database');
+    $this->assertEquals('NIH PubMed database', $plugins['tripal_pub_library_pubmed']);
 
 
     $plugin_id = 'tripal_pub_library_pubmed';
@@ -64,7 +64,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     $pubs_count = count($results['pubs']);
     $this->assertEquals($pubs_count, 1);
 
-    $this->assertNotEquals($results['pubs'][0]['Title'], NULL, 'There should be a title but a title was not found');
+    $this->assertNotNull($results['pubs'][0]['Title'], 'There should be a title but a title was not found');
 
     // Test for a BOOK type
     $search_array = [
@@ -88,8 +88,8 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     if ($results === NULL) {
       $this->markTestSkipped('Skipping PubMed test due to being unable to access service.');
     }
-    $this->assertEquals($results['pubs'][0]['Publication Dbxref'], '30000852', 'This should have returned the PMID');
-    $this->assertEquals($results['pubs'][0]['Publisher'], 'National Institute of Child Health and Human Development', 'This should have returned the Title');
+    $this->assertEquals('30000852', $results['pubs'][0]['Publication Dbxref'], 'This should have returned the PMID');
+    $this->assertEquals('National Institute of Child Health and Human Development', $results['pubs'][0]['Publisher'], 'This should have returned the Title');
 
     $search_array = [
       'remote_db' => 'pubmed',
@@ -119,23 +119,23 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     $query = $query->condition('name', 'test-query', '=');
     $query = $query->fields('tplq');
     $results = $query->execute();
-    $this->assertNotEquals($results, NULL, 'Tripal Pub Library Query tables contains no query by test-query, this is an error');
+    $this->assertNotNull($results, 'Tripal Pub Library Query tables contains no query by test-query, this is an error');
     $row = $results->fetchAssoc();
-    $this->assertEquals($row['name'], 'test-query', 'The Tripal Pub Library Query name is not test-query, this is an error');
+    $this->assertEquals('test-query', $row['name'], 'The Tripal Pub Library Query name is not test-query, this is an error');
 
     $query_id = $row['pub_library_query_id'];
 
     // --- Get search query test
     $row = $pub_library_manager->getSearchQuery($query_id); // returns object
-    $this->assertEquals($row->name, 'test-query',
+    $this->assertEquals('test-query', $row->name,
       'The Tripal Pub Library Query name is not test-query, this is an error - getSearchQuery test error');
 
     // Get all search queries test
     $results = $pub_library_manager->getSearchQueries(); // returns results
-    $this->assertNotEquals($results, NULL,
+    $this->assertNotNull($results,
       'Tripal Pub Library Query tables contains no query by test-query, this is an error - issue with getSearchQueries');
     $row = $results[0];
-    $this->assertEquals($row->name, 'test-query',
+    $this->assertEquals('test-query', $row->name,
       'The Tripal Pub Library Query name is not test-query, this is an error - issue with getSearchQueries');
 
     // --- Update search query test
@@ -165,7 +165,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     // This should update the search query
     $pub_library_manager->updateSearchQuery($query_id, $db_fields);
     $row = $pub_library_manager->getSearchQuery($query_id); // returns object
-    $this->assertEquals($row->name, 'test-query-updated',
+    $this->assertEquals('test-query-updated', $row->name,
        'The Tripal Pub Library Query name is not test-query-updated, this is an error - updateSearchQuery test error');
 
     // // --- Delete search query test
@@ -178,7 +178,7 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     foreach ($results as $row) {
       $row_count++;
     }
-    $this->assertEquals($row_count, 0, 'Tripal Pub Library Query tables contains test-query-updated, deleteSearchQuery test error');
+    $this->assertEquals(0, $row_count, 'Tripal Pub Library Query tables contains test-query-updated, deleteSearchQuery test error');
 
   }
 }
