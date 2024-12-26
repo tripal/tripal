@@ -25,7 +25,7 @@ class PubSearchQueryNameAutocompleteController extends ControllerBase {
     // We support entering search text without first specifying the
     // database, in which case all databases are queried.
     if ($db == '*') {
-      $query->condition('criteria', '"loader_name";s:\d+:"[^"]' . $q, 'REGEXP');
+      $query->condition('criteria', '"loader_name";s:\d+:"[^"]*' . $q, 'REGEXP');
     }
     else {
       $andGroup = $query->andConditionGroup()
