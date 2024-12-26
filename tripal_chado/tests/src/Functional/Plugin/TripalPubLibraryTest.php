@@ -32,10 +32,13 @@ class TripalPubLibraryTest extends ChadoTestBrowserBase {
     asort($plugins);
     $this->assertEquals('NIH PubMed database', $plugins['tripal_pub_library_pubmed']);
 
+    $pub_library_options = $pub_library_manager->getLibraryOptions();
+    $this->assertIsArray($pub_library_options, 'getLibraryOptions did not return an array');
+    $this->assertGreaterThan(0, count($pub_library_options), 'getLibraryOptions did not return any options');
+    $this->assertArrayHasKey('tripal_pub_library_pubmed', $pub_library_options, 'getLibraryOptions results missing expected key');
 
     $plugin_id = 'tripal_pub_library_pubmed';
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
-
 
     $search_array = [
       'remote_db' => 'pubmed',
