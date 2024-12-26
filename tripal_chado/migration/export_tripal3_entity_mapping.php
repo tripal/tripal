@@ -1,21 +1,20 @@
 <?php
 
 /**
- * Finds and saves all published entities.
+ * Finds and saves all published entities from a Tripal 3 site.
  *
  * @param string $output_file_name
  *   The name of a tab-delimited file to be created.
  *   The columns are:
  *     bundle_label,
  *     chado table name,
- *     chado table pkey column,
  *     chado table pkey value,
  *     entity id value
  */
 function find_all_published(string $output_file_name) {
   $grand_total = 0;
 
-  // first get a list of defined bio_data bundles
+  // Get a list of defined bio_data bundles
   $sql = "SELECT name, label FROM [tripal_bundle] ORDER BY term_id";
   $results = chado_query($sql, []);
   $bundle_names = [];
@@ -52,7 +51,7 @@ function find_all_published(string $output_file_name) {
 }
 
 /**
- * Finds and saves all published entities.
+ * Finds and returns all published entities from one bundle
  *
  * @param string $bundle_name
  *   The bundle name e.g. "bio_data_8"
