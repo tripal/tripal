@@ -5,9 +5,11 @@ namespace Drupal\Tests\tripal_chado\Functional;
 class TripalPubLibraryTest extends ChadoTestBrowserBase {
 
   /**
-   * Confirm basic Taxonomy importer functionality.
+   * Confirm basic publication importer functionality.
    *
-   * @group taxonomy
+   * @group TripalImporter
+   * @group ChadoImporter
+   * @group PubImporter
    */
   public function testTripalPubLibraryTestSimpleTest() {
 

@@ -7,6 +7,7 @@ namespace Drupal\Tests\tripal_chado\Functional;
  *
  * @group TripalImporter
  * @group ChadoImporter
+ * @group PubImporter
  * @group PubSearchQueryImporter
  */
 class PubSearchQueryImporterTest extends ChadoTestBrowserBase
