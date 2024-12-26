@@ -26,7 +26,7 @@ use Drupal\tripal\Entity\TripalEntityType;
  * }
  * @endcode
  */
-class Chadomigrator extends ChadoTaskBase {
+class ChadoMigrator extends ChadoTaskBase {
 
   /**
    * Name of the task.
