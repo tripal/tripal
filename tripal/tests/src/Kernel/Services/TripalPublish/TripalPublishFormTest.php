@@ -26,6 +26,7 @@ class TripalPublishFormTest extends TripalTestKernelBase {
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
     $this->installConfig('system');
+    $this->installSchema('file', ['file_usage']);
 
   }
 
