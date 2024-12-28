@@ -132,6 +132,8 @@ class ChadoManageCommands extends DrushCommands {
    *   Publish options. Defaults are
    *   'schema-name' => 'chado'
    *   'datastore' => 'chado_storage'
+   *   'migration-file' => ''
+   *   'lenient-migration' => FALSE
    *   'batch-size' => '1000'
    * @usage drush trp-chado-publish organism
    *   Submits a standard chado publish job for the organism content type which
@@ -144,8 +146,18 @@ class ChadoManageCommands extends DrushCommands {
     'schema-name' => '',
     'datastore' => 'chado_storage',
     'batch-size' => '1000',
-    'republish' => 0]) {
+    'migration-file' => '',
+    'lenient-migration' => FALSE,
+    'republish' => FALSE]) {
 
+    if ($options['migration-file'] and !file_exists($options['migration-file'])) {
+      $this->output()->writeln('The specified file "' . $options['migration-file'] . '" does not exist');
+      return;
+    }
+    if ($options['migration-file'] and $options['republish']) {
+      $this->output()->writeln('The options --republish and --migration-file cannot be combined');
+      return;
+    }
     // If schema not supplied then grab default chado schema.
     if (!$options['schema-name']) {
       $chado = \Drupal::service('tripal_chado.database');
@@ -156,6 +168,8 @@ class ChadoManageCommands extends DrushCommands {
       'schema_name' => $options['schema-name'],
       'batch_size' => $options['batch-size'],
       'republish' => $options['republish'],
+      'migration_file' => $options['migration-file'],
+      'lenient_migration' => $options['lenient-migration'],
     ];
     // @todo validate the bundle
     $bundle = $bundle;

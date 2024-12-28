@@ -39,6 +39,7 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
 
     // Setup for working with tripal jobs being submitted in test.
     $this->installEntitySchema('user');
+    $this->installSchema('file', ['file_usage']);
     $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
     $this->setUpCurrentUser();
 
