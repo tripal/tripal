@@ -183,6 +183,27 @@ tripal_chado.project_autocomplete:
       type_id:
         type: integer
 
+tripal_chado.generic_autocomplete:
+  path: 'chado/project/autocomplete/{base_table}/{column_name}/{property_table}/{count}/{type_id}'
+  defaults:
+    _controller: '\Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController::handleAutocomplete'
+    _title: 'Chado Generic Autocomplete'
+    _format: json
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      base_table:
+        type: string
+      column_name:
+        type: string
+      property_table:
+        type: string
+      count:
+        type: integer
+      type_id:
+        type: integer
+
 # Publication Loaders.
 tripal.data_loaders.publication_loaders:
   path: 'admin/tripal/loaders/publications'
