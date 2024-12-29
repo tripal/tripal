@@ -33,24 +33,6 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-#    // Get the sorted list of publications.
-#    $pubs = [];
-
-#    $sql = 'SELECT P.pub_id, P.title FROM {1:pub} P
-#      ORDER BY LOWER(P.title)';
-#    $results = $chado->query($sql, []);
-#      $query->orderBy('value');
-#      $results = $query->execute();
-#      while ($pub = $results->fetchObject()) {
-#        $pubs[$pub->pkey_id] = $pub->value;
-#        // Change the non-user-friendly 'null' publication.
-#        if ($pubs[$pub->pkey_id] == '') {
-#          $pubs[$pub->pkey_id] = '-- Unknown --';  // This will sort to the top.
-#        }
-#      }
-#      natcasesort($pubs);
-#    }
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
