@@ -33,25 +33,23 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of publications.
-    $pubs = [];
-    $chado = \Drupal::service('tripal_chado.database');
+#    // Get the sorted list of publications.
+#    $pubs = [];
 
-    // In addition to getting a sorted list of pubs, include
-    // the pubprop rdfs:type when it is present, e.g.
-    // genome assembly or genome annotation.
-    $sql = 'SELECT P.pub_id, P.title FROM {1:pub} P
-      ORDER BY LOWER(P.title)';
-    $results = $chado->query($sql, []);
-
-    while ($pub = $results->fetchObject()) {
-      $pubs[$pub->pub_id] = $pub->title;
-      // Change the non-user-friendly 'null' publication.
-      if ($pubs[$pub->pub_id] == '') {
-        $pubs[$pub->pub_id] = '-- Unknown --';  // This will sort to the top.
-      }
-    }
-    natcasesort($pubs);
+#    $sql = 'SELECT P.pub_id, P.title FROM {1:pub} P
+#      ORDER BY LOWER(P.title)';
+#    $results = $chado->query($sql, []);
+#      $query->orderBy('value');
+#      $results = $query->execute();
+#      while ($pub = $results->fetchObject()) {
+#        $pubs[$pub->pkey_id] = $pub->value;
+#        // Change the non-user-friendly 'null' publication.
+#        if ($pubs[$pub->pkey_id] == '') {
+#          $pubs[$pub->pkey_id] = '-- Unknown --';  // This will sort to the top.
+#        }
+#      }
+#      natcasesort($pubs);
+#    }
 
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
@@ -82,12 +80,35 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $pubs,
-      '#default_value' => $pub_id,
-      '#empty_option' => '-- Select --',
+
+    // Set up the ingredients for a select element specific to this content type
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('1:pub', 'BT');
+    $query->addField('BT', 'pub_id', 'pkey_id');
+    $query->addField('BT', 'title', 'value');
+    $autocomplete_route = 'tripal_chado.generic_autocomplete';
+    $autocomplete_parameters = [
+      'base_table' => 'pub',
+      'column_name' => 'title',
+      'property_table' => 'pub',
+      'count' => 10,
+      'type_id' => 0,
     ];
+    $select_element = $this->widgetSelectElement($query, $pub_id,
+        $autocomplete_route, $autocomplete_parameters);
+
+    // Special processing for the null publication defined by chado
+    if (array_key_exists('#options', $select_element)) {
+      $null_pub = array_search('', $select_element['#options']);
+      if ($null_pub) {
+        $select_element['#options'][$null_pub] = '-- Unknown --';  // This will sort to the top
+      }
+      natcasesort($select_element['#options']);
+    }
+
+    // Insert the select element, either a select or an autocomplete depending
+    // on the number of options.
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
