@@ -63,6 +63,67 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   }
 
   /**
+   * Function to use select for a few values, autocomplete for many values.
+   *
+   * @param Drupal\pgsql\Driver\Database\pgsql\Select $query
+   *   A prepared database query
+   * @param int|null $default_id
+   *   The pkey_id value of the default, if one exists
+   * @param string $autocomplete_route
+   *   The route to an autocomplete
+   * @param array $autocomplete_parameters
+   *   All the values needed for the autocomplete
+   * @param int $limit
+   *   The maximum number of records for a select, above use autocomplete
+   *
+   * @return array
+   *   The appropriate form element
+   */
+  protected function widgetSelectElement($query, ?int $default_id,
+      string $autocomplete_route, array $autocomplete_parameters, int $limit = 50): array {
+    $element = [];
+
+    // Get a count of the number of possible values
+    $count = $query->countQuery()->execute()->fetchField();
+    // For a large number of options, use an autocomplete
+    if ($count > $limit) {
+
+      // Look up the default value if one was specified
+      $default_value = '';
+      if ($default_id) {
+        $query->condition('pkey_id', $default_id, '=');
+        $default_value = $query->execute()->fetchField('value');
+        $default_value .= ' (' . $default_id . ')';
+      }      
+      $element = [
+        '#type' => 'textfield',
+        '#default_value' => $default_value,
+        '#autocomplete_route_name' => $autocomplete_route,
+        '#autocomplete_route_parameters' => $autocomplete_parameters,
+      ];
+    }
+
+    // For a small number of options, use a select
+    else {
+      $results = $query->execute();
+      $select_options = [];
+      while ($record = $results->fetchObject()) {
+        // Remove HTML markup if present, e.g. publication titles
+        $value = strip_tags($record->value ?? '');
+        $select_options[$record->pkey_id] = $value;
+      }
+      natcasesort($select_options);
+      $element = [
+        '#type' => 'select',
+        '#options' => $select_options,
+        '#default_value' => $default_id,
+        '#empty_option' => '-- Select --',
+      ];
+    }
+    return $element;
+  }
+
+  /**
    * Assists the massageFormValues() function for linking fields, that
    * is, double-hop fields where an intermediate linking table is used.
    * This includes properly handling deletion of the record in the
