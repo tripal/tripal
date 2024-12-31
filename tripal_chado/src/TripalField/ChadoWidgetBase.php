@@ -100,7 +100,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
           // Append the chado pkey id value
           $default_value .= ' (' . $default_id . ')';
         }
-      }      
+      }
       $element = [
         '#type' => 'textfield',
         '#default_value' => $default_value,
