@@ -11,7 +11,7 @@ use Drupal\Core\Form\FormStateInterface;
  * Views field plugin to display 'criteria'.
  *
  * @ingroup views_field_handlers
- * 
+ *
  * @ViewsField("criteria")
  */
 class Criteria extends FieldPluginBase {
@@ -37,8 +37,8 @@ class Criteria extends FieldPluginBase {
     //$options['data_element'] = ['default' => []];
 
     return $options;
-  }  
-  
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -78,7 +78,7 @@ class Criteria extends FieldPluginBase {
 
 
     switch ($data_element) {
-      case 'Search String': 
+      case 'Search String':
         $search_string = "";
         foreach ($criteria_column_array['criteria'] as $criteria_row) {
           $search_string .= $criteria_row['operation'] . ' (' . $criteria_row['scope'] . ': ' . $criteria_row['search_terms'] . ') ';
@@ -92,7 +92,7 @@ class Criteria extends FieldPluginBase {
       default:
         $output .= "Label must either contain string 'database' or 'search string' for this field to display correctly";
     }
-  
+
     // To retrieve a value of an additional field, just use the construction as
     // below. The 'units' key of $this->additional_fields is the name of
     // additional field whose value we intend to retrieve from $values. In fact
