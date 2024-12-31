@@ -63,12 +63,11 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $field_name,
     ];
 
-    // Set up the ingredients for a select element specific to this content type
+    // Create a select element specific to this content type
     $chado = \Drupal::service('tripal_chado.database');
     $query = $chado->select('1:pub', 'BT');
     $query->addField('BT', 'pub_id', 'pkey_id');
     $query->addField('BT', 'title', 'value');
-    $autocomplete_route = 'tripal_chado.generic_autocomplete';
     $autocomplete_parameters = [
       'base_table' => 'pub',
       'column_name' => 'title',
@@ -76,14 +75,13 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
       'count' => 10,
       'type_id' => 0,
     ];
-    $select_element = $this->widgetSelectElement($query, $pub_id,
-        $autocomplete_route, $autocomplete_parameters);
+    $select_element = $this->genericSelectElement($query, 'pub_id', $pub_id, $autocomplete_parameters);
 
-    // Special processing for the null publication defined by chado
+    // Special processing for the null publication which is defined by chado
     if (array_key_exists('#options', $select_element)) {
       $null_pub = array_search('', $select_element['#options']);
       if ($null_pub) {
-        $select_element['#options'][$null_pub] = '-- Unknown --';  // This will sort to the top
+        $select_element['#options'][$null_pub] = '- Unknown -';  // This will sort to the top
       }
       natcasesort($select_element['#options']);
     }
