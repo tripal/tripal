@@ -59,9 +59,9 @@ class ChadoGenericAutocompleteController extends ControllerBase {
       // Get typed in string input.
       $string = trim($request->query->get('q'));
 
+      // Proceed to autocomplete when string is at least a character
+      // long and result count is set to a value greater than 0.
       if (strlen($string) > 0 && $count > 0) {
-        // Proceed to autocomplete when string is at least a character
-        // long and result count is set to a value greater than 0.
 
         $connection = \Drupal::service('tripal_chado.database');
 
@@ -74,7 +74,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
         $pkey_id = $base_table . '_id';
         $type_column = 'type_id';
 
-        // Transform string as a search keyword pattern.
+        // Transform string into a search pattern with wildcards
         $keyword = '%' . strtolower($string) . '%';
 
         $args = [];
@@ -101,14 +101,16 @@ class ChadoGenericAutocompleteController extends ControllerBase {
         $args[':keyword'] = $keyword;
         $args[':count'] = $count;
 
-        // Perform database query
+        // Perform the database query
         $results = $connection->query($sql, $args);
 
-        // Compose response result.
+        // Compose the response
         if ($results) {
           foreach($results as $record) {
             // Strip HTML tags if present, e.g. in Pub title
-            $value = strip_tags($record->value) . ' (' . $record->pkey . ')';
+            $value = strip_tags($record->value);
+            // Append the chado pkey id value
+            $value .= ' (' . $record->pkey . ')';
             $response[] = [
               'value' => $value, // Value returned and value displayed by textfield.
               'label' => $value, // Value shown in the list of options.
