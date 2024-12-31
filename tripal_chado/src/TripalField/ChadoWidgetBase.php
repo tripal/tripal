@@ -63,14 +63,14 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   }
 
   /**
-   * Function to use select for a few values, autocomplete for many values.
+   * Generic select function, for a few values uses a select, for many uses an autocomplete.
    *
    * @param Drupal\pgsql\Driver\Database\pgsql\Select $query
    *   A prepared database query
+   * @param string $pkey_column
+   *   The name of the primary key column
    * @param int|null $default_id
    *   The pkey_id value of the default, if one exists
-   * @param string $autocomplete_route
-   *   The route to an autocomplete
    * @param array $autocomplete_parameters
    *   All the values needed for the autocomplete
    * @param int $limit
@@ -79,26 +79,32 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    * @return array
    *   The appropriate form element
    */
-  protected function widgetSelectElement($query, ?int $default_id,
-      string $autocomplete_route, array $autocomplete_parameters, int $limit = 50): array {
+  protected function genericSelectElement($query, string $pkey_column, ?int $default_id,
+      array $autocomplete_parameters, int $limit = 50): array {
     $element = [];
 
     // Get a count of the number of possible values
     $count = $query->countQuery()->execute()->fetchField();
+
     // For a large number of options, use an autocomplete
     if ($count > $limit) {
 
       // Look up the default value if one was specified
       $default_value = '';
       if ($default_id) {
-        $query->condition('pkey_id', $default_id, '=');
-        $default_value = $query->execute()->fetchField('value');
-        $default_value .= ' (' . $default_id . ')';
+        $query->condition($pkey_column, $default_id, '=');
+        $result = $query->execute()->fetchObject();
+        if ($result) {
+          // Strip HTML tags if present, e.g. in Pub title
+          $default_value = strip_tags($result->value ?? '');
+          // Append the chado pkey id value
+          $default_value .= ' (' . $default_id . ')';
+        }
       }      
       $element = [
         '#type' => 'textfield',
         '#default_value' => $default_value,
-        '#autocomplete_route_name' => $autocomplete_route,
+        '#autocomplete_route_name' => 'tripal_chado.generic_autocomplete',
         '#autocomplete_route_parameters' => $autocomplete_parameters,
       ];
     }
@@ -108,7 +114,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       $results = $query->execute();
       $select_options = [];
       while ($record = $results->fetchObject()) {
-        // Remove HTML markup if present, e.g. publication titles
+        // Strip HTML tags if present, e.g. in Pub title
         $value = strip_tags($record->value ?? '');
         $select_options[$record->pkey_id] = $value;
       }
@@ -117,7 +123,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
         '#type' => 'select',
         '#options' => $select_options,
         '#default_value' => $default_id,
-        '#empty_option' => '-- Select --',
+        '#empty_option' => $this->t('- Select -'),
       ];
     }
     return $element;
