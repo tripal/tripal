@@ -32,31 +32,6 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
       ?? $storage_settings['base_column'] ?? 'analysis_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
-
-    // Get the list of analyses.
-    $analyses = [];
-    $chado = \Drupal::service('tripal_chado.database');
-
-    // In addition to getting a sorted list of analyses, include
-    // the analysisprop rdfs:type when it is present, e.g.
-    // genome assembly or genome annotation.
-    $sql = 'SELECT A.analysis_id, A.name, TYPE.value FROM {1:analysis} A
-      LEFT JOIN (
-        SELECT AP.analysis_id, AP.value FROM {1:analysisprop} AP
-        LEFT JOIN {1:cvterm} T ON AP.type_id=T.cvterm_id
-        LEFT JOIN {1:cv} CV ON T.cv_id=CV.cv_id
-        WHERE T.name=:cvterm
-        AND CV.name=:cv
-      ) AS TYPE
-      ON A.analysis_id=TYPE.analysis_id
-      ORDER BY LOWER(A.name)';
-    $results = $chado->query($sql, [':cvterm' => 'type', ':cv' => 'rdfs']);
-
-    while ($analysis = $results->fetchObject()) {
-      $type_text = $analysis->value ? ' (' . $analysis->value . ')' : '';
-      $analyses[$analysis->analysis_id] = $analysis->name . $type_text;
-    }
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -86,12 +61,21 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $analyses,
-      '#default_value' => $analysis_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('1:analysis', 'BT');
+    $query->addField('BT', 'analysis_id', 'pkey_id');
+    $query->addField('BT', 'name', 'value');
+    $autocomplete_parameters = [
+      'base_table' => 'analysis',
+      'column_name' => 'name',
+      'property_table' => 'analysis',
+      'count' => 10,
+      'type_id' => 0,
     ];
+    $select_element = $this->genericSelectElement($query, 'analysis_id', $analysis_id, $autocomplete_parameters);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
