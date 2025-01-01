@@ -33,19 +33,6 @@ class ChadoProtocolWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of protocols.
-    $protocols = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('protocol', 'p');
-    $query->fields('p', ['protocol_id', 'name']);
-    $query->orderBy('name');
-    $results = $query->execute();
-    while ($protocol = $results->fetchObject()) {
-      $protocol_name = $protocol->name;
-      $protocols[$protocol->protocol_id] = $protocol_name;
-    }
-    natcasesort($protocols);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -75,12 +62,21 @@ class ChadoProtocolWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $protocols,
-      '#default_value' => $protocol_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('1:protocol', 'BT');
+    $query->addField('BT', 'protocol_id', 'pkey_id');
+    $query->addField('BT', 'name', 'value');
+    $autocomplete_parameters = [
+      'base_table' => 'protocol',
+      'column_name' => 'name',
+      'property_table' => 'protocol',
+      'count' => 10,
+      'type_id' => 0,
     ];
+    $select_element = $this->genericSelectElement($query, 'protocol_id', $protocol_id, $autocomplete_parameters);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id, rank,
