@@ -66,8 +66,10 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
     // Create a select element specific to this content type
     $chado = \Drupal::service('tripal_chado.database');
     $query = $chado->select('1:pub', 'BT');
+    $query->leftJoin('cvterm', 'T', '[BT].[type_id] = [T].[cvterm_id]');
     $query->addField('BT', 'pub_id', 'pkey_id');
     $query->addField('BT', 'title', 'value');
+    $query->addField('T', 'name', 'type');
     $autocomplete_parameters = [
       'base_table' => 'pub',
       'column_name' => 'title',
