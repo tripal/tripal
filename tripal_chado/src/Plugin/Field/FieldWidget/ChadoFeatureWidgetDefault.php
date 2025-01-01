@@ -66,7 +66,7 @@ class ChadoFeatureWidgetDefault extends ChadoWidgetBase {
     // Create a select element specific to this content type
     $chado = \Drupal::service('tripal_chado.database');
     $query = $chado->select('1:feature', 'BT');
-    $query->leftJoin('cvterm', 'T', 'BT.type_id = T.cvterm_id');
+    $query->leftJoin('cvterm', 'T', '[BT].[type_id] = [T].[cvterm_id]');
     $query->addField('BT', 'feature_id', 'pkey_id');
     $query->addField('BT', 'name', 'value');
     $query->addField('T', 'name', 'type');
