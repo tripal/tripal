@@ -75,7 +75,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    * @param array $autocomplete_parameters
    *   All the values needed for the autocomplete
    * @param int $limit
-   *   The maximum number of records for a select, above use autocomplete
+   *   The maximum number of records for a select. If more, then
+   *   use autocomplete. Use zero if autocomplete always wanted.
    *
    * @return array
    *   The appropriate form element

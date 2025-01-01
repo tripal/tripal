@@ -101,6 +101,7 @@ class ChadoFeatureMapWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('featuremap_id', $values);
     return $this->massageLinkingFormValues('featuremap_id', $values, $form_state);
   }
 }

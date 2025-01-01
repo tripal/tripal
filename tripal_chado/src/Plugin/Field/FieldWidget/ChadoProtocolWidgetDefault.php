@@ -101,6 +101,7 @@ class ChadoProtocolWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('protocol_id', $values);
     return $this->massageLinkingFormValues('protocol_id', $values, $form_state);
   }
 }

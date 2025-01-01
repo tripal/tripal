@@ -101,6 +101,7 @@ class ChadoBiomaterialWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('biomaterial_id', $values);
     return $this->massageLinkingFormValues('biomaterial_id', $values, $form_state);
   }
 }

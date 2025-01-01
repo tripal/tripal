@@ -103,6 +103,7 @@ class ChadoFeatureWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('feature_id', $values);
     return $this->massageLinkingFormValues('feature_id', $values, $form_state);
   }
 

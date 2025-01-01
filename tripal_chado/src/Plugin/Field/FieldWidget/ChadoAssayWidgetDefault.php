@@ -101,6 +101,7 @@ class ChadoAssayWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('assay_id', $values);
     return $this->massageLinkingFormValues('assay_id', $values, $form_state);
   }
 }
