@@ -21,7 +21,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    *
    * To support columns without a unique constraint, the returned
    * autocomplete value includes the primary key numeric value in
-   * parentheses at the end.
+   * parentheses at the end, e.g. "Impressive Publication (42)".
    *
    * @param Request request
    *
@@ -36,8 +36,9 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    *
    * @param int $count
    *   Desired number of matching names to suggest.
-   *   Default to 5 items.
-   *   Must be declared in autocomplete route parameter e.g. ['count' => 5].
+   *   Default to 10 items.
+   *   If set to zero, then autocomplete is disabled.
+   *   Must be declared in autocomplete route parameter e.g. ['count' => 15].
    *
    * @param int $type_id
    *   Publication type set in pub.type_id to restrict publications to specific type.
@@ -50,7 +51,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    */
   public function handleAutocomplete(Request $request,
      string $base_table, string $column_name, string $property_table,
-     int $count = 5, int $type_id = 0) {
+     int $count = 10, int $type_id = 0) {
 
     // Array to hold matching records.
     $response = [];
@@ -81,7 +82,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
         $sql = 'SELECT BT.' . $pkey_id .' AS pkey, BT.' . $column_name . ' AS value'
              . ' FROM {1:' . $base_table . '} BT';
 
-        // If specified, restrict to type provided by type_id in the route parameter.
+        // If specified, restrict to the type provided by type_id in the route parameter.
         if ($type_id > 0) {
           if ($property_table and ($property_table != $base_table)) {
             $sql .= ' LEFT JOIN {1:' . $property_table . '} PT ON BT.' . $pkey_id . ' = PT.' . $pkey_id
