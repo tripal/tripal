@@ -34,28 +34,6 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of contacts.
-    $contacts = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('contact', 'c');
-    $query->leftJoin('cvterm', 'cvt', 'c.type_id = cvt.cvterm_id');
-    $query->fields('c', ['contact_id', 'name', 'description']);
-    $query->addField('cvt', 'name', 'contact_type');
-    $query->orderBy('name', 'contact_type');
-    $results = $query->execute();
-    while ($contact = $results->fetchObject()) {
-      $contact_name = $contact->name;
-      // Change the non-user-friendly 'null' contact, which is specified by chado.
-      if ($contact_name == 'null') {
-        $contact_name = '-- Unknown --';  // This will sort to the top.
-      }
-      if ($contact->contact_type) {
-        $contact_name .= ' (' . $contact->contact_type . ')';
-      }
-      $contacts[$contact->contact_id] = $contact_name;
-    }
-    natcasesort($contacts);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -85,12 +63,34 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $contacts,
-      '#default_value' => $contact_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('1:contact', 'BT');
+    $query->addField('BT', 'contact_id', 'pkey_id');
+    $query->addField('BT', 'name', 'value');
+    $query->addField('BT', 'type_id', 'type');
+    $autocomplete_parameters = [
+      'base_table' => 'contact',
+      'column_name' => 'name',
+      'property_table' => 'contact',
+      'count' => 10,
+      'type_id' => 0,
     ];
+    $select_element = $this->genericSelectElement($query, 'contact_id', $contact_id, $autocomplete_parameters);
+
+    // Special processing for the null contact which is defined by chado
+    if (array_key_exists('#options', $select_element)) {
+      $null_contact = array_search('null', $select_element['#options']);
+      if ($null_contact) {
+        $select_element['#options'][$null_contact] = '- Unknown -';  // This will sort to the top
+      }
+      natcasesort($select_element['#options']);
+    }
+
+    // Insert the select element, either a select or an autocomplete depending
+    // on the number of options.
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there is a type_id and the value is not already set, then we want to
     // use the cvterm of the field as the default.
