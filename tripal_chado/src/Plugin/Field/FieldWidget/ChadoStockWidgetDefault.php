@@ -33,17 +33,6 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of stocks.
-    $stocks = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('stock', 's');
-    $query->fields('s', ['stock_id', 'name']);
-    $query->orderBy('name');
-    $results = $query->execute();
-    while ($stock = $results->fetchObject()) {
-      $stocks[$stock->stock_id] = $stock->name;
-    }
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -73,12 +62,21 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $stocks,
-      '#default_value' => $stock_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('1:stock', 'BT');
+    $query->addField('BT', 'stock_id', 'pkey_id');
+    $query->addField('BT', 'name', 'value');
+    $autocomplete_parameters = [
+      'base_table' => 'stock',
+      'column_name' => 'name',
+      'property_table' => 'stock',
+      'count' => 10,
+      'type_id' => 0,
     ];
+    $select_element = $this->genericSelectElement($query, 'stock_id', $stock_id, $autocomplete_parameters);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
