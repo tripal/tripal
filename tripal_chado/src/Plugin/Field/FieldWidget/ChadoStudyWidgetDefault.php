@@ -33,20 +33,6 @@ class ChadoStudyWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of studies. Include contacts because that has a not null constraint.
-    $studys = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('study', 's');
-    $query->leftJoin('contact', 'c', 's.contact_id = c.contact_id');
-    $query->fields('s', ['study_id', 'name']);
-    $query->addField('c', 'name', 'contact_name');
-    $query->orderBy('name', 'contact_name');
-    $results = $query->execute();
-    while ($study = $results->fetchObject()) {
-      $studys[$study->study_id] = $study->name;
-    }
-    natcasesort($studys);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -76,12 +62,21 @@ class ChadoStudyWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $studys,
-      '#default_value' => $study_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('1:study', 'BT');
+    $query->addField('BT', 'study_id', 'pkey_id');
+    $query->addField('BT', 'name', 'value');
+    $autocomplete_parameters = [
+      'base_table' => 'study',
+      'column_name' => 'name',
+      'property_table' => 'study',
+      'count' => 10,
+      'type_id' => 0,
     ];
+    $select_element = $this->genericSelectElement($query, 'study_id', $study_id, $autocomplete_parameters);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
