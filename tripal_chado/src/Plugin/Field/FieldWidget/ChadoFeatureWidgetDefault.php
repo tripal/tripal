@@ -33,24 +33,6 @@ class ChadoFeatureWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of features.
-    $features = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('feature', 'f');
-    $query->leftJoin('cvterm', 'cvt', 'f.type_id = cvt.cvterm_id');
-    $query->fields('f', ['feature_id', 'name']);
-    $query->addField('cvt', 'name', 'feature_type');
-    $query->orderBy('name', 'feature_type');
-    $results = $query->execute();
-    while ($feature = $results->fetchObject()) {
-      $feature_name = $feature->name;
-      if ($feature->feature_type) {
-        $feature_name .= ' (' . $feature->feature_type . ')';
-      }
-      $features[$feature->feature_id] = $feature_name;
-    }
-    natcasesort($features);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -80,12 +62,23 @@ class ChadoFeatureWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $features,
-      '#default_value' => $feature_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('1:feature', 'BT');
+    $query->leftJoin('cvterm', 'T', 'BT.type_id = T.cvterm_id');
+    $query->addField('BT', 'feature_id', 'pkey_id');
+    $query->addField('BT', 'name', 'value');
+    $query->addField('T', 'name', 'type');
+    $autocomplete_parameters = [
+      'base_table' => 'feature',
+      'column_name' => 'name',
+      'property_table' => 'feature',
+      'count' => 10,
+      'type_id' => 0,
     ];
+    $select_element = $this->genericSelectElement($query, 'feature_id', $feature_id, $autocomplete_parameters);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
