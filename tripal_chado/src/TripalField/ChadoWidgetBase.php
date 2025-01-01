@@ -63,7 +63,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   }
 
   /**
-   * Generic select function, for a few values uses a select, for many uses an autocomplete.
+   * Generic select form element generator. If there are a few values creates
+   * a select, for many values creates an autocomplete.
    *
    * @param Drupal\pgsql\Driver\Database\pgsql\Select $query
    *   A prepared database query
@@ -126,6 +127,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
         '#empty_option' => $this->t('- Select -'),
       ];
     }
+    $element['#element_validate'] = [[static::class, 'validateAutocomplete']];
     return $element;
   }
 
@@ -227,6 +229,37 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   }
 
   /**
+   * A helper for massageFormValues() where the generic autocomplete is used.
+   *
+   * The genericSelectElement() will return an integer in the $values array
+   * when a select is used, but returns a string with an embedded id value
+   * in parentheses when the autocomplete is used. In this latter case, we
+   * need to return just the integer value.
+   * Note that if you somehow pass a text string without an embedded value,
+   * then no changes are made, however, this should be prevented by validation.
+   *
+   * @param string $pkey_id
+   *   The name of the value to be massaged, e.g. "analysis_id"
+   * @param array $values
+   *   The submitted form values produced by the widget.
+   * @return array
+   *   The massaged values
+   */
+  protected function genericSelectMassageFormValues(string $pkey_id, array $values): array {
+    foreach ($values as $key => $info) {
+      if (array_key_exists($pkey_id, $info)) {
+        // If already an integer, then do nothing
+        if (!preg_match('/^\d+$/', $info[$pkey_id])) {
+          if (preg_match('/\((\d+)\)$/', $info[$pkey_id], $matches)) {
+            $values[$key][$pkey_id] = $matches[1];
+          }
+        }
+      }
+    }
+    return $values;
+  }
+
+  /**
    * Assists the massageFormValues() function for property fields, that
    * is, single-hop fields where the linked table contains a value.
    * This includes properly handling deletion of the record in the
@@ -320,5 +353,35 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       }
     }
     return $values;
+  }
+
+  /**
+   * Form element validation handler for an autocomplete field
+   *
+   * @param array $element
+   *   The form element being validated
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form
+   */
+  public static function validateAutocomplete($element, FormStateInterface $form_state) {
+    $element_parents = $element['#parents'];
+    $element_value = $element['#value'];
+
+    // The value must either be an integer, or a string with an integer
+    // value in parentheses at the end.
+    $valid = TRUE;
+    if ($element_value) {
+      $valid = FALSE;
+      if (preg_match('/^\d+$/', $element_value)) {
+        $valid = TRUE;
+      }
+      elseif (preg_match('/\(\d+\)$/', $element_value)) {
+        $valid = TRUE;
+      }
+    }
+    if (!$valid) {
+      $form_state->setErrorByName(implode('][', $element_parents),
+          'The specified record must include its chado record number in parentheses at the end');
+    }
   }
 }

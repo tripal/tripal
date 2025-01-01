@@ -63,7 +63,6 @@ class ChadoProjectWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $field_name,
     ];
 
-
     // Create a select element specific to this content type
     $chado = \Drupal::service('tripal_chado.database');
     $query = $chado->select('1:project', 'BT');
@@ -102,6 +101,7 @@ class ChadoProjectWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('project_id', $values);
     return $this->massageLinkingFormValues('project_id', $values, $form_state);
   }
 }
