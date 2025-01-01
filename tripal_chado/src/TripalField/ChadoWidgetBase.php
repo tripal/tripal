@@ -99,6 +99,9 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
         if ($result) {
           // Strip HTML tags if present, e.g. in Pub title
           $default_value = strip_tags($result->value ?? '');
+          if (property_exists($record, 'type') and $record->type) {
+            $default_value .= ' [' . $record->type . ']';
+          }
           // Append the chado pkey id value
           $default_value .= ' (' . $default_id . ')';
         }
@@ -118,6 +121,9 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       while ($record = $results->fetchObject()) {
         // Strip HTML tags if present, e.g. in Pub title
         $value = strip_tags($record->value ?? '');
+        if (property_exists($record, 'type') and $record->type) {
+          $value .= ' [' . $record->type . ']';
+        }
         $select_options[$record->pkey_id] = $value;
       }
       natcasesort($select_options);
