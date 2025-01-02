@@ -183,7 +183,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
 
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
-    // existing record is changed to "-- Select --"
+    // existing record is changed to "- Select -"
     $retained_records = [];
     foreach ($values as $val_key => $value) {
       if ($value[$linker_key]) {
@@ -306,7 +306,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
 
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
-    // existing record is changed to "-- Select --"
+    // existing record is changed to "- Select -"
     $retained_records = [];
     foreach ($values as $val_key => $value) {
       if ($value[$linker_key]) {
