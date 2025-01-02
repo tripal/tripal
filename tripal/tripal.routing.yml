@@ -572,6 +572,14 @@ entity.tripal_entity_settings:
   requirements:
     _permission: 'administer tripal'
 
+entity.tripal_widget_settings:
+  path: 'admin/tripal/config/widget_settings'
+  defaults:
+    _title: 'Tripal Global Widget Configuration'
+    _form: 'Drupal\tripal\Form\TripalWidgetSettingsForm'
+  requirements:
+    _permission: 'administer tripal'
+
 ##
 # Tripal Field Collection entity.
 ##

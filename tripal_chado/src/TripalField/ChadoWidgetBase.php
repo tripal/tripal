@@ -63,8 +63,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   }
 
   /**
-   * Generic select form element generator. If there are a few values creates
-   * a select, for many values creates an autocomplete.
+   * Generic select form element generator. For a small number of values
+   * this creates a select, for many values this creates an autocomplete.
    *
    * @param Drupal\pgsql\Driver\Database\pgsql\Select $query
    *   A prepared database query
@@ -74,7 +74,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    *   The pkey_id value of the default, if one exists
    * @param array $autocomplete_parameters
    *   All the values needed for the autocomplete
-   * @param int $limit
+   * @param ?int $limit
    *   The maximum number of records for a select. If more, then
    *   use autocomplete. Use zero if autocomplete always wanted.
    *
@@ -82,7 +82,17 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    *   The appropriate form element
    */
   protected function genericSelectElement($query, string $pkey_column, ?int $default_id,
-      array $autocomplete_parameters, int $limit = 50): array {
+      array $autocomplete_parameters, ?int $limit = NULL): array {
+
+    // The limit parameter is optional for this function. If not specified,
+    // then use the global settings value. If that is not set, default to 50.
+    if (is_null($limit)) {
+      $limit = \Drupal::config('tripal.settings')->get('tripal_entity_type.widget_select_limit');
+      if (is_null($limit) or (trim($limit) === '')) {
+        $limit = 50;
+      }
+    }
+
     $element = [];
 
     // Get a count of the number of possible values
