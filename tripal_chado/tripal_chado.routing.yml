@@ -168,21 +168,6 @@ tripal_chado.dbxref_autocomplete:
       db_id:
         type: integer
 
-tripal_chado.project_autocomplete:
-  path: 'chado/project/autocomplete/{count}/{type_id}'
-  defaults:
-    _controller: '\Drupal\tripal_chado\Controller\ChadoProjectAutocompleteController::handleAutocomplete'
-    _title: 'Chado Project Autocomplete'
-    _format: json
-  requirements:
-    _permission: 'access content'
-  options:
-    parameters:
-      count:
-        type: integer
-      type_id:
-        type: integer
-
 tripal_chado.generic_autocomplete:
   path: 'chado/generic/autocomplete/{base_table}/{column_name}/{property_table}/{count}/{type_id}'
   defaults:
