@@ -193,11 +193,11 @@ tripal.data_loaders.publication_loaders:
     _permission: 'administer tripal'
 
 
-# TODO - Add the correct form here
-tripal.data_loaders.publication_loaders.import_publication_file:
-  path: 'admin/tripal/loaders/publications/import_publication_file'
-  defaults:
-    _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
-    _title: 'Import Publication File'
-  requirements:
-    _permission: 'allow tripal import'
+# TODO - This has not yet been implemented
+#tripal.data_loaders.publication_loaders.import_publication_file:
+#  path: 'admin/tripal/loaders/publications/import_publication_file'
+#  defaults:
+#    _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
+#    _title: 'Import Publication File'
+#  requirements:
+#    _permission: 'allow tripal import'

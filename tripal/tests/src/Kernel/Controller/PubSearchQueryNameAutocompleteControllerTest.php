@@ -69,8 +69,6 @@ class PubSearchQueryNameAutocompleteControllerTest extends TripalTestKernelBase 
       ['db' => '*', 'q' => 'a']
     );
     $results = $autocomplete->handleAutocomplete($request, 10, 0)->getContent();
-#print "CP21";var_dump($results);
-#print "CP22";var_dump(json_decode($results));
     $this->assertCount(6, json_decode($results), 'Expected exactly six results from "a" autocomplete for all plugins');
 
     // Test for a single plugin
