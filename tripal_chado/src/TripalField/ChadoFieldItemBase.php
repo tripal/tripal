@@ -756,6 +756,103 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   *
+   * @param array $options
+   *   Specific options from the field's discover() function. Required keys:
+   *     'id' - the field id, e.g. 'chado_organism_type_default'
+   *     'table' - the field's base table, e.g. 'organism'
+   *     'label' - the field's label, e.g. 'Organism'
+   *     'termIdSpace'
+   *     'termAccession'
+   *     'description' - A text description for the discovered field
+   *   Optional keys:
+   *     'cardinality' - defaults to 1
+   *     'required' - defaults to FALSE
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // The parent class only initializes an empty array, so we don't need to call it
+    $field_list = [];
+
+    if (!$options) {
+      return $field_list;
+    }
+
+    // Make sure the base table setting exists.
+    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
+    if (!$base_table) {
+      return $field_list;
+    }
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+
+    // Make sure the base table has a foreign key to the field's table.
+    if (!$chado->schema()->foreignKeyExists($base_table, $options['table'])) {
+      return $field_list;
+    }
+    $fk_def = $chado->schema()->getForeignKeyDef($base_table, $options['table']);
+
+    // Check for existing fields of this type.
+    if (array_key_exists(self::$id, $field_types)) {
+      // If yes, then add it to the field list.
+      foreach ($field_instances as $instance) {
+        if ($instance->getType() == $options['id']) {
+          $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
+        }
+      }
+      if ($field_list) {
+        return $field_list;
+      }
+    }
+
+    // Create a field entry in the list.
+    $field_list[] = [
+      'name' => self::generateFieldName($bundle, $options['table'], 0),
+      'content_type' => $bundle->getID(),
+      'label' => $options['label'],
+      'type' => $options['id'],
+      'description' => $options['description'],
+      'cardinality' => $options['cardinality'] ?? 1,
+      'required' => $options['required'] ?? FALSE,
+      'storage_settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'base_table' => $base_table,
+          'base_column' => array_keys($fk_def['columns'])[0],
+        ],
+      ],
+      'settings' => [
+        'termIdSpace' => $options['termIdSpace'],
+        'termAccession' => $options['termAccession'],
+      ],
+      'display' => [
+        'view' => [
+          'default' => [
+            'region' => 'content',
+            'label' => 'above',
+            'weight' => 10,
+          ],
+        ],
+        'form' => [
+          'default' => [
+            'region' => 'content',
+            'weight' => 10
+          ],
+        ],
+      ],
+    ];
+
+    // Adds collection plugin IDs
+    $field_list = self::discoverPostprocess($field_list);
+
+    return $field_list;
+  }
+
+  /**
    * Adds tripal term plugin IDs for the field's term.
    * Used for the field discovery process if a DB or CV
    * is not a tripal collection yet.
@@ -775,13 +872,13 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
   /**
    *  Get the column's term ID.
-   * 
+   *
    * @param string $table
    *   The table name.
-   * 
+   *
    * @param string column
    *   The column name.
-   * 
+   *
    * @param string $default_term
    *   The default term to use.
    */
