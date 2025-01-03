@@ -480,9 +480,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
 
-    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
 
     // Initialize with an empty field list.
     $field_list = [];
@@ -492,6 +489,10 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     if (!$base_table) {
       return $field_list;
     }
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
 
     // For this field, we need either a "type_id" column in the base table,
     // or else have it specified in a property table. Sometimes we have both.
