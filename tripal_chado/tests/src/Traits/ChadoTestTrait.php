@@ -352,27 +352,29 @@ trait ChadoTestTrait  {
     $this->testSchemaName = $schema_name;
 
     // Make sure that the version is correct in the chado property table.
-    // -- get the version cvterm ID.
-    $result = $tripaldbx_db->select('1:cvterm', 'cvt')
-      ->fields('cvt', ['cvterm_id']);
-    $result->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
-    $result->condition('cv.name', 'chado_properties');
-    $result->condition('cvt.name', 'version');
-    $result = $result->execute();
-    $version_cvterm_id = $result->fetchField();
-    // -- now update the current version.
-    $tripaldbx_db->update('1:chadoprop')
-      ->fields([
-        'value' => $version,
-      ])
-      ->condition('type_id', $version_cvterm_id)
-      ->execute();
-    // -- confirm the version was set properly.
-    $this->assertEquals(
-      $version,
-      $tripaldbx_db->getVersion(),
-      "We expect that the chado version returned by the connection matches what we requested."
-    );
+    if ($init_level > 1) {
+      // -- get the version cvterm ID.
+      $result = $tripaldbx_db->select('1:cvterm', 'cvt')
+        ->fields('cvt', ['cvterm_id']);
+      $result->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+      $result->condition('cv.name', 'chado_properties');
+      $result->condition('cvt.name', 'version');
+      $result = $result->execute();
+      $version_cvterm_id = $result->fetchField();
+      // -- now update the current version.
+      $tripaldbx_db->update('1:chadoprop')
+        ->fields([
+          'value' => $version,
+        ])
+        ->condition('type_id', $version_cvterm_id)
+        ->execute();
+      // -- confirm the version was set properly.
+      $this->assertEquals(
+        $version,
+        $tripaldbx_db->getVersion(),
+        "We expect that the chado version returned by the connection matches what we requested."
+      );
+    }
 
     // Make sure that any other connections to TripalDBX will see this new test schema as
     // the default schema.
