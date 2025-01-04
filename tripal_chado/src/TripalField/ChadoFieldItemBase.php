@@ -9,6 +9,7 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\Services\TripalFieldCollection;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 
@@ -791,13 +792,14 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
 
     // Make sure the base table has a foreign key to the field's table.
+    // We don't currently support discover through a linking table.
     if (!$chado->schema()->foreignKeyExists($base_table, $options['table'])) {
       return $field_list;
     }
     $fk_def = $chado->schema()->getForeignKeyDef($base_table, $options['table']);
 
     // Check for existing fields of this type.
-    if (array_key_exists(self::$id, $field_types)) {
+    if (array_key_exists($options['id'], $field_types)) {
       // If yes, then add it to the field list.
       foreach ($field_instances as $instance) {
         if ($instance->getType() == $options['id']) {
