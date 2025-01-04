@@ -352,7 +352,7 @@ trait ChadoTestTrait  {
     $this->testSchemaName = $schema_name;
 
     // Make sure that the version is correct in the chado property table.
-    if ($init_level > 1) {
+    if (($init_level > 1) && ($version !== '1.3')) {
       // -- get the version cvterm ID.
       $result = $tripaldbx_db->select('1:cvterm', 'cvt')
         ->fields('cvt', ['cvterm_id']);
