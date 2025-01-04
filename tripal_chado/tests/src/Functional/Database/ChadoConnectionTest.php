@@ -5,10 +5,9 @@ namespace Drupal\Tests\tripal_chado\Functional;
 /**
  * Tests for the Chado Connection implementation of Tripal DBX Connection.
  *
- * @group Tripal
- * @group Tripal TripalDBX
- * @group Tripal TripalDBX Connection
- * @group TripalDBX Chado
+ * @group Tripal Chado
+ * @group TripalDBX
+ * @group ChadoConnection
  */
 class ChadoConnectionTest extends ChadoTestBrowserBase {
 

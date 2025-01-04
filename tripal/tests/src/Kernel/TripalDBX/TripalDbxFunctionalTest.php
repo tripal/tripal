@@ -11,8 +11,8 @@ use Drupal\tripal\TripalDBX\TripalDbx;
  * @coversDefaultClass \Drupal\tripal\TripalDBX\TripalDbx
  *
  * @group Tripal
- * @group Tripal TripalDBX
- * @group Tripal TripalDBX Service
+ * @group TripalDBX
+ * @group TripalDbxService
  */
 class TripalDbxFunctionalTest extends TripalTestKernelBase {
 

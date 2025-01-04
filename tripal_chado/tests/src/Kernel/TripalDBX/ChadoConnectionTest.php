@@ -10,6 +10,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  * Tests for ChadoConnection.
  *
  * @group Tripal Chado
+ * @group TripalDBX
  * @group ChadoConnection
  */
 class ChadoConnectionTest extends ChadoTestKernelBase {
