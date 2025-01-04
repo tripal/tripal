@@ -764,7 +764,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param array $options
    *   All of the specific values for this field
    */
-  private static function createFieldEntry(TripalEntityType $bundle, array $options = []): array {
+  protected static function createFieldEntry(TripalEntityType $bundle, array $options = []): array {
     // Create one field entry.
     $field_item = [
       'name' => self::generateFieldName($bundle, $options['table'], 0),
@@ -813,6 +813,87 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
+   * discover() for directly linked foreign keys
+   *
+   * @see Drupal\tripal_chado\TripalField\ChadoFieldItemBase::discover()
+   */
+  protected static function discoverDirect(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options): array {
+
+    $field_list = [];
+
+    // See if the base table has a foreign key directly to the field's table.
+    if ($options['chado']->schema()->foreignKeyExists($options['base_table'], $options['table'])) {
+      $fk_def = $options['chado']->schema()->getForeignKeyDef($options['base_table'], $options['table']);
+      $options['base_column'] = array_keys($fk_def['columns'])[0];
+
+      // Check for existing fields of this type.
+      if (array_key_exists($options['id'], $field_types)) {
+        // If yes, then add it to the field list.
+        foreach ($field_instances as $instance) {
+          if ($instance->getType() == $options['id']) {
+            $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
+          }
+        }
+      }
+
+      // If this is new, then create a field entry in the list.
+      if (!$field_list) {
+        $field_list[] = self::createFieldEntry($bundle, $options);
+      }
+    }
+    return $field_list;
+  }
+
+  /**
+   * discover() for foreign keys through an intermediate linker table
+   *
+   * @see Drupal\tripal_chado\TripalField\ChadoFieldItemBase::discover()
+   */
+  protected static function discoverLinked(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options): array {
+
+    $field_list = [];
+
+    // See if the base table has a foreign key to the field's table
+    // through an intermediate linking table. discover() only
+    // supports linking tables of the standard naming scheme.
+    $possible_linking_tables = [
+      $options['base_table'] . '_' . $options['table'],
+      $options['table'] . '_' . $options['base_table'],
+    ];
+    foreach ($possible_linking_tables as $linking_table) {
+      if ($options['chado']->schema()->foreignKeyExists($linking_table, $options['base_table'])) {
+        $linking_def = $options['chado']->schema()->getForeignKeyDef($linking_table, $options['base_table']);
+        $base_column = array_keys($linking_def['columns'])[0];
+        if ($options['chado']->schema()->foreignKeyExists($linking_table, $options['table'])) {
+          $fk_def = $options['chado']->schema()->getForeignKeyDef($linking_table, $options['table']);
+          $linker_fkey_column = array_keys($fk_def['columns'])[0];
+          // Check for existing fields of this type.
+          if (array_key_exists($options['id'], $field_types)) {
+            // If yes, then add it to the field list.
+            foreach ($field_instances as $instance) {
+              if ($instance->getType() == $options['id']) {
+                $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
+              }
+            }
+          }
+
+          // If this is new, then create a field entry in the list.
+          if (!$field_list) {
+            $options['linker_table'] = $linking_table;
+            $options['linker_fkey_column'] = $linker_fkey_column;
+            $options['cardinality'] = -1;  // Linker fields are always unlimited cardinality
+            $field_list[] = self::createFieldEntry($bundle, $options);
+          }
+        }
+      }
+    }
+
+    return $field_list;
+  }
+
+  /**
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    *
@@ -834,78 +915,24 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // The parent class only initializes an empty array, so we don't need to call it
     $field_list = [];
 
+    if (!$options) {
+      return $field_list;
+    }
+
     // Make sure the base table setting exists.
-    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
-    if (!$base_table or !$options) {
+    $options['base_table'] = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
+    if (!$options['base_table']) {
       return $field_list;
     }
 
     /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-    $chado = \Drupal::service('tripal_chado.database');
+    $options['chado'] = \Drupal::service('tripal_chado.database');
 
-    // See if the base table has a foreign key directly to the field's table.
-    $existing = FALSE;
-    if ($chado->schema()->foreignKeyExists($base_table, $options['table'])) {
-      $fk_def = $chado->schema()->getForeignKeyDef($base_table, $options['table']);
-      $base_column = array_keys($fk_def['columns'])[0];
+    // Discovers directly linked fields
+    $field_list = $field_list + self::discoverDirect($bundle, $field_id, $field_types, $field_instances, $options);
 
-      // Check for existing fields of this type.
-      if (array_key_exists($options['id'], $field_types)) {
-        // If yes, then add it to the field list.
-        foreach ($field_instances as $instance) {
-          if ($instance->getType() == $options['id']) {
-            $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
-            $existing = TRUE;
-          }
-        }
-      }
-
-      // If this is new, then create a field entry in the list.
-      if (!$existing) {
-        $options['base_table'] = $base_table;
-        $options['base_column'] = $base_column;
-        $field_list[] = self::createFieldEntry($bundle, $options);
-      }
-
-    }
-
-    // See if the base table has a foreign key to the field's
-    // table through an intermediate linking table. We only
-    // support linking tables of the standard naming scheme.
-    $linking_tables= [
-      $base_table . '_' . $options['table'],
-      $options['table'] . '_' . $base_table
-    ];
-    $existing = FALSE;
-    foreach ($linking_tables as $linking_table) {
-      if ($chado->schema()->foreignKeyExists($linking_table, $base_table)) {
-        $linking_def = $chado->schema()->getForeignKeyDef($linking_table, $base_table);
-        $base_column = array_keys($linking_def['columns'])[0];
-        if ($chado->schema()->foreignKeyExists($linking_table, $options['table'])) {
-          $fk_def = $chado->schema()->getForeignKeyDef($linking_table, $options['table']);
-          $linker_fkey_column = array_keys($fk_def['columns'])[0];
-          // Check for existing fields of this type.
-          if (array_key_exists($options['id'], $field_types)) {
-            // If yes, then add it to the field list.
-            foreach ($field_instances as $instance) {
-              if ($instance->getType() == $options['id']) {
-                $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
-                $existing = TRUE;
-              }
-            }
-          }
-
-          // If this is new, then create a field entry in the list.
-          if (!$existing) {
-            $options['base_table'] = $base_table;
-            $options['linker_table'] = $linking_table;
-            $options['linker_fkey_column'] = $linker_fkey_column;
-            $options['cardinality'] = -1;  // Linker fields are always unlimited cardinality
-            $field_list[] = self::createFieldEntry($bundle, $options);
-          }
-        }
-      }
-    }
+    // Discovers fields linked through an intermediate linker table
+    $field_list = $field_list + self::discoverLinked($bundle, $field_id, $field_types, $field_instances, $options);
 
     // Adds collection plugin IDs
     $field_list = self::discoverPostprocess($field_list);
