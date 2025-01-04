@@ -478,7 +478,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances, array $options = []): array {
 
 
     // Initialize with an empty field list.
@@ -582,7 +582,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     ];
 
     // The parent class adds collection plugin IDs
-    $field_list = self::discoverPostprocess($field_list);
+    $field_list = parent::discoverPostprocess($field_list);
     return $field_list;
   }
 
