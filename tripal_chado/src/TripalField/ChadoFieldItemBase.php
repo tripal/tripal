@@ -764,16 +764,15 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param array $options
    *   All of the specific values for this field
    */
-  protected static function createFieldEntry(TripalEntityType $bundle, array $options = []): array {
-    // Create one field entry.
+  protected static function createFieldEntry(TripalEntityType $bundle, array $options): array {
     $field_item = [
       'name' => self::generateFieldName($bundle, $options['table'], 0),
       'content_type' => $bundle->getID(),
       'label' => $options['label'],
       'type' => $options['id'],
       'description' => $options['description'],
-      'cardinality' => $options['cardinality'] ?? 1,
-      'required' => $options['required'] ?? FALSE,
+      'cardinality' => $options['cardinality'],
+      'required' => $options['required'],
       'storage_settings' => [
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings' => [
@@ -826,7 +825,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     if ($options['chado']->schema()->foreignKeyExists($options['base_table'], $options['table'])) {
       $fk_def = $options['chado']->schema()->getForeignKeyDef($options['base_table'], $options['table']);
       $options['base_column'] = array_keys($fk_def['columns'])[0];
-
       // Check for existing fields of this type.
       if (array_key_exists($options['id'], $field_types)) {
         // If yes, then add it to the field list.
@@ -839,6 +837,14 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
       // If this is new, then create a field entry in the list.
       if (!$field_list) {
+        $table_def = $options['chado']->schema()->getTableDef($options['base_table'], ['format' => 'Drupal']);
+        // Use the column not null and default value status to set the field's required status
+        $required = $table_def['fields'][$options['base_column']]['not null'];
+        if ($table_def['fields'][$options['base_column']]['default'] ?? FALSE) {
+          $required = FALSE;
+        }
+        $options['required'] = $required;
+        $options['cardinality'] = 1;  // Direct fields are always single cardinality
         $field_list[] = self::createFieldEntry($bundle, $options);
       }
     }
@@ -883,6 +889,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
           if (!$field_list) {
             $options['linker_table'] = $linking_table;
             $options['linker_fkey_column'] = $linker_fkey_column;
+            $options['required'] = FALSE;  // Linker fields are never required
             $options['cardinality'] = -1;  // Linker fields are always unlimited cardinality
             $field_list[] = self::createFieldEntry($bundle, $options);
           }
@@ -905,9 +912,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *     'termIdSpace' - The field term's DB
    *     'termAccession' - The field term's accession
    *     'description' - A text description for the discovered field
-   *   Optional keys:
-   *     'cardinality' - defaults to 1 for direct links, forced to -1 for linker table fields
-   *     'required' - defaults to FALSE
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
       array $field_instances, array $options = []): array {
