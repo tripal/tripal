@@ -286,12 +286,13 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
 
     // Specific settings for this field
     $options = [
       'id' => self::$id,
-      'table' => 'organism',
+      'table' => self::$object_table,
       'label' => 'Organism',
       'termIdSpace' => 'OBI',
       'termAccession' => '0100026',
@@ -299,7 +300,7 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
     ];
 
     // Call the parent discover() with this field's specific options
-    $field_list = self::discover($bundle, $field_id, $field_types, $field_instances, $options);
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
 
     return $field_list;
   }

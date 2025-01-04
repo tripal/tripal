@@ -238,4 +238,40 @@ class ChadoFeatureMapTypeDefault extends ChadoFieldItemBase {
     return $compatible;
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    $options = [
+      'id' => self::$id,
+      'table' => self::$object_table,
+      'label' => 'Genetic Map',
+      'termIdSpace' => 'data',
+      'termAccession' => '1278',
+      'description' => 'A map showing the relative positions of genetic markers in a nucleic acid sequence, based on estimation of non-physical distance such as recombination frequencies.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list_1 = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+
+    // Specific settings for this field
+    $options = [
+      'id' => self::$id,
+      'table' => self::$object_table,
+      'label' => 'Physical Map',
+      'termIdSpace' => 'data',
+      'termAccession' => '1280',
+      'description' => 'A map of DNA (linear or circular) annotated with physical features or landmarks such as restriction sites, cloned DNA fragments, genes or genetic markers, along with the physical distances between them. Distance in a physical map is measured in base pairs. A physical map might be ordered relative to a reference map (typically a genetic map) in the process of genome sequencing.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list_2 = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+
+    return $field_list_1 + $field_list_2;
+  }
+
 }

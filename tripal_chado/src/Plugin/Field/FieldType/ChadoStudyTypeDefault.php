@@ -262,4 +262,27 @@ class ChadoStudyTypeDefault extends ChadoFieldItemBase {
     return $compatible;
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    $options = [
+      'id' => self::$id,
+      'table' => self::$object_table,
+      'label' => 'Study',
+      'termIdSpace' => 'SIO',
+      'termAccession' => '001066',
+      'description' => 'A study is a process that realizes the steps of a study design.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+
+    return $field_list;
+  }
+
 }
