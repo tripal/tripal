@@ -253,9 +253,6 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances, array $options = []): array {
 
-    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-    $chado = \Drupal::service('tripal_chado.database');
-
     // Initialize with an empty field list.
     $field_list = [];
 
@@ -264,6 +261,9 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     if (!$base_table) {
       return $field_list;
     }
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Make sure the prop table exists in Chado.
     $prop_table = $base_table . 'prop';
