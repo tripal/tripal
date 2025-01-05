@@ -209,5 +209,44 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
       $schema_def,
       $message . " Shouldn't be an empty array."
     );
+
+    $this->assertGreaterThan(
+      5,
+      count($schema_def),
+      $message . " There should be at least 5 tables in a schema definition."
+    );
+
+    // Check for some key tables.
+    $this->assertArrayHasKey(
+      'chadoprop',
+      $schema_def,
+      $message . " All valid schema should have a chadoprop table to indicate version."
+    );
+    $this->assertArrayHasKey(
+      'cvterm',
+      $schema_def,
+      $message . " All valid schema should have a cvterm table."
+    );
+
+    // Check structure for a single table.
+    // @note cannot check table structure since it is different per source.
+    // @note the following would be for a file source.
+    /*
+    $table_def = $schema_def['cvterm'];
+    $this->assertArrayHasKey(
+      'description',
+      $table_def,
+      $message . " Table definition does not have a description key."
+    );
+    $this->assertArrayHasKey(
+      'fields',
+      $table_def,
+      $message . " Table definition does not have a fields key."
+    );
+    $this->assertIsArray(
+      $table_def['fields'],
+      $message . " Table definition fields should be an array."
+    );
+    */
   }
 }
