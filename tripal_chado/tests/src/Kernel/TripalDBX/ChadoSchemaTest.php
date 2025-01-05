@@ -110,6 +110,58 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
   }
 
   /**
+   * Test the ChadoSchema::getDefault() method on all Chado schema versions.
+   *
+   * We will test that the default chado in this test returns the name set
+   * by the chadoTestTrait when a new test schema was created. The chadoTestTrait
+   * also sets the new chado schema created for testing to the default within
+   * the test environment.
+   *
+   * There is no way to programatically set the default chado, so we will not
+   * test changing the default and seeing if the default is still reported
+   * correctly afterwards.
+   *
+   * @dataProvider provideChadoSchemaVersions
+   *
+   * @param string $version
+   *   The version of chado to test against.
+   * @param int $init_level
+   *   The init level to create the test database with.
+   */
+  public function testGetDefault(string $version, int $init_level) {
+
+    // Get Chado in place.
+    $chado_connection = $this->createTestSchema(
+      $init_level,
+      $version
+    );
+    $this->assertInstanceOf(
+      'Drupal\tripal_chado\Database\ChadoConnection',
+      $chado_connection,
+      "Unable to create test chado with the specified version (i.e. $version)."
+    );
+    $this->assertEquals(
+      $version,
+      $chado_connection->getVersion(),
+      "We expect that the chado version returned by the connection matches what we requested."
+    );
+
+    $default_chado_schema = $chado_connection->schema()->getDefault();
+
+    // Test if the reported Chado version matches the test chado format,
+    // e.g. _test_chado_h87g97hkln64vy76
+    $this->assertMatchesRegularExpression('/(\_test\_chado\_[\w]{16})\b/', $default_chado_schema, "The default Chado schema returned did not match the format we expected within the testing environment.");
+
+    // Test if the default chado schema returned matches the
+    // one we created.
+    $this->assertEquals(
+      $this->testSchemaName,
+      $default_chado_schema,
+      "The default chado schema name we retrieved did not match the test chado schema we just created."
+    );
+  }
+
+  /**
    * Provides scenarios to test ChadoSchema::getSchemaDef().
    *
    * @return array
