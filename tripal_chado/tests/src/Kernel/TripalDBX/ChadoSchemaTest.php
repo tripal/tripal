@@ -73,6 +73,43 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
   }
 
   /**
+   * Tests ChadoSchema::getMainTables() on all Chado schema versions.
+   *
+   * @dataProvider provideChadoSchemaVersions
+   *
+   * @param string $version
+   *   The version of chado to test against.
+   * @param int $init_level
+   *   The init level to create the test database with.
+   */
+  public function testGetMainTables(string $version, int $init_level) {
+
+    // Get Chado in place.
+    $chado_connection = $this->createTestSchema(
+      $init_level,
+      $version
+    );
+    $this->assertInstanceOf(
+      'Drupal\tripal_chado\Database\ChadoConnection',
+      $chado_connection,
+      "Unable to create test chado with the specified version (i.e. $version)."
+    );
+    $this->assertEquals(
+      $version,
+      $chado_connection->getVersion(),
+      "We expect that the chado version returned by the connection matches what we requested."
+    );
+
+    $schema = $chado_connection->schema();
+
+    $tables = $schema->getMainTables();
+    $this->assertIsArray(
+      $tables,
+      "ChadoSchema::getMainTables did not return an array as expected"
+    );
+  }
+
+  /**
    * Provides scenarios to test ChadoSchema::getSchemaDef().
    *
    * @return array
