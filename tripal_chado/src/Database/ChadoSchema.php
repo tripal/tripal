@@ -110,8 +110,8 @@ class ChadoSchema extends TripalDbxSchema {
     // We'll use the cvterm table to guide which tables are base tables. Typically
     // base tables (with a few exceptions) all have a type.  Iterate through the
     // referring tables.
-    $schema = $this->getTableSchema('cvterm');
-    if (isset($schema['referring_tables'])) {
+    $schema = $this->getTableDef('cvterm', []);
+    if (isset($schema['referring_tables']) && is_array($schema['referring_tables'])) {
       foreach ($schema['referring_tables'] as $tablename) {
 
         $is_base_table = TRUE;
@@ -161,8 +161,8 @@ class ChadoSchema extends TripalDbxSchema {
         continue;
       }
       $num_links = 0;
-      $schema = $this->getTableSchema($tablename);
-      $fkeys = $schema['foreign keys'];
+      $schema = $this->getTableDef($tablename, []);
+      $fkeys = $schema['foreign keys'] ?? [];
       foreach ($fkeys as $fkid => $details) {
         $fktable = $details['table'];
         if (in_array($fktable, $base_tables)) {
