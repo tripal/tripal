@@ -61,6 +61,24 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     $scenarios = [];
 
     foreach (self::$supported_chado_versions as $version_string) {
+      $scenarios[] = [
+        (string) $version_string,
+      ];
+    }
+
+    return $scenarios;
+  }
+
+  /**
+   * Provides each supported version of chado to the tests.
+   *
+   * @return array
+   *   Each scenario is a unique chado version and init level combination.
+   */
+  public static function provideChadoSchemaVersionsAcrossInitLevels() {
+    $scenarios = [];
+
+    foreach (self::$supported_chado_versions as $version_string) {
       foreach (self::$init_levels as $init_level) {
         $scenarios[] = [
           (string) $version_string,
@@ -75,7 +93,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
   /**
    * Tests that we can create use CRUD on all Chado schema versions.
    *
-   * @dataProvider provideChadoSchemaVersions
+   * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
    */
   public function testCRUDChadoSchema(string $version, int $init_level) {
 
@@ -103,6 +121,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
   /**
    * Tests table prefixing by the ChadoConnection + TripalDbxConnection classes.
    *
+   * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
+   *
    * NOTE:
    * In Drupal you can execute queries directly using CONNECTION->query()
    * or you can use the various query builders: CONNECTION->select(),
@@ -118,8 +138,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * and not at the query building stage, we are currently going to assume that
    * the Drupal testing is sufficient for the query builders.
    */
-  public function testDefaultTablePrefixing() {
-    $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY);
+  public function testDefaultTablePrefixing(string $version, int $init_level) {
+    $this->createTestSchema($init_level, $version);
 
     // Open a Connection to the default Tripal DBX managed Chado schema.
     $connection = \Drupal::service('tripal_chado.database');
@@ -208,9 +228,11 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
 
   /**
    * Tests the Drupal query builders while quering chado.
+   *
+   * @dataProvider provideChadoSchemaVersions
    */
-  public function testChadoQueryBuilding() {
-    $chado = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY);
+  public function testChadoQueryBuilding(string $version) {
+    $chado = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
 
     // INSERT:
     try {
@@ -266,93 +288,42 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
   /**
    * This tests the ChadoConnection::findVersion() method.
    *
-   * We will test that the version can be obtained from the test schema when it
-   * is generated in the following ways:
-   * 1. INIT_CHADO_EMPTY
-   * 2. INIT_CHADO_DUMMY
-   * 3. PREPARE_TEST_CHADO
+   * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
    *
    * Furthermore, we will test both when the findVersion() method is called with
    * A. no parameters
    * B. schema name supplied
    * C. exact version requested.
    */
-  public function testFindVersion() {
-    $expected_version = '1.3';
+  public function testFindVersion(string $version, int $init_level) {
+    $expected_version = $version;
 
-    // Test 1A
-    $connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY);
-    $version = $connection->findVersion();
+    $connection = $this->createTestSchema($init_level, $version);
+
+    // Test A.
+    $retrieved_version = $connection->findVersion();
     $this->assertEquals(
-      $version,
+      $retrieved_version,
       $expected_version,
-      "Unable to extract the version from INIT_CHADO_EMPTY test schema with no parameters provided."
-    );
-    $version = $connection->findVersion();
-    // Test 1B
-    $schema_name = $connection->getSchemaName();
-    $version = $connection->findVersion($schema_name);
-    $this->assertEquals(
-      $version,
-      $expected_version,
-      "Unable to extract the version from INIT_CHADO_EMPTY test schema with the schema name provided."
-    );
-    // Test 1C
-    $version = $connection->findVersion($schema_name, TRUE);
-    $this->assertEquals(
-      $version,
-      $expected_version,
-      "Unable to extract the Exact Version from INIT_CHADO_EMPTY test schema with the schema name provided."
+      "Unable to extract the version from $init_level test schema with no parameters provided."
     );
 
-    // Test 2A
-    $connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
-    $version = $connection->findVersion();
-    $this->assertEquals(
-      $version,
-      $expected_version,
-      "Unable to extract the version from INIT_CHADO_DUMMY test schema with no parameters provided."
-    );
-    $version = $connection->findVersion();
-    // Test 2B
+    // Test B.
     $schema_name = $connection->getSchemaName();
-    $version = $connection->findVersion($schema_name);
+    $retrieved_version = $connection->findVersion($schema_name);
     $this->assertEquals(
-      $version,
+      $retrieved_version,
       $expected_version,
-      "Unable to extract the version from INIT_CHADO_DUMMY test schema with the schema name provided."
-    );
-    // Test 2C
-    $version = $connection->findVersion($schema_name, TRUE);
-    $this->assertEquals(
-      $version,
-      $expected_version,
-      "Unable to extract the Exact Version from INIT_CHADO_DUMMY test schema with the schema name provided."
+      "Unable to extract the version from $init_level test schema with the schema name provided."
     );
 
-    // Test 3A
-    $connection = $this->createTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
-    $version = $connection->findVersion();
+    // Test C.
+    $retrieved_version = $connection->findVersion($schema_name, TRUE);
     $this->assertEquals(
-      $version,
+      $retrieved_version,
       $expected_version,
-      "Unable to extract the version from PREPARE_TEST_CHADO test schema with no parameters provided."
+      "Unable to extract the Exact Version from $init_level test schema with the schema name provided."
     );
-    $version = $connection->findVersion();
-    // Test 3B
-    $schema_name = $connection->getSchemaName();
-    $version = $connection->findVersion($schema_name);
-    $this->assertEquals(
-      $version,
-      $expected_version,
-      "Unable to extract the version from PREPARE_TEST_CHADO test schema with the schema name provided."
-    );
-    // Test 3C
-    $version = $connection->findVersion($schema_name, TRUE);
-    $this->assertEquals(
-      $version,
-      $expected_version,
-      "Unable to extract the Exact Version from PREPARE_TEST_CHADO test schema with the schema name provided."
-    );
+
   }
 }
