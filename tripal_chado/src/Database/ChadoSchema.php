@@ -66,7 +66,7 @@ class ChadoSchema extends TripalDbxSchema {
       elseif ('database' == $source) {
         // Use Schema object to fetch each table structures from database.
         $schema_def = [];
-        $tables = $this->getTables();
+        $tables = $this->getTables(['tables' => TRUE]);
         foreach (array_keys($tables) as $table) {
           $schema_def[$table] =
             $this->getTableDef($table, $parameters);

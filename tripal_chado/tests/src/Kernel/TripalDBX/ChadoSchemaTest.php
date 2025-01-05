@@ -55,7 +55,7 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
    * Provides each supported version of chado to the tests.
    *
    * @return array
-   *   Each scenario is just a version of chado as a string.
+   *   Each scenario is a unique chado version and init level combination.
    */
   public static function provideChadoSchemaVersions() {
     $scenarios = [];
@@ -72,6 +72,13 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
     return $scenarios;
   }
 
+  /**
+   * Provides scenarios to test ChadoSchema::getSchemaDef().
+   *
+   * @return array
+   *   Each scenario is a unique chado version and init level combination with
+   *   a specific option set for getSchemaDef() to be called with.
+   */
   public static function provideSchemaDefParams() {
     $scenarios = [];
 
@@ -82,13 +89,11 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
     foreach ($schema_version_combos as $version_combo) {
 
       // Provide only required params: database.
-      /* @todo database does not seem to be working at all.
       $scenarios[] = $version_combo + [
         'options' => [
           'source' => 'database',
         ],
       ];
-      */
 
       // Provide only required params: file.
       $scenarios[] = $version_combo + [
@@ -103,9 +108,16 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests that we can create use CRUD on all Chado schema versions.
+   * Tests ChadoSchema::getSchemaDef() on all Chado schema versions.
    *
    * @dataProvider provideSchemaDefParams
+   *
+   * @param string $version
+   *   The version of chado to test against.
+   * @param int $init_level
+   *   The init level to create the test database with.
+   * @param array $options
+   *   Parameters to use when testing ChadoSchema::getSchemaDef().
    */
   public function testGetChadoSchemaDef(string $version, int $init_level, array $options) {
 
@@ -177,6 +189,14 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
     );
   }
 
+  /**
+   * Confirms that a Schema Definition array is valid.
+   *
+   * @param array $schema_def
+   *   An array defining the schema as returned by getSchemaDef().
+   * @param string $message
+   *   A message prefix to use with the asserts.
+   */
   public function assertValidSchemaDef(array $schema_def, string $message) {
 
     $this->assertIsArray(
@@ -184,6 +204,10 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
       $message . " Not an array."
     );
 
-    $this->assertNotCount(0, $schema_def, $message . " Shouldn't be an empty array.");
+    $this->assertNotCount(
+      0,
+      $schema_def,
+      $message . " Shouldn't be an empty array."
+    );
   }
 }
