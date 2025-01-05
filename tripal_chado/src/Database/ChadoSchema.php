@@ -49,13 +49,13 @@ class ChadoSchema extends TripalDbxSchema {
       if ('file' == $source) {
         $filename =
           \Drupal::service('extension.list.module')->getPath('tripal_chado')
-          . '/chado_schema/chado_schema-'
+          . '/chado_schema/schema-definition/version-'
           . $version
           . '.yml'
         ;
 
         // Make sure we got a valid version format.
-        if (!preg_match('/^\\d\\.\\d$/', $version)
+        if (!preg_match('/^\d\.\d\.?\d?\.?\d*$/', $version)
             || !file_exists($filename)
         ) {
           throw new SchemaException("Invalid or unsupported Chado schema version '$version'.");
@@ -218,7 +218,7 @@ class ChadoSchema extends TripalDbxSchema {
    * and do not make any assumptions about the name of the chado schema.
    *
    * Note: The admin can change the default chado instance via the UI
-   * by going to Admin > Tripal > Data Storage > Chado > Chado Schemas 
+   * by going to Admin > Tripal > Data Storage > Chado > Chado Schemas
    * (admin/tripal/storage/chado/manager) and clicking "Set default".
    * We DO NOT recommend setting this programmaticly as it is confusing
    * to the admin.

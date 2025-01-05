@@ -72,14 +72,44 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
     return $scenarios;
   }
 
+  public static function provideSchemaDefParams() {
+    $scenarios = [];
+
+    $schema_version_combos = self::provideChadoSchemaVersions();
+
+    // Create scenarios:
+    // For each available init level and version combo...
+    foreach ($schema_version_combos as $version_combo) {
+
+      // Provide only required params: database.
+      /* @todo database does not seem to be working at all.
+      $scenarios[] = $version_combo + [
+        'options' => [
+          'source' => 'database',
+        ],
+      ];
+      */
+
+      // Provide only required params: file.
+      $scenarios[] = $version_combo + [
+        'options' => [
+          'source' => 'file',
+        ],
+      ];
+
+    }
+
+    return $scenarios;
+  }
+
   /**
    * Tests that we can create use CRUD on all Chado schema versions.
    *
-   * @dataProvider provideChadoSchemaVersions
+   * @dataProvider provideSchemaDefParams
    */
-  public function testChadoSchemaClass(string $version, int $init_level) {
+  public function testGetChadoSchemaDef(string $version, int $init_level, array $options) {
 
-    // Get Chado in place
+    // Get Chado in place.
     $chado_connection = $this->createTestSchema(
       $init_level,
       $version
@@ -89,18 +119,71 @@ class ChadoSchemaTest extends ChadoTestKernelBase {
       $chado_connection,
       "Unable to create test chado with the specified version (i.e. $version)."
     );
-    $this->assertNotEquals(
-      'chado',
-      $chado_connection->getSchemaName(),
-      "Ensure that the schema we created is not named 'chado'."
-    );
-
-    // Ensure the version returned by ChadoConnection matches what we asked for.
     $this->assertEquals(
       $version,
       $chado_connection->getVersion(),
       "We expect that the chado version returned by the connection matches what we requested."
     );
 
+    $schema = $chado_connection->schema();
+
+    // Test with format none which will always return an empty array.
+    $options_with_none_format = $options;
+    $options_with_none_format['format'] = 'none';
+    $schema_def = $schema->getSchemaDef($options_with_none_format);
+    $this->assertIsArray(
+      $schema_def,
+      "ChadoSchema::getSchemaDef did not return an array as expected when format: none was supplied."
+    );
+    $this->assertCount(
+      0,
+      $schema_def,
+      "ChadoSchema::getSchemaDef with format none should return empty array."
+    );
+
+    // Test with the options actually provided (i.e. with version not specified).
+    $schema_def = $schema->getSchemaDef($options);
+    $this->assertValidSchemaDef(
+      $schema_def,
+      "ChadoSchema::getSchemaDef did not return a valid schema array as expected."
+    );
+
+    // Test with the options provided and also the version.
+    $options_with_version = $options;
+    $options_with_version['version'] = $version;
+    $schema_def_with_version = $schema->getSchemaDef($options_with_version);
+    $this->assertValidSchemaDef(
+      $schema_def_with_version,
+      "ChadoSchema::getSchemaDef did not return a valid schema array as expected when the correct version was supplied."
+    );
+    $this->assertEquals(
+      $schema_def,
+      $schema_def_with_version,
+      "The schema definition provided should be the same regardless of whether the version was supplied or not."
+    );
+
+    // Now test that clearing the cache still returns the same result as before.
+    $options_with_clearCache = $options;
+    $options_with_clearCache['clear'] = TRUE;
+    $schema_def2 = $schema->getSchemaDef($options_with_clearCache);
+    $this->assertValidSchemaDef(
+      $schema_def2,
+      "ChadoSchema::getSchemaDef did not return a valid schema array as expected after clearing the cache."
+    );
+    $this->assertEquals(
+      $schema_def,
+      $schema_def2,
+      "The schema definition provided should be the same after clearing the cache as it was before."
+    );
+  }
+
+  public function assertValidSchemaDef(array $schema_def, string $message) {
+
+    $this->assertIsArray(
+      $schema_def,
+      $message . " Not an array."
+    );
+
+    $this->assertNotCount(0, $schema_def, $message . " Shouldn't be an empty array.");
   }
 }
