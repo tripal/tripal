@@ -709,9 +709,9 @@ function tripal_chado_update_10410() {
       'tripal_entity.pub.pub_type:rdfs:type',
       'tripal_entity.array_design.array_design_substrate_type:EFO:0005522',
       'tripal_entity.array_design.array_design_platform_type:NCIT:C45378',
-      'tripal_entity.genome_annotation.genome_annotation_prog_version:local:source_version',
+      'tripal_entity.genome_annotation.genome_annotation_src_version:local:source_version',
       'tripal_entity.genome_annotation.genome_annotation_src_name:local:source_data',
-      'tripal_entity.genome_assembly.genome_assembly_program_version:local:source_version',
+      'tripal_entity.genome_assembly.genome_assembly_source_version:local:source_version',
       'tripal_entity.genome_assembly.genome_assembly_source_name:local:source_data',
     ];
     foreach ($update_list as $update_item) {
