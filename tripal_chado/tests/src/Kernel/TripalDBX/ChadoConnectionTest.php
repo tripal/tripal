@@ -209,11 +209,11 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     $this->createTestSchema($init_level, $version);
 
     // Open a Connection to the default Tripal DBX managed Chado schema.
-    $connection = \Drupal::service('tripal_chado.database');
-    $chado_1_prefix = $connection->getSchemaName();
+    $chado_connection = \Drupal::service('tripal_chado.database');
+    $chado_1_prefix = $chado_connection->getSchemaName();
 
     // Create a situation where we should be using the core chado schema for our query.
-    $query = $connection->query("SELECT name, uniquename FROM {1:feature} LIMIT 1");
+    $query = $chado_connection->query("SELECT name, uniquename FROM {1:feature} LIMIT 1");
     $sqlStatement = $query->getQueryString();
     // We expect: "SCHEMAPREFIX"."feature" but since the quotes are not
     // necessary and could be interchanged by Drupal, we use the following pattern.
@@ -230,7 +230,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // NOTE: we use try/catch here so we can continue with our testing.
     // When using expectException the execution of all other assertions is skipped.
     try {
-      $query = $connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
+      $query = $chado_connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
     } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
       $this->assertTrue(TRUE, "We expect to have an exception thrown when TripalDBX incorrectly assumes the feature table is in Drupal, which it's not.");
     }
@@ -239,10 +239,10 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // Using useTripalDbxSchemaFor():
     //---------------------------------
     // PARENT CLASS: Let's check if it works when a parent class is white listed.
-    $connection = \Drupal::service('tripal_chado.database');
-    $connection->useTripalDbxSchemaFor(\Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase::class);
+    $chado_connection = \Drupal::service('tripal_chado.database');
+    $chado_connection->useTripalDbxSchemaFor(\Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase::class);
     try {
-      $query = $connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
+      $query = $chado_connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
     } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "Now TripalDBX should know that chado is the default schema for this test class and it should not throw an exception.");
     }
@@ -257,10 +257,10 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     );
 
     // CURRENT CLASS: Let's test it works when the current class is whitelisted
-    $connection = \Drupal::service('tripal_chado.database');
-    $connection->useTripalDbxSchemaFor(\Drupal\Tests\tripal_chado\Functional\ChadoConnectionTest::class);
+    $chado_connection = \Drupal::service('tripal_chado.database');
+    $chado_connection->useTripalDbxSchemaFor(\Drupal\Tests\tripal_chado\Functional\ChadoConnectionTest::class);
     try {
-      $query = $connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
+      $query = $chado_connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
     } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "Now TripalDBX should know that chado is the default schema for this test class and it should not throw an exception.");
     }
@@ -275,10 +275,10 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     );
 
     // CURRENT OBJECT: Let's test it works when the current class is whitelisted
-    $connection = \Drupal::service('tripal_chado.database');
-    $connection->useTripalDbxSchemaFor($this);
+    $chado_connection = \Drupal::service('tripal_chado.database');
+    $chado_connection->useTripalDbxSchemaFor($this);
     try {
-      $query = $connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
+      $query = $chado_connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
     } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "Now TripalDBX should know that chado is the default schema for this test class and it should not throw an exception.");
     }
@@ -361,41 +361,132 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
    *
    * @covers \Drupal\tripal_chado\Database\ChadoConnection::findVersion
-   *
-   * Furthermore, we will test both when the findVersion() method is called with
-   * A. no parameters
-   * B. schema name supplied
-   * C. exact version requested.
    */
   public function testFindVersion(string $version, int $init_level) {
     $expected_version = $version;
 
-    $connection = $this->createTestSchema($init_level, $version);
+    $chado_connection = $this->createTestSchema($init_level, $version);
 
-    // Test A.
-    $retrieved_version = $connection->findVersion();
+    // Default parameters;
+    // version NOT in chado_installations table.
+    $retrieved_version_defaults = $chado_connection->findVersion();
     $this->assertEquals(
-      $retrieved_version,
+      $retrieved_version_defaults,
       $expected_version,
       "Unable to extract the version from $init_level test schema with no parameters provided."
     );
 
-    // Test B.
-    $schema_name = $connection->getSchemaName();
-    $retrieved_version = $connection->findVersion($schema_name);
+    // Schema name provided;
+    // version NOT in chado_installations table.
+    $schema_name = $chado_connection->getSchemaName();
+    $retrieved_version = $chado_connection->findVersion($schema_name);
     $this->assertEquals(
       $retrieved_version,
       $expected_version,
       "Unable to extract the version from $init_level test schema with the schema name provided."
     );
+    $this->assertEquals(
+      $retrieved_version_defaults,
+      $retrieved_version,
+      "We expect that providing the schema name should not change the version returned."
+    );
 
-    // Test C.
-    $retrieved_version = $connection->findVersion($schema_name, TRUE);
+    // Schema name + exact version requested;
+    // version NOT in chado_installations table.
+    $retrieved_version = $chado_connection->findVersion($schema_name, TRUE);
     $this->assertEquals(
       $retrieved_version,
       $expected_version,
       "Unable to extract the Exact Version from $init_level test schema with the schema name provided."
     );
+    $this->assertEquals(
+      $retrieved_version_defaults,
+      $retrieved_version,
+      "We expect that the exact version should not change the version returned."
+    );
 
+    // Default parameters;
+    // version IN chado_installations table.
+    // -- first insert into drupal chado_installations table.
+    $drupal_connection = \Drupal::service('database');
+    $drupal_connection->insert('chado_installations')
+    ->fields([
+      'schema_name' => $chado_connection->getSchemaName(),
+      'version' => $version,
+    ])
+    ->execute();
+    // -- now try to find the version.
+    $retrieved_version = $chado_connection->findVersion();
+    $this->assertEquals(
+      $retrieved_version,
+      $expected_version,
+      "Unable to extract the version from $init_level test schema with no parameters provided."
+    );
+    $this->assertEquals(
+      $retrieved_version_defaults,
+      $retrieved_version,
+      "We expect that retrieving the version from chado_installations should not change the version returned."
+    );
+  }
+
+  /**
+   * Tests the ChadoConnection::findVersion() when version unsupported.
+   *
+   * @covers \Drupal\tripal_chado\Database\ChadoConnection::findVersion
+   */
+  public function testFindVersionUnsupported() {
+
+    // Test version 1.2.
+    // Chado version 1.2 will have a chadoprop table.
+    $expected_version = '1.2';
+    $chado_connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+    // -- Update the chadoprop version to 1.2.
+    $result = $chado_connection->select('1:cvterm', 'cvt')
+    ->fields('cvt', ['cvterm_id']);
+    $result->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+    $result->condition('cv.name', 'chado_properties');
+    $result->condition('cvt.name', 'version');
+    $result = $result->execute();
+    $version_cvterm_id = $result->fetchField();
+    $chado_connection->update('1:chadoprop')
+    ->fields([
+      'value' => $expected_version,
+    ])
+    ->condition('type_id', $version_cvterm_id)
+    ->execute();
+    // -- Now find the version and confirm it matches our expectations.
+    $retrieved_version = $chado_connection->findVersion();
+    $this->assertEquals(
+      $retrieved_version,
+      $expected_version,
+      "The version returned for a chado instance with a chadoprop table but not 1.3+ version was not what we expected."
+    );
+
+    // Test version <= 1.11
+    // Chado version 1.11 and less does not have a chadoprop table.
+    $expected_version = '<=1.11';
+    // -- Drop the chadoprop table.
+    $chado_connection->schema()->dropTable('chadoprop');
+    $this->assertFalse(
+      $chado_connection->schema()->tableExists('chadoprop'),
+      "We were unable to drop the chadoprop table when setting up our test."
+    );
+    // -- Now find the version and confirm it matches our expectations.
+    $retrieved_version = $chado_connection->findVersion();
+    $this->assertEquals(
+      $retrieved_version,
+      $expected_version,
+      "The version returned for a chado instance with NO chadoprop table was not what we expected."
+    );
+
+    // Test finding the version of not a chado schema.
+    $expected_version = '';
+    $chado_connection = $this->createTestSchema(ChadoTestKernelBase::CREATE_SCHEMA);
+    $retrieved_version = $chado_connection->findVersion();
+    $this->assertEquals(
+      $retrieved_version,
+      $expected_version,
+      "The version returned for a chado imposter schema was not what we expected."
+    );
   }
 }
