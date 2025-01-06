@@ -419,8 +419,8 @@ fields:
                 base_column: sourcename
             max_length: 255
         settings:
-            termIdSpace: schema
-            termAccession: name
+            termIdSpace: local
+            termAccession: source_data
         display:
           view:
             default:
@@ -1267,8 +1267,8 @@ fields:
                 type_table: pub
                 type_column: type_id
         settings:
-            termIdSpace: TPUB
-            termAccession: "0000015"
+            termIdSpace: rdfs
+            termAccession: type
         display:
           view:
             default:
