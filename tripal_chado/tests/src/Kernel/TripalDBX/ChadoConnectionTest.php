@@ -541,4 +541,55 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
       "We expected to be able to create a ChadoConnection with no parameters."
     );
   }
+
+  /**
+   * Tests ChadoConnection::removeAllTestSchemas().
+   *
+   * @covers \Drupal\tripal_chado\Database\ChadoConnection::removeAllTestSchemas
+   */
+  public function testRemoveAllTestSchemas() {
+
+    // We should not get an error when removing test schema even when there
+    // are no test schema create yet.
+    $created_object = new ChadoConnection();
+    $created_object->removeAllTestSchemas();
+
+    // Create a number of test schema.
+    $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+    $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+    $chado_connection = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+
+    // Confirm that we have multiple registered test schema.
+    $instances = $chado_connection->getAvailableInstances();
+    $total_num_instances = count($instances);
+    $this->assertGreaterThanOrEqual(
+      3,
+      $total_num_instances,
+      "We expect there to be at least 3 instances since we created that many test instances."
+    );
+
+    // Now remove the test instances and ensure we have the number of instances
+    // we expect which is the number last time - the 3 test instances we created.
+    $expected_num_instances = $total_num_instances - 3;
+    $chado_connection->removeAllTestSchemas();
+    $instances = $chado_connection->getAvailableInstances();
+    $remaining_num_instances = count($instances);
+    $this->assertNotEquals(
+      $total_num_instances,
+      $remaining_num_instances,
+      "We should not have the same number of instances after removing test schema."
+    );
+    $this->assertEquals(
+      $expected_num_instances,
+      $remaining_num_instances,
+      "We did not have the number of expected instances after removing the test instances."
+    );
+
+    // Make sure to indicate that the removed schema are no longer in use
+    // so that the tearDownAfterClass() doesn't fail when the test schema
+    // has already been removed.
+    foreach (self::$testSchemas as $test_schema => $in_use) {
+      self::$testSchemas[$test_schema] = FALSE;
+    }
+  }
 }
