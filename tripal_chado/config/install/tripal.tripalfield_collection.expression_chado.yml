@@ -560,7 +560,7 @@ fields:
                 type_table: arraydesign
                 type_column: platformtype_id
         settings:
-            termIdSpace:NCIT
+            termIdSpace: NCIT
             termAccession: C45378
         display:
           view:
