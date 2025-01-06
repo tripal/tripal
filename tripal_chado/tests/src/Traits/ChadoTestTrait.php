@@ -348,7 +348,15 @@ trait ChadoTestTrait  {
         break;
     }
     self::$db = self::$db ?? \Drupal::database();
-    self::$testSchemas[$schema_name] = TRUE;
+    // Set the test schema name.
+    // If the schema was actually created then set the value to TRUE because
+    // it's actually in use and needs to be dropped but otherwise, set it FALSE.
+    if ($init_level === static::SCHEMA_NAME_ONLY) {
+      self::$testSchemas[$schema_name] = FALSE;
+    }
+    else {
+      self::$testSchemas[$schema_name] = TRUE;
+    }
     $this->testSchemaName = $schema_name;
 
     // Make sure that the version is correct in the chado property table.
