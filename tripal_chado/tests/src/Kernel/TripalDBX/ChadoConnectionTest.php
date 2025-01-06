@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\TripalDBX\TripalDbx;
+use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
@@ -487,6 +488,57 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
       $retrieved_version,
       $expected_version,
       "The version returned for a chado imposter schema was not what we expected."
+    );
+  }
+
+  /**
+   * Tests ChadoConnection::getTripalDbxClass() directly.
+   */
+  public function testGetTripalDbxClass() {
+
+    // We just need a ChadoSchema of some type so no need to initialize anything.
+    $chado_connection = $this->createTestSchema(ChadoTestKernelBase::CREATE_SCHEMA);
+
+    // Ask for something valid and ensure and ensure we get it.
+    $retrieved_schema = $chado_connection->getTripalDbxClass('Schema');
+    $this->assertEquals(
+      \Drupal\tripal_chado\Database\ChadoSchema::class,
+      $retrieved_schema,
+      "ChadoConnection::getTripalDbxClass() should return the full namespaced ChadoSchema."
+    );
+
+    // Ensure we get an exception when we ask for something invalid.
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $retrieved_schema = $chado_connection->getTripalDbxClass('FRED');
+    }
+    catch (ConnectionException $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+    $this->assertTrue(
+      $exception_caught,
+      "ChadoConnection::getTripalDbxClass() should throw an exception when asked for an invalid class."
+    );
+    $this->assertEquals(
+      "Invalid Tripal DBX class 'FRED'.",
+      $exception_message,
+      "ChadoConnection::getTripalDbxClass() exception message should indicate we asked for an invalid class."
+    );
+  }
+
+  /**
+   * Tests ChadoConnection::_construct() directly.
+   */
+  public function testChadoConnectionConstructor() {
+
+    // Create with no parameters.
+    $created_object = new ChadoConnection();
+    $this->assertInstanceOf(
+      ChadoConnection::class,
+      $created_object,
+      "We expected to be able to create a ChadoConnection with no parameters."
     );
   }
 }
