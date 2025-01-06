@@ -18,7 +18,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['tripal', 'tripal_chado'];
+  protected static $modules = ['system', 'user', 'views', 'path', 'tripal', 'tripal_chado'];
 
   /**
    * Lists all supported versions of chado.
@@ -49,6 +49,16 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
 
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
+
+    // Install the settings for tripal chado which includes the default chado.
+    // Note: This gets rid of the following kernel test error when installing
+    // the tripal_chado config. We also need system + views in the module list.
+    // Note2: We would normally install the chado_installations schema as well
+    // but this is already done by the parent::setUp().
+    $this->installSchema('tripal_chado', ['tripal_custom_tables']);
+
+    // Now we can install the config needed for the default database setting.
+    $this->installConfig('tripal_chado');
   }
 
   /**
@@ -73,11 +83,11 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests that we can create use CRUD on all Chado schema versions.
+   * Tests ChadoConnection::getAvailableInstances() across chado versions.
    *
    * @dataProvider provideChadoSchemaVersions
    */
-  public function testCRUDChadoSchema(string $version, int $init_level) {
+  public function testGetAvailableInstances(string $version, int $init_level) {
 
     // Get Chado in place.
     $chado_connection = $this->getTestSchema(
@@ -97,8 +107,60 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
       "We expect that the chado version returned by the connection matches what we requested."
     );
 
-  }
+    $instances = $chado_connection->getAvailableInstances();
+    $this->assertIsArray(
+      $instances,
+      "We expect ChadoConnection::getAvailableInstances() will always return an array."
+    );
+    // Each instance returned should be fully described. Lets check the keys
+    // to confirm. The value in the following array is an array of types that
+    // the value of that key might be.
+    $expected_keys = [
+      'schema_name' => ['string'],
+      'version' => ['string'],
+      'is_default' => ['boolean'],
+      'is_test' => ['boolean','string'],
+      'is_reserved' => ['boolean'],
+      'has_data' => ['boolean'],
+      'size' => ['integer'],
+      'integration' => ['boolean', 'array'],
+    ];
+    foreach ($instances as $instance_key => $retrieved_instance) {
+      foreach ($expected_keys as $key_to_check => $value_types) {
+        $this->assertArrayHasKey(
+          $key_to_check,
+          $retrieved_instance,
+          "Each instance returned by ChadoConnection::getAvailableInstances() should have the '$key_to_check' indicated but '$instance_key' does not."
+        );
+        $this->assertContains(
+          gettype($retrieved_instance[$key_to_check]),
+          $value_types,
+          "The value for ['$instance_key']['$key_to_check'] as returned by ChadoConnection::getAvailableInstances() is not what is expected. The value is: " . print_r($retrieved_instance[$key_to_check], TRUE)
+        );
+      }
+    }
 
+    // Next lets check our current test schema is there and that it is indicated
+    // to be a test schema.
+    $test_schema_name = $chado_connection->getSchemaName();
+    $this->assertArrayHasKey(
+      $test_schema_name,
+      $instances,
+      "Our current test schema should be in the list of instances returned by ChadoConnection::getAvailableInstances()."
+    );
+    $test_schema_instance = $instances[$test_schema_name];
+    $this->assertEquals(
+      $version,
+      $test_schema_instance['version'],
+      "The version returned for our test schema using ChadoConnection::getAvailableInstances() did not match what we created it as."
+    );
+    $this->assertEquals(
+      'chado',
+      $test_schema_instance['is_test'],
+      "We expect our test instance returned by ChadoConnection::getAvailableInstances() to indicate that it is a test schema of chado."
+    );
+
+  }
 
   /**
    * Tests table prefixing by the ChadoConnection + TripalDbxConnection classes.
@@ -264,15 +326,9 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
   }
 
   /**
-   * This tests the ChadoConnection::findVersion() method.
+   * This tests the ChadoConnection::findVersion() method across chado versions.
    *
-   * We will test that the version can be obtained from the test schema when it
-   * is generated in the following ways:
-   * 1. INIT_CHADO_EMPTY
-   * 2. INIT_CHADO_DUMMY
-   * 3. PREPARE_TEST_CHADO
-   *
-   * Furthermore, we will test both when the findVersion() method is called with
+   * We will test both when the findVersion() method is called with
    * A. no parameters
    * B. schema name supplied
    * C. exact version requested.
