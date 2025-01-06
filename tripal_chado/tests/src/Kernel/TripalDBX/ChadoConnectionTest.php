@@ -104,6 +104,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * Tests ChadoConnection::getAvailableInstances() across chado versions.
    *
    * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
+   *
+   * @covers \Drupal\tripal_chado\Database\ChadoConnection::getAvailableInstances
    */
   public function testGetAvailableInstances(string $version, int $init_level) {
 
@@ -184,6 +186,9 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * Tests table prefixing by the ChadoConnection + TripalDbxConnection classes.
    *
    * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
+   *
+   * @covers \Drupal\tripal\TripalDBX\TripalDbxConnection
+   * @covers \Drupal\tripal\TripalDBX\TripalDbxSchema
    *
    * NOTE:
    * In Drupal you can execute queries directly using CONNECTION->query()
@@ -292,6 +297,9 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * Tests the Drupal query builders while quering chado.
    *
    * @dataProvider provideChadoSchemaVersions
+   *
+   * @covers \Drupal\tripal\TripalDBX\TripalDbxConnection
+   * @covers \Drupal\tripal\TripalDBX\TripalDbxSchema
    */
   public function testChadoQueryBuilding(string $version) {
     $chado = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
@@ -351,6 +359,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * Tests the ChadoConnection::findVersion() across unique version/init levels.
    *
    * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
+   *
+   * @covers \Drupal\tripal_chado\Database\ChadoConnection::findVersion
    *
    * Furthermore, we will test both when the findVersion() method is called with
    * A. no parameters
