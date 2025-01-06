@@ -12,6 +12,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  *
  * @group Tripal Chado
  * @group TripalDBX
+ * @group ChadoDBX
  * @group ChadoConnection
  */
 class ChadoConnectionTest extends ChadoTestKernelBase {
@@ -107,6 +108,11 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
    *
    * @covers \Drupal\tripal_chado\Database\ChadoConnection::getAvailableInstances
+   *
+   * @param string $version
+   *   The version of chado to test against.
+   * @param int $init_level
+   *   The init level to create the test database with.
    */
   public function testGetAvailableInstances(string $version, int $init_level) {
 
@@ -205,6 +211,11 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * are Drupal functionalities and our differences come during execution
    * and not at the query building stage, we are currently going to assume that
    * the Drupal testing is sufficient for the query builders.
+   *
+   * @param string $version
+   *   The version of chado to test against.
+   * @param int $init_level
+   *   The init level to create the test database with.
    */
   public function testDefaultTablePrefixing(string $version, int $init_level) {
     $this->createTestSchema($init_level, $version);
@@ -301,6 +312,9 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    *
    * @covers \Drupal\tripal\TripalDBX\TripalDbxConnection
    * @covers \Drupal\tripal\TripalDBX\TripalDbxSchema
+   *
+   * @param string $version
+   *   The version of chado to test against.
    */
   public function testChadoQueryBuilding(string $version) {
     $chado = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
@@ -362,6 +376,11 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
    *
    * @covers \Drupal\tripal_chado\Database\ChadoConnection::findVersion
+   *
+   * @param string $version
+   *   The version of chado to test against.
+   * @param int $init_level
+   *   The init level to create the test database with.
    */
   public function testFindVersion(string $version, int $init_level) {
     $expected_version = $version;

@@ -11,6 +11,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  *
  * @group Tripal Chado
  * @group TripalDBX
+ * @group ChadoDBX
  * @group ChadoSchema
  */
 class ChadoSchemaTest extends ChadoTestKernelBase {
