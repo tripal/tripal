@@ -303,6 +303,14 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
       $sqlStatement,
       "The sql statement does not have the table prefix we expect."
     );
+
+    // Also test TripalDbxConnection::tablePrefix().
+    $prefix = $chado_connection->tablePrefix('default', TRUE);
+    $this->assertEquals(
+      $chado_1_prefix . '.',
+      $prefix,
+      "We did not get the chado prefix despite asking for tripaldbx to be used."
+    );
   }
 
   /**
