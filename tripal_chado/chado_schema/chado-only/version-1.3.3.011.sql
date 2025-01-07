@@ -11137,3 +11137,111 @@ CREATE INDEX  stock_biomaterial_idx1 ON stock_biomaterial USING btree (biomateri
 CREATE INDEX  stock_biomaterial_idx2 ON stock_biomaterial USING btree (stock_id);
 
 COMMENT ON TABLE stock_biomaterial IS 'Associates records in the biomaterial table with a stock.';
+
+-- ~~~~~~~~~~~~~~~~~~~~
+-- 1.3.3.002
+-- Adds support for relationships between chado.db by creating a db_relationship table.
+-- ~~~~~~~~~~~~~~~~~~~~
+
+create table db_relationship (
+    db_relationship_id bigserial not null,
+    type_id bigint not null,
+    subject_id bigint not null,
+    object_id bigint not null,
+    primary key (db_relationship_id),
+    foreign key (type_id) references db (db_id) on delete cascade INITIALLY DEFERRED,
+    foreign key (subject_id) references db (db_id) on delete cascade INITIALLY DEFERRED,
+    foreign key (object_id) references db (db_id) on delete cascade INITIALLY DEFERRED,
+    constraint db_relationship_c1 unique (subject_id,object_id,type_id)
+);
+create index db_relationship_idx1 on db_relationship USING btree (type_id);
+create index db_relationship_idx2 on db_relationship USING btree (subject_id);
+create index db_relationship_idx3 on db_relationship USING btree (object_id);
+
+COMMENT ON TABLE db_relationship IS 'Specifies relationships between databases.  This is
+particularly useful for ontologies that use multiple prefix IDs for its vocabularies. For example,
+the EDAM ontology uses the prefixes "data", "format", "operation" and others. Each of these would
+have a record in the db table.  An "EDAM" record could be added for the entire ontology to the
+db table and the previous records could be linked as "part_of" EDAM.  As another example
+databases housing cross-references may have sub databases such as NCBI (e.g. Taxonomy, SRA, etc).
+This table can use a "part_of" record to link all of them to NCBI.';
+
+-- ~~~~~~~~~~~~~~~~~~~~
+-- 1.3.3.003
+-- Updates chado.analysis unique constraint to include the name column.
+-- ~~~~~~~~~~~~~~~~~~~~
+
+ALTER TABLE analysis
+  DROP CONSTRAINT analysis_c1
+, ADD  CONSTRAINT analysis_c1 unique (program,programversion, name, sourcename);
+
+-- ~~~~~~~~~~~~~~~~~~~~
+-- 1.3.3.004
+-- Adds indicies to the synonym table for better performance.
+-- ~~~~~~~~~~~~~~~~~~~~
+
+CREATE INDEX cvtermsynonym_idx2 ON chado.cvtermsynonym (type_id);
+CREATE INDEX cvtermsynonym_idx3 ON chado.cvtermsynonym (synonym);
+
+-- ~~~~~~~~~~~~~~~~~~~~
+-- 1.3.3.005
+-- Update chado.project table to include a type_id.
+-- ~~~~~~~~~~~~~~~~~~~~
+
+ALTER TABLE project
+ADD COLUMN type_id bigint;
+ALTER TABLE project ADD FOREIGN KEY (type_id) REFERENCES cvterm (cvterm_id) ON DELETE SET NULL;
+CREATE INDEX project_idx1 ON project USING btree (type_id);
+COMMENT ON COLUMN project.type_id IS 'An optional cvterm_id that specifies what type of project this record is.  Prior to 1.4, project type was set with an projectprop.';
+
+-- ~~~~~~~~~~~~~~~~~~~~
+-- 1.3.3.006
+-- Update MAGE module: allow arraydesign to be null in chado.assay and chado.element.
+-- ~~~~~~~~~~~~~~~~~~~~
+
+ALTER TABLE assay
+ALTER COLUMN arraydesign_id
+DROP NOT null;
+
+COMMENT ON TABLE assay IS 'An assay consists of an experiment for a single biosample, for example a microarray or an RNASeq library sequence set. An assay can be thought of as an experiment to quantify expression of a sample.';
+
+COMMENT ON TABLE acquisition IS 'This represents the acquisition technique. In the case of a microarray, it is scanning, in the case of a sequencer, it is sequencing. The output of this process is a digital image of an array for a microarray or a set of digital images or nucleotide base calls for a sequencer.';
+
+COMMENT ON TABLE quantification IS 'Quantification is the transformation of an image or set of sequences to numeric expression data. This typically involves statistical procedures.';
+
+ALTER TABLE element
+ALTER COLUMN arraydesign_id
+DROP NOT null;
+
+COMMENT ON TABLE element IS 'For a microarray, represents a feature of the array. This is typically a region of the array coated or bound to DNA. For RNASeq, represents a feature sequence that is used for aligning and quantifying reads.';
+
+COMMENT ON TABLE elementresult IS 'Expression signal. In the case of a microarray, the hybridization signal. In the case of RNAseq, the read count. May be normalized or raw, as specified in the acquisition record.';
+
+-- ~~~~~~~~~~~~~~~~~~~~
+-- 1.3.3.007
+-- Fix Search Path by updating boxrange and associated functions to use current schema.
+--
+-- NOT APPLICABLE IN THIS SETTING.
+-- ~~~~~~~~~~~~~~~~~~~~
+
+-- ~~~~~~~~~~~~~~~~~~~~
+-- 1.3.3.008
+-- Support indicating that a cell line is obsolete by adding a chado.cell_line.is_obsolete column.
+-- ~~~~~~~~~~~~~~~~~~~~
+
+ALTER TABLE cell_line ADD COLUMN is_obsolete boolean DEFAULT false;
+
+-- ~~~~~~~~~~~~~~~~~~~~
+-- 1.3.3.009
+-- Update schema comments for the chado.analysis table to better reflect current usage.
+-- ~~~~~~~~~~~~~~~~~~~~
+
+COMMENT ON TABLE analysis IS 'An analysis is a particular type of a computational analysis; it may be a blast of one sequence against another, or an all by all blast, or a different kind of analysis altogether. It can be a single unit of computation or an analysis that represents a set of computational steps. For example, a reference genome assembly could be stored as a single record in the analysis table, but this analysis could encompass many individual analysis steps (read trimming, assembly, scaffolding, etc). These could be stored and related via the analysis_relationship table.';
+
+-- ~~~~~~~~~~~~~~~~~~~~
+-- 1.3.3.011
+-- Fixes the chado.db_relationship.type_id foreign key to reference the cvterm table correctly.
+-- ~~~~~~~~~~~~~~~~~~~~
+
+ALTER TABLE db_relationship DROP CONSTRAINT db_relationship_type_id_fkey;
+ALTER TABLE db_relationship ADD CONSTRAINT db_relationship_type_id_fkey FOREIGN KEY  (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;

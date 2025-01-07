@@ -30,6 +30,16 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
   protected static array $supported_chado_versions = [
     '1.3',
     '1.3.3.001',
+    '1.3.3.002',
+    '1.3.3.003',
+    '1.3.3.004',
+    '1.3.3.005',
+    '1.3.3.006',
+    '1.3.3.007',
+    '1.3.3.008',
+    '1.3.3.009',
+    '1.3.3.011',
+    '1.3.3.013',
   ];
 
   /**
