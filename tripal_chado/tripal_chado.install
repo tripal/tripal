@@ -687,7 +687,7 @@ function tripal_chado_update_10409() {
  * Moves several custom CVs, if present, to the local CV.
  */
 function tripal_chado_update_10411() {
-  // Transfer of CVs was done by PR 1727. This hook added by PR 20xx
+  // Transfer of CVs was done by PR 1727. This hook added by PR 2081
   $obsolete_cvs = [
     'organism_property', 'analysis_property', 'tripal_phylogeny',
     'featuremap_units', 'featurepos_property', 'featuremap_property',
@@ -722,8 +722,8 @@ function tripal_chado_update_10411() {
         $query->condition('cv_id', $cv_id, '=');
         $count = $query->execute();
         if ($count) {
-          $messenger->addMessage('Transferred @count records from CV "@from" to the "local" CV',
-              ['@count' => $count, '@from' => $obsolete_cv]);
+          $messenger->addMessage(t('Transferred @count records from CV "@from" to the "local" CV',
+              ['@count' => $count, '@from' => $obsolete_cv]));
           $n_transferred += $count;
         }
         $query = $chado->delete('1:cv');
@@ -733,11 +733,11 @@ function tripal_chado_update_10411() {
       }
     }
     if ($n_removed) {
-      $messenger->addMessage('Removed @count obsolete controlled vocabularies',
-          ['@count' => $n_removed]);
+      $messenger->addMessage(t('Removed @count obsolete controlled vocabularies',
+          ['@count' => $n_removed]));
     }
     if (!$n_transferred and !$n_removed) {
-      $messenger->addMessage('No changes were needed');
+      $messenger->addMessage(t('No changes were needed'));
     }
   }
   catch (\Exception $e) {
