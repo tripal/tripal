@@ -815,9 +815,9 @@ class ChadoPublish extends TripalBackendPublishBase {
     // Generate the insert SQL and add the field-specific columns to it.
     $init_sql = "
       INSERT INTO {" . $field_table . "}
-        (bundle, deleted, entity_id, revision_id, langcode, delta, ";
-    foreach (array_keys(array_merge($this->required_types[$field_name],
-                                    $this->non_required_types[$field_name])) as $key) {
+        (bundle, deleted, entity_id, revision_id, langcode, delta, "; 
+    foreach (array_keys(array_merge($this->required_types[$field_name] ?? [], // might be empty, avoid type error
+                                    $this->non_required_types[$field_name] ?? [] )) as $key) {
       $init_sql .= $field_name . '_'. $key . ', ';
     }
     $init_sql = rtrim($init_sql, ', ') . ") VALUES\n";
@@ -958,15 +958,14 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
       $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
     }
-    // If we want views filter this needs to be changed. Now, both required and non-required types 
-    // get their : values added.
-    // PreviouslyNon-required types never have a value stored, just a placeholder.
-    // Alternatively, add types to the required times group
-    // ICICIC: This isn't optimal. Also residue fields would e copied, better to move fields to required_types
-    foreach ($this->non_required_types[$field_name] as $key => $properties) {
-      $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
-      $sql .=  $placeholder . ', ';
-      $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue() ?? $properties->getDefaultValue();
+    // Non-required types never have a value stored, just a placeholder.
+    // There might not be non_required_types for this field
+    if (isset($this->non_required_types[$field_name])) {
+      foreach ($this->non_required_types[$field_name] as $key => $properties) { 
+        $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
+        $sql .=  $placeholder . ', ';
+        $args[$placeholder] = $properties->getDefaultValue();
+      }
     }
     $sql = rtrim($sql, ", ");
     $sql .= "),\n";

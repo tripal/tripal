@@ -144,19 +144,29 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       foreach ($keys as $key => $prop_type) {
         $storage_settings = $prop_type->getStorageSettings();
 
+        // $is_required = true; // default: all fields are required by default
+        // in chado, all table coloumns containing sequence are named residues 
+        // we want to exclude sequences from drupal storage
+        //var_dump($storage_settings);
+        $is_required = ! (array_key_exists('path', $storage_settings) and 
+        str_ends_with($storage_settings['path'],  '.residues')); 
         // Any field that stores a base record id, a primary key,
         // or a foreign key link is required.
-        $is_required = FALSE;
         if (($storage_settings['action'] == 'store_id') or
             ($storage_settings['action'] == 'store_pkey') or
             ($storage_settings['action'] == 'store_link')) {
           $is_required = TRUE;
         }
-        // For any other fields that have 'drupal_store' set,
-        // it is required too.
-        elseif ((array_key_exists('drupal_store', $storage_settings)) and
-                ($storage_settings['drupal_store'] === TRUE)) {
-          $is_required = TRUE;
+        // For any other fields that have 'drupal_exclude' set,
+        // it is _excluded_ too.
+        elseif ((array_key_exists('drupal_exclude', $storage_settings)) and
+                ($storage_settings['drupal_exclude'] === TRUE)) {
+          $is_required = false;
+        }
+        // stay compatible with the original behavior and allow to force drupal storage
+        elseif ((array_key_exists('drupal_include', $storage_settings)) and
+                ($storage_settings['drupal_include'] === TRUE)) {
+          $is_required = true;
         }
         if (($is_required and $required) or (!$is_required and !$required)) {
           $ret_types[$field_name][$key] = $prop_type;
