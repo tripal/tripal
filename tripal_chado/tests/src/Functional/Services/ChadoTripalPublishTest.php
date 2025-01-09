@@ -389,27 +389,27 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // shouldn't be saved in Drupal are equal to the field's default value.
     $this->checkFieldItem('organism', 'organism_genus', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => 'Oryza']);
 
     $this->checkFieldItem('organism', 'organism_species', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => 'species']);
 
     $this->checkFieldItem('organism', 'organism_abbreviation', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => 'O. sativa']);
 
     $this->checkFieldItem('organism', 'organism_infraspecific_name', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => 'Japonica']);
 
     $this->checkFieldItem('organism', 'organism_infraspecific_type', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'type_id' => 0]);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'type_id' => $subspecies_term_id]);
 
     $this->checkFieldItem('organism', 'organism_comment', 1,
         ['record_id' => $organism_id],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => 'rice is nice']);
 
     // Test that the title via token replacement is working.
     $this->assertTrue($entities[$entity_id] == '<em>Oryza species</em> subspecies <em>Japonica</em>',
