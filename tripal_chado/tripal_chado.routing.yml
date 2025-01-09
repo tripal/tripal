@@ -171,7 +171,7 @@ tripal_chado.dbxref_autocomplete:
 tripal_chado.generic_autocomplete:
   path: 'chado/generic/autocomplete/{base_table}/{column_name}/{property_table}/{count}/{type_id}'
   defaults:
-    _controller: '\Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController::handleAutocomplete'
+    _controller: '\Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController::handleGenericAutocomplete'
     _title: 'Chado Generic Autocomplete'
     _format: json
   requirements:

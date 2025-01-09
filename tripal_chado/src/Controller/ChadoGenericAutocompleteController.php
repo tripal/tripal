@@ -12,6 +12,18 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class ChadoGenericAutocompleteController extends ControllerBase {
 
   /**
+   * Controls whether the primary key is included in the response in
+   * parentheses. Used by derived classes.
+   */
+  protected bool $include_pkey = TRUE;
+
+  /**
+   * Controls whether a leading wildcard character is included.
+   * Used by derived classes.
+   */
+  protected bool $leading_wildcard = TRUE;
+
+  /**
    * Controller autocomplete method to use for any chado table
    * where the returned value is from a single column.
    *
@@ -49,7 +61,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    *   Matching publication rows in an array where pub title
    *   is both the value to the array keys label and value.
    */
-  public function handleAutocomplete(Request $request,
+  public function handleGenericAutocomplete(Request $request,
      string $base_table, string $column_name, string $property_table,
      int $count = 10, int $type_id = 0) {
 
@@ -76,7 +88,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
         $type_column = 'type_id';
 
         // Transform string into a search pattern with wildcards
-        $keyword = '%' . strtolower($string) . '%';
+        $keyword = ($this->leading_wildcard?'%':'') . strtolower($string) . '%';
 
         $args = [];
         $sql = 'SELECT BT.' . $pkey_id .' AS pkey, BT.' . $column_name . ' AS value'
@@ -111,7 +123,9 @@ class ChadoGenericAutocompleteController extends ControllerBase {
             // Strip HTML tags if present, e.g. in Pub title
             $value = strip_tags($record->value);
             // Append the chado pkey id value
-            $value .= ' (' . $record->pkey . ')';
+            if ($this->include_pkey) {
+              $value .= ' (' . $record->pkey . ')';
+            }
             $response[] = [
               'value' => $value, // Value returned and value displayed by textfield.
               'label' => $value, // Value shown in the list of options.
