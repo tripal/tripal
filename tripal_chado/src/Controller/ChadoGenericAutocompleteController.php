@@ -88,38 +88,31 @@ class ChadoGenericAutocompleteController extends ControllerBase {
         $type_column = 'type_id';
 
         // Transform string into a search pattern with wildcards
-        $keyword = ($this->leading_wildcard?'%':'') . strtolower($string) . '%';
+        $keyword = ($this->leading_wildcard?'%':'') . $string . '%';
 
-        $args = [];
-        $sql = 'SELECT BT.' . $pkey_id .' AS pkey, BT.' . $column_name . ' AS value'
-             . ' FROM {1:' . $base_table . '} BT';
+        $query = $connection->select('1:' . $base_table, 'BT');
+        $query->addField('BT', $pkey_id, 'pkey');
+        $query->addField('BT', $column_name, 'value');
+        $query->condition('BT.' . $column_name, $keyword, 'ILIKE');
+        $query->orderBy('BT.' . $column_name, 'ASC');
+        $query->range(0, $count);
 
-        // If specified, restrict to the type provided by type_id in the route parameter.
         if ($type_id > 0) {
           if ($property_table and ($property_table != $base_table)) {
-            $sql .= ' LEFT JOIN {1:' . $property_table . '} PT ON BT.' . $pkey_id . ' = PT.' . $pkey_id
-                 . ' WHERE PT.' . $type_column . ' = :type_id AND';
+            $query->join('1:' . $property_table, 'PT', '"BT".' . $pkey_id . ' = "PT".' . $pkey_id);
+            $query->condition('PT.' . $type_column, $type_id, '=');
           }
           else {
-            $sql .= ' WHERE BT.' . $type_column . ' = :type_id AND';
+            $query->condition('BT.' . $type_column, $type_id, '=');
           }
-          $args[':type_id'] = $type_id;
         }
-        else {
-          $sql .= ' WHERE';
-        }
-
-        $sql .= ' LOWER(BT.' . $column_name .') LIKE :keyword'
-             . ' ORDER BY BT.' . $column_name . ' ASC LIMIT :count';
-        $args[':keyword'] = $keyword;
-        $args[':count'] = $count;
 
         // Perform the database query
-        $results = $connection->query($sql, $args);
+        $results = $query->execute();
 
         // Compose the response
         if ($results) {
-          foreach($results as $record) {
+          while ($record = $results->fetchObject()) {
             // Strip HTML tags if present, e.g. in Pub title
             $value = strip_tags($record->value);
             // Append the chado pkey id value
