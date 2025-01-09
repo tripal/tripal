@@ -434,19 +434,19 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
     $this->checkFieldItem('organism', 'organism_genus', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => 'Gorilla']);
 
     $this->checkFieldItem('organism', 'organism_species', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => 'gorilla']);
 
     $this->checkFieldItem('organism', 'organism_abbreviation', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => 'G. gorilla']);
 
     $this->checkFieldItem('organism', 'organism_comment', 1,
         ['record_id' => $organism_id2],
-        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => '']);
+        ['bundle' => 'organism', 'entity_id' => $entity_id, 'value' => 'Gorilla']);
 
     // We expect no infraspecies here, so expected count is zero
     $this->checkFieldItem('organism', 'organism_infraspecific_name', 0,
