@@ -144,14 +144,14 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       foreach ($keys as $key => $prop_type) {
         $storage_settings = $prop_type->getStorageSettings();
 
-        // $is_required = true; // default: all fields are required by default
-        // in chado, all table coloumns containing sequence are named residues 
-        // we want to exclude sequences from drupal storage
-        //var_dump($storage_settings);
+        // $is_required = true; // possible default: all fields are required 
+        // In chado, all table coloumns containing sequence are named 'residues' 
+        // We want to exclude sequences and other large data objects from drupal storage
         $is_required = ! (array_key_exists('path', $storage_settings) and 
         str_ends_with($storage_settings['path'],  '.residues')); 
         // Any field that stores a base record id, a primary key,
         // or a foreign key link is required.
+        // This takes absolute precedence and cannot be overridden.
         if (($storage_settings['action'] == 'store_id') or
             ($storage_settings['action'] == 'store_pkey') or
             ($storage_settings['action'] == 'store_link')) {
@@ -159,13 +159,19 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
         // For any other fields that have 'drupal_exclude' set,
         // it is _excluded_ too.
+        // To force exclusion of the field from entity storage, add:
+        // drupal_exclude: true   
+        // in the section storage_settings: of the field definition in its tripalfield_collection*_chado.yml file
         elseif ((array_key_exists('drupal_exclude', $storage_settings)) and
                 ($storage_settings['drupal_exclude'] === TRUE)) {
           $is_required = false;
         }
-        // stay compatible with the original behavior and allow to force drupal storage
-        elseif ((array_key_exists('drupal_include', $storage_settings)) and
-                ($storage_settings['drupal_include'] === TRUE)) {
+        // Stay compatible with the original behavior and allow to force drupal storage
+        // To force inclusion of the field into Entity storage, add:
+        // drupal_store: true   
+        // in the section storage_settings: of the field definition in its tripal field collection
+        elseif ((array_key_exists('drupal_store', $storage_settings)) and
+                ($storage_settings['drupal_store'] === TRUE)) {
           $is_required = true;
         }
         if (($is_required and $required) or (!$is_required and !$required)) {
