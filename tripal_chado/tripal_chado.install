@@ -705,7 +705,7 @@ function tripal_chado_update_10410() {
 
     $update_list = [
       'tripal_entity.analysis.analysis_source:local:source_data',
-      'tripal_entity.analysis.analysis_program_version:local:source_version',
+      'tripal_entity.analysis.analysis_source_version:local:source_version',
       'tripal_entity.pub.pub_type:rdfs:type',
       'tripal_entity.array_design.array_design_substrate_type:EFO:0005522',
       'tripal_entity.array_design.array_design_platform_type:NCIT:C45378',
