@@ -365,8 +365,8 @@ fields:
                 base_column: programversion
             max_length: 255
         settings:
-            termIdSpace: local
-            termAccession: source_version
+            termIdSpace: IAO
+            termAccession: "0000129"
         display:
           view:
             default:
@@ -446,8 +446,8 @@ fields:
                 base_column: sourceversion
             max_length: 255
         settings:
-            termIdSpace: IAO
-            termAccession: "0000129"
+            termIdSpace: local
+            termAccession: source_version
         display:
           view:
             default:
