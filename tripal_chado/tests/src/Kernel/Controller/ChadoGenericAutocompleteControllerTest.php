@@ -112,33 +112,33 @@ class ChadoGenericAutocompleteControllerTest extends ChadoTestKernelBase {
 
     // Test empty string
     $request = Request::create(
-      'chado/generic/autocomplete/project/name/project/10/0',
+      'chado/generic/autocomplete/project/name/x/project/10/0',
       'GET',
       ['q' => '']
     );
-    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'project', 'name', 'project', 10, 0)->getContent();
-    $this->assertCount(0, json_decode($results), 'Expected no results from empty string project generic autocomplete');
+    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'project', 'name', 'x', 'project', 10, 0)->getContent();
+    $this->assertCount(0, json_decode($results, FALSE), 'Expected no results from empty string project generic autocomplete');
 
     // Test for string with no matches
     $request = Request::create(
-      'chado/generic/autocomplete/project/name/project/10/0',
+      'chado/generic/autocomplete/project/name/x/project/10/0',
       'GET',
       ['q' => 'xxx']
     );
-    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'project', 'name', 'project', 10, 0)->getContent();
-    $this->assertCount(0, json_decode($results), 'Expected no results from "xxx" project generic autocomplete');
+    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'project', 'name', 'x', 'project', 10, 0)->getContent();
+    $this->assertCount(0, json_decode($results, FALSE), 'Expected no results from "xxx" project generic autocomplete');
 
     // Test for an internal string, matches "Great" and "Green"
     $request = Request::create(
-      'chado/generic/autocomplete/project/name/project/10/0',
+      'chado/generic/autocomplete/project/name/x/project/10/0',
       'GET',
       ['q' => 'gre']
     );
-    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'project', 'name', 'project', 10, 0)->getContent();
-    $this->assertCount(2, json_decode($results), 'Expected exactly two results from "gre" project generic autocomplete');
+    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'project', 'name', 'x', 'project', 10, 0)->getContent();
+    $this->assertCount(2, json_decode($results, FALSE), 'Expected exactly two results from "gre" project generic autocomplete');
 
     // Make sure both of these have the expected pkey id embedded
-    foreach (json_decode($results) as $result) {
+    foreach (json_decode($results, FALSE) as $result) {
       $value = $result->value;
       $title = preg_replace('/ \(\d+\)$/', '', $value);
       $expected_id = $this->project_ids[$title] ?? -1;
@@ -157,32 +157,36 @@ class ChadoGenericAutocompleteControllerTest extends ChadoTestKernelBase {
 
     // Test count limit
     $request = Request::create(
-      'chado/generic/autocomplete/pub/title/pub/10/0',
+      'chado/generic/autocomplete/pub/title/type_id/pub/10/0',
       'GET',
       ['q' => 'p']
     );
-    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'pub', 'title', 'pub', 10, 0)->getContent();
-    $this->assertCount(10, json_decode($results), 'Expected exactly 10 results from pub generic autocomplete');
+    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'pub', 'title', 'type_id', 'pub', 10, 0)->getContent();
+    $decoded_results = json_decode($results, FALSE);
+    $this->assertCount(10, $decoded_results, 'Expected exactly 10 results from pub generic autocomplete');
+    $this->assertMatchesRegularExpression('/\[.*\]/', $decoded_results[0]->value, 'The publication type in brackets should be present when a type is not specified: ' . $decoded_results[0]->value);
 
     // Test limiting by type_id for a table with a type_id column
     $type_id = $this->types['Proceedings Article'];
     $request = Request::create(
-      'chado/generic/autocomplete/pub/title/pub/1000/' . $type_id,
+      'chado/generic/autocomplete/pub/title/type_id/pub/1000/' . $type_id,
       'GET',
       ['q' => 'p']
     );
-    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'pub', 'title', 'pub', 1000, $type_id)->getContent();
-    $this->assertCount(51, json_decode($results), 'Expected exactly 51 results from pub generic autocomplete for Proceedings Article containing "p"');
+    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'pub', 'title', 'type_id', 'pub', 1000, $type_id)->getContent();
+    $decoded_results = json_decode($results, FALSE);
+    $this->assertCount(51, $decoded_results, 'Expected exactly 51 results from pub generic autocomplete for Proceedings Article containing "p"');
+    $this->assertDoesNotMatchRegularExpression('/\[.*\]/', $decoded_results[0]->value, 'The publication type in brackets should be absent when a type is specified: ' . $decoded_results[0]->value);
 
     // Test limiting by type_id for a table with a type_id in a property table
     $type_id = $this->types['Genome Project'];
     $request = Request::create(
-      'chado/generic/autocomplete/project/name/projectprop/1000/' . $type_id,
+      'chado/generic/autocomplete/project/name/x/projectprop/1000/' . $type_id,
       'GET',
       ['q' => 'w']
     );
-    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'project', 'name', 'projectprop', 1000, $type_id)->getContent();
-    $this->assertCount(2, json_decode($results), 'Expected exactly 2 results from project generic autocomplete for Genome Project containing "w"');
+    $results = $generic_autocomplete->handleGenericAutocomplete($request, 'project', 'name', 'x', 'projectprop', 1000, $type_id)->getContent();
+    $this->assertCount(2, json_decode($results, FALSE), 'Expected exactly 2 results from project generic autocomplete for Genome Project containing "w"');
 
     /**
      * Tests the project autocomplete which is derived from the generic controller
@@ -204,10 +208,10 @@ class ChadoGenericAutocompleteControllerTest extends ChadoTestKernelBase {
         ->getContent();
       if ($count > 0) {
 
-        $this->assertEquals(count(json_decode($suggest)), $count, 'Number of suggestions does not match requested count limit when not specifying projectprop');
+        $this->assertEquals(count(json_decode($suggest, FALSE)), $count, 'Number of suggestions does not match requested count limit when not specifying projectprop');
 
         // Each suggestion matches the projects that were inserted.
-        foreach(json_decode($suggest) as $item) {
+        foreach(json_decode($suggest, FALSE) as $item) {
           $is_found = (in_array($item->value, array_keys($this->projects))) ? TRUE : FALSE;
           $this->assertTrue($is_found, "Did not return the $count-th project");
         }
@@ -235,10 +239,10 @@ class ChadoGenericAutocompleteControllerTest extends ChadoTestKernelBase {
       $suggest = $project_autocomplete->handleAutocomplete($request, $count, 0)
         ->getContent();
 
-      $this->assertEquals(count(json_decode($suggest)), $count, 'Number of suggestions does not match requested count limit when projectprop specified');
+      $this->assertEquals(count(json_decode($suggest, FALSE)), $count, 'Number of suggestions does not match requested count limit when projectprop specified');
 
       // Each suggestion matches the projects that were inserted.
-      foreach(json_decode($suggest) as $item) {
+      foreach(json_decode($suggest, FALSE) as $item) {
         $is_found = (in_array($item->value, array_keys($this->projects))) ? TRUE : FALSE;
         $this->assertTrue($is_found, "Returned a project not in the list of projects");
       }
@@ -275,7 +279,7 @@ class ChadoGenericAutocompleteControllerTest extends ChadoTestKernelBase {
     $suggest = $project_autocomplete->handleAutocomplete($request, 5, 0)
       ->getContent();
 
-    foreach(json_decode($suggest) as $item) {
+    foreach(json_decode($suggest, FALSE) as $item) {
       $is_found = (in_array($item->value, ['Project Great', 'Project Green'])) ? TRUE : FALSE;
       $this->assertTrue($is_found, '"%gre" matched to "'.$item->value.'" not to "Project Great" or "Project Green"');
     }

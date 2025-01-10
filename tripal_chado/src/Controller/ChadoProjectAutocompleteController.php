@@ -33,7 +33,7 @@ class ChadoProjectAutocompleteController extends ChadoGenericAutocompleteControl
     // Project name has a unique constraint, so we don't need the pkey value included
     $this->include_pkey = FALSE;
     $this->leading_wildcard = FALSE;
-    return $this->handleGenericAutocomplete($request, 'project', 'name', 'projectprop', $count, $type_id);
+    return $this->handleGenericAutocomplete($request, 'project', 'name', '.', 'projectprop', $count, $type_id);
   }
 
   /**

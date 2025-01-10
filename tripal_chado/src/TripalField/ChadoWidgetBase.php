@@ -6,7 +6,7 @@ use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\TripalField\TripalWidgetBase;
-
+use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 
 
 /**
@@ -66,8 +66,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    * Generic select form element generator. For a small number of values
    * this creates a select, for many values this creates an autocomplete.
    *
-   * @param Drupal\pgsql\Driver\Database\pgsql\Select $query
-   *   A prepared database query
+#   * @param Drupal\pgsql\Driver\Database\pgsql\Select $query
+#   *   A prepared database query
    * @param string $pkey_column
    *   The name of the primary key column
    * @param int|null $default_id
@@ -81,11 +81,12 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    * @return array
    *   The appropriate form element
    */
-  protected function genericSelectElement($query, string $pkey_column, ?int $default_id,
+  protected function genericSelectElement(string $pkey_column, ?int $default_id,
       array $autocomplete_parameters, ?int $limit = NULL): array {
 
-    // The limit parameter is optional for this function. If not specified,
-    // then use the global settings value. If that is not set, default to 50.
+    // The limit parameter is optional for this function. If not specified by
+    // the specific widget's settings, then use the global settings value.
+    // If that is not set, default to 50.
     if (is_null($limit)) {
       $limit = \Drupal::config('tripal.settings')->get('tripal_entity_type.widget_select_limit');
       if (is_null($limit) or (trim($limit) === '')) {
@@ -94,6 +95,19 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     }
 
     $element = [];
+
+    // Construct a query
+    // A single wildcard indicates that all records are to be returned
+    $string = '%';
+    $options = [
+      'base_table' => $autocomplete_parameters['base_table'],
+      'column_name' => $autocomplete_parameters['name'],
+      'type_column' => $autocomplete_parameters['type_column'] ?? NULL,
+      'property_table' => $autocomplete_parameters['property_table'] ?? NULL,
+      'count' => $limit + 1,
+      'type_id' => $autocomplete_parameters['type_id'] ?? 0,
+    ];
+    $query = ChadoGenericAutocompleteController::getQuery($string, $options);
 
     // Get a count of the number of possible values
     $count = $query->countQuery()->execute()->fetchField();

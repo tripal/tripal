@@ -74,7 +74,8 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
       'count' => 10,
       'type_id' => 0,
     ];
-    $select_element = $this->genericSelectElement($query, 'analysis_id', $analysis_id, $autocomplete_parameters);
+#@@@$select_element = $this->genericSelectElement($query, 'analysis_id', $analysis_id, $autocomplete_parameters);
+    $select_element = $this->genericSelectElement('analysis_id', $analysis_id, $autocomplete_parameters);
     $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
