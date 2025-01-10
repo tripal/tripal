@@ -618,7 +618,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         'Failed to publish 1 array design entitity.');
     $this->checkFieldItem('array_design', 'array_design_num_of_elements', 1,
         ['record_id' => $array_design_id1],
-        ['bundle' => 'array_design', 'entity_id' => 8, 'value' => 0]);
+        ['bundle' => 'array_design', 'entity_id' => 8, 'value' => 1]);
     // We do not expect a NULL integer item to be published
     $this->checkFieldItem('array_design', 'array_design_num_array_columns', 0,
         ['record_id' => $array_design_id1],
