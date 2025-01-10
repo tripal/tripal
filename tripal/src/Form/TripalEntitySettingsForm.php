@@ -38,11 +38,21 @@ class TripalEntitySettingsForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $settings = \Drupal::config('tripal.settings');
 
-    $form['tripal_entity_settings']['#markup'] = 'Settings form for Tripal Content entities.';
-
     // Define the HTML tags that tripal supports in Tripal Entity titles.
     $allowed_title_tags = $form_state->getValue('allowed_title_tags',
       $settings->get('tripal_entity_type.allowed_title_tags'));
+
+    // Defines the limit of records for a select. Above this value,
+    // the form element will change to an autocomplete.
+    // Supplying zero or less means always use autocomplete.
+    $widget_global_select_limit = $form_state->getValue('widget_global_select_limit',
+      $settings->get('tripal_entity_type.widget_global_select_limit'));
+    // If nothing is set, create a default value that matches what the code defines
+    if (is_null($widget_global_select_limit) or (trim($widget_global_select_limit) === '')) {
+      $widget_global_select_limit = 50;
+    }
+
+    $form['tripal_entity_settings']['#markup'] = 'Settings form for Tripal Content entities.';
 
     $form['allowed_title_tags'] = [
       '#type' => 'textfield',
@@ -53,6 +63,21 @@ class TripalEntitySettingsForm extends FormBase {
                         . ' Any tag not in this list will be filtered out if present in a page title.'
                         . ' You may need to rebuild the cache for changes to take effect.'),
       '#default_value' => $allowed_title_tags,
+      '#required' => FALSE,
+    ];
+
+    $form['widget_global_select_limit'] = [
+      '#type' => 'textfield',
+      '#title' => t('Maximum records for a select'),
+      '#description' => t('The value here controls whether a widget select element uses a'
+                        . ' dropdown select list, or an autocomplete.'
+                        . ' A dropdown can be difficult to use and is a performance problem'
+                        . ' if the number of records is large.'
+                        . ' When the number of records is larger than the value entered here,'
+                        . ' use an autocomplete if the field supports one.'
+                        . ' Enter zero to indicate that an autocomplete should always be used.'
+                        . " This value can be overridden by an individual widget's settings."),
+      '#default_value' => $widget_global_select_limit,
       '#required' => FALSE,
     ];
 
@@ -77,6 +102,14 @@ class TripalEntitySettingsForm extends FormBase {
       $form_state->setErrorByName('allowed_title_tags',
         t('Only letters and spaces can be used.'));
     }
+
+    $widget_global_select_limit = trim($form_state->getValue('widget_global_select_limit'));
+
+    // Non-negative integers or an empty string are valid
+    if (!preg_match('/^\d*$/', $widget_global_select_limit)) {
+      $form_state->setErrorByName('widget_global_select_limit',
+        t('This field must contain an integer value.'));
+    }
   }
 
   /**
@@ -94,10 +127,13 @@ class TripalEntitySettingsForm extends FormBase {
     $allowed_title_tags = strtolower(trim($allowed_title_tags));
     $allowed_title_tags = preg_replace('/ +/', ' ', $allowed_title_tags);
 
+    $widget_global_select_limit = trim($form_state->getValue('widget_global_select_limit'));
+
     // Update configuration
     \Drupal::configFactory()
       ->getEditable('tripal.settings')
       ->set('tripal_entity_type.allowed_title_tags', $allowed_title_tags)
+      ->set('tripal_entity_type.widget_global_select_limit', $widget_global_select_limit)
       ->save();
 
     $this->messenger()->addStatus('Settings have been saved.');
