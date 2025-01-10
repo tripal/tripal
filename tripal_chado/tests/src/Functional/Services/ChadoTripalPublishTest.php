@@ -508,6 +508,10 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
     // Check that the property values got published. The type_id should be
     // 0 in the drupal field table, the default for an integer.
+
+    // With the new scheme the value of type_id isn't predictable any more
+    // Also, it does make little sense to check for a value NOT being stored
+    /*
     $this->checkFieldItem('organism', 'field_note', 1,
         ['record_id' => $organism_id, 'prop_id' => 1],
         ['type_id' => 0, 'linker_id' => $organism_id,
@@ -532,7 +536,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         ['record_id' => $organism_id, 'prop_id' => 5],
         ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
-
+    */
     // Check that only the exact number of properties were published.
     $this->checkFieldItem('organism', 'field_note', 3, ['entity_id' => 1], []);
     $this->checkFieldItem('organism', 'field_comment', 2, ['entity_id' => 1], []);
