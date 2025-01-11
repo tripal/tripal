@@ -138,6 +138,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    *               Must be declared in autocomplete route parameter e.g. ['type_id' => 0].
    *     match_operator - Either 'CONTAINS' (default) or 'STARTS_WITH'.
    *     match_limit - Desired number of autocomplete matching names to suggest, default 10.
+   *                   If zero, there is no limit.
    *
    * @return ?\Drupal\pgsql\Driver\Database\pgsql\Select $query
    *   A database query object
@@ -182,7 +183,9 @@ class ChadoGenericAutocompleteController extends ControllerBase {
         $query->condition('BT.' . $column_name, $condition_value, 'ILIKE');
       }
       $query->orderBy('BT.' . $column_name, 'ASC');
-      $query->range(0, $options['match_limit']);
+      if ($options['match_limit']) {
+        $query->range(0, $options['match_limit']);
+      }
 
       if ($options['type_id'] > 0) {
         // We are limiting to records of a specific type.
