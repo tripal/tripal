@@ -253,7 +253,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     $element['size'] = [
       '#type' => 'number',
       '#title' => $this->t('Size of textfield'),
-      '#default_value' => $this->getSetting('size'),
+      '#default_value' => $this->getSetting('size') ?: 60,
       '#min' => 1,
       '#required' => TRUE,
     ];
