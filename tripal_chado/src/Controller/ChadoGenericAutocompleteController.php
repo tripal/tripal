@@ -21,7 +21,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    * Controls whether a leading wildcard character is included.
    * Used by derived classes.
    */
-  protected bool $leading_wildcard = TRUE;
+  protected string $match_operator = 'CONTAINS';
 
   /**
    * Controller autocomplete method to use for any chado table
@@ -50,11 +50,11 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    * @param string $property_table
    *   Property table name, use same name as base table if not needed
    *
-   * @param int $count
+   * @param int $match_limit
    *   Desired number of matching names to suggest.
    *   Default to 10 items.
    *   If set to zero, then autocomplete is disabled.
-   *   Must be declared in autocomplete route parameter e.g. ['count' => 15].
+   *   Must be declared in autocomplete route parameter e.g. ['match_limit' => 15].
    *
    * @param int $type_id
    *   Publication type set in pub.type_id to restrict publications to specific type.
@@ -67,7 +67,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    */
   public function handleGenericAutocomplete(Request $request,
      string $base_table, string $column_name, string $type_column, string $property_table,
-     int $count = 10, int $type_id = 0) {
+     int $match_limit = 10, int $type_id = 0) {
 
     // Array to hold matching records.
     $response = [];
@@ -81,9 +81,9 @@ class ChadoGenericAutocompleteController extends ControllerBase {
       'column_name' => $column_name,
       'type_column' => $type_column,
       'property_table' => $property_table,
-      'count' => $count,
+      'match_limit' => $match_limit,
       'type_id' => $type_id,
-      'leading_wildcard' => $this->leading_wildcard,
+      'match_operator' => $this->match_operator,
     ];
     $query = self::getQuery($string, $options);
 
@@ -133,13 +133,11 @@ class ChadoGenericAutocompleteController extends ControllerBase {
    *                   usually "type_id". Use a single character placeholder if absent.
    *     property_table - Property table name, use same name as base table if not needed
    *     property_type_column - type column in property table, defaults to "type_id"
-   *     count - Desired number of matching names to suggest.
-   *             Default to 10 items. If set to zero, then autocomplete is disabled.
    *     type_id - Used to restrict records to those of a specific type.
    *               Default to 0, return records regardless of type.
    *               Must be declared in autocomplete route parameter e.g. ['type_id' => 0].
-   *     leading_wildcard - Indicates if the query should include a "%" wildcard at
-   *                        the beginning, defaults to TRUE.
+   *     match_operator - Either 'CONTAINS' (default) or 'STARTS_WITH'.
+   *     match_limit - Desired number of autocomplete matching names to suggest, default 10.
    *
    * @return ?\Drupal\pgsql\Driver\Database\pgsql\Select $query
    *   A database query object
@@ -147,18 +145,18 @@ class ChadoGenericAutocompleteController extends ControllerBase {
   public static function getQuery(string $string, array $options): ?\Drupal\pgsql\Driver\Database\pgsql\Select {
 
     // Set defaults
+    $options['pkey_id'] ??= $options['base_table'] . '_id';
     $options['type_column'] ??= '.';
     $options['property_table'] ??= $options['base_table'];
     $options['property_type_column'] ??= 'type_id';
-    $options['pkey_id'] ??= $options['base_table'] . '_id';
-    $options['count'] ??= 10;
     $options['type_id'] ??= 0;
-    $options['leading_wildcard'] ??= TRUE;
+    $options['match_operator'] ??= 'CONTAINS';
+    $options['match_limit'] ??= 10;
 
     $query = NULL;
-    // Generate a query only if string is at least a character
+    // Generate a query only if $string is at least a character
     // long and result count is set to a value greater than 0.
-    if (strlen($string) > 0 && $options['count'] > 0) {
+    if (strlen($string) > 0 && $options['match_limit'] > 0) {
 
       $connection = \Drupal::service('tripal_chado.database');
 
@@ -170,21 +168,24 @@ class ChadoGenericAutocompleteController extends ControllerBase {
       $property_table = $connection->escapeTable($options['property_table']);
       $property_type_column = $connection->escapeTable($options['property_type_column']);
 
-      // Transform string into a search pattern with wildcards
-      $condition_value = ($options['leading_wildcard']?'%':'') . $string . '%';
+      // Transform string into a search pattern with wildcards.
+      // Only STARTS_WITH and CONTAINS are supported.
+      $condition_value = $string . '%';
+      if ($options['match_operator'] == 'CONTAINS') {
+        $condition_value = '%' . $condition_value;
+      }
       $query = $connection->select('1:' . $base_table, 'BT');
       $query->addField('BT', $options['pkey_id'], 'pkey');
       $query->addField('BT', $column_name, 'value');
-      // Single "%" wildcard is used to indicate return all records for a select
+      // A single "%" wildcard is used to indicate return all records for a form select element
       if ($string != '%') {
         $query->condition('BT.' . $column_name, $condition_value, 'ILIKE');
       }
       $query->orderBy('BT.' . $column_name, 'ASC');
-      if ($options['count']) {
-        $query->range(0, $options['count']);
-      }
+      $query->range(0, $options['match_limit']);
 
       if ($options['type_id'] > 0) {
+        // We are limiting to records of a specific type.
         if ($property_table and ($property_table != $base_table)) {
           $query->join('1:' . $property_table, 'PT', '"BT".' . $options['pkey_id'] . ' = "PT".' . $options['pkey_id']);
           $query->condition('PT.' . $options['property_type_column'], $options['type_id'], '=');

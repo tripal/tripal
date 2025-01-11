@@ -67,7 +67,9 @@ class TripalEntitySettingsForm extends FormBase {
     ];
 
     $form['widget_global_select_limit'] = [
-      '#type' => 'textfield',
+      '#type' => 'number',
+      '#min' => 0,
+      '#step' => 1,
       '#title' => t('Maximum records for a select'),
       '#description' => t('The value here controls whether a widget select element uses a'
                         . ' dropdown select list, or an autocomplete.'

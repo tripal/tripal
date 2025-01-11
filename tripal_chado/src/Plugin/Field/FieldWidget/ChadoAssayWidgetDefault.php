@@ -64,18 +64,13 @@ class ChadoAssayWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Create a select element specific to this content type
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('1:assay', 'BT');
-    $query->addField('BT', 'assay_id', 'pkey_id');
-    $query->addField('BT', 'name', 'value');
-    $autocomplete_parameters = [
+    $options = [
       'base_table' => 'assay',
       'column_name' => 'name',
+      'type_column' => 'x',
       'property_table' => 'assay',
-      'count' => 10,
-      'type_id' => 0,
     ];
-    $select_element = $this->genericSelectElement($query, 'assay_id', $assay_id, $autocomplete_parameters);
+    $select_element = $this->genericSelectElement('assay_id', $assay_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,

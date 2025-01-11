@@ -64,18 +64,13 @@ class ChadoProtocolWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Create a select element specific to this content type
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('1:protocol', 'BT');
-    $query->addField('BT', 'protocol_id', 'pkey_id');
-    $query->addField('BT', 'name', 'value');
-    $autocomplete_parameters = [
+    $options = [
       'base_table' => 'protocol',
       'column_name' => 'name',
+      'type_column' => 'type_id',
       'property_table' => 'protocol',
-      'count' => 10,
-      'type_id' => 0,
     ];
-    $select_element = $this->genericSelectElement($query, 'protocol_id', $protocol_id, $autocomplete_parameters);
+    $select_element = $this->genericSelectElement('protocol_id', $protocol_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,

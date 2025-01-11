@@ -65,20 +65,14 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Create a select element specific to this content type
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('1:contact', 'BT');
-    $query->leftJoin('cvterm', 'T', '[BT].[type_id] = [T].[cvterm_id]');
-    $query->addField('BT', 'contact_id', 'pkey_id');
-    $query->addField('BT', 'name', 'value');
-    $query->addField('T', 'name', 'type');
-    $autocomplete_parameters = [
+    $options = [
       'base_table' => 'contact',
       'column_name' => 'name',
+      'type_column' => 'type_id',
       'property_table' => 'contact',
-      'count' => 10,
-      'type_id' => 0,
     ];
-    $select_element = $this->genericSelectElement($query, 'contact_id', $contact_id, $autocomplete_parameters);
+    $select_element = $this->genericSelectElement('contact_id', $contact_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // Special processing for the null contact which is defined by chado
     if (array_key_exists('#options', $select_element)) {

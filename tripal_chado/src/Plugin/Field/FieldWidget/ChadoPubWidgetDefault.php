@@ -64,20 +64,14 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Create a select element specific to this content type
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('1:pub', 'BT');
-    $query->leftJoin('cvterm', 'T', '[BT].[type_id] = [T].[cvterm_id]');
-    $query->addField('BT', 'pub_id', 'pkey_id');
-    $query->addField('BT', 'title', 'value');
-    $query->addField('T', 'name', 'type');
-    $autocomplete_parameters = [
+    $options = [
       'base_table' => 'pub',
       'column_name' => 'title',
+      'type_column' => 'type_id',
       'property_table' => 'pub',
-      'count' => 10,
-      'type_id' => 0,
     ];
-    $select_element = $this->genericSelectElement($query, 'pub_id', $pub_id, $autocomplete_parameters);
+    $select_element = $this->genericSelectElement('pub_id', $pub_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // Special processing for the null publication which is defined by chado
     if (array_key_exists('#options', $select_element)) {

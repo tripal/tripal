@@ -63,19 +63,13 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Create a select element specific to this content type
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('1:analysis', 'BT');
-    $query->addField('BT', 'analysis_id', 'pkey_id');
-    $query->addField('BT', 'name', 'value');
-    $autocomplete_parameters = [
+    $options = [
       'base_table' => 'analysis',
       'column_name' => 'name',
+      'type_column' => 'x',
       'property_table' => 'analysis',
-      'count' => 10,
-      'type_id' => 0,
     ];
-#@@@$select_element = $this->genericSelectElement($query, 'analysis_id', $analysis_id, $autocomplete_parameters);
-    $select_element = $this->genericSelectElement('analysis_id', $analysis_id, $autocomplete_parameters);
+    $select_element = $this->genericSelectElement('analysis_id', $analysis_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
@@ -103,6 +97,27 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     $values = $this->genericSelectMassageFormValues('analysis_id', $values);
     return $this->massageLinkingFormValues('analysis_id', $values, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return parent::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary();
   }
 
 }

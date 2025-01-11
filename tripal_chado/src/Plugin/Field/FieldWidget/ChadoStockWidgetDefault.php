@@ -64,20 +64,13 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Create a select element specific to this content type
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('1:stock', 'BT');
-    $query->leftJoin('cvterm', 'T', '[BT].[type_id] = [T].[cvterm_id]');
-    $query->addField('BT', 'stock_id', 'pkey_id');
-    $query->addField('BT', 'name', 'value');
-    $query->addField('T', 'name', 'type');
-    $autocomplete_parameters = [
+    $options = [
       'base_table' => 'stock',
       'column_name' => 'name',
+      'type_column' => 'type_id',
       'property_table' => 'stock',
-      'count' => 10,
-      'type_id' => 0,
     ];
-    $select_element = $this->genericSelectElement($query, 'stock_id', $stock_id, $autocomplete_parameters);
+    $select_element = $this->genericSelectElement('stock_id', $stock_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,

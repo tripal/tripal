@@ -64,18 +64,13 @@ class ChadoFeatureMapWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Create a select element specific to this content type
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('1:featuremap', 'BT');
-    $query->addField('BT', 'featuremap_id', 'pkey_id');
-    $query->addField('BT', 'name', 'value');
-    $autocomplete_parameters = [
+    $options = [
       'base_table' => 'featuremap',
       'column_name' => 'name',
+      'type_column' => 'x',
       'property_table' => 'featuremap',
-      'count' => 10,
-      'type_id' => 0,
     ];
-    $select_element = $this->genericSelectElement($query, 'featuremap_id', $featuremap_id, $autocomplete_parameters);
+    $select_element = $this->genericSelectElement('featuremap_id', $featuremap_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,

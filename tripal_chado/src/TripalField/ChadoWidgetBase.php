@@ -63,34 +63,70 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   }
 
   /**
+   * Gets the select_limit value, checking in order from: an explicit value;
+   * from the field's settings; from the global setting; or default value of 50.
+   *
+   * @param int ?$select_limit
+   *   If not NULL or an empty string, use this value
+   *
+   * @return int
+   *   A non-negative integer. Zero is used to indicate to always use autocomplete.
+   */
+  protected function getSelectLimit(?int $select_limit = NULL) {
+    if (is_null($select_limit) or (trim($select_limit) === '')) {
+      $select_limit = $this->getSetting('widget_select_limit');
+      if (is_null($select_limit) or (trim($select_limit) === '')) {
+        $select_limit = \Drupal::config('tripal.settings')->get('tripal_entity_type.widget_global_select_limit');
+        if (is_null($select_limit) or (trim($select_limit) === '')) {
+          $select_limit = 50;
+        }
+      }
+    }
+    return $select_limit;
+  }
+
+  /**
    * Generic select form element generator. For a small number of values
    * this creates a select, for many values this creates an autocomplete.
    *
-#   * @param Drupal\pgsql\Driver\Database\pgsql\Select $query
-#   *   A prepared database query
    * @param string $pkey_column
    *   The name of the primary key column
    * @param int|null $default_id
    *   The pkey_id value of the default, if one exists
-   * @param array $autocomplete_parameters
-   *   All the values needed for the autocomplete
-   * @param ?int $limit
-   *   The maximum number of records for a select. If more, then
-   *   use autocomplete. Use zero if autocomplete always wanted.
+   * @param array $options
+   *   'base_table' - Chado table name
+   *   'column_name' - Column name in the base table
+   *   'type_column' - Column in base table specifying type,
+   *       or single character placeholder if none exists.
+   *   'property_table' - same as base table if type is stored there
+   *   'type_id' - cvterm_id to limit by, 0 for no limiting.
+   *   'match_operator' - Either "CONTAINS" or "STARTS_WITH"
+   *   'match_limit' -Number of records that the autoselect will present
+   *   'size' - Size of the autocomplete form field
+   *   'placeholder' - Placeholder before autocomplete is filled
+   *   'select_limit' - The maximum number of records for a select. If more,
+   *       then use autocomplete. Use zero if autocomplete always wanted.
+   *       If NULL or empty string, then the global setting will be used.
    *
    * @return array
    *   The appropriate form element
    */
   protected function genericSelectElement(string $pkey_column, ?int $default_id,
-      array $autocomplete_parameters, ?int $limit = NULL): array {
+      array $options): array {
 
-    // The limit parameter is optional for this function. If not specified by
-    // the specific widget's settings, then use the global settings value.
-    // If that is not set, default to 50.
-    if (is_null($limit)) {
-      $limit = \Drupal::config('tripal.settings')->get('tripal_entity_type.widget_select_limit');
-      if (is_null($limit) or (trim($limit) === '')) {
-        $limit = 50;
+    // Set some defaults to keep each of the fields simpler
+    $options['type_id'] ??= 0;
+    $options['select_limit'] = $this->getSelectLimit($options['select_limit'] ?? NULL);
+    $options['match_operator'] ??= $this->getSetting('match_operator') ?? 'CONTAINS';
+    $options['match_limit'] ??= $this->getSetting('match_limit') ?? 10;
+    $options['size'] ??= $this->getSetting('size');
+    $options['placeholder'] ??= $this->getSetting('placeholder');
+
+    // Validation for developers
+    $required = ['base_table', 'column_name', 'type_column', 'property_table'];
+    foreach ($required as $key) {
+      if (!array_key_exists($key, $options)) {
+        throw new \Exception(t('genericSelectElement options is missing required key "@key"', ['@key' => $key]));
       }
     }
 
@@ -99,22 +135,16 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // Construct a query
     // A single wildcard indicates that all records are to be returned
     $string = '%';
-    $options = [
-      'base_table' => $autocomplete_parameters['base_table'],
-      'column_name' => $autocomplete_parameters['name'],
-      'type_column' => $autocomplete_parameters['type_column'] ?? NULL,
-      'property_table' => $autocomplete_parameters['property_table'] ?? NULL,
-      'count' => $limit + 1,
-      'type_id' => $autocomplete_parameters['type_id'] ?? 0,
-    ];
-    $query = ChadoGenericAutocompleteController::getQuery($string, $options);
+    // Add one to select limit so we know it is exceeded
+    $count_options = $options;
+    $count_options['select_limit'] = $options['select_limit'] + 1;
+    $query = ChadoGenericAutocompleteController::getQuery($string, $count_options);
 
     // Get a count of the number of possible values
     $count = $query->countQuery()->execute()->fetchField();
 
     // For a large number of options, use an autocomplete
-    if ($count > $limit) {
-
+    if ($count > $select_limit) {
       // Look up the default value if one was specified
       $default_value = '';
       if ($default_id) {
@@ -134,8 +164,12 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
         '#type' => 'textfield',
         '#default_value' => $default_value,
         '#autocomplete_route_name' => 'tripal_chado.generic_autocomplete',
-        '#autocomplete_route_parameters' => $autocomplete_parameters,
+        '#size' => $options['size'],
+        '#placeholder' => $options['placeholder'],
       ];
+      unset($options['size']);
+      unset($options['placeholder']);
+      $element['#autocomplete_route_parameters'] = $options;
     }
 
     // For a small number of options, use a select
@@ -160,6 +194,105 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     }
     $element['#element_validate'] = [[static::class, 'validateAutocomplete']];
     return $element;
+  }
+
+  /**
+   * Default settings associated with the generic select element
+   *
+   * @return array
+   *   The default settings.
+   */
+  public static function defaultSelectSettings(): array {
+    return [
+      'widget_select_limit' => '',  // Global setting applies when not set
+      'match_operator' => 'CONTAINS',
+      'match_limit' => 10,
+      'size' => 60,
+      'placeholder' => '',
+    ];
+  }
+
+  /**
+   * Elements for the widget settings form for the generic select element
+   *
+   */
+  public function selectSettingsForm(array $form, FormStateInterface $form_state) {
+    $element = [];
+    $element['widget_select_limit'] = [
+      '#type' => 'number',
+      '#min' => 0,
+      '#step' => 1,
+      '#title' => t('Maximum records for a select'),
+      '#description' => $this->t('The value here controls whether a widget select element uses'
+                        . ' a dropdown select list, or an autocomplete.'
+                        . ' A dropdown can be difficult to use and is a performance problem'
+                        . ' if the number of records is large.'
+                        . ' When the number of records is larger than the value entered here,'
+                        . ' use an autocomplete.'
+                        . ' If the value is left blank, then the global setting will be used.'
+                        . ' Enter <em>0</em> to indicate that an autocomplete should always be used.'),
+      '#required' => FALSE,
+      '#default_value' => $this->getSetting('widget_select_limit') ?? '',
+    ];
+
+    // These elements are copied directly from Drupal
+    $element['match_operator'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Autocomplete matching'),
+      '#default_value' => $this->getSetting('match_operator'),
+      '#options' => $this->getMatchOperatorOptions(),
+      '#description' => $this->t('Select the method used to collect autocomplete suggestions. Note that <em>Contains</em> can cause performance issues on sites with thousands of entities.'),
+    ];
+    $element['match_limit'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Number of results'),
+      '#default_value' => $this->getSetting('match_limit'),
+      '#min' => 0,
+      '#description' => $this->t('The number of suggestions that will be listed. Use <em>0</em> to remove the limit.'),
+    ];
+    $element['size'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Size of textfield'),
+      '#default_value' => $this->getSetting('size'),
+      '#min' => 1,
+      '#required' => TRUE,
+    ];
+    $element['placeholder'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Placeholder'),
+      '#default_value' => $this->getSetting('placeholder'),
+      '#description' => $this->t('Text that will be shown inside the field until a value is entered. This hint is usually a sample value or a brief description of the expected format.'),
+    ];
+
+    return $element;
+  }
+
+  /**
+   * Summary of the settings for the generic select element
+   */
+  public function selectSettingsSummary() {
+    $summary = [];
+//    $global_select_limit = \Drupal::config('tripal.settings')->get('tripal_entity_type.widget_global_select_limit');
+    $select_limit = $this->getSetting('widget_select_limit');
+    if (is_null($select_limit) or ($select_limit === '')) {
+      $select_limit = $this->t('use global setting');
+    }
+
+    $summary[] = $this->t('Maximum records for a select: @select_limit',
+                          ['@select_limit' => $select_limit]);
+    $operators = $this->getMatchOperatorOptions();
+    $summary[] = $this->t('Autocomplete matching: @match_operator', ['@match_operator' => $operators[$this->getSetting('match_operator')]]);
+    $size = $this->getSetting('match_limit') ?: $this->t('unlimited');
+    $summary[] = $this->t('Autocomplete suggestion list size: @size', ['@size' => $size]);
+    $summary[] = $this->t('Textfield size: @size', ['@size' => $this->getSetting('size')]);
+    $placeholder = $this->getSetting('placeholder');
+    if (!empty($placeholder)) {
+      $summary[] = $this->t('Placeholder: @placeholder', ['@placeholder' => $placeholder]);
+    }
+    else {
+      $summary[] = $this->t('No placeholder');
+    }
+    return $summary;
   }
 
   /**
@@ -415,4 +548,18 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
           'The specified record must include its chado record number in parentheses at the end');
     }
   }
+
+  /**
+   * Returns the options for the match operator.
+   *
+   * @return array
+   *   List of options.
+   */
+  protected function getMatchOperatorOptions() {
+    return [
+      'STARTS_WITH' => $this->t('Starts with'),
+      'CONTAINS' => $this->t('Contains'),
+    ];
+  }
+
 }
