@@ -368,6 +368,26 @@ tripal.tripalfield_collection.*:
                                type: string
                                label: 'Filter format for a filtered text field'
                                nullable: true
+                             widget_select_limit:
+                               type: integer
+                               label: 'Maximum number of records for a select'
+                               nullable: true
+                             match_operator:
+                               type: string
+                               label: 'Type of matching for an autocomplete'
+                               nullable: true
+                             match_limit:
+                               type: integer
+                               label: 'Maximum number of records to display for an autocomplete'
+                               nullable: true
+                             size:
+                               type: integer
+                               label: 'Number of characters for a text field'
+                               nullable: false
+                             placeholder:
+                               type: integer
+                               label: 'Placeholder value for an empty text field'
+                               nullable: true
 
 field.formatter.settings.*:
   type: mapping
@@ -422,3 +442,18 @@ field.widget.settings.*:
     num_rows:
       type: integer
       label: 'Number of Rows to display in the text widget'
+    widget_select_limit:
+      type: integer
+      label: 'Maximum number of records for a select'
+    match_operator:
+      type: string
+      label: 'Type of matching for an autocomplete'
+    match_limit:
+      type: integer
+      label: 'Maximum number of records to display for an autocomplete'
+    size:
+      type: integer
+      label: 'Number of characters for a text field'
+    placeholder:
+      type: integer
+      label: 'Placeholder value for an empty text field'
