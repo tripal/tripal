@@ -140,10 +140,13 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     $count_options['select_limit'] = $options['select_limit'] + 1;
     $query = ChadoGenericAutocompleteController::getQuery($string, $count_options);
 
-    // Get a count of the number of possible values
-    $count = $query->countQuery()->execute()->fetchField();
+    // Get a count of the number of possible values, unless forcing always autocomplete
+    $count = 1;
+    if ($select_limit > 0) {
+      $count = $query->countQuery()->execute()->fetchField();
+    }
 
-    // For a large number of options, use an autocomplete
+    // For a large number of options, or if limit is zero, use an autocomplete
     if ($count > $select_limit) {
       // Look up the default value if one was specified
       $default_value = '';
