@@ -137,17 +137,17 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     $string = '%';
     // Add one to select limit so we know it is exceeded
     $count_options = $options;
-    $count_options['select_limit'] = $options['select_limit'] + 1;
-    $query = ChadoGenericAutocompleteController::getQuery($string, $count_options);
+    $count_options['match_limit'] = $options['select_limit'] + 1;
+    $count_query = ChadoGenericAutocompleteController::getQuery($string, $count_options);
 
     // Get a count of the number of possible values, unless forcing always autocomplete
     $count = 1;
-    if ($select_limit > 0) {
-      $count = $query->countQuery()->execute()->fetchField();
+    if ($options['select_limit'] > 0) {
+      $count = $count_query->countQuery()->execute()->fetchField();
     }
 
     // For a large number of options, or if limit is zero, use an autocomplete
-    if ($count > $select_limit) {
+    if ($count > $options['select_limit']) {
       // Look up the default value if one was specified
       $default_value = '';
       if ($default_id) {
@@ -177,7 +177,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
 
     // For a small number of options, use a select
     else {
-      $results = $query->execute();
+      $select_query = ChadoGenericAutocompleteController::getQuery($string, $options);
+      $results = $select_query->execute();
       $select_options = [];
       while ($record = $results->fetchObject()) {
         // Strip HTML tags if present, e.g. in Pub title
@@ -185,7 +186,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
         if (property_exists($record, 'type') and $record->type) {
           $value .= ' [' . $record->type . ']';
         }
-        $select_options[$record->pkey_id] = $value;
+        $select_options[$record->pkey] = $value;
       }
       natcasesort($select_options);
       $element = [
