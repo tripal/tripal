@@ -682,3 +682,65 @@ function tripal_chado_update_10409() {
     throw new UpdateException('Could not set title and publication year required setting: ' . $e->getMessage());
   }
 }
+
+/**
+ * Corrects duplicated terms for some fields in yaml files.
+ * PR 2079
+ */
+function tripal_chado_update_10410() {
+  try {
+    $messenger = \Drupal::messenger();
+
+    // Adds a new CV term
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $term_values = [
+      'db.name' => 'NCIT',
+      'cv.name' => 'ncit',
+      'dbxref.accession' => 'C16493',
+      'cvterm.name' => 'Data Source',
+      'cvterm.definition' => 'The person or authoritative body who provided the information.',
+    ];
+    $chado_cvterm_record = $cvterm_buddy->upsertCvterm($term_values, []);
+    $term_values = [
+      'db.name' => 'SIO',
+      'cv.name' => 'SIO',
+      'dbxref.accession' => '001377',
+      'cvterm.name' => 'versioned dataset',
+      'cvterm.definition' => 'a versioned dataset is a dataset with a particular release date or release number.',
+    ];
+    $chado_cvterm_record = $cvterm_buddy->upsertCvterm($term_values, []);
+
+    $update_list = [
+      'tripal_entity.analysis.analysis_source:SIO:001377',
+      'tripal_entity.analysis.analysis_source_version:NCIT:C16493',
+      'tripal_entity.pub.pub_type:rdfs:type',
+      'tripal_entity.array_design.array_design_substrate_type:EFO:0005522',
+      'tripal_entity.array_design.array_design_platform_type:NCIT:C45378',
+      'tripal_entity.genome_annotation.genome_annotation_src_version:NCIT:C16493',
+      'tripal_entity.genome_annotation.genome_annotation_src_name:SIO:001377',
+      'tripal_entity.genome_assembly.genome_assembly_source_version:NCIT:C16493',
+      'tripal_entity.genome_assembly.genome_assembly_source_name:SIO:001377',
+    ];
+    foreach ($update_list as $update_item) {
+      $parts = explode(':', $update_item);
+      /** Drupal\field\Entity\FieldConfig **/
+      $field = FieldConfig::load($parts[0]);
+      if ($field) {
+        $settings = $field->getSettings();
+        $old_term = $settings['termIdSpace'] . ':' . $settings['termAccession'];
+        $new_term = $parts[1] . ':' . $parts[2];
+        if ($old_term != $new_term) {
+          $settings['termIdSpace'] = $parts[1];
+          $settings['termAccession'] = $parts[2];
+          $field->setSettings($settings);
+          $field->save();
+          $messenger->addMessage("Changed term for field $parts[0] from $old_term to $new_term");
+        }
+      }
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not update chado fields: ' . $e->getMessage());
+  }
+}
