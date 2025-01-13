@@ -3650,7 +3650,7 @@ INSERT INTO chado.dbxref VALUES (3484, 27, '0000254', '', NULL);
 INSERT INTO chado.dbxref VALUES (3485, 27, '0000255', '', NULL);
 INSERT INTO chado.dbxref VALUES (3486, 15, 'lineageex', '', NULL);
 INSERT INTO chado.dbxref VALUES (3487, 20, 'C16493', '', NULL);
-INSERT INTO chado.dbxref VALUES (3487, 31, '001377', '', NULL);
+INSERT INTO chado.dbxref VALUES (3488, 31, '001377', '', NULL);
 INSERT INTO chado.cvterm VALUES (1, 1, 'null', NULL, 1, 0, 0);
 INSERT INTO chado.cvterm VALUES (2, 4, 'version', 'Chado schema version', 2, 0, 0);
 INSERT INTO chado.cvterm VALUES (3, 5, 'accession', '', 3, 0, 0);
@@ -6831,7 +6831,7 @@ INSERT INTO chado.cvterm VALUES (3177, 26, 'Publication Code', 'A unique special
 INSERT INTO chado.cvterm VALUES (3178, 26, 'Patent Number', 'A unique special code for journal article, book, book chapter or any publication type.', 3485, 0, 0);
 INSERT INTO chado.cvterm VALUES (3179, 2, 'lineageex', '', 3486, 0, 0);
 INSERT INTO chado.cvterm VALUES (3180, 19, 'Data Source', 'The person or authoritative body who provided the information.', 3487, 0, 0);
-INSERT INTO chado.cvterm VALUES (3180, 30, 'versioned dataset', 'a versioned dataset is a dataset with a particular release date or release number.', 3488, 0, 0);
+INSERT INTO chado.cvterm VALUES (3181, 30, 'versioned dataset', 'a versioned dataset is a dataset with a particular release date or release number.', 3488, 0, 0);
 INSERT INTO chado.contact VALUES (1, NULL, 'null', 'null');
 INSERT INTO chado.pub VALUES (1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'null', 'null', 1, false, NULL, NULL);
 INSERT INTO chado.chadoprop VALUES (1, 2, '1.3', 0);
