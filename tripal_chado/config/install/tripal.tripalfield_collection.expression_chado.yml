@@ -560,8 +560,8 @@ fields:
                 type_table: arraydesign
                 type_column: platformtype_id
         settings:
-            termIdSpace: EFO
-            termAccession: "0000269"
+            termIdSpace: NCIT
+            termAccession: C45378
         display:
           view:
             default:
@@ -588,7 +588,7 @@ fields:
                 type_column: substratetype_id
         settings:
             termIdSpace: EFO
-            termAccession: "0000269"
+            termAccession: "0005522"
         display:
           view:
             default:
