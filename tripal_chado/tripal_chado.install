@@ -695,24 +695,32 @@ function tripal_chado_update_10410() {
     $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
     $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
     $term_values = [
-      'db.name' => 'local',
-      'cv.name' => 'local',
-      'dbxref.accession' => 'source_version',
-      'cvterm.name' => 'source_version',
-      'cvterm.definition' => 'The version of a data set.',
+      'db.name' => 'NCIT',
+      'cv.name' => 'ncit',
+      'dbxref.accession' => 'C16493',
+      'cvterm.name' => 'Data Source',
+      'cvterm.definition' => 'The person or authoritative body who provided the information.',
+    ];
+    $chado_cvterm_record = $cvterm_buddy->upsertCvterm($term_values, []);
+    $term_values = [
+      'db.name' => 'SIO',
+      'cv.name' => 'SIO',
+      'dbxref.accession' => '001377',
+      'cvterm.name' => 'versioned dataset',
+      'cvterm.definition' => 'a versioned dataset is a dataset with a particular release date or release number.',
     ];
     $chado_cvterm_record = $cvterm_buddy->upsertCvterm($term_values, []);
 
     $update_list = [
-      'tripal_entity.analysis.analysis_source:local:source_data',
-      'tripal_entity.analysis.analysis_source_version:local:source_version',
+      'tripal_entity.analysis.analysis_source:SIO:001377',
+      'tripal_entity.analysis.analysis_source_version:NCIT:C16493',
       'tripal_entity.pub.pub_type:rdfs:type',
       'tripal_entity.array_design.array_design_substrate_type:EFO:0005522',
       'tripal_entity.array_design.array_design_platform_type:NCIT:C45378',
-      'tripal_entity.genome_annotation.genome_annotation_src_version:local:source_version',
-      'tripal_entity.genome_annotation.genome_annotation_src_name:local:source_data',
-      'tripal_entity.genome_assembly.genome_assembly_source_version:local:source_version',
-      'tripal_entity.genome_assembly.genome_assembly_source_name:local:source_data',
+      'tripal_entity.genome_annotation.genome_annotation_src_version:NCIT:C16493',
+      'tripal_entity.genome_annotation.genome_annotation_src_name:SIO:001377',
+      'tripal_entity.genome_assembly.genome_assembly_source_version:NCIT:C16493',
+      'tripal_entity.genome_assembly.genome_assembly_source_name:SIO:001377',
     ];
     foreach ($update_list as $update_item) {
       $parts = explode(':', $update_item);
