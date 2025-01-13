@@ -324,7 +324,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the Drupal query builders while quering chado.
+   * Tests the Drupal query builders while querying chado.
    *
    * @dataProvider provideChadoSchemaVersions
    *
@@ -409,8 +409,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // version NOT in chado_installations table.
     $retrieved_version_defaults = $chado_connection->findVersion();
     $this->assertEquals(
-      $retrieved_version_defaults,
       $expected_version,
+      $retrieved_version_defaults,
       "Unable to extract the version from $init_level test schema with no parameters provided."
     );
 
@@ -419,8 +419,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     $schema_name = $chado_connection->getSchemaName();
     $retrieved_version = $chado_connection->findVersion($schema_name);
     $this->assertEquals(
-      $retrieved_version,
       $expected_version,
+      $retrieved_version,
       "Unable to extract the version from $init_level test schema with the schema name provided."
     );
     $this->assertEquals(
@@ -433,8 +433,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // version NOT in chado_installations table.
     $retrieved_version = $chado_connection->findVersion($schema_name, TRUE);
     $this->assertEquals(
-      $retrieved_version,
       $expected_version,
+      $retrieved_version,
       "Unable to extract the Exact Version from $init_level test schema with the schema name provided."
     );
     $this->assertEquals(
@@ -456,8 +456,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // -- now try to find the version.
     $retrieved_version = $chado_connection->findVersion();
     $this->assertEquals(
-      $retrieved_version,
       $expected_version,
+      $retrieved_version,
       "Unable to extract the version from $init_level test schema with no parameters provided."
     );
     $this->assertEquals(
@@ -495,8 +495,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // -- Now find the version and confirm it matches our expectations.
     $retrieved_version = $chado_connection->findVersion();
     $this->assertEquals(
-      $retrieved_version,
       $expected_version,
+      $retrieved_version,
       "The version returned for a chado instance with a chadoprop table but not 1.3+ version was not what we expected."
     );
 
@@ -512,8 +512,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     // -- Now find the version and confirm it matches our expectations.
     $retrieved_version = $chado_connection->findVersion();
     $this->assertEquals(
-      $retrieved_version,
       $expected_version,
+      $retrieved_version,
       "The version returned for a chado instance with NO chadoprop table was not what we expected."
     );
 
@@ -522,8 +522,8 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
     $chado_connection = $this->createTestSchema(ChadoTestKernelBase::CREATE_SCHEMA);
     $retrieved_version = $chado_connection->findVersion();
     $this->assertEquals(
-      $retrieved_version,
       $expected_version,
+      $retrieved_version,
       "The version returned for a chado imposter schema was not what we expected."
     );
   }
