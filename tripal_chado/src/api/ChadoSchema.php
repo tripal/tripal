@@ -433,7 +433,7 @@ class ChadoSchema {
   public function getSchemaDetails() {
 
     if (empty($this->schema)) {
-      $filename = \Drupal::service('extension.list.module')->getPath('tripal_chado') . '/chado_schema/chado_schema-1.3.yml';
+      $filename = \Drupal::service('extension.list.module')->getPath('tripal_chado') . '/chado_schema/schema-definition/version-1.3.yml';
       $this->schema = Yaml::parse(file_get_contents($filename));
     }
 

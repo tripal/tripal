@@ -596,7 +596,7 @@ class ChadoUpgrader extends ChadoTaskBase {
       $module_path = \Drupal::service('extension.list.module')->getPath('tripal_chado');
       $file_path =
         $module_path
-        . '/chado_schema/chado-only-'
+        . '/chado_schema/chado-only/version-'
         . $version
         . '.sql';
 
@@ -1548,6 +1548,7 @@ class ChadoUpgrader extends ChadoTaskBase {
    *   updated to match the reference schema.
    */
   private function prepareUpgradeTables_newTablesStep1_compareColumns(&$new_table_columns, &$old_table_columns, $context) {
+    $alter_sql = [];
 
     // Compare columns for each column defined in the reference schema...
     foreach ($new_table_columns as $new_column => $new_column_def) {
