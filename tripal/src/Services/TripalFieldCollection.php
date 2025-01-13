@@ -419,7 +419,44 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
       return FALSE;
     }
 
+    // Verify that the term for this field is not already used by another field
+    $existing_terms = $this->getExistingFieldTerms($field_def['content_type']);
+    $new_term = $field_def['settings']['termIdSpace'] . ':' . $field_def['settings']['termAccession'];
+    if (array_key_exists($new_term, $existing_terms)) {
+      $reason = t('The term "@new_term" for field "@name" in bundle "@bundle" is already'
+          . ' being used by another field, so this field cannot be added.',
+          ['@new_term' => $new_term, '@name' => $field_def['name'], '@bundle' => $field_def['content_type']]);
+      $this->logger->error($reason);
+      return FALSE;
+    }
+
     return True;
+  }
+
+  /**
+   * Returns a list of field terms for all fields on the specified
+   * bundle, including non-chado fields.
+   *
+   * @param string $bundle
+   *   The bundle id, e.g. 'project', 'analysis', etc.
+   *
+   * @return array
+   *   An associative array of existing terms. The key is the term
+   *   stored as 'IdSpace:Accession', the value is the name of the field.
+   */
+  protected static function getExistingFieldTerms(string $bundle) {
+    $existing_terms = [];
+    /** @var \Drupal\Core\Entity\EntityFieldManager $field_manager **/
+    $field_manager = \Drupal::service('entity_field.manager');
+    $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $bundle);
+    foreach ($field_defs as $field_name => $field_definition) {
+      $settings = $field_definition->getSettings();
+      if (array_key_exists('termIdSpace', $settings)) {
+        $term = $settings['termIdSpace'] . ':' . $settings['termAccession'];
+        $existing_terms[$term] = $field_name;
+      }
+    }
+    return $existing_terms;
   }
 
   /**

@@ -229,17 +229,19 @@ trait ChadoTestTrait  {
    *   One of the constant to select the schema initialization level.
    *   If this is supplied then it forces a new connection to be made for
    *   backwards compatibility.
+   * @param string $version
+   *   Indicate the version of Chado to test against.
    *
    * @return \Drupal\tripal\TripalDBX\TripalDbxConnection
    *   A bio database connection using the generated schema.
    */
-  protected function getTestSchema(int $init_level = NULL) {
+  protected function getTestSchema(int $init_level = NULL, string $version = '1.3') {
 
     if ($init_level !== NULL) {
-      return $this->createTestSchema($init_level);
+      return $this->createTestSchema($init_level, $version);
     }
     elseif ($this->testSchemaName === NULL) {
-      return $this->createTestSchema();
+      return $this->createTestSchema(0, $version);
     }
     else {
       return new ChadoConnection($this->testSchemaName);
@@ -251,11 +253,13 @@ trait ChadoTestTrait  {
    *
    * @param int $init_level
    *   One of the constant to select the schema initialization level.
+   * @param string $version
+   *   Indicate the version of Chado to test against.
    *
    * @return \Drupal\tripal\TripalDBX\TripalDbxConnection
    *   A bio database connection using the generated schema.
    */
-  protected function createTestSchema(int $init_level = 0) {
+  protected function createTestSchema(int $init_level = 0, string $version = '1.3') {
     $schema_name = $this->testSchemaBaseNames['chado']
       . '_'
       . bin2hex(random_bytes(8))
@@ -267,12 +271,17 @@ trait ChadoTestTrait  {
         "Failed to generate a free test schema ($schema_name)."
       );
     }
+
+    // Determine the name of the chado schema file.
+    $chado_schema_file = __DIR__ . '/../../../chado_schema/chado-only/version-' . $version . '.sql';
+    $this->assertFileIsReadable($chado_schema_file, "Schema file does not exist for the version you specified (i.e. '$version').");
+
     switch ($init_level) {
       case static::INIT_CHADO_DUMMY:
         $tripaldbx_db->schema()->createSchema();
         $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
         $success = $tripaldbx_db->executeSqlFile(
-          __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
+          $chado_schema_file,
           ['chado' => $schema_name]);
         $this->assertTrue($success, 'Chado schema loaded.');
 
@@ -290,7 +299,7 @@ trait ChadoTestTrait  {
         $tripaldbx_db->schema()->createSchema();
         $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
         $success = $tripaldbx_db->executeSqlFile(
-          __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
+          $chado_schema_file,
           ['chado' => $schema_name]);
         $this->assertTrue($success, 'Chado schema loaded.');
         $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
@@ -305,7 +314,7 @@ trait ChadoTestTrait  {
           $tripaldbx_db->schema()->createSchema();
           $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
           $success = $tripaldbx_db->executeSqlFile(
-            __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
+            $chado_schema_file,
             ['chado' => $schema_name]);
           $this->assertTrue($success, 'Chado schema loaded.');
           $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
@@ -339,8 +348,41 @@ trait ChadoTestTrait  {
         break;
     }
     self::$db = self::$db ?? \Drupal::database();
-    self::$testSchemas[$schema_name] = TRUE;
+    // Set the test schema name.
+    // If the schema was actually created then set the value to TRUE because
+    // it's actually in use and needs to be dropped but otherwise, set it FALSE.
+    if ($init_level === static::SCHEMA_NAME_ONLY) {
+      self::$testSchemas[$schema_name] = FALSE;
+    }
+    else {
+      self::$testSchemas[$schema_name] = TRUE;
+    }
     $this->testSchemaName = $schema_name;
+
+    // Make sure that the version is correct in the chado property table.
+    if (($init_level > 1) && ($version !== '1.3')) {
+      // -- get the version cvterm ID.
+      $result = $tripaldbx_db->select('1:cvterm', 'cvt')
+        ->fields('cvt', ['cvterm_id']);
+      $result->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+      $result->condition('cv.name', 'chado_properties');
+      $result->condition('cvt.name', 'version');
+      $result = $result->execute();
+      $version_cvterm_id = $result->fetchField();
+      // -- now update the current version.
+      $tripaldbx_db->update('1:chadoprop')
+        ->fields([
+          'value' => $version,
+        ])
+        ->condition('type_id', $version_cvterm_id)
+        ->execute();
+      // -- confirm the version was set properly.
+      $this->assertEquals(
+        $version,
+        $tripaldbx_db->getVersion(),
+        "We expect that the chado version returned by the connection matches what we requested."
+      );
+    }
 
     // Make sure that any other connections to TripalDBX will see this new test schema as
     // the default schema.
