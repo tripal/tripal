@@ -5,6 +5,7 @@ tripaldocker/dev/.env
 */_build
 vendor
 .phpunit.result.cache
+.phpunit.cache
 clover.xml
 cc-test-reporter
 coverage/

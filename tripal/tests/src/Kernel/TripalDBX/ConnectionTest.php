@@ -11,8 +11,8 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
  * @coversDefaultClass \Drupal\tripal\TripalDBX\TripalDbxConnection
  *
  * @group Tripal
- * @group Tripal TripalDBX
- * @group Tripal TripalDBX Connection
+ * @group TripalDBX
+ * @group TripalDbxConnection
  */
 class ConnectionTest extends TripalTestKernelBase {
 
