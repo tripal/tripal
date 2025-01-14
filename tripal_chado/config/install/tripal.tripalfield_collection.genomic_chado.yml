@@ -1534,8 +1534,8 @@ fields:
                 base_column: sourcename
             max_length: 255
         settings:
-            termIdSpace: schema
-            termAccession: name
+            termIdSpace: NCIT
+            termAccession: "C16493"
         display:
           view:
             default:
@@ -1561,8 +1561,8 @@ fields:
                 base_column: sourceversion
             max_length: 255
         settings:
-            termIdSpace: IAO
-            termAccession: "0000129"
+            termIdSpace: SIO
+            termAccession: "001377"
         display:
           view:
             default:
@@ -1834,8 +1834,8 @@ fields:
                 base_column: sourcename
             max_length: 255
         settings:
-            termIdSpace: schema
-            termAccession: name
+            termIdSpace: NCIT
+            termAccession: "C16493"
         display:
           view:
             default:
@@ -1861,8 +1861,8 @@ fields:
                 base_column: sourceversion
             max_length: 255
         settings:
-            termIdSpace: IAO
-            termAccession: "0000129"
+            termIdSpace: SIO
+            termAccession: "001377"
         display:
           view:
             default:

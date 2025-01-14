@@ -25,21 +25,37 @@ class ChadoUpgraderTest extends ChadoTestKernelBase {
    */
   public function testPerformTaskUpgrader() {
 
+    // Create a reference.
+    $tripaldbx_db_ref = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+
     // Create a temporary schema.
-    $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+    $tripaldbx_db = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
+
+    // Confirm the reference schema is different from the one we are testing
+    // an upgrade on.
+    $this->assertNotEquals(
+      $tripaldbx_db->getSchemaName(),
+      $tripaldbx_db_ref->getSchemaName(),
+      "The reference should not be the same schema we are testing an upgrade on."
+    );
 
     // Now modify the schema.
     $tripaldbx_db->query('ALTER TABLE {1:project} DROP COLUMN description');
     $tripaldbx_db->query('ALTER TABLE {1:feature} ADD COLUMN testsum INT');
     $tripaldbx_db->query('DROP TABLE {1:analysis} CASCADE');
-
+    // -- confirm it was successful.
     $this->assertFalse($tripaldbx_db->schema()->fieldExists('project', 'description'), 'Unable to prepare chado for test by removing project.description column.');
     $this->assertTrue($tripaldbx_db->schema()->fieldExists('feature', 'testsum'), 'Unable to prepare chado for test by adding feature.testsum column.');
     $this->assertFalse($tripaldbx_db->schema()->tableExists('analysis'), 'Unable to prepare chado for test by removing analysis table.');
+    // -- confirm you did not inadvertently alter the reference too.
+    $this->assertTrue($tripaldbx_db_ref->schema()->fieldExists('project', 'description'), 'Accidentally removed project.description column from reference.');
+    $this->assertFalse($tripaldbx_db_ref->schema()->fieldExists('feature', 'testsum'), 'Accidentally added feature.testsum column to reference.');
+    $this->assertTrue($tripaldbx_db_ref->schema()->tableExists('analysis'), 'Accidentally removed analysis table from reference.');
 
     // Test upgrader.
     $upgrader = \Drupal::service('tripal_chado.upgrader');
     $upgrader->setParameters([
+      'input_schemas' => [$tripaldbx_db_ref->getSchemaName()],
       'output_schemas'  => [$tripaldbx_db->getSchemaName()],
       'cleanup'  => TRUE,
       'filename'  => '/tmp/upgrade_test.sql',

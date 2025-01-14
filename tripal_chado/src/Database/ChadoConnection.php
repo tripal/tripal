@@ -173,48 +173,12 @@ class ChadoConnection extends TripalDbxConnection {
           return $v->value;
         }
       }
-
       // If we don't have a version in the chadoprop table then it must be
-      // v1.11 or older...
-      // Try to guess it from schema content from table specific to newer
-      // versions (https://github.com/GMOD/Chado/tree/master/chado/schemas).
-
-      // 'feature_organism' table added in 0.02.
-      if ($this->schema()->tableExists('feature_organism')) {
-        $version = '0.02';
+      // v1.11 or older... instead of checking individually, we're just going
+      // to say exactly that.
+      else {
+        $version = '<=1.11';
       }
-
-      // @bug currently weird prefixing when fieldExists is used.
-      // 'cv.cvname' column replaced by 'cv.name' after 0.03.
-      // if ($this->schema()->fieldExists('cv ', 'cvname')) {
-      //   $version = '0.03';
-      // }
-
-      // 'feature_cvterm_dbxref' table added in 1.0.
-      if ($this->schema()->tableExists('feature_cvterm_dbxref')) {
-        $version = '1.0';
-      }
-
-      // 'cell_line' table added in 1.1-1.11.
-      if ($this->schema()->tableExists('cell_line')) {
-        $version = '1.1';
-      }
-
-      // 'cvprop' table added in 1.2-1.24.
-      if ($this->schema()->tableExists('cvprop')) {
-        $version = '1.2';
-      }
-
-      // 'analysis_cvterm' table added in 1.3-1.31.
-      if ($this->schema()->tableExists('analysis_cvterm')) {
-        $version = '1.3';
-      }
-
-      // @bug currently weird prefixing when fieldExists is used.
-      // 'featureprop.cvalue_id' column added in 1.4.
-      // if ($this->schema()->fieldExists('featureprop', 'cvalue_id')) {
-      //   $version = '1.4';
-      // }
     }
 
     return $version;
