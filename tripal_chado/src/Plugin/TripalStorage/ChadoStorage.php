@@ -46,6 +46,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   protected $records = NULL;
 
   /**
+   * Caches the default value for entity field caching from the configuration
+   * @var bool
+   */
+  protected bool $default_is_required = false;
+
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
@@ -90,6 +97,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $this->connection = $connection;
     $this->field_debugger = $field_debugger;
+    $this->default_is_required = \Drupal::config('tripal.settings')->
+      get('tripal_entity_type.default_cache_backend_field_values');
   }
 
   /**
@@ -142,10 +151,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool
   {
     $storage_settings = $this->property_types[$field_name][$key]->getStorageSettings();
-    // $is_required = true; // possible default: all fields are required
+     // get the default from the configuration
     // In chado, all table coloumns containing sequence are named 'residues'
     // We want to exclude sequences and other large data objects from drupal storage
-    $is_required = !(array_key_exists('path', $storage_settings) and
+    // Even if the default is on, we will never save residues
+    $is_required = $this->default_is_required and !(array_key_exists('path', $storage_settings) and
       str_ends_with($storage_settings['path'], '.residues'));
     // Any field that stores a base record id, a primary key,
     // or a foreign key link is required.
