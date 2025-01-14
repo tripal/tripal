@@ -799,10 +799,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $prop_values = [];
         $prop_types = [];
         foreach ($values[$tsid][$field_name][$delta] as $key => $prop_info) {
-          $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $key);
+          $storage = $tripal_storages[$tsid];
+          $prop_type = $storage->getPropertyType($field_name, $key);
+
           $prop_value = $prop_info['value'];
-          $settings = $prop_type->getStorageSettings();
-          if (array_key_exists('drupal_store', $settings) and $settings['drupal_store'] == TRUE) {
+          if ($storage->isDrupalStoreByFieldNameKey($field_name, $key)) {
             $prop_values[] = $prop_value;
             $prop_types[] = $prop_type;
           }
