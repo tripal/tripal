@@ -11,7 +11,6 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal_chado\TripalStorage\ChadoRecords;
-use Drupal\Core\Render\Element\Token;
 
 /**
  * Chado implementation of the TripalStorageInterface.
@@ -98,7 +97,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $this->connection = $connection;
     $this->field_debugger = $field_debugger;
     $this->default_is_required = \Drupal::config('tripal.settings')->
-      get('tripal_entity_type.default_cache_backend_field_values');
+      get('tripal_entity_type.default_cache_backend_field_values') ?? true;
   }
 
   /**

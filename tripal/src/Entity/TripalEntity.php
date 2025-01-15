@@ -4,16 +4,12 @@ namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
-use Drupal\field\Entity\FieldConfig;
-use Symfony\Component\Routing\Route;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
-use \Drupal\tripal\Services\TripalTokenParser;
+
 
 /**
  * Defines the Tripal Content entity.
