@@ -706,7 +706,6 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     //
     $comment_type_id = $schema_db->getTerm('comment')->getInternalId();
     $note_type_id = $local_db->getTerm('Note')->getInternalId();
-    $this->attachOrganismPropertyFields();
     $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id3,
       'type_id' => $note_type_id,
