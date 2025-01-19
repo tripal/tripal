@@ -829,7 +829,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   to this content type.
    * @param array $options
    *   Specific options from the field's discover() function. Required keys:
-   *   - id: the field id, e.g. 'chado_organism_type_default
+   *   - id: the field id, e.g. 'chado_organism_type_default'
    *   - table: the field's base table, e.g. 'organism'
    *   - label: the field's label, e.g. 'Organism'
    *   - termIdSpace: The field term's DB
@@ -893,7 +893,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   to this content type.
    * @param array $options
    *   Specific options from the field's discover() function. Required keys:
-   *   - id: the field id, e.g. 'chado_organism_type_default
+   *   - id: the field id, e.g. 'chado_organism_type_default'
    *   - table: the field's base table, e.g. 'organism'
    *   - label: the field's label, e.g. 'Organism'
    *   - termIdSpace: The field term's DB
@@ -967,7 +967,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   to this content type.
    * @param array $options
    *   Specific options from the field's discover() function. Required keys:
-   *   - id: the field id, e.g. 'chado_organism_type_default
+   *   - id: the field id, e.g. 'chado_organism_type_default'
    *   - table: the field's base table, e.g. 'organism'
    *   - label: the field's label, e.g. 'Organism'
    *   - termIdSpace: The field term's DB
