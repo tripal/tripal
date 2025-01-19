@@ -30,9 +30,12 @@ class ChadoProjectAutocompleteController extends ChadoGenericAutocompleteControl
    *   is both the value to the array keys label and value.
    */
   public function handleAutocomplete(Request $request, int $count = 5, int $type_id = 0) {
-    // Project name has a unique constraint, so we don't need the pkey value included
+    // Project name has a unique constraint, so we don't need the pkey value
+    // included in the autocomplete result.
     $this->include_pkey = FALSE;
+    // This autocomplete only matches for the same starting characters.
     $this->match_operator = 'STARTS_WITH';
+    // Call the generic autocomplete handler.
     return $this->handleGenericAutocomplete($request, 'project', 'name', '.', 'projectprop', $count, $type_id);
   }
 
@@ -40,11 +43,12 @@ class ChadoProjectAutocompleteController extends ChadoGenericAutocompleteControl
    * Fetch the project id number, given a project name value.
    *
    * @param string $project
-   *   Project name value.
+   *   Project name value. This table column has a unique constraint,
+   *   so we are guaranteed either zero or one matches.
    *
    * @return integer
-   *   Project id number of the project name or 0 if no matching
-   *   project record was found.
+   *   Project id number of the project with this name name, or 0 if
+   *   no matching project record was found.
    */
   public static function getProjectId(string $project): int {
     $id = 0;
@@ -70,8 +74,8 @@ class ChadoProjectAutocompleteController extends ChadoGenericAutocompleteControl
    *   Project id number value.
    *
    * @return string
-   *   Corresponding project name of the project id number or
-   *   empty string if no matching project record was found.
+   *   Corresponding project name of the project id number, or
+   *   an empty string if no matching project record was found.
    */
   public static function getProjectName(int $project): string {
     $name = '';

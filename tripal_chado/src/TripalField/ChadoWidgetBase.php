@@ -63,8 +63,13 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   }
 
   /**
-   * Gets the select_limit value, checking in order from: an explicit value;
-   * from the field's settings; from the global setting; or default value of 50.
+   * Gets the select_limit value.
+   *
+   * This finds the value by checking in order:
+   *   1. An explicit value passed to this function
+   *   2. If not defined, then the value the field's settings
+   *   3. If not defined, then the value from the global setting
+   *   4. If not defined, then use the default value of 50
    *
    * @param int ?$select_limit
    *   If not NULL or an empty string, use this value
@@ -232,7 +237,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
                         . ' A dropdown can be difficult to use and is a performance problem'
                         . ' if the number of records is large.'
                         . ' When the number of records is larger than the value entered here,'
-                        . ' use an autocomplete.'
+                        . ' then use an autocomplete.'
                         . ' If the value is left blank, then the global setting will be used.'
                         . ' Enter <em>0</em> to indicate that an autocomplete should always be used.'),
       '#required' => FALSE,
@@ -285,13 +290,17 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     $summary[] = $this->t('Maximum records for a select: @select_limit',
                           ['@select_limit' => $select_limit]);
     $operators = $this->getMatchOperatorOptions();
-    $summary[] = $this->t('Autocomplete matching: @match_operator', ['@match_operator' => $operators[$this->getSetting('match_operator')]]);
+    $summary[] = $this->t('Autocomplete matching: @match_operator',
+                          ['@match_operator' => $operators[$this->getSetting('match_operator')]]);
     $size = $this->getSetting('match_limit') ?: $this->t('unlimited');
-    $summary[] = $this->t('Autocomplete suggestion list size: @size', ['@size' => $size]);
-    $summary[] = $this->t('Textfield size: @size', ['@size' => $this->getSetting('size')]);
+    $summary[] = $this->t('Autocomplete suggestion list size: @size',
+                          ['@size' => $size]);
+    $summary[] = $this->t('Textfield size: @size',
+                          ['@size' => $this->getSetting('size')]);
     $placeholder = $this->getSetting('placeholder');
     if (!empty($placeholder)) {
-      $summary[] = $this->t('Placeholder: @placeholder', ['@placeholder' => $placeholder]);
+      $summary[] = $this->t('Placeholder: @placeholder',
+                            ['@placeholder' => $placeholder]);
     }
     else {
       $summary[] = $this->t('No placeholder');

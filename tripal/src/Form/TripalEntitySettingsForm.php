@@ -47,7 +47,7 @@ class TripalEntitySettingsForm extends FormBase {
     // Supplying zero or less means always use autocomplete.
     $widget_global_select_limit = $form_state->getValue('widget_global_select_limit',
       $settings->get('tripal_entity_type.widget_global_select_limit'));
-    // If nothing is set, create a default value that matches what the code defines
+    // If nothing is set, create a default value that matches what the code defines as default
     if (is_null($widget_global_select_limit) or (trim($widget_global_select_limit) === '')) {
       $widget_global_select_limit = 50;
     }
@@ -77,7 +77,7 @@ class TripalEntitySettingsForm extends FormBase {
                         . ' if the number of records is large.'
                         . ' When the number of records is larger than the value entered here,'
                         . ' use an autocomplete if the field supports one.'
-                        . ' Enter zero to indicate that an autocomplete should always be used.'
+                        . ' Enter <em>0</em> to indicate that an autocomplete should always be used.'
                         . " This value can be overridden by an individual widget's settings."),
       '#default_value' => $widget_global_select_limit,
       '#required' => FALSE,
@@ -110,7 +110,7 @@ class TripalEntitySettingsForm extends FormBase {
     // Non-negative integers or an empty string are valid
     if (!preg_match('/^\d*$/', $widget_global_select_limit)) {
       $form_state->setErrorByName('widget_global_select_limit',
-        t('This field must contain an integer value.'));
+        t('This field must contain an integer value, or be left blank.'));
     }
   }
 

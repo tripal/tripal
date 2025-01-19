@@ -178,7 +178,8 @@ class ChadoGenericAutocompleteController extends ControllerBase {
       $query = $connection->select('1:' . $base_table, 'BT');
       $query->addField('BT', $options['pkey_id'], 'pkey');
       $query->addField('BT', $column_name, 'value');
-      // A single "%" wildcard is used to indicate return all records for a form select element
+      // A single "%" wildcard is used to indicate that we should return
+      // all records. This is used for a form select element.
       if ($string != '%') {
         $query->condition('BT.' . $column_name, $condition_value, 'ILIKE');
       }
@@ -210,14 +211,17 @@ class ChadoGenericAutocompleteController extends ControllerBase {
   }
 
   /**
-   * Fetch the pkey id number, given an autocomplete value with numeric
-   * id in parentheses at the end of the string.
+   * Fetch the pkey id number, given an autocomplete value with a numeric
+   * ID in parentheses at the end of the string.
    *
    * @param string $value
-   *   Autocomplete value, e.g. "Some (Big) Analysis (12)"
+   *   A value from an autocomplete with the ID in parentheses at the end,
+   *   earlier parentheses are ignored, e.g. "Some (Big) Analysis (12)"
    *
    * @return int
-   *   Primary key id number of the record, or 0 if invalid $value was passed.
+   *   Primary key ID number of the record, or 0 if an unparsable $value was
+   *   passed, which can happen if the user did not let the autocomplete
+   *   supply a value.
    */
   public static function getPkeyId(string $value): int {
     $id = 0;
