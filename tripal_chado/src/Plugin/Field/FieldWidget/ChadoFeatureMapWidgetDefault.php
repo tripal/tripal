@@ -99,4 +99,25 @@ class ChadoFeatureMapWidgetDefault extends ChadoWidgetBase {
     $values = $this->genericSelectMassageFormValues('featuremap_id', $values);
     return $this->massageLinkingFormValues('featuremap_id', $values, $form_state);
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return parent::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary();
+  }
 }

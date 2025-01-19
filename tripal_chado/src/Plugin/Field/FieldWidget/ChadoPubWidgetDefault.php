@@ -113,4 +113,24 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
     return $this->massageLinkingFormValues('pub_id', $values, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return parent::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary();
+  }
 }
