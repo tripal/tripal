@@ -981,8 +981,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
       array $field_instances, array $options = []): array {
 
-    // The parent class only initializes an empty array, so we don't need to call it
-    $field_list = [];
+    // Call the parent for initialization.
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instance, $options);
 
     if (!$options) {
       return $field_list;
