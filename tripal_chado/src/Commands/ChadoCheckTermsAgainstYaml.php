@@ -70,6 +70,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     $summary_rows = [];
 
     $this->chadoCheckTerms_findProblems($problems, $solutions, $summary_rows, $options);
+    $this->chadoCheckTerms_findCVProblems($problems, $solutions, $summary_rows, $options);
     $this->chadoCheckTerms_reportProblems($problems, $solutions, $summary_rows, $options);
   }
 
@@ -201,6 +202,40 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   }
 
   /**
+   * Checks for obsolete vocabularies in the database.
+   *
+   * @param array $problems
+   *   Array containing details for either errors or warnings
+   * @param array $solutions
+   *   Array containing possible solutions for either errors or warnings
+   * @param array $summary_rows
+   *   Infomation for the output table
+   * @param array $options
+   *   Options from drush command line
+   **/
+  protected function chadoCheckTerms_findCVProblems(&$problems, &$solutions, &$summary_rows, $options) {
+    $obsolete_cvs = [
+      'organism_property', 'analysis_property', 'tripal_phylogeny',
+      'featuremap_units', 'featurepos_property', 'featuremap_property',
+      'study_property', 'nd_experiment_types', 'nd_geolocation_property',
+      'tripal_analysis', 'library_property', 'library_type', 'project_property',
+    ];
+    $query = $this->chado->select('1:cv', 'CV')
+      ->fields('CV', ['cv_id', 'name']);
+    $results = $query->execute();
+    while ($result = $results->fetchObject()) {
+      if (in_array($result->name, $obsolete_cvs)) {
+        $problems['error']['obsolete_cv'][$result->cv_id][] = [
+          'message' => 'Obsolete controlled vocabulary',
+          'vocab-name' => $result->name,
+          'vocab-id' => $result->cv_id,
+        ];
+        $solutions['error']['obsolete_cv'][$result->cv_id]['vocab-name'] = 'Move to local CV';
+      }
+    }
+  }
+
+  /**
    * Reports to user the status of chado as determined by chadoCheckTerms_findProblems.
    *
    * @param array $problems
@@ -255,6 +290,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         );
       }
 
+      // cv
+      if (array_key_exists('obsolete_cv', $problems['error'])) {
+        $solutions['error']['obsolete_cv'] = (array_key_exists('obsolete_cv', $solutions['error'])) ? $solutions['error']['obsolete_cv'] : [];
+        $this->chadoCheckTerms_reportProblem_obsoleteCv(
+          $problems['error']['obsolete_cv'],
+          $solutions['error']['obsolete_cv'],
+          $options
+        );
+      }
+
       // term
       if (array_key_exists('term', $problems['error'])) {
         $solutions['error']['term'] = (array_key_exists('term', $solutions['error'])) ? $solutions['error']['term'] : [];
@@ -270,7 +315,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     // Then WARNINGS:
     $this->io()->title('Warnings');
-    $this->output()->writeln('Differences are categorized as warnings if they are in non-critical parts of the terms, vocabularies and references. These can be safely ignored but you may also want to use this opprotinuity to update your version of these terms.');
+    $this->output()->writeln('Differences are categorized as warnings if they are in non-critical parts of the terms, vocabularies and references. These can be safely ignored but you may also want to use this opportunity to update your version of these terms.');
 
     $has_warnings = (array_key_exists('warning', $problems) && count($problems['warning']) > 0);
     if (!$has_warnings) {
@@ -648,7 +693,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         $summary_dbxref = sprintf($this->red_format, $first_dbxref->dbxref_id);
 
         // ERROR:
-        // Dbxref is connected to other cvterms and not it's correct one!
+        // Dbxref is connected to other cvterms and not its correct one!
         // @see chadoCheckTerms_reportProblem_terms()
         $problems['error']['term'][$term_info['id']][] = [
           'term-name' => $term_info['name'],
@@ -852,6 +897,47 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   }
 
   /**
+   * Migrates terms in obsolete vocabularies to "local" vocabulary,
+   * and then removes the obsolete vocabularies.
+   *
+   * @param array $cv_ids
+   *   An associative array of the obsolete vocabularies,
+   *   key is pkey_id, value is vocabulary name.
+   * @return void
+   */
+  protected function migrateObsoleteVocabularies(array $cv_ids) {
+
+    $query = $this->chado->select('1:cv', 'cv');
+    $query->condition('name', 'local', '=');
+    $query->fields('cv', ['cv_id']);
+    $local_cv = $query->execute()->fetchField();
+    if (!$local_cv) {
+      $this->output()->writeln(t('Could not perform update, "local" CV is not present'));
+      return;
+    }
+
+    $n_transferred = 0;
+    $n_removed = 0;
+    foreach ($cv_ids as $cv_id => $cv_name) {
+      $query = $this->chado->update('1:cvterm');
+      $query->fields(['cv_id' => $local_cv]);
+      $query->condition('cv_id', $cv_id, '=');
+      $count = $query->execute();
+      if ($count) {
+        $this->output()->writeln(t('Transferred @count records from CV "@from" to the "local" CV',
+            ['@count' => $count, '@from' => $cv_name]));
+        $n_transferred += $count;
+      }
+      $query = $this->chado->delete('1:cv');
+      $query->condition('cv_id', $cv_id, '=');
+      $query->execute();
+      $n_removed++;
+    }
+    $this->output()->writeln(t('Removed @count obsolete controlled vocabularies',
+        ['@count' => $n_removed]));
+  }
+
+  /**
    * Reports errors and potential solutions for the "yamlDuplication" error type.
    *
    * Trigger Example: the term local:lineage is defined twice in
@@ -948,6 +1034,64 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   }
 
   /**
+   * Reports errors and potential solutions for the "obsolete_cv" error type.
+   *
+   * Trigger Examples:
+   *   Imagine a term defined with a vocabulary of 'organism_property'
+   *
+   * @param array $problems
+   *   An array describing instances with this type of error with the following format:
+   *     - [YAML Term ID]: an array of reports where each report has the
+   *       following structure:
+   *         - vocab-name:
+   *         - vocab-id:
+   *         - message: will always contain 'Obsolete controlled vocabulary'
+   * @param array $solutions
+   *   Just a placeholder, will always contain 'Move to local CV'
+   *
+   * @return void
+   *   This function interacts through command-line input/output directly and
+   *   as such, does not need to return anything to the parent Drush command.
+   */
+  protected function chadoCheckTerms_reportProblem_obsoleteCv($problems, $solutions, $options) {
+
+    $this->io()->section('Obsolete Controlled Vocabulary Issues.');
+    $num_detected = count($problems);
+    $this->output()->writeln("We have detected $num_detected obsolete vocabularies (CVs). Specifically:");
+
+    $table = new Table($this->output());
+    $table->setHeaders(['VOCABULARY', 'MESSAGE']);
+
+    $rows = [];
+    $vocab_id_list = [];
+    foreach ($problems as $id => $cv_with_issues) {
+      foreach ($cv_with_issues as $prob_deets) {
+        $rows[] = [
+          $prob_deets['vocab-name'] . ' (' . $prob_deets['vocab-id'] . ')',
+          $prob_deets['message'],
+        ];
+        $vocab_id_list[$prob_deets['vocab-id']] = $prob_deets['vocab-name'];
+      }
+    }
+    $table->addRows($rows);
+    $table->render();
+
+    $offer_fix = !$options['no-fix'];
+    $fix = $this->askOrRespectOptions(
+      'Would you like us to move terms using these obsolete vocabularies to the "local" vocabulary to match Tripal 4 expectations?',
+      $options,
+      'auto-fix',
+      $offer_fix,
+      FALSE
+    );
+    if ($fix) {
+      $this->migrateObsoleteVocabularies($vocab_id_list);
+      $this->io()->success('Terms from obsolete vocabularies have been migrated to the "local"'
+          . ' vocabulary and the obsolete vocabularies have been removed.');
+    }
+  }
+
+  /**
    * Reports errors and potential solutions for the "term" error type.
    *
    * Trigger Examples:
@@ -973,7 +1117,6 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    *   as such, does not need to return anything to the parent Drush command.
    */
   protected function chadoCheckTerms_reportProblem_terms($problems, $solutions, $options) {
-
 
     $this->io()->section('Term (cvterm/dbxref) Issues.');
     $num_detected = count($problems);
