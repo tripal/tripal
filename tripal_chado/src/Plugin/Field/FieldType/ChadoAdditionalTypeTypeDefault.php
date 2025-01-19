@@ -582,7 +582,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     ];
 
     // The parent class adds collection plugin IDs
-    $field_list = parent::discoverPostprocess($field_list);
+    $field_list = self::discoverPostprocess($field_list);
     return $field_list;
   }
 
