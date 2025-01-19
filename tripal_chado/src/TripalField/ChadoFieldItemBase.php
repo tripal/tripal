@@ -812,9 +812,33 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
-   * discover() for directly linked foreign keys
+   * Discover fields that use a foreign key in the specified base table.
    *
-   * @see Drupal\tripal_chado\TripalField\ChadoFieldItemBase::discover()
+   * This is used by ChadoFieldItemBase::discover().
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $bundle
+   *   The entity type object for which new field instances should be found.
+   * @param string $field_id
+   *   The id of the field.
+   * @param array $field_types
+   *   An array where each item defines a field type that is attached to this
+   *   bundle. Each item is itself an array of the annotation defined at the top
+   *   of that particular field type class.
+   * @param array $field_instances
+   *   An array of FieldConfig objects where each object defines a field attached
+   *   to this content type.
+   * @param array $options
+   *   Specific options from the field's discover() function. Required keys:
+   *   - id: the field id, e.g. 'chado_organism_type_default
+   *   - table: the field's base table, e.g. 'organism'
+   *   - label: the field's label, e.g. 'Organism'
+   *   - termIdSpace: The field term's DB
+   *   - termAccession: The field term's accession
+   *   - description: A text description for the discovered field
+   *
+   * @return array
+   *   An associative array of fields to suggest that follows the same structure
+   *   as expected by tripal.tripalfield_collection.* configuration.
    */
   protected static function discoverDirect(TripalEntityType $bundle, string $field_id, array $field_types,
       array $field_instances, array $options): array {
@@ -852,9 +876,33 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
-   * discover() for foreign keys through an intermediate linker table
+   * Discover fields that link to the base table through a linking table.
    *
-   * @see Drupal\tripal_chado\TripalField\ChadoFieldItemBase::discover()
+   * This is used by ChadoFieldItemBase::discover().
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $bundle
+   *   The entity type object for which new field instances should be found.
+   * @param string $field_id
+   *   The id of the field.
+   * @param array $field_types
+   *   An array where each item defines a field type that is attached to this
+   *   bundle. Each item is itself an array of the annotation defined at the top
+   *   of that particular field type class.
+   * @param array $field_instances
+   *   An array of FieldConfig objects where each object defines a field attached
+   *   to this content type.
+   * @param array $options
+   *   Specific options from the field's discover() function. Required keys:
+   *   - id: the field id, e.g. 'chado_organism_type_default
+   *   - table: the field's base table, e.g. 'organism'
+   *   - label: the field's label, e.g. 'Organism'
+   *   - termIdSpace: The field term's DB
+   *   - termAccession: The field term's accession
+   *   - description: A text description for the discovered field
+   *
+   * @return array
+   *   An associative array of fields to suggest that follows the same structure
+   *   as expected by tripal.tripalfield_collection.* configuration.
    */
   protected static function discoverLinked(TripalEntityType $bundle, string $field_id, array $field_types,
       array $field_instances, array $options): array {
@@ -901,17 +949,34 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
-   * {@inheritDoc}
-   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   * Finds new instances of this field for a given content type.
    *
+   * Overrides TripalFieldItem::discover() to add the $options parameter so that the
+   * base class can discover more fields in a consistent way.
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $bundle
+   *   The entity type object for which new field instances should be found.
+   * @param string $field_id
+   *   The id of the field.
+   * @param array $field_types
+   *   An array where each item defines a field type that is attached to this
+   *   bundle. Each item is itself an array of the annotation defined at the top
+   *   of that particular field type class.
+   * @param array $field_instances
+   *   An array of FieldConfig objects where each object defines a field attached
+   *   to this content type.
    * @param array $options
    *   Specific options from the field's discover() function. Required keys:
-   *     'id' - the field id, e.g. 'chado_organism_type_default'
-   *     'table' - the field's base table, e.g. 'organism'
-   *     'label' - the field's label, e.g. 'Organism'
-   *     'termIdSpace' - The field term's DB
-   *     'termAccession' - The field term's accession
-   *     'description' - A text description for the discovered field
+   *   - id: the field id, e.g. 'chado_organism_type_default
+   *   - table: the field's base table, e.g. 'organism'
+   *   - label: the field's label, e.g. 'Organism'
+   *   - termIdSpace: The field term's DB
+   *   - termAccession: The field term's accession
+   *   - description: A text description for the discovered field
+   *
+   * @return array
+   *   An associative array of fields to suggest that follows the same structure
+   *   as expected by tripal.tripalfield_collection.* configuration.
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
       array $field_instances, array $options = []): array {
