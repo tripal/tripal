@@ -191,7 +191,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
       if ($options['type_id'] > 0) {
         // We are limiting to records of a specific type.
         if ($property_table and ($property_table != $base_table)) {
-          $query->join('1:' . $property_table, 'PT', '"BT".' . $options['pkey_id'] . ' = "PT".' . $options['pkey_id']);
+          $query->leftJoin('1:' . $property_table, 'PT', '"BT".' . $options['pkey_id'] . ' = "PT".' . $options['pkey_id']);
           $query->condition('PT.' . $options['property_type_column'], $options['type_id'], '=');
         }
         else {
@@ -203,7 +203,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
         // if it is present in the base table.
         if (strlen($options['type_column']) > 1) {
           $query->addField('CVT', 'name', 'type');
-          $query->join('1:cvterm', 'CVT', '"BT".' . $type_column . ' = "CVT".cvterm_id');
+          $query->leftJoin('1:cvterm', 'CVT', '"BT".' . $type_column . ' = "CVT".cvterm_id');
         }
       }
     }
