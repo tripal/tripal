@@ -97,7 +97,7 @@ class ChadoGenericAutocompleteController extends ControllerBase {
           // Strip HTML tags if present, e.g. in Pub title
           $value = strip_tags($record->value);
           // Append the type when available
-          if (property_exists($record, 'type')) {
+          if (property_exists($record, 'type') and $record->type) {
             $value .= ' [' . $record->type . ']';
           }
           // Append the chado pkey id value
