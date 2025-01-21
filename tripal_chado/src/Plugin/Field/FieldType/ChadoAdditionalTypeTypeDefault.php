@@ -396,7 +396,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
       // Get a list of tables with foreign keys to selected $base_table.
       $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-      $fkey_list = preg_split('/[ ,]+/', ($base_schema_def['referring_tables']??''));
+      $fkey_list = $base_schema_def['referring_tables']??[];
       asort($fkey_list);
 
       // Include the base table at the top of the sorted list
