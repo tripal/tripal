@@ -237,6 +237,15 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     );
     $this->assertContains($entity_id, $expected_contact_entity_ids, "We did not retrieve the expected entity_id for manufacturer_id $chado_contact_id");
 
+    // Likewise it should work the same if we omit the term entirely
+    $entity_id = $lookup_manager->getEntityId(
+      $chado_contact_id,
+      NULL,
+      NULL,
+      $base_table
+    );
+    $this->assertContains($entity_id, $expected_contact_entity_ids, "We did not retrieve the expected entity_id for manufacturer_id $chado_contact_id");
+
     // Also check that the contact_id (as manufacturer_id) is in the Drupal table
     $entity_table_name = 'tripal_entity__array_design_manufacturer';
     $entity_column_name = 'array_design_manufacturer_record_id';

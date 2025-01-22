@@ -17,6 +17,13 @@ use Drupal\Core\Render\Markup;
 class TripalEntityLookup {
 
   /**
+   * Caches bundle IDs used for a base table
+   *
+   * @var array $bundle_cache
+   */
+  protected array $bundle_cache = [];
+
+  /**
    * This is used by field formatters to get a ready-to-use render
    * array item to link to an entity.
    *
@@ -62,6 +69,7 @@ class TripalEntityLookup {
    *   The bundle's CV Term namespace e.g. for gene "SO"
    * @param string $termAccession
    *   The bundle's CV term accession e.g. for gene "0000704"
+   *   If IdSpace and Accession are NULL, then any bundle using the base table is checked.
    * @param string $base_table
    *   The Chado base table for the requested entity e.g. for gene "feature".
    *   Only needed if term does not map to a content type.
@@ -80,9 +88,12 @@ class TripalEntityLookup {
 
     // Perform the lookup steps
     $entity_id = NULL;
-    $bundle_id = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
+    $bundle_id = NULL;
+    if ($termIdSpace and $termAccession) {
+      $bundle_id = $this->getBundleFromCvTerm($termIdSpace, $termAccession);
+    }
 
-    // in most cases we will have a bundle ID
+    // When we have a bundle ID, only check that bundle
     if ($bundle_id) {
       $entity_ids = $this->getEntityIdFromRecordId($record_id, $bundle_id, $entity_type);
       if ($entity_ids) {
@@ -91,8 +102,9 @@ class TripalEntityLookup {
         $entity_id = reset($entity_ids);
       }
     }
-    // If the term does not have a content type, the fallback is
-    // to check all bundles derived from the base table.
+    // If the term does not have a content type, or we did not
+    // specify a term, then the fallback is to check all bundles
+    // derived from the base table.
     else {
       $bundle_ids = [];
       if ($base_table) {
@@ -143,14 +155,16 @@ class TripalEntityLookup {
    * @return array
    *   The bundle ids, or an empty array if no matches found.
    */
-  protected function getBundles($base_table) {
-    $bundles = \Drupal::entityTypeManager()
-      ->getStorage('tripal_entity_type')
-      ->getQuery()
-      ->condition('third_party_settings.tripal.chado_base_table', $base_table)
-      ->execute();
-    $bundle_ids = array_keys($bundles);
-    return $bundle_ids;
+  protected function getBundles(string $base_table): array {
+    if (!array_key_exists($base_table, $this->bundle_cache)) {
+      $bundles = \Drupal::entityTypeManager()
+        ->getStorage('tripal_entity_type')
+        ->getQuery()
+        ->condition('third_party_settings.tripal.chado_base_table', $base_table)
+        ->execute();
+      $this->bundle_cache[$base_table] = array_keys($bundles);
+    }
+    return $this->bundle_cache[$base_table];
   }
 
   /**
