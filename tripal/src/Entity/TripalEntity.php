@@ -723,6 +723,28 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Provide a lazy utility function to check if all array elements are empty.
+   *
+   * * @param array $arr
+   *
+   * @return bool
+   *   True IFF all elements a null
+   *   False if at least a single element is different from null
+   *
+   */
+  public static function allNull(array $arr) : bool {
+    foreach ($arr as $i => $v) {
+              if (isset($v)) {
+                return false;
+              }
+    }
+    return true;
+  }
+
+
+
+
+  /**
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
@@ -730,7 +752,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // Create a values array appropriate for `loadValues()`
     list($values, $tripal_storages) = TripalEntity::getValuesArray($this);
-
     // Perform the Insert or Update of the submitted values to the
     // underlying data store.
     foreach ($values as $tsid => $tsid_values) {
@@ -741,10 +762,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $tripal_storages[$tsid]->insertValues($tsid_values);
         }
         catch (\Exception $e) {
-          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::logger('tripal')->error($e->getMessage()); // this is an error
           \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
               'logs for more details or contact the site administrator if you ' .
               'cannot view the logs.');
+          return; // we cannot safely continue after such error
         }
         $values[$tsid] = $tsid_values;
       }
@@ -755,10 +777,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $tripal_storages[$tsid]->updateValues($tsid_values);
         }
         catch (\Exception $e) {
-          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::logger('tripal')->error($e->getMessage()); // log this as an error
           \Drupal::messenger()->addError('Cannot update this entity. See the recent ' .
               'logs for more details or contact the site administrator if you cannot ' .
-              'view the logs.');
+              'view the logs. ');
+          return; // we cannot safely continue after such error
         }
       }
     }
@@ -802,27 +825,27 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           // Determine whether the property values are to be cached in the
           // Drupal Entity Field tables
           if ($storage->isDrupalStoreByFieldNameKey($field_name, $key)) {
+            error_log("storing field in drupal: ".$field_name.", ".$key);
             $prop_values[] = $prop_value;
             $prop_types[] = $prop_type;
+          } else {
+            error_log("not caching: ".$field_name.", ".$key);
           }
         }
+
         if (count($prop_values) > 0) {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
-
           // Keep track of elements that have no value.
-          foreach ($prop_values as $i => $prop_value) {
-            $prop_value_value = $prop_value->getValue();
-            if (is_null($prop_value_value)) {
-              // A given delta should only be present once here.
-              if (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name])) {
-                $delta_remove[$field_name][] = $delta;
-              }
-              continue;
-            }
+          // A given delta should only be present once here.
+          if ($this->allNull($prop_values) and (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name]))) {
+            $delta_remove[$field_name][] = $delta;
           }
+
+
         }
       }
     }
+
 
     // Now remove any values that shouldn't be there.
     foreach ($delta_remove as $field_name => $deltas) {
@@ -831,7 +854,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $this->get($field_name)->removeItem($delta);
         }
         catch (\Exception $e) {
-          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::logger('tripal')->error($e->getMessage());
           \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
               'logs for more details or contact the site administrator if you ' .
               'cannot view the logs.');

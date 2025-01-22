@@ -287,22 +287,26 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // constraints if we don't e.g. changing the order of records with a
       // rank.
       foreach ($base_tables as $base_table) {
+        // While iterating over all tables only once, this improves performance
+        // by only calling this once per base_table
         $tables = $this->records->getAncillaryTables($base_table);
+
+
         foreach ($tables as $table_alias) {
-          $this->records->deleteRecords($base_table, $table_alias, TRUE);
+         // try {
+            // this should improve update performance
+           // $this->records->updateRecords($base_table, $table_alias, true); // try update first, this should work in most cases, if it doesn't
+          //} catch (\Exception $e) {
+             // log this but not as error, it is a pretty rare state
+            //\Drupal::logger('tripal')->warning("We could not update some values, trying delete/insert: " . $e->getMessage());
+            // If the delete/update mechanism doesn't work, we still need to bail out
+            $this->records->deleteRecords($base_table, $table_alias, TRUE);
+            $this->records->insertRecords($base_table, $table_alias);
+          //}
         }
       }
-
-      // Now insert all new values for the non-base table records.
-      foreach ($base_tables as $base_table) {
-        $tables = $this->records->getAncillaryTables($base_table);
-        foreach ($tables as $table_alias) {
-          $this->records->insertRecords($base_table, $table_alias);
-        }
-      }
-
       // Now that we've done the updates, set the property values.
-      $this->setPropValues($values, $this->records);
+    $this->setPropValues($values, $this->records);
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
