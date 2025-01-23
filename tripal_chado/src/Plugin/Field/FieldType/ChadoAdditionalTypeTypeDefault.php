@@ -480,7 +480,6 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances, array $options = []): array {
 
-
     // Initialize with an empty field list.
     $field_list = [];
 
