@@ -2682,11 +2682,14 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
         // Iterate through all of the dbxrefs of this feature.
         foreach ($feature['terms'] as $index => $info) {
-          $j++;
-          $sql .= "(:feature_id_$j, :cvterm_id_$j, :pub_id_$j),\n";
-          $args[":feature_id_$j"] = $feature_id;
-          $args[":cvterm_id_$j"] = $this->cvterm_lookup[$index];
-          $args[":pub_id_$j"] = $this->null_pub->pub_id;
+          // Some dbxrefs may not have an associated cvterm, skip those.
+          if (array_key_exists($index, $this->cvterm_lookup)) {
+            $j++;
+            $sql .= "(:feature_id_$j, :cvterm_id_$j, :pub_id_$j),\n";
+            $args[":feature_id_$j"] = $feature_id;
+            $args[":cvterm_id_$j"] = $this->cvterm_lookup[$index];
+            $args[":pub_id_$j"] = $this->null_pub->pub_id;
+          }
         }
       }
 
