@@ -306,6 +306,7 @@ class ChadoAnalysisTypeDefault extends ChadoFieldItemBase {
       'termIdSpace' => 'operation',
       'termAccession' => '2945',
       'description' => 'Apply analytical methods to existing data of a specific type.',
+      'custom_linker' => 'analysisfeature',
     ];
 
     // Call the parent discover() with this field's specific options

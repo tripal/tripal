@@ -910,12 +910,22 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $field_list = [];
 
     // See if the base table has a foreign key to the field's table
-    // through an intermediate linking table. discover() only
-    // supports linking tables of the standard naming scheme.
+    // through an intermediate linking table. These are the
+    // linking tables of the standard naming scheme.
     $possible_linking_tables = [
       $options['base_table'] . '_' . $options['table'],
       $options['table'] . '_' . $options['base_table'],
     ];
+    // A field can specify non-standard linking tables.
+    $custom_linker = $options['custom_linker'] ?? NULL;
+    if ($custom_linker) {
+      if (is_array($custom_linkers)) {
+        $possible_linking_tables += $custom_linker;
+      }
+      else {
+        $possible_linking_tables[] = $custom_linker;
+      }
+    }
     foreach ($possible_linking_tables as $linking_table) {
       if ($options['chado']->schema()->foreignKeyExists($linking_table, $options['base_table'])) {
         $linking_def = $options['chado']->schema()->getForeignKeyDef($linking_table, $options['base_table']);

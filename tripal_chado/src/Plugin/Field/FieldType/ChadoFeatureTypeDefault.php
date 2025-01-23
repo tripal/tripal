@@ -377,6 +377,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
       'termIdSpace' => 'SO',
       'termAccession' => '0000110',
       'description' => 'Any extent of continuous biological sequence. [LAMHDI:mb, SO:ke]',
+      'custom_linker' => 'analysisfeature',
     ];
 
     // Call the parent discover() with this field's specific options
