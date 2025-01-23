@@ -104,20 +104,20 @@ class ChadoStudyWidgetDefault extends ChadoWidgetBase {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-    return parent::defaultSelectSettings() + parent::defaultSettings();
+    return self::defaultSelectSettings() + parent::defaultSettings();
   }
 
   /**
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
-    return $this->selectSettingsForm($form, $form_state);
+    return $this->selectSettingsForm($form, $form_state) + parent::settingsForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
   public function settingsSummary() {
-    return $this->selectSettingsSummary();
+    return $this->selectSettingsSummary() + parent::settingsSummary();
   }
 }
