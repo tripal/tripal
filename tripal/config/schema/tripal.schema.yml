@@ -385,7 +385,7 @@ tripal.tripalfield_collection.*:
                                label: 'Number of characters for a text field'
                                nullable: false
                              placeholder:
-                               type: integer
+                               type: string
                                label: 'Placeholder value for an empty text field'
                                nullable: true
 
@@ -455,5 +455,5 @@ field.widget.settings.*:
       type: integer
       label: 'Number of characters for a text field'
     placeholder:
-      type: integer
+      type: string
       label: 'Placeholder value for an empty text field'
