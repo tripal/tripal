@@ -342,10 +342,10 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     $options += [
       'id' => self::$id,
       'table' => self::$object_table,
-      'label' => 'Germplasm Accession',
-      'termIdSpace' => 'CO_010',
-      'termAccession' => '0000044',
-      'description' => 'Germplasm Accession',
+      'label' => 'Stock',
+      'termIdSpace' => 'NCIT',
+      'termAccession' => 'C70699',
+      'description' => 'Any material sample taken from a biological entity for testing, diagnostic, propagation, treatment or research purposes, including a sample obtained from a living organism or taken from the biological object after halting of all its life functions.',
     ];
 
     // Call the parent discover() with this field's specific options
