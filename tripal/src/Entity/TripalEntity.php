@@ -733,7 +733,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *
    */
   public static function allNull(array $arr) : bool {
-    foreach ($arr as $i => $v) {
+    foreach ($arr as $v) {
               if (isset($v)) {
                 return false;
               }
@@ -825,11 +825,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           // Determine whether the property values are to be cached in the
           // Drupal Entity Field tables
           if ($storage->isDrupalStoreByFieldNameKey($field_name, $key)) {
-            error_log("storing field in drupal: ".$field_name.", ".$key);
+            //error_log("storing field in drupal: ".$field_name.", ".$key);
             $prop_values[] = $prop_value;
             $prop_types[] = $prop_type;
           } else {
-            error_log("not caching: ".$field_name.", ".$key);
+            //error_log("not caching: ".$field_name.", ".$key);
           }
         }
 
@@ -837,6 +837,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
           // Keep track of elements that have no value.
           // A given delta should only be present once here.
+          // 
           if ($this->allNull($prop_values) and (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name]))) {
             $delta_remove[$field_name][] = $delta;
           }
