@@ -281,10 +281,11 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    */
   public function selectSettingsSummary() {
     $summary = [];
-    $global_select_limit = \Drupal::config('tripal.settings')->get('tripal_entity_type.widget_global_select_limit');
     $select_limit = $this->getSetting('widget_select_limit');
     if (is_null($select_limit) or ($select_limit === '')) {
-      $select_limit = $this->t('use global setting of ' . $global_select_limit);
+      $global_select_limit = \Drupal::config('tripal.settings')->get('tripal_entity_type.widget_global_select_limit');
+      $select_limit = $this->t('@global_select_limit (global setting)',
+                               ['@global_select_limit' => $global_select_limit]);
     }
 
     $summary[] = $this->t('Maximum records for a select: @select_limit',
@@ -297,9 +298,14 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
                           ['@size' => $size]);
     $summary[] = $this->t('Textfield size: @size',
                           ['@size' => $this->getSetting('size')]);
-    $placeholder = $this->getSetting('placeholder') ?? 'none';
-    $summary[] = $this->t('Placeholder: @placeholder',
-                          ['@placeholder' => $placeholder]);
+    $placeholder = $this->getSetting('placeholder');
+    if (is_null($placeholder) or ($placeholder === '')) {
+      $summary[] = $this->t('No placeholder');
+    }
+    else {
+      $summary[] = $this->t('Placeholder: @placeholder',
+                            ['@placeholder' => $placeholder]);
+    }
     return $summary;
   }
 
