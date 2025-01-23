@@ -1435,14 +1435,25 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       return -1;
     }
 
-    // Given the Chado record ID and bundle term, we can lookup the Drupal entity ID.
+    // Given the Chado record ID and bundle term, we can lookup the Drupal entity ID,
+    // but some tables have multiple bundles. To support those, we can pass a NULL
+    // term and let the entity lookup manager find the bundle(s).
     $ftable = $prop_storage_settings['ftable'] ?? NULL;
-    $entity_id = $lookup_manager->getEntityId(
-      $record_id,
-      $context['field_settings']['termIdSpace'],
-      $context['field_settings']['termAccession'],
-      $ftable
-    );
+    if ($ftable) {
+      $entity_id = $lookup_manager->getEntityId(
+        $record_id,
+        NULL,
+        NULL,
+        $ftable
+      );
+    }
+    else {
+      $entity_id = $lookup_manager->getEntityId(
+        $record_id,
+        $context['field_settings']['termIdSpace'],
+        $context['field_settings']['termAccession']
+      );
+    }
 
     // In the TripalEntity class, the preSave function will flag all falsey
     // property values for deletion when drupal_store is set to TRUE.
