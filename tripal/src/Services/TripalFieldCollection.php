@@ -264,7 +264,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
           if ($field_names[$discovered_field_name] > 1) {
             $discovered_field['name'] = $this->updateFieldName($discovered_field);
           }
-          $field_status['new'][$discovered_field_name] = $discovered_field;
+          $field_status['new'][$discovered_field['name']] = $discovered_field;
         }
       }
     }
