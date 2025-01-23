@@ -297,14 +297,9 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
                           ['@size' => $size]);
     $summary[] = $this->t('Textfield size: @size',
                           ['@size' => $this->getSetting('size')]);
-    $placeholder = $this->getSetting('placeholder');
-    if (!empty($placeholder)) {
-      $summary[] = $this->t('Placeholder: @placeholder',
-                            ['@placeholder' => $placeholder]);
-    }
-    else {
-      $summary[] = $this->t('No placeholder');
-    }
+    $placeholder = $this->getSetting('placeholder') ?? 'none';
+    $summary[] = $this->t('Placeholder: @placeholder',
+                          ['@placeholder' => $placeholder]);
     return $summary;
   }
 
