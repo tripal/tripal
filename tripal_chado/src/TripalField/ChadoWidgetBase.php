@@ -65,7 +65,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
   /**
    * Gets the select_limit value.
    *
-   * This finds the value by checking in order:
+   * This finds the value by using, in order:
    *   1. An explicit value passed to this function
    *   2. If not defined, then the value the field's settings
    *   3. If not defined, then the value from the global setting
@@ -281,10 +281,10 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    */
   public function selectSettingsSummary() {
     $summary = [];
-//    $global_select_limit = \Drupal::config('tripal.settings')->get('tripal_entity_type.widget_global_select_limit');
+    $global_select_limit = \Drupal::config('tripal.settings')->get('tripal_entity_type.widget_global_select_limit');
     $select_limit = $this->getSetting('widget_select_limit');
     if (is_null($select_limit) or ($select_limit === '')) {
-      $select_limit = $this->t('use global setting');
+      $select_limit = $this->t('use global setting of ' . $global_select_limit);
     }
 
     $summary[] = $this->t('Maximum records for a select: @select_limit',
