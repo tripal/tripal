@@ -227,19 +227,27 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
 
     $all_field_defs = $field_type_manager->getDefinitions();
     $entity_field_defs = $entity_field_manager->getFieldDefinitions('tripal_entity', $bundle_name);
+    $field_names = [];
     foreach ($all_field_defs as $field_id => $field_def) {
       $field_class = $field_def['class'];
       if (is_subclass_of($field_class, 'Drupal\tripal\TripalField\TripalFieldItemBase')) {
         $discovered = $field_class::discover($tripal_entity_type, $field_id, $all_field_defs, $entity_field_defs);
         foreach ($discovered as $discovered_field) {
+          $discovered_field_name = $discovered_field['name'];
+          $field_names[$discovered_field_name] = ($field_names[$discovered_field_name] ?? 0) + 1;
 
           // If the CV term for the discovered field is currently used by an
           // existing field, then mark it as existing.
           $discoveredIdSpace = $discovered_field['settings']['termIdSpace'];
           $discoveredAccession = $discovered_field['settings']['termAccession'];
-          $existing = $this->checkDiscoveredTerm($discoveredIdSpace, $discoveredAccession, $entity_field_defs);
-          if ($existing) {
-            $field_status['existing'][$discovered_field['name']] = $discovered_field;
+          $existing_field_name = $this->checkDiscoveredTerm($discoveredIdSpace, $discoveredAccession, $entity_field_defs);
+          if ($existing_field_name) {
+            // Note that the existing name may differ from the name proposed by discover()
+            $discovered_field['name'] = $existing_field_name;
+            $field_status['existing'][$existing_field_name] = $discovered_field;
+            // We may have already added a new field with this existing field's name
+            // earlier in the loop. If so, go back and update that new field.
+            $this->recheckTerms($field_status, $existing_field_name);
             continue;
           }
 
@@ -247,16 +255,64 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
           $reason = '';
           $is_valid = $this->validate($discovered_field, $reason);
           if (!$is_valid) {
-            $field_status['invalid'][$discovered_field['name']] = $discovered_field;
-            $field_status['invalid'][$discovered_field['name']]['invalid_reason'] = $reason;
+            $field_status['invalid'][$discovered_field_name] = $discovered_field;
+            $field_status['invalid'][$discovered_field_name]['invalid_reason'] = $reason;
             continue;
           }
 
-          $field_status['new'][$discovered_field['name']] = $discovered_field;
+          // If the field name already exists, then adjust it to be unique
+          if ($field_names[$discovered_field_name] > 1) {
+            $discovered_field['name'] = $this->updateFieldName($discovered_field);
+          }
+          $field_status['new'][$discovered_field_name] = $discovered_field;
         }
       }
     }
     return $field_status;
+  }
+
+  /**
+   * Updates a field name if it is already used for a different field.
+   *
+   * @param string $discovered_field
+   *   Current field with duplicated name
+   *
+   * @return string
+   *   The updated field name
+   */
+  protected function updateFieldName(array $discovered_field): string {
+    $max_length = FieldStorageConfig::NAME_MAX_LENGTH;
+    // CV term id is currently only available for property fields
+    $suffix = strtolower($discovered_field['cvterm_id'] ?? $discovered_field['termIdSpace'] ?? uniqid());
+    $field_name = $discovered_field['name'] . '_' . $suffix;
+    // If name is now longer than Drupal allows, shorten the original
+    // name before adding the suffix.
+    if (mb_strlen($field_name) > $max_length) {
+      $truncate_to = $max_length - strlen($suffix) - 1;
+      $field_name = mb_substr($discovered_field['name'], 0, $truncate_to) . '_' . $suffix;
+    }
+    $field_name = preg_replace('/[^\w]/u', '_', $field_name);
+    return $field_name;
+  }
+
+  /**
+   * If a new field's name conflicts with an existing one, update
+   * the new field's name to eliminate the duplication.
+   *
+   * @param array &$field_status
+   *   Holds the status of each field. Will be updated if necessary.
+   * @param string $field_name
+   *   Name of one existing field to check against
+   * @return void
+   */
+  protected function recheckTerms(array &$field_status, string $field_name) {
+    if (array_key_exists($field_name, $field_status['new'])) {
+      $def = $field_status['new'][$field_name];
+      $new_name = $this->updateFieldName($def);
+      $def['name'] = $new_name;
+      $field_status['new'][$new_name] = $def;
+      unset($field_status['new'][$field_name]);
+    }
   }
 
   /**
@@ -301,16 +357,16 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    * @param array $entity_field_defs
    *   Array of field definitions returned from getFieldDefinitions()
    *
-   * @return bool
-   *   TRUE if term already used by a field, FALSE otherwise
+   * @return string
+   *   The name of the field if term already used by a field, empty string otherwise
    */
   private function checkDiscoveredTerm($idSpace, $accession, $entity_field_defs) {
-    $existing = FALSE;
+    $existing = '';
     foreach ($entity_field_defs as $name => $def) {
       $settings = $def->getSettings();
       if ( (($settings['termIdSpace'] ?? '') == $idSpace)
           and (($settings['termAccession'] ?? '') == $accession) ) {
-        $existing = TRUE;
+        $existing = $name;
         break;
       }
     }
