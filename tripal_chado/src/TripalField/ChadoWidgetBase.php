@@ -143,12 +143,12 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // Add one to select limit so we know it is exceeded
     $count_options = $options;
     $count_options['match_limit'] = $options['select_limit'] + 1;
-    $count_query = ChadoGenericAutocompleteController::getQuery($string, $count_options);
+    $query = ChadoGenericAutocompleteController::getQuery($string, $count_options);
 
     // Get a count of the number of possible values, unless forcing always autocomplete
     $count = 1;
     if ($options['select_limit'] > 0) {
-      $count = $count_query->countQuery()->execute()->fetchField();
+      $count = $query->countQuery()->execute()->fetchField();
     }
 
     // For a large number of options, or if limit is zero, use an autocomplete
@@ -156,13 +156,14 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       // Look up the default value if one was specified
       $default_value = '';
       if ($default_id) {
+        // We can reuse the existing query since only one change is needed
         $query->condition($pkey_column, $default_id, '=');
         $result = $query->execute()->fetchObject();
         if ($result) {
           // Strip HTML tags if present, e.g. in Pub title
           $default_value = strip_tags($result->value ?? '');
-          if (property_exists($record, 'type') and $record->type) {
-            $default_value .= ' [' . $record->type . ']';
+          if (property_exists($result, 'type') and $result->type) {
+            $default_value .= ' [' . $result->type . ']';
           }
           // Append the chado pkey id value
           $default_value .= ' (' . $default_id . ')';
