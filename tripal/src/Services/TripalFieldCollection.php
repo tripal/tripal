@@ -419,10 +419,13 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
       return FALSE;
     }
 
-    // Verify that the term for this field is not already used by another field
+    // Verify that the term for this field is not already used by another field.
+    // To do this we check if any fields on this content type have a field with
+    // the same term and that any existing field is not the same field we are
+    // validating.
     $existing_terms = $this->getExistingFieldTerms($field_def['content_type']);
     $new_term = $field_def['settings']['termIdSpace'] . ':' . $field_def['settings']['termAccession'];
-    if (array_key_exists($new_term, $existing_terms)) {
+    if (array_key_exists($new_term, $existing_terms) && ($existing_terms[$new_term] !== $field_def['name'])) {
       $reason = t('The term "@new_term" for field "@name" in bundle "@bundle" is already'
           . ' being used by another field, so this field cannot be added.',
           ['@new_term' => $new_term, '@name' => $field_def['name'], '@bundle' => $field_def['content_type']]);
@@ -657,16 +660,18 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
         $bundle_id = $entity_type->id();
         $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $bundle_id);
         foreach (array_keys($view_modes) as $view_mode) {
+          $view_mode_options = $field_def['display']['view'][$view_mode] ?? [];
           \Drupal::service('entity_display.repository')
             ->getViewDisplay('tripal_entity', $bundle_id, $view_mode)
-            ->setComponent($field_def['name'], $field_def['display']['view'][$view_mode])
+            ->setComponent($field_def['name'], $view_mode_options)
             ->save();
         }
         $form_modes = $entity_display->getFormModeOptionsByBundle('tripal_entity', $bundle_id);
         foreach (array_keys($form_modes) as $form_mode) {
+          $form_mode_options = $field_def['display']['form'][$form_mode] ?? [];
           \Drupal::service('entity_display.repository')
             ->getFormDisplay('tripal_entity', $bundle_id, $form_mode)
-            ->setComponent($field_def['name'], $field_def['display']['form'][$form_mode])
+            ->setComponent($field_def['name'], $form_mode_options)
             ->save();
         }
 
