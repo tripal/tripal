@@ -301,7 +301,7 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
       array $field_instances, array $options = []): array {
 
     // Specific settings for this field
-    $options = [
+    $options += [
       'id' => self::$id,
       'table' => self::$object_table,
       'label' => 'Protocol',

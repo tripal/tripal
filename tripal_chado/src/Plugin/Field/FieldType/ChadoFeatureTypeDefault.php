@@ -370,7 +370,7 @@ class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
 
     // Specific settings for this field
     // There are multiple types of features in core tripal, use a generic term here
-    $options = [
+    $options += [
       'id' => self::$id,
       'table' => self::$object_table,
       'label' => 'Sequence Feature',

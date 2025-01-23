@@ -339,7 +339,7 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
 
     // Specific settings for this field
     // There are four stock types in core Tripal, use the most generic one
-    $options = [
+    $options += [
       'id' => self::$id,
       'table' => self::$object_table,
       'label' => 'Germplasm Accession',
