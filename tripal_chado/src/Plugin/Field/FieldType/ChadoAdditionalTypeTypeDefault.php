@@ -541,6 +541,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $termIdSpace = $bundle->getTermIdSpace();
     $termAccession = $bundle->getTermAccession();
     $fixed_value = $termIdSpace . ':' . $termAccession;
+    // This discovered field is unchecked by default, issue #2033
     $field_list[] = [
       'name' => self::generateFieldName($bundle, 'type', 0),
       'content_type' => $bundle->getID(),
@@ -550,6 +551,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
           . ' for this content type as "' . $fixed_value . '"',
       'cardinality' => 1,
       'required' => TRUE,
+      'checked' => FALSE,
       'storage_settings' => [
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings' => [

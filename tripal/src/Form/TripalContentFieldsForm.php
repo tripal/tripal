@@ -60,7 +60,8 @@ class TripalContentFieldsForm implements FormInterface {
       '#title' => 'Discovered Fields',
     ];
 
-    // Add elements for the new fields tab.
+    // Add elements for the new fields tab. They are checked by default
+    // unless that is overridden, e.g. for the additional type field.
     $new_fields = [];
     $new_defaults = [];
     foreach ($fields['new'] as $field) {
@@ -68,7 +69,9 @@ class TripalContentFieldsForm implements FormInterface {
       if ($field['description']) {
         $new_fields[$field['name']] .= ': ' . $field['description'];
       }
-      $new_defaults[] = $field['name'];
+      if ($field['checked'] ?? TRUE) {
+        $new_defaults[] = $field['name'];
+      }
     }
     $form['new_fields_details'] = [
       '#type' => 'details',
