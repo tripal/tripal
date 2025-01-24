@@ -693,7 +693,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
-
     return [];
   }
 

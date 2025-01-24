@@ -830,7 +830,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param array $options
    *   Specific options from the field's discover() function. Required keys:
    *   - id: the field id, e.g. 'chado_organism_type_default'
-   *   - table: the field's base table, e.g. 'organism'
+   *   - base_table: the base table of the entity
+   *   - table: the field's table, e.g. 'organism'
    *   - label: the field's label, e.g. 'Organism'
    *   - termIdSpace: The field term's DB
    *   - termAccession: The field term's accession
@@ -894,7 +895,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param array $options
    *   Specific options from the field's discover() function. Required keys:
    *   - id: the field id, e.g. 'chado_organism_type_default'
-   *   - table: the field's base table, e.g. 'organism'
+   *   - base_table: the base table of the entity
+   *   - table: the field's table, e.g. 'organism'
    *   - label: the field's label, e.g. 'Organism'
    *   - termIdSpace: The field term's DB
    *   - termAccession: The field term's accession
@@ -978,7 +980,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param array $options
    *   Specific options from the field's discover() function. Required keys:
    *   - id: the field id, e.g. 'chado_organism_type_default'
-   *   - table: the field's base table, e.g. 'organism'
+   *   - table: the field's table, e.g. 'organism'
    *   - label: the field's label, e.g. 'Organism'
    *   - termIdSpace: The field term's DB
    *   - termAccession: The field term's accession
@@ -1001,6 +1003,11 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // Make sure the base table setting exists.
     $options['base_table'] = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
     if (!$options['base_table']) {
+      return $field_list;
+    }
+
+    // Ignore linking from table back to itself, e.g. gene to rna both use feature table
+    if ($options['base_table'] == $options['table']) {
       return $field_list;
     }
 
