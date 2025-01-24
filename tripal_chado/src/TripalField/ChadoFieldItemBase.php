@@ -788,13 +788,13 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
           'default' => [
             'region' => 'content',
             'label' => 'above',
-            'weight' => 10,
+            'weight' => 90,
           ],
         ],
         'form' => [
           'default' => [
             'region' => 'content',
-            'weight' => 10
+            'weight' => 90
           ],
         ],
       ],
