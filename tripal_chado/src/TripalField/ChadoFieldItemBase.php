@@ -901,6 +901,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   - termIdSpace: The field term's DB
    *   - termAccession: The field term's accession
    *   - description: A text description for the discovered field
+   *   - custom_linker: either a string or an array of additional potential linker tables
    *
    * @return array
    *   An associative array of fields to suggest that follows the same structure
@@ -912,22 +913,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $field_list = [];
 
     // See if the base table has a foreign key to the field's table
-    // through an intermediate linking table. These are the
-    // linking tables of the standard naming scheme.
-    $possible_linking_tables = [
-      $options['base_table'] . '_' . $options['table'],
-      $options['table'] . '_' . $options['base_table'],
-    ];
-    // A field can specify non-standard linking tables.
-    $custom_linker = $options['custom_linker'] ?? NULL;
-    if ($custom_linker) {
-      if (is_array($custom_linker)) {
-        $possible_linking_tables += $custom_linker;
-      }
-      else {
-        $possible_linking_tables[] = $custom_linker;
-      }
-    }
+    // through an intermediate linking table.
+    $possible_linking_tables = self::getPossibleLinkingTables($options);
     foreach ($possible_linking_tables as $linking_table) {
       if ($options['chado']->schema()->foreignKeyExists($linking_table, $options['base_table'])) {
         $linking_def = $options['chado']->schema()->getForeignKeyDef($linking_table, $options['base_table']);
@@ -958,6 +945,37 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     }
 
     return $field_list;
+  }
+
+  /**
+   * Constructs a list of possible linking tables
+   *
+   * @param array $options
+   *   The options passed to discoverLinked(). Keys used here:
+   *   - base_table: the base table of the entity
+   *   - table: the field's table, e.g. 'organism'
+   *   - custom_linker: either a string or an array of additional potential linker tables
+   *
+   * @return array
+   *   The list of tables to check
+   */
+  protected static function getPossibleLinkingTables(array $options): array {
+    // These are the linking tables of the standard naming scheme.
+    $possible_linking_tables = [
+      $options['base_table'] . '_' . $options['table'],
+      $options['table'] . '_' . $options['base_table'],
+    ];
+    // A field can specify non-standard linking tables.
+    $custom_linker = $options['custom_linker'] ?? NULL;
+    if ($custom_linker) {
+      if (is_array($custom_linker)) {
+        $possible_linking_tables += $custom_linker;
+      }
+      else {
+        $possible_linking_tables[] = $custom_linker;
+      }
+    }
+    return $possible_linking_tables;
   }
 
   /**
