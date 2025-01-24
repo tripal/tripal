@@ -286,78 +286,23 @@ class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
 
-    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-    $chado = \Drupal::service('tripal_chado.database');
-
-    // Initialize with an empty field list.
-    $field_list = [];
-
-    // Make sure the base table setting exists.
-    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
-    if (!$base_table) {
-      return $field_list;
-    }
-
-    // Make sure the base table has a foreign key to the organism table.
-    if (!$chado->schema()->foreignKeyExists($base_table, 'organism')) {
-      return $field_list;
-    }
-    $fk_def = $chado->schema()->getForeignKeyDef($base_table, 'organism');
-
-    // Check for existing fields of this type.
-    if (array_key_exists(self::$id, $field_types)) {
-      // If yes, then add it to the field list.
-      foreach ($field_instances as $instance) {
-        if ($instance->getType() == self::$id) {
-          $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
-        }
-      }
-      if ($field_list) {
-        return $field_list;
-      }
-    }
-
-    // Create a field entry in the list.
-    $field_list[] = [
-      'name' => self::generateFieldName($bundle, 'organism', 0),
-      'content_type' => $bundle->getID(),
+    // Specific settings for this field
+    $options += [
+      'id' => self::$id,
+      'table' => self::$object_table,
       'label' => 'Organism',
-      'type' => self::$id,
+      'termIdSpace' => 'OBI',
+      'termAccession' => '0100026',
       'description' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
-      'cardinality' => 1,
-      'required' => TRUE,
-      'storage_settings' => [
-        'storage_plugin_id' => 'chado_storage',
-        'storage_plugin_settings' => [
-          'base_table' => $base_table,
-          'base_column' => array_keys($fk_def['columns'])[0]
-        ],
-      ],
-      'settings' => [
-        'termIdSpace' => 'OBI',
-        'termAccession' => '0100026'
-      ],
-      'display' => [
-        'view' => [
-          'default' => [
-            'region' => 'content',
-            'label' => 'above',
-            'weight' => 10,
-          ],
-        ],
-        'form' => [
-          'default' => [
-            'region' => 'content',
-            'weight' => 10
-          ],
-        ],
-      ],
     ];
 
-    // The parent class adds collection plugin IDs
-    $field_list = self::discoverPostprocess($field_list);
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+
     return $field_list;
   }
+
 }

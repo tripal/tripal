@@ -68,7 +68,11 @@ class TripalContentFieldsForm implements FormInterface {
       if ($field['description']) {
         $new_fields[$field['name']] .= ': ' . $field['description'];
       }
-      $new_defaults[] = $field['name'];
+      // Discovered fields are checked by default unless that is overridden,
+      // e.g. for the additional type field.
+      if ($field['checked'] ?? TRUE) {
+        $new_defaults[] = $field['name'];
+      }
     }
     $form['new_fields_details'] = [
       '#type' => 'details',

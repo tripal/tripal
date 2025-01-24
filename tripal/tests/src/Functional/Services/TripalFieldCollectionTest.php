@@ -12,6 +12,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *
  * @group Tripal
  * @group Tripal Content
+ * @group Discover
  */
 class TripalFieldCollectionTest extends TripalTestBrowserBase {
 
