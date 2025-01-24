@@ -919,7 +919,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // A field can specify non-standard linking tables.
     $custom_linker = $options['custom_linker'] ?? NULL;
     if ($custom_linker) {
-      if (is_array($custom_linkers)) {
+      if (is_array($custom_linker)) {
         $possible_linking_tables += $custom_linker;
       }
       else {
