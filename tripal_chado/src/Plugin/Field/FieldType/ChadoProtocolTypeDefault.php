@@ -293,4 +293,27 @@ class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
     return $compatible;
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    $options += [
+      'id' => self::$id,
+      'table' => self::$object_table,
+      'label' => 'Protocol',
+      'termIdSpace' => 'sep',
+      'termAccession' => '00101',
+      'description' => 'A protocol is a process which is a parameterizable description of a process.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+
+    return $field_list;
+  }
+
 }
