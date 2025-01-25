@@ -568,6 +568,34 @@ fields:
               region: content
               weight: 68
 
+    -   name: analysis_type
+        content_type: analysis
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                type_table: analysisprop
+                type_column: type_id
+        settings:
+            termIdSpace: operation
+            termAccession: "0525"
+            fixed_value: operation:0525
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
+
 ## Project ##
 ## Chado Table: project
 ## Required Columns: name (varchar 255)
@@ -735,6 +763,34 @@ fields:
             default:
               region: content
               weight: 68
+
+    -   name: project_type
+        content_type: project
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                type_table: projectprop
+                type_column: type_id
+        settings:
+            termIdSpace: operation
+            termAccession: "0525"
+            fixed_value: operation:0525
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
 
 ## Study ##
 ## Chado Table: study
