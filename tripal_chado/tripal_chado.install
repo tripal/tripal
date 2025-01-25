@@ -806,3 +806,22 @@ function tripal_chado_update_10411() {
     throw new UpdateException('Could not perform update: ' . $e->getMessage());
   }
 }
+
+/**
+ * Adds types to content types that don't have them. PR TBD
+ */
+function tripal_chado_update_10412() {
+  try {
+    $messenger = \Drupal::messenger();
+    $bundleManager = \Drupal::service('entity_type.bundle.info');
+    $entityFieldManager = \Drupal::service('entity_field.manager');
+    $entityTypeManager = \Drupal::entityTypeManager();
+
+    // Add new additional type fields in yaml for these bundles
+    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.general_chado.yml', ['analysis_type']);
+    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.general_chado.yml', ['project_type']);
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not add third party settings: ' . $e->getMessage());
+  }
+}
