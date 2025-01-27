@@ -155,7 +155,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // We want to exclude sequences and other large data objects from drupal storage
     // Even if the default is on, we will never save residues
     $is_required = $this->default_is_required and !(array_key_exists('path', $storage_settings) and
-      str_ends_with($storage_settings['path'], '.residues'));
+      str_ends_with(haystack: $storage_settings['path'], needle: 'residues'));
     // Any field that stores a base record id, a primary key,
     // or a foreign key link is required.
     // This takes absolute precedence and cannot be overridden.
@@ -294,9 +294,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
         foreach ($tables as $table_alias) {
          // try {
-            // this should improve update performance
+           // this should improve update performance
            // $this->records->updateRecords($base_table, $table_alias, true); // try update first, this should work in most cases, if it doesn't
-          //} catch (\Exception $e) {
+           //} catch (\Exception $e) {
              // log this but not as error, it is a pretty rare state
             //\Drupal::logger('tripal')->warning("We could not update some values, trying delete/insert: " . $e->getMessage());
             // If the delete/update mechanism doesn't work, we still need to bail out

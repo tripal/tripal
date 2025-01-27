@@ -9,6 +9,8 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
+use function array_values;
+use function count;
 
 
 /**
@@ -747,11 +749,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     // Create a values array appropriate for `loadValues()`
-    list($values, $tripal_storages) = TripalEntity::getValuesArray($this);
+    list($values, $tripal_storages) = TripalEntity::getValuesArray(entity: $this);
     // Perform the Insert or Update of the submitted values to the
     // underlying data store.
     foreach ($values as $tsid => $tsid_values) {
@@ -841,13 +843,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           if ($this->allNull($prop_values) and (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name]))) {
             $delta_remove[$field_name][] = $delta;
           }
-
-
         }
       }
     }
-
-
+  
     // Now remove any values that shouldn't be there.
     foreach ($delta_remove as $field_name => $deltas) {
       foreach (array_reverse($deltas) as $delta) {
@@ -864,10 +863,55 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
   }
 
+
+  /**
+  * {@inheritDoc} 
+  */
+  public function postSave(EntityStorageInterface $storage, $update = true): void
+  {
+    parent::postSave($storage);
+    // need to do this only if the default storage in entity tables is On
+    if (
+      \Drupal::config('tripal.settings')->
+        get('tripal_entity_type.default_cache_backend_field_values')
+    ) {
+
+      $publish_service = \Drupal::service('tripal.backend_publish');
+      $chado_publish = $publish_service->createInstance('chado_storage', []);
+      list($values, $nil) = TripalEntity::getValuesArray(entity: $this);
+      $fields = $this->getFields();
+
+      $bundle = $this->getBundle()->getID();
+      if (empty($bundle)) {
+        \Drupal::messenger()->addMessage('No bundle information found!');
+        return;
+      } // cannot update without bundle information
+      \Drupal::messenger()->addMessage('Republishing ' . count(value: $fields) . ' fields in bundle ' . $bundle .
+        ' for entity ' . $this->getType() . ' with ID ' . $this->getID());
+      
+      foreach ($values as $tsid => $tsid_values) {
+        \Drupal::Messenger()->addMessage('Got ' . count(value: $tsid_values) . ' values from storage ' . $tsid);
+        foreach ($fields as $field_name => $items) {
+          foreach ($items as $item) {
+            if (!($item instanceof TripalFieldItemInterface))
+              continue;
+            $delta = 0;
+            $entities = $chado_publish->updatePublishedEntity($this, field_name: $field_name, values: $tsid_values, delta: $delta, bundle: $bundle, tsid: $tsid);
+            if (count($entities) > 0) {
+              \Drupal::messenger()->addMessage("Updated $field_name in bundle $bundle");
+            } else {
+              \Drupal::messenger()->addMessage("Nothing was updated in bundle $bundle");
+            }
+          }
+        }
+      }
+    }
+  }
+
   /**
    * {@inheritdoc}
    */
-  public static function postLoad(EntityStorageInterface $storage, array &$entities) {
+  public static function postLoad(EntityStorageInterface $storage, array &$entities): void {
     parent::postLoad($storage, $entities);
 
 
