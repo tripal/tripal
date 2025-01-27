@@ -1052,6 +1052,8 @@ class ChadoPublish extends TripalBackendPublishBase {
     if (!$this->republish) {
       $record_ids = array_diff($record_ids, array_keys($this->existing_published_entities));
     }
+
+
     return $record_ids;
   }
 

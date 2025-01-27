@@ -69,7 +69,6 @@ fields:
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
-            drupal_exclude: true
             storage_plugin_settings:
                 base_table: feature
                 base_column: residues
@@ -502,7 +501,6 @@ fields:
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
-            drupal_exclude: true
             storage_plugin_settings:
                 base_table: feature
                 base_column: residues
