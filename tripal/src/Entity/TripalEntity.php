@@ -9,7 +9,6 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
-use function array_values;
 use function count;
 
 
@@ -864,9 +863,28 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
 
+   
   /**
-  * {@inheritDoc} 
-  */
+   * Performs actions after the entity is saved.
+   *
+   * The postSave method in a Drupal entity is a hook that is called after an entity is saved.
+   * It allows developers to perform additional actions or modifications after the entity has been persisted to the database.
+   *
+   * In the context of Tripal and Chado, the postSave method can be used to update Chado values.
+   * For example, when a Tripal entity is saved, the postSave method can be used to ensure that the corresponding Chado records
+   * are cached and updated in the entity storage tables.
+   *
+   * The postSave method is called after the entity is saved, so the entity is already existing in the database.
+   * 
+   * {@inheritDoc} 
+   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   The entity storage handler.
+   * @param bool $update
+   *   (optional) Whether the entity is being updated (TRUE) or created (FALSE).
+   *   Defaults to TRUE.
+   *
+   * @return void
+   */
   public function postSave(EntityStorageInterface $storage, $update = true): void
   {
     parent::postSave($storage);
@@ -876,8 +894,24 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         get('tripal_entity_type.default_cache_backend_field_values')
     ) {
 
-      $publish_service = \Drupal::service('tripal.backend_publish');
-      $chado_publish = $publish_service->createInstance('chado_storage', []);
+      // TODO: This is not a good way to get the storage plugin 
+      // (could couse error in unit tests in:
+      // testTripalEntityAccessControlHandler and testTripalContentPages). 
+      // We may need to find a better way to get the storage plugin.
+      // interestingly, this is the same way it is done in ChadoTripalPublishTest.php 
+      // and several other places and it works there.
+      // Whether a chado_storage instance can be loaded depends on where or when it is called.
+      // This may be an issue with the the tripal backend publish plugin or the way it is loaded.
+      // ... sure has a lot of duct tape on it.
+      try {
+        $publish_service = \Drupal::service('tripal.backend_publish');
+        $chado_publish = $publish_service->createInstance('chado_storage', []);
+      } catch (\Drupal\Component\Plugin\Exception\PluginNotFoundException $e) {
+        \Drupal::logger('tripal')->warning('Chado storage plugin not found (this may happen due to partial bootstrap): @message', ['@message' => $e->getMessage()]);
+        \Drupal::messenger()->addWarning('Chado storage plugin could not be intialized. Please check the configuration.');
+        return;
+      }
+
       list($values, $nil) = TripalEntity::getValuesArray(entity: $this);
       $fields = $this->getFields();
 
