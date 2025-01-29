@@ -893,8 +893,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       \Drupal::config('tripal.settings')->
         get('tripal_entity_type.default_cache_backend_field_values')
     ) {
-      // Could couse error in unit tests in:
-      // testTripalEntityAccessControlHandler and testTripalContentPages. 
+
+      // TODO: This is not a good way to get the storage plugin 
+      // (could couse error in unit tests in:
+      // testTripalEntityAccessControlHandler and testTripalContentPages). 
       // We may need to find a better way to get the storage plugin.
       // interestingly, this is the same way it is done in ChadoTripalPublishTest.php 
       // and several other places and it works there.
@@ -910,28 +912,29 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         return;
       }
 
-      [$values, $nil] = TripalEntity::getValuesArray(entity: $this);
+      list($values, $nil) = TripalEntity::getValuesArray(entity: $this);
       $fields = $this->getFields();
+
       $bundle = $this->getBundle()->getID();
       if (empty($bundle)) {
-        \Drupal::messenger()->addMessage('No bundle information found!'); // cannot update without bundle information
-      } else {
-        \Drupal::messenger()->addMessage('Republishing ' . count(value: $fields) . ' fields in bundle ' . $bundle .
-          ' for entity ' . $this->getType() . ' with ID ' . $this->getID());
-        foreach ($values as $tsid => $tsid_values) {
-          \Drupal::Messenger()->addMessage('Got ' . count(value: $tsid_values) . ' values from storage ' . $tsid);
-          foreach ($fields as $field_name => $items) {
-            foreach ($items as $item) {
-              if ($item instanceof TripalFieldItemInterface) {
-
-                $delta = 0; // delta is always 0, need to fix this?
-                $entities = $chado_publish->updatePublishedEntity($this, field_name: $field_name, values: $tsid_values, delta: $delta, bundle: $bundle, tsid: $tsid);
-                if (count(value: $entities) > 0) {
-                  \Drupal::messenger()->addMessage("Updated $field_name in bundle $bundle");
-                } else {
-                  \Drupal::messenger()->addMessage("Nothing was updated in bundle $bundle");
-                }
-              }
+        \Drupal::messenger()->addMessage('No bundle information found!');
+        return;
+      } // cannot update without bundle information
+      \Drupal::messenger()->addMessage('Republishing ' . count(value: $fields) . ' fields in bundle ' . $bundle .
+        ' for entity ' . $this->getType() . ' with ID ' . $this->getID());
+      
+      foreach ($values as $tsid => $tsid_values) {
+        \Drupal::Messenger()->addMessage('Got ' . count(value: $tsid_values) . ' values from storage ' . $tsid);
+        foreach ($fields as $field_name => $items) {
+          foreach ($items as $item) {
+            if (!($item instanceof TripalFieldItemInterface))
+              continue;
+            $delta = 0;
+            $entities = $chado_publish->updatePublishedEntity($this, field_name: $field_name, values: $tsid_values, delta: $delta, bundle: $bundle, tsid: $tsid);
+            if (count($entities) > 0) {
+              \Drupal::messenger()->addMessage("Updated $field_name in bundle $bundle");
+            } else {
+              \Drupal::messenger()->addMessage("Nothing was updated in bundle $bundle");
             }
           }
         }
