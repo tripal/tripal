@@ -1351,10 +1351,12 @@ class ChadoPublish extends TripalBackendPublishBase {
     $fields = [];
     // update only the fields that are cached in the entity tables
     // non-required types will stay having the default empty value
-    foreach (array_keys($this->required_types[$field_name]) as $key) {
-        $field_value = $matches[0][$field_name][$delta][$key]['value']->getValue();
+    foreach ($this->required_types[$field_name] as $key => $properties) {
+        $value = $matches[0][$field_name][$delta][$key]['value'];
+        $field_value = (is_object($value)) ? $value->getValue() : null;
         if (empty($field_value)) {
-          \Drupal::messenger()->addMessage("{$field_name}_$key: empty value");
+          // allow to delete the field value, if the value is empty, but need to use the default value
+          $field_value = $properties->getDefaultValue();
         } else {
           $fields["{$field_name}_$key"] = $field_value;
          // \Drupal::messenger()->addMessage("{$field_name}_$key: $field_value"); 
