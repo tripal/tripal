@@ -806,3 +806,14 @@ function tripal_chado_update_10411() {
     throw new UpdateException('Could not perform update: ' . $e->getMessage());
   }
 }
+
+/**
+ * Adds missing 'path' setting to the 'record_id'
+ * property in the 'chado_assay_type_default' field
+ */
+function tripal_chado_update_10412() {
+  // This hook added by PR 2099
+  $upgradable_types = ['chado_assay_type_default'];
+  $upgradable_properties = ['record_id'];
+  tripal_chado_field_reload($upgradable_types, $upgradable_properties, TRUE);
+}
