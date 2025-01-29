@@ -470,7 +470,8 @@ class ChadoApplyMigrations extends ChadoTaskBase {
           try {
             $success = $this->chado_connection->executeSqlFile(
               $migration_file,
-              ['chado' => $target_schema]
+              FALSE,
+              $target_schema
             );
           }
           catch (\Exception $e) {
