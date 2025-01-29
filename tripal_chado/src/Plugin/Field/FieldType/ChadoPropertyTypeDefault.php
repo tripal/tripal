@@ -251,10 +251,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
-
-    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-    $chado = \Drupal::service('tripal_chado.database');
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances, array $options = []): array {
 
     // Initialize with an empty field list.
     $field_list = [];
@@ -264,6 +261,9 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     if (!$base_table) {
       return $field_list;
     }
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Make sure the prop table exists in Chado.
     $prop_table = $base_table . 'prop';
@@ -325,7 +325,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
     }
 
     // The parent class adds collection plugin IDs
-    $field_list = self::discoverPostprocess($field_list);
+    $field_list = parent::discoverPostprocess($field_list);
     return $field_list;
   }
 

@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
@@ -305,6 +306,29 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
       $compatible = FALSE;
     }
     return $compatible;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    $options += [
+      'id' => self::$id,
+      'table' => self::$object_table,
+      'label' => 'Assay',
+      'termIdSpace' => 'OBI',
+      'termAccession' => '0000070',
+      'description' => 'A planned process with the objective to produce information about the material entity that is the evaluant, by physically examining it or its proxies.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+
+    return $field_list;
   }
 
 }

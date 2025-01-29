@@ -145,3 +145,22 @@ CREATE TABLE chadoprop (
     value text,
     rank integer DEFAULT 0 NOT NULL
 );
+INSERT INTO cv (name, definition) VALUES ('chado_properties', 'Terms that are used in the chadoprop table to describe the state of the database')
+  ON CONFLICT DO NOTHING;
+INSERT INTO db (name, description) VALUES ('null', 'Use when a database is not available.')
+  ON CONFLICT DO NOTHING;
+INSERT INTO dbxref (db_id, accession) VALUES (
+  (SELECT db_id FROM db WHERE name = 'null'),
+  'chado_properties:version'
+) ON CONFLICT DO NOTHING;
+INSERT INTO cvterm (name, definition, cv_id,dbxref_id) VALUES (
+  'version',
+  'Chado schema version',
+  (SELECT cv_id FROM cv WHERE name = 'chado_properties'),
+  (SELECT dbxref_id FROM dbxref WHERE accession = 'chado_properties:version')
+) ON CONFLICT DO NOTHING;
+
+INSERT INTO chadoprop (type_id, value, rank)
+  SELECT cvterm_id as type_id, '1.3' as value, 0 as rank
+  FROM cvterm
+  WHERE name = 'version';

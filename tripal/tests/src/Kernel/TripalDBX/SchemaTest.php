@@ -14,8 +14,8 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
  * @coversDefaultClass \Drupal\tripal\TripalDBX\TripalDbxSchema
  *
  * @group Tripal
- * @group Tripal TripalDBX
- * @group Tripal TripalDBX Schema
+ * @group TripalDBX
+ * @group TripalDbxSchema
  */
 class SchemaTest extends TripalTestKernelBase {
 

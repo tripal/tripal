@@ -330,4 +330,28 @@ class ChadoStockTypeDefault extends ChadoFieldItemBase {
     return $compatible;
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    // There are four stock types in core Tripal, use the most generic one
+    $options += [
+      'id' => self::$id,
+      'table' => self::$object_table,
+      'label' => 'Germplasm',
+      'termIdSpace' => 'NCIT',
+      'termAccession' => 'C70699',
+      'description' => 'Any material sample taken from a biological entity for testing, diagnostic, propagation, treatment or research purposes, including a sample obtained from a living organism or taken from the biological object after halting of all its life functions.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+
+    return $field_list;
+  }
+
 }
