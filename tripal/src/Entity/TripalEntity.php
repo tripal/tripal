@@ -888,54 +888,60 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function postSave(EntityStorageInterface $storage, $update = true): void
   {
     parent::postSave($storage);
-    // need to do this only if the default storage in entity tables is On
-    if (
-      \Drupal::config('tripal.settings')->
-        get('tripal_entity_type.default_cache_backend_field_values')
-    ) {
-
-      // TODO: This is not a good way to get the storage plugin 
-      // (could couse error in unit tests in:
-      // testTripalEntityAccessControlHandler and testTripalContentPages). 
-      // We may need to find a better way to get the storage plugin.
-      // interestingly, this is the same way it is done in ChadoTripalPublishTest.php 
-      // and several other places and it works there.
-      // Whether a chado_storage instance can be loaded depends on where or when it is called.
-      // This may be an issue with the the tripal backend publish plugin or the way it is loaded.
-      // ... sure has a lot of duct tape on it.
-      try {
-        $publish_service = \Drupal::service('tripal.backend_publish');
-        $chado_publish = $publish_service->createInstance('chado_storage', []);
-      } catch (\Drupal\Component\Plugin\Exception\PluginNotFoundException $e) {
-        \Drupal::logger('tripal')->warning('Chado storage plugin not found (this may happen due to partial bootstrap): @message', ['@message' => $e->getMessage()]);
-        \Drupal::messenger()->addWarning('Chado storage plugin could not be intialized. Please check the configuration.');
+    if ($this->shouldUpdateCache()) {
+      $chado_publish = $this->getChadoPublishService();
+      if (!$chado_publish) {
         return;
       }
 
-      list($values, $nil) = TripalEntity::getValuesArray(entity: $this);
+      [$values, $nil] = TripalEntity::getValuesArray(entity: $this);
       $fields = $this->getFields();
-
       $bundle = $this->getBundle()->getID();
+
       if (empty($bundle)) {
         \Drupal::messenger()->addMessage('No bundle information found!');
         return;
-      } // cannot update without bundle information
-      \Drupal::messenger()->addMessage('Republishing ' . count(value: $fields) . ' fields in bundle ' . $bundle .
+      }
+
+      \Drupal::messenger()->addMessage('Republishing ' . count($fields) . ' fields in bundle ' . $bundle .
         ' for entity ' . $this->getType() . ' with ID ' . $this->getID());
-      
-      foreach ($values as $tsid => $tsid_values) {
-        \Drupal::Messenger()->addMessage('Got ' . count(value: $tsid_values) . ' values from storage ' . $tsid);
-        foreach ($fields as $field_name => $items) {
-          foreach ($items as $item) {
-            if (!($item instanceof TripalFieldItemInterface))
-              continue;
-            $delta = 0;
-            $entities = $chado_publish->updatePublishedEntity($this, field_name: $field_name, values: $tsid_values, delta: $delta, bundle: $bundle, tsid: $tsid);
-            if (count($entities) > 0) {
-              \Drupal::messenger()->addMessage("Updated $field_name in bundle $bundle");
-            } else {
-              \Drupal::messenger()->addMessage("Nothing was updated in bundle $bundle");
-            }
+
+      $this->updateFields(values: $values, fields: $fields, bundle: $bundle, chado_publish: $chado_publish);
+    }
+  }
+
+  private function shouldUpdateCache(): bool
+  {
+    return \Drupal::config('tripal.settings')
+      ->get('tripal_entity_type.default_cache_backend_field_values');
+  }
+
+  private function getChadoPublishService()
+  {
+    try {
+      $publish_service = \Drupal::service('tripal.backend_publish');
+      return $publish_service->createInstance('chado_storage', []);
+    } catch (\Drupal\Component\Plugin\Exception\PluginNotFoundException $e) {
+      \Drupal::logger('tripal')->warning('Chado storage plugin not found (this may happen due to partial bootstrap): @message', ['@message' => $e->getMessage()]);
+      \Drupal::messenger()->addWarning('Chado storage plugin could not be initialized. Please check the configuration.');
+      return null;
+    }
+  }
+
+  private function updateFields(array $values, array $fields, string $bundle, $chado_publish): void
+  {
+    foreach ($values as $tsid => $tsid_values) {
+      foreach ($fields as $field_name => $items) {
+        foreach ($items as $item) {
+          if (!($item instanceof TripalFieldItemInterface)) {
+            continue;
+          }
+          $delta = 0;
+          $entities = $chado_publish->updatePublishedEntity($this, field_name: $field_name, values: $tsid_values, delta: $delta, bundle: $bundle, tsid: $tsid);
+          if (count(value: $entities) > 0) {
+            \Drupal::messenger()->addMessage("Updated $field_name in bundle $bundle");
+          } else {
+            \Drupal::messenger()->addMessage("Nothing was updated in bundle $bundle");
           }
         }
       }
@@ -974,7 +980,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $bundle = $entity->bundle();
 
       // Create a values array appropriate for `loadValues()`
-      list($values, $tripal_storages) = TripalEntity::getValuesArray($entity);
+      [$values, $tripal_storages] = TripalEntity::getValuesArray($entity);
 
       // Call the loadValues() function for each storage type.
       $load_success = False;
