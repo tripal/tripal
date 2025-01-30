@@ -814,6 +814,6 @@ function tripal_chado_update_10411() {
 function tripal_chado_update_10412() {
   // This hook added by PR 2099
   $upgradable_types = ['chado_assay_type_default'];
-  $upgradable_properties = ['record_id'];
+  $upgradable_properties = ['record_id', 'assay_description'];
   tripal_chado_field_reload($upgradable_types, $upgradable_properties, TRUE);
 }
