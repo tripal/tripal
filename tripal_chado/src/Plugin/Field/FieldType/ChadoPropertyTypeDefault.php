@@ -295,6 +295,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
         'description' => $recprop->definition ? 'A record property with the following definition: ' . $recprop->definition : '',
         'cardinality' => -1,
         'required' => False,
+        'cvterm_id' => $recprop->cvterm_id,
         'storage_settings' => [
           'storage_plugin_id' => 'chado_storage',
           'storage_plugin_settings' => [
