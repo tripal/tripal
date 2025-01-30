@@ -913,10 +913,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   private function shouldUpdateCache(): bool
   {
     return \Drupal::config('tripal.settings')
-      ->get('tripal_entity_type.default_cache_backend_field_values');
+      ->get('tripal_entity_type.default_cache_backend_field_values') ?? false;
   }
 
-  private function getChadoPublishService()
+  private function getChadoPublishService(): mixed
   {
     try {
       $publish_service = \Drupal::service('tripal.backend_publish');
