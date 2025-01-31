@@ -179,4 +179,31 @@ class ChadoManageCommands extends DrushCommands {
        $bundle, $datastore, $values);
   }
 
+  /**
+   * Add a Chado schema to Tripal. Does not set this schema as the default, as
+   * there can be more than one Chado schema added to Tripal.
+   * See the command tripal-chado:set_default for this functionality.
+   * 
+   * @command tripal-chado:add_to_tripal
+   * @alias trp-add-chado
+   * @options schema-name
+   *   The name of the chado schema to add to Tripal. 
+   * @usage drush trp-add-chado --schema-name="chado"
+   *   Adds the specified Chado to Tripal. 
+   *
+   */
+  public function addToTripal($options = ['schema-name' => 'chado']) {
+    
+    $this->output()->writeln('Adding the schema "' . $options['schema-name'] . '" to Tripal...');
+
+    $integrator = \Drupal::service('tripal_chado.integrator');
+    $integrator->setParameters(
+      [
+        'input_schemas' => [$options['schema-name']]
+      ]
+    );
+    if ($integrator->performTask()) {
+      $this->output()->writeln('Successfully added the schema "' . $options['schema-name'] . '" to Tripal.');
+    }
+  }
 }
