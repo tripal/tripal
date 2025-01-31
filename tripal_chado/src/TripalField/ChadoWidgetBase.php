@@ -284,7 +284,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     $summary = [];
     $select_limit = $this->getSetting('widget_select_limit');
     if (is_null($select_limit) or ($select_limit === '')) {
-      $global_select_limit = \Drupal::config('tripal.settings')->get('tripal_entity_type.widget_global_select_limit');
+      $global_select_limit = \Drupal::config('tripal.settings')
+        ->get('tripal_entity_type.widget_global_select_limit') ?? 50;
       $select_limit = $this->t('@global_select_limit (global setting)',
                                ['@global_select_limit' => $global_select_limit]);
     }
