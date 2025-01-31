@@ -142,7 +142,7 @@ class TripalContentFieldsForm implements FormInterface {
     ];
     $invalid_fields_desc = t('The following fields do not pass validation tests. '
       . 'They need correction by the module developer and cannot be added.');
-    if (empty($invalid_fields_desc)) {
+    if (empty($invalid_fields)) {
       $invalid_fields_desc = t('All fields passed validation tests!');
     }
     $form['invalid_fields_details']['invalid_fields_list'] = [
