@@ -136,8 +136,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
-      'chado_table' => $base_table,
-      'chado_column' => $base_pkey_col,
+      'path' => $base_table . '.' . $base_pkey_col,
     ]);
 
     // This property will store the Drupal entity ID of the linked chado
@@ -214,7 +213,7 @@ class ChadoAssayTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'assay_description', $description_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
-      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . $object_pkey_col . ';description',
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';description',
       'as' => 'assay_description',
     ]);
 
