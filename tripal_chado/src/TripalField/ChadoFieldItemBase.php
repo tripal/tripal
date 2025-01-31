@@ -766,7 +766,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    */
   protected static function createFieldEntry(TripalEntityType $bundle, array $options): array {
     $field_item = [
-      'name' => self::generateFieldName($bundle, $options['table'], 0),
+      'name' => $options['name'] ?? self::generateFieldName($bundle, $options['table'], 0),
       'content_type' => $bundle->getID(),
       'label' => $options['label'],
       'type' => $options['id'],
@@ -830,6 +830,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param array $options
    *   Specific options from the field's discover() function. Required keys:
    *   - id: the field id, e.g. 'chado_organism_type_default'
+   *   - name: the unique name for a specific field instance. The default is
+   *     generated using generateFieldName().
    *   - base_table: the base table of the entity
    *   - table: the field's table, e.g. 'organism'
    *   - label: the field's label, e.g. 'Organism'
@@ -895,6 +897,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param array $options
    *   Specific options from the field's discover() function. Required keys:
    *   - id: the field id, e.g. 'chado_organism_type_default'
+   *   - name: the unique name for a specific field instance. The default is
+   *     generated using generateFieldName().
    *   - base_table: the base table of the entity
    *   - table: the field's table, e.g. 'organism'
    *   - label: the field's label, e.g. 'Organism'
@@ -998,6 +1002,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param array $options
    *   Specific options from the field's discover() function. Required keys:
    *   - id: the field id, e.g. 'chado_organism_type_default'
+   *   - name: the unique name for a specific field instance. The default is
+   *     generated using generateFieldName().
    *   - table: the field's table, e.g. 'organism'
    *   - label: the field's label, e.g. 'Organism'
    *   - termIdSpace: The field term's DB
