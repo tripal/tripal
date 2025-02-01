@@ -271,6 +271,9 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         ->condition('third_party_settings.tripal.chado_base_table', $table)
         ->execute();
       $bundle_ids = array_keys($bundles);
+      if (!$bundle_ids) {
+        return;
+      }
 
       // For each of these bundles, get its defining DB and
       // accession, and then from that get its cvterm_id
