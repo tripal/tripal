@@ -582,9 +582,9 @@ fields:
                 type_table: analysisprop
                 type_column: type_id
         settings:
-            termIdSpace: operation
-            termAccession: "0525"
-            fixed_value: operation:0525
+            termIdSpace: "operation"
+            termAccession: "2945"
+            fixed_value: "operation:2945"
         display:
           view:
             default:
@@ -778,9 +778,9 @@ fields:
                 type_table: projectprop
                 type_column: type_id
         settings:
-            termIdSpace: operation
-            termAccession: "0525"
-            fixed_value: operation:0525
+            termIdSpace: "NCIT"
+            termAccession: "C47885"
+            fixed_value: "NCIT:C47885"
         display:
           view:
             default:
