@@ -65,7 +65,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'name' => $details['name'],
       'description' => array_key_exists('description', $details) ? $details['description'] : NULL,
     ]);
-    return $insert->execute();
+    $project_id = $insert->execute();
+    $this->addFixedValue($chado, 'project', $project_id, 'NCIT', 'C47885');
+    return $project_id;
   }
 
   /**

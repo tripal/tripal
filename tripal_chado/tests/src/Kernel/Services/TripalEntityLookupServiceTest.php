@@ -49,20 +49,22 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
 
     // Create three projects in chado.
     for ($i=1; $i <= 3; $i++) {
-      $this->connection->insert('1:project')
+      $project_id = $this->connection->insert('1:project')
         ->fields([
           'name' => 'Project No. ' . $i,
         ])->execute();
+      $this->addFixedValue($this->connection, 'project', $project_id, $this->project_termIdSpace, $this->project_Accession);
     }
 
     // Create three analyses in chado.
     for ($i=1; $i <= 3; $i++) {
-      $this->connection->insert('1:analysis')
+      $analysis_id = $this->connection->insert('1:analysis')
         ->fields([
           'name' => 'Analysis No. ' . $i,
           'program' => 'PHP',
           'programversion' => 'Version ' . $i,
         ])->execute();
+      $this->addFixedValue($this->connection, 'analysis', $analysis_id, $this->analysis_termIdSpace, $this->analysis_Accession);
     }
 
     // Create one contact in chado, in addition to the null contact.
@@ -140,6 +142,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
       );
       $this->assertEquals($expected_entity_id, $entity_id, "We did not retrieve the expected entity_id for project $project_id");
     }
+
     for ($analysis_id=1; $analysis_id <= 3; $analysis_id++) {
       $expected_entity_id = $analysis_id + 3;
       $entity_id = $lookup_manager->getEntityId(

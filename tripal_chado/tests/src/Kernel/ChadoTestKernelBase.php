@@ -150,4 +150,39 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
       $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
     }
   }
+
+  /**
+   * A helper function to add a bundle term reference
+   *
+   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
+   *   A chado database object.
+   * @param string $table
+   *   The chado table name
+   * @param int $pkey_id
+   *   The primary key value for the specified $table
+   * @param string $termIdNamespace
+   *   The DB name
+   * @param string $termAccession
+   *   The dbxref accession
+   *
+   * @return void
+   */
+  public function addFixedValue($chado, $table, $pkey_id, $termIdNamespace, $termAccession) {
+    // Look up the cvterm ID
+    $query = $chado->select('1:cvterm', 'T');
+    $query->leftJoin('1:dbxref', 'X', '"T".dbxref_id = "X".dbxref_id');
+    $query->leftJoin('1:db', 'DB', '"X".db_id = "DB".db_id');
+    $query->condition('"X".accession', $termAccession, '=');
+    $query->condition('"DB".name', $termIdNamespace, '=');
+    $query->addField('T', 'cvterm_id', 'id');
+    $cvterm_id = $query->execute()->fetchField();
+
+    // This inserts the property with the bundle term
+    $insert = $chado->insert('1:' . $table . 'prop');
+    $insert->fields([
+      $table . '_id' => $pkey_id,
+      'type_id' => $cvterm_id,
+    ]);
+    $insert->execute();
+  }
 }
