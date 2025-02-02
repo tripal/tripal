@@ -253,7 +253,15 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     // Defines which core tripal tables we want to check, and the term to use
     $migrated_tables = [
       'analysis' => 'operation:2945',
+      'arraydesign' => 'EFO:0000269',
+      'assay' => 'OBI:0000070',
+      'biomaterial' => 'sep:00195',
+      'contact' => 'NCIT:C47954',
+      'organism' => 'OBI:0100026',
       'project' => 'NCIT:C47885',
+      'protocol' => 'sep:00101',
+      'pub' => 'TPUB:0000002',
+      'study' => 'SIO:001066',
     ];
 
     foreach ($migrated_tables as $table => $expected_bundle_term) {
