@@ -53,7 +53,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
         ->fields([
           'name' => 'Project No. ' . $i,
         ])->execute();
-      $this->addFixedValue($this->connection, 'project', $project_id, $this->project_termIdSpace, $this->project_Accession);
+      $this->addFixedValue($this->connection, 'project', $project_id);
     }
 
     // Create three analyses in chado.
@@ -64,7 +64,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
           'program' => 'PHP',
           'programversion' => 'Version ' . $i,
         ])->execute();
-      $this->addFixedValue($this->connection, 'analysis', $analysis_id, $this->analysis_termIdSpace, $this->analysis_Accession);
+      $this->addFixedValue($this->connection, 'analysis', $analysis_id);
     }
 
     // Create one contact in chado, in addition to the null contact.

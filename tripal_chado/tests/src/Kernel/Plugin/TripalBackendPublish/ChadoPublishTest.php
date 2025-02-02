@@ -57,7 +57,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
           'name' => 'Project No. ' . $i,
           'description' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
         ])->execute();
-      $this->addFixedValue($this->connection, 'project', $project_id, 'NCIT', 'C47885');
+      $this->addFixedValue($this->connection, 'project', $project_id);
     }
 
     // Create three contacts in chado to be published.

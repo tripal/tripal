@@ -66,7 +66,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'description' => array_key_exists('description', $details) ? $details['description'] : NULL,
     ]);
     $project_id = $insert->execute();
-    $this->addFixedValue($chado, 'project', $project_id, 'NCIT', 'C47885');
+    if (!array_key_exists('no_fixed_value', $details)) {
+      $this->addFixedValue($chado, 'project', $project_id);
+    }
     return $project_id;
   }
 
@@ -563,6 +565,11 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $project_id2 = $this->addChadoProject($chado, [
       'name' => 'Project Face',
       'description' => 'I wanna project like they do in Texas, please'
+    ]);
+    $project_id3 = $this->addChadoProject($chado, [
+      'name' => 'Unpublishable Project',
+      'description' => 'This project should not be publishable because it does not have a fixed value',
+      'no_fixed_value' => TRUE,
     ]);
     $project_contact_id1 = $this->addChadoProjectContact($chado, [
       'project_id' => $project_id1,

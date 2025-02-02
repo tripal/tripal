@@ -306,15 +306,26 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
    *   The chado table name
    * @param int $pkey_id
    *   The primary key value for the specified $table
-   * @param string $termIdNamespace
-   *   The DB name
-   * @param string $termAccession
-   *   The dbxref accession
    *
    * @return void
    */
-  public function addFixedValue($chado, $table, $pkey_id, $termIdNamespace, $termAccession) {
+  public function addFixedValue($chado, $table, $pkey_id) {
+    $table_to_term = [
+      'analysis' => ['operation', '2945'],
+      'arraydesign' => ['EFO', '0000269'],
+      'assay' => ['OBI', '0000070'],
+      'biomaterial' => ['sep', '00195'],
+      'contact' => ['NCIT', 'C47954'],
+      'library' => ['NCIT', 'C16223'],
+      'organism' => ['OBI', '0100026'],
+      'phylotree' => ['data', '0872'],
+      'project' => ['NCIT', 'C47885'],
+      'protocol' => ['sep', '00101'],
+      'pub' => ['TPUB', '0000002'],
+      'study' => ['SIO', '001066'],
+    ];
     // Look up the cvterm ID
+    list($termIdNamespace, $termAccession) = $table_to_term[$table];
     $query = $chado->select('1:cvterm', 'T');
     $query->leftJoin('1:dbxref', 'X', '"T".dbxref_id = "X".dbxref_id');
     $query->leftJoin('1:db', 'DB', '"X".db_id = "DB".db_id');
