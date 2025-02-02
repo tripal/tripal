@@ -166,6 +166,34 @@ fields:
               region: content
               weight: 68
 
+    -   name: biosample_type
+        content_type: biosample
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biosample
+                type_table: biosampleprop
+                type_column: type_id
+        settings:
+            termIdSpace: "sep"
+            termAccession: "00195"
+            fixed_value: "sep:00195"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
+
 ## Assay ##
 
     -   name: assay_name
@@ -462,6 +490,34 @@ fields:
             default:
               region: content
               weight: 68
+
+    -   name: assay_type
+        content_type: assay
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                type_table: assayprop
+                type_column: type_id
+        settings:
+            termIdSpace: "OBI"
+            termAccession: "0000070"
+            fixed_value: "OBI:0000070"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
 
 ## Array Design ##
 
@@ -912,3 +968,31 @@ fields:
             default:
               region: content
               weight: 68
+
+    -   name: array_design_type
+        content_type: array_design
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                type_table: arraydesignprop
+                type_column: type_id
+        settings:
+            termIdSpace: "EFO"
+            termAccession: "0000269"
+            fixed_value: "EFO:0000269"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
