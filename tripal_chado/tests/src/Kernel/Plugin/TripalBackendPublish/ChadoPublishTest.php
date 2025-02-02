@@ -42,12 +42,13 @@ class ChadoPublishTest extends ChadoTestKernelBase {
 
     // Create three organisms in chado to be published.
     for ($i=1; $i <= 3; $i++) {
-      $this->connection->insert('1:organism')
+      $organism_id = $this->connection->insert('1:organism')
         ->fields([
           'genus' => 'Tripalus',
           'species' => 'databasica ' . $i,
           'comment' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
         ])->execute();
+      $this->addFixedValue($this->connection, 'organism', $organism_id);
     }
 
     // Create three projects in chado to be published.
@@ -62,11 +63,12 @@ class ChadoPublishTest extends ChadoTestKernelBase {
 
     // Create three contacts in chado to be published.
     for ($i=1; $i <= 3; $i++) {
-      $this->connection->insert('1:contact')
+      $contact_id = $this->connection->insert('1:contact')
         ->fields([
           'name' => 'Contact No. ' . $i,
           'description' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
         ])->execute();
+      $this->addFixedValue($this->connection, 'contact', $contact_id);
     }
 
     // Create the terms for the field property storage types.

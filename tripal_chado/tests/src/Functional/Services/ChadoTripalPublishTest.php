@@ -45,7 +45,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'common_name' => array_key_exists('common_name', $details) ? $details['common_name'] : NULL,
       'comment' => array_key_exists('comment', $details) ? $details['comment'] : NULL,
     ]);
-    return $insert->execute();
+    $organism_id = $insert->execute();
+    $this->addFixedValue($chado, 'organism', $organism_id);
+    return $organism_id;
   }
 
   /**
@@ -110,7 +112,8 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'project_id' => $details['project_id'],
       'contact_id' => $details['contact_id'],
     ]);
-    return $insert->execute();
+    $project_contact_id = $insert->execute();
+    return $project_contact_id;
   }
 
   /**
@@ -132,7 +135,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'platformtype_id' => array_key_exists('platformtype_id', $details) ? $details['platformtype_id'] : 1,
       'num_of_elements' => array_key_exists('num_of_elements', $details) ? $details['num_of_elements'] : NULL,
     ]);
-    return $insert->execute();
+    $arraydesign_id = $insert->execute();
+    $this->addFixedValue($chado, 'arraydesign', $arraydesign_id);
+    return $arraydesign_id;
   }
 
   /**
@@ -158,7 +163,8 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'type_id' => $details['type_id'],
       'rank' => $details['rank'],
     ]);
-    return $insert->execute();
+    $property_id = $insert->execute();
+    return $property_id;
   }
 
 
@@ -467,32 +473,33 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $comment_type_id = $schema_db->getTerm('comment')->getInternalId();
     $note_type_id = $local_db->getTerm('Note')->getInternalId();
     $this->attachOrganismPropertyFields();
-    $this->addProperty($chado, 'organism', [
+    $prop_ids = [];
+    $prop_ids[0] = $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $note_type_id,
       'value' => 'Note 1',
       'rank' => 1,
     ]);
-    $this->addProperty($chado, 'organism', [
+    $prop_ids[1] = $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $note_type_id,
       'value' => 'Note 0',
       'rank' => 0,
     ]);
-    $this->addProperty($chado, 'organism', [
+    $prop_ids[2] = $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $note_type_id,
       'value' => 'Note 2',
       'rank' => 2,
     ]);
 
-    $this->addProperty($chado, 'organism', [
+    $prop_ids[3] = $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $comment_type_id,
       'value' => 'Comment 0',
       'rank' => 0,
     ]);
-    $this->addProperty($chado, 'organism', [
+    $prop_ids[4] = $this->addProperty($chado, 'organism', [
       'organism_id' => $organism_id,
       'type_id' => $comment_type_id,
       'value' => 'Comment 1',
@@ -513,27 +520,27 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // Check that the property values got published. The type_id should be
     // 0 in the drupal field table, the default for an integer.
     $this->checkFieldItem('organism', 'field_note', 1,
-        ['record_id' => $organism_id, 'prop_id' => 1],
+        ['record_id' => $organism_id, 'prop_id' => $prop_ids[0]],
         ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
-        ['record_id' => $organism_id, 'prop_id' => 2],
+        ['record_id' => $organism_id, 'prop_id' => $prop_ids[1]],
         ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
 
     $this->checkFieldItem('organism', 'field_note', 1,
-        ['record_id' => $organism_id, 'prop_id' => 3],
+        ['record_id' => $organism_id, 'prop_id' => $prop_ids[2]],
         ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
-        ['record_id' => $organism_id, 'prop_id' => 4],
+        ['record_id' => $organism_id, 'prop_id' => $prop_ids[3]],
         ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
 
     $this->checkFieldItem('organism', 'field_comment', 1,
-        ['record_id' => $organism_id, 'prop_id' => 5],
+        ['record_id' => $organism_id, 'prop_id' => $prop_ids[4]],
         ['type_id' => 0, 'linker_id' => $organism_id,
          'bundle' => 'organism', 'entity_id' => 1]);
 

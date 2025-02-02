@@ -68,19 +68,21 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     }
 
     // Create one contact in chado, in addition to the null contact.
-    $this->connection->insert('1:contact')
+    $contact_id = $this->connection->insert('1:contact')
       ->fields([
         'name' => 'Contact No. 2',
       ])->execute();
+    $this->addFixedValue($this->connection, 'contact', $contact_id);
 
     // Create one arraydesign in chado, to test the mismatched
     // foreign key names manufacturer_id -> contact_id
-    $this->connection->insert('1:arraydesign')
+    $arraydesign_id = $this->connection->insert('1:arraydesign')
       ->fields([
         'name' => 'ArrayDesign No. 1',
         'platformtype_id' => 1,  // not used, whatever the very first cvterm is
         'manufacturer_id' => 2,  // 1 is the null contact, defined by chado
       ])->execute();
+    $this->addFixedValue($this->connection, 'arraydesign', $arraydesign_id);
 
     // Create the terms for the field property storage types.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
