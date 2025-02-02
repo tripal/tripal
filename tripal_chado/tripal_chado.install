@@ -829,7 +829,15 @@ function tripal_chado_update_10413() {
     // Add new additional type fields for these bundles as defined in yaml
     $yaml_base = __DIR__ . '/config/install';
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['analysis_type']);
+    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['contact_type']);
+    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['organism_type']);
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['project_type']);
+    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['protocol_type']);
+    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['pub_type']);
+    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['study_type']);
+    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['array_design_type']);
+    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['assay_type']);
+    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['biomaterial_type']);
     $messenger->addMessage(t('Successfully completed update'));
   }
   catch (\Exception $e) {
