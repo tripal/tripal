@@ -52,11 +52,12 @@ class ChadoPublishTest extends ChadoTestKernelBase {
 
     // Create three projects in chado to be published.
     for ($i=1; $i <= 3; $i++) {
-      $this->connection->insert('1:project')
+      $project_id = $this->connection->insert('1:project')
         ->fields([
           'name' => 'Project No. ' . $i,
           'description' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
         ])->execute();
+      $this->addFixedValue($this->connection, 'project', $project_id, 'NCIT', 'C47885');
     }
 
     // Create three contacts in chado to be published.
