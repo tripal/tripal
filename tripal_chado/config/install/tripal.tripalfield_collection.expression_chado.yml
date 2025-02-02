@@ -176,8 +176,8 @@ fields:
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table: biosample
-                type_table: biosampleprop
+                base_table: biomaterial
+                type_table: biomaterialprop
                 type_column: type_id
         settings:
             termIdSpace: "sep"
