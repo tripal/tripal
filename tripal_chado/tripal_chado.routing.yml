@@ -168,17 +168,25 @@ tripal_chado.dbxref_autocomplete:
       db_id:
         type: integer
 
-tripal_chado.project_autocomplete:
-  path: 'chado/project/autocomplete/{count}/{type_id}'
+tripal_chado.generic_autocomplete:
+  path: 'chado/generic/autocomplete/{base_table}/{column_name}/{type_column}/{property_table}/{match_limit}/{type_id}'
   defaults:
-    _controller: '\Drupal\tripal_chado\Controller\ChadoProjectAutocompleteController::handleAutocomplete'
-    _title: 'Chado Project Autocomplete'
+    _controller: '\Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController::handleGenericAutocomplete'
+    _title: 'Chado Generic Autocomplete'
     _format: json
   requirements:
     _permission: 'access content'
   options:
     parameters:
-      count:
+      base_table:
+        type: string
+      column_name:
+        type: string
+      type_column:
+        type: string
+      property_table:
+        type: string
+      match_limit:
         type: integer
       type_id:
         type: integer
