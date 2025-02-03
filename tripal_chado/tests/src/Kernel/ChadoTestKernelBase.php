@@ -174,7 +174,6 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
       'organism' => ['OBI', '0100026'],
       'phylotree' => ['data', '0872'],
       'project' => ['NCIT', 'C47885'],
-      'protocol' => ['OBI', '0000272'],
       'pub' => ['TPUB', '0000002'],
       'study' => ['SIO', '001066'],
     ];

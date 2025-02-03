@@ -260,7 +260,6 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'contact' => 'NCIT:C47954',
       'organism' => 'OBI:0100026',
       'project' => 'NCIT:C47885',
-      'protocol' => 'OBI:0000272',
       'pub' => 'TPUB:0000002',
       'study' => 'SIO:001066',
     ];

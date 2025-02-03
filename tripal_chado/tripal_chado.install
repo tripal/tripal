@@ -832,7 +832,6 @@ function tripal_chado_update_10413() {
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['contact_bundle_type']);
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['organism_bundle_type']);
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['project_bundle_type']);
-    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['protocol_bundle_type']);
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['pub_bundle_type']);
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['study_bundle_type']);
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['array_design_bundle_type']);

@@ -114,6 +114,10 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // of the type name.
     if ($type_table != $base_table) {
       $type_table_def = $schema->getTableDef($type_table, ['format' => 'Drupal']);
+if (!array_key_exists('primary key', $type_table_def)) {
+print "CP01 base_table=\"$base_table\" type_table=\"$type_table\"\n"; //@@@
+var_dump($type_table_def);
+}
       $type_pkey_col = $type_table_def['primary key'];
       $type_fkey_col = array_keys($type_table_def['foreign keys'][$base_table]['columns'])[0];
       $link_term = self::getColumnTermId($type_table, $type_fkey_col, self::$record_id_term);
