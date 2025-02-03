@@ -135,6 +135,14 @@ entity.tripal_entity_settings:
   route_name: entity.tripal_entity_settings
   weight: 40
 
+# -- Configuration for Tripal Field Widgets.
+entity.tripal_widget_settings:
+  title: 'Tripal Global Widget Settings'
+  parent: tripal.config
+  description: 'Manage global settings for field widgets.'
+  route_name: entity.tripal_widget_settings
+  weight: 50
+
 # -- Root link for Tripal extension listing.
 tripal.extension:
   route_name: tripal.extension

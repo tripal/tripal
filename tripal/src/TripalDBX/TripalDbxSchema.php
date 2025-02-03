@@ -903,6 +903,9 @@ EOD;
       $schema_def = $this->getSchemaDef($schema_parameters);
       if (array_key_exists($table, $schema_def)) {
         $table_def = $schema_def[$table];
+        if (array_key_exists('referring_tables', $table_def) && is_string($table_def['referring_tables'])) {
+          $table_def['referring_tables'] = array_map('trim', explode(',', $table_def['referring_tables']));
+        }
       }
       else {
         $table_def = [];

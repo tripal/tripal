@@ -33,19 +33,6 @@ class ChadoFeatureMapWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of featuremaps.
-    $featuremaps = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('featuremap', 'm');
-    $query->fields('m', ['featuremap_id', 'name', 'description']);
-    $query->orderBy('name');
-    $results = $query->execute();
-    while ($featuremap = $results->fetchObject()) {
-      $featuremap_name = $featuremap->name;
-      $featuremaps[$featuremap->featuremap_id] = $featuremap_name;
-    }
-    natcasesort($featuremaps);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -75,12 +62,16 @@ class ChadoFeatureMapWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $featuremaps,
-      '#default_value' => $featuremap_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $options = [
+      'base_table' => 'featuremap',
+      'column_name' => 'name',
+      'type_column' => 'x',
+      'property_table' => 'featuremap',
     ];
+    $select_element = $this->genericSelectElement('featuremap_id', $featuremap_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
@@ -105,6 +96,28 @@ class ChadoFeatureMapWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('featuremap_id', $values);
     return $this->massageLinkingFormValues('featuremap_id', $values, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return self::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state) + parent::settingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary() + parent::settingsSummary();
   }
 }

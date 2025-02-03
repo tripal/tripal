@@ -33,24 +33,6 @@ class ChadoFeatureWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of features.
-    $features = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('feature', 'f');
-    $query->leftJoin('cvterm', 'cvt', 'f.type_id = cvt.cvterm_id');
-    $query->fields('f', ['feature_id', 'name']);
-    $query->addField('cvt', 'name', 'feature_type');
-    $query->orderBy('name', 'feature_type');
-    $results = $query->execute();
-    while ($feature = $results->fetchObject()) {
-      $feature_name = $feature->name;
-      if ($feature->feature_type) {
-        $feature_name .= ' (' . $feature->feature_type . ')';
-      }
-      $features[$feature->feature_id] = $feature_name;
-    }
-    natcasesort($features);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -80,12 +62,16 @@ class ChadoFeatureWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $features,
-      '#default_value' => $feature_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $options = [
+      'base_table' => 'feature',
+      'column_name' => 'name',
+      'type_column' => 'type_id',
+      'property_table' => 'feature',
     ];
+    $select_element = $this->genericSelectElement('feature_id', $feature_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
@@ -110,7 +96,28 @@ class ChadoFeatureWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('feature_id', $values);
     return $this->massageLinkingFormValues('feature_id', $values, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return self::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state) + parent::settingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary() + parent::settingsSummary();
+  }
 }

@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @group Tripal
  * @group Tripal Chado
- * @group Tripal Chado Autocomplete
+ * @group Autocomplete
  */
 class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
   /**

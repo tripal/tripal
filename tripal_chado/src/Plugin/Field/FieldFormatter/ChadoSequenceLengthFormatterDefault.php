@@ -18,83 +18,35 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class ChadoSequenceLengthFormatterDefault extends ChadoFormatterBase {
+class ChadoSequenceLengthFormatterDefault extends ChadoIntegerFormatterDefault {
 
   /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    $settings = parent::defaultSettings();
-    $settings['field_prefix'] = '';
-    $settings['field_suffix'] = '';
-    $settings['thousand_separator'] = '';
-    return $settings;
-  }
-
-  /**
-   * {@inheritdoc}
+   * {@inheritDoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
-    $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoSequenceLengthFormatterDefault';
     $field_prefix = $this->getSetting('field_prefix');
     $field_suffix = $this->getSetting('field_suffix');
     $thousand_separator = $this->getSetting('thousand_separator');
+    $hide_condition = $this->getSetting('hide_condition') ?? '';
+    $hide_value = $this->getSetting('hide_value') ?? '';
 
     foreach($items as $delta => $item) {
-      $value = $item->get('seqlen')->getString();
-      if (strlen($thousand_separator)) {
-        // For an integer we can hardcode the unused decimal setting
-        $value = number_format(floatval($value), 0, '.', $thousand_separator);
+      $value = $item->get('seqlen')->getValue() ?? '';
+      $hide = ((($hide_condition == '') and !$value)
+           or (($hide_condition == 'if_value') and ($value == $hide_value)));
+      if (!$hide) {
+        if (strlen($value) and strlen($thousand_separator)) {
+          // For an integer we can hardcode the unused decimal setting to 0
+          $value = number_format(floatval($value), 0, '.', $thousand_separator);
+        }
+        $elements[$delta] = [
+          "#markup" => $field_prefix . $value . $field_suffix,
+        ];
       }
-      $elements[$delta] = [
-        "#markup" => $field_prefix . $value . $field_suffix,
-      ];
     }
 
     return $elements;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
-    $form = parent::settingsForm($form, $form_state);
-
-    $form['field_prefix'] = [
-      '#title' => $this->t('Text to display before the sequence length'),
-      '#description' => $this->t('Enter text here that will be displayed before the'
-                     . ' sequence length value, or leave blank for no additional text'),
-      '#type' => 'textfield',
-      '#default_value' => $this->getSetting('field_prefix'),
-      '#required' => FALSE,
-    ];
-    $form['field_suffix'] = [
-      '#title' => $this->t('Text to display after the sequence length'),
-      '#description' => $this->t('Enter text here that will be displayed after the'
-                     . ' sequence length value, e.g. " b.p.", or leave blank for no additional text'),
-      '#type' => 'textfield',
-      '#default_value' => $this->getSetting('field_suffix'),
-      '#required' => FALSE,
-    ];
-    $form['thousand_separator'] = [
-      '#title' => $this->t('Thousand Separator'),
-      '#description' => $this->t('Character to display every three digits'),
-      '#type' => 'textfield',
-      '#default_value' => $this->getSetting('thousand_separator'),
-      '#required' => FALSE,
-    ];
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function settingsSummary() {
-    $summary = parent::settingsSummary();
-    $summary[] = $this->t('Set display format');
-    return $summary;
   }
 
 }

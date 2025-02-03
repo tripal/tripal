@@ -33,17 +33,6 @@ class ChadoAssayWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of assays.
-    $assays = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('assay', 'a');
-    $query->fields('a', ['assay_id', 'name']);
-    $query->orderBy('name');
-    $results = $query->execute();
-    while ($assay = $results->fetchObject()) {
-      $assays[$assay->assay_id] = $assay->name;
-    }
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -73,12 +62,16 @@ class ChadoAssayWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $assays,
-      '#default_value' => $assay_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $options = [
+      'base_table' => 'assay',
+      'column_name' => 'name',
+      'type_column' => 'x',
+      'property_table' => 'assay',
     ];
+    $select_element = $this->genericSelectElement('assay_id', $assay_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
@@ -103,6 +96,28 @@ class ChadoAssayWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('assay_id', $values);
     return $this->massageLinkingFormValues('assay_id', $values, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return self::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state) + parent::settingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary() + parent::settingsSummary();
   }
 }

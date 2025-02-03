@@ -49,13 +49,13 @@ class ChadoSchema extends TripalDbxSchema {
       if ('file' == $source) {
         $filename =
           \Drupal::service('extension.list.module')->getPath('tripal_chado')
-          . '/chado_schema/chado_schema-'
+          . '/chado_schema/schema-definition/version-'
           . $version
           . '.yml'
         ;
 
         // Make sure we got a valid version format.
-        if (!preg_match('/^\\d\\.\\d$/', $version)
+        if (!preg_match('/^\d\.\d\.?\d?\.?\d*$/', $version)
             || !file_exists($filename)
         ) {
           throw new SchemaException("Invalid or unsupported Chado schema version '$version'.");
@@ -66,7 +66,7 @@ class ChadoSchema extends TripalDbxSchema {
       elseif ('database' == $source) {
         // Use Schema object to fetch each table structures from database.
         $schema_def = [];
-        $tables = $this->getTables();
+        $tables = $this->getTables(['tables' => TRUE]);
         foreach (array_keys($tables) as $table) {
           $schema_def[$table] =
             $this->getTableDef($table, $parameters);
@@ -110,8 +110,8 @@ class ChadoSchema extends TripalDbxSchema {
     // We'll use the cvterm table to guide which tables are base tables. Typically
     // base tables (with a few exceptions) all have a type.  Iterate through the
     // referring tables.
-    $schema = $this->getTableSchema('cvterm');
-    if (isset($schema['referring_tables'])) {
+    $schema = $this->getTableDef('cvterm', []);
+    if (isset($schema['referring_tables']) && is_array($schema['referring_tables'])) {
       foreach ($schema['referring_tables'] as $tablename) {
 
         $is_base_table = TRUE;
@@ -161,8 +161,8 @@ class ChadoSchema extends TripalDbxSchema {
         continue;
       }
       $num_links = 0;
-      $schema = $this->getTableSchema($tablename);
-      $fkeys = $schema['foreign keys'];
+      $schema = $this->getTableDef($tablename, []);
+      $fkeys = $schema['foreign keys'] ?? [];
       foreach ($fkeys as $fkid => $details) {
         $fktable = $details['table'];
         if (in_array($fktable, $base_tables)) {
@@ -218,7 +218,7 @@ class ChadoSchema extends TripalDbxSchema {
    * and do not make any assumptions about the name of the chado schema.
    *
    * Note: The admin can change the default chado instance via the UI
-   * by going to Admin > Tripal > Data Storage > Chado > Chado Schemas 
+   * by going to Admin > Tripal > Data Storage > Chado > Chado Schemas
    * (admin/tripal/storage/chado/manager) and clicking "Set default".
    * We DO NOT recommend setting this programmaticly as it is confusing
    * to the admin.

@@ -68,7 +68,11 @@ class TripalContentFieldsForm implements FormInterface {
       if ($field['description']) {
         $new_fields[$field['name']] .= ': ' . $field['description'];
       }
-      $new_defaults[] = $field['name'];
+      // Discovered fields are checked by default unless that is overridden,
+      // e.g. for the additional type field.
+      if ($field['checked'] ?? TRUE) {
+        $new_defaults[] = $field['name'];
+      }
     }
     $form['new_fields_details'] = [
       '#type' => 'details',
@@ -138,7 +142,7 @@ class TripalContentFieldsForm implements FormInterface {
     ];
     $invalid_fields_desc = t('The following fields do not pass validation tests. '
       . 'They need correction by the module developer and cannot be added.');
-    if (empty($invalid_fields_desc)) {
+    if (empty($invalid_fields)) {
       $invalid_fields_desc = t('All fields passed validation tests!');
     }
     $form['invalid_fields_details']['invalid_fields_list'] = [

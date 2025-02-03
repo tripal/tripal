@@ -33,19 +33,6 @@ class ChadoProjectWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of projects.
-    $projects = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('project', 'p');
-    $query->fields('p', ['project_id', 'name']);
-    $query->orderBy('name');
-    $results = $query->execute();
-    while ($project = $results->fetchObject()) {
-      $project_name = $project->name;
-      $projects[$project->project_id] = $project_name;
-    }
-    natcasesort($projects);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -75,12 +62,16 @@ class ChadoProjectWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $projects,
-      '#default_value' => $project_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $options = [
+      'base_table' => 'project',
+      'column_name' => 'name',
+      'type_column' => 'x',
+      'property_table' => 'project',
     ];
+    $select_element = $this->genericSelectElement('project_id', $project_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
@@ -105,6 +96,28 @@ class ChadoProjectWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('project_id', $values);
     return $this->massageLinkingFormValues('project_id', $values, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return self::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state) + parent::settingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary() + parent::settingsSummary();
   }
 }

@@ -682,3 +682,138 @@ function tripal_chado_update_10409() {
     throw new UpdateException('Could not set title and publication year required setting: ' . $e->getMessage());
   }
 }
+
+/**
+ * Corrects duplicated terms for some fields in yaml files.
+ * PR 2079
+ */
+function tripal_chado_update_10410() {
+  try {
+    $messenger = \Drupal::messenger();
+
+    // Adds a new CV term
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $term_values = [
+      'db.name' => 'NCIT',
+      'cv.name' => 'ncit',
+      'dbxref.accession' => 'C16493',
+      'cvterm.name' => 'Data Source',
+      'cvterm.definition' => 'The person or authoritative body who provided the information.',
+    ];
+    $chado_cvterm_record = $cvterm_buddy->upsertCvterm($term_values, []);
+    $term_values = [
+      'db.name' => 'SIO',
+      'cv.name' => 'SIO',
+      'dbxref.accession' => '001377',
+      'cvterm.name' => 'versioned dataset',
+      'cvterm.definition' => 'a versioned dataset is a dataset with a particular release date or release number.',
+    ];
+    $chado_cvterm_record = $cvterm_buddy->upsertCvterm($term_values, []);
+
+    $update_list = [
+      'tripal_entity.analysis.analysis_source:SIO:001377',
+      'tripal_entity.analysis.analysis_source_version:NCIT:C16493',
+      'tripal_entity.pub.pub_type:rdfs:type',
+      'tripal_entity.array_design.array_design_substrate_type:EFO:0005522',
+      'tripal_entity.array_design.array_design_platform_type:NCIT:C45378',
+      'tripal_entity.genome_annotation.genome_annotation_src_version:NCIT:C16493',
+      'tripal_entity.genome_annotation.genome_annotation_src_name:SIO:001377',
+      'tripal_entity.genome_assembly.genome_assembly_source_version:NCIT:C16493',
+      'tripal_entity.genome_assembly.genome_assembly_source_name:SIO:001377',
+    ];
+    foreach ($update_list as $update_item) {
+      $parts = explode(':', $update_item);
+      /** Drupal\field\Entity\FieldConfig **/
+      $field = FieldConfig::load($parts[0]);
+      if ($field) {
+        $settings = $field->getSettings();
+        $old_term = $settings['termIdSpace'] . ':' . $settings['termAccession'];
+        $new_term = $parts[1] . ':' . $parts[2];
+        if ($old_term != $new_term) {
+          $settings['termIdSpace'] = $parts[1];
+          $settings['termAccession'] = $parts[2];
+          $field->setSettings($settings);
+          $field->save();
+          $messenger->addMessage("Changed term for field $parts[0] from $old_term to $new_term");
+        }
+      }
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not update chado fields: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Moves several custom CVs, if present, to the local CV.
+ */
+function tripal_chado_update_10411() {
+  // Transfer of CVs was done by PR 1727. This hook added by PR 2081
+  $obsolete_cvs = [
+    'organism_property', 'analysis_property', 'tripal_phylogeny',
+    'featuremap_units', 'featurepos_property', 'featuremap_property',
+    'study_property', 'nd_experiment_types', 'nd_geolocation_property',
+    'tripal_analysis', 'library_property', 'library_type', 'project_property',
+  ];
+
+  try {
+    $messenger = \Drupal::messenger();
+    $chado = \Drupal::service('tripal_chado.database');
+
+    $query = $chado->select('1:cv', 'cv');
+    $query->condition('name', 'local', '=');
+    $query->fields('cv', ['cv_id']);
+    $local_cv = $query->execute()->fetchField();
+    if (!$local_cv) {
+      throw new UpdateException('Could not perform update, "local" CV is not present');
+    }
+
+    $n_transferred = 0;
+    $n_removed = 0;    
+    foreach ($obsolete_cvs as $obsolete_cv) {
+      $query = $chado->select('1:cv', 'cv');
+      $query->condition('name', $obsolete_cv, '=');
+      $query->fields('cv', ['cv_id']);
+      $cv_id = $query->execute()->fetchField();
+
+      // Only update if the CV exists
+      if ($cv_id) {
+        $query = $chado->update('1:cvterm');
+        $query->fields(['cv_id' => $local_cv]);
+        $query->condition('cv_id', $cv_id, '=');
+        $count = $query->execute();
+        if ($count) {
+          $messenger->addMessage(t('Transferred @count records from CV "@from" to the "local" CV',
+              ['@count' => $count, '@from' => $obsolete_cv]));
+          $n_transferred += $count;
+        }
+        $query = $chado->delete('1:cv');
+        $query->condition('name', $obsolete_cv, '=');
+        $query->execute();
+        $n_removed++;
+      }
+    }
+    if ($n_removed) {
+      $messenger->addMessage(t('Removed @count obsolete controlled vocabularies',
+          ['@count' => $n_removed]));
+    }
+    if (!$n_transferred and !$n_removed) {
+      $messenger->addMessage(t('No changes were needed'));
+    }
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not perform update: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Adds missing 'path' setting to the 'record_id'
+ * property in the 'chado_assay_type_default' field
+ */
+function tripal_chado_update_10412() {
+  // This hook added by PR 2099
+  $upgradable_types = ['chado_assay_type_default'];
+  $upgradable_properties = ['record_id', 'assay_description'];
+  tripal_chado_field_reload($upgradable_types, $upgradable_properties, TRUE);
+}
