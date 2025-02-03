@@ -33,19 +33,6 @@ class ChadoArrayDesignWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of arraydesigns.
-    $arraydesigns = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('arraydesign', 'a');
-    $query->fields('a', ['arraydesign_id', 'name']);
-    $query->orderBy('name');
-    $results = $query->execute();
-    while ($arraydesign = $results->fetchObject()) {
-      $arraydesign_name = $arraydesign->name;
-      $arraydesigns[$arraydesign->arraydesign_id] = $arraydesign_name;
-    }
-    natcasesort($arraydesigns);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -75,12 +62,16 @@ class ChadoArrayDesignWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $arraydesigns,
-      '#default_value' => $arraydesign_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $options = [
+      'base_table' => 'arraydesign',
+      'column_name' => 'name',
+      'type_column' => 'x',
+      'property_table' => 'arraydesign',
     ];
+    $select_element = $this->genericSelectElement('arraydesign_id', $arraydesign_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
@@ -105,6 +96,28 @@ class ChadoArrayDesignWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('arraydesign_id', $values);
     return $this->massageLinkingFormValues('arraydesign_id', $values, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return self::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state) + parent::settingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary() + parent::settingsSummary();
   }
 }
