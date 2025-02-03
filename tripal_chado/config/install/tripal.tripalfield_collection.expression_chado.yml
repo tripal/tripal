@@ -166,7 +166,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: biosample_type
+    -   name: biosample_bundle_type
         content_type: biosample
         label: Type
         type: chado_additional_type_type_default
@@ -491,7 +491,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: assay_type
+    -   name: assay_bundle_type
         content_type: assay
         label: Type
         type: chado_additional_type_type_default
@@ -969,7 +969,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: array_design_type
+    -   name: array_design_bundle_type
         content_type: array_design
         label: Type
         type: chado_additional_type_type_default

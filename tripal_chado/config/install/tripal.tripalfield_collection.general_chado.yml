@@ -262,7 +262,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: organism_type
+    -   name: organism_bundle_type
         content_type: organism
         label: Type
         type: chado_additional_type_type_default
@@ -596,7 +596,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: analysis_type
+    -   name: analysis_bundle_type
         content_type: analysis
         label: Type
         type: chado_additional_type_type_default
@@ -792,7 +792,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: project_type
+    -   name: project_bundle_type
         content_type: project
         label: Type
         type: chado_additional_type_type_default
@@ -958,7 +958,7 @@ fields:
             default:
               region: content
               weight: 68
-    -   name: study_type
+    -   name: study_bundle_type
         content_type: study
         label: Type
         type: chado_additional_type_type_default
@@ -1102,7 +1102,7 @@ fields:
               region: content
               weight: 60
 
-    -   name: contact_type
+    -   name: contact_bundle_type
         content_type: contact
         label: Type
         type: chado_additional_type_type_default
@@ -1349,7 +1349,7 @@ fields:
               region: content
               weight: 68
 
-    -   name: protocol_type
+    -   name: protocol_bundle_type
         content_type: protocol
         label: Type
         type: chado_additional_type_type_default
@@ -2189,7 +2189,7 @@ fields:
               region: content
               weight: 90
 
-    -   name: pub_type
+    -   name: pub_bundle_type
         content_type: pub
         label: Type
         type: chado_additional_type_type_default
