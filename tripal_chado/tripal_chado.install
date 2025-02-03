@@ -821,7 +821,7 @@ function tripal_chado_update_10412() {
 /**
  * Adds types to content types that don't have them.
  */
-function tripal_chado_update_10413() {
+function tripal_chado_update_10414() {
   // This hook added by PR 2105
   try {
     $messenger = \Drupal::messenger();
