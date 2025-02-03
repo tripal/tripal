@@ -320,7 +320,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'organism' => ['OBI', '0100026'],
       'phylotree' => ['data', '0872'],
       'project' => ['NCIT', 'C47885'],
-      'protocol' => ['sep', '00101'],
+      'protocol' => ['OBI', '0000272'],
       'pub' => ['TPUB', '0000002'],
       'study' => ['SIO', '001066'],
     ];

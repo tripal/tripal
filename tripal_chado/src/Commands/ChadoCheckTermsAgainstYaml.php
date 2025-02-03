@@ -250,7 +250,8 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
    **/
   protected function chadoCheckTerms_findBundleProblems(&$problems, &$solutions, &$summary_rows, $options) {
 
-    // Defines which core tripal tables we want to check, and the term to use
+    // Defines which core tripal tables we want to check, and the term to use.
+    // For protocol, sep:00101 is already used, so the term is different than the bundle term
     $migrated_tables = [
       'analysis' => 'operation:2945',
       'arraydesign' => 'EFO:0000269',
@@ -259,7 +260,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       'contact' => 'NCIT:C47954',
       'organism' => 'OBI:0100026',
       'project' => 'NCIT:C47885',
-      'protocol' => 'sep:00101',
+      'protocol' => 'OBI:0000272',
       'pub' => 'TPUB:0000002',
       'study' => 'SIO:001066',
     ];

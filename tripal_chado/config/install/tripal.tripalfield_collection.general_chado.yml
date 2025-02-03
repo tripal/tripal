@@ -1363,9 +1363,9 @@ fields:
                 type_table: protocolprop
                 type_column: type_id
         settings:
-            termIdSpace: "sep"
-            termAccession: "00101"
-            fixed_value: "sep:00101"
+            termIdSpace: "OBI"
+            termAccession: "0000272"
+            fixed_value: "OBI:0000272"
         display:
           view:
             default:
