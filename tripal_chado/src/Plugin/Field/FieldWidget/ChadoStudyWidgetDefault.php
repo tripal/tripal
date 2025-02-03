@@ -33,20 +33,6 @@ class ChadoStudyWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of studies. Include contacts because that has a not null constraint.
-    $studys = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    $query = $chado->select('study', 's');
-    $query->leftJoin('contact', 'c', 's.contact_id = c.contact_id');
-    $query->fields('s', ['study_id', 'name']);
-    $query->addField('c', 'name', 'contact_name');
-    $query->orderBy('name', 'contact_name');
-    $results = $query->execute();
-    while ($study = $results->fetchObject()) {
-      $studys[$study->study_id] = $study->name;
-    }
-    natcasesort($studys);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -76,12 +62,16 @@ class ChadoStudyWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $studys,
-      '#default_value' => $study_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $options = [
+      'base_table' => 'study',
+      'column_name' => 'name',
+      'type_column' => 'x',
+      'property_table' => 'study',
     ];
+    $select_element = $this->genericSelectElement('study_id', $study_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
@@ -106,6 +96,28 @@ class ChadoStudyWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('study_id', $values);
     return $this->massageLinkingFormValues('study_id', $values, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return self::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state) + parent::settingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary() + parent::settingsSummary();
   }
 }

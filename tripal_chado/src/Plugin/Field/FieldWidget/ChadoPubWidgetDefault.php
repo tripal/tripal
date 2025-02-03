@@ -33,26 +33,6 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
-    // Get the list of publications.
-    $pubs = [];
-    $chado = \Drupal::service('tripal_chado.database');
-
-    // In addition to getting a sorted list of pubs, include
-    // the pubprop rdfs:type when it is present, e.g.
-    // genome assembly or genome annotation.
-    $sql = 'SELECT P.pub_id, P.title FROM {1:pub} P
-      ORDER BY LOWER(P.title)';
-    $results = $chado->query($sql, []);
-
-    while ($pub = $results->fetchObject()) {
-      $pubs[$pub->pub_id] = $pub->title;
-      // Change the non-user-friendly 'null' publication.
-      if ($pubs[$pub->pub_id] == '') {
-        $pubs[$pub->pub_id] = '-- Unknown --';  // This will sort to the top.
-      }
-    }
-    natcasesort($pubs);
-
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -82,12 +62,29 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $field_name,
     ];
-    $elements[$linker_fkey_column] = $element + [
-      '#type' => 'select',
-      '#options' => $pubs,
-      '#default_value' => $pub_id,
-      '#empty_option' => '-- Select --',
+
+    // Create a select element specific to this content type
+    $options = [
+      'base_table' => 'pub',
+      'column_name' => 'title',
+      'type_column' => 'type_id',
+      'property_table' => 'pub',
     ];
+    $select_element = $this->genericSelectElement('pub_id', $pub_id, $options);
+    $elements[$linker_fkey_column] = $element + $select_element;
+
+    // Special processing for the null publication which is defined by chado
+    if (array_key_exists('#options', $select_element)) {
+      $null_pub = array_search('', $select_element['#options']);
+      if ($null_pub) {
+        $select_element['#options'][$null_pub] = '- Unknown -';  // This will sort to the top
+      }
+      natcasesort($select_element['#options']);
+    }
+
+    // Insert the select element, either a select or an autocomplete depending
+    // on the number of options.
+    $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
     // use a default of 1 which will work for type_id or rank.
@@ -112,7 +109,28 @@ class ChadoPubWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $values = $this->genericSelectMassageFormValues('pub_id', $values);
     return $this->massageLinkingFormValues('pub_id', $values, $form_state);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    return self::defaultSelectSettings() + parent::defaultSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    return $this->selectSettingsForm($form, $form_state) + parent::settingsForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    return $this->selectSettingsSummary() + parent::settingsSummary();
+  }
 }
