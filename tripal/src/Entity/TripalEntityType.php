@@ -243,6 +243,48 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   }
 
   // --------------------------------------------------------------------------
+  //                            FIELD MANAGEMT
+  //
+  // TripalEntity uses mostly TripalFields and any entity-wide functions needed
+  // for TripalFields are below.
+  // --------------------------------------------------------------------------
+
+  /**
+   * Update Drupal field schema to match that defined by each field.
+   *
+   * TripalEntity uses a combination of the default SqlContentEntityStorage
+   * and an associated TripalStorage backend. The linking values are stored
+   * by SqlContentEntityStorage in Drupal and then the canonical version of the
+   * data is stored in the specified TripalStorage databackend.
+   *
+   * If the schema of the TripalStorage data backend is updated then the schema
+   * defined by the tripalTypes() method may be different from the Drupal field
+   * table. This method will update the Drupal field table to match the current
+   * schema defined by TripalTypes() for all fields attached to a given
+   * TripalEntityType.
+   *
+   * @return void
+   */
+  public function syncStorageSchema() {
+
+    // Get a list of field instances for the current type.
+    $field_instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
+
+    // Now for each field instance...
+    foreach ($field_instances as $field_def) {
+      // Get the current schema of the field table.
+
+      // Get the new schema based on tripalTypes which is dynamically updated
+      // based on the backend TripalStorage.
+
+      // Compare the two to see if the current schema is missing anything defined
+      // in the new schema.
+
+      // Add in anything missing.
+    }
+  }
+
+  // --------------------------------------------------------------------------
   //                          MAIN SETTER / GETTERS
   //
   // The following methods allow the main properties of the Tripal Entity Type
