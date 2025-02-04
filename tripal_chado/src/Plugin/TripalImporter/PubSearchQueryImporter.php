@@ -110,7 +110,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       '#options' => $plugins,
       '#empty_option' => t('- Select -'),
       '#description' => 'Select the database of the search query to'
-        . ' limit "Search query name" to only queries for that database',
+        . ' limit "Search query name" to only queries for that database.',
       '#ajax' => [
         'callback' =>  [$this::class, 'database_on_change'],
         'wrapper' => 'edit-output',

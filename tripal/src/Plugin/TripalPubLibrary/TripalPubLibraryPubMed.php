@@ -65,7 +65,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     $form['pub_library']['days'] = [
       '#title' => t('Days since record modified'),
       '#type' => 'textfield',
-      '#description' => t('Limit the search to include pubs that have been added no more than this many days before today'),
+      '#description' => t('Limit the search to include pubs that have been added no more than this many days before today.'),
       '#required' => FALSE,
       '#size' => 5,
     ];

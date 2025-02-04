@@ -206,7 +206,7 @@ class NewPubSearchQueryForm extends FormBase {
     $form['pub_library']['loader_name'] = [
       '#title' => t('Loader Name'),
       '#type' => 'textfield',
-      '#description' => t("Please provide a name for this loader setup"),
+      '#description' => t('Please provide a name for this loader setup.'),
       '#required' => TRUE,
       '#weight' => -50,
     ];
@@ -222,7 +222,7 @@ class NewPubSearchQueryForm extends FormBase {
       '#title' => t('Create Contact'),
       '#description' => t('Check to create an entry in the contact table for each author of'
          . ' a matching publication during import. This allows storage of additional information'
-         . ' such as affiliation, etc. Otherwise, only authors\' names are retrieved'),
+         . ' such as affiliation, etc. Otherwise, only authors\' names are retrieved.'),
       '#default_value' => $do_contact,
       '#weight' => -48,
     ];
