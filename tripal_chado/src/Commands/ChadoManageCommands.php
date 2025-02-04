@@ -185,7 +185,7 @@ class ChadoManageCommands extends DrushCommands {
    * See the command tripal-chado:set_default for this functionality.
    *
    * @command tripal-chado:add_to_tripal
-   * @alias trp-add-chado
+   * @aliases trp-add-chado
    * @options schema-name
    *   The name of the chado schema to add to Tripal.
    * @usage drush trp-add-chado --schema-name="chado"
@@ -214,7 +214,7 @@ class ChadoManageCommands extends DrushCommands {
    * schema may be set to default at a time.
    *
    * @command tripal-chado:set_default_schema
-   * @alias trp-set-default
+   * @aliases trp-set-default
    * @options schema-name
    *   The name of the chado schema to be set to default in Tripal.
    * @usage drush trp-set-default --schema-name="chado"
