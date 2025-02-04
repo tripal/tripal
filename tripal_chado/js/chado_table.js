@@ -7,8 +7,10 @@ function submitToTaskFrom(event) {
   var chado_form = this.closest("form");
   var schema = chado_form.querySelector("input[name=chado_schema]");
   var task = chado_form.querySelector("input[name=task]");
+  var installID = chado_form.querySelector("input[name=install_id]");
   task.value = this.dataset.chadoTask;
   schema.value = this.dataset.chadoSchema;
+  installID.value = this.dataset.chadoInstallId;
   chado_form.submit();
   return false;
 }

@@ -18,7 +18,7 @@ tripal_chado.chado_manager_form:
   path: 'admin/tripal/storage/chado/manager'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoManagerForm'
-    _title: 'Chado Manager'
+    _title: 'Chado Schema Manager'
   requirements:
     _permission: 'administer tripal'
 
