@@ -100,5 +100,25 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
       $this->chado_connection->getVersion(),
       "We were unable to upgrade our test schema to the version we intended to."
     );
+
+    // Now actually call the method!
+    $syncTripalFieldStorageService = \Drupal::service('tripal.sync_tripal_field_storage');
+    $differences = $syncTripalFieldStorageService->detectDifferences($bundle_name);
+    $this->assertNotEmpty($differences, "We expected some differences based on the version under test.");
+
+    $this->assertCount(4, $differences, "We expected this many fields to have differences detected.");
+
+    $expected_differences = [
+      'project_analysis' => ['linker_type_id'],
+      'project_contact' => ['linker_type_id', 'linker_rank'],
+      'project_pub' => ['linker_type_id', 'linker_rank'],
+      'project_dbxref' => ['linker_type_id'],
+    ];
+    foreach ($expected_differences as $expected_field => $expected_properties) {
+      $this->assertArrayHasKey($expected_field, $differences, "We expected this field to have a difference detected but it did not.");
+      foreach ($expected_properties as $expected_property) {
+        $this->assertArrayHasKey($expected_property, $differences[$expected_field], "We expected this property of $expected_field to have a difference but it did not.");
+      }
+    }
   }
 }

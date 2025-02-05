@@ -37,10 +37,36 @@ class SyncTripalFieldStorage {
    *    - missing_property_column: where a column for a new TripalField property
    *      does not have a column in the corresponding Drupal field table.
    *
-   * @return void
+   * @return array
    */
-  public function detectDifferences(string $entity_type = NULL, array $difference_types = []): void {
-    // @todo Place your code here.
+  public function detectDifferences(string $entity_type = NULL, array $difference_types = []): array {
+    $all_columns_added = [];
+
+    if ($entity_type === NULL) {
+      $type = \Drupal::entityTypeManager()
+        ->getStorage('tripal_entity_type')
+        ->load($entity_type);
+      if (is_object($type)) {
+        $types = [$entity_type => $type];
+      }
+      else {
+        throw new \Exception("We were unable to retrieve the TripalEntityType $entity_type when trying to detect differences in the field schema.");
+      }
+    }
+    else {
+      $types = \Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->loadMultiple();
+    }
+
+    foreach ($types as $bundle_name => $type_object) {
+      $columns_added = $type_object->syncStorageSchema();
+      if (is_array($columns_added)) {
+        $all_columns_added = $all_columns_added + $columns_added;
+      }
+    }
+
+    return $all_columns_added;
   }
 
   /**
