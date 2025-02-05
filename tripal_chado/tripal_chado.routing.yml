@@ -18,7 +18,7 @@ tripal_chado.chado_manager_form:
   path: 'admin/tripal/storage/chado/manager'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoManagerForm'
-    _title: 'Chado Manager'
+    _title: 'Chado Schema Manager'
   requirements:
     _permission: 'administer tripal'
 
@@ -223,7 +223,7 @@ tripal.data_loaders.publication_loaders.delete_publication_search_query:
     _form: 'Drupal\tripal_chado\Form\ChadoDeletePubSearchQueryForm'
     _title: 'Delete publication'
   requirements:
-    _permission: 'allow tripal import'    
+    _permission: 'allow tripal import'
 
 tripal.data_loaders.publication_loaders.edit_publication_search_query:
   path: 'admin/tripal/loaders/publications/edit_publication_search_query/{pub_import_id}'
@@ -231,7 +231,7 @@ tripal.data_loaders.publication_loaders.edit_publication_search_query:
     _form: 'Drupal\tripal_chado\Form\ChadoNewPubSearchQueryForm'
     _title: 'Edit publication search query'
   requirements:
-    _permission: 'allow tripal import'  
+    _permission: 'allow tripal import'
 
 # TODO - Add the correct form here
 tripal.data_loaders.publication_loaders.run_publication_search_query:
