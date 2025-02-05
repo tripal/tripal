@@ -47,9 +47,9 @@ class ChadoManagerForm extends FormBase {
   public const DROP_TASK = 'remove';
 
   /**
-   * Upgrade Chado task identifier.
+   * Apply Migrations task identifier.
    */
-  public const UPGRADE_TASK = 'upgrade';
+  public const APPLY_MIGRATIONS_TASK = 'apply_migrations';
 
   /**
    * @} End of "defgroup chado_manager_form_tasks".
@@ -69,6 +69,7 @@ class ChadoManagerForm extends FormBase {
     // Get values from state.
     $schema_name = $form_state->getValue('chado_schema');
     $task = $form_state->getValue('task');
+    $install_id = $form_state->getValue('install_id');
 
     $confirm = $form_state->getValue('confirm');
     if ($schema_name && $task) {
@@ -81,8 +82,8 @@ class ChadoManagerForm extends FormBase {
           $form = $this->buildCloneForm($form, $form_state);
           break;
 
-        case static::UPGRADE_TASK:
-          $form = $this->buildUpgradeForm($form, $form_state);
+        case static::APPLY_MIGRATIONS_TASK:
+          $form = $this->buildApplyMigrationsForm($form, $form_state);
           break;
 
         case static::DROP_TASK:
@@ -123,11 +124,16 @@ class ChadoManagerForm extends FormBase {
     $tripal_dbx = \Drupal::service('tripal.dbx');
     $chado = new ChadoConnection();
 
+    // @todo this should be specific to each schema.
+    $highest_chado_version = \Drupal\tripal_chado\Task\ChadoApplyMigrations::getHighestVersion();
+
     // Now that we support multiple chado instances, we need to list all the
     // currently installed ones here since they may be different versions.
     $rows = [];
     $instances = $chado->getAvailableInstances();
 
+    // These elements are set by the following js library based on the
+    // data attribute set on the button pressed.
     $form['#attached']['library'][] = 'tripal_chado/tripal_chado.chado_table';
     $form['chado_schema'] = [
       '#type' => 'hidden',
@@ -137,6 +143,11 @@ class ChadoManagerForm extends FormBase {
     $form['task'] = [
       '#type' => 'hidden',
       '#name' => 'task',
+      '#default_value' => '',
+    ];
+    $form['install_id'] = [
+      '#type' => 'hidden',
+      '#name' => 'install_id',
       '#default_value' => '',
     ];
 
@@ -270,28 +281,39 @@ class ChadoManagerForm extends FormBase {
         ],
       ];
       // Drop.
-      $operations['drop_button'] = [
-        '#type' => 'button',
-        '#value' => $this->t('Drop'),
-        '#attributes' => [
-          'class' => ['chadoTableButton'],
-          'data-chado-task' => static::DROP_TASK,
-          'data-chado-schema' => $schema_name,
-        ],
-      ];
-      $default_version = (float) ChadoInstaller::DEFAULT_CHADO_VERSION;
-      if ((float)$details['version'] < $default_version) {
-        // Upgrade.
-        $operations['upgrade_button'] = [
+      if ($default_chado !== $schema_name) {
+        $operations['drop_button'] = [
           '#type' => 'button',
-          '#value' => $this->t(
-            'Upgrade to @default_version',
-            ['@default_version' => $default_version, ]
-          ),
+          '#value' => $this->t('Drop'),
           '#attributes' => [
             'class' => ['chadoTableButton'],
-            'data-chado-task' => static::UPGRADE_TASK,
+            'data-chado-task' => static::DROP_TASK,
             'data-chado-schema' => $schema_name,
+          ],
+        ];
+      }
+      // Apply Migrations
+      if ($details['version'] < $highest_chado_version && $details['integration']) {
+        $operations['apply_migrations'] = [
+          '#type' => 'button',
+          '#value' => $this->t('Apply Migrations'),
+          '#attributes' => [
+            'class' => ['chadoTableButton'],
+            'data-chado-task' => static::APPLY_MIGRATIONS_TASK,
+            'data-chado-schema' => $schema_name,
+            'data-chado-install-id' => $details['integration']['install_id'],
+          ],
+        ];
+      }
+      if ($details['version'] == $highest_chado_version && $details['integration']) {
+        $operations['view_migrations'] = [
+          '#type' => 'button',
+          '#value' => $this->t('View Migrations'),
+          '#attributes' => [
+            'class' => ['chadoTableButton'],
+            'data-chado-task' => static::APPLY_MIGRATIONS_TASK,
+            'data-chado-schema' => $schema_name,
+            'data-chado-install-id' => $details['integration']['install_id'],
           ],
         ];
       }
@@ -332,6 +354,8 @@ class ChadoManagerForm extends FormBase {
     $form['#prefix'] = '<div id="tripal_chado_manage_form">';
     $form['#suffix'] = '</div>';
 
+    // @debug dpm($form, 'form');
+
     return $form;
   }
 
@@ -339,6 +363,8 @@ class ChadoManagerForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // @debug dpm($form_state->getValues(), 'Values @ start');
+
     // Get values from form first and then from state.
     $schema_name =
       $form_state->getValue('chado_schema')
@@ -351,6 +377,12 @@ class ChadoManagerForm extends FormBase {
       ?: $form_state->get('task')
     ;
     $form_state->set('task', $task);
+
+    $install_id =
+      $form_state->getValue('install_id')
+      ?: $form_state->get('install_id')
+    ;
+    $form_state->set('install_id', $install_id);
 
     $confirm = $form_state->getValue('confirm');
 
@@ -369,13 +401,13 @@ class ChadoManagerForm extends FormBase {
           $this->goBackForm($form, $form_state);
           break;
         }
-      case static::UPGRADE_TASK:
       case static::RENAME_TASK:
       case static::CLONE_TASK:
       default:
         // A second form page should be provided.
         $form_state->setRebuild(TRUE);
     }
+    // @debug dpm($form_state->getValues(), 'Values @ end');
   }
 
   /**
@@ -733,20 +765,23 @@ class ChadoManagerForm extends FormBase {
   }
 
   /**
-   * Builds upgrade schema form.
+   * Builds apply migrations form.
    *
    * @param array $form
    *   An associative array containing the structure of the form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function buildUpgradeForm(array $form, FormStateInterface $form_state) {
+  public function buildApplyMigrationsForm(array $form, FormStateInterface $form_state) {
     $schema_name = $form_state->getValue('chado_schema');
+    $install_id = $form_state->getValue('install_id');
+    // @debug dpm($schema_name, 'schema');
+    // @debug dpm($install_id, 'install ID');
 
     $form['task'] = [
       '#type' => 'item',
       '#markup' => t(
-        '<h2>Upgrade "@schema_name" schema</h2>',
+        '<h2>Apply Migrations to "@schema_name" schema</h2>',
         ['@schema_name' => $schema_name, ]
       ),
     ];
@@ -757,29 +792,45 @@ class ChadoManagerForm extends FormBase {
       '#value' => $schema_name,
     ];
 
-    $form['cleanup'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Remove database objects and table columns not existing in the official Chado schema.'),
-      '#description' => t(
-        "Checking this box will perform a database cleanup. If you didn't customize your Chado schema, leave this checked. If you uncheck it, be aware that there are more chances the update process may fail du to database object dependencies related to non-chado objects."
-      ),
-      '#default_value' => TRUE,
+    $form['install_id'] = [
+      '#type' => 'hidden',
+      '#name' => 'install_id',
+      '#value' => $install_id,
     ];
 
-    $form['sql_file'] = [
-      '#type' => 'textfield',
-      '#title' => t('Generate an update SQL file instead (optional)'),
-      '#required' => FALSE,
-      '#description' => t(
-        'If you specify a file, your schema will <strong>not</strong> be upgraded. You can leave this field empty if you want the upgrader to upgrade your schema. Otherwise, you can provide a file name relative to your Drupal public folder "files" (or private folder if set as default) or an absolute file name starting with "/". The target file must not exist. You can later execute that SQL file to mnually upgrade your schema and deal with issues (advanced users).'
-      ),
-      '#default_value' => '',
+    $apply_migrations_task = \Drupal::service('tripal_chado.apply_migrations');
+    $apply_migrations_task->setParameters([
+      'input_schemas' => [ $schema_name ],
+    ]);
+    $all_migrations = $apply_migrations_task->checkMigrationStatus();
+    $rows = [];
+    $pending_migrations = 0;
+    foreach ($all_migrations as $migration) {
+      $formatted_date = '';
+      if ($migration->applied_on) {
+        $formatted_date = \Drupal::service('date.formatter')->format($migration->applied_on, 'medium');
+      }
+      $rows[] = [
+        $migration->version,
+        $migration->description,
+        $formatted_date,
+        $migration->status,
+      ];
+
+      if ($migration->status !== 'Successful') {
+        $pending_migrations++;
+      }
+    }
+    $form['migrations'] = [
+      '#type' => 'table',
+      '#header' => ['Chado Version', 'Description', 'Applied On', 'Status'],
+      '#rows' => $rows,
     ];
 
     $form['cancel'] = [
       '#type' => 'submit',
       '#name' => 'back',
-      '#value' => t('Cancel'),
+      '#value' => t('Back'),
       '#submit' => ['::goBackForm'],
       '#limit_validation_errors' => [],
     ];
@@ -787,40 +838,41 @@ class ChadoManagerForm extends FormBase {
     $form['submit'] = [
       '#type' => 'submit',
       '#name' => 'action',
-      '#value' => t('Upgrade'),
-      '#submit' => ['::submitUpgradeForm'],
+      '#value' => t('Apply Migrations'),
+      '#submit' => ['::submitApplyMigrationsForm'],
     ];
+    if ($pending_migrations === 0) {
+      $form['submit']['#disabled'] = TRUE;
+    }
 
     return $form;
   }
 
   /**
-   * Submit upgrade form.
+   * Submits apply migrations form.
    *
    * @param array $form
    *   An associative array containing the structure of the form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function submitUpgradeForm(array &$form, FormStateInterface $form_state) {
+  public function submitApplyMigrationsForm(array $form, FormStateInterface $form_state) {
 
     $schema_name = $form_state->getValue('chado_schema');
-    $sql_file = $form_state->getValue('sql_file');
-    $cleanup = $form_state->getValue('cleanup');
+    $install_id = $form_state->getValue('install_id');
 
     $current_user = \Drupal::currentUser();
-    $args = [$schema_name, '1.3', $sql_file, $cleanup];
+    $args = [$schema_name, $install_id];
 
     \Drupal::service('tripal.job')->create([
-      'job_name' => t('Upgrade Chado schema'),
+      'job_name' => t("Apply Migrations to $schema_name schema"),
       'modulename' => 'tripal_chado',
-      'callback' => 'tripal_chado_upgrade_schema',
+      'callback' => '\Drupal\tripal_chado\Task\ChadoApplyMigrations::runTripalJob',
       'arguments' => $args,
-      'uid' => $current_user->id(),
+      'uid' => $current_user->id()
     ]);
 
     // Go back.
     $this->goBackForm($form, $form_state);
   }
-
 }
