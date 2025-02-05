@@ -263,9 +263,14 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * schema defined by TripalTypes() for all fields attached to a given
    * TripalEntityType.
    *
-   * @return void
+   * @return array
+   *   An array of the columns that were previously missing and have now beed
+   *   added. This array is keyed first by field name and then by property
+   *   name. The value is an array defining the column that was added with the
+   *   keys: 'drupal_table', 'column_name', 'column_spec'.
    */
   public function syncStorageSchema() {
+    $columns_added = [];
 
     // Get the drupal database schema object.
     $schema = \Drupal::service('database')->schema();
@@ -280,31 +285,41 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $drupal_table_mapping = $sql_storage->getTableMapping();
 
     // Now for each field instance...
-    //foreach ($field_instances as $key => $field_def) {
-      $field_def = $field_instances['project_contact'];
+    foreach ($field_instances as $key => $field_def) {
+      $field_name = $field_def->getName();
       $field_storage_def = $field_def->getFieldStorageDefinition();
 
+      // Only check non-base fields.
+      if ($field_storage_def->isBaseField()) {
+        continue;
+      }
+
       // Get the Drupal field table that we may need to update.
-      $drupal_table = $drupal_table_mapping->getFieldTableName($field_def->getName());
+      $drupal_table = $drupal_table_mapping->getFieldTableName($field_name);
 
       // Get the new schema based on tripalTypes which is dynamically updated
       // based on the backend TripalStorage.
       $current_schema_columns = $field_storage_def->getColumns();
-      // @debug print "Current Schema ($drupal_table): " . print_r($current_schema_columns, TRUE);
 
       // Now for each property of the current field, check to see if the
       // corresponding drupal table column exists.
       foreach($current_schema_columns as $property_name => $column_schema) {
         $property_column_name = $drupal_table_mapping->getFieldColumnName($field_storage_def, $property_name);
         $column_exists = $schema->fieldExists($drupal_table, $property_column_name);
-        // @debug print "$property_name => $property_column_name: " . (($column_exists === TRUE) ? 'Exists' : 'Missing') . "\n";
 
         // If it is missing then let's just add it ;-p.
-        // @todo
+        if ($column_exists === FALSE) {
+          $schema->addField($drupal_table, $property_column_name, $column_schema);
+          $columns_added[$field_name][$property_name] = [
+            'drupal_table' => $drupal_table,
+            'column_name' => $property_column_name,
+            'column_spec' => $column_schema,
+          ];
+        }
       }
+    }
 
-      print "\n\n";
-    //}
+    return $columns_added;
   }
 
   // --------------------------------------------------------------------------
