@@ -189,4 +189,25 @@ class TripalCommands extends DrushCommands {
     $fields->install($chosen_collection_ids);
 
   }
+
+  /**
+   * Ensures the Drupal field table schema is up to date for all fields.
+   *
+   * @command tripal:trp-sync-field-schema
+   */
+  public function tripalSyncFieldSchema() {
+
+    $types = \Drupal::entityTypeManager()
+    ->getStorage('tripal_entity_type')
+    ->loadMultiple();
+
+    $types['project']->syncStorageSchema();
+    /*
+    foreach ($types as $key => $type) {
+      print "Working on " . $type->id() . " ($key)...\n";
+      $type->syncStorageSchema();
+      break;
+    }
+    */
+  }
 }
