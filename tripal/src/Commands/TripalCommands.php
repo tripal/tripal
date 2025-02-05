@@ -201,13 +201,22 @@ class TripalCommands extends DrushCommands {
     ->getStorage('tripal_entity_type')
     ->loadMultiple();
 
-    $types['project']->syncStorageSchema();
-    /*
-    foreach ($types as $key => $type) {
-      print "Working on " . $type->id() . " ($key)...\n";
-      $type->syncStorageSchema();
-      break;
+    $this->output()->writeln("\nChecking " . count($types) . " Tripal Entity types for discrepancies between field schema definitions and the underlying Drupal tables...\n");
+
+    $columns_added = $types['project']->syncStorageSchema();
+    foreach ($types as $bundle_name => $type_object) {
+      $this->output()->write("$bundle_name... ");
+
+      $columns_added = $type_object->syncStorageSchema();
+
+      $fields_needing_updates = count($columns_added);
+      $num_columns_added = array_sum(array_map("count", $columns_added));
+      if ($fields_needing_updates > 0) {
+        $this->output()->writeln("Added $num_columns_added columns across $fields_needing_updates fields.");
+      }
+      else {
+        $this->output()->writeln("No discrepancies found.");
+      }
     }
-    */
   }
 }
