@@ -2,6 +2,7 @@
 namespace Drupal\tripal_chado\Commands;
 
 use Drush\Commands\DrushCommands;
+use Drupal\tripal\TripalDBX\TripalDbx;
 
 /**
  * Drush commands
@@ -225,13 +226,26 @@ class ChadoManageCommands extends DrushCommands {
 
     $this->output()->writeln('Setting the schema "' . $options['schema-name'] . '" to be default in Tripal...');
 
-    $config = \Drupal::service('config.factory')
-      ->getEditable('tripal_chado.settings')
-    ;
-    $success = $config->set('default_schema', $options['schema-name'])->save();
+    // Ensure that the provided schema exists.
+    $tripaldbx = \Drupal::service('tripal.dbx');
 
-    if ($success) {
-      $this->output()->writeln('Successfull set the schema "' . $options['schema-name'] . '" to be default.');
+   if ($tripaldbx->schemaExists($options['schema-name'])) {
+      $config = \Drupal::service('config.factory')
+        ->getEditable('tripal_chado.settings')
+      ;
+      $success = $config->set('default_schema', $options['schema-name'])->save();
+  
+      if ($success) {
+        $this->output()->writeln('Successfully set the schema "' . $options['schema-name'] . '" to be default.');
+      }
+    }
+    else {
+      throw new \Exception(dt(
+        'Unable to set the default schema to \'@schema\' - that schema does not exist.',
+        [
+          '@schema' => $options['schema-name'],
+        ]
+      ));
     }
   }
 }
