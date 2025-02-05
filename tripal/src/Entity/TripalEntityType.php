@@ -267,21 +267,44 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   public function syncStorageSchema() {
 
+    // Get the drupal database schema object.
+    $schema = \Drupal::service('database')->schema();
+
     // Get a list of field instances for the current type.
     $field_instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
 
+    // Get the SQL Storage instance in order to get the field => table mapping.
+    // We will use this mapping later to check the current state of the drupal
+    // field table for each field.
+    $sql_storage = \Drupal::service('entity_type.manager')->getStorage('tripal_entity');
+    $drupal_table_mapping = $sql_storage->getTableMapping();
+
     // Now for each field instance...
-    foreach ($field_instances as $field_def) {
-      // Get the current schema of the field table.
+    //foreach ($field_instances as $key => $field_def) {
+      $field_def = $field_instances['project_contact'];
+      $field_storage_def = $field_def->getFieldStorageDefinition();
+
+      // Get the Drupal field table that we may need to update.
+      $drupal_table = $drupal_table_mapping->getFieldTableName($field_def->getName());
 
       // Get the new schema based on tripalTypes which is dynamically updated
       // based on the backend TripalStorage.
+      $current_schema_columns = $field_storage_def->getColumns();
+      // @debug print "Current Schema ($drupal_table): " . print_r($current_schema_columns, TRUE);
 
-      // Compare the two to see if the current schema is missing anything defined
-      // in the new schema.
+      // Now for each property of the current field, check to see if the
+      // corresponding drupal table column exists.
+      foreach($current_schema_columns as $property_name => $column_schema) {
+        $property_column_name = $drupal_table_mapping->getFieldColumnName($field_storage_def, $property_name);
+        $column_exists = $schema->fieldExists($drupal_table, $property_column_name);
+        // @debug print "$property_name => $property_column_name: " . (($column_exists === TRUE) ? 'Exists' : 'Missing') . "\n";
 
-      // Add in anything missing.
-    }
+        // If it is missing then let's just add it ;-p.
+        // @todo
+      }
+
+      print "\n\n";
+    //}
   }
 
   // --------------------------------------------------------------------------
