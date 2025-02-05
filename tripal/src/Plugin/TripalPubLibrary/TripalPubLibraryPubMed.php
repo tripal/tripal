@@ -67,6 +67,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       '#type' => 'textfield',
       '#description' => t('Limit the search to include pubs that have been added no more than this many days before today.'),
       '#required' => FALSE,
+      '#default_value' => 30,
       '#size' => 5,
     ];
     return $form;

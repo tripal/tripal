@@ -107,6 +107,10 @@ class NewPubSearchQueryForm extends FormBase {
         }
       }
     }
+
+    // Attach custom css for importers
+    $form['#attached']['library'][] = 'tripal/tripal.importer';
+
     return $form;
   }
 
@@ -388,11 +392,11 @@ class NewPubSearchQueryForm extends FormBase {
     $search_terms = $form_state->getValue("search_terms-$i") ?? $search_terms;
     $is_phrase = $form_state->getValue("is_phrase-$i") ?? $is_phrase;
 
-    // $row['#attributes'] = ['vertical-align' => 'top'];  // Align vertically to top - @todo this doesn't work
     $row["operation-$i"] = [
       '#type' => 'select',
       '#options' => $i==1?$first_op_choices:$op_choices,
       '#default_value' => $operation,
+      '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
     ];
     $row["scope-$i"] = [
       '#type' => 'select',
@@ -400,6 +404,7 @@ class NewPubSearchQueryForm extends FormBase {
       '#description_display' => 'after',
       '#options' => $scope_choices,
       '#default_value' => $scope,
+      '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
     ];
     $row["search_terms-$i"] = [
       '#type' => 'textfield',
@@ -411,11 +416,13 @@ class NewPubSearchQueryForm extends FormBase {
       '#default_value' => $search_terms,
 //      '#required' => TRUE,
       '#maxlength' => 2048,
+      '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
     ];
     $row["is_phrase-$i"] = [
       '#type' => 'checkbox',
       '#title' => t('Is Phrase?'),
       '#default_value' => $is_phrase,
+      '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
     ];
 
     // If last row of the table
