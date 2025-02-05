@@ -94,7 +94,11 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
     $this->createContentTypeFromConfig($bundle_category, $bundle_name, TRUE);
 
     // Upgrade the test environment to the specified chado version.
-    // @todo implement a way to do this.
-    // $this->upgradeTestSchema('1.3', $chado_verison_under_test);
+    $this->upgradeTestSchema($this->chado_connection, '1.3', $chado_verison_under_test);
+    $this->assertEquals(
+      $chado_verison_under_test,
+      $this->chado_connection->getVersion(),
+      "We were unable to upgrade our test schema to the version we intended to."
+    );
   }
 }
