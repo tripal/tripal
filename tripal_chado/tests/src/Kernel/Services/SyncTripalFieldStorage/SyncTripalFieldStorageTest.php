@@ -44,9 +44,41 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
   /**
    * Provides information about specific versions of Chado to test for
    * discrepancies against field installed on Chado 1.3.
+   *
+   * @return array
+   *   Each entry in this array is a specific scenario to be tested.
+   *   Each scenario has the following elements:
+   *   - chado_verison_under_test
+   *   The version of chado we want to test for differences from Chado 1.3.
+   *   - bundles_to_create
+   *   An array of bundles to create for the test. The bundles should be a
+   *   string of the format CATEGORY.BUNDLENAME. Each bundle will be created
+   *   when the test schema is at 1.3 using createContentTypeFromConfig().
+   *   - bundle_under_test
+   *   The bundle name to pass into our test function.
+   *   - expectations
+   *   An array of expectations. Specifically,
+   *     - num_fields: the number of fields with detected differences.
+   *     - differences: the keys are field names with differences and the value
+   *       for each is a list of property names with differences for that field.
    */
   public static function provideChadoVersionsToTest() {
     $scenarios = [];
+
+    $scenarios[] = [
+      '1.3.3.013',
+      ['general_chado.project'],
+      'project',
+      [
+        'num_fields' => 4,
+        'differences' => [
+          'project_analysis' => ['linker_type_id'],
+          'project_contact' => ['linker_type_id', 'linker_rank'],
+          'project_pub' => ['linker_type_id', 'linker_rank'],
+          'project_dbxref' => ['linker_type_id'],
+        ],
+      ],
+    ];
 
     return $scenarios;
   }
@@ -84,14 +116,30 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
 
   /**
    * Tests SyncTripalFieldStorage::detectDifferences().
+   *
+   * @dataProvider provideChadoVersionsToTest
+   *
+   * @param string $chado_verison_under_test
+   *   The version of chado we want to test for differences from Chado 1.3.
+   * @param array $bundles_to_create
+   *   An array of bundles to create for the test. The bundles should be a
+   *   string of the format CATEGORY.BUNDLENAME. Each bundle will be created
+   *   when the test schema is at 1.3 using createContentTypeFromConfig().
+   * @param string $bundle_under_test
+   *   The bundle name to pass into our test function.
+   * @param array $expectations
+   *   An array of expectations. Specifically,
+   *    - num_fields: the number of fields with detected differences.
+   *    - differences: the keys are field names with differences and the value
+   *      for each is a list of property names with differences for that field.
    */
-  public function testDetectDifferences() {
-    $chado_verison_under_test = '1.3.3.013';
-    $bundles_under_test = ['general_chado.project'];
+  public function testDetectDifferences(string $chado_verison_under_test, array $bundles_to_create, string $bundle_under_test, array $expectations) {
 
     // Create an instance of the specified bundle(s) with all associated fields.
-    [$bundle_category, $bundle_name] = explode('.', $bundles_under_test[0]);
-    $this->createContentTypeFromConfig($bundle_category, $bundle_name, TRUE);
+    foreach ($bundles_to_create as $bundle_details) {
+      [$bundle_category, $bundle_name] = explode('.', $bundle_details);
+      $this->createContentTypeFromConfig($bundle_category, $bundle_name, TRUE);
+    }
 
     // Upgrade the test environment to the specified chado version.
     $this->upgradeTestSchema($this->chado_connection, '1.3', $chado_verison_under_test);
@@ -103,18 +151,13 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
 
     // Now actually call the method!
     $syncTripalFieldStorageService = \Drupal::service('tripal.sync_tripal_field_storage');
-    $differences = $syncTripalFieldStorageService->detectDifferences($bundle_name);
+    $differences = $syncTripalFieldStorageService->detectDifferences($bundle_under_test);
     $this->assertNotEmpty($differences, "We expected some differences based on the version under test.");
 
-    $this->assertCount(4, $differences, "We expected this many fields to have differences detected.");
+    $this->assertCount($expectations['num_fields'], $differences, "We expected this many fields to have differences detected.");
 
-    $expected_differences = [
-      'project_analysis' => ['linker_type_id'],
-      'project_contact' => ['linker_type_id', 'linker_rank'],
-      'project_pub' => ['linker_type_id', 'linker_rank'],
-      'project_dbxref' => ['linker_type_id'],
-    ];
-    foreach ($expected_differences as $expected_field => $expected_properties) {
+    // Now check all the expected differences are present.
+    foreach ($expectations['differences'] as $expected_field => $expected_properties) {
       $this->assertArrayHasKey($expected_field, $differences, "We expected this field to have a difference detected but it did not.");
       foreach ($expected_properties as $expected_property) {
         $this->assertArrayHasKey($expected_property, $differences[$expected_field], "We expected this property of $expected_field to have a difference but it did not.");
