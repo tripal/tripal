@@ -29,6 +29,7 @@ WORKDIR /var/www/drupal
 RUN service apache2 start \
   && service postgresql start \
   && mkdir -p /var/www/drupal/web/modules/contrib \
+  && rm -rf /var/www/drupal/web/modules/contrib/tripal \
   && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
   && allmodules="${tripalmodules} ${modules}" \
   && vendor/bin/drush en ${allmodules} -y \
