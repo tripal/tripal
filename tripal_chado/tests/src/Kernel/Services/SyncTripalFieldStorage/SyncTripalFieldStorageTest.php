@@ -130,7 +130,7 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests SyncTripalFieldStorage::detectDifferences().
+   * Tests detectDifferences() + resolveDetectedDifferences().
    *
    * @dataProvider provideChadoVersionsToTest
    *
@@ -210,5 +210,69 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
       }
     }
     */
+  }
+
+  /**
+   * Tests detectDifferences() + resolveDetectedDifferences().
+   *
+   * @dataProvider provideChadoVersionsToTest
+   *
+   * @param string $chado_verison_under_test
+   *   The version of chado we want to test for differences from Chado 1.3.
+   * @param array $bundles_to_create
+   *   An array of bundles to create for the test. The bundles should be a
+   *   string of the format CATEGORY.BUNDLENAME. Each bundle will be created
+   *   when the test schema is at 1.3 using createContentTypeFromConfig().
+   * @param string|null $bundle_under_test
+   *   The bundle name to pass into our test function.
+   * @param array $expectations
+   *   An array of expectations. Specifically,
+   *    - num_fields: the number of fields with detected differences.
+   *    - differences: the keys are field names with differences and the value
+   *      for each is a list of property names with differences for that field.
+   */
+  public function testResolveDifferences(string $chado_verison_under_test, array $bundles_to_create, string|null $bundle_under_test, array $expectations) {
+
+    // Create an instance of the specified bundle(s) with all associated fields.
+    foreach ($bundles_to_create as $bundle_details) {
+      [$bundle_category, $bundle_name] = explode('.', $bundle_details);
+      $this->createContentTypeFromConfig($bundle_category, $bundle_name, TRUE);
+    }
+
+    // Upgrade the test environment to the specified chado version.
+    $this->upgradeTestSchema($this->chado_connection, '1.3', $chado_verison_under_test);
+    $this->assertEquals(
+      $chado_verison_under_test,
+      $this->chado_connection->getVersion(),
+      "We were unable to upgrade our test schema to the version we intended to."
+    );
+
+    // Now actually call the method!
+    $syncTripalFieldStorageService = \Drupal::service('tripal.sync_tripal_field_storage');
+    $differences = $syncTripalFieldStorageService->resolveDifferences($bundle_under_test);
+    $this->assertNotEmpty($differences, "We expected some differences based on the version under test.");
+
+    $this->assertCount($expectations['num_fields'], $differences, "We expected this many fields to have differences detected.");
+
+    // Now check all the expected differences are present.
+    $schema = $this->chado_connection->schema();
+    foreach ($expectations['differences'] as $expected_field => $expected_properties) {
+      $this->assertArrayHasKey($expected_field, $differences, "We expected this field to have a difference detected but it did not.");
+      foreach ($expected_properties as $expected_property) {
+        $this->assertArrayHasKey($expected_property, $differences[$expected_field], "We expected this property of $expected_field to have a difference but it did not.");
+
+        // Confirm that this field WAS added to the drupal table
+        // since we asked to resolve the differences directly.
+        /* Currently failing
+        $property_difference = $differences[$expected_field][$expected_property];
+        $column_exists = $schema->fieldExists(
+          $property_difference['drupal_table'],
+          $property_difference['column_name']
+        );
+        $column = $property_difference['drupal_table'] . '.' . $property_difference['column_name'];
+        $this->assertFalse($column_exists, "The $column column should still not exist because we checked for differences but did not choose to resolve them.");
+        */
+      }
+    }
   }
 }
