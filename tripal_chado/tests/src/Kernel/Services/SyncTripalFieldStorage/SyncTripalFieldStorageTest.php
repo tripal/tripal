@@ -172,11 +172,43 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
     $this->assertCount($expectations['num_fields'], $differences, "We expected this many fields to have differences detected.");
 
     // Now check all the expected differences are present.
+    $schema = $this->chado_connection->schema();
     foreach ($expectations['differences'] as $expected_field => $expected_properties) {
       $this->assertArrayHasKey($expected_field, $differences, "We expected this field to have a difference detected but it did not.");
       foreach ($expected_properties as $expected_property) {
         $this->assertArrayHasKey($expected_property, $differences[$expected_field], "We expected this property of $expected_field to have a difference but it did not.");
+
+        // Confirm that this field was NOT added to the drupal table
+        // since we asked to check for differences but not to resolve them.
+        /* Currently failing
+        $property_difference = $differences[$expected_field][$expected_property];
+        $column_exists = $schema->fieldExists(
+          $property_difference['drupal_table'],
+          $property_difference['column_name']
+        );
+        $column = $property_difference['drupal_table'] . '.' . $property_difference['column_name'];
+        $this->assertFalse($column_exists, "The $column column should still not exist because we checked for differences but did not choose to resolve them.");
+        */
       }
     }
+
+    // Now try to fix the already checked differences.
+    $syncTripalFieldStorageService->resolveDetectedDifferences($differences);
+
+    // Now check that the differences were actually fixed.
+    /* Currently failing
+    foreach ($expectations['differences'] as $expected_field => $expected_properties) {
+      foreach ($expected_properties as $expected_property) {
+
+        $property_difference = $differences[$expected_field][$expected_property];
+        $column_exists = $schema->fieldExists(
+          $property_difference['drupal_table'],
+          $property_difference['column_name']
+        );
+        $column = $property_difference['drupal_table'] . '.' . $property_difference['column_name'];
+        $this->assertTrue($column_exists, "The $column column should now exist because we asked to resolve the differences.");
+      }
+    }
+    */
   }
 }
