@@ -30,6 +30,7 @@ RUN service apache2 start \
   && service postgresql start \
   && mkdir -p /var/www/drupal/web/modules/contrib \
   && cp -R /tripal_app /var/www/drupal/web/modules/contrib/tripal \
+  && rm -rf /app /tripal_app \
   && allmodules="${tripalmodules} ${modules}" \
   && vendor/bin/drush en ${allmodules} -y \
   && service apache2 stop \
