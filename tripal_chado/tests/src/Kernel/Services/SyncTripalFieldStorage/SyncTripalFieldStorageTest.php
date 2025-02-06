@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\tripal\Kernel;
 
-use Drupal\Core\Database\Database;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\pgsql\Driver\Database\pgsql\Connection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 
 /**
@@ -25,7 +25,7 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal', 'tripal_chado', 'views', 'field'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal', 'tripal_chado', 'views', 'field', 'field_ui'];
 
   /**
    * Connection to the test chado instance.
@@ -37,9 +37,9 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
   /**
    * Connection to the test drupal instance.
    *
-   * @var \Drupal\Core\Database\Database;
+   * @var Drupal\pgsql\Driver\Database\pgsql\Connection
    */
-  protected Database $drupal_connection;
+  protected Connection $drupal_connection;
 
   /**
    * Provides information about specific versions of Chado to test for
@@ -114,6 +114,7 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
 
     // Create chado 1.3 test instance which will later be upgraded.
     $this->chado_connection = $this->createTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO, '1.3');
+    $this->drupal_connection = \Drupal::service('database');
 
     // Add terms needed.
     // @todo update the createContentType method to add terms needed!
@@ -172,7 +173,7 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
     $this->assertCount($expectations['num_fields'], $differences, "We expected this many fields to have differences detected.");
 
     // Now check all the expected differences are present.
-    $schema = $this->chado_connection->schema();
+    $schema = $this->drupal_connection->schema();
     foreach ($expectations['differences'] as $expected_field => $expected_properties) {
       $this->assertArrayHasKey($expected_field, $differences, "We expected this field to have a difference detected but it did not.");
       foreach ($expected_properties as $expected_property) {
@@ -180,7 +181,6 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
 
         // Confirm that this field was NOT added to the drupal table
         // since we asked to check for differences but not to resolve them.
-        /* Currently failing
         $property_difference = $differences[$expected_field][$expected_property];
         $column_exists = $schema->fieldExists(
           $property_difference['drupal_table'],
@@ -188,7 +188,6 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
         );
         $column = $property_difference['drupal_table'] . '.' . $property_difference['column_name'];
         $this->assertFalse($column_exists, "The $column column should still not exist because we checked for differences but did not choose to resolve them.");
-        */
       }
     }
 
@@ -196,7 +195,6 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
     $syncTripalFieldStorageService->resolveDetectedDifferences($differences);
 
     // Now check that the differences were actually fixed.
-    /* Currently failing
     foreach ($expectations['differences'] as $expected_field => $expected_properties) {
       foreach ($expected_properties as $expected_property) {
 
@@ -209,7 +207,6 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
         $this->assertTrue($column_exists, "The $column column should now exist because we asked to resolve the differences.");
       }
     }
-    */
   }
 
   /**
@@ -255,7 +252,7 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
     $this->assertCount($expectations['num_fields'], $differences, "We expected this many fields to have differences detected.");
 
     // Now check all the expected differences are present.
-    $schema = $this->chado_connection->schema();
+    $schema = $this->drupal_connection->schema();
     foreach ($expectations['differences'] as $expected_field => $expected_properties) {
       $this->assertArrayHasKey($expected_field, $differences, "We expected this field to have a difference detected but it did not.");
       foreach ($expected_properties as $expected_property) {
@@ -263,15 +260,13 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
 
         // Confirm that this field WAS added to the drupal table
         // since we asked to resolve the differences directly.
-        /* Currently failing
         $property_difference = $differences[$expected_field][$expected_property];
         $column_exists = $schema->fieldExists(
           $property_difference['drupal_table'],
           $property_difference['column_name']
         );
         $column = $property_difference['drupal_table'] . '.' . $property_difference['column_name'];
-        $this->assertFalse($column_exists, "The $column column should still not exist because we checked for differences but did not choose to resolve them.");
-        */
+        $this->assertTrue($column_exists, "The $column column SHOULD exist because we asked to resolve the differences as we were checking.");
       }
     }
   }
