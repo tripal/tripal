@@ -44,6 +44,71 @@ class ChadoManageCommands extends DrushCommands {
   }
 
   /**
+   * Apply migrations to an existing Chado schema.
+   *
+   * @command tripal-chado:migrate-chado
+   * @aliases trp-migrate-chado
+   * @options schema-name
+   *   The name of the schema to apply chado migrations to.
+   * @usage drush trp-install-chado --schema-name='teapot'
+   *   Applies all pending migrations to a schema named "teapot".
+   */
+  public function migrateChado($options = ['schema-name' => 'chado']) {
+
+    // First setup our task.
+    $migrator = \Drupal::service('tripal_chado.apply_migrations');
+    $migrator->setParameters([
+      'input_schemas' => [$options['schema-name']],
+    ]);
+
+    // Look up the install ID
+    // @todo lookup the install ID.
+
+    // Determine what work is to be done and format into a table.
+    $all_migrations = $migrator->checkMigrationStatus();
+    $header = ['Chado Version', 'Description', 'Applied On', 'Status'];
+    $rows = [];
+    $pending_migrations = 0;
+    foreach ($all_migrations as $migration) {
+      $formatted_date = '';
+      if ($migration->applied_on) {
+        $formatted_date = \Drupal::service('date.formatter')->format($migration->applied_on, 'medium');
+      }
+      $rows[] = [
+        $migration->version,
+        $migration->description,
+        $formatted_date,
+        $migration->status,
+      ];
+
+      if ($migration->status !== 'Successful') {
+        $pending_migrations++;
+      }
+    }
+
+    $this->output()->writeln("\nThe following table summarizes the migrations for the '" . $options['schema-name'] . "' schema.");
+    $this->io()->table($header, $rows);
+    $this->output()->writeln('');
+
+    $response = $this->io()->confirm(
+      "Would you like to apply $pending_migrations pending migrations?",
+      TRUE
+    );
+    if ($response) {
+      $success = $migrator->performTask();
+      if ($success) {
+        $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully migrated to the most recent version.'));
+      } else {
+        throw new \Exception(dt(
+          'Unable to migrate chado in {schema}',
+          ['schema' => $options['schema-name']]
+        ));
+      }
+    }
+
+  }
+
+  /**
    * Drops the Chado schema.
    *
    * @command tripal-chado:drop-chado
