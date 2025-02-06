@@ -269,7 +269,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    *   name. The value is an array defining the column that was added with the
    *   keys: 'drupal_table', 'column_name', 'column_spec'.
    */
-  public function syncStorageSchema() {
+  public function syncStorageSchema(bool $check_only = FALSE) {
     $columns_added = [];
 
     // Get the drupal database schema object.
@@ -309,7 +309,9 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
         // If it is missing then let's just add it ;-p.
         if ($column_exists === FALSE) {
-          $schema->addField($drupal_table, $property_column_name, $column_schema);
+          if ($check_only === FALSE) {
+            $schema->addField($drupal_table, $property_column_name, $column_schema);
+          }
           $columns_added[$field_name][$property_name] = [
             'drupal_table' => $drupal_table,
             'column_name' => $property_column_name,
