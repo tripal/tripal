@@ -26,29 +26,30 @@ COPY . /app
 
 WORKDIR /var/www/drupal
 
-RUN service apache2 start \
-  && service postgresql start \
+#RUN service apache2 start \
+#  && service postgresql start \
+RUN ls -l /app \
   && mkdir -p /var/www/drupal/web/modules/contrib \
-  && rm -rf /var/www/drupal/web/modules/contrib/tripal \
   && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
-  && allmodules="${tripalmodules} ${modules}" \
-  && vendor/bin/drush en ${allmodules} -y \
-  && service apache2 stop \
-  && service postgresql stop
+  && ls -l /app
+#  && allmodules="${tripalmodules} ${modules}" \
+#  && vendor/bin/drush en ${allmodules} -y \
+#  && service apache2 stop \
+#  && service postgresql stop
 
-RUN service apache2 start \
-  && service postgresql start \
-  && if [ "$installchado" = "TRUE" ]; then \
-  vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
-  && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema}; \
-  fi \
-  && service apache2 stop \
-  && service postgresql stop
+#RUN service apache2 start \
+#  && service postgresql start \
+#  && if [ "$installchado" = "TRUE" ]; then \
+#  vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
+#  && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema}; \
+#  fi \
+#  && service apache2 stop \
+#  && service postgresql stop
 
-RUN service apache2 start \
-  && service postgresql start \
-  && if [ "$installchado" = "TRUE" ]; then \
-  vendor/bin/drush trp-import-types --collection_id=general_chado --username=drupaladmin; \
-  fi \
-  && service apache2 stop \
-  && service postgresql stop
+#RUN service apache2 start \
+#  && service postgresql start \
+#  && if [ "$installchado" = "TRUE" ]; then \
+#  vendor/bin/drush trp-import-types --collection_id=general_chado --username=drupaladmin; \
+#  fi \
+#  && service apache2 stop \
+#  && service postgresql stop
