@@ -28,10 +28,12 @@ WORKDIR /var/www/drupal
 
 #RUN service apache2 start \
 #  && service postgresql start \
-RUN ls -l /app \
-  && mkdir -p /var/www/drupal/web/modules/contrib \
-  && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
-  && ls -l /app
+RUN ls -l /app 
+RUN ls -l /app/tripal
+RUN mkdir -p /var/www/drupal/web/modules/contrib
+RUN ls -l /var/www/drupal/web/modules/contrib/tripal
+RUN ls -l /var/www/drupal/web/modules/contrib/tripal/tripal
+#  && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
 #  && allmodules="${tripalmodules} ${modules}" \
 #  && vendor/bin/drush en ${allmodules} -y \
 #  && service apache2 stop \
