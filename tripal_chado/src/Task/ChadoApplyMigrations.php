@@ -494,7 +494,7 @@ class ChadoApplyMigrations extends ChadoTaskBase {
       // Now update the field storage to match any changes.
       $this->logger->notice("Updating any fields associated with Chado to ensure they take advantage of the new schema.");
       $differences = \Drupal::service('tripal.sync_tripal_field_storage')
-      ->resolveDifferences();
+        ->resolveDifferences();
 
       $fields_needing_updates = count($differences);
       $num_columns_added = array_sum(array_map("count", $differences));

@@ -264,7 +264,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * TripalEntityType.
    *
    * @return array
-   *   An array of the columns that were previously missing and have now beed
+   *   An array of the columns that were previously missing and have now been
    *   added. This array is keyed first by field name and then by property
    *   name. The value is an array defining the column that was added with the
    *   keys: 'drupal_table', 'column_name', 'column_spec'.

@@ -40,7 +40,7 @@ class SyncTripalFieldStorage {
    *   If this parameter is ommitted then all TripalEntityType instances
    *   will be checked.
    * @param array $difference_types
-   *   A list of the types of differences to detect. If ommitted then all
+   *   A list of the types of differences to detect. If omitted then all
    *   supported types of differences will be checked.
    *   The supported types include:
    *    - missing_property_column: where a column for a new TripalField property
@@ -111,10 +111,10 @@ class SyncTripalFieldStorage {
    *
    * @param string $entity_type
    *   The id of the entity type whose associated fields we want to fix.
-   *   If this parameter is ommitted then all TripalEntityType instances
+   *   If this parameter is omitted then all TripalEntityType instances
    *   will be fixed.
    * @param array $difference_types
-   *   A list of the types of differences to detect. If ommitted then all
+   *   A list of the types of differences to detect. If omitted then all
    *   supported types of differences will be fixed.
    *   The supported types include:
    *    - missing_property_column: where a column for a new TripalField property

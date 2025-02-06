@@ -197,7 +197,7 @@ class TripalCommands extends DrushCommands {
    */
   public function tripalSyncFieldSchema() {
 
-    $this->output()->writeln("\nChecking  Tripal Entity types for discrepancies between field schema definitions and the underlying Drupal tables...\n");
+    $this->output()->writeln("\nChecking Tripal Entity types for discrepancies between field schema definitions and the underlying Drupal tables...\n");
 
     $columns_added = \Drupal::service('tripal.sync_tripal_field_storage')
       ->resolveDifferences();
