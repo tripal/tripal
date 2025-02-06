@@ -197,26 +197,22 @@ class TripalCommands extends DrushCommands {
    */
   public function tripalSyncFieldSchema() {
 
-    $types = \Drupal::entityTypeManager()
-    ->getStorage('tripal_entity_type')
-    ->loadMultiple();
+    $this->output()->writeln("\nChecking  Tripal Entity types for discrepancies between field schema definitions and the underlying Drupal tables...\n");
 
-    $this->output()->writeln("\nChecking " . count($types) . " Tripal Entity types for discrepancies between field schema definitions and the underlying Drupal tables...\n");
+    $columns_added = \Drupal::service('tripal.sync_tripal_field_storage')
+      ->resolveDifferences();
 
-    $columns_added = $types['project']->syncStorageSchema();
-    foreach ($types as $bundle_name => $type_object) {
-      $this->output()->write("$bundle_name... ");
+    foreach ($columns_added as $field_name => $field_differences) {
+      $this->output()->writeln("$field_name needed " . count($field_differences) . " difference(s) fixed.");
+    }
 
-      $columns_added = $type_object->syncStorageSchema();
-
-      $fields_needing_updates = count($columns_added);
-      $num_columns_added = array_sum(array_map("count", $columns_added));
-      if ($fields_needing_updates > 0) {
-        $this->output()->writeln("Added $num_columns_added columns across $fields_needing_updates fields.");
-      }
-      else {
-        $this->output()->writeln("No discrepancies found.");
-      }
+    $fields_needing_updates = count($columns_added);
+    $num_columns_added = array_sum(array_map("count", $columns_added));
+    if ($fields_needing_updates > 0) {
+      $this->output()->writeln("\nAdded $num_columns_added columns across $fields_needing_updates fields.\n");
+    }
+    else {
+      $this->output()->writeln("\nNo discrepancies found.\n");
     }
   }
 }
