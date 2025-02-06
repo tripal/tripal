@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Services;
 
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
@@ -17,10 +18,18 @@ class SyncTripalFieldStorage {
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
+   * The drupal database connection.
+   *
+   * @var Drupal\Core\Database\Connection
+   */
+  protected Connection $drupal_connection;
+
+  /**
    * Constructs a SyncTripalFieldStorage object.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, Connection $drupal_connection) {
     $this->entityTypeManager = $entityTypeManager;
+    $this->drupal_connection = $drupal_connection;
   }
 
   /**
@@ -43,7 +52,7 @@ class SyncTripalFieldStorage {
     $all_columns_added = [];
 
     if ($entity_type !== NULL) {
-      $type = \Drupal::entityTypeManager()
+      $type = $this->entityTypeManager
         ->getStorage('tripal_entity_type')
         ->load($entity_type);
       if (is_object($type)) {
@@ -54,7 +63,7 @@ class SyncTripalFieldStorage {
       }
     }
     else {
-      $types = \Drupal::entityTypeManager()
+      $types = $this->entityTypeManager
       ->getStorage('tripal_entity_type')
       ->loadMultiple();
     }
@@ -81,7 +90,7 @@ class SyncTripalFieldStorage {
   public function resolveDetectedDifferences(array $differences): void {
 
     // Get the drupal database schema object.
-    $schema = \Drupal::service('database')->schema();
+    $schema = $this->drupal_connection->schema();
 
     foreach ($differences as $field_name => $field_differences) {
       foreach ($field_differences as $property_name => $property_difference) {
@@ -115,7 +124,7 @@ class SyncTripalFieldStorage {
     $all_columns_added = [];
 
     if ($entity_type !== NULL) {
-      $type = \Drupal::entityTypeManager()
+      $type = $this->entityTypeManager
         ->getStorage('tripal_entity_type')
         ->load($entity_type);
       if (is_object($type)) {
@@ -124,7 +133,7 @@ class SyncTripalFieldStorage {
         throw new \Exception("We were unable to retrieve the TripalEntityType $entity_type when trying to detect differences in the field schema.");
       }
     } else {
-      $types = \Drupal::entityTypeManager()
+      $types = $this->entityTypeManager
         ->getStorage('tripal_entity_type')
         ->loadMultiple();
     }

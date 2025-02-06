@@ -57,4 +57,4 @@ services:
 
   tripal.sync_tripal_field_storage:
     class: Drupal\tripal\Services\SyncTripalFieldStorage
-    arguments: ['@entity_type.manager']
+    arguments: ['@entity_type.manager', '@database']
