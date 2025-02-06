@@ -92,7 +92,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'type_id' => array_key_exists('type_id', $details) ? $details['type_id'] : NULL,
       'description' => array_key_exists('description', $details) ? $details['description'] : NULL,
     ]);
-    return $insert->execute();
+    $contact_id = $insert->execute();
+    $this->addFixedValue($chado, 'contact', $contact_id);
+    return $contact_id;
   }
 
   /**
@@ -557,7 +559,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $person_term_id = $contact_db->getTerm('0000003')->getInternalId();
     $contact_id1 = $this->addChadoContact($chado, [
       'name' => 'John Doe',
-       'type_id' => $person_term_id,
+      'type_id' => $person_term_id,
       'description' => 'Bioinformaticist extrodinaire'
     ]);
     $contact_id2 = $this->addChadoContact($chado, [
@@ -591,12 +593,12 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
       'contact_id' => $contact_id2,
     ]);
 
-    // Now publish the projects and contacts. We check that 3 items are
-    // published because there is a null contact and currently there is
-    // nothing to prevent that contact from being published. (Issue #1809)
+    // Now publish the projects and contacts. We check that 2 items are
+    // published, although there is a null contact, but it should not be
+    // published since it does not have a type (Issues #1809, #2097)
     $entities = $chado_publish->publish(['bundle' => 'contact', 'datastore' => 'chado_storage']);
-    $this->assertCount(3, $entities,
-        'Failed to publish 3 contact entities.');
+    $this->assertCount(2, $entities,
+        'Failed to publish 2 contact entities.');
 
     $entities = $chado_publish->publish(['bundle' => 'project', 'datastore' => 'chado_storage']);
     $this->assertCount(2, $entities,
@@ -606,19 +608,19 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // The chado_contact_type_default is the field we're testing got published.
     $this->checkFieldItem('project', 'project_contact', 1,
         ['record_id' => $project_id1, 'linker_id' => $project_contact_id1],
-        ['link' => $project_id1, 'bundle' => 'project', 'entity_id' => 6, 'contact_id' => $contact_id1]);
+        ['link' => $project_id1, 'bundle' => 'project', 'entity_id' => 5, 'contact_id' => $contact_id1]);
 
     $this->checkFieldItem('project', 'project_contact', 1,
         ['record_id' => $project_id1, 'linker_id' => $project_contact_id2],
-        ['link' => $project_id1, 'bundle' => 'project', 'entity_id' => 6, 'contact_id' => $contact_id2]);
+        ['link' => $project_id1, 'bundle' => 'project', 'entity_id' => 5, 'contact_id' => $contact_id2]);
 
     $this->checkFieldItem('project', 'project_contact', 1,
         ['record_id' => $project_id2, 'linker_id' => $project_contact_id3],
-        ['link' => $project_id2, 'bundle' => 'project', 'entity_id' => 7, 'contact_id' => $contact_id2]);
+        ['link' => $project_id2, 'bundle' => 'project', 'entity_id' => 6, 'contact_id' => $contact_id2]);
 
     // Check that only the exact number of linked items were published.
-    $this->checkFieldItem('project', 'project_contact', 2, ['entity_id' => 6], []);
-    $this->checkFieldItem('project', 'project_contact', 1, ['entity_id' => 7], []);
+    $this->checkFieldItem('project', 'project_contact', 2, ['entity_id' => 5], []);
+    $this->checkFieldItem('project', 'project_contact', 1, ['entity_id' => 6], []);
 
     // Test publishing of integer fields
     $array_design_id1 = $this->addChadoArrayDesign($chado, [
@@ -630,7 +632,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         'Failed to publish 1 array design entitity.');
     $this->checkFieldItem('array_design', 'array_design_num_of_elements', 1,
         ['record_id' => $array_design_id1],
-        ['bundle' => 'array_design', 'entity_id' => 8, 'value' => 0]);
+        ['bundle' => 'array_design', 'entity_id' => 7, 'value' => 0]);
     // We do not expect a NULL integer item to be published
     $this->checkFieldItem('array_design', 'array_design_num_array_columns', 0,
         ['record_id' => $array_design_id1],

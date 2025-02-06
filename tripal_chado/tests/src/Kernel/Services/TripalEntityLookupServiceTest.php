@@ -209,14 +209,14 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     // primary key, e.g. arraydesign table column manufacturer_id is
     // a foreign key to the contact table column contact_id.
 
-    // Publish the null contact entity and confirm that it has been created. Issue #1809
+    // Publish the contact entity and confirm that it has been created
+    // The existing null contact defined by chado will not be published because it has no type - Issues #1809, #2097
     $publish_options = ['bundle' => 'contact', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
     $published_entities = $this->chado_publish->publish($publish_options);
 
     $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
-    // Expect 2 here instead of 1 because the null contact will also be published - Issue #1809
-    $this->assertCount(2, $confirmed_entities,
-      "We expected there to be two contacts created, including the null contact.");
+    $this->assertCount(1, $confirmed_entities,
+      "We expected there to be one contact created, the null contact should not be published.");
 
     // Publish the arraydesign entity and confirm that it has been created.
     $publish_options = ['bundle' => 'array_design', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
