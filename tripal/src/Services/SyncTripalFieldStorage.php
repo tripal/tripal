@@ -39,10 +39,10 @@ class SyncTripalFieldStorage {
    *
    * @return array
    */
-  public function detectDifferences(string $entity_type = NULL, array $difference_types = []): array {
+  public function detectDifferences(string|null $entity_type = NULL, array $difference_types = []): array {
     $all_columns_added = [];
 
-    if ($entity_type === NULL) {
+    if ($entity_type !== NULL) {
       $type = \Drupal::entityTypeManager()
         ->getStorage('tripal_entity_type')
         ->load($entity_type);

@@ -80,6 +80,21 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
       ],
     ];
 
+    $scenarios[] = [
+      '1.3.3.013',
+      ['general_chado.project'],
+      NULL,
+      [
+        'num_fields' => 4,
+        'differences' => [
+          'project_analysis' => ['linker_type_id'],
+          'project_contact' => ['linker_type_id', 'linker_rank'],
+          'project_pub' => ['linker_type_id', 'linker_rank'],
+          'project_dbxref' => ['linker_type_id'],
+        ],
+      ],
+    ];
+
     return $scenarios;
   }
 
@@ -125,7 +140,7 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
    *   An array of bundles to create for the test. The bundles should be a
    *   string of the format CATEGORY.BUNDLENAME. Each bundle will be created
    *   when the test schema is at 1.3 using createContentTypeFromConfig().
-   * @param string $bundle_under_test
+   * @param string|null $bundle_under_test
    *   The bundle name to pass into our test function.
    * @param array $expectations
    *   An array of expectations. Specifically,
@@ -133,7 +148,7 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
    *    - differences: the keys are field names with differences and the value
    *      for each is a list of property names with differences for that field.
    */
-  public function testDetectDifferences(string $chado_verison_under_test, array $bundles_to_create, string $bundle_under_test, array $expectations) {
+  public function testDetectDifferences(string $chado_verison_under_test, array $bundles_to_create, string|null $bundle_under_test, array $expectations) {
 
     // Create an instance of the specified bundle(s) with all associated fields.
     foreach ($bundles_to_create as $bundle_details) {
