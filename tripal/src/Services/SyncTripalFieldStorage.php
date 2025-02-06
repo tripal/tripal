@@ -60,7 +60,7 @@ class SyncTripalFieldStorage {
     }
 
     foreach ($types as $bundle_name => $type_object) {
-      $columns_added = $type_object->syncStorageSchema();
+      $columns_added = $type_object->syncStorageSchema(TRUE);
       if (is_array($columns_added)) {
         $all_columns_added = $all_columns_added + $columns_added;
       }
@@ -79,7 +79,22 @@ class SyncTripalFieldStorage {
    * @return void
    */
   public function resolveDetectedDifferences(array $differences): void {
-    // @todo Place your code here.
+
+    // Get the drupal database schema object.
+    $schema = \Drupal::service('database')->schema();
+
+    foreach ($differences as $field_name => $field_differences) {
+      foreach ($field_differences as $property_name => $property_difference) {
+        $column_exists = $schema->fieldExists($property_difference['drupal_table'], $property_difference['column_name']);
+        if ($column_exists === FALSE) {
+          $schema->addField(
+            $property_difference['drupal_table'],
+            $property_difference['column_name'],
+            $property_difference['column_spec']
+          );
+        }
+      }
+    }
   }
 
   /**
