@@ -120,7 +120,7 @@ class SyncTripalFieldStorage {
    *    - missing_property_column: where a column for a new TripalField property
    *      does not have a column in the corresponding Drupal field table.
    */
-  public function resolveDifferences(string $entity_type = NULL, array $difference_types = []) {
+  public function resolveDifferences(string $entity_type = NULL, array $difference_types = []): array {
     $all_columns_added = [];
 
     if ($entity_type !== NULL) {

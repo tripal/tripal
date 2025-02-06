@@ -490,6 +490,18 @@ class ChadoApplyMigrations extends ChadoTaskBase {
           }
         }
       }
+
+      // Now update the field storage to match any changes.
+      $this->logger->notice("Updating any fields associated with Chado to ensure they take advantage of the new schema.");
+      $differences = \Drupal::service('tripal.sync_tripal_field_storage')
+      ->resolveDifferences();
+
+      $fields_needing_updates = count($differences);
+      $num_columns_added = array_sum(array_map("count", $differences));
+      if ($fields_needing_updates > 0) {
+        $this->logger->notice("Added $num_columns_added columns across $fields_needing_updates fields.");
+      }
+
       // @todo Only mark the task successfull if no migrations failed.
       $task_success = TRUE;
     }
