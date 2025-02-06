@@ -98,7 +98,7 @@ class ChadoApplyMigrations extends ChadoTaskBase {
    * The unique ID of the above saved Tripal job.
    * @var int
    */
-  protected int $job_id;
+  protected int $job_id = 0;
 
   /**
    * The unique id of the Tripal-managed Chado installation.
