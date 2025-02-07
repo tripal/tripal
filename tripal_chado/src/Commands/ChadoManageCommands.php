@@ -2,6 +2,7 @@
 namespace Drupal\tripal_chado\Commands;
 
 use Drush\Commands\DrushCommands;
+use Drupal\tripal\TripalDBX\TripalDbx;
 
 /**
  * Drush commands
@@ -50,10 +51,22 @@ class ChadoManageCommands extends DrushCommands {
    * @aliases trp-migrate-chado
    * @options schema-name
    *   The name of the schema to apply chado migrations to.
-   * @usage drush trp-install-chado --schema-name='teapot'
+   * @usage drush trp-migrate-chado --schema-name='teapot'
    *   Applies all pending migrations to a schema named "teapot".
    */
   public function migrateChado($options = ['schema-name' => 'chado']) {
+
+    // Confirm the schema exists.
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $schema_exists = $tripaldbx->schemaExists($options['schema-name']);
+    if (!$schema_exists) {
+      throw new \Exception(dt(
+        'The \'@schema\' does not exist and therefore cannot be migrated.',
+        [
+          '@schema' => $options['schema-name'],
+        ]
+      ));
+    }
 
     // First setup our task.
     $migrator = \Drupal::service('tripal_chado.apply_migrations');
@@ -62,7 +75,7 @@ class ChadoManageCommands extends DrushCommands {
     ]);
 
     // Look up the install ID
-    // @todo lookup the install ID.
+    $migrator->lookupInstallID();
 
     // Determine what work is to be done and format into a table.
     $all_migrations = $migrator->checkMigrationStatus();
@@ -72,7 +85,7 @@ class ChadoManageCommands extends DrushCommands {
     foreach ($all_migrations as $migration) {
       $formatted_date = '';
       if ($migration->applied_on) {
-        $formatted_date = \Drupal::service('date.formatter')->format($migration->applied_on, 'medium');
+        $formatted_date = \Drupal::service('date.formatter')->format($migration->applied_on, 'html_date');
       }
       $rows[] = [
         $migration->version,
@@ -90,22 +103,27 @@ class ChadoManageCommands extends DrushCommands {
     $this->io()->table($header, $rows);
     $this->output()->writeln('');
 
-    $response = $this->io()->confirm(
-      "Would you like to apply $pending_migrations pending migrations?",
-      TRUE
-    );
-    if ($response) {
-      $success = $migrator->performTask();
-      if ($success) {
-        $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully migrated to the most recent version.'));
-      } else {
-        throw new \Exception(dt(
-          'Unable to migrate chado in {schema}',
-          ['schema' => $options['schema-name']]
-        ));
+    if ($pending_migrations) {
+      $response = $this->io()->confirm(
+        "Would you like to apply $pending_migrations pending migrations?",
+        TRUE
+      );
+      if ($response) {
+        $success = $migrator->performTask();
+        if ($success) {
+          $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully migrated to the most recent version.'));
+        } else {
+          throw new \Exception(dt(
+            'Unable to migrate chado in {schema}',
+            ['schema' => $options['schema-name']]
+          ));
+        }
       }
     }
-
+    else {
+      $this->output()->writeln(dt('<info>[Success]</info> Chado is already up to date. There are no migrations pending.'));
+    }
+    $this->output()->writeln('');
   }
 
   /**
