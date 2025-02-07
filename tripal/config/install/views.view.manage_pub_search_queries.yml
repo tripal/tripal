@@ -8,7 +8,7 @@ dependencies:
     - tripal
     - user
 _core:
-  default_config_hash: Oh86o6oV5xIWufoDe6Of41BGowCTBtqm7AqHcdZSnf0
+  default_config_hash: OEQORVHQAcJLLOhPTAQRp-Y-XhFX4PwTlEOiV7wvdfI
 id: manage_pub_search_queries
 label: 'Manage Publication Search Queries'
 module: views
@@ -92,7 +92,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: standard
-          label: Name
+          label: 'Importer Name'
           exclude: false
           alter:
             alter_text: false
@@ -296,7 +296,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: numeric
-          label: 'Do Contact'
+          label: 'Create Contact'
           exclude: false
           alter:
             alter_text: false

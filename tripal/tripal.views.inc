@@ -343,7 +343,7 @@ function tripal_views_pub_search_queries(&$data) {
   ];
 
   $data['tripal_pub_library_query']['name'] = [
-    'title' => t('Name'),
+    'title' => t('Importer Name'),
     'help' => t('The publication query name'),
     'field' => [
       'id' => 'standard',
@@ -429,8 +429,8 @@ function tripal_views_pub_search_queries(&$data) {
   ];
 
   $data['tripal_pub_library_query']['do_contact'] = [
-    'title' => t('Do Contact'),
-    'help' => t('Do Contact option'),
+    'title' => t('Create Contact'),
+    'help' => t('Create Contact option'),
     'field' => [
       'id' => 'do_contact',
     ],
