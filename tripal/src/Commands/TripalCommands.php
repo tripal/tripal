@@ -189,4 +189,30 @@ class TripalCommands extends DrushCommands {
     $fields->install($chosen_collection_ids);
 
   }
+
+  /**
+   * Ensures the Drupal field table schema is up to date for all fields.
+   *
+   * @command tripal:trp-sync-field-schema
+   */
+  public function tripalSyncFieldSchema() {
+
+    $this->output()->writeln("\nChecking Tripal Entity types for discrepancies between field schema definitions and the underlying Drupal tables...\n");
+
+    $columns_added = \Drupal::service('tripal.sync_tripal_field_storage')
+      ->resolveDifferences();
+
+    foreach ($columns_added as $field_name => $field_differences) {
+      $this->output()->writeln("$field_name needed " . count($field_differences) . " difference(s) fixed.");
+    }
+
+    $fields_needing_updates = count($columns_added);
+    $num_columns_added = array_sum(array_map("count", $columns_added));
+    if ($fields_needing_updates > 0) {
+      $this->output()->writeln("\nAdded $num_columns_added columns across $fields_needing_updates fields.\n");
+    }
+    else {
+      $this->output()->writeln("\nNo discrepancies found.\n");
+    }
+  }
 }

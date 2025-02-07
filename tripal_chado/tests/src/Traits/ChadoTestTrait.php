@@ -3,6 +3,7 @@ namespace Drupal\Tests\tripal_chado\Traits;
 
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * This is a PHP Trait for Chado tests.
@@ -361,27 +362,7 @@ trait ChadoTestTrait  {
 
     // Make sure that the version is correct in the chado property table.
     if (($init_level > 1) && ($version !== '1.3')) {
-      // -- get the version cvterm ID.
-      $result = $tripaldbx_db->select('1:cvterm', 'cvt')
-        ->fields('cvt', ['cvterm_id']);
-      $result->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
-      $result->condition('cv.name', 'chado_properties');
-      $result->condition('cvt.name', 'version');
-      $result = $result->execute();
-      $version_cvterm_id = $result->fetchField();
-      // -- now update the current version.
-      $tripaldbx_db->update('1:chadoprop')
-        ->fields([
-          'value' => $version,
-        ])
-        ->condition('type_id', $version_cvterm_id)
-        ->execute();
-      // -- confirm the version was set properly.
-      $this->assertEquals(
-        $version,
-        $tripaldbx_db->getVersion(),
-        "We expect that the chado version returned by the connection matches what we requested."
-      );
+      $this->setChadoTestSchemaVersion($tripaldbx_db, $version);
     }
 
     // Make sure that any other connections to TripalDBX will see this new test schema as
@@ -398,6 +379,138 @@ trait ChadoTestTrait  {
     $container->set('tripal_chado.database', $tripaldbx_db);
 
     return $tripaldbx_db;
+  }
+
+  /**
+   * Sets the chado version of the test schema.
+   *
+   * @return void
+   */
+  protected function setChadoTestSchemaVersion(ChadoConnection &$chado_connection, string $version) {
+
+    // Get the version cvterm ID.
+    $result = $chado_connection->select('1:cvterm', 'cvt')
+      ->fields('cvt', ['cvterm_id']);
+    $result->join('1:cv', 'cv', 'cv.cv_id = cvt.cv_id');
+    $result->condition('cv.name', 'chado_properties');
+    $result->condition('cvt.name', 'version');
+    $result = $result->execute();
+    $version_cvterm_id = $result->fetchField();
+    $this->assertNotEquals(0, $version_cvterm_id, "We were unable to retrieve the cvterm needed for the chado property verion.");
+
+    // Now update the current version.
+    $chado_connection->update('1:chadoprop')
+      ->fields([
+        'value' => $version,
+      ])
+      ->condition('type_id', $version_cvterm_id)
+      ->execute();
+
+    // Confirm the version was set properly.
+    // Note: we use findVersion() because getVersion() is cached and this
+    // resets the cache.
+    $this->assertEquals(
+      $version,
+      $chado_connection->findVersion($chado_connection->getSchemaName(), TRUE),
+      "We expect that the chado version returned by the connection matches what we requested."
+    );
+  }
+
+  /**
+   * Updates an existing test schema to a new version.
+   *
+   * @param ChadoConnection $chado_connection
+   *   The test schema to migrate.
+   * @param string $current_version
+   *   The current version of the test schema (e.g. 1.3).
+   * @param string $version_to_upgrade_to
+   *   The version to upgrade the test schema to (e.g. 1.3.3.013).
+   *
+   * @return void
+   */
+  protected function upgradeTestSchema(ChadoConnection &$chado_connection, string $current_version, string $version_to_upgrade_to) {
+
+    $target_schema = $chado_connection->getSchemaName();
+    $migrations = $this->getChadoMigrations();
+
+    // Determine which migrations need to be applied.
+    // -- Where to start.
+    // If the current version is 1.3 then we need to start applying at the
+    // beginning of the list. If not, we need to find where to start so lets
+    // do that now.
+    $start_index = 0;
+    if ($current_version !== '1.3') {
+      foreach ($migrations as $key => $details) {
+        if ($details['version'] === $current_version) {
+          $start_index = $key;
+          break;
+        }
+      }
+      if ($start_index === 0) {
+        $this->assertTrue(FALSE, "We were unable to find the '$current_version' in our list of migrations.");
+      }
+    }
+
+    // -- Now apply migrations from there onwards.
+    // Now that we know where to start, lets begin applying migrations to the
+    // current test schema until we reach the version to update to.
+    $last_key_possible = array_key_last($migrations);
+    for ($i = $start_index; $i <= $last_key_possible; $i++) {
+      $migration_file = __DIR__ . '/../../../chado_schema/migrations/' . $migrations[$i]['filename'];
+      $success = $chado_connection->executeSqlFile(
+        $migration_file,
+        FALSE,
+        $target_schema
+      );
+      $this->assertTrue(
+        $success,
+        "We should have been able to apply $migration_file to $target_schema but could not."
+      );
+
+      // Check to see if this is the last migration we should apply.
+      if ($migrations[$i]['version'] === $version_to_upgrade_to) {
+        break;
+      }
+    }
+
+    // Now report the new version.
+    $this->setChadoTestSchemaVersion($chado_connection, $version_to_upgrade_to);
+
+  }
+
+  /**
+   * Retrieve information about the current chado migrations available.
+   *
+   * @return array
+   *   The parsed array structure from the migrations YAML not include the
+   *   file definition but instead only that under `migrations`.
+   */
+  protected function getChadoMigrations() {
+    $yaml_file = __DIR__ . '/../../../chado_schema/migrations/tripal_chado.chado_migrations.yml';
+
+    $this->assertFileIsReadable(
+      $yaml_file,
+      "Cannot open YAML file $yaml_file in order to set the fields for testing chadostorage."
+    );
+
+    $file_contents = file_get_contents($yaml_file);
+    $this->assertNotEmpty(
+      $file_contents,
+      "Unable to retrieve contents for YAML file $yaml_file in order to set the fields for testing chadostorage."
+    );
+
+    $yaml_data = Yaml::parse($file_contents);
+    $this->assertNotEmpty(
+      $yaml_data,
+      "Unable to parse YAML file $yaml_file in order to set the fields for testing chadostorage."
+    );
+    $this->assertArrayHasKey(
+      'migrations',
+      $yaml_data,
+      "The key 'migrations' does not exist in the parsed YAML file: $yaml_file."
+    );
+
+    return $yaml_data['migrations'];
   }
 
   /**
