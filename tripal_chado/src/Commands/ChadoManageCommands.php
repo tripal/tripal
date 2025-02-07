@@ -61,7 +61,7 @@ class ChadoManageCommands extends DrushCommands {
     $schema_exists = $tripaldbx->schemaExists($options['schema-name']);
     if (!$schema_exists) {
       throw new \Exception(dt(
-        'The \'@schema\' does not exist and therefore cannot be migrated.',
+        'The schema \'@schema\' does not exist and therefore cannot be migrated.',
         [
           '@schema' => $options['schema-name'],
         ]
@@ -114,7 +114,7 @@ class ChadoManageCommands extends DrushCommands {
           $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully migrated to the most recent version.'));
         } else {
           throw new \Exception(dt(
-            'Unable to migrate chado in {schema}',
+            'Unable to migrate chado in schema \'{schema}\'',
             ['schema' => $options['schema-name']]
           ));
         }

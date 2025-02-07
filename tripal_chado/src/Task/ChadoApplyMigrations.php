@@ -141,7 +141,7 @@ class ChadoApplyMigrations extends ChadoTaskBase {
    * @return int|bool
    *   The install ID of the associated installation.
    */
-  public function lookupInstallID(): bool {
+  public function lookupInstallID(): int|bool {
 
     $schema_name = $this->parameters['input_schemas'][0];
 
