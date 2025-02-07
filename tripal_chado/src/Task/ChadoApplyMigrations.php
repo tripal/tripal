@@ -136,6 +136,32 @@ class ChadoApplyMigrations extends ChadoTaskBase {
   }
 
   /**
+   * Lookup the install ID based on the input schema name.
+   *
+   * @return int|bool
+   *   The install ID of the associated installation.
+   */
+  public function lookupInstallID(): bool {
+
+    $schema_name = $this->parameters['input_schemas'][0];
+
+    $query = \Drupal::service('database')->select('chado_installations' ,'i')
+      ->fields('i', ['install_id'])
+      ->condition('i.schema_name', $schema_name, '=');
+
+    $install_id = $query->execute()
+      ->fetchField();
+
+    if (is_numeric($install_id) && ($install_id > 0)) {
+      $this->setInstallID($install_id);
+      return $install_id;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  /**
    * A callable function to provide to tripal jobs as the callback.
    *
    * Simply sets up the biotask with the details saved in the job
