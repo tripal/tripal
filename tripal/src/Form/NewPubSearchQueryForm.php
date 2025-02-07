@@ -32,10 +32,8 @@ class NewPubSearchQueryForm extends FormBase {
       $publication = $pub_library_manager->getSearchQuery($pub_import_id);
       $criteria = unserialize($publication->criteria);
 
-
       // Add the previously saved user input into the instantiated object
       $this->form_state_previous_user_input = $criteria['form_state_user_input'];
-
 
       // Let's add a hidden field called form_mode to tell the form submit process that this is an edit instead of creation
       $form['mode'] = [
@@ -52,7 +50,7 @@ class NewPubSearchQueryForm extends FormBase {
 
     $form_state_values = $form_state->getValues();
 
-    // If performing a test we need to change the state etc to make sure the form appears correctly
+    // If performing a test we need to change the state etc. to make sure the form appears correctly
     if (isset($_SESSION['tripal_pub_import'])) {
       if ($_SESSION['tripal_pub_import']['perform_test'] == 1) {
         $this->form_state_previous_user_input = $_SESSION['tripal_pub_import']['perform_test_user_input'];
@@ -185,8 +183,14 @@ class NewPubSearchQueryForm extends FormBase {
   }
 
   /**
-   * Recursive function to find values from user_input and add it back to the #default_value
-   * key for the specific form element
+   * Recursive function to find values from user_input and add it back to the
+   * #default_value key for the specific form element
+   *
+   * @var array &$input
+   *   Nested array of user input values
+   * @var array &$form_element
+   *   Render array for the form
+   * @return void
    */
   public function form_elements_load_previous_user_input(&$input, &$form_element) {
     if (isset($input)) {
@@ -201,6 +205,33 @@ class NewPubSearchQueryForm extends FormBase {
     }
   }
 
+  /**
+   * Removes a specified row from a table, and renames the internal keys to again be sequential
+   *
+   * @param array $table
+   *   Array where second level keys are of the form /text-\d+/
+   * @param int $delete_id
+   *   The first level key to remove
+   * @return array
+   *   Array in original order, but with specified row removed and second level keys renamed
+   */
+  protected function deleteRow(array $table, int $delete_id): array {
+    $new_table = [];
+    $new_row_index = 1;
+    foreach ($table as $row_index => $value) {
+      if ($row_index != $delete_id) {
+        $new_value = [];
+        foreach ($value as $key => $info) {
+          // $key is of the format "string-\d+' and we want to update the integer portion
+          $new_key = preg_replace('/\d+$/', $new_row_index, $key);
+          $new_value[$new_key] = $info;
+        }
+        $new_table[$new_row_index] = $new_value;
+        $new_row_index++;
+      }
+    }
+    return $new_table;
+  }
 
   public function form_elements_common($form, FormStateInterface &$form_state) {
 
@@ -243,25 +274,38 @@ class NewPubSearchQueryForm extends FormBase {
     }
 
     if ($trigger == 'add') {
-      // Increment the num_criteria which should regenerate the form with an additional criterion row
+      // Increment num_criteria which will regenerate the form with an additional criterion row
       $num_criteria += 1;
       $user_input['num_criteria'] = $num_criteria;
       $form_state->setUserInput($user_input);
-
     }
-    elseif ($trigger == 'remove') {
-      // Decrement the num_criteria which should regenerate the form with one fewer criterion row
+    elseif ($trigger and preg_match('/^remove-(\d)$/', $trigger, $matches)) {
+      $row_id = $matches[1];
       $num_criteria -= 1;
       $user_input['num_criteria'] = $num_criteria;
+
+      // Remove the row from the user input
+      $user_input['table'] = $this->deleteRow($user_input['table'], $row_id);
       $form_state->setUserInput($user_input);
+
+      // We also need to remove the same value from $this->form_state_previous_user_input
+      $this->form_state_previous_user_input['table'] = $this->deleteRow($this->form_state_previous_user_input['table'], $row_id);
     }
 
-    // Add the form for the criteria
+    // Add the hidden form element for the number of criteria
     $form['pub_library']['num_criteria'] = [
       '#type' => 'hidden',
       '#default_value' => $num_criteria,
     ];
 
+    $row_keys = range(1, $num_criteria);
+    if ($user_input['table'] ?? FALSE) {
+      $row_keys = [];
+      foreach (array_keys($user_input['table']) as $i) {
+        preg_match('/\d+$/', array_key_first($user_input['table'][$i]), $matches);
+        $row_keys[] = $matches[0];
+      }
+    }
     $criteria = [];
 
     $form = $this->tripal_pub_importer_setup_add_criteria_fields($form, $form_state, $num_criteria, $criteria);
@@ -312,7 +356,7 @@ class NewPubSearchQueryForm extends FormBase {
    * @param $num_criteria
    *   The number of criteria that exist for the importer
    * @param $criteria
-   *   An array containing the criteria
+   *   An array of row indices for the form
    *
    * @return
    *  A form array
@@ -333,7 +377,7 @@ class NewPubSearchQueryForm extends FormBase {
 
     for ($i = 1; $i <= $num_criteria; $i++) {
       $form = $this->tripal_pub_importer_add_criteria_fields_row($form, $form_state, $i, $num_criteria, $criteria);
-    } // for $i
+    }
 
     return $form;
   }
@@ -414,7 +458,6 @@ class NewPubSearchQueryForm extends FormBase {
         as part of the text to search</span>'),
       '#description_display' => 'after',
       '#default_value' => $search_terms,
-//      '#required' => TRUE,
       '#maxlength' => 2048,
       '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
     ];
@@ -425,25 +468,24 @@ class NewPubSearchQueryForm extends FormBase {
       '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
     ];
 
-    // If last row of the table
-    if ($i == $num_criteria) {
-      if ($i > 1) {
-        $row["remove-$i"] = [
-          // '#type' => 'button',
-          '#type' => 'submit',
-          '#name' => 'remove',
-          '#value' => t('Remove'),
-        ];
-      }
+    // The "Remove" button is on every row, but not if there is only one row.
+    if ($num_criteria > 1) {
+      $row["remove-$i"] = [
+        '#type' => 'submit',
+        '#name' => 'remove-' . $i,
+        '#value' => t('Remove'),
+      ];
+    }
 
+    // The "Add" button is only present on the last row of the table
+    if ($i == $num_criteria) {
       $row["add-$i"] = [
-        // '#type' => 'button',
         '#type' => 'submit',
         '#name' => 'add',
         '#value' => t('Add'),
       ];
-
     }
+
     $form['pub_library']['table'][$i] = $row;
     return $form;
   }
@@ -681,7 +723,7 @@ class NewPubSearchQueryForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    // We can't make the criteria fields required as it will prevent the "Remove"
+    // We can't set the criteria fields as required, because that will prevent the "Remove"
     // button from working, but we can validate them here for any other action.
     $trigger = @$form_state->getTriggeringElement()['#name'];
     if ($trigger != 'remove') {
