@@ -23,6 +23,7 @@ use Drupal\Core\Url;
  *    file_remote = False,
  *    file_local = False,
  *    file_required = False,
+ *    hidden = True,
  *  )
  */
 class PubSearchQueryImporter extends ChadoImporterBase {

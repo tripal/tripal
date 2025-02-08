@@ -182,8 +182,8 @@ tripal.files_usage:
 # -- Manage Publication Loaders
 tripal.data_loaders.publication_loaders:
   route_name: tripal.data_loaders.publication_loaders
-  title: 'Publication Search Query Definitions'
-  description: "Create, edit, test, or delete publication search queries"
+  title: 'Publication Loader'
+  description: "Import publications into Chado"
   parent: tripal.data_loaders
   weight: 10
 
