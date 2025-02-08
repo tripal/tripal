@@ -21,7 +21,7 @@ ENV PATH="/var/www/drupal/vendor/drush/drush:$PATH"
 LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
 
-COPY . /app
+COPY . /tripal_app
 
 ############# Tripal ##########################################################
 
@@ -30,7 +30,8 @@ WORKDIR /var/www/drupal
 RUN service apache2 start \
   && service postgresql start \
   && mkdir -p /var/www/drupal/web/modules/contrib \
-  && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
+  && cp -R /tripal_app /var/www/drupal/web/modules/contrib/tripal \
+  && rm -rf /tripal_app \
   && allmodules="${tripalmodules} ${modules}" \
   && vendor/bin/drush en ${allmodules} -y \
   && service apache2 stop \

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains tripal.module..
+ * Contains tripal.module.
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -26,6 +26,7 @@ require_once 'src/api/tripal.upload.api.php';
 require_once 'src/api/tripal.jobs.api.php';
 require_once 'src/api/tripal.deprecated.api.php';
 require_once 'src/api/tripal.importer.api.php';
+require_once 'src/api/tripal.viewsdata.inc';
 
 /**
  * Implements hook_help().
