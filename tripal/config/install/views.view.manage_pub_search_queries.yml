@@ -35,8 +35,8 @@ display:
           entity_type: null
           entity_field: null
           plugin_id: numeric
-          label: 'Query ID'
-          exclude: true
+          label: ID
+          exclude: false
           alter:
             alter_text: false
             text: ''
@@ -79,7 +79,7 @@ display:
           set_precision: false
           precision: 0
           decimal: .
-          separator: ','
+          separator: ''
           format_plural: false
           format_plural_string: !!binary MQNAY291bnQ=
           prefix: ''
@@ -588,60 +588,19 @@ display:
       cache:
         type: none
         options: {  }
-      empty: {  }
-      sorts:
-        name:
-          id: name
-          table: tripal_pub_library_query
-          field: name
+      empty:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: standard
-          order: ASC
-          expose:
-            label: 'Importer Name'
-            field_identifier: name
-          exposed: true
-        criteria:
-          id: criteria
-          table: tripal_pub_library_query
-          field: criteria
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: standard
-          order: ASC
-          expose:
-            label: Criteria
-            field_identifier: criteria
-          exposed: true
-        do_contact:
-          id: do_contact
-          table: tripal_pub_library_query
-          field: do_contact
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: standard
-          order: ASC
-          expose:
-            label: 'Create Contact'
-            field_identifier: do_contact
-          exposed: true
-        disabled:
-          id: disabled
-          table: tripal_pub_library_query
-          field: disabled
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: standard
-          order: ASC
-          expose:
-            label: Disabled
-            field_identifier: disabled
-          exposed: true
+          plugin_id: text_custom
+          empty: true
+          content: '<p>No search queries match the specified filter settings. Click on the "<strong><a href="/admin/tripal/loaders/publications/new_publication_search_query">+Add a new search query</a></strong>" button to create a new search query.</p>'
+          tokenize: false
+      sorts: {  }
       arguments: {  }
       filters:
         name:
@@ -819,6 +778,93 @@ display:
           1: AND
       style:
         type: table
+        options:
+          grouping: {  }
+          row_class: ''
+          default_row_class: true
+          columns:
+            pub_library_query_id: pub_library_query_id
+            name: name
+            criteria: criteria
+            criteria_1: criteria_1
+            do_contact: do_contact
+            disabled: disabled
+            nothing_2: nothing_2
+            nothing_1: nothing_1
+            nothing: nothing
+            dropbutton: dropbutton
+          default: '-1'
+          info:
+            pub_library_query_id:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            name:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            criteria:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            criteria_1:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            do_contact:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            disabled:
+              sortable: true
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            nothing_2:
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            nothing_1:
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            nothing:
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            dropbutton:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+          override: true
+          sticky: false
+          summary: ''
+          empty_table: false
+          caption: ''
+          description: ''
       row:
         type: fields
       query:
@@ -840,7 +886,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: "<p>\r\nA publication importer is used to create a set of search criteria that can be used\r\nto query a remote database, find publications that match the specified criteria and\r\nthen import those publications into the Chado database. An example use case would\r\nbe to periodically add new publications to this Tripal site that have appeared in\r\nPubMed in the last 30 days. You can import publications in one of two ways:\r\n<ol>\r\n  <li>Create a new importer by clicking the '+ Add a new search query' button below, and\r\n    after saving it should appear in the list below.\r\n    Under 'Actions' select 'Run' to create a job to import the publications.</li>\r\n  <li>The first method only performs the import once. However, you can schedule the\r\n    importer to run periodically by adding a cron job. </li>\r\n  </ol>\r\n</p>"
+          content: '<p>A publication search query is used to specify a set of search criteria that can be used to query a remote database. When this query is performed by selecting the "Run" action, publications that match the specified criteria will be returned and then imported into the Chado database. Once created, an importer can be run at regular intervals using the <code>drush trp-import-pubs</code> command (<em>not yet implemented</em>) to add recently released publications. This command can be started by a cron job or other automation method.</p>'
           tokenize: false
       footer:
         area:
@@ -863,8 +909,6 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-        - 'url.query_args:sort_by'
-        - 'url.query_args:sort_order'
         - user.permissions
       tags: {  }
   pub_search_queries_view:
@@ -890,7 +934,5 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-        - 'url.query_args:sort_by'
-        - 'url.query_args:sort_order'
         - user.permissions
       tags: {  }
