@@ -529,19 +529,16 @@ class NewPubSearchQueryForm extends FormBase {
     $form['#prefix'] = '<div id="pub_importer_main_form">';
     $form['#suffix'] = '</div>';
 
-    $default_value = NULL;
-    if ($this->form_state_previous_user_input != null) {
-      $default_value = $this->form_state_previous_user_input['plugin_id'];
-    }
+    $default_plugin_id = $this->form_state_previous_user_input['plugin_id'] ?? NULL;
 
-    // This is the radio buttons which lists the types of publication / sources eg NIH PubMed database
+    // These are the radio buttons which list the types of publication / sources eg NIH PubMed database
     $form['plugin_id'] = [
       '#title' => t('Select a source of publications'),
       '#type' => 'radios',
-      '#description' => t("Choose one of the sources above for loading publications."),
+      '#description' => t('Choose one of the sources above for loading publications.'),
       '#required' => TRUE,
       '#options' => $plugins,
-      '#default_value' => $default_value,
+      '#default_value' => $default_plugin_id,
     ];
 
     $form['button_next'] = [
@@ -676,18 +673,10 @@ class NewPubSearchQueryForm extends FormBase {
   protected function criteria_convert_to_array($form, FormStateInterface $form_state) {
     $user_input = $form_state->getUserInput();
 
-    $disabled = $user_input['disabled'];
-    if ($disabled == null) {
-      $disabled = 0;
-    }
-    $do_contact = $user_input['do_contact'];
-    if ($do_contact == null) {
-      $do_contact = 0;
-    }
-    $pub_import_id = NULL;
-    if (isset($user_input['pub_import_id'])) {
-      $pub_import_id = $user_input['pub_import_id'];
-    }
+    $disabled = $user_input['disabled'] ?? 0;
+    $do_contact = $user_input['do_contact'] ?? 0;
+    $pub_import_id = $user_input['pub_import_id'] ?? NULL;
+
     $criteria_column_array = [
       'remote_db' => explode('tripal_pub_library_', $user_input['plugin_id'])[1],
       // 'days' => $user_input['days'],
