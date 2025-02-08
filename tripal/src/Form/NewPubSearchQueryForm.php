@@ -35,7 +35,6 @@ class NewPubSearchQueryForm extends FormBase {
         $pub_library_manager = \Drupal::service('tripal.pub_library');
         $publication = $pub_library_manager->getSearchQuery($pub_import_id);
         $criteria = unserialize($publication->criteria);
-
         // Add the previously saved user input into the instantiated object
         $this->form_state_previous_user_input = $criteria['form_state_user_input'];
       }
@@ -115,6 +114,7 @@ class NewPubSearchQueryForm extends FormBase {
     $form['#attached']['library'][] = 'tripal/tripal.importer';
 
     // Save the previous user input
+    $_SESSION['previous_user_input'] = [];
     $_SESSION['previous_user_input'][$pub_import_id] = $this->form_state_previous_user_input;
 
     return $form;
@@ -296,8 +296,9 @@ class NewPubSearchQueryForm extends FormBase {
       $user_input['table'] = $this->deleteRow($user_input['table'], $row_id);
       $form_state->setUserInput($user_input);
 
-      // We also need to remove the same value from $this->form_state_previous_user_input
+      // We also need to remove the same value from the form state previous user input
       $this->form_state_previous_user_input['table'] = $this->deleteRow($this->form_state_previous_user_input['table'], $row_id);
+      $this->form_state_previous_user_input['num_criteria'] = count($this->form_state_previous_user_input['table']);
     }
 
     // Add the hidden form element for the number of criteria
@@ -452,7 +453,6 @@ class NewPubSearchQueryForm extends FormBase {
     ];
     $row["scope-$i"] = [
       '#type' => 'select',
-      '#description' => t('Please select the fields to search for this term.'),
       '#description_display' => 'after',
       '#options' => $scope_choices,
       '#default_value' => $scope,
@@ -460,15 +460,18 @@ class NewPubSearchQueryForm extends FormBase {
     ];
     $row["search_terms-$i"] = [
       '#type' => 'textfield',
-      '#description' => t('<span style="white-space: normal">Please provide a list of words for searching. You may use
-        conjunctions such as "AND" or "OR" to separate words if they are expected in
-        the same scope, but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions
-        as part of the text to search</span>'),
       '#description_display' => 'after',
       '#default_value' => $search_terms,
       '#maxlength' => 2048,
       '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
     ];
+    // To avoid repetition, only display the field descriptions on the first row
+    if ($i == 1) {
+      $row["scope-$i"]['#description'] = t('Please select the fields to search for this term.');
+      $row["search_terms-$i"]['#description'] = t('<span style="white-space: normal">Please provide a list of words for searching.'
+        . ' You may use conjunctions such as "AND" or "OR" to separate words if they are expected in the same scope,'
+        . ' but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions as part of the text to search</span>');
+    }
     $row["is_phrase-$i"] = [
       '#type' => 'checkbox',
       '#title' => t('Is Phrase?'),
@@ -666,9 +669,9 @@ class NewPubSearchQueryForm extends FormBase {
   }
 
   /**
-   * This function accepts the form state and converts the data into a criteria array
-   * This criteria array is serialized and saved in the tripal_pub_library_query table as a row if Save Importer is clicked
-   * This array will be given to the plugin test function to perform a test if Test Importer is clicked
+   * This function accepts the form state and converts the data into a criteria array.
+   * This criteria array is serialized and saved in the tripal_pub_library_query table as a row if Save Importer is clicked.
+   * This array will be given to the plugin test function to perform a test if Test Importer is clicked.
    */
   protected function criteria_convert_to_array($form, FormStateInterface $form_state) {
     $user_input = $form_state->getUserInput();
@@ -731,8 +734,8 @@ class NewPubSearchQueryForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    // We can't set the criteria fields as required, because that will prevent the "Remove"
-    // button from working, but we can validate them here for any other action.
+    // We can't set the criteria fields to be required, because that will prevent the "Remove"
+    // button from working, but we can validate that they are not blank for any other action.
     $trigger = @$form_state->getTriggeringElement()['#name'];
     if (!preg_match('/^remove-\d$/', $trigger)) {
       $user_input = $form_state->getUserInput();
