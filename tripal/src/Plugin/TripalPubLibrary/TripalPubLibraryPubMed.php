@@ -41,7 +41,10 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     // Add form elements specific to this parser.
     $api_key_description = t('Tripal imports publications using NCBI\'s ')
       . Link::fromTextAndUrl('EUtils API',
-          Url::fromUri('https://www.ncbi.nlm.nih.gov/books/NBK25500/'))->toString()
+          Url::fromUri('https://www.ncbi.nlm.nih.gov/books/NBK25500/', [
+            'attributes' => [
+              'target' => 'blank',
+            ]]))->toString()
       . t(', which limits users and programs to a maximum of 3 requests per second without an API key. '
           . 'However, NCBI allows users and programs to an increased maximum of 10 requests per second if '
           . 'they provide a valid API key. This is particularly useful in speeding up large publication imports. '
