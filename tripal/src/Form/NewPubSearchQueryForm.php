@@ -78,7 +78,7 @@ class NewPubSearchQueryForm extends FormBase {
     ];
     unset($html);
 
-    // Show the list of importers available for user to select
+    // Show the list of importers available for the user to select from
     $form = $this->form_elements_importer_selection($form, $form_state);
 
     // If the button_next was clicked, it will exist in the form_state_values
@@ -87,7 +87,7 @@ class NewPubSearchQueryForm extends FormBase {
       $form['button_next']['#type'] = 'hidden';
 
       // Disable the click radio options
-      $form['plugin_id']['#attributes'] = array('onclick' => 'return false;');
+      $form['plugin_id']['#attributes'] = ['onclick' => 'return false;'];
 
       // add the elements for the specific importer (below function initialized plugin and calls form function)
       $form = $this->form_elements_specific_importer($form, $form_state);
@@ -337,6 +337,12 @@ class NewPubSearchQueryForm extends FormBase {
       '#weight' => 51,
     ];
 
+    $form['pub_library']['undo'] = [
+      '#type' => 'submit',
+      '#value' => t('Revert Unsaved Edits'),
+      '#weight' => 51,
+    ];
+
     if($this->pub_import_id != null) {
       $form['pub_library']['delete'] = [
         '#type' => 'submit',
@@ -564,6 +570,13 @@ class NewPubSearchQueryForm extends FormBase {
     $form_mode = $user_input['mode'] ?? NULL;
     $trigger = $form_state->getTriggeringElement()['#name'];
 
+    // Update previous user input for any trigger
+    $pub_import_id = $user_input['pub_import_id'] ?? NULL;
+    if ($pub_import_id) {
+      $_SESSION['previous_user_input'] = [];
+      $_SESSION['previous_user_input'][$pub_import_id] = $user_input;
+    }
+
     if ($trigger == 'op') {
       $op = $user_input['op'];
       if ($op == 'Save Search Query') {
@@ -574,7 +587,7 @@ class NewPubSearchQueryForm extends FormBase {
         // of the tripal_pub_library_query table
         $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
 
-        // Load the plugin and initialize an instance to perform it's unique form_submit function
+        // Load the plugin and initialize an instance to perform its unique form_submit function
         // This will run plugin specific form submit operations that can alter the criteria database column
         // which stores the specific plugin importer settings (basically all the form data)
         $plugin_id = $user_input['plugin_id'];
@@ -606,7 +619,7 @@ class NewPubSearchQueryForm extends FormBase {
         // If form_mode is not edit, then it is a new importer
         if ($form_mode != "edit") {
           $pub_library_manager->addSearchQuery($db_fields);
-          $messenger->addMessage("Importer successfully added!");
+          $messenger->addMessage('Importer successfully added');
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
         }
@@ -614,7 +627,7 @@ class NewPubSearchQueryForm extends FormBase {
         // If form_mode is 'edit', this is an update to the database
         else {
           $pub_library_manager->updateSearchQuery($user_input['pub_import_id'], $db_fields);
-          $messenger->addMessage("Importer successfully edited!");
+          $messenger->addMessage('Importer successfully updated');
           $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
           $form_state->setRedirectUrl($url);
         }
@@ -636,9 +649,9 @@ class NewPubSearchQueryForm extends FormBase {
         // of the tripal_pub_library_query table
         $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
 
-        // Load the plugin and initialize an instance to perform it's unique form_submit function
+        // Load the plugin and initialize an instance to perform its unique form_submit function.
         // This will run plugin specific form submit operations that can alter the criteria database column
-        // which stores the specific plugin importer settings (basically all the form data)
+        // which stores the specific plugin importer settings (basically all the form data).
         $plugin_id = $user_input['plugin_id'];
         if ($plugin_id) {
           // Instantiate the selected plugin
@@ -657,6 +670,9 @@ class NewPubSearchQueryForm extends FormBase {
         // $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $this->criteria_convert_to_array($form, $form_state);
         $_SESSION['tripal_pub_import']['perform_test_user_input'] = $form_state->getUserInput();
         $form_state->setRebuild(TRUE);
+      }
+      else if ($op == 'Revert Unsaved Edits') {
+        $_SESSION['previous_user_input'] = [];
       }
     }
     else {
