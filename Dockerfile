@@ -13,6 +13,7 @@ ARG modules='devel devel_php field_group field_group_table'
 ARG tripalmodules='tripal tripal_biodb tripal_chado tripal_layout'
 ARG chadoschema='chado'
 ARG installchado=TRUE
+ARG migratechado=FALSE
 # see issue #2000 for the reason for updating the PATH:
 ENV PATH="/var/www/drupal/vendor/drush/drush:$PATH"
 
@@ -20,7 +21,7 @@ ENV PATH="/var/www/drupal/vendor/drush/drush:$PATH"
 LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
 
-COPY . /app
+COPY . /tripal_app
 
 ############# Tripal ##########################################################
 
@@ -29,7 +30,8 @@ WORKDIR /var/www/drupal
 RUN service apache2 start \
   && service postgresql start \
   && mkdir -p /var/www/drupal/web/modules/contrib \
-  && cp -R /app /var/www/drupal/web/modules/contrib/tripal \
+  && cp -R /tripal_app /var/www/drupal/web/modules/contrib/tripal \
+  && rm -rf /tripal_app \
   && allmodules="${tripalmodules} ${modules}" \
   && vendor/bin/drush en ${allmodules} -y \
   && service apache2 stop \
@@ -37,9 +39,13 @@ RUN service apache2 start \
 
 RUN service apache2 start \
   && service postgresql start \
-  && if [ "$installchado" = "TRUE" ]; then \
-  vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
-  && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema}; \
+  && if [ "$installchado" = "TRUE" ] && [ "$migratechado" = "TRUE" ]; then \
+    vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
+    && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
+    && vendor/bin/drush trp-migrate-chado --schema-name=${chadoschema}; \
+  elif [ "$installchado" = "TRUE" ]; then \
+    vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
+    && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema}; \
   fi \
   && service apache2 stop \
   && service postgresql stop

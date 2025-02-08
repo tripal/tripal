@@ -98,7 +98,7 @@ class ChadoApplyMigrations extends ChadoTaskBase {
    * The unique ID of the above saved Tripal job.
    * @var int
    */
-  protected int $job_id;
+  protected int $job_id = 0;
 
   /**
    * The unique id of the Tripal-managed Chado installation.
@@ -133,6 +133,32 @@ class ChadoApplyMigrations extends ChadoTaskBase {
    */
   public function setInstallID(int $install_id) {
     $this->install_id = $install_id;
+  }
+
+  /**
+   * Lookup the install ID based on the input schema name.
+   *
+   * @return int|bool
+   *   The install ID of the associated installation.
+   */
+  public function lookupInstallID(): int|bool {
+
+    $schema_name = $this->parameters['input_schemas'][0];
+
+    $query = \Drupal::service('database')->select('chado_installations' ,'i')
+      ->fields('i', ['install_id'])
+      ->condition('i.schema_name', $schema_name, '=');
+
+    $install_id = $query->execute()
+      ->fetchField();
+
+    if (is_numeric($install_id) && ($install_id > 0)) {
+      $this->setInstallID($install_id);
+      return $install_id;
+    }
+    else {
+      return FALSE;
+    }
   }
 
   /**

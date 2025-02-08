@@ -114,6 +114,7 @@ class NewPubSearchQueryForm extends FormBase {
     // Attach custom css for importers
     $form['#attached']['library'][] = 'tripal/tripal.importer';
 
+    // Save the previous user input
     $_SESSION['previous_user_input'][$pub_import_id] = $this->form_state_previous_user_input;
 
     return $form;
