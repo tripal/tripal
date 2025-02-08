@@ -877,8 +877,8 @@ display:
       path: admin/tripal/loaders/publications/manage_publication_search_queries
       menu:
         type: normal
-        title: 'Publication Search Queries'
-        description: ''
+        title: 'External Database Search Queries'
+        description: 'Queries made to external databases to search for publications matching some criteria'
         weight: -10
         expanded: false
         menu_name: admin
