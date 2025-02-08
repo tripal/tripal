@@ -8,7 +8,7 @@ dependencies:
     - tripal
     - user
 _core:
-  default_config_hash: PljTZuKtJMLncrDWEY2G2lrCjfmKNz-T8g3SRwKJatc
+  default_config_hash: OUUEDxJvS2XwVTcKt8bcKPrMH7dbBBfly52DGM1vCCc
 id: manage_pub_search_queries
 label: 'Manage Publication Search Queries'
 module: views
@@ -345,21 +345,21 @@ display:
           format_plural_string: !!binary MQNAY291bnQ=
           prefix: ''
           suffix: ''
-        nothing_1:
-          id: nothing_1
+        nothing_2:
+          id: nothing_2
           table: views
           field: nothing
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: custom
-          label: Edit
+          label: Run
           exclude: true
           alter:
             alter_text: true
-            text: Edit
+            text: Run
             make_link: true
-            path: 'admin/tripal/loaders/publications/edit_publication_search_query/{{ pub_library_query_id }}'
+            path: 'admin/tripal/loaders/pub_search_query_loader/{{ pub_library_query_id }}'
             absolute: false
             external: false
             replace_spaces: false
@@ -394,21 +394,21 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: false
-        nothing_2:
-          id: nothing_2
+        nothing_1:
+          id: nothing_1
           table: views
           field: nothing
           relationship: none
           group_type: group
           admin_label: ''
           plugin_id: custom
-          label: Run
+          label: Edit
           exclude: true
           alter:
             alter_text: true
-            text: Run
+            text: Edit
             make_link: true
-            path: 'admin/tripal/loaders/pub_search_query_loader/{{ pub_library_query_id }}'
+            path: 'admin/tripal/loaders/publications/edit_publication_search_query/{{ pub_library_query_id }}'
             absolute: false
             external: false
             replace_spaces: false
@@ -543,20 +543,21 @@ display:
           hide_alter_empty: true
           destination: false
           fields:
-            nothing_1: nothing_1
             nothing_2: nothing_2
+            nothing_1: nothing_1
             nothing: nothing
             pub_library_query_id: '0'
             name: '0'
             criteria: '0'
-            disabled: '0'
+            criteria_1: '0'
             do_contact: '0'
+            disabled: '0'
       pager:
         type: mini
         options:
           offset: 0
           pagination_heading_level: h4
-          items_per_page: 10
+          items_per_page: 25
           total_pages: null
           id: 0
           tags:
@@ -601,19 +602,6 @@ display:
           expose:
             label: 'Importer Name'
             field_identifier: name
-          exposed: true
-        pub_library_query_id:
-          id: pub_library_query_id
-          table: tripal_pub_library_query
-          field: pub_library_query_id
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: standard
-          order: ASC
-          expose:
-            label: Database
-            field_identifier: pub_library_query_id
           exposed: true
         criteria:
           id: criteria
@@ -698,53 +686,6 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        pub_library_query_id:
-          id: pub_library_query_id
-          table: tripal_pub_library_query
-          field: pub_library_query_id
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: numeric
-          operator: '='
-          value:
-            min: ''
-            max: ''
-            value: ''
-          group: 1
-          exposed: true
-          expose:
-            operator_id: pub_library_query_id_op
-            label: Database
-            description: ''
-            use_operator: false
-            operator: pub_library_query_id_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: pub_library_query_id
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-              anonymous: '0'
-              content_editor: '0'
-              administrator: '0'
-            min_placeholder: ''
-            max_placeholder: ''
-            placeholder: ''
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
         criteria:
           id: criteria
           table: tripal_pub_library_query
@@ -759,8 +700,8 @@ display:
           exposed: true
           expose:
             operator_id: criteria_op
-            label: 'Search String'
-            description: ''
+            label: Criteria
+            description: 'This will match either Database or Search String'
             use_operator: false
             operator: criteria_op
             operator_limit_selection: false
@@ -777,16 +718,19 @@ display:
             placeholder: ''
           is_grouped: false
           group_info:
-            label: ''
-            description: ''
-            identifier: ''
+            label: Criteria
+            description: null
+            identifier: criteria
             optional: true
             widget: select
             multiple: false
             remember: false
             default_group: All
             default_group_multiple: {  }
-            group_items: {  }
+            group_items:
+              1: {  }
+              2: {  }
+              3: {  }
         do_contact:
           id: do_contact
           table: tripal_pub_library_query
@@ -837,7 +781,7 @@ display:
           admin_label: ''
           plugin_id: boolean
           operator: '='
-          value: All
+          value: '0'
           group: 1
           exposed: true
           expose:
@@ -923,8 +867,8 @@ display:
         - 'url.query_args:sort_order'
         - user.permissions
       tags: {  }
-  page_1:
-    id: page_1
+  pub_search_queries_view:
+    id: pub_search_queries_view
     display_title: Page
     display_plugin: page
     position: 1
