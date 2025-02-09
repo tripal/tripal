@@ -8,7 +8,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 
-class NewPubSearchQueryForm extends FormBase {
+class PubSearchQueryForm extends FormBase {
   private $pub_import_id = null;
   private $form_state_previous_user_input = null;
 
