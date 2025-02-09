@@ -863,7 +863,7 @@ display:
           sticky: false
           summary: ''
           empty_table: false
-          caption: ''
+          caption: 'Existing Search Queries'
           description: ''
       row:
         type: fields
@@ -886,7 +886,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: '<p>A publication search query is used to specify a set of search criteria that can be used to query a remote database. When this query is performed by selecting the "Run" action, publications that match the specified criteria will be returned and then imported into the Chado database. Once created, an importer can be run at regular intervals using the <code>drush trp-import-pubs</code> command (<em>not yet implemented</em>) to add recently released publications. This command can be started by a cron job or other automation method.</p>'
+          content: "<p>A publication search query is used to specify a set of search criteria that can be used to query a remote database. When this query is performed by selecting the \"Run\" action, publications that match the specified criteria will be returned and then imported into the Chado database. Once created, an importer can be run at regular intervals using the <code>drush trp-import-pubs</code> command (<em>not yet implemented</em>) to add recently released publications. This command can be started by a cron job or other automation method.</p>\r\n\r\n<p>Search Query Filter Settings</p>"
           tokenize: false
       footer:
         area:
