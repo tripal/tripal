@@ -7,6 +7,7 @@ use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 
 /**
@@ -783,6 +784,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function formSubmit($form, &$form_state) {
-    // $form_state->setRebuild(TRUE);
+    // After submit, we redirect to the "Manage Publication Search Queries" page
+    $response = new RedirectResponse('/admin/tripal/loaders/publications/manage_publication_search_queries');
+    $response->send();
   }
 }
