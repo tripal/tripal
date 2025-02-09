@@ -72,19 +72,34 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         ->execute()->fetchObject();
       $criteria_column_array = unserialize($row->criteria);
       // Get search string from the criteria data
-      $search_string = "";
+      $search_string = '';
       foreach ($criteria_column_array['criteria'] as $criteria_row) {
         $search_string .= $criteria_row['operation'] . ' (' . $criteria_row['scope'] . ': ' . $criteria_row['search_terms'] . ') ';
       }
       // Get the database from the criteria data
       $db_string = $criteria_column_array['remote_db'];
-      $markup = "<h4>Search Query Details</h4>";
-      $markup .= "<p>Name: " . $row->name . "</p>";
-      $markup .= "<p>Database: " . $db_string . "</p>";
-      $markup .= "<p>Search string: " . $search_string . "</p>";
+      $do_contact_string = $criteria_column_array['do_contact']?t('yes'):t('no');
+      $disabled = $criteria_column_array['disabled'];
+      $markup = '<h4>Search Query Details</h4>';
+      $markup .= '<ul>';
+      $markup .= '<li>Name: ' . $row->name . '</li>';
+      $markup .= '<li>Database: ' . $db_string . '</li>';
+      $markup .= '<li>Search string: ' . $search_string . '</li>';
+      if (array_key_exists('days', $criteria_column_array)) {
+        $markup .= '<li>Days since record modified: ' . $criteria_column_array['days'] . '</li>';
+      }
+      $markup .= '<li>Create contact: ' . $do_contact_string . '</li>';
+      $markup .= '</ul>';
       $form['query_info'] = [
         '#markup' => $markup
       ];
+
+      // We don't actually enforce the disabled status, and apparently Tripal 3
+      // ignored this field, but at least provide a warning.
+      if ($disabled) {
+        \Drupal::messenger()->addWarning(t('This importer has been marked as "Disabled"'));
+      }
+
     }
 
     return $form;
@@ -632,7 +647,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       }
 
       $args[":type_id_$i"] = $type_id;
-
 
       if ($i == $batch_size or $total == $total_missing_publications_dbxref) {
         $sql = rtrim($sql, ", ");
