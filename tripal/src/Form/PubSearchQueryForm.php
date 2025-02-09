@@ -9,8 +9,8 @@ use Drupal\Core\Url;
 
 
 class PubSearchQueryForm extends FormBase {
-  private $pub_import_id = null;
-  private $form_state_previous_user_input = null;
+  private $pub_import_id = NULL;
+  private $form_state_previous_user_input = NULL;
 
   /**
    * {@inheritdoc}
@@ -23,7 +23,7 @@ class PubSearchQueryForm extends FormBase {
    * {@inheritDoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, $pub_import_id = NULL): array {
-    if ($pub_import_id != null) {
+    if (!is_null($pub_import_id)) {
       // used to keep track of whether this is a new query or edit query
       $this->pub_import_id = $pub_import_id;
 
@@ -82,7 +82,7 @@ class PubSearchQueryForm extends FormBase {
     $form = $this->form_elements_importer_selection($form, $form_state);
 
     // If the button_next was clicked, it will exist in the form_state_values
-    if (isset($form_state_values['button_next']) || $pub_import_id != null) {
+    if (isset($form_state_values['button_next']) || !is_null($pub_import_id)) {
       // Once clicked, hide the 'next' button by changing type to hidden
       $form['button_next']['#type'] = 'hidden';
 
@@ -96,7 +96,7 @@ class PubSearchQueryForm extends FormBase {
       $form = $this->form_elements_common($form, $form_state);
 
       // handle previous user input
-      if ($pub_import_id != 'null') {
+      if (!is_null($pub_import_id)) {
         $this->form_elements_load_previous_user_input(
           $this->form_state_previous_user_input, $form['pub_library']
         );
@@ -352,7 +352,7 @@ class PubSearchQueryForm extends FormBase {
       '#weight' => 51,
     ];
 
-    if($this->pub_import_id != null) {
+    if(!is_null($this->pub_import_id)) {
       $form['pub_library']['delete'] = [
         '#type' => 'submit',
         '#value' => $this->t('Delete Search Query'),
