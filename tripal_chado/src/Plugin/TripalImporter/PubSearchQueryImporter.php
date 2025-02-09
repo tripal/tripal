@@ -300,7 +300,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $arguments = $this->arguments['run_args'];
 
     $query_id = NULL;
-    // print_r('Query ID: ' . $arguments['query_id'] . "\n");
     if (isset($arguments['query_id']) and !empty($arguments['query_id'])) {
       $query_id = $arguments['query_id'];
     }
@@ -322,7 +321,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $plugin_id = $criteria['form_state_user_input']['plugin_id'];
 
     if (is_null($criteria) || is_null($plugin_id)) {
-      print_r('Could not find criteria or plugin_id, could not find adequate query information');
+      $this->logger->error('Could not find criteria or plugin_id, could not find adequate query information');
       return;
     }
 
@@ -585,7 +584,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $args = [];
       }
     }
-    // print_r($pub_dbxref_ids);
     return $pub_dbxref_ids;
   }
 
@@ -607,7 +605,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       // Find the publication structure
 
       $publication = $publications[$total];
-      // print_r($publication);
 
       // Process values to be used as values
       $title = $publication['Title'];
@@ -665,7 +662,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $args = [];
       }
     }
-    // print_r($pub_ids);
     return $pub_ids;
   }
 
