@@ -346,13 +346,15 @@ class PubSearchQueryForm extends FormBase {
       '#weight' => 51,
     ];
 
-    $form['pub_library']['undo'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Revert Unsaved Edits'),
-      '#weight' => 51,
-    ];
+    // Revert and delete buttons only appear if importer was previously saved
+    if (!is_null($this->pub_import_id)) {
+      $form['pub_library']['undo'] = [
+        '#type' => 'submit',
+        '#value' => $this->t('Revert Unsaved Edits'),
+        '#name' => 'undo',
+        '#weight' => 51,
+      ];
 
-    if(!is_null($this->pub_import_id)) {
       $form['pub_library']['delete'] = [
         '#type' => 'submit',
         '#value' => $this->t('Delete Search Query'),
@@ -617,10 +619,10 @@ class PubSearchQueryForm extends FormBase {
       else if ($op == 'Test Search Query') {
         $this->submitFormTest($form, $form_state, $user_input);
       }
-      else if ($op == 'Revert Unsaved Edits') {
-        $_SESSION['previous_user_input'] = [];
-        $form_state->setRebuild(FALSE);
-      }
+    }
+    else if ($trigger == 'undo') {
+      $_SESSION['previous_user_input'] = [];
+      $form_state->setRebuild(FALSE);
     }
     else {
       $_SESSION['tripal_pub_import']['perform_test'] = 0; // stop perform test from running
@@ -809,7 +811,7 @@ class PubSearchQueryForm extends FormBase {
     // We can't set the criteria fields to be required, because that will prevent the "Remove"
     // button from working, but here we can validate that they are not blank for any other action.
     $trigger = @$form_state->getTriggeringElement()['#name'];
-    if (!preg_match('/^remove-\d$/', $trigger)) {
+    if (!preg_match('/^remove-\d$/', $trigger) and ($trigger != 'undo')) {
       $user_input = $form_state->getUserInput();
       if (array_key_exists('table', $user_input)) {
         foreach ($user_input['table'] as $delta => $table) {
