@@ -22,7 +22,7 @@ class NewPubSearchQueryForm extends FormBase {
   /**
    * {@inheritDoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $pub_import_id = null) {
+  public function buildForm(array $form, FormStateInterface $form_state, $pub_import_id = NULL): array {
     if ($pub_import_id != null) {
       // used to keep track of whether this is a new query or edit query
       $this->pub_import_id = $pub_import_id;
@@ -125,6 +125,7 @@ class NewPubSearchQueryForm extends FormBase {
    *
    * @param array &$form
    *   The form array definition.
+   * @return void
    */
   private function buildFormRunTest(array &$form) {
     $plugin_id = $form['plugin_id']['#default_value'];
@@ -192,11 +193,11 @@ class NewPubSearchQueryForm extends FormBase {
 
   /**
    * Recursive function to find values from user_input and add it back to the
-   * #default_value key for the specific form element
+   * #default_value key for the specific form elements.
    *
-   * @var array &$input
+   * @param array &$input
    *   Nested array of user input values
-   * @var array &$form_element
+   * @param array &$form_element
    *   Render array for the form
    * @return void
    */
@@ -214,7 +215,8 @@ class NewPubSearchQueryForm extends FormBase {
   }
 
   /**
-   * Removes a specified row from a table, and renames the internal keys to again be sequential
+   * Removes a specified row from a table, and renames the internal keys to again
+   * be sequential.
    *
    * @param array $table
    *   Array where second level keys are of the form /text-\d+/
@@ -241,29 +243,44 @@ class NewPubSearchQueryForm extends FormBase {
     return $new_table;
   }
 
+  /**
+   * Add form elements common to all importers
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   * @param int $num_criteria
+   *   The number of criteria that exist for the importer
+   * @param array $criteria
+   *   An array of row indices for the form
+   *
+   * @return
+   *  A form array
+   */
   protected function form_elements_common($form, FormStateInterface &$form_state) {
 
     $disabled = '';
     $do_contact = '';
 
     $form['pub_library']['loader_name'] = [
-      '#title' => t('Loader Name'),
+      '#title' => $this->t('Loader Name'),
       '#type' => 'textfield',
-      '#description' => t('Please provide a name for this loader setup.'),
+      '#description' => $this->t('Please provide a name for this loader setup.'),
       '#required' => TRUE,
       '#weight' => -50,
     ];
     $form['pub_library']['disabled'] = [
       '#type' => 'checkbox',
-      '#title' => t('Disabled'),
-      '#description' => t('Check to disable this importer.'),
+      '#title' => $this->t('Disabled'),
+      '#description' => $this->t('Check to disable this importer.'),
       '#default_value' => $disabled,
       '#weight' => -49,
     ];
     $form['pub_library']['do_contact'] = [
       '#type' => 'checkbox',
-      '#title' => t('Create Contact'),
-      '#description' => t('Check to create an entry in the contact table for each author of'
+      '#title' => $this->t('Create Contact'),
+      '#description' => $this->t('Check to create an entry in the contact table for each author of'
          . ' a matching publication during import. This allows storage of additional information'
          . ' such as affiliation, etc. Otherwise, only authors\' names are retrieved.'),
       '#default_value' => $do_contact,
@@ -289,7 +306,7 @@ class NewPubSearchQueryForm extends FormBase {
     }
     elseif ($trigger and preg_match('/^remove-(\d)$/', $trigger, $matches)) {
       $row_id = $matches[1];
-      $num_criteria -= 1;
+      $num_criteria--;
       $user_input['num_criteria'] = $num_criteria;
 
       // Remove the row from the user input
@@ -307,14 +324,6 @@ class NewPubSearchQueryForm extends FormBase {
       '#default_value' => $num_criteria,
     ];
 
-    $row_keys = range(1, $num_criteria);
-    if ($user_input['table'] ?? FALSE) {
-      $row_keys = [];
-      foreach (array_keys($user_input['table']) as $i) {
-        preg_match('/\d+$/', array_key_first($user_input['table'][$i]), $matches);
-        $row_keys[] = $matches[0];
-      }
-    }
     $criteria = [];
 
     $form = $this->tripal_pub_importer_setup_add_criteria_fields($form, $form_state, $num_criteria, $criteria);
@@ -327,26 +336,26 @@ class NewPubSearchQueryForm extends FormBase {
     // Add the submit buttons
     $form['pub_library']['save'] = [
       '#type' => 'submit',
-      '#value' => t('Save Search Query'),
+      '#value' => $this->t('Save Search Query'),
       '#weight' => 51,
     ];
 
     $form['pub_library']['test'] = [
       '#type' => 'submit',
-      '#value' => t('Test Search Query'),
+      '#value' => $this->t('Test Search Query'),
       '#weight' => 51,
     ];
 
     $form['pub_library']['undo'] = [
       '#type' => 'submit',
-      '#value' => t('Revert Unsaved Edits'),
+      '#value' => $this->t('Revert Unsaved Edits'),
       '#weight' => 51,
     ];
 
     if($this->pub_import_id != null) {
       $form['pub_library']['delete'] = [
         '#type' => 'submit',
-        '#value' => t('Delete Search Query'),
+        '#value' => $this->t('Delete Search Query'),
         '#attributes' => ['style' => 'float: right;'],
         '#weight' => 51,
       ];
@@ -364,21 +373,20 @@ class NewPubSearchQueryForm extends FormBase {
    * A helper function for the importer setup form that adds the criteria to
    * the form that belongs to the importer.
    *
-   * @param $form
-   *   The form
-   * @param $form_state
-   *   The form state
-   * @param $num_criteria
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   * @param int $num_criteria
    *   The number of criteria that exist for the importer
-   * @param $criteria
+   * @param array $criteria
    *   An array of row indices for the form
-   *
-   * @return
-   *  A form array
+   * @return array
+   *   A form array
    *
    * @ingroup tripal_pub
    */
-  private function tripal_pub_importer_setup_add_criteria_fields($form, &$form_state, $num_criteria, $criteria) {
+  private function tripal_pub_importer_setup_add_criteria_fields(array $form, FormStateInterface $form_state, int $num_criteria, array $criteria): array {
 
     $headers = ['Operation', 'Scope', 'Search Terms', '', '', ''];
     // Add the table to the form
@@ -473,14 +481,14 @@ class NewPubSearchQueryForm extends FormBase {
     ];
     // To avoid repetition, only display the field descriptions on the first row
     if ($i == 1) {
-      $row["scope-$i"]['#description'] = t('Please select the fields to search for this term.');
-      $row["search_terms-$i"]['#description'] = t('<span style="white-space: normal">Please provide a list of words for searching.'
+      $row["scope-$i"]['#description'] = $this->t('Please select the fields to search for this term.');
+      $row["search_terms-$i"]['#description'] = $this->t('<span style="white-space: normal">Please provide a list of words for searching.'
         . ' You may use conjunctions such as "AND" or "OR" to separate words if they are expected in the same scope,'
         . ' but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions as part of the text to search</span>');
     }
     $row["is_phrase-$i"] = [
       '#type' => 'checkbox',
-      '#title' => t('Is Phrase?'),
+      '#title' => $this->t('Is Phrase?'),
       '#default_value' => $is_phrase,
       '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
     ];
@@ -490,7 +498,7 @@ class NewPubSearchQueryForm extends FormBase {
       $row["remove-$i"] = [
         '#type' => 'submit',
         '#name' => 'remove-' . $i,
-        '#value' => t('Remove'),
+        '#value' => $this->t('Remove'),
       ];
     }
 
@@ -499,7 +507,7 @@ class NewPubSearchQueryForm extends FormBase {
       $row["add-$i"] = [
         '#type' => 'submit',
         '#name' => 'add',
-        '#value' => t('Add'),
+        '#value' => $this->t('Add'),
       ];
     }
 
@@ -507,8 +515,18 @@ class NewPubSearchQueryForm extends FormBase {
     return $form;
   }
 
-  protected function form_elements_specific_importer($form, FormStateInterface $form_state) {
-    // Add elements only after a plugin has been selected.
+  /**
+   * Add elements to the form that are specific to the specified plugin_id
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   * @return array
+   *   The updated $form array
+   */
+  protected function form_elements_specific_importer($form, FormStateInterface $form_state): array {
+    // Add elements only if a plugin has been selected.
     $plugin_id = $form_state->getValue(['plugin_id']);
     if (!$plugin_id) {
       $plugin_id = $form['plugin_id']['#default_value'];
@@ -527,7 +545,17 @@ class NewPubSearchQueryForm extends FormBase {
     return $form;
   }
 
-  protected function form_elements_importer_selection($form, FormStateInterface $form_state) {
+  /**
+   * Add elements to the form to select a pub library plugin
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   * @return array
+   *   The updated $form array
+   */
+  protected function form_elements_importer_selection(array $form, FormStateInterface $form_state): array {
     // Retrieve a sorted list of available pub library plugins.
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugins = $pub_library_manager->getLibraryOptions();
@@ -537,11 +565,11 @@ class NewPubSearchQueryForm extends FormBase {
 
     $default_plugin_id = $this->form_state_previous_user_input['plugin_id'] ?? NULL;
 
-    // These are the radio buttons which list the types of publication / sources eg NIH PubMed database
+    // These are the radio buttons which list the types of publication / sources e.g. NIH PubMed database
     $form['plugin_id'] = [
-      '#title' => t('Select a source of publications'),
+      '#title' => $this->t('Select a source of publications'),
       '#type' => 'radios',
-      '#description' => t('Choose one of the sources above for loading publications.'),
+      '#description' => $this->t('Choose one of the sources above for loading publications.'),
       '#required' => TRUE,
       '#options' => $plugins,
       '#default_value' => $default_plugin_id,
@@ -552,8 +580,8 @@ class NewPubSearchQueryForm extends FormBase {
       '#value' => 'Next'
     ];
 
-    // This is the container that will hold the specific fields for a specific 'plugin' which represents the
-    // publication / sources eg NIH PubMed database form elements
+    // This is the container that will hold the specific fields for a specific 'plugin'
+    // which represents the publication / sources eg NIH PubMed database form elements.
     $form['pub_library'] = [
       '#prefix' => '<span id="edit-pub_library">',
       '#suffix' => '</span>',
@@ -567,7 +595,6 @@ class NewPubSearchQueryForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $user_input = $form_state->getUserInput();
-    $form_mode = $user_input['mode'] ?? NULL;
     $trigger = $form_state->getTriggeringElement()['#name'];
 
     // Update previous user input for any trigger
@@ -580,60 +607,7 @@ class NewPubSearchQueryForm extends FormBase {
     if ($trigger == 'op') {
       $op = $user_input['op'];
       if ($op == 'Save Search Query') {
-        $_SESSION['tripal_pub_import']['perform_test'] = 0;
-        // tripal_pub_library_query table columns are: pub_library_query_id, name, criteria, disabled, do_contact
-
-        // Translate the submitted data into a variable which can be serialized into a criteria column
-        // of the tripal_pub_library_query table
-        $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
-
-        // Load the plugin and initialize an instance to perform its unique form_submit function
-        // This will run plugin specific form submit operations that can alter the criteria database column
-        // which stores the specific plugin importer settings (basically all the form data)
-        $plugin_id = $user_input['plugin_id'];
-        $pub_library_manager = NULL;
-        $plugin = NULL;
-        if ($plugin_id) {
-          // Instantiate the selected plugin
-          // Pub Library Manager is found in tripal module:
-          // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
-          $pub_library_manager = \Drupal::service('tripal.pub_library');
-          $plugin = $pub_library_manager->createInstance($plugin_id, []);
-
-          // The selected plugin defines form elements specific
-          // to itself.
-          $plugin->form_submit($form, $form_state, $criteria_column_array);
-        }
-
-        $criteria_column_serialized = serialize($criteria_column_array);
-
-        $db_fields = [
-          'name' => $user_input['loader_name'],
-          'criteria' => $criteria_column_serialized,
-          'disabled' => $criteria_column_array['disabled'],
-          'do_contact' => $criteria_column_array['do_contact'],
-        ];
-
-        $messenger = \Drupal::messenger();
-
-        // If form_mode is not edit, then it is a new importer
-        if ($form_mode != "edit") {
-          $pub_library_manager->addSearchQuery($db_fields);
-          $messenger->addMessage('Importer successfully added');
-          $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
-          $form_state->setRedirectUrl($url);
-        }
-
-        // If form_mode is 'edit', this is an update to the database
-        else {
-          $pub_library_manager->updateSearchQuery($user_input['pub_import_id'], $db_fields);
-          $messenger->addMessage('Importer successfully updated');
-          $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
-          $form_state->setRedirectUrl($url);
-        }
-
-        $form_state->setRebuild(FALSE);
-
+        $this->submitFormSave($form, $form_state, $user_input);
       }
       else if ($op == 'Delete Search Query') {
         $pub_import_id = $user_input['pub_import_id'];
@@ -641,38 +615,11 @@ class NewPubSearchQueryForm extends FormBase {
         $form_state->setRedirectUrl($url);
       }
       else if ($op == 'Test Search Query') {
-        // This session variable gets checked when the form reloads so you can find the code
-        // in the buildForm function
-        $_SESSION['tripal_pub_import']['perform_test'] = 1;
-
-        // Translate the submitted data into a variable which can be serialized into a criteria column
-        // of the tripal_pub_library_query table
-        $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
-
-        // Load the plugin and initialize an instance to perform its unique form_submit function.
-        // This will run plugin specific form submit operations that can alter the criteria database column
-        // which stores the specific plugin importer settings (basically all the form data).
-        $plugin_id = $user_input['plugin_id'];
-        if ($plugin_id) {
-          // Instantiate the selected plugin
-          // Pub Library Manager is found in tripal module:
-          // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
-          $pub_library_manager = \Drupal::service('tripal.pub_library');
-          $plugin = $pub_library_manager->createInstance($plugin_id, []);
-
-          // The selected plugin defines form elements specific
-          // to itself.
-          $plugin->form_submit($form, $form_state, $criteria_column_array);
-        }
-        $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $criteria_column_array;
-
-        // Older code before 1/5/2024
-        // $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $this->criteria_convert_to_array($form, $form_state);
-        $_SESSION['tripal_pub_import']['perform_test_user_input'] = $form_state->getUserInput();
-        $form_state->setRebuild(TRUE);
+        $this->submitFormTest($form, $form_state, $user_input);
       }
       else if ($op == 'Revert Unsaved Edits') {
         $_SESSION['previous_user_input'] = [];
+        $form_state->setRebuild(FALSE);
       }
     }
     else {
@@ -682,11 +629,134 @@ class NewPubSearchQueryForm extends FormBase {
   }
 
   /**
-   * This function accepts the form state and converts the data into a criteria array.
-   * This criteria array is serialized and saved in the tripal_pub_library_query table as a row if Save Importer is clicked.
-   * This array will be given to the plugin test function to perform a test if Test Importer is clicked.
+   * Handles submit when processing the save operation
+   *
+   * @param array &$form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   * @param array $user_input
+   *   User input from $form_state->getUserInput()
+   *
+   * @return void
    */
-  protected function criteria_convert_to_array($form, FormStateInterface $form_state) {
+  protected function submitFormSave(array &$form, FormStateInterface $form_state, array $user_input) {
+    $form_mode = $user_input['mode'] ?? NULL;
+
+    $_SESSION['tripal_pub_import']['perform_test'] = 0;
+
+    // Translate the submitted data into a variable which can be serialized into a criteria
+    // column of the tripal_pub_library_query table.
+    // tripal_pub_library_query table columns are: pub_library_query_id, name, criteria, disabled, do_contact
+    $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
+
+    // Load the plugin and initialize an instance to perform its unique form_submit function.
+    // This will run plugin specific form submit operations that can alter the criteria database column,
+    // which stores the specific plugin importer settings (basically all of the form data).
+    $plugin_id = $user_input['plugin_id'];
+    $pub_library_manager = NULL;
+    $plugin = NULL;
+    if ($plugin_id) {
+      // Instantiate the selected plugin
+      // Pub Library Manager is found in tripal module:
+      // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+      $pub_library_manager = \Drupal::service('tripal.pub_library');
+      $plugin = $pub_library_manager->createInstance($plugin_id, []);
+
+      // The selected plugin defines form elements specific
+      // to itself.
+      $plugin->form_submit($form, $form_state, $criteria_column_array);
+    }
+
+    $criteria_column_serialized = serialize($criteria_column_array);
+
+    $db_fields = [
+      'name' => $user_input['loader_name'],
+      'criteria' => $criteria_column_serialized,
+      'disabled' => $criteria_column_array['disabled'],
+      'do_contact' => $criteria_column_array['do_contact'],
+    ];
+
+    $messenger = \Drupal::messenger();
+
+    // If form_mode is not edit, then this is a new importer
+    if ($form_mode != "edit") {
+      $pub_library_manager->addSearchQuery($db_fields);
+      $messenger->addMessage('Importer successfully added');
+    }
+
+    // If form_mode is 'edit', then this is an update to an existing importer
+    else {
+      $pub_library_manager->updateSearchQuery($user_input['pub_import_id'], $db_fields);
+      $messenger->addMessage('Importer successfully updated');
+    }
+
+    $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
+    $form_state->setRedirectUrl($url);
+    $form_state->setRebuild(FALSE);
+  }
+
+  /**
+   * Handles submit when processing the test operation
+   *
+   * @param array &$form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   * @param array $user_input
+   *   User input from $form_state->getUserInput()
+   *
+   * @return void
+   */
+  protected function submitFormTest(array &$form, FormStateInterface $form_state, array $user_input) {
+
+    // This session variable gets checked when the form reloads so you can find the
+    // code in the buildForm function
+    $_SESSION['tripal_pub_import']['perform_test'] = 1;
+
+    // Translate the submitted data into a variable which can be serialized into a
+    // criteria column of the tripal_pub_library_query table
+    $criteria_column_array = $this->criteria_convert_to_array($form, $form_state);
+
+    // Load the plugin and initialize an instance to perform its unique form_submit
+    // function. This will run plugin specific form submit operations that can alter
+    // the criteria database column which stores the specific plugin importer
+    // settings (basically all the form data).
+    $plugin_id = $user_input['plugin_id'];
+    if ($plugin_id) {
+      // Instantiate the selected plugin
+      // Pub Library Manager is found in tripal module:
+      // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+      $pub_library_manager = \Drupal::service('tripal.pub_library');
+      $plugin = $pub_library_manager->createInstance($plugin_id, []);
+
+      // The selected plugin defines form elements specific
+      // to itself.
+      $plugin->form_submit($form, $form_state, $criteria_column_array);
+    }
+    $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $criteria_column_array;
+
+    // Older code before 1/5/2024
+    // $_SESSION['tripal_pub_import']['perform_test_criteria_array'] = $this->criteria_convert_to_array($form, $form_state);
+    $_SESSION['tripal_pub_import']['perform_test_user_input'] = $form_state->getUserInput();
+    $form_state->setRebuild(TRUE);
+  }
+
+  /**
+   * This function accepts the form state and converts the data into a criteria array.
+   *
+   * This criteria array is later serialized and saved in the tripal_pub_library_query
+   * table as a row if Save Importer is clicked.
+   * This array will be given to the plugin test function to perform a test if Test
+   * Importer is clicked.
+   *
+   * @param array $form
+   *   The form where the settings form is being included in.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form.
+   * @return array
+   */
+  protected function criteria_convert_to_array($form, FormStateInterface $form_state): array {
     $user_input = $form_state->getUserInput();
 
     $disabled = $user_input['disabled'] ?? 0;
@@ -695,7 +765,7 @@ class NewPubSearchQueryForm extends FormBase {
 
     $criteria_column_array = [
       'remote_db' => explode('tripal_pub_library_', $user_input['plugin_id'])[1],
-      // 'days' => $user_input['days'],
+      'days' => $user_input['days'],
       'num_criteria' => $user_input['num_criteria'],
       'loader_name' => $user_input['loader_name'],
       'disabled' => $disabled,
@@ -715,21 +785,18 @@ class NewPubSearchQueryForm extends FormBase {
     unset($user_input['mode']); // was used to determine if it is new or edit
     $criteria_column_array['form_state_user_input'] = $user_input;
 
-    $criteria_count = 1;
     // $user_input['table'] is the criteria rows from the submitted form
     // Go through each row of criteria
+    $criteria_index = 1;
     foreach ($user_input['table'] as $criteria_row_submitted) {
-      $is_phrase = $criteria_row_submitted['is_phrase-' . $criteria_count];
-      if ($is_phrase == null) {
-        $is_phrase = 0;
-      }
-      $criteria_column_array['criteria'][$criteria_count] = [
-        'search_terms' => $criteria_row_submitted['search_terms-' . $criteria_count],
-        'scope' => $criteria_row_submitted['scope-' . $criteria_count],
+      $is_phrase = $criteria_row_submitted['is_phrase-' . $criteria_index] ?? 0;
+      $criteria_column_array['criteria'][$criteria_index] = [
+        'search_terms' => $criteria_row_submitted['search_terms-' . $criteria_index],
+        'scope' => $criteria_row_submitted['scope-' . $criteria_index],
         'is_phrase' => $is_phrase,
-        'operation' => $criteria_row_submitted['operation-' . $criteria_count],
+        'operation' => $criteria_row_submitted['operation-' . $criteria_index],
       ];
-      $criteria_count++;
+      $criteria_index++;
     }
 
     return $criteria_column_array;
@@ -740,7 +807,7 @@ class NewPubSearchQueryForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     // We can't set the criteria fields to be required, because that will prevent the "Remove"
-    // button from working, but we can validate that they are not blank for any other action.
+    // button from working, but here we can validate that they are not blank for any other action.
     $trigger = @$form_state->getTriggeringElement()['#name'];
     if (!preg_match('/^remove-\d$/', $trigger)) {
       $user_input = $form_state->getUserInput();
@@ -749,7 +816,7 @@ class NewPubSearchQueryForm extends FormBase {
           $key = 'search_terms-' . $delta;
           $criterion = $table[$key];
           if (!$criterion) {
-            $form_state->setErrorByName("table][$delta][$key", t('The Search Terms field cannot be blank'));
+            $form_state->setErrorByName("table][$delta][$key", $this->t('The Search Terms field cannot be blank'));
           }
         }
       }

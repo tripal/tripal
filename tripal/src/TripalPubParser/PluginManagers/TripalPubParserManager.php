@@ -97,7 +97,6 @@ class TripalPubParserManager extends DefaultPluginManager {
       '#markup' => '<div id="tripal-pub-importer-test-section"></div>',
     ];
 
-
     // Attach custom css for importers
     $form['#attached']['library'][] = 'tripal/tripal.importer';
 
