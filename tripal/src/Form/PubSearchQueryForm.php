@@ -682,13 +682,19 @@ class PubSearchQueryForm extends FormBase {
     // If form_mode is not edit, then this is a new importer
     if ($form_mode != "edit") {
       $pub_library_manager->addSearchQuery($db_fields);
-      $messenger->addMessage('Importer successfully added');
+      $messenger->addMessage($this->t(
+        'Importer "@name" successfully added',
+        ['@name' => $user_input['loader_name']]
+      ));
     }
 
     // If form_mode is 'edit', then this is an update to an existing importer
     else {
       $pub_library_manager->updateSearchQuery($user_input['pub_import_id'], $db_fields);
-      $messenger->addMessage('Importer successfully updated');
+      $messenger->addMessage($this->t(
+        'Importer "@name" successfully updated',
+        ['@name' => $user_input['loader_name']]
+      ));
     }
 
     $url = Url::fromUri('internal:/admin/tripal/loaders/publications/manage_publication_search_queries');
