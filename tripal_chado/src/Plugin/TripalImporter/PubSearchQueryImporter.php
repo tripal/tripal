@@ -46,7 +46,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $query_id = "";
     $build_args = $form_state->getBuildInfo();
 
-    if ($build_args['args'][1] != NULL) {
+    if (!is_null($build_args['args'][1])) {
       $query_id = $build_args['args'][1];
     }
 
@@ -64,7 +64,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     }
 
     // If the query id is set, display the data
-    if ($build_args['args'][1] != NULL) {
+    if (!is_null($build_args['args'][1])) {
       $public = \Drupal::service('database');
       $row = $public->select('tripal_pub_library_query', 'tpi')
         ->fields('tpi')
@@ -321,7 +321,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $criteria = unserialize($pub_record->criteria);
     $plugin_id = $criteria['form_state_user_input']['plugin_id'];
 
-    if ($criteria == NULL || $plugin_id == NULL) {
+    if (is_null($criteria) || is_null($plugin_id)) {
       print_r('Could not find criteria or plugin_id, could not find adequate query information');
       return;
     }
@@ -338,7 +338,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $db_id = $db_row->db_id;
       $this->db_id = $db_id; // used in other helper functions
     }
-    if ($db_id == NULL) {
+    if (is_null($db_id)) {
       throw new \Exception("Could not find a db_id for this remote database. A db record must exist in the db table that matches description " . $criteria['remote_db']);
     }
     $this->logger->notice("               🗸 Found db_id: " . $this->db_id);
@@ -631,7 +631,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
       // Lookup type_id from $type_ids
       $type_id = @$type_ids[$publication['Publication Type'][0]];
-      if ($type_id == NULL) {
+      if (is_null($type_id)) {
         $results = $this->chado->query("SELECT * FROM {1:cvterm} WHERE name = :type_name", [
           ':type_name' => $publication['Publication Type'][0]
         ]);
@@ -642,7 +642,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
         }
       }
-      if ($type_id == NULL) {
+      if (is_null($type_id)) {
         throw new \Exception('Type ID for Publication Type: ' . $publication['Publication Type'][0] . ' could not be found in cvterm table');
       }
 
