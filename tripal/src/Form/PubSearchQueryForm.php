@@ -23,17 +23,16 @@ class PubSearchQueryForm extends FormBase {
    * {@inheritDoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, $pub_import_id = NULL): array {
-    if (!is_null($pub_import_id)) {
-      // used to keep track of whether this is a new query or edit query
-      $this->pub_import_id = $pub_import_id;
-
+    // used to keep track of whether this is a new query or edit query
+    $this->pub_import_id = $pub_import_id;
+    if (!is_null($this->pub_import_id)) {
       if ($_SESSION['previous_user_input'][$pub_import_id] ?? FALSE) {
-        $this->form_state_previous_user_input = $_SESSION['previous_user_input'][$pub_import_id];
+        $this->form_state_previous_user_input = $_SESSION['previous_user_input'][$this->pub_import_id];
       }
       else {
         // This is the edit version of the form, we need to lookup the current pub_import_id
         $pub_library_manager = \Drupal::service('tripal.pub_library');
-        $publication = $pub_library_manager->getSearchQuery($pub_import_id);
+        $publication = $pub_library_manager->getSearchQuery($this->pub_import_id);
         $criteria = unserialize($publication->criteria);
         // Add the previously saved user input into the instantiated object
         $this->form_state_previous_user_input = $criteria['form_state_user_input'];
@@ -48,7 +47,7 @@ class PubSearchQueryForm extends FormBase {
       // Save the pub_import_id into a hidden field to be used if the form is ever submitted
       $form['pub_import_id'] = [
         '#type' => 'hidden',
-        '#value' => $pub_import_id
+        '#value' => $this->pub_import_id
       ];
     }
 
@@ -82,7 +81,7 @@ class PubSearchQueryForm extends FormBase {
     $form = $this->form_elements_importer_selection($form, $form_state);
 
     // If the button_next was clicked, it will exist in the form_state_values
-    if (isset($form_state_values['button_next']) || !is_null($pub_import_id)) {
+    if (isset($form_state_values['button_next']) || !is_null($this->pub_import_id)) {
       // Once clicked, hide the 'next' button by changing type to hidden
       $form['button_next']['#type'] = 'hidden';
 
@@ -96,7 +95,7 @@ class PubSearchQueryForm extends FormBase {
       $form = $this->form_elements_common($form, $form_state);
 
       // handle previous user input
-      if (!is_null($pub_import_id)) {
+      if (!is_null($this->pub_import_id)) {
         $this->form_elements_load_previous_user_input(
           $this->form_state_previous_user_input, $form['pub_library']
         );
@@ -115,7 +114,7 @@ class PubSearchQueryForm extends FormBase {
 
     // Save the previous user input
     $_SESSION['previous_user_input'] = [];
-    $_SESSION['previous_user_input'][$pub_import_id] = $this->form_state_previous_user_input;
+    $_SESSION['previous_user_input'][$this->pub_import_id] = $this->form_state_previous_user_input;
 
     return $form;
   }
@@ -612,7 +611,6 @@ class PubSearchQueryForm extends FormBase {
         $this->submitFormSave($form, $form_state, $user_input);
       }
       else if ($op == 'Delete Search Query') {
-        $pub_import_id = $user_input['pub_import_id'];
         $url = Url::fromUri('internal:/admin/tripal/loaders/publications/delete_publication_search_query/' . $pub_import_id);
         $form_state->setRedirectUrl($url);
       }
