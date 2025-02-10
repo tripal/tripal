@@ -262,4 +262,72 @@ class ChadoManageCommands extends DrushCommands {
        $bundle, $datastore, $values);
   }
 
+  /**
+   * Add a Chado schema to Tripal. Does not set this schema as the default, as
+   * there can be more than one Chado schema added to Tripal.
+   * See the command tripal-chado:set_default for this functionality.
+   *
+   * @command tripal-chado:add_to_tripal
+   * @aliases trp-add-chado
+   * @options schema-name
+   *   The name of the chado schema to add to Tripal.
+   * @usage drush trp-add-chado --schema-name="chado"
+   *   Adds the specified Chado to Tripal.
+   *
+   */
+  public function addToTripal($options = ['schema-name' => 'chado']) {
+
+    $this->output()->writeln('Adding the schema "' . $options['schema-name'] . '" to Tripal...');
+
+    $integrator = \Drupal::service('tripal_chado.integrator');
+    $integrator->setParameters(
+      [
+        'input_schemas' => [$options['schema-name']]
+      ]
+    );
+
+    if ($integrator->performTask()) {
+      $this->output()->writeln('Successfully added the schema "' . $options['schema-name'] . '" to Tripal.');
+    }
+  }
+
+
+  /**
+   * Sets a specified Chado schema to be the default in Tripal. Only one
+   * schema may be set to default at a time.
+   *
+   * @command tripal-chado:set_default_schema
+   * @aliases trp-set-default
+   * @options schema-name
+   *   The name of the chado schema to be set to default in Tripal.
+   * @usage drush trp-set-default --schema-name="chado"
+   *   Sets the specified Chado to be default in Tripal.
+   *
+   */
+  public function setDefault($options = ['schema-name' => 'chado']) {
+
+    $this->output()->writeln('Setting the schema "' . $options['schema-name'] . '" to be default in Tripal...');
+
+    // Ensure that the provided schema exists.
+    $tripaldbx = \Drupal::service('tripal.dbx');
+
+   if ($tripaldbx->schemaExists($options['schema-name'])) {
+      $config = \Drupal::service('config.factory')
+        ->getEditable('tripal_chado.settings')
+      ;
+      $success = $config->set('default_schema', $options['schema-name'])->save();
+  
+      if ($success) {
+        $this->output()->writeln('Successfully set the schema "' . $options['schema-name'] . '" to be default.');
+      }
+    }
+    else {
+      throw new \Exception(dt(
+        'Unable to set the default schema to \'@schema\' - that schema does not exist.',
+        [
+          '@schema' => $options['schema-name'],
+        ]
+      ));
+    }
+  }
 }
