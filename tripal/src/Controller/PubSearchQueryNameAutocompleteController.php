@@ -15,7 +15,7 @@ class PubSearchQueryNameAutocompleteController extends ControllerBase {
     $public = \Drupal::service('database');
     $response = [];
 
-    // $db is database e.g. "tripal_pub_library_pubmed"
+    // $db is database e.g. "tripal_pub_library_PMID"
     // $q is text user is entering
     $db = $request->query->get('db');
     $q = $request->query->get('q');

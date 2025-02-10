@@ -41,7 +41,7 @@ class PubSearchQueryNameAutocompleteControllerTest extends TripalTestKernelBase 
     // Create some records in the public.tripal_pub_library_query
     // table using two different plugin_id values
     $public = \Drupal::database();
-    $plugin_ids = ['tripal_pub_library_pubmed', 'another_plugin'];
+    $plugin_ids = ['tripal_pub_library_PMID', 'another_plugin'];
     $names = ['abcdef', 'abcxyz', 'a12345', 'lmnopq'];
     $ids = [];
     foreach ($plugin_ids as $plugin_id) {
@@ -75,7 +75,7 @@ class PubSearchQueryNameAutocompleteControllerTest extends TripalTestKernelBase 
     $request = Request::create(
       'admin/tripal/autocomplete/pubsearchqueryname',
       'GET',
-      ['db' => 'tripal_pub_library_pubmed', 'q' => 'a']
+      ['db' => 'tripal_pub_library_PMID', 'q' => 'a']
     );
     $results = $autocomplete->handleAutocomplete($request, 10, 0)->getContent();
     $this->assertCount(3, json_decode($results), 'Expected exactly three results from "a" autocomplete for pubmed plugin');
@@ -84,7 +84,7 @@ class PubSearchQueryNameAutocompleteControllerTest extends TripalTestKernelBase 
     $request = Request::create(
       'admin/tripal/autocomplete/pubsearchqueryname',
       'GET',
-      ['db' => 'tripal_pub_library_pubmed', 'q' => 'mnop']
+      ['db' => 'tripal_pub_library_PMID', 'q' => 'mnop']
     );
     $results = $autocomplete->handleAutocomplete($request, 10, 0)->getContent();
     $this->assertCount(1, json_decode($results), 'Expected exactly one result from "mnop" autocomplete for pubmed plugin');
@@ -93,7 +93,7 @@ class PubSearchQueryNameAutocompleteControllerTest extends TripalTestKernelBase 
     $request = Request::create(
       'admin/tripal/autocomplete/pubsearchqueryname',
       'GET',
-      ['db' => 'tripal_pub_library_pubmed', 'q' => 'r']
+      ['db' => 'tripal_pub_library_PMID', 'q' => 'r']
     );
     $results = $autocomplete->handleAutocomplete($request, 10, 0)->getContent();
     $this->assertCount(0, json_decode($results), 'Expected no results from "r" autocomplete for pubmed plugin');
@@ -102,7 +102,7 @@ class PubSearchQueryNameAutocompleteControllerTest extends TripalTestKernelBase 
     $request = Request::create(
       'admin/tripal/autocomplete/pubsearchqueryname',
       'GET',
-      ['db' => 'tripal_pub_library_pubmed', 'q' => 'r']
+      ['db' => 'tripal_pub_library_PMID', 'q' => 'r']
     );
     $results = $autocomplete->handleAutocomplete($request, 10, 0)->getContent();
     $this->assertCount(0, json_decode($results), 'Expected no results from empty string autocomplete for pubmed plugin');

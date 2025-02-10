@@ -11,10 +11,11 @@ use Drupal\Core\Url;
  * PubMed publication parser
  *
  *  @TripalPubLibrary(
- *    id = "tripal_pub_library_pubmed",
+ *    id = "tripal_pub_library_PMID",
  *    label = @Translation("NIH PubMed database"),
  *    description = @Translation("Retrieves and parses publication data from the NIH PubMed database"),
  *  )
+ *  n.b. last part of id must match the record in the chado.db table name column
  */
 class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
