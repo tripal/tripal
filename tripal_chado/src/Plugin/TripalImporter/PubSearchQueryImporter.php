@@ -37,6 +37,22 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   private $cvterm_lookups = NULL;
 
   /**
+   * Stores pub_id for inserted accession
+   * @var array $pub_index
+   *   First key is accession, second level keys implemented are:
+   *     - pub_id
+   *     - is_new
+   *     - dbxref_id
+   */
+  protected array $pub_index = [];
+
+  /**
+   * Stores the maximum size of database query batches
+   * @var int $batch_size
+   */
+  protected int $batch_size = 100;
+
+  /**
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
@@ -114,7 +130,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
-  private function formQueryIdNotSet(&$form, $form_state) {
+  protected function formQueryIdNotSet(&$form, $form_state) {
     // Get list of database/libraries
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugins = $pub_library_manager->getLibraryOptions();
@@ -237,14 +253,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   }
 
   public static function test_click_on_change(array &$form, $form_state) {
-    $user_input = $form_state->getUserInput();
-
     $response = new AjaxResponse();
-
     $response->addCommand(new ReplaceCommand('#pub-query-details', 'WOW'));
-
     return $response;
-
   }
 
   public static function database_on_change(array &$form, $form_state) {
@@ -292,6 +303,44 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   }
 
   /**
+   * Retrieves the database pkey value
+   *
+   * @param string $db_name
+   *   The name of the remote database
+   * @return void
+   *   Stores the returned value in $this->db_id
+   */
+  protected function getRemoteDbId(string $db_name) {
+    $query = $this->chado->query('1:db', 'DB');
+    $query->condition('"DB".name', $db_name, '=');
+    $query->addField('DB', 'name');
+    $db_id = $query-execute()->fetchField();
+    if (is_null($db_id)) {
+      throw new \Exception('Could not find a db_id for this remote database. A db record must exist in the db table that matches the name ' . $db_name);
+    }
+print "CP01 db_id=$db_id\n";//@@@
+    $this->db_id = $db_id;
+  }
+
+  /**
+   * Caches cvterm_id values for all cvterms in the "tripal_pub"
+   * vocabulary in the class variable $this->cvterm_lookups
+   */
+  function cachePublicationCvterms() {
+    $sql = 'SELECT T.cvterm_id, T.name FROM {1:cvterm} T WHERE T.cv_id ='
+         . ' (SELECT cv_id FROM {1:cv} WHERE name = :name)';
+    $args = [
+      ':name' => 'tripal_pub',
+    ];
+    $result = $this->chado->query($sql, $args);
+    foreach ($result as $row) {
+      $cvterm_id = $row->cvterm_id;
+      $cvterm_name = $row->name;
+      $this->cvterm_lookups[$cvterm_name] = $cvterm_id;
+    }
+  }
+
+  /**
    * @see TripalImporter::run()
    */
   public function run() {
@@ -318,34 +367,34 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $pub_record = $pub_library_manager->getSearchQuery($query_id);
 
     $criteria = unserialize($pub_record->criteria);
-    $plugin_id = $criteria['form_state_user_input']['plugin_id'];
+    $plugin_id = $criteria['form_state_user_input']['plugin_id'] ?? NULL;
 
     if (is_null($criteria) || is_null($plugin_id)) {
       $this->logger->error('Could not find criteria or plugin_id, could not find adequate query information');
       return;
     }
 
+    if ($criteria['disabled']) {
+      $this->logger->error('This query cannot be executed because it is marked as "Disabled"');
+      return;
+    }
+    $do_contact = $criteria['do_contact'];
+    $n_steps = $do_contact?9:8;
+
     // Initialize chado variable (used in other helper functions within this class)
-    $chado = $this->getChadoConnection();
-    $this->chado = $chado;
-    $this->logger->notice("Step 1 of 9: Find db_id for remote database (table: db) ...");
-    $results = $this->chado->query('SELECT * FROM {1:db} WHERE lower(description) LIKE :remote_db', [
-      ':remote_db' => $criteria['remote_db']
-    ]);
-    $db_id = NULL;
-    foreach ($results as $db_row) {
-      $db_id = $db_row->db_id;
-      $this->db_id = $db_id; // used in other helper functions
-    }
-    if (is_null($db_id)) {
-      throw new \Exception("Could not find a db_id for this remote database. A db record must exist in the db table that matches description " . $criteria['remote_db']);
-    }
+    $this->chado = $this->getChadoConnection();
+    $this->logger->notice("Step 1 of $n_steps: Find db_id for remote database (table: db) ...");
+    $this->getRemoteDbId();
     $this->logger->notice("               🗸 Found db_id: " . $this->db_id);
 
-    // Run a pull from the remote database and return publications in an array
+    $this->logger->notice("Step 2 of $n_steps: CVTERMs lookup and caching ...            ");
+    $this->cachePublicationCvterms();
+    $this->logger->notice("               🗸 Cached cvterms: " . count($this->cvterm_lookups));
+
+    // Run a query to the remote database and return publications in an array
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
-    $this->logger->notice("Step 2 of 9: Retrieving publication data from remote database ...");
+    $this->logger->notice("Step 3 of $n_steps: Retrieving publication data from remote database ...");
     $publications = $plugin->run($query_id);
     if (!is_array($publications)) {
       $this->logger->error("               🗸 ERROR: Unable to connect to NCBI to lookup publications!");
@@ -353,45 +402,38 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     }
     $this->logger->notice("               🗸 Found publications: " . count($publications));
 
+    // Now we may make changes, so start a transaction
     $transaction_chado = $this->chado->startTransaction();
     try {
 
-      $this->logger->notice("Step 3 of 9: Check for already imported publications ...         ");
-      $missing_publications_dbxref = $this->findMissingPublicationsDbxref($publications);
-      $missing_publications_dbxref_count = count($missing_publications_dbxref);
-      $this->logger->notice("               🗸 Missing publications to be inserted: " . $missing_publications_dbxref_count);
-
-
-      // Filter publications to only contains the one we need for inserting data
-      $this->logger->notice("Step 4 of 9: Check for already imported publications ...         ");
-      $publications = $this->filterOnlyMissingPublications($publications, $missing_publications_dbxref);
-      $this->logger->notice("               🗸 Filtered: " . count($publications));
+      $this->logger->notice("Step 4 of $n_steps: Check for already imported publications ...         ");
+      $n_to_insert = $this->findExistingPublications($publications);
+      $this->logger->notice("               🗸 Missing publications to be inserted: " . $n_to_insert);
 
       // Insert missingPublicationsDbxref
-      $this->logger->notice("Step 5 of 9: Insert new publication dbxrefs ...                ");
-      $inserted_dbxref_ids = [];
-      if ($missing_publications_dbxref_count > 0) {
-        $inserted_dbxref_ids = $this->insertMissingPublicationsDbxref($missing_publications_dbxref);
-        $this->logger->notice("               🗸 Inserted: " . count($inserted_dbxref_ids));
-      }
+      $this->logger->notice("Step 5 of $n_steps: Insert new publication dbxrefs ...                ");
+      $n_inserted = $this->insertMissingPublicationsDbxref();
+      $this->logger->notice("               🗸 Inserted: " . $n_inserted);
 
-      $this->logger->notice("Step 6 of 9: Insert new publications ...                       ");
-      $inserted_pub_ids = [];
-      $inserted_pub_ids = $this->insertPublications($missing_publications_dbxref, $publications);
-      $this->logger->notice("               🗸 Inserted: " . count($inserted_pub_ids));
+      $this->logger->notice("Step 6 of $n_steps: Insert new publications ...                       ");
+      $n_inserted = $this->insertPublications($publications);
+      $this->logger->notice("               🗸 Inserted: " . $n_inserted);
 
-      $this->logger->notice("Step 7 of 9: CVTERMs lookup and caching ...            ");
-      $this->cachePublicationCvterms();
-      $this->logger->notice("               🗸 Cached cvterms: " . count($this->cvterm_lookups));
+      $this->logger->notice("Step 7 of $n_steps: Insert new pub_dbxrefs ...                        ");
+      $inserted_pub_dbxref_ids = [];
+      $inserted_pub_dbxref_ids = $this->insertPubDbxrefs();
+      $this->logger->notice("               🗸 Inserted: " . count($inserted_pub_dbxref_ids));
 
-      $this->logger->notice("Step 8 of 9: Insert new publications properties ...            ");
-      $pub_props_count = $this->insertPubProps($inserted_pub_ids, $missing_publications_dbxref, $publications);
+      $this->logger->notice("Step 8 of $n_steps: Insert new publications properties ...            ");
+      $pub_props_count = $this->insertPubProps($publications);
       $this->logger->notice("               🗸 Inserted: " . $pub_props_count);
 
-      $this->logger->notice("Step 9 of 9: Insert new pub_dbxrefs ...                        ");
-      $inserted_pub_dbxref_ids = [];
-      $inserted_pub_dbxref_ids = $this->insertPubDbxrefs($inserted_pub_ids, $inserted_dbxref_ids);
-      $this->logger->notice("               🗸 Inserted: " . count($inserted_pub_dbxref_ids));
+      if ($do_contact) {
+        $this->logger->notice("Step 9 of $n_steps: Insert author contacts ...");
+print "CP78 missing_publications_dbxref "; print_r($missing_publications_dbxref); //@@@
+        $n_added = $this->insertContacts($missing_publications_dbxref, $publications);
+        $this->logger->notice("               🗸 Inserted: " . $n_added);
+      }
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
@@ -400,29 +442,10 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
   }
 
-  /**
-   * Caches cvterm_id values for all cvterms in the "tripal_pub"
-   * vocabulary in the class variable $this->cvterm_lookups
-   */
-  function cachePublicationCvterms() {
-    $sql = 'SELECT T.cvterm_id, T.name FROM {1:cvterm} T WHERE T.cv_id ='
-         . ' (SELECT cv_id FROM {1:cv} WHERE name = :name)';
-    $args = [
-      ':name' => 'tripal_pub',
-    ];
-    $result = $this->chado->query($sql, $args);
-    foreach ($result as $row) {
-      $cvterm_id = $row->cvterm_id;
-      $cvterm_name = $row->name;
-      $this->cvterm_lookups[$cvterm_name] = $cvterm_id;
-    }
-  }
-
   function insertPubProps($inserted_pub_ids, $missing_publications_dbxref, &$publications) {
     // Handle some special cases for properties, e.g. create a URL from the DOI
     $this->specialCaseProps($publications);
 
-    $batch_size = 100;
     $init_sql = "INSERT INTO {1:pubprop} (pub_id, type_id, value, rank) ";
     $init_sql .= "VALUES \n";
     $i = 0;
@@ -454,7 +477,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
             $delta++;
           }
 
-          if ($i >= $batch_size) {
+          if ($i >= $this->batch_size) {
             $sql = rtrim($sql, ", ");
             $sql = $init_sql . $sql;
             $this->chado->query($sql, $args);
@@ -498,17 +521,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         }
       }
 
-      // Case 2. The "Author List" property. This is a
-      // expanded array of keyed parts of author names.
-      // If there is a "regular" list of authors, then
-      // we will ignore it. There is no cv term for
-      // "Author List", so unsetting it avoids a notification.
-      if (array_key_exists('Author List', $publication)) {
-        if (array_key_exists('Authors', $publication)) {
-          unset($publications[$index]['Author List']);
-        }
-      }
-
     }
   }
 
@@ -537,250 +549,256 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       }
     }
     else {
-      $missing_cvterms[$key] = TRUE;
+      // Author list is used to create contacts, so we allow even though it has no CV term
+      if ($key != 'Author List') {
+        $missing_cvterms[$key] = TRUE;
+      }
     }
     return $prop_values;
   }
 
-  function insertPubDbxrefs($inserted_pub_ids, $inserted_dbxref_ids) {
-    $batch_size = 100;
-    $init_sql = "INSERT INTO {1:pub_dbxref} (pub_id, dbxref_id, is_current) ";
-    $init_sql .= "VALUES \n";
-    $i = 0;
-    $total = 0;
-    $batch_num = 1;
-    $sql = '';
-    $args = [];
-    $total_inserted_pub_ids = count($inserted_pub_ids);
-    $pub_dbxref_ids = [];
-    foreach ($inserted_pub_ids as $pub_id) {
-      $dbxref_id = $inserted_dbxref_ids[$total];
+  /**
+   * Link publications to the database accessions
+   */
+  function insertPubDbxrefs(
+#@@@    $inserted_pub_ids, $inserted_dbxref_ids
+) {
+    $n_inserted = 0;
 
-      $total++;
-      $i++;
-
-      $sql .= " (:pub_id_$i, :dbxref_id_$i, :is_current_$i), ";
-      $args[":pub_id_$i"] = $pub_id;
-      $args[":dbxref_id_$i"] = $dbxref_id;
-      $args[":is_current_$i"] = TRUE;
-
-
-
-      if ($i == $batch_size or $total == $total_inserted_pub_ids) {
-        $sql = rtrim($sql, ", ");
-        $sql = $init_sql . $sql . ' RETURNING pub_dbxref_id';
-        // echo "INSERTION\n";
-        $return = $this->chado->query($sql, $args);
-
-        // Add the ids inserted into the $dbxref_ids variable
-        foreach ($return as $return_id) {
-          $pub_dbxref_ids[] = $return_id->pub_dbxref_id;
-        }
-
-        $batch_num++;
-        // Now reset all of the variables for the next batch.
-        $sql = '';
-        $i = 0;
-        $args = [];
+    // Create the list of new accessions to add
+    $new_publications_dbxref = [];
+    foreach ($this->pub_index as $accession => $info) {
+      if ($info['is_new']) {
+        $new_publications_dbxref[] = $accession;
       }
     }
-    return $pub_dbxref_ids;
-  }
 
-  /** Inserts publications into the pub table */
-  function insertPublications($missing_publications_dbxref, $publications) {
-    // For each publication (structured array)
-    $type_ids = [];
-    $batch_size = 100;
-    $init_sql = "INSERT INTO {1:pub} (title, series_name, pyear, uniquename, type_id) ";
-    $init_sql .= "VALUES \n";
-    $i = 0;
-    $total = 0;
-    $batch_num = 1;
-    $sql = '';
-    $args = [];
-    $total_missing_publications_dbxref = count($missing_publications_dbxref);
-    $pub_ids = [];
-    foreach ($missing_publications_dbxref as $accession) {
-      // Find the publication structure
-
-      $publication = $publications[$total];
-
-      // Process values to be used as values
-      $title = $publication['Title'];
-      $series_name = trim(explode('(', $publication['Journal Name'])[0]);
-      $pyear = $publication['Year'];
-
-      // Here for the uniquename field in the pub table we use the citation,
-      // which should be unique, and which for all importers we should have
-      // already generated it, but a simple default is provided as a fallback.
-      $uniquename = $publication['Citation']
-        ?? str_replace(',',';', @$publication['Authors']) . ' ' . $title . ' ' . $series_name . '; ' . $pyear;
-
-      $total++;
-      $i++;
-
-      $sql .= " (:title_$i, :series_name_$i, :pyear_$i, :uniquename_$i, :type_id_$i), ";
-      $args[":title_$i"] = $title;
-      $args[":series_name_$i"] = $series_name;
-      $args[":pyear_$i"] = $pyear;
-      $args[":uniquename_$i"] = $uniquename;
-
-      // Lookup type_id from $type_ids
-      $type_id = @$type_ids[$publication['Publication Type'][0]];
-      if (is_null($type_id)) {
-        $results = $this->chado->query("SELECT * FROM {1:cvterm} WHERE name = :type_name", [
-          ':type_name' => $publication['Publication Type'][0]
+    // Perform inserts in batches
+    $n_inserted = 0;
+    $batches = array_chunk($new_publications_dbxref, $this->batch_size);
+    foreach ($batches as $batch) {
+      $insert = $this->chado->insert('1:pub_dbxref');
+      $insert->fields(['pub_id', 'dbxref_id']);
+      foreach ($batch as $accession) {
+        $dbxref_id = $this->pub_index[$accession]['dbxref_id'];
+        $pub_id = $this->pub_index[$accession]['pub_id'];
+        $insert->values([
+          'pub_id' => $pub_id,
+          'dbxref_id' => $dbxref_id,
         ]);
-        foreach ($results as $row) {
-          $type_id = $row->cvterm_id;
-          // Keep in type_ids which is a temporary cache variable
-          $type_ids[$publication['Publication Type'][0]] = $row->cvterm_id;
-
-        }
-      }
-      if (is_null($type_id)) {
-        throw new \Exception('Type ID for Publication Type: ' . $publication['Publication Type'][0] . ' could not be found in cvterm table');
-      }
-
-      $args[":type_id_$i"] = $type_id;
-
-      if ($i == $batch_size or $total == $total_missing_publications_dbxref) {
-        $sql = rtrim($sql, ", ");
-        $sql = $init_sql . $sql . ' RETURNING pub_id';
-        $return = $this->chado->query($sql, $args);
-
-        // Add the ids inserted into the $dbxref_ids variable
-        foreach ($return as $return_id) {
-          $pub_ids[] = $return_id->pub_id;
-        }
-
-        $batch_num++;
-        // Now reset all of the variables for the next batch.
-        $sql = '';
-        $i = 0;
-        $args = [];
+        $n_inserted++;
       }
     }
-    return $pub_ids;
+    return $n_inserted;
   }
 
   /**
-   * This filters all publications and returns only the publications (structures) that
-   * are missing.
+   * Add authors to all specified publications
+   *
+   * @param array $missing_publications_dbxref
+   *   A list of publication accessions that were inserted
+   * @param array $publications
+   *   Results from the publication external database query
+   * @return int
+   *   Count of number of contacts added
    */
-  function filterOnlyMissingPublications($publications, $missing_publications_dbxref) {
-    $publications_filtered = [];
+  protected function insertContacts(array $missing_publications_dbxref, $publications): int {
+    $n_added = 0;
+print "CP39 insertContacts\n";//@@@
     foreach ($publications as $publication) {
-      $dbxref = $publication['Publication Dbxref'];
-      if (in_array($dbxref, $missing_publications_dbxref)) {
-        $publications_filtered[] = $publication;
+      $accession = $publication['Publication Dbxref'];
+      if (in_array($accession, $missing_publications_dbxref)) {
+print "CP40\n";//@@@
+#print "CP40 publication="; print_r($publication); //@@@
+        $n_added += $this->addAuthors($publication);
       }
     }
-    return $publications_filtered;
+    return $n_added;
   }
 
   /**
-   * Inserts missing publication dbxrefs into the dbxref table
+   * Add one or more authors to a publication
+   *
+   * @param array $publication
+   *   A single publication query result.
+   * @return int
+   *   A count of the number of records added
    */
-  public function insertMissingPublicationsDbxref($missing_publications_dbxref) {
-    // Create a bulk query
-    $batch_size = 100;
-    $init_sql = "INSERT INTO {1:dbxref} (db_id, accession, version) VALUES \n";
-    $i = 0;
-    $total = 0;
-    $batch_num = 1;
-    $sql = '';
-    $args = [];
-    $total_missing_publications_dbxref = count($missing_publications_dbxref);
-    $dbxref_ids = [];
-    foreach ($missing_publications_dbxref as $accession) {
-      $total++;
-      $i++;
+  protected function addAuthors(array $publication): int {
+    $author_list = $publication['Author List'] ?? [];
+    $rank = 0;
+print "CP41 authors="; print_r($author_list);//@@@
+    // First remove any of the existing pubauthor entries.
+    return 0;//@@@
+  }
 
-      $sql .= " (:db_id_$i, :accession_$i, :version_$i), ";
-      $args[":db_id_$i"] = $this->db_id;
-      $args[":accession_$i"] = $accession;
-      $args[":version_$i"] = '';
+  /**
+   * Inserts new publications into the pub table
+   *
+   * @param array $publications
+   *   All publications returned by the external database
+   * @return int
+   *   A count of the number of publications inserted
+   */
+  function insertPublications(array $publications): int {
+    $n_inserted = 0;
+    foreach ($publications as $publication) {
+      $accession = $publication['Publication Dbxref'];
+      if ($this->pub_index[$accession]['is_new']) {
 
-      if ($i == $batch_size or $total == $total_missing_publications_dbxref) {
-        $sql = rtrim($sql, ", ");
-        $sql = $init_sql . $sql . ' RETURNING dbxref_id';
-        $return = $this->chado->query($sql, $args);
+        // Assemble the values for the pub table columns
+        $title = $publication['Title'];
+        $series_name = trim(explode('(', $publication['Journal Name'])[0]);
+        $pyear = $publication['Year'];
+        // Here for the uniquename field in the pub table we use the citation,
+        // which should be unique, and we should have already generated it for
+        // for all importers, but a simple default is provided as a fallback.
+        $uniquename = $publication['Citation']
+          ?? str_replace(',', ';', @$publication['Authors']) . ' ' . $title . ' ' . $series_name . '; ' . $pyear;
+        $type_id = $this->getPublicationTypeId($publication);
 
-        // Add the ids inserted into the $dbxref_ids variable
-        foreach ($return as $return_id) {
-          $dbxref_ids[] = $return_id->dbxref_id;
+        if ($type_id) {
+          $insert = $this->chado->insert('1:pub');
+          $insert->fields([
+            'title' => $title,
+            'series_name' => $series_name,
+            'pyear' => $pyear,
+            'uniquename' => $uniquename,
+            'type_id' => $type_id,
+          ]);
+          $pub_id = $insert->execute();
+print "CP93 pub_id inserted=$pub_id\n";//@@@
+          $this->pub_index[$accession]['pub_id'] = $pub_id;
+          $n_inserted++;
         }
-
-        $batch_num++;
-        // Now reset all of the variables for the next batch.
-        $sql = '';
-        $i = 0;
-        $args = [];
       }
     }
-    return $dbxref_ids;
+    return $n_inserted;
+  }
+
+  /**
+   * Get the cvterm_id for the publication type
+   *
+   * @param array $publication
+   *   One publication record returned by the external database
+   * @return int
+   *   The corresponding cvterm_id value
+   * @throw \Exception
+   *   If term is not defined, or if it is not available in the ontology
+   */
+  protected function getPublicationTypeId(array $publication): int {
+    $type_id = 0;
+    $type = $publication['Publication Type'] ?? NULL;
+    if ($type) {
+      if (is_array($type)) {
+        // A publication can have more than one type. We can't support
+        // that in the pub table, so just return the first one.
+        $type = $type[array_key_first($type)];
+      }
+      $type_id = $this->cvterm_lookups[$type] ?? 0;
+      // @todo change to just issue warning so we can skip over this publication
+      if (!$type_id) {
+        throw new \Exception('Type ID for Publication Type: ' . $type . ' is not present in the tripal_pub vocabulary');
+      }
+    }
+    else {
+      throw new \Exception('Publication is missing a type: ' . print_r($publication, TRUE));
+    }
+    return $type_id;
+  }
+
+  /**
+   * Inserts new publication accessions into the dbxref table.
+   *
+   * Inserted dbxref_id pkey values are stored in $this->pub_index
+   *
+   * @return int
+   *   A count of the number of records inserted
+   */
+  protected function insertMissingPublicationsDbxref() {
+
+    // Create the list of new accessions to add
+    $new_publications_dbxref = [];
+    foreach ($this->pub_index as $accession => $info) {
+      if ($info['is_new']) {
+        $new_publications_dbxref[] = $accession;
+      }
+    }
+
+    // Perform inserts in batches
+    $n_inserted = 0;
+    $batches = array_chunk($new_publications_dbxref, $this->batch_size);
+    foreach ($batches as $batch) {
+      $insert = $this->chado->insert('1:dbxref');
+      $insert->fields(['db_id', 'accession', 'version']);
+      foreach ($batch as $accession) {
+        $insert->values([
+          'db_id' => $this->db_id,
+          'accession' => $accession,
+          'version' => ''
+        ]);
+        $n_inserted++;
+      }
+      $first_dbxref_id = $insert->execute();
+print "CP51 first dbxref id=$first_dbxref_id\n"; //@@@
+
+      // Store the dbxref keys for linking to pub later
+      for ($i=0; $i<count($batch); $i++) {
+        $this->pub_index[$batch[$i]]['dbxref_id'] = $first_dbxref_id + $i;
+      }
+    }
+    return $n_inserted;
   }
 
 
   /**
-   * Finds PublicationDbxrefs that do not exist in the dbxref table and returns
-   * an array of the accessions
+   * Finds publication accessions that already are stored in Chado.
+   *
+   * Results are stored in $this->pub_index
+   *
+   * @param array $publications
+   *   Publications loaded from the external database
+   * @return int
+   *   The number of publications not currently stored in Chado
    */
-  public function findMissingPublicationsDbxref($publications) {
-    $found_publications_dbxref = []; // these are for the accession column query in dbxref table
-    $missing_publications_dbxref = [];
+  public function findExistingPublications(array $publications) {
 
-    // Get all accessions
+    // Get all publication accessions
     $all_publications_dbxref = [];
     foreach ($publications as $publication) {
-      $all_publications_dbxref[] = $publication['Publication Dbxref'];
+      $accession = $publication['Publication Dbxref'];
+      $all_publications_dbxref[] = $accession;
+      // Initialize the publication index with defaults
+      $this->pub_index[$accession] = [
+        'is_new' => TRUE,
+        'dbxref_id' => NULL,
+        'pub_id' => NULL,
+      ];
     }
 
-    // Create a bulk query
-    $batch_size = 1000;
-    $init_sql = "SELECT * FROM {1:dbxref} WHERE (\n";
-    $i = 0;
-    $total = 0;
-    $batch_num = 1;
-    $sql = '';
-    $args = [];
-    $total_all_publications_dbxref = count($all_publications_dbxref);
-    foreach ($all_publications_dbxref as $accession) {
-      $total++;
-      $i++;
-
-      $sql .= " accession = :accession_$i OR";
-      $args[":accession_$i"] = $accession;
-
-      if ($i == $batch_size or $total == $total_all_publications_dbxref) {
-        $sql = rtrim($sql, "OR");
-        $sql .= ")";
-        $sql = $init_sql . $sql;
-        $results_found = $this->chado->query($sql, $args);
-        foreach ($results_found as $found_record) {
-          $found_publications_dbxref[] = $found_record->accession;
-        }
-
-        $batch_num++;
-        // Now reset all of the variables for the next batch.
-        $sql = '';
-        $i = 0;
-        $args = [];
+    // Query for existing records in batches
+    $n_found = 0;
+    $batches = array_chunk($all_publications_dbxref, $this->batch_size);
+    foreach ($batches as $batch) {
+      $select = $this->chado->select('1:pub', 'P');
+      $select->leftJoin('1:pub_dbxref', 'PX', '"P".pub_id="PX".pub_id');
+      $select->leftJoin('1:dbxref', 'X', '"PX".dbxref_id="X".dbxref_id');
+      $select->addField('P', 'pub_id', 'pub_id');
+      $select->addField('X', 'dbxref_id', 'dbxref_id');
+      $select->addField('X', 'accession', 'accession');
+      $select->condition('X.accession', $batch, 'IN');
+      $results = $select->execute();
+      while ($values = $results->fetchAssoc()) {
+        $this->pub_index[$values['accession']] = [
+          'is_new' => FALSE,
+          'dbxref_id' => $values['dbxref_id'],
+          'pub_id' => $values['pub_id'],
+        ];
+        $n_found++;
       }
     }
-
-    // Now we have all found dbxrefs
-    foreach ($all_publications_dbxref as $accession) {
-      if (!in_array($accession, $found_publications_dbxref)) {
-        $missing_publications_dbxref[] = $accession;
-      }
-    }
-
-    // Now we have all missing dbxrefs
-    return $missing_publications_dbxref;
-
+    // We return the count of how many publication records we will need to add
+    return count($all_publications_dbxref) - $n_found;
   }
 
   /**
