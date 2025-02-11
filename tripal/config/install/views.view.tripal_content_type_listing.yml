@@ -1,14 +1,6 @@
 langcode: en
 status: true
 dependencies:
-  config:
-    - tripal.content_type.analysis
-    - tripal.content_type.contact
-    - tripal.content_type.organism
-    - tripal.content_type.project
-    - tripal.content_type.protocol
-    - tripal.content_type.pub
-    - tripal.content_type.study
   module:
     - tripal
     - user
@@ -511,15 +503,7 @@ display:
           entity_field: type
           plugin_id: bundle
           operator: in
-          value:
-            all: all
-            analysis: analysis
-            contact: contact
-            organism: organism
-            project: project
-            protocol: protocol
-            pub: pub
-            study: study
+          value: {  }
           group: 1
           exposed: true
           expose:
@@ -620,7 +604,7 @@ display:
     position: 1
     display_options:
       display_extenders: {  }
-      path: tripal-content-type-listing
+      path: admin/content/bio_data
       use_admin_theme: true
     cache_metadata:
       max-age: -1
