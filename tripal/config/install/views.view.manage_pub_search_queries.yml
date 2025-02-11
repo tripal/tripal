@@ -8,7 +8,7 @@ dependencies:
     - tripal
     - user
 _core:
-  default_config_hash: OUUEDxJvS2XwVTcKt8bcKPrMH7dbBBfly52DGM1vCCc
+  default_config_hash: sqb2ZzTzujwYaWrhS7JPCRup-YINgXWZAM6Y7_3Imko
 id: manage_pub_search_queries
 label: 'Manage Publication Search Queries'
 module: views
@@ -625,13 +625,13 @@ display:
             operator_list: {  }
             identifier: name
             required: false
-            remember: false
+            remember: true
             multiple: false
             remember_roles:
               authenticated: authenticated
+              content_editor: content_editor
+              administrator: administrator
               anonymous: '0'
-              content_editor: '0'
-              administrator: '0'
             placeholder: ''
           is_grouped: false
           group_info:
@@ -667,13 +667,13 @@ display:
             operator_list: {  }
             identifier: criteria
             required: false
-            remember: false
+            remember: true
             multiple: false
             remember_roles:
               authenticated: authenticated
+              content_editor: content_editor
+              administrator: administrator
               anonymous: '0'
-              content_editor: '0'
-              administrator: '0'
             placeholder: ''
           is_grouped: false
           group_info:
@@ -712,13 +712,13 @@ display:
             operator_list: {  }
             identifier: do_contact
             required: false
-            remember: false
+            remember: true
             multiple: false
             remember_roles:
               authenticated: authenticated
+              content_editor: content_editor
+              administrator: administrator
               anonymous: '0'
-              content_editor: '0'
-              administrator: '0'
           is_grouped: false
           group_info:
             label: ''
@@ -740,7 +740,7 @@ display:
           admin_label: ''
           plugin_id: boolean
           operator: '='
-          value: '0'
+          value: All
           group: 1
           exposed: true
           expose:
@@ -753,13 +753,13 @@ display:
             operator_list: {  }
             identifier: disabled
             required: false
-            remember: false
+            remember: true
             multiple: false
             remember_roles:
               authenticated: authenticated
+              content_editor: content_editor
+              administrator: administrator
               anonymous: '0'
-              content_editor: '0'
-              administrator: '0'
           is_grouped: false
           group_info:
             label: ''
