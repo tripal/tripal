@@ -29,12 +29,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  */
 class PubSearchQueryImporter extends ChadoImporterBase {
 
-#  /**
-#   * Connection to the Drupal public schema
-#   * @var \Drupal\pgsql\Driver\Database\pgsql\Connection $public
-#   */
-#  protected $public = NULL;
-
   /**
    * Connection to the Chado schema
    * @var \Drupal\pgsql\Driver\Database\pgsql\Connection $chado
@@ -356,7 +350,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    *   Exception if the database name does not exist
    */
   protected function getRemoteDbId(string $db_name) {
-print "CP01A db_name=$db_name\n";//@@@
     $query = $this->chado->select('1:db', 'DB');
     $query->condition('"DB".name', $db_name, '=');
     $query->addField('DB', 'db_id');
@@ -365,7 +358,6 @@ print "CP01A db_name=$db_name\n";//@@@
     if (is_null($db_id)) {
       throw new \Exception('Could not find a db_id for this remote database. A db record must exist in the db table that matches the name ' . $db_name);
     }
-print "CP01B db_id=$db_id\n";//@@@
     $this->db_id = $db_id;
   }
 
@@ -382,7 +374,6 @@ print "CP01B db_id=$db_id\n";//@@@
     while ($values = $results->fetchAssoc()) {
       $this->cvterm_lookups[$values['name']] = $values['cvterm_id'];
     }
-print "CP02 cached ".count($this->cvterm_lookups)." cvterm lookups\n";//@@@
   }
 
   /**
@@ -410,14 +401,11 @@ print "CP02 cached ".count($this->cvterm_lookups)." cvterm lookups\n";//@@@
         'pub_id' => NULL,
       ];
     }
-print "CP04A stored ".count($this->pub_index)." records in the pub_index\n";//@@@
 
     // Query for existing records in batches
     $n_found = 0;
     $batches = array_chunk($all_publications_dbxref, $this->batch_size);
-print "CP04B all_publications_dbxref="; print_r($all_publications_dbxref);//@@@
     foreach ($batches as $batch) {
-print "CP04C batch "; print_r($batch);//@@@
       $select = $this->chado->select('1:pub', 'P');
       $select->leftJoin('1:pub_dbxref', 'PX', '"P".pub_id="PX".pub_id');
       $select->leftJoin('1:dbxref', 'X', '"PX".dbxref_id="X".dbxref_id');
@@ -433,7 +421,6 @@ print "CP04C batch "; print_r($batch);//@@@
         $n_found++;
       }
     }
-print "CP04E n_found=$n_found\n"; //@@@
     // We return the count of how many publication records we will need to add
     return count($all_publications_dbxref) - $n_found;
   }
@@ -452,7 +439,6 @@ print "CP04E n_found=$n_found\n"; //@@@
 
     // Create the list of new accessions to add
     $this->getNewPublicationAccessions($publications);
-print "CP05G new accessions "; print_r($this->new_accessions); //@@@
 
     // Perform inserts in batches
     $n_inserted = 0;
@@ -469,14 +455,12 @@ print "CP05G new accessions "; print_r($this->new_accessions); //@@@
         $n_inserted++;
       }
       $first_dbxref_id = $insert->execute();
-print "CP05B first dbxref id=$first_dbxref_id\n"; //@@@
 
       // Store the dbxref keys for linking to pub later
       for ($i=0; $i<count($batch); $i++) {
         $this->pub_index[$batch[$i]]['dbxref_id'] = $first_dbxref_id + $i;
       }
     }
-print "CP05C n_inserted = ".$n_inserted."\n"; //@@@
     return $n_inserted;
   }
 
@@ -491,25 +475,23 @@ print "CP05C n_inserted = ".$n_inserted."\n"; //@@@
   protected function getNewPublicationAccessions(array $publications): void {
     // Create the list of new accessions to be imported
     foreach ($this->pub_index as $accession => $info) {
-print "CP05F check accession $accession: "; print_r($info);//@@@
       if ($info['is_new']) {
         $this->new_accessions[] = $accession;
       }
     }
-print "CP05A stored ".count($this->new_accessions)." new accessions in class variable\n";//@@@
   }
 
   /**
    * Inserts new publications into the pub table
    *
-   * @param array $publications
+   * @param array &$publications
    *   All publications returned by the external database
    * @return int
    *   A count of the number of publications inserted
    */
-  protected function insertPublications(array $publications): int {
+  protected function insertPublications(array &$publications): int {
     $n_inserted = 0;
-    foreach ($publications as $publication) {
+    foreach ($publications as $index => $publication) {
       $accession = $publication['Publication Dbxref'];
       if ($this->pub_index[$accession]['is_new']) {
 
@@ -521,10 +503,9 @@ print "CP05A stored ".count($this->new_accessions)." new accessions in class var
         // which should be unique, and we should have already generated it for
         // for all importers, but a simple default is provided as a fallback.
         $uniquename = $publication['Citation']
-          ?? str_replace(',', ';', @$publication['Authors']) . ' ' . $title . ' ' . $series_name . '; ' . $pyear;
-        $type_id = $this->getPublicationTypeId($publication);
-print "CP06A type_id = ".$type_id."\n";//@@@
+          ?? trim(str_replace(',', ';', $publication['Authors'] ?? '') . ' ' . $title . ' ' . $series_name . '; ' . $pyear);
 
+        $type_id = $this->getPublicationTypeId($publication);
         if ($type_id) {
           $insert = $this->chado->insert('1:pub');
           $insert->fields([
@@ -535,13 +516,15 @@ print "CP06A type_id = ".$type_id."\n";//@@@
             'type_id' => $type_id,
           ]);
           $pub_id = $insert->execute();
-print "CP06B pub_id inserted = $pub_id\n";//@@@
           $this->pub_index[$accession]['pub_id'] = $pub_id;
           $n_inserted++;
         }
+        else {
+          // If there is no type_id, we cannot process this publication further
+          unset($publications[$index]);
+        }
       }
     }
-print "CP06C n_inserted = ".$n_inserted."\n"; //@@@
     return $n_inserted;
   }
 
@@ -567,11 +550,11 @@ print "CP06C n_inserted = ".$n_inserted."\n"; //@@@
       $type_id = $this->cvterm_lookups[$type] ?? 0;
       // @todo change to just issue warning so we can skip over this publication
       if (!$type_id) {
-        throw new \Exception('Type ID for Publication Type: ' . $type . ' is not present in the tripal_pub vocabulary');
+        $this->logger->warning('Type ID for Publication Type: ' . $type . ' is not present in the tripal_pub vocabulary');
       }
     }
     else {
-      throw new \Exception('Publication is missing a type: ' . print_r($publication, TRUE));
+      $this->logger->warning('Publication is missing a type: ' . print_r($publication, TRUE));
     }
     return $type_id;
   }
@@ -582,8 +565,6 @@ print "CP06C n_inserted = ".$n_inserted."\n"; //@@@
   protected function insertPubDbxrefs() {
     $n_inserted = 0;
 
-print "CP07A add ".count($this->new_accessions)." new pub_dbxref links\n";//@@@
-
     // Perform inserts in batches
     $n_inserted = 0;
     $batches = array_chunk($this->new_accessions, $this->batch_size);
@@ -593,7 +574,6 @@ print "CP07A add ".count($this->new_accessions)." new pub_dbxref links\n";//@@@
       foreach ($batch as $accession) {
         $dbxref_id = $this->pub_index[$accession]['dbxref_id'];
         $pub_id = $this->pub_index[$accession]['pub_id'];
-print "CP07B pub_id=$pub_id dbxref_id=$dbxref_id\n";//@@@
         $insert->values([
           'pub_id' => $pub_id,
           'dbxref_id' => $dbxref_id,
@@ -602,7 +582,6 @@ print "CP07B pub_id=$pub_id dbxref_id=$dbxref_id\n";//@@@
       }
       $insert->execute();
     }
-print "CP07C inserted ".$n_inserted." pub_dbxref records\n"; //@@@
     return $n_inserted;
   }
 
@@ -730,29 +709,15 @@ print "CP07C inserted ".$n_inserted." pub_dbxref records\n"; //@@@
     $batches = array_chunk($this->new_accessions, $this->batch_size);
     foreach ($batches as $batch) {
       foreach ($batch as $accession) {
-
-print "CP09A insertContacts accession $accession\n";//@@@
         $publication = $publications[$this->pub_index[$accession]['index']];
         $author_list = $publication['Author List'] ?? NULL;
         if ($author_list) {
-print "CP09B\n";//@@@
           $n_added += $this->addAuthors($accession, $publication, $do_contact);
         }
       }
     }
-print "CP09D n added = ".$n_added."\n"; //@@@
     return $n_added;
   }
-#  CP09A insertContacts accession 39887573
-#  CP09B
-#  ERROR: SQLSTATE[22P02]: Invalid text representation: 7 ERROR:  invalid input syntax for type boolean: ""
-#  LINE 1: ...rname", "givennames", "suffix") VALUES ('2', '0', '', 'Rolli...
-#                                                               ^: INSERT INTO "chado"."pubauthor"
-#                                                                ("pub_id", "rank", "editor", "surname", "givennames", "suffix")
-#                                                                 VALUES (:db_insert_placeholder_0, :db_insert_placeholder_1, :db_insert_placeholder_2,
-#                                                                  :db_insert_placeholder_3, :db_insert_placeholder_4, :db_insert_placeholder_5), (:db_insert_placeholder_6, :db_insert_placeholder_7, :db_insert_placeholder_8, :db_insert_placeholder_9, :db_insert_placeholder_10, :db_insert_placeholder_11), (:db_insert_placeholder_12, :db_insert_placeholder_13, :db_insert_placeholder_14, :db_insert_placeholder_15, :db_insert_placeholder_16, :db_insert_placeholder_17), (:db_insert_placeholder_18, :db_insert_placeholder_19, :db_insert_placeholder_20, :db_insert_placeholder_21, :db_insert_placeholder_22, :db_insert_placeholder_23), (:db_insert_placeholder_24, :db_insert_placeholder_25, :db_insert_placeholder_26, :db_insert_placeholder_27, :db_insert_placeholder_28, :db_insert_placeholder_29), (:db_insert_placeholder_30, :db_insert_placeholder_31, :db_insert_placeholder_32, :db_insert_placeholder_33, :db_insert_placeholder_34, :db_insert_placeholder_35), (:db_insert_placeholder_36, :db_insert_placeholder_37, :db_insert_placeholder_38, :db_insert_placeholder_39, :db_insert_placeholder_40, :db_insert_placeholder_41) RETURNING pubauthor_id; Array
-#  (
-#  )
 
   /**
    * Add one or more authors to a publication through the
@@ -767,9 +732,10 @@ print "CP09D n added = ".$n_added."\n"; //@@@
    *   If TRUE, then create and link an entry in the chado.contact table
    * @return int
    *   A count of the number of records added
+   * Example PMID with a suffix: 38266644
+   * Example PMID that is a collective: 12773082
    */
   protected function addAuthors(string $accession, array $publication, bool $do_contact = FALSE): int {
-  print "CP09C addAuthors accession=$accession do_contact="; print_r($do_contact); //@@@
     $pub_id = $this->pub_index[$accession]['pub_id'];
     $author_list = $publication['Author List'] ?? [];
     $contact_id_list = [];
@@ -778,7 +744,6 @@ print "CP09D n added = ".$n_added."\n"; //@@@
     $insert->fields(['pub_id', 'rank', 'editor', 'surname', 'givennames', 'suffix']);
     foreach ($author_list as $author) {
       if (($author['valid'] ?? 'Y') != 'N') {
-print "CP09D pub_id=$pub_id rank=$rank surname=".$author['Surname']." givennames=".$author['Given Name']."\n";//@@@
         $surname = substr($author['Surname'] ?? '', 0, 100);
         if ($author['Collective'] ?? NULL) {
           if (!$surname) {
@@ -796,11 +761,8 @@ print "CP09D pub_id=$pub_id rank=$rank surname=".$author['Surname']." givennames
         $rank++;
       }
     }
-print "CP09E rank at end=$rank\n";//@@@
-print "CP09f do_contact is "; var_dump($do_contact); //@@@
     // Skip remainder if author list was empty
     if ($rank > 0) {
-print "CP09G insert execute\n";//@@@
       $first_pubauthor_id = $insert->execute();
       if ($do_contact) {
         $delta = 0;
@@ -820,9 +782,7 @@ print "CP09G insert execute\n";//@@@
               $author_full_name = $author['Collective'];
               $author_type = 'Collective';
             }
-print "09H full name \"$author_full_name\"\n";//@@@
             $contact_id = $this->getContact($author_full_name, $author_type);
-print "09I contact_id=$contact_id\n";//@@@
             $contact_insert->values([
               'pubauthor_id' => $first_pubauthor_id + $delta,
               'contact_id' => $contact_id,
@@ -834,32 +794,28 @@ print "09I contact_id=$contact_id\n";//@@@
       }
     }
 
-    print "CP09Z added $rank authors\n";//@@@
     return $rank;
   }
 
   /**
-   * Gets the contact_id of a person, creating the contact if it does not already exist
+   * Gets the contact_id of a person, will create the contact if it does not already exist
    *
    * @param string $contact_name
    *   The name of a contact
    * @param string $type
-   *   The type of contact in the tripal_contact ontology, defaults to 'Person'
+   *   The type of contact in the tripal_contact ontology, most commonly 'Person'
    * @return int
    *   The contact_id value
    */
-  protected function getContact(string $contact_name, string $type = 'Person'): int {
+  protected function getContact(string $contact_name, string $type): int {
     $type_id = $this->getContactType($type);
-print "CP09J type_id=$type_id\n";//@@@
     $query = $this->chado->select('1:contact', 'C');
     $query->condition('"C".name', $contact_name, 'ILIKE');
     $query->condition('"C".type_id', $type_id, '=');
     $query->addField('C', 'contact_id');
     $contact_id = $query->execute()->fetchField();
-print "CP09K contact_id="; var_dump($contact_id);//@@@
     if (!$contact_id) {
       $insert = $this->chado->insert('1:contact');
-print "CP09L insert\n";//@@@
       $insert->fields([
         'name' => $contact_name,
         'description' => '',
@@ -950,7 +906,6 @@ print "CP09L insert\n";//@@@
     // Use the appropriate plugin to run the query and process the results
     $this->logger->notice('Step 3 of 9: Retrieving publication data from remote database ...');
     $pub_library_manager = \Drupal::service('tripal.pub_library');
-print "CP03A plugin_id=\"$plugin_id\"\n"; //@@@
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
     $publications = $plugin->run($query_id);
     if (!is_array($publications)) {
