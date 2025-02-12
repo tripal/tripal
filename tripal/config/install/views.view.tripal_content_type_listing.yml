@@ -381,7 +381,7 @@ display:
       access:
         type: perm
         options:
-          perm: 'access tripal content overview'
+          perm: 'administer tripal content'
       cache:
         type: none
         options: {  }
@@ -605,6 +605,12 @@ display:
     display_plugin: page
     position: 1
     display_options:
+      access:
+        type: perm
+        options:
+          perm: 'access tripal content overview'
+      defaults:
+        access: false
       display_extenders: {  }
       path: admin/content/bio_data
       use_admin_theme: true
@@ -625,6 +631,8 @@ display:
     display_plugin: page
     position: 2
     display_options:
+      defaults:
+        access: true
       display_extenders: {  }
       path: admin/content/bio_data
     cache_metadata:
