@@ -54,3 +54,7 @@ services:
     arguments: ['@tripal.logger']
   tripal.tripal_entity.lookup:
     class: Drupal\tripal\Services\TripalEntityLookup
+
+  tripal.sync_tripal_field_storage:
+    class: Drupal\tripal\Services\SyncTripalFieldStorage
+    arguments: ['@entity_type.manager', '@database']

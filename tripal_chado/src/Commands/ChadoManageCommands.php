@@ -2,6 +2,7 @@
 namespace Drupal\tripal_chado\Commands;
 
 use Drush\Commands\DrushCommands;
+use Drupal\tripal\TripalDBX\TripalDbx;
 
 /**
  * Drush commands
@@ -41,6 +42,88 @@ class ChadoManageCommands extends DrushCommands {
         ]
       ));
     }
+  }
+
+  /**
+   * Apply migrations to an existing Chado schema.
+   *
+   * @command tripal-chado:migrate-chado
+   * @aliases trp-migrate-chado
+   * @options schema-name
+   *   The name of the schema to apply chado migrations to.
+   * @usage drush trp-migrate-chado --schema-name='teapot'
+   *   Applies all pending migrations to a schema named "teapot".
+   */
+  public function migrateChado($options = ['schema-name' => 'chado']) {
+
+    // Confirm the schema exists.
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $schema_exists = $tripaldbx->schemaExists($options['schema-name']);
+    if (!$schema_exists) {
+      throw new \Exception(dt(
+        'The schema \'@schema\' does not exist and therefore cannot be migrated.',
+        [
+          '@schema' => $options['schema-name'],
+        ]
+      ));
+    }
+
+    // First setup our task.
+    $migrator = \Drupal::service('tripal_chado.apply_migrations');
+    $migrator->setParameters([
+      'input_schemas' => [$options['schema-name']],
+    ]);
+
+    // Look up the install ID
+    $migrator->lookupInstallID();
+
+    // Determine what work is to be done and format into a table.
+    $all_migrations = $migrator->checkMigrationStatus();
+    $header = ['Chado Version', 'Description', 'Applied On', 'Status'];
+    $rows = [];
+    $pending_migrations = 0;
+    foreach ($all_migrations as $migration) {
+      $formatted_date = '';
+      if ($migration->applied_on) {
+        $formatted_date = \Drupal::service('date.formatter')->format($migration->applied_on, 'html_date');
+      }
+      $rows[] = [
+        $migration->version,
+        $migration->description,
+        $formatted_date,
+        $migration->status,
+      ];
+
+      if ($migration->status !== 'Successful') {
+        $pending_migrations++;
+      }
+    }
+
+    $this->output()->writeln("\nThe following table summarizes the migrations for the '" . $options['schema-name'] . "' schema.");
+    $this->io()->table($header, $rows);
+    $this->output()->writeln('');
+
+    if ($pending_migrations) {
+      $response = $this->io()->confirm(
+        "Would you like to apply $pending_migrations pending migrations?",
+        TRUE
+      );
+      if ($response) {
+        $success = $migrator->performTask();
+        if ($success) {
+          $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully migrated to the most recent version.'));
+        } else {
+          throw new \Exception(dt(
+            'Unable to migrate chado in schema \'{schema}\'',
+            ['schema' => $options['schema-name']]
+          ));
+        }
+      }
+    }
+    else {
+      $this->output()->writeln(dt('<info>[Success]</info> Chado is already up to date. There are no migrations pending.'));
+    }
+    $this->output()->writeln('');
   }
 
   /**
@@ -179,4 +262,72 @@ class ChadoManageCommands extends DrushCommands {
        $bundle, $datastore, $values);
   }
 
+  /**
+   * Add a Chado schema to Tripal. Does not set this schema as the default, as
+   * there can be more than one Chado schema added to Tripal.
+   * See the command tripal-chado:set_default for this functionality.
+   *
+   * @command tripal-chado:add_to_tripal
+   * @aliases trp-add-chado
+   * @options schema-name
+   *   The name of the chado schema to add to Tripal.
+   * @usage drush trp-add-chado --schema-name="chado"
+   *   Adds the specified Chado to Tripal.
+   *
+   */
+  public function addToTripal($options = ['schema-name' => 'chado']) {
+
+    $this->output()->writeln('Adding the schema "' . $options['schema-name'] . '" to Tripal...');
+
+    $integrator = \Drupal::service('tripal_chado.integrator');
+    $integrator->setParameters(
+      [
+        'input_schemas' => [$options['schema-name']]
+      ]
+    );
+
+    if ($integrator->performTask()) {
+      $this->output()->writeln('Successfully added the schema "' . $options['schema-name'] . '" to Tripal.');
+    }
+  }
+
+
+  /**
+   * Sets a specified Chado schema to be the default in Tripal. Only one
+   * schema may be set to default at a time.
+   *
+   * @command tripal-chado:set_default_schema
+   * @aliases trp-set-default
+   * @options schema-name
+   *   The name of the chado schema to be set to default in Tripal.
+   * @usage drush trp-set-default --schema-name="chado"
+   *   Sets the specified Chado to be default in Tripal.
+   *
+   */
+  public function setDefault($options = ['schema-name' => 'chado']) {
+
+    $this->output()->writeln('Setting the schema "' . $options['schema-name'] . '" to be default in Tripal...');
+
+    // Ensure that the provided schema exists.
+    $tripaldbx = \Drupal::service('tripal.dbx');
+
+   if ($tripaldbx->schemaExists($options['schema-name'])) {
+      $config = \Drupal::service('config.factory')
+        ->getEditable('tripal_chado.settings')
+      ;
+      $success = $config->set('default_schema', $options['schema-name'])->save();
+  
+      if ($success) {
+        $this->output()->writeln('Successfully set the schema "' . $options['schema-name'] . '" to be default.');
+      }
+    }
+    else {
+      throw new \Exception(dt(
+        'Unable to set the default schema to \'@schema\' - that schema does not exist.',
+        [
+          '@schema' => $options['schema-name'],
+        ]
+      ));
+    }
+  }
 }

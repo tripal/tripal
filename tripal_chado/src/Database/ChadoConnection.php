@@ -134,6 +134,7 @@ class ChadoConnection extends TripalDbxConnection {
       ->execute()
       ->fetch();
     if ($result) {
+      $this->version = $result->version;
       return $result->version;
     }
 
@@ -170,6 +171,7 @@ class ChadoConnection extends TripalDbxConnection {
             AND cvt.name = 'version'";
         $v = $this->query($sql_query)->fetchObject();
         if ($v) {
+          $this->version = $v->value;
           return $v->value;
         }
       }
@@ -181,6 +183,7 @@ class ChadoConnection extends TripalDbxConnection {
       }
     }
 
+    $this->version = $version;
     return $version;
   }
 
