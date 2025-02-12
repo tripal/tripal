@@ -379,7 +379,7 @@ display:
       access:
         type: perm
         options:
-          perm: 'administer tripal, access tripal content overview'
+          perm: 'administer tripal, access tripal content overview, view tripal content entities'
       cache:
         type: none
         options: {  }
