@@ -4,6 +4,8 @@ dependencies:
   module:
     - tripal
     - user
+_core:
+  default_config_hash: vXHzj7L1fF2AOk6gkFs-68KBr0y9W0NEDHqsBJQe0xE
 id: tripal_content_type_listing
 label: 'Tripal Content Type Listing'
 module: views
@@ -379,7 +381,7 @@ display:
       access:
         type: perm
         options:
-          perm: 'administer tripal, access tripal content overview, view tripal content entities'
+          perm: 'access tripal content overview'
       cache:
         type: none
         options: {  }
@@ -606,6 +608,25 @@ display:
       display_extenders: {  }
       path: admin/content/bio_data
       use_admin_theme: true
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_content'
+        - 'languages:language_interface'
+        - url
+        - url.query_args
+        - 'url.query_args:sort_by'
+        - 'url.query_args:sort_order'
+        - user.permissions
+      tags: {  }
+  page_2:
+    id: page_2
+    display_title: 'Page 2'
+    display_plugin: page
+    position: 2
+    display_options:
+      display_extenders: {  }
+      path: admin/content/bio_data
     cache_metadata:
       max-age: -1
       contexts:
