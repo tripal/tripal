@@ -29,6 +29,11 @@ use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
   /**
+   * Holds the chado database connection
+   */
+  protected $chado;
+
+  /**
    * Holds the list of all organisms currently in Chado. This list
    * is needed when checking to see if an organism has already been
    * loaded.
@@ -51,9 +56,24 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   protected object $dbxref_buddy;
 
   /**
+   * Provide the cvterm buddy instance
+   */
+  protected object $cvterm_buddy;
+
+  /**
    * Provide the property buddy instance
    */
   protected object $property_buddy;
+
+  /**
+   * The type_id for the organism bundle
+   */
+  protected ?int $default_type_id = NULL;
+
+  /**
+   * Cache of cvterm_id values for infraspecific ranks
+   */
+  protected array $infraspecific_types = [];
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -89,7 +109,9 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
                               ChadoConnection $connection, ChadoBuddyPluginManager $buddy_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
     $this->buddy_manager = $buddy_manager;
+    $this->chado = $connection;
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
+    $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
     $this->property_buddy = $this->buddy_manager->createInstance('chado_property_buddy', []);
   }
 
@@ -97,7 +119,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
@@ -193,8 +214,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    */
   public function run() {
 
-    $chado = $this->getChadoConnection();
-
     $arguments = $this->arguments['run_args'];
     $taxonomy_ids = trim($arguments['taxonomy_ids']);
     $import_existing = $arguments['import_existing'];
@@ -216,7 +235,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
       ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
     ";
-    $results = $chado->query($sql);
+    $results = $this->chado->query($sql);
 
     while ($item = $results->fetchObject()) {
       $this->all_orgs[] = $item;
@@ -444,7 +463,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    *   The rank of the organism as provied by NCBI Taxonomy.
    */
   protected function addOrganism($sci_name, $rank) {
-    $chado = $this->getChadoConnection();
     $organism = NULL;
     $matches = [];
     $genus = '';
@@ -460,10 +478,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $full_infra = $matches[3];
 
       // Get the CV term for the rank.
-      $type = chado_get_cvterm([
-        'name' => preg_replace('/ /', '_', $rank),
-        'cv_id' => ['name' => 'taxonomic_rank'],
-      ], [], $this->chado_schema_main);
+      $cvterm_id = $this->getInfraspecificTypeId($rank);
 
       // Remove the rank from the infraspecific name.
       $abbrev = chado_abbreviate_infraspecific_rank($rank);
@@ -474,13 +489,13 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         'genus' => $genus,
         'species' => $species,
         'abbreviation' => $genus[0] . '. ' . $species . ' ' . $full_infra,
-        'type_id' => $type->cvterm_id,
+        'type_id' => $cvterm_id,
         'infraspecific_name' => $infra,
       ];
-      $organism_id = $chado->insert('1:organism')
+      $organism_id = $this->chado->insert('1:organism')
         ->fields($values)
         ->execute();
-      $organism = $chado->select('1:organism', 'o')
+      $organism = $this->chado->select('1:organism', 'o')
         ->fields('o')
         ->condition('organism_id', $organism_id)
         ->execute()
@@ -500,10 +515,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         ];
         // $organism = chado_insert_record('organism', $values);
         // $organism = (object) $organism;
-        $organism_id = $chado->insert('1:organism')
+        $organism_id = $this->chado->insert('1:organism')
         ->fields($values)
         ->execute();
-        $organism = $chado->select('1:organism', 'o')
+        $organism = $this->chado->select('1:organism', 'o')
         ->fields('o')
         ->condition('organism_id', $organism_id)
         ->execute()
@@ -516,11 +531,69 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       }
     }
     if ($organism) {
+      $this->addOrganismBundleType($organism->organism_id);
       $organism->is_new = TRUE;
       $this->all_orgs[] = $organism;
     }
 
     return $organism;
+  }
+
+  /**
+   * Gets the cvterm_id for the supplied taxonomic rank
+   *
+   * @param string $infraspecific_type
+   *   The rank, e.g. 'subspecies', 'varietas', etc.
+   * @return int
+   *   The corresponding cvterm_id value, or zero if it does not exist
+   */
+  protected function getInfraspecificTypeId(string $infraspecific_type): int {
+    $infraspecific_type = preg_replace('/ /', '_', $infraspecific_type);
+    $cvterm_id = 0;
+    if (array_key_exists($infraspecific_type, $this->infraspecific_types)) {
+      $cvterm_id = $this->infraspecific_types[$infraspecific_type];
+    }
+    else {
+      $cvterm_records = $this->cvterm_buddy->getCvterm([
+        'cv.name' => 'taxonomic_rank',
+        'cvterm.name' => preg_replace('/ /', '_', $infraspecific_type),
+      ]);
+      if ($cvterm_records) {
+        $cvterm_id = $cvterm_records[0]->getValue('cvterm.cvterm_id');
+      }
+      $this->infraspecific_types[$infraspecific_type] = $cvterm_id;
+    }
+    return $cvterm_id;
+  }
+
+  /**
+   * Adds the bundle type to the organism
+   *
+   * @param int $organism_id
+   *   The pkey for the organism record
+   * @param int type_id
+   *   The type to use, defaults to the standard organism bundle type
+   */
+  protected function addOrganismBundleType(int $organism_id, int $type_id = NULL) {
+    if (!$type_id) {
+      if (!$this->default_type_id) {
+        $cvterm_records = $this->cvterm_buddy->getCvterm([
+          'db.name' => 'OBI',
+          'dbxref.accession' => '0100026',
+        ]);
+        $this->default_type_id = $cvterm_records[0]->getValue('cvterm.cvterm_id');
+      }
+      $type_id = $this->default_type_id;
+    }
+    $values = [
+      'organism_id' => $organism_id,
+      'type_id' => $type_id,
+      'value' => 'organism',
+      'rank' => 0,
+    ];
+    $this->chado->insert('1:organismprop')
+      ->fields($values)
+      ->execute();
   }
 
   /**
@@ -579,6 +652,14 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
 
     if ($xml) {
       $taxon = $xml->Taxon;
+
+      // This will happen for undefined taxid values
+      if (!$taxon) {
+        $this->logger->warning('NCBI does not have a record for taxon ID @taxid',
+          ['@taxid' => $taxid]
+        );
+        return FALSE;
+      }
 
       // Get the genus and species from the xml.
       $parent = (string) $taxon->ParentTaxId;
