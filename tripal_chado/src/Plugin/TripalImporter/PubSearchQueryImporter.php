@@ -908,45 +908,47 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
     $publications = $plugin->run($query_id);
+
     if (!is_array($publications)) {
       $this->logger->error('  ✗ ERROR: Unable to connect to external database to lookup publications');
-      return FALSE;
     }
-    $this->logger->notice('  🗸 Found publications: ' . count($publications));
+    else {
+      $this->logger->notice('  🗸 Found publications: ' . count($publications));
 
-    // Determine the number of new publications to be inserted
-    $n_to_insert = 0;
-    if (count($publications)) {
-      $this->logger->notice('Step 4 of 9: Check for already imported publications ...');
-      $n_to_insert = $this->findExistingPublications($publications);
-      $this->logger->notice('  🗸 New publications to be inserted: ' . $n_to_insert);
+      // Determine the number of new publications to be inserted
+      $n_to_insert = 0;
+      if (count($publications)) {
+        $this->logger->notice('Step 4 of 9: Check for already imported publications ...');
+        $n_to_insert = $this->findExistingPublications($publications);
+        $this->logger->notice('  🗸 New publications to be inserted: ' . $n_to_insert);
+      }
+
+      // If no new publications, then nothing to do
+      if (!$n_to_insert) {
+        $this->logger->notice('  ✗ No new publications were found, there is nothing to import');
+      }
+      else {
+        $this->logger->notice('Step 5 of 9: Insert database crossreferences ...');
+        $n_inserted = $this->insertMissingPublicationsDbxref($publications);
+        $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
+
+        $this->logger->notice('Step 6 of 9: Insert new publications ...');
+        $n_inserted = $this->insertPublications($publications);
+        $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
+
+        $this->logger->notice('Step 7 of 9: Link publications to database crossreferences ...');
+        $n_inserted = $this->insertPubDbxrefs();
+        $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
+
+        $this->logger->notice('Step 8 of 9: Insert publication properties ...');
+        $n_inserted = $this->insertPubProps($publications);
+        $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
+
+        $this->logger->notice('Step 9 of 9: Insert authors ...');
+        $n_added = $this->insertContacts($publications, $do_contact);
+        $this->logger->notice('  🗸 Inserted: ' . $n_added);
+      }
     }
-
-    // If no new publications, then nothing to do
-    if (!$n_to_insert) {
-      $this->logger->notice('  ✗ No new publications were found, there is nothing to import');
-      return;
-    }
-
-    $this->logger->notice('Step 5 of 9: Insert database crossreferences ...');
-    $n_inserted = $this->insertMissingPublicationsDbxref($publications);
-    $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
-
-    $this->logger->notice('Step 6 of 9: Insert new publications ...');
-    $n_inserted = $this->insertPublications($publications);
-    $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
-
-    $this->logger->notice('Step 7 of 9: Link publications to database crossreferences ...');
-    $n_inserted = $this->insertPubDbxrefs();
-    $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
-
-    $this->logger->notice('Step 8 of 9: Insert publication properties ...');
-    $n_inserted = $this->insertPubProps($publications);
-    $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
-
-    $this->logger->notice('Step 9 of 9: Insert authors ...');
-    $n_added = $this->insertContacts($publications, $do_contact);
-    $this->logger->notice('  🗸 Inserted: ' . $n_added);
 
     return;
   }
