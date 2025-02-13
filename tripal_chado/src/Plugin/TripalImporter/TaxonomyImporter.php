@@ -569,10 +569,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    *
    * @param int $organism_id
    *   The pkey for the organism record
-   * @param int type_id
+   * @param ?int type_id
    *   The type to use, defaults to the standard organism bundle type
    */
-  protected function addOrganismBundleType(int $organism_id, int $type_id = NULL) {
+  protected function addOrganismBundleType(int $organism_id, ?int $type_id = NULL) {
     $chado = $this->getChadoConnection();
     if (!$type_id) {
       if (!$this->default_type_id) {
