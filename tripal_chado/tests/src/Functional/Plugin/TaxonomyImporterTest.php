@@ -61,6 +61,17 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     $this->assertEquals(1, $results_object->c1,
         'No organism Arabidopsis thaliana found which should have been created');
 
+    // Test that the bundle term was added to the new organism record
+    $results = $chado->query("SELECT count(*) as c2 FROM {1:organism} O
+        LEFT JOIN {1:organismprop} P ON O.organism_id=P.organism_id
+        LEFT JOIN {1:cvterm} T ON P.type_id=T.cvterm_id
+        LEFT JOIN {1:dbxref} X ON T.dbxref_id=X.dbxref_id
+        LEFT JOIN {1:db} DB ON X.db_id=DB.db_id
+        WHERE O.genus = 'Arabidopsis' AND O.species = 'thaliana' AND DB.name='OBI' AND X.accession='0100026';");
+    $results_object = $results->fetchObject();
+    $this->assertEquals(1, $results_object->c2,
+        'No bundle term was added for Arabidopsis thaliana');
+
     // Test import_existing, check if Arabidopsis arenosa
     // lineageex property was looked up from NCBI
     $results = $chado->query("SELECT count(*) as c2 FROM {1:organism} O

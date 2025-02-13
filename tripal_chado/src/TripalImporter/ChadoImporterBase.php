@@ -35,6 +35,13 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
   protected $connection;
 
   /**
+   * The type_id for the bundle(s)
+   * @var array $bundle_type_id
+   *   Key is DB:accession, value is cvterm_id
+   */
+  protected array $bundle_type_id = [];
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
@@ -129,6 +136,49 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
     $transactions[] = $chado->startTransaction();
 
     return $transactions;
+  }
+
+  /**
+   * Adds the bundle type property to a record
+   *
+   * @param string $pkey
+   *   The primary key column name
+   * @param int $record_id
+   *   The pkey value for the record
+   * @param string $property_table
+   *   The name of the property table
+   * @param string $termIdSpace
+   *   The name in the chado.db table
+   * @param string $termAccession
+   *   The accession in the chado.dbxref table
+   * @param string $value = ''
+   *   Property value, can be empty string
+   * @param ?int $rank = NULL
+   *   Optional rank
+   */
+  protected function addBundleTypeProperty(string $pkey, int $record_id, string $property_table, string $termIdSpace, string $termAccession, string $value = '', ?int $rank = NULL) {
+    $key = $termIdSpace . ':' . $termAccession;
+    if (!($this->bundle_type_id[$key] ?? NULL)) {
+      $select = $this->connection->select('1:cvterm', 'T');
+      $select->join('1:dbxref', 'X', '"T".dbxref_id = "X".dbxref_id');
+      $select->join('1:db', 'DB', '"X".db_id = "DB".db_id');
+      $select->condition('DB.name', $termIdSpace, '=');
+      $select->condition('X.accession', $termAccession, '=');
+      $select->addField('T', 'cvterm_id', 'cvterm_id');
+      $this->bundle_type_id[$key] = $select->execute()->fetchField();
+    }
+    $type_id = $this->bundle_type_id[$key];
+    $values = [
+      $pkey => $record_id,
+      'type_id' => $type_id,
+      'value' => $value,
+    ];
+    if (!is_null($rank)) {
+      $values['rank'] = $rank;
+    }
+    $this->connection->insert('1:' . $property_table)
+      ->fields($values)
+      ->execute();
   }
 
   /**

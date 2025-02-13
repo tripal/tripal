@@ -61,11 +61,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   protected object $property_buddy;
 
   /**
-   * The type_id for the organism bundle
-   */
-  protected ?int $default_type_id = NULL;
-
-  /**
    * Cache of cvterm_id values for infraspecific ranks
    */
   protected array $infraspecific_types = [];
@@ -529,7 +524,8 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       }
     }
     if ($organism) {
-      $this->addOrganismBundleType($organism->organism_id);
+      // Adds the property defining the bundle type
+      $this->addBundleTypeProperty('organism_id', $organism->organism_id, 'organismprop', 'OBI', '0100026', 'organism');
       $organism->is_new = TRUE;
       $this->all_orgs[] = $organism;
     }
@@ -562,37 +558,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $this->infraspecific_types[$infraspecific_type] = $cvterm_id;
     }
     return $cvterm_id;
-  }
-
-  /**
-   * Adds the bundle type to the organism
-   *
-   * @param int $organism_id
-   *   The pkey for the organism record
-   * @param ?int type_id
-   *   The type to use, defaults to the standard organism bundle type
-   */
-  protected function addOrganismBundleType(int $organism_id, ?int $type_id = NULL) {
-    $chado = $this->getChadoConnection();
-    if (!$type_id) {
-      if (!$this->default_type_id) {
-        $cvterm_records = $this->cvterm_buddy->getCvterm([
-          'db.name' => 'OBI',
-          'dbxref.accession' => '0100026',
-        ]);
-        $this->default_type_id = $cvterm_records[0]->getValue('cvterm.cvterm_id');
-      }
-      $type_id = $this->default_type_id;
-    }
-    $values = [
-      'organism_id' => $organism_id,
-      'type_id' => $type_id,
-      'value' => 'organism',
-      'rank' => 0,
-    ];
-    $chado->insert('1:organismprop')
-      ->fields($values)
-      ->execute();
   }
 
   /**
