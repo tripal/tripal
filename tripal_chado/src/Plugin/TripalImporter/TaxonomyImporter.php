@@ -29,11 +29,6 @@ use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
   /**
-   * Holds the chado database connection
-   */
-  protected $chado;
-
-  /**
    * Holds the list of all organisms currently in Chado. This list
    * is needed when checking to see if an organism has already been
    * loaded.
@@ -109,7 +104,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
                               ChadoConnection $connection, ChadoBuddyPluginManager $buddy_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
     $this->buddy_manager = $buddy_manager;
-    $this->chado = $connection;
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
     $this->property_buddy = $this->buddy_manager->createInstance('chado_property_buddy', []);
@@ -119,6 +113,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
+     $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
@@ -214,6 +209,8 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    */
   public function run() {
 
+    $chado = $this->getChadoConnection();
+
     $arguments = $this->arguments['run_args'];
     $taxonomy_ids = trim($arguments['taxonomy_ids']);
     $import_existing = $arguments['import_existing'];
@@ -235,7 +232,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
       ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
     ";
-    $results = $this->chado->query($sql);
+    $results = $chado->query($sql);
 
     while ($item = $results->fetchObject()) {
       $this->all_orgs[] = $item;
@@ -463,6 +460,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    *   The rank of the organism as provied by NCBI Taxonomy.
    */
   protected function addOrganism($sci_name, $rank) {
+    $chado = $this->getChadoConnection();
     $organism = NULL;
     $matches = [];
     $genus = '';
@@ -492,7 +490,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         'type_id' => $cvterm_id,
         'infraspecific_name' => $infra,
       ];
-      $organism_id = $this->chado->insert('1:organism')
+      $organism_id = $chado->insert('1:organism')
         ->fields($values)
         ->execute();
       $organism = $this->chado->select('1:organism', 'o')
@@ -515,10 +513,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         ];
         // $organism = chado_insert_record('organism', $values);
         // $organism = (object) $organism;
-        $organism_id = $this->chado->insert('1:organism')
+        $organism_id = $chado->insert('1:organism')
         ->fields($values)
         ->execute();
-        $organism = $this->chado->select('1:organism', 'o')
+        $organism = $chado->select('1:organism', 'o')
         ->fields('o')
         ->condition('organism_id', $organism_id)
         ->execute()
@@ -575,6 +573,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    *   The type to use, defaults to the standard organism bundle type
    */
   protected function addOrganismBundleType(int $organism_id, int $type_id = NULL) {
+    $chado = $this->getChadoConnection();
     if (!$type_id) {
       if (!$this->default_type_id) {
         $cvterm_records = $this->cvterm_buddy->getCvterm([
@@ -591,7 +590,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       'value' => 'organism',
       'rank' => 0,
     ];
-    $this->chado->insert('1:organismprop')
+    $chado->insert('1:organismprop')
       ->fields($values)
       ->execute();
   }
