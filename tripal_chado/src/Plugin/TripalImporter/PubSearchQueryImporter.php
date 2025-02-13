@@ -425,7 +425,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     return count($all_publications_dbxref) - $n_found;
   }
 
-/**
+  /**
    * Inserts new publication accessions into the dbxref table.
    *
    * @param array $publications
@@ -518,6 +518,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
           $pub_id = $insert->execute();
           $this->pub_index[$accession]['pub_id'] = $pub_id;
           $n_inserted++;
+          // Adds the property defining the bundle type
+          $this->addBundleTypeProperty('pub_id', $pub_id, 'pubprop', 'TPUB', '0000002', 'publication');
         }
         else {
           // If there is no type_id, we cannot process this publication further
