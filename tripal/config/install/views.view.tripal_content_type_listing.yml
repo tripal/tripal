@@ -1,14 +1,11 @@
 langcode: en
 status: true
 dependencies:
-  config:
-    - user.role.administrator
-    - user.role.authenticated
   module:
     - tripal
     - user
 _core:
-  default_config_hash: D7URjeFAspIGq91Zp4pyy03_ET6SDH_UMcKVKDG70cg
+  default_config_hash: pW72ou_ok2gGi1X6U3oPn631_rvNA_Q4W_PJHDFVNTg
 id: tripal_content_type_listing
 label: 'Tripal Content Type Listing'
 module: views
@@ -381,11 +378,8 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       access:
-        type: role
-        options:
-          role:
-            authenticated: authenticated
-            administrator: administrator
+        type: none
+        options: {  }
       cache:
         type: none
         options: {  }
@@ -601,7 +595,6 @@ display:
         - url.query_args
         - 'url.query_args:sort_by'
         - 'url.query_args:sort_order'
-        - user.roles
       tags: {  }
   page_1:
     id: page_1
@@ -621,5 +614,4 @@ display:
         - url.query_args
         - 'url.query_args:sort_by'
         - 'url.query_args:sort_order'
-        - user.roles
       tags: {  }
