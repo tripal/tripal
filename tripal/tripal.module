@@ -15,6 +15,7 @@ use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
+use Drupal\views\ViewExecutable;
 
 require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
@@ -675,4 +676,33 @@ function tripal_gin_content_form_routes() {
   $route_names[] = 'entity.tripal_entity.edit_form';
 
   return $route_names;
+}
+
+/**
+ * Implements hook_views_pre_view().
+ */
+function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
+  if ($view->id() == 'tripal_content_type_listing') {
+    // List of permission user must have to access Tripal Content Type listings.
+    $perm = [
+      'access tripal content overview',
+      'administer tripal content',
+    ];
+
+    // Check if current user has either permissions when attempting to view listing.
+    $user = \Drupal::currentUser();
+
+    $has_permission = FALSE;
+    foreach ($perm as $permission) {
+      if ($user->hasPermission($permission)) {
+        $has_permission = TRUE;
+        break;
+      }
+    }
+
+    // Deny access if user does not have necessary permission.
+    if (!$has_permission) {
+      throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
+    }
+  }
 }

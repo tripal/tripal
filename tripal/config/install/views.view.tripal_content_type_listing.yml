@@ -1,11 +1,14 @@
 langcode: en
 status: true
 dependencies:
+  config:
+    - user.role.administrator
+    - user.role.authenticated
   module:
     - tripal
     - user
 _core:
-  default_config_hash: vXHzj7L1fF2AOk6gkFs-68KBr0y9W0NEDHqsBJQe0xE
+  default_config_hash: D7URjeFAspIGq91Zp4pyy03_ET6SDH_UMcKVKDG70cg
 id: tripal_content_type_listing
 label: 'Tripal Content Type Listing'
 module: views
@@ -283,7 +286,6 @@ display:
               past_format: '@interval ago'
               granularity: 2
               refresh: 60
-              # description: 'time difference'
           group_column: value
           group_columns: {  }
           group_rows: true
@@ -379,9 +381,11 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       access:
-        type: perm
+        type: role
         options:
-          perm: 'administer tripal content'
+          role:
+            authenticated: authenticated
+            administrator: administrator
       cache:
         type: none
         options: {  }
@@ -597,7 +601,7 @@ display:
         - url.query_args
         - 'url.query_args:sort_by'
         - 'url.query_args:sort_order'
-        - user.permissions
+        - user.roles
       tags: {  }
   page_1:
     id: page_1
@@ -605,12 +609,6 @@ display:
     display_plugin: page
     position: 1
     display_options:
-      access:
-        type: perm
-        options:
-          perm: 'access tripal content overview'
-      defaults:
-        access: false
       display_extenders: {  }
       path: admin/content/bio_data
       use_admin_theme: true
@@ -623,26 +621,5 @@ display:
         - url.query_args
         - 'url.query_args:sort_by'
         - 'url.query_args:sort_order'
-        - user.permissions
-      tags: {  }
-  page_2:
-    id: page_2
-    display_title: 'Page 2'
-    display_plugin: page
-    position: 2
-    display_options:
-      defaults:
-        access: true
-      display_extenders: {  }
-      path: admin/content/bio_data
-    cache_metadata:
-      max-age: -1
-      contexts:
-        - 'languages:language_content'
-        - 'languages:language_interface'
-        - url
-        - url.query_args
-        - 'url.query_args:sort_by'
-        - 'url.query_args:sort_order'
-        - user.permissions
+        - user.roles
       tags: {  }
