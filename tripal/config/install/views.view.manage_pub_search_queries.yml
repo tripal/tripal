@@ -8,7 +8,7 @@ dependencies:
     - tripal
     - user
 _core:
-  default_config_hash: sqb2ZzTzujwYaWrhS7JPCRup-YINgXWZAM6Y7_3Imko
+  default_config_hash: h-wJ3LmHL79rzDnvaQoa54WeCnV27J6yQte7ZggXWb0
 id: manage_pub_search_queries
 label: 'Manage Publication Search Queries'
 module: views
@@ -242,8 +242,8 @@ display:
           label: 'Create Contact'
           exclude: false
           alter:
-            alter_text: false
-            text: ''
+            alter_text: true
+            text: "{{ bool_var ? 'Yes':'No' }}"
             make_link: false
             path: ''
             absolute: false
@@ -299,8 +299,8 @@ display:
           label: Disabled
           exclude: false
           alter:
-            alter_text: false
-            text: ''
+            alter_text: true
+            text: "{{ bool_var ? 'Yes':'No' }}\r\n"
             make_link: false
             path: ''
             absolute: false
@@ -575,7 +575,7 @@ display:
         type: basic
         options:
           submit_button: Apply
-          reset_button: false
+          reset_button: true
           reset_button_label: Reset
           exposed_sorts_label: 'Sort by'
           expose_sort_order: true
