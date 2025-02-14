@@ -682,8 +682,13 @@ function tripal_gin_content_form_routes() {
  * Implements hook_views_pre_view().
  */
 function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
+  // Override permission of Tripal Content Type listing (admin/content/bio_data)
+  // in order to support OR when evaluating permissions since views UI does
+  // not support this. 
+  // WARNING: requires you to have NO Permissions on this view through the UI!
   if ($view->id() == 'tripal_content_type_listing') {
-    // List of permission user must have to access Tripal Content Type listings.
+    // The user must have 1+ of the following permissions to access the
+    // Tripal Content Type listing (admin/content/bio_data).
     $perm = [
       'access tripal content overview',
       'administer tripal content',
