@@ -8,7 +8,7 @@ dependencies:
     - tripal
     - user
 _core:
-  default_config_hash: h-wJ3LmHL79rzDnvaQoa54WeCnV27J6yQte7ZggXWb0
+  default_config_hash: T7aIocvufAlH4EFvZ4NgQNHvs3aN6rNF5hlDFn8Zirk
 id: manage_pub_search_queries
 label: 'Manage Publication Search Queries'
 module: views
@@ -243,7 +243,7 @@ display:
           exclude: false
           alter:
             alter_text: true
-            text: "{{ bool_var ? 'Yes':'No' }}"
+            text: '{% if (do_contact == "No") or (do_contact == "0") %}No{% else %}Yes{% endif %}'
             make_link: false
             path: ''
             absolute: false
@@ -300,7 +300,7 @@ display:
           exclude: false
           alter:
             alter_text: true
-            text: "{{ bool_var ? 'Yes':'No' }}\r\n"
+            text: '{% if (disabled == "No") or (do_contact == "0") %}No{% else %}Yes{% endif %}'
             make_link: false
             path: ''
             absolute: false
