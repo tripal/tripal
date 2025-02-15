@@ -87,7 +87,7 @@ class ChadoUnitWidgetDefault extends ChadoWidgetBase {
       '#description' =>  t("Select map unit from dropdown."),
       '#options' => $unit_vals,
       '#default_value' => $unittype_id,
-      '#empty_option' => '-- Select --',
+      '#empty_option' => '- Select -',
     ];
 
     return $elements;

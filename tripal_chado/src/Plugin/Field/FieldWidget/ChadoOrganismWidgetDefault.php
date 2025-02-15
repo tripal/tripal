@@ -69,7 +69,7 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
       '#type' => 'select',
       '#options' => $organisms,
       '#default_value' => $organism_id,
-      '#empty_option' => '-- Select --',
+      '#empty_option' => '- Select -',
     ];
 
     // If there are any additional columns present in the linker table,

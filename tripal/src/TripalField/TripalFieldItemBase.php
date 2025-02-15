@@ -693,7 +693,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
-
     return [];
   }
 
@@ -701,8 +700,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * A helper function to create an appropriate field name.
    *
    * This function can be used by a field's `discover()` method to generate
-   * an appropriate field name. It removes will always include the bundle
-   * type as the prefix, followed by an underscore, followed by extra text
+   * an appropriate field name. It will always include the bundle type
+   * as the prefix, followed by an underscore, followed by extra text
    * provided. It ensures that only alphanumeric values are present in the
    * name and that it doesn't exceed Drupal's maximum length.
    *

@@ -243,6 +243,88 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   }
 
   // --------------------------------------------------------------------------
+  //                            FIELD MANAGEMT
+  //
+  // TripalEntity uses mostly TripalFields and any entity-wide functions needed
+  // for TripalFields are below.
+  // --------------------------------------------------------------------------
+
+  /**
+   * Update Drupal field schema to match that defined by each field.
+   *
+   * TripalEntity uses a combination of the default SqlContentEntityStorage
+   * and an associated TripalStorage backend. The linking values are stored
+   * by SqlContentEntityStorage in Drupal and then the canonical version of the
+   * data is stored in the specified TripalStorage databackend.
+   *
+   * If the schema of the TripalStorage data backend is updated then the schema
+   * defined by the tripalTypes() method may be different from the Drupal field
+   * table. This method will update the Drupal field table to match the current
+   * schema defined by TripalTypes() for all fields attached to a given
+   * TripalEntityType.
+   *
+   * @return array
+   *   An array of the columns that were previously missing and have now been
+   *   added. This array is keyed first by field name and then by property
+   *   name. The value is an array defining the column that was added with the
+   *   keys: 'drupal_table', 'column_name', 'column_spec'.
+   */
+  public function syncStorageSchema(bool $check_only = FALSE) {
+    $columns_added = [];
+
+    // Get the drupal database schema object.
+    $schema = \Drupal::service('database')->schema();
+
+    // Get a list of field instances for the current type.
+    $field_instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
+
+    // Get the SQL Storage instance in order to get the field => table mapping.
+    // We will use this mapping later to check the current state of the drupal
+    // field table for each field.
+    $sql_storage = \Drupal::service('entity_type.manager')->getStorage('tripal_entity');
+    $drupal_table_mapping = $sql_storage->getTableMapping();
+
+    // Now for each field instance...
+    foreach ($field_instances as $key => $field_def) {
+      $field_name = $field_def->getName();
+      $field_storage_def = $field_def->getFieldStorageDefinition();
+
+      // Only check non-base fields.
+      if ($field_storage_def->isBaseField()) {
+        continue;
+      }
+
+      // Get the Drupal field table that we may need to update.
+      $drupal_table = $drupal_table_mapping->getFieldTableName($field_name);
+
+      // Get the new schema based on tripalTypes which is dynamically updated
+      // based on the backend TripalStorage.
+      $current_schema_columns = $field_storage_def->getColumns();
+
+      // Now for each property of the current field, check to see if the
+      // corresponding drupal table column exists.
+      foreach($current_schema_columns as $property_name => $column_schema) {
+        $property_column_name = $drupal_table_mapping->getFieldColumnName($field_storage_def, $property_name);
+        $column_exists = $schema->fieldExists($drupal_table, $property_column_name);
+
+        // If it is missing then let's just add it ;-p.
+        if ($column_exists === FALSE) {
+          if ($check_only === FALSE) {
+            $schema->addField($drupal_table, $property_column_name, $column_schema);
+          }
+          $columns_added[$field_name][$property_name] = [
+            'drupal_table' => $drupal_table,
+            'column_name' => $property_column_name,
+            'column_spec' => $column_schema,
+          ];
+        }
+      }
+    }
+
+    return $columns_added;
+  }
+
+  // --------------------------------------------------------------------------
   //                          MAIN SETTER / GETTERS
   //
   // The following methods allow the main properties of the Tripal Entity Type

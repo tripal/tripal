@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 /**
  * Controller, Chado Project Autocomplete.
  */
-class ChadoProjectAutocompleteController extends ControllerBase {
+class ChadoProjectAutocompleteController extends ChadoGenericAutocompleteController {
   /**
    * Controller method, autocomplete project name.
    *
@@ -30,62 +30,25 @@ class ChadoProjectAutocompleteController extends ControllerBase {
    *   is both the value to the array keys label and value.
    */
   public function handleAutocomplete(Request $request, int $count = 5, int $type_id = 0) {
-    // Array to hold matching project records.
-    $response = [];
-
-    if ($request->query->get('q')) {
-      // Get typed in string input from the URL.
-      $string = trim($request->query->get('q'));
-
-      if (strlen($string) > 0 && $count > 0) {
-        // Proceed to autocomplete when string is at least a character
-        // long and result count is set to a value greater than 0.
-
-        // Transform string as a search keyword pattern.
-        $keyword = strtolower($string) . '%';
-
-        if ($type_id > 0) {
-          // Restrict to type provided by type_id in the route parameter.
-          $sql  = "SELECT name FROM {1:project} AS p LEFT JOIN {1:projectprop} AS t USING (project_id)
-            WHERE LOWER(p.name) LIKE :keyword AND t.type_id = :type_id ORDER BY p.name ASC LIMIT %d";
-          $args = [':keyword' => $keyword, ':type_id' => $type_id];
-        }
-        else {
-          // Match projects regardless of type.
-          $sql  = "SELECT name FROM {1:project} WHERE LOWER(name) LIKE :keyword ORDER BY name ASC LIMIT %d";
-          $args = [':keyword' => $keyword];
-        }
-
-        // Prepare Chado database connection and execute sql query by providing value
-        // to :keyword and/or :type_id placeholder text.
-        $connection = \Drupal::service('tripal_chado.database');
-        $query = sprintf($sql, $count);
-        $results = $connection->query($query, $args);
-
-        // Compose response result.
-        if ($results) {
-          foreach($results as $record) {
-            $response[] = [
-              'value' => $record->name, // Value returned and value displayed by textfield.
-              'label' => $record->name  // Value shown in the list of options.
-            ];
-          }
-        }
-      }
-    }
-
-    return new JsonResponse($response);
+    // Project name has a unique constraint, so we don't need the pkey value
+    // included in the autocomplete result.
+    $this->include_pkey = FALSE;
+    // This autocomplete only matches for the same starting characters.
+    $this->match_operator = 'STARTS_WITH';
+    // Call the generic autocomplete handler.
+    return $this->handleGenericAutocomplete($request, 'project', 'name', '.', 'projectprop', $count, $type_id);
   }
 
   /**
    * Fetch the project id number, given a project name value.
    *
    * @param string $project
-   *   Project name value.
+   *   Project name value. This table column has a unique constraint,
+   *   so we are guaranteed either zero or one matches.
    *
    * @return integer
-   *   Project id number of the project name or 0 if no matching
-   *   project record was found.
+   *   Project id number of the project with this name name, or 0 if
+   *   no matching project record was found.
    */
   public static function getProjectId(string $project): int {
     $id = 0;
@@ -111,8 +74,8 @@ class ChadoProjectAutocompleteController extends ControllerBase {
    *   Project id number value.
    *
    * @return string
-   *   Corresponding project name of the project id number or
-   *   empty string if no matching project record was found.
+   *   Corresponding project name of the project id number, or
+   *   an empty string if no matching project record was found.
    */
   public static function getProjectName(int $project): string {
     $name = '';

@@ -396,7 +396,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
       // Get a list of tables with foreign keys to selected $base_table.
       $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-      $fkey_list = preg_split('/[ ,]+/', ($base_schema_def['referring_tables']??''));
+      $fkey_list = $base_schema_def['referring_tables']??[];
       asort($fkey_list);
 
       // Include the base table at the top of the sorted list
@@ -478,11 +478,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
-  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
-
-    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances, array $options = []): array {
 
     // Initialize with an empty field list.
     $field_list = [];
@@ -492,6 +488,10 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     if (!$base_table) {
       return $field_list;
     }
+
+    /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
 
     // For this field, we need either a "type_id" column in the base table,
     // or else have it specified in a property table. Sometimes we have both.
@@ -541,6 +541,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $termIdSpace = $bundle->getTermIdSpace();
     $termAccession = $bundle->getTermAccession();
     $fixed_value = $termIdSpace . ':' . $termAccession;
+    // This discovered field is unchecked by default, issue #2033
     $field_list[] = [
       'name' => self::generateFieldName($bundle, 'type', 0),
       'content_type' => $bundle->getID(),
@@ -550,6 +551,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
           . ' for this content type as "' . $fixed_value . '"',
       'cardinality' => 1,
       'required' => TRUE,
+      'checked' => FALSE,
       'storage_settings' => [
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings' => [
