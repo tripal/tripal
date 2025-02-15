@@ -399,6 +399,26 @@ class PubSearchQueryForm extends FormBase {
       '#weight' => 50, // arbitrary heavier number so table is below most options
     ];
 
+    // Add a row just to hold the descriptions, as we want to only display them once
+    $descriptions = [];
+    $descriptions['operation-0'] = ['#markup' => ''];
+    $descriptions['scope-0'] = [
+      '#prefix' => '<div class="form-item__description">',
+      '#markup' => $this->t('Please select the fields to search for this term.'),
+      '#suffix' => '</div>',
+    ];
+    $descriptions['search_terms-0'] = [
+      '#prefix' => '<div class="form-item__description">',
+      '#markup' => $this->t('Please provide a list of words for searching.'
+      . ' You may use conjunctions such as "AND" or "OR" to separate words if they are expected in the same scope,'
+      . ' but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions as part of the text to search'),
+      '#suffix' => '</div>',
+    ];
+    $descriptions['is_phrase-0'] = ['#markup' => ''];
+    $descriptions['remove-0'] = ['#markup' => ''];
+    $descriptions['add-0'] = ['#markup' => ''];
+    $form['pub_library']['table'][] = $descriptions;
+
     for ($i = 1; $i <= $num_criteria; $i++) {
       $form = $this->tripal_pub_importer_add_criteria_fields_row($form, $form_state, $i, $num_criteria, $criteria);
     }
@@ -468,25 +488,16 @@ class PubSearchQueryForm extends FormBase {
     ];
     $row["scope-$i"] = [
       '#type' => 'select',
-      '#description_display' => 'after',
       '#options' => $scope_choices,
       '#default_value' => $scope,
       '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
     ];
     $row["search_terms-$i"] = [
       '#type' => 'textfield',
-      '#description_display' => 'after',
       '#default_value' => $search_terms,
       '#maxlength' => 2048,
       '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
     ];
-    // To avoid repetition, only display the field descriptions on the first row
-    if ($i == 1) {
-      $row["scope-$i"]['#description'] = $this->t('Please select the fields to search for this term.');
-      $row["search_terms-$i"]['#description'] = $this->t('<span style="white-space: normal">Please provide a list of words for searching.'
-        . ' You may use conjunctions such as "AND" or "OR" to separate words if they are expected in the same scope,'
-        . ' but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions as part of the text to search</span>');
-    }
     $row["is_phrase-$i"] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Is Phrase?'),
