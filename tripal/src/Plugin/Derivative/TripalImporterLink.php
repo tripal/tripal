@@ -47,12 +47,14 @@ class TripalImporterLink extends DeriverBase implements ContainerDeriverInterfac
     $importer_defs = $importer_manager->getDefinitions();
 
     foreach ($importer_defs as $plugin_id => $def) {
-      $links[$plugin_id] = [
-        'title' => $def['label'],
-        'description' => $def['description'],
-        'route_name' => 'tripal.data_loaders_tripalimporter',
-        'route_parameters' => ['plugin_id' => $plugin_id]
-      ] + $base_plugin_definition;
+      if (!($def['hidden'] ?? FALSE)) {
+        $links[$plugin_id] = [
+          'title' => $def['label'],
+          'description' => $def['description'],
+          'route_name' => 'tripal.data_loaders_tripalimporter',
+          'route_parameters' => ['plugin_id' => $plugin_id]
+        ] + $base_plugin_definition;
+      }
     }
     return $links;
   }
