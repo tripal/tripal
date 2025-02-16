@@ -140,7 +140,12 @@ class ChadoPublish extends TripalBackendPublishBase {
    */
   protected bool $lenient_migration = FALSE;
 
-  protected $republish = true;
+  /**
+   * Flag to indicate if we should republish in order to cache chado values.
+   *
+   * @var bool
+   */
+  protected $republish = TRUE;
 
   /**
    * Populates the $this->field_info variable with field information
@@ -818,9 +823,12 @@ class ChadoPublish extends TripalBackendPublishBase {
     // Generate the insert SQL and add the field-specific columns to it.
     $init_sql = "
       INSERT INTO {" . $field_table . "}
-        (bundle, deleted, entity_id, revision_id, langcode, delta, "; 
-    foreach (array_keys(array_merge($this->required_types[$field_name] ?? [], // might be empty, avoid type error
-                                    $this->non_required_types[$field_name] ?? [] )) as $key) {
+        (bundle, deleted, entity_id, revision_id, langcode, delta, ";
+    $all_types = array_merge(
+      $this->required_types[$field_name] ?? [],
+      $this->non_required_types[$field_name] ?? []
+    );
+    foreach (array_keys($all_types) as $key) {
       $init_sql .= $field_name . '_'. $key . ', ';
     }
     $init_sql = rtrim($init_sql, ', ') . ") VALUES\n";
@@ -962,11 +970,11 @@ class ChadoPublish extends TripalBackendPublishBase {
       $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
     }
     // Non-required types never have a value stored, just a placeholder.
-    // There might not be non_required_types for this field
+    // There might not be non_required_types for this field.
     if (isset($this->non_required_types[$field_name])) {
-      foreach ($this->non_required_types[$field_name] as $key => $properties) { 
-        $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
-        $sql .=  $placeholder . ', ';
+      foreach ($this->non_required_types[$field_name] as $key => $properties) {
+        $placeholder = ':' . $field_name . '_' . $key . '_' . $j;
+        $sql .= $placeholder . ', ';
         $args[$placeholder] = $properties->getDefaultValue();
       }
     }
@@ -1053,7 +1061,6 @@ class ChadoPublish extends TripalBackendPublishBase {
       $record_ids = array_diff($record_ids, array_keys($this->existing_published_entities));
     }
 
-
     return $record_ids;
   }
 
@@ -1089,7 +1096,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
     // Optional values
     $this->schema_name = $options['schema_name'] ?? 'chado';
-    $this->republish = $options['republish'] ?? true;
+    $this->republish = $options['republish'] ?? TRUE;
     $this->job = $options['job'] ?? NULL;
     if ($options['batch_size'] ?? 0) {
       $this->batch_size = $options['batch_size'];
@@ -1217,7 +1224,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       if (!$success) {
         break;
       }
-      
+
       if (!count($matches)) {
         $this->logger->notice($batch_prefix . 'No matching records found, skipping remaining steps');
         continue;
@@ -1298,89 +1305,103 @@ class ChadoPublish extends TripalBackendPublishBase {
     // This return value is currently only used for unit tests, so is limited to 100 records.
     return $this->published_or_updated_entities;
   }
-  
-  
-/**
- * Updates a single published entity with new chado values.
- *
- * This function updates the specified field of a published entity with the new chado values.
- * It initializes the publishing process, prepares the update statement, and executes it.
- *
- * @param TripalEntity $entity The entity to be updated.
- * @param string $field_name The name of the field to be updated.
- * @param mixed $delta The delta value indicating the specific instance of the field.
- * @param array $values The (incomplete) entity values to update the field with.
- * @param string $bundle The bundle type of the TripalEntity.
- * @param string $tsid The datastore identifier.
- *
- * @return array The updated entity.
- */
-  public function updatePublishedEntity(TripalEntity $entity, string $field_name, mixed $delta, array $values, string $bundle, string $tsid): array {
-    // Initialization for publish
+
+
+  /**
+   * Updates a single published entity with new chado values.
+   *
+   * This function updates the specified field of a published entity with the
+   * new chado values. It initializes the publishing process, prepares the
+   * update statement, and executes it.
+   *
+   * @param TripalEntity $entity
+   *   The entity to be updated.
+   * @param string $field_name
+   *   The name of the field to be updated.
+   * @param mixed $delta
+   *   The delta value indicating the specific instance of the field.
+   * @param array $values
+   *   The (incomplete) entity values to update the field with.
+   * @param string $bundle
+   *   The bundle type of the TripalEntity.
+   * @param string $tsid
+   *   The datastore identifier.
+   *
+   * @return TripalEntity|null
+   *   The updated entity if it was successful and null otherwise.
+   */
+  public function updatePublishedEntity(TripalEntity $entity, string $field_name, mixed $delta, array $values, string $bundle, string $tsid): TripalEntity|null {
+
+    // Initialization for publish.
     $success = $this->publish_init(options:['bundle' => $bundle, 'datastore' => $tsid]);
     if (!$success) {
       \Drupal::messenger()->addError('Error initializing the update process');
-      return [];
+      return NULL;
     }
-    // Populates the $this->field_info variable with field information
-    $this->setFieldInfo();  
+
+    // Populates the $this->field_info variable with field information.
+    $this->setFieldInfo();
+
     // Get the required field properties that will uniquely identify an entity.
-    // TODO: check if this should be called in publish_init
-    $this->required_types = $this->storage->getStoredTypes(); 
-    if(empty($this->required_types[$field_name])) {
+    // TODO: check if this should be called in publish_init.
+    $this->required_types = $this->storage->getStoredTypes();
+    if (empty($this->required_types[$field_name])) {
       \Drupal::messenger()->addError('Field ' . $field_name . ' is not supported for update');
-      return [];
+      return NULL;
     }
-    // Find the record_id of the entity to update
+
+    // Find the record_id of the entity to update.
     $record_id = $values[$field_name][0]['record_id']['value'];
     \Drupal::messenger()->addMessage('Updating entity with record_id: ' . $record_id->getValue());
-    // Find the entity Values for all fields to update
-    // This is necessary to update the entity cache, because TripalEntity itself updates only
-    // the 'direct' value fields, not the entire entity cache fields from ancilliary tables.
-    $matches = $this->storage->findValues(values: $values, main_property_names: $this->main_property_names, 
-    record_ids: [$record_id->getValue()]);
-    // This is and example how the values are stored in the matches array:
-    //error_log($matches[0]['gene_organism'][$delta]['organism_species']['value']->getValue());
+
+    // Find the entity Values for all fields to update.
+    // This is necessary to update the entity cache, because TripalEntity
+    // itself updates only the 'direct' value fields, not the entire entity
+    // cache fields from ancilliary tables.
+    $matches = $this->storage->findValues($values, $this->main_property_names, [$record_id->getValue()]);
+
     if (empty($matches)) {
       \Drupal::messenger()->addError('No matching records found');
-      return [];
+      return NULL;
     }
-    //prepare the statement
+
+    // Prepare the statement.
     $field_table = 'tripal_entity__' . $field_name;
-    // Update the field values in the entity table
+    // Update the field values in the entity table.
     $fields = [];
-    // update only the fields that are cached in the entity tables
-    // non-required types will stay having the default empty value
+    // Update only the fields that are cached in the entity tables
+    // non-required types will stay having the default empty value.
     foreach ($this->required_types[$field_name] as $key => $properties) {
-        $value = $matches[0][$field_name][$delta][$key]['value'];
-        $field_value = (is_object($value)) ? $value->getValue() : null;
-        if (empty($field_value)) {
-          // allow to delete the field value, if the value is empty, but need to use the default value
-          $field_value = $properties->getDefaultValue();
-        } else {
-          $fields["{$field_name}_$key"] = $field_value;
-         // \Drupal::messenger()->addMessage("{$field_name}_$key: $field_value"); 
-        }
+      $value = $matches[0][$field_name][$delta][$key]['value'];
+      $field_value = (is_object($value)) ? $value->getValue() : null;
+      if (empty($field_value)) {
+        // Allow to delete the field value, if the value is empty,
+        // but need to use the default value.
+        $field_value = $properties->getDefaultValue();
+      }
+      else {
+        $fields["{$field_name}_$key"] = $field_value;
+      }
     }
     $query = $this->connection->update($field_table);
     $query->fields($fields);
-    // set the conditions for the update
+    // Set the conditions for the update.
     $query->condition('entity_id', $entity->getID());
     $query->condition('delta', $delta);
-    // execute the query and catch any exceptions
-    // if the query fails, log the error. An error is not fatal 
-    // because it only means that the field cache was not updated
-    // if the query is successful, log the success
-    // and return the updated entity
+
+    // Execute the query and catch any exceptions. If the query fails,
+    // log the error, which is not fatal because it only means that the field
+    // cache was not updated. If the query is successful, log the success
+    // and return the updated entity.
     try {
       $query->execute();
       $this->logger->info("Field $field_name updated successfully");
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       \Drupal::messenger()->addError('Error updating field entity cache' . $field_name . ': ' . $e->getMessage());
       $this->logger->error('Error updating field ' . $field_name . ': ' . $e->getMessage());
     }
-    return [$entity];
+    return $entity;
   }
+
 }
-
-

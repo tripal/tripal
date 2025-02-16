@@ -45,10 +45,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   protected $records = NULL;
 
   /**
-   * Caches the default value for entity field caching from the configuration
+   * Caches the default value for entity field caching from the configuration.
+   *
    * @var bool
    */
-  protected bool $default_is_required = false;
+  protected bool $default_is_required = TRUE;
 
 
   /**
@@ -96,8 +97,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $this->connection = $connection;
     $this->field_debugger = $field_debugger;
-    $this->default_is_required = \Drupal::config('tripal.settings')->
-      get('tripal_entity_type.default_cache_backend_field_values') ?? true;
+    $this->default_is_required = \Drupal::config('tripal.settings')
+      ->get('tripal_entity_type.default_cache_backend_field_values') ?? TRUE;
   }
 
   /**
@@ -135,30 +136,32 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     return $this->getStoredTypesFilter(FALSE);
   }
 
+  /**
+   * Helper function: check if a single field property should be cached.
+   *
+   * @param string $field_name
+   *   The name of the chado field to check.
+   * @param string $key
+   *   The storage property key to check.
+   *
+   * @return bool
+   *   TRUE if it should be saved to the Drupal field table and FALSE otherwise.
+   */
+  public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool {
 
-/**
- * Helper function to modularize the logic for determining whether a single field value
- * is to be stored in Drupal's Entity tables or not.
- *
- * @param string $field_name
- *  The name of the chado field
- * @param string $key
- *  The storage key
- * @return bool
- *
- */
-  public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool
-  {
     $storage_settings = $this->property_types[$field_name][$key]->getStorageSettings();
-     // get the default from the configuration
-    // In chado, all table coloumns containing sequence are named 'residues'
-    // We want to exclude sequences and other large data objects from drupal storage
-    // Even if the default is on, we will never save residues
-    $is_required = $this->default_is_required and !(array_key_exists('path', $storage_settings) and
-      str_ends_with(haystack: $storage_settings['path'], needle: 'residues'));
-    // Any field that stores a base record id, a primary key,
-    // or a foreign key link is required.
-    // This takes absolute precedence and cannot be overridden.
+
+    // Get the default from the configuration.
+    $is_required = $this->default_is_required;
+
+    // In chado, all table columns containing sequence are named 'residues'.
+    // We want to exclude sequences from drupal storage even if the default is TRUE.
+    if (array_key_exists('path', $storage_settings) and str_ends_with($storage_settings['path'], 'residues')) {
+      $is_required = FALSE;
+    }
+
+    // Any field that stores a base record id, a primary key, or a foreign key
+    // link is required. This takes precedence and cannot be overridden.
     if (
       ($storage_settings['action'] == 'store_id') or
       ($storage_settings['action'] == 'store_pkey') or
@@ -166,33 +169,24 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ) {
       $is_required = TRUE;
     }
-    // For any other fields that have 'drupal_exclude' set,
-    // it is _excluded_ too.
-    // To force exclusion of the field from entity storage, add:
-    // drupal_exclude: true
-    // in the section storage_settings: of the field definition in its tripalfield_collection*_chado.yml file
-    elseif (
-      (array_key_exists('drupal_exclude', $storage_settings)) and
-      ($storage_settings['drupal_exclude'] === TRUE)
-    ) {
-      $is_required = false;
+    // For any other fields that have 'drupal_exclude' set, we want to ensure it
+    // is excluded regardless of the default configuration. To force exclusion
+    // of the field from entity storage, add `drupal_exclude: true` in the
+    // `storage_settings` of the field definition in its
+    // tripalfield_collection*_chado.yml file.
+    elseif ((array_key_exists('drupal_exclude', $storage_settings)) and ($storage_settings['drupal_exclude'] === TRUE)) {
+      $is_required = FALSE;
     }
-    // Stay compatible with the original behavior and allow to force drupal storage
-    // To force inclusion of the field into Entity storage, add:
-    // drupal_store: true
-    // in the section storage_settings: of the field definition in its tripal field collection
-    elseif (
-      (array_key_exists('drupal_store', $storage_settings)) and
-      ($storage_settings['drupal_store'] === TRUE)
-    ) {
-       $is_required = true;
+    // Stay compatible with the original behavior and allow to force drupal
+    // storage. To force inclusion of the field into Entity storage, add
+    // `drupal_store: true` in the section `storage_settings` of the field
+    // definition in its tripal field collection.
+    elseif ((array_key_exists('drupal_store', $storage_settings)) and ($storage_settings['drupal_store'] === TRUE)) {
+      $is_required = TRUE;
     }
+
     return $is_required;
-
-
   }
-
-
 
   /**
    * Helper function for getStoredTypes() and getNonStoredTypes().
@@ -207,7 +201,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   protected function getStoredTypesFilter(bool $required) {
     $ret_types = [];
     foreach ($this->property_types as $field_name => $keys) {
-      $field_definition = $this->field_definitions[$field_name];
       foreach ($keys as $key => $prop_type) {
         $is_required = $this->isDrupalStoreByFieldNameKey($field_name, $key);
         if (($is_required and $required) or (!$is_required and !$required)) {
@@ -288,25 +281,18 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // rank.
       foreach ($base_tables as $base_table) {
         // While iterating over all tables only once, this improves performance
-        // by only calling this once per base_table
+        // by only calling this once per base_table.
         $tables = $this->records->getAncillaryTables($base_table);
 
 
         foreach ($tables as $table_alias) {
-         // try {
-           // this should improve update performance
-           // $this->records->updateRecords($base_table, $table_alias, true); // try update first, this should work in most cases, if it doesn't
-           //} catch (\Exception $e) {
-             // log this but not as error, it is a pretty rare state
-            //\Drupal::logger('tripal')->warning("We could not update some values, trying delete/insert: " . $e->getMessage());
-            // If the delete/update mechanism doesn't work, we still need to bail out
-            $this->records->deleteRecords($base_table, $table_alias, TRUE);
-            $this->records->insertRecords($base_table, $table_alias);
-          //}
+          $this->records->deleteRecords($base_table, $table_alias, TRUE);
+          $this->records->insertRecords($base_table, $table_alias);
         }
       }
+
       // Now that we've done the updates, set the property values.
-    $this->setPropValues($values, $this->records);
+      $this->setPropValues($values, $this->records);
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();

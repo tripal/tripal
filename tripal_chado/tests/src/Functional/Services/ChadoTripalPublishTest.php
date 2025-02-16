@@ -322,12 +322,9 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
   public function testChadoTripalPublishService() {
 
     // The behavior depends on settings made in TripalEntitySettingsForm
-    // Depending on default_cache_backend_field_values the values are either saved in the entity
-    // or not.
-
-    // Get editable config object
+    // Depending on default_cache_backend_field_values the values are either
+    // saved in the entity or not.
     $config_edit = \Drupal::configFactory()->getEditable('tripal.settings');
-
 
     // Prepare Chado
     $chado = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
@@ -367,13 +364,12 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $content_type_setup->install($collection_ids);
     $fields_setup->install($collection_ids);
 
-
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     // % Run the first test set with caching disabled. %
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    // Update configuration
-    $config_edit->set('tripal_entity_type.default_cache_backend_field_values', false);
+    // Update configuration.
+    $config_edit->set('tripal_entity_type.default_cache_backend_field_values', FALSE);
     $config_edit->save();
 
     //
@@ -642,7 +638,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     // Update configuration
-    $config_edit->set('tripal_entity_type.default_cache_backend_field_values', true);
+    $config_edit->set('tripal_entity_type.default_cache_backend_field_values', TRUE);
     $config_edit->save();
     //
     // Test publishing a single record: Organism 3
@@ -748,7 +744,6 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->assertCount(1, array_values($entities),
     'There should only be one published entity for a single organism with new properties.');
 
-
     // Check that the property values got published. The type_id should be
     // be the $note_type_id in the drupal field table, not the default for an integer.
     $this->checkFieldItem('organism', 'field_note', 1,
@@ -827,25 +822,22 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
         ['record_id' => $organism_id4],
         []);
 
-
-// Test publishing of integer fields
-$array_design_id2 = $this->addChadoArrayDesign($chado, [
-  'name' => 'AD2',
-  'num_of_elements' => 12,
-]);
-$entities = $chado_publish->publish(['bundle' => 'array_design', 'datastore' => 'chado_storage']);
-$entity_id = array_key_first($entities);
-$this->assertCount(1, $entities,
-    'Failed to publish 1 array design entitity.');
-$this->checkFieldItem('array_design', 'array_design_num_of_elements', 1,
-    ['record_id' => $array_design_id2],
-    ['bundle' => 'array_design', 'entity_id' => $entity_id, 'value' => 12]);
-// We do not expect a NULL integer item to be published
-$this->checkFieldItem('array_design', 'array_design_num_array_columns', 0,
-    ['record_id' => $array_design_id2],
-    []);
-
-
-
+    // Test publishing of integer fields
+    $array_design_id2 = $this->addChadoArrayDesign($chado, [
+      'name' => 'AD2',
+      'num_of_elements' => 12,
+    ]);
+    $entities = $chado_publish->publish(['bundle' => 'array_design', 'datastore' => 'chado_storage']);
+    $entity_id = array_key_first($entities);
+    $this->assertCount(1, $entities,
+      'Failed to publish 1 array design entitity.');
+    $this->checkFieldItem('array_design', 'array_design_num_of_elements', 1,
+      ['record_id' => $array_design_id2],
+      ['bundle' => 'array_design', 'entity_id' => $entity_id, 'value' => 12]);
+    // We do not expect a NULL integer item to be published
+    $this->checkFieldItem('array_design', 'array_design_num_array_columns', 0,
+      ['record_id' => $array_design_id2],
+      []);
   }
+
 }
