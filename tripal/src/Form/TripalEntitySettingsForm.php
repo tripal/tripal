@@ -39,11 +39,14 @@ class TripalEntitySettingsForm extends FormBase {
     $settings = \Drupal::config('tripal.settings');
 
     // Define the HTML tags that tripal supports in Tripal Entity titles.
-    $allowed_title_tags = $form_state->getValue('allowed_title_tags',
-      $settings->get('tripal_entity_type.allowed_title_tags'));
-      $drupal_entity_field_store  = $form_state->getValue('default_cache_backend_field_values',
-      $settings->get('tripal_entity_type.default_cache_backend_field_values'));
-
+    $allowed_title_tags = $form_state->getValue(
+      'allowed_title_tags',
+      $settings->get('tripal_entity_type.allowed_title_tags')
+    );
+    $drupal_entity_field_store = $form_state->getValue(
+      'default_cache_backend_field_values',
+      $settings->get('tripal_entity_type.default_cache_backend_field_values')
+    );
 
     // Defines the limit of records for a select. Above this value,
     // the form element will change to an autocomplete.
@@ -69,6 +72,17 @@ class TripalEntitySettingsForm extends FormBase {
       '#required' => FALSE,
     ];
 
+<<<<<<< HEAD
+=======
+    $form['default_cache_backend_field_values'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Cache Backend Storage field values in Drupal'),
+      '#description' => $this->t('When enabled, a copy of data from the backend storage will be stored in the Drupal field tables. This is needed for Drupal views filtering and sorting and is recommended for most sites. Changing this setting does not affect already published content. When this option is changed from OFF to ON on an already populated site, all Tripal Content needs to be re-published to take effect. Note: values that have already been cached will not be removed when turning switching option OFF.'),
+      '#default_value' => $drupal_entity_field_store,
+      '#required' => FALSE,
+    ];
+
+>>>>>>> 944972587 (Document new functions and Clean-up to match standards.)
     $form['widget_global_select_limit'] = [
       '#type' => 'number',
       '#min' => 0,
@@ -126,7 +140,7 @@ class TripalEntitySettingsForm extends FormBase {
     // Non-negative integers or an empty string are valid
     if (!preg_match('/^\d*$/', $widget_global_select_limit)) {
       $form_state->setErrorByName('widget_global_select_limit',
-        t('This field must contain an integer value, or be left blank.'));
+        $this->t('This field must contain an integer value, or be left blank.'));
     }
   }
 
@@ -141,18 +155,19 @@ class TripalEntitySettingsForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $allowed_title_tags = $form_state->getValue('allowed_title_tags');
     $drupal_entity_field_store = $form_state->getValue('default_cache_backend_field_values');
-    # trim, convert to lower case, and collapse multiple spaces for consistency
+    // Trim, convert to lower case, and collapse multiple spaces for consistency.
     $allowed_title_tags = strtolower(trim($allowed_title_tags));
     $allowed_title_tags = preg_replace('/ +/', ' ', $allowed_title_tags);
 
     $widget_global_select_limit = trim($form_state->getValue('widget_global_select_limit'));
 
     // Update configuration
-    $config_edit = \Drupal::configFactory()->getEditable('tripal.settings');
-    $config_edit->set('tripal_entity_type.allowed_title_tags', $allowed_title_tags);
-    $config_edit->set('tripal_entity_type.widget_global_select_limit', $widget_global_select_limit);
-    $config_edit->set('tripal_entity_type.default_cache_backend_field_values', $drupal_entity_field_store);
-    $config_edit->save();
+    \Drupal::configFactory()
+      ->getEditable('tripal.settings')
+      ->set('tripal_entity_type.allowed_title_tags', $allowed_title_tags)
+      ->set('tripal_entity_type.default_cache_backend_field_values', $drupal_entity_field_store)
+      ->set('tripal_entity_type.widget_global_select_limit', $widget_global_select_limit)
+      ->save();
 
     $this->messenger()->addStatus('Settings have been saved.');
   }
