@@ -11,10 +11,11 @@ use Drupal\Core\Url;
  * PubMed publication parser
  *
  *  @TripalPubLibrary(
- *    id = "tripal_pub_library_pubmed",
+ *    id = "tripal_pub_library_PMID",
  *    label = @Translation("NIH PubMed database"),
  *    description = @Translation("Retrieves and parses publication data from the NIH PubMed database"),
  *  )
+ *  n.b. last part of id must match the record in the chado.db table name column
  */
 class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
@@ -41,7 +42,10 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     // Add form elements specific to this parser.
     $api_key_description = t('Tripal imports publications using NCBI\'s ')
       . Link::fromTextAndUrl('EUtils API',
-          Url::fromUri('https://www.ncbi.nlm.nih.gov/books/NBK25500/'))->toString()
+          Url::fromUri('https://www.ncbi.nlm.nih.gov/books/NBK25500/', [
+            'attributes' => [
+              'target' => 'blank',
+            ]]))->toString()
       . t(', which limits users and programs to a maximum of 3 requests per second without an API key. '
           . 'However, NCBI allows users and programs to an increased maximum of 10 requests per second if '
           . 'they provide a valid API key. This is particularly useful in speeding up large publication imports. '
@@ -61,27 +65,48 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       //to-do add ajax callback to populate?
       '#size' => 20,
     ];
+
     $form['pub_library']['days'] = [
       '#title' => t('Days since record modified'),
       '#type' => 'textfield',
-      '#description' => t('Limit the search to include pubs that have been added no more than this many days before today'),
+      '#description' => t('Limit the search to include pubs that have been added no more than this many days before today.'),
       '#required' => FALSE,
+      '#default_value' => 30,
       '#size' => 5,
     ];
     return $form;
   }
 
   public function formValidate($form, &$form_state) {
-    // @TODO
+    // Perform any form validations necessary with the form data
   }
 
 
   /**
    * More documentation can be found in TripalPubLibraryInterface
-   * @TODO - This will need to retrieve the publications AND save to CHADO
    */
   public function run(int $query_id) {
+    // public connection is already defined due to dependency injection happening on TripalPubLibraryBase
+    $row = $this->public->select('tripal_pub_library_query', 'tpi')
+    ->fields('tpi')
+    ->condition('pub_library_query_id', $query_id, '=')
+    ->execute()
+    ->fetchObject();
+    // Get the criteria column which has serialized data, so unserialize it into $query variable
+    $query = unserialize($row->criteria);
 
+    // Go through all results until pubs is empty
+    $page_results = $this->retrieve($query);
+    $publications = [];
+    if (is_array($page_results) && array_key_exists('pubs', $page_results)) {
+      if (count($page_results['pubs']) != 0) {
+        $publications = array_merge($publications, $page_results['pubs']);
+      }
+    }
+    else {
+      return NULL;
+    }
+    return $publications;
   }
 
   /**
@@ -98,13 +123,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     return $results;
   }
 
-
-  /** THIS IS FROM 7.x-3.x/tripal_chado/includes/loaders/tripal_chado.pub_importer_PMID.inc */
-  /** UPGRADED FOR TRIPAL 4 USE */
-
   /**
    * A function for performing the search on the PubMed database.
-   * T4 - this is not a hook any longer but can still be used
    *
    * @param $search_array
    *   An array containing the search criteria for the search
@@ -120,7 +140,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  public function remoteSearchPMID($search_array, $num_to_retrieve, $page) {
+  public function remoteSearchPMID($search_array, $num_to_retrieve, $page, $row_mode = 1) {
     // convert the terms list provided by the caller into a string with words
     // separated by a '+' symbol.
     $num_criteria = $search_array['num_criteria'];
@@ -399,15 +419,15 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * Information about PubMed's citation format can be found here
    * https://www.nlm.nih.gov/bsd/policy/cit_format.html
    *
-   * @param $pub_xml
-   *  An XML string describing a single publication
+   * @param string $pub_xml
+   *   An XML string describing a single publication
    *
-   * @return
-   *  An array describing the publication
+   * @return array
+   *   An array describing the publication
    *
    * @ingroup tripal_pub
    */
-  public function parse($pub_xml) {
+  public function parse(string $pub_xml): array {
     $pub = [];
 
     if (!$pub_xml) {
@@ -422,29 +442,10 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       if ($xml->nodeType == \XMLReader::ELEMENT) {
 
         switch ($element) {
-          case 'ERROR':
-            $xml->read(); // get the value for this element
-            \Drupal::service('tripal.logger')->error("Error: " . $xml->value);
-            break;
-          case 'PMID':
-            // thre are multiple places where a PMID is present in the XML and
-            // since this code does not descend into every branch of the XML tree
-            // we will encounter many of them here.  Therefore, we only want the
-            // PMID that we first encounter. If we already have the PMID we will
-            // just skip it.  Examples of other PMIDs are in the articles that
-            // cite this one.
-            $xml->read(); // get the value for this element
-            if (!array_key_exists('Publication Dbxref', $pub)) {
-              $pub['Publication Dbxref'] = 'PMID:' . $xml->value;
-            }
-            break;
           case 'Article':
             $pub_model = $xml->getAttribute('PubModel');
             $pub['Publication Model'] = $pub_model;
             $this->pmidParseArticle($xml, $pub);
-            break;
-          case 'MedlineJournalInfo':
-            $this->pmidParseMedlineJournalInfo($xml, $pub);
             break;
           case 'BookDocument':
             $this->pmidParseBookDocument($xml, $pub);
@@ -452,17 +453,33 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
           case 'ChemicalList':
             // TODO: handle this
             break;
-          case 'SupplMeshList':
-            // TODO: meant for protocol list
-            break;
           case 'CitationSubset':
             // TODO: not sure this is needed.
             break;
           case 'CommentsCorrections':
             // TODO: handle this
             break;
+          case 'DeleteCitation':
+            // TODO: need to know how to handle this
+            break;
+          case 'ERROR':
+            $xml->read(); // get the value for this element
+            \Drupal::service('tripal.logger')->error("Error: " . $xml->value);
+            break;
+          case 'GeneralNote':
+            // TODO: handle this
+            break;
           case 'GeneSymbolList':
             // TODO: handle this
+            break;
+          case 'InvestigatorList':
+            // TODO: personal names of individuals who are not authors (can be used with collection)
+            break;
+          case 'KeywordList':
+            // TODO: handle this
+            break;
+          case 'MedlineJournalInfo':
+            $this->pmidParseMedlineJournalInfo($xml, $pub);
             break;
           case 'MeshHeadingList':
             // TODO: Medical subject headings
@@ -470,37 +487,132 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
           case 'NumberOfReferences':
             // TODO: not sure we should keep this as it changes frequently.
             break;
-          case 'PersonalNameSubjectList':
-            // TODO: for works about an individual or with biographical note/obituary.
+          case 'OtherAbstract':
+            // TODO: when the journal does not contain an abstract for the publication.
             break;
           case 'OtherID':
             // TODO: ID's from another NLM partner.
             break;
-          case 'OtherAbstract':
-            // TODO: when the journal does not contain an abstract for the publication.
+          case 'PersonalNameSubjectList':
+            // TODO: for works about an individual or with biographical note/obituary.
             break;
-          case 'KeywordList':
-            // TODO: handle this
+          case 'PMID':
+            // There are multiple places where a PMID is present in the XML and
+            // since this code does not descend into every branch of the XML tree,
+            // we will encounter many of them here. Therefore, we only want the
+            // PMID that we first encounter. If we already have the PMID we will
+            // just skip it.  Examples of other PMIDs are in the articles that
+            // cite this one.
+            $xml->read(); // get the value for this element
+            if (!array_key_exists('Publication Dbxref', $pub)) {
+              $pub['Publication Dbxref'] = $xml->value;
+            }
             break;
-          case 'InvestigatorList':
-            // TODO: personal names of individuals who are not authors (can be used with collection)
-            break;
-          case 'GeneralNote':
-            // TODO: handle this
-            break;
-          case 'DeleteCitation':
-            // TODO: need to know how to handle this
+          case 'SupplMeshList':
+            // TODO: meant for protocol list
             break;
           default:
             break;
         }
       }
     }
-    // @TODO refer to T3 tripal_chado module, tripal_chado.pub.api.inc
-    // $pub['Citation'] = chado_pub_create_citation($pub);
 
-    $pub['raw'] = $pub_xml;
+    $pub['Citation'] = $this->pmid_generate_citation($pub);
+
     return $pub;
+  }
+
+  /**
+   * Creates Citation
+   *
+   * This function generates a citation for a publication. It requires
+   * an array structure with keys being the terms in the Tripal
+   * publication ontology.  This function is intended to be used
+   * for any function that needs to generate a citation.
+   *
+   * @param $pub
+   *   An array structure containing publication details where the keys
+   *   are the publication ontology term names and values are the
+   *   corresponding details. The pub array can contain the following
+   *   keys with corresponding values:
+   *     - Publication Type: an array of publication types. a publication can
+   *       have more than one type.
+   *     - Authors: a string containing all of the authors of a publication.
+   *     - Journal Name: a string containing the journal name.
+   *     - Journal Abbreviation: a string containing the journal name
+   *       abbreviation.
+   *     - Series Name: a string containing the series (e.g. conference
+   *       proceedings) name.
+   *     - Series Abbreviation: a string containing the series name abbreviation
+   *     - Volume: the serives volume number.
+   *     - Issue: the series issue number.
+   *     - Pages: the page numbers for the publication.
+   *     - Publication Date: a date in the format "Year Month Day".
+   *
+   * @return
+   *   A text string containing the citation.
+   */
+  private function pmid_generate_citation($pub) {
+
+    $pub_type = $this->pmid_get_pub_type($pub);
+
+    // The citation manager uses a default citation format if the passed
+    // $pub_type is not known.
+    $citation_format = $this->citation_manager->getDefaultCitationTemplate($pub_type);
+    $citation = $this->citation_manager->generateCitation($citation_format, $pub);
+
+    return $citation;
+  }
+
+  /**
+   * Determines the type of publication
+   *
+   * @param $pub
+   *   An array structure containing publication details where the keys
+   *   are the publication ontology term names and values are the
+   *   corresponding details.
+   *
+   * @return string
+   *   The publication type, e.g. "Journal Article", "Book", etc.
+   */
+  private function pmid_get_pub_type($pub): string {
+    $pub_type = '';
+    $known_types = [
+      'Journal Article',
+      'Conference Proceedings',
+      'Review',
+      'Book',
+      'Letter',
+      'Book Chapter',
+    ];
+
+    // An article may have more than one publication type. For example,
+    // a publication type can be 'Journal Article' but also a 'Clinical Trial'.
+    // Therefore, we need to select the type that makes most sense for
+    // construction of the citation. Here we'll iterate through them all
+    // and select the one that matches best.
+    if (is_array($pub['Publication Type'])) {
+      foreach ($pub['Publication Type'] as $ptype) {
+        if (in_array($ptype, $known_types)) {
+          $pub_type = $ptype;
+          break;
+        }
+        elseif ($ptype == "Research Support, Non-U.S. Gov't") {
+          $pub_type = $ptype;
+          // We don't break because if the article is also a Journal Article
+          // we prefer that type.
+        }
+      }
+      // If we don't have a recognized publication type, then just use the
+      // first one in the list.
+      if (!$pub_type) {
+        $pub_type = $pub['Publication Type'][0];
+      }
+    }
+    else {
+      $pub_type = $pub['Publication Type'];
+    }
+    return $pub_type;
   }
 
   /**
@@ -529,7 +641,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
           case 'PMID':
             $xml->read(); // get the value for this element
             if (!array_key_exists('Publication Dbxref', $pub)) {
-              $pub['Publication Dbxref'] = 'PMID:' . $xml->value;
+              $pub['Publication Dbxref'] = $xml->value;
             }
             break;
           case 'BookTitle':
@@ -652,7 +764,6 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     }
   }
 
-
   /**
    * Parses the section from the XML returned from PubMed that contains
    * information about the Journal
@@ -700,7 +811,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * Parses the section from the XML returned from PubMed that contains
    * information about an article.
    *
-   * @param $xml
+   * @param XMLReader $xml
    *   The XML to parse
    * @param $pub
    *   The publication object to which additional details will be added
@@ -1091,7 +1202,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * Parses the section from the XML returned from PubMed that contains
    * information about the author list for a publication
    *
-   * @param $xml
+   * @param XMLReader $xml
    *   The XML to parse
    * @param $pub
    *   The publication object to which additional details will be added
@@ -1126,8 +1237,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
           $pub['Authors'] = $authors;
           return;
         }
-        // if we're at the end </Author> element then we're done with the author and we can
-        // start a new one.
+        // if we're at the end </Author> element then we're done with the author
+        // and we can start a new one.
         if ($element == 'Author') {
           $num_authors++;
         }

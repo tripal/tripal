@@ -97,6 +97,9 @@ class TripalPubParserManager extends DefaultPluginManager {
       '#markup' => '<div id="tripal-pub-importer-test-section"></div>',
     ];
 
+    // Attach custom css for importers
+    $form['#attached']['library'][] = 'tripal/tripal.importer';
+
     return $form;
   }
 
@@ -184,11 +187,12 @@ class TripalPubParserManager extends DefaultPluginManager {
       $search_terms = $form_state->getValue("search_terms-$i") ?? $search_terms;
       $is_phrase = $form_state->getValue("is_phrase-$i") ?? $is_phrase;
 
-      // $row['#attributes'] = ['vertical-align' => 'top'];  // Align vertically to top - @todo this doesn't work
+      // $row['#attributes'] = ['vertical-align: top'];  // Align vertically to top - @todo this doesn't work
       $row["operation-$i"] = [
         '#type' => 'select',
         '#options' => $i==1?$first_op_choices:$op_choices,
         '#default_value' => $operation,
+        '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
       ];
       $row["scope-$i"] = [
         '#type' => 'select',
@@ -196,6 +200,7 @@ class TripalPubParserManager extends DefaultPluginManager {
         '#description_display' => 'after',
         '#options' => $scope_choices,
         '#default_value' => $scope,
+        '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
       ];
       $row["search_terms-$i"] = [
         '#type' => 'textfield',
@@ -206,11 +211,13 @@ class TripalPubParserManager extends DefaultPluginManager {
         '#default_value' => $search_terms,
         '#required' => TRUE,
         '#maxlength' => 2048,
+        '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
       ];
       $row["is_phrase-$i"] = [
         '#type' => 'checkbox',
         '#title' => t('Is Phrase?'),
         '#default_value' => $is_phrase,
+        '#wrapper_attributes' => ['class' => ['tripal-pub-importer-align-top']],
       ];
 
       // If last row of the table
@@ -234,7 +241,7 @@ class TripalPubParserManager extends DefaultPluginManager {
             // but we need it or Drupal will run the default validate anyway.
             // We also set #limit_validation_errors to empty so fields that are
             // required that don't have values won't generate warnings.
-            
+
             // RISH REMOVED FOR TESTING (9/23/2023)
             // '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
             // '#validate' => ['tripal_pub_setup_form_ajax_button_validate'], 
@@ -259,7 +266,7 @@ class TripalPubParserManager extends DefaultPluginManager {
           // but we need it or Drupal will run the default validate anyway.
           // we also set #limit_validation_errors to empty so fields that
           // are required that don't have values won't generate warnings.
-          
+
           //@to-do this submit function is not being called - why?
 
           // RISH REMOVED FOR TESTING (9/23/2023)

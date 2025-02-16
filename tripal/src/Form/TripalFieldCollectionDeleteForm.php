@@ -12,6 +12,21 @@ use Drupal\Core\Form\FormStateInterface;
 class TripalFieldCollectionDeleteForm extends EntityConfirmFormBase {
 
   /**
+   * Build form.
+   *
+   * @param array $form
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   * @param null $uid
+   *
+   * @return array
+   */
+  public function buildForm(array $form, FormStateInterface $form_state, $uid = NULL) {
+    $this->uid = $uid;
+
+    return parent::buildForm($form, $form_state);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getQuestion() {

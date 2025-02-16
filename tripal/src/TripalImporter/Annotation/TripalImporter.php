@@ -154,6 +154,16 @@ class TripalImporter extends Plugin {
   public $file_required = TRUE;
 
   /**
+   * Indicates if the importer will not appear in the importer menu.
+   *
+   * This is used by the publication importer because it is more complicated
+   * than the base importer class supports.
+   *
+   * @var bool
+   */
+  public $hidden = FALSE;
+
+  /**
    * The array of arguments used for this loader.
    *
    * Each argument should
