@@ -86,16 +86,16 @@ class TripalPubLibraryManager extends DefaultPluginManager {
   }
 
   /**
-   * Add a new Tripal Pub Library Query 
+   * Add a new Tripal Pub Library Query
    *
    * This method will add a new pub library query to the 'tripal_pub_library_query'
-   * table in the public schema of the database. 
+   * table in the public schema of the database.
    *
    * @param $query
    *  The query data in the form of an array
-   * 
+   *
    * @ingroup pub_loader
-   */  
+   */
   public function addSearchQuery(array $query) {
     $public = $this->connection;
     $public->insert('tripal_pub_library_query')->fields($query)->execute();
@@ -113,7 +113,7 @@ class TripalPubLibraryManager extends DefaultPluginManager {
    *  An array containing the updated query data
    *
    * @ingroup pub_loader
-   */ 
+   */
   public function updateSearchQuery(int $query_id, array $query) {
     $public = $this->connection;
     $public->update('tripal_pub_library_query')
@@ -133,7 +133,7 @@ class TripalPubLibraryManager extends DefaultPluginManager {
    *  The query_id which matches the existing query_id of the table
    *
    * @ingroup pub_loader
-   */ 
+   */
   public function deleteSearchQuery(int $query_id) {
     $public = $this->connection;
     $public->delete('tripal_pub_library_query')
@@ -141,4 +141,22 @@ class TripalPubLibraryManager extends DefaultPluginManager {
     ->execute();
   }
 
+  /**
+   * Returns a list of library options, sorted and ready to use in a form.
+   *
+   * @return array
+   *   The sorted associative array of options
+   */
+  public function getLibraryOptions() {
+    // Get list of database/libraries
+    $pub_library_defs = $this->getDefinitions();
+    $plugins = [];
+    foreach ($pub_library_defs as $def) {
+      $plugin_key = $def['id'];
+      $plugin_value = $def['label'];
+      $plugins[$plugin_key] = $plugin_value;
+    }
+    asort($plugins);
+    return $plugins;
+  }
 }

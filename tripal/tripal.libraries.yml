@@ -42,6 +42,12 @@ tripal-entity-form:
       css/tripal_entity_type.variables.css: {}
       css/tripal_entity.form.css: {}
 
+tripal.importer:
+  version: 1.x
+  css:
+    component:
+      css/tripal.importer.css: {}
+
 tripal-dashboard:
   version: 1.x
   js:

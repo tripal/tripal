@@ -1,0 +1,8 @@
+/**
+ * @file
+ * Styling for tripal importers.
+ */
+
+form td.tripal-pub-importer-align-top {
+  vertical-align: top;
+}
