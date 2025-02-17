@@ -343,12 +343,12 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     $type_column = $storage_settings['type_column'] ?? '';
     $fixed_value = $settings['field_term_fs']['fixed_value'];
 
+    $bundle = $form_state_storage['bundle'];
     if ($fixed_value) {
       // The fixed value from the form checkbox is just a boolean,
       // convert it to the term when saving.
       $fixed_value = $settings['termIdSpace'] . ':' . $settings['termAccession'];
       $form_state_storage = $form_state->getStorage();
-      $bundle = $form_state_storage['bundle'];
       $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle);
       $bundle_term = $bundle_entity->getTermIdSpace() . ':' . $bundle_entity->getTermAccession();
       if ($fixed_value != $bundle_term) {
