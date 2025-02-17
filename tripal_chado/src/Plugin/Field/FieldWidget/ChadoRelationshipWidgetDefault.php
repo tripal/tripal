@@ -5,7 +5,8 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
-use Drupal\tripal_chado\Controller\ChadoCvtermAutocompleteController;
+use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
+use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 
@@ -28,178 +29,89 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-    $chado = \Drupal::service('tripal_chado.database');
-    $element = [];
+//    $chado = \Drupal::service('tripal_chado.database');
+//dpm($element, "CP001 passed element");//@@@
+#    $element = [];
 
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
+    $field_name = $field_definition->get('field_name');
+dpm($field_name, "CP20 field_name=");//@@@
 #    $field_settings = $field_definition->getSettings();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
+dpm($base_table, "CP20B base_table=");//@@@
+dpm($base_column ?? 'undef', "CP20C base_column=");//@@@
+#if (!$base_table) {
+#  return $element;
+#}
+  $base_column = $storage_settings['base_column'];
 
     // Get the default values.
     $item_vals = $items[$delta]->getValue();
-dpm($item_vals, "CP3 item_vals"); //@@@
-
-if (FALSE) {
-    // Subject
-    $subject_autocomplete_default = 'xx';
-    $element['subject'] = [
-      '#type' => 'textfield',
-      '#title' => 'Subject',
-      '#required' => TRUE,
-      '#description' => $this->t('...' .
-        'to help choose. Only the top 10 best matches are shown at a time.'),
-      '#default_value' => $subject_autocomplete_default,
-      '#disabled' => FALSE,
-      '#autocomplete_route_name' => 'tripal.generic_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 10],
-    ];
-}
-
-    // CV term autocomplete
-    $term_autocomplete_default = '';
-    $element['term'] = [
-      '#type' => 'textfield',
-      '#title' => 'Controlled Vocabulary Term',
-      '#required' => FALSE,  // If true then the default value becomes required !!! @@@
-      '#description' => $this->t('Enter a vocabulary term name. A set of matching ' .
-        'candidates will be provided to choose from. You may find multiple matching terms ' .
-        'from different vocabularies. The full accession for each term is provided ' .
-        'to help choose. Only the top 10 best matches are shown at a time.'),
-      '#default_value' => $term_autocomplete_default,
-      '#disabled' => FALSE,
-      '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 10],
-    ];
-
-
-
-if (FALSE) {
-    // Get the list of databases
-    $databases = [];
-    $query = $chado->select('db', 'd');
-    $query->fields('d', ['db_id', 'name']);
-    $query->orderBy('name');
-    $results = $query->execute();
-    while ($db = $results->fetchObject()) {
-      $databases[$db->db_id] = $db->name;
-    }
-
-    // Get the field settings.
-    $field_definition = $items[$delta]->getFieldDefinition();
-    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-    $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? 'dbxref_id';
-    $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
-    $field_name = $items->getFieldDefinition()->get('field_name');
-    $storage = $form_state->getStorage();
-
-    // Retrieve a value we need to get from the form state after an ajax callback
-    $field_name = $items->getFieldDefinition()->get('field_name');
-    $item_vals = $items[$delta]->getValue();
+dpm($item_vals, "CP21 widget item_vals=");  //@@@
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
-    $link = $item_vals['link'] ?? 0;
-    $db_id = $form_state->getValue([$field_name, $delta, 'db_id']);
-    $db_name = $form_state->getValue([$field_name, $delta, 'db_name']);
-    if (!$db_id) {
-      $db_id = $item_vals['dbxref_db_id'] ?? 0;
-      $db_name = $item_vals['dbxref_db_name'] ?? '';
-    }
 
-    // We need to handle an additional case, no $item_vals will be available when
-    // the "Add another item" ajax triggers, so store db_id if we have it.
-    // This should not trigger, however, for the remove button, since that changes
-    // delta values.
-    $triggering_element = $form_state->getTriggeringElement()['#name'] ?? '';
-    if ($db_id) {
-      if (!preg_match('/remove_button/', $triggering_element)) {
-        $storage['initial_values'][$field_name][$delta]['db_id'] = $db_id;
-        $storage['initial_values'][$field_name][$delta]['db_name'] = $db_name;
-        $form_state->setStorage($storage);
-      }
-    }
-    else {
-      $db_id = $storage['initial_values'][$field_name][$delta]['db_id'] ?? 0;
-      $db_name = $storage['initial_values'][$field_name][$delta]['db_name'] ?? '';
-    }
-
-    $dbxref_id = $item_vals['dbxref_id'] ?? 0;
-    $accession = $item_vals['dbxref_accession'] ?? '';
-    $machine_name = $items->getName();
-
-    $element['#type'] = 'item';
-
-    $element['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoDbxrefWidgetDefault';
     $element['record_id'] = [
       '#type' => 'value',
       '#default_value' => $record_id,
     ];
-    $element['linker_id'] = [
-      '#type' => 'value',
-      '#default_value' => $linker_id,
-    ];
-    $element['link'] = [
-      '#type' => 'value',
-      '#default_value' => $link,
-    ];
-    // pass the field machine name through the form for massageFormValues()
-    $element['field_name'] = [
-      '#type' => 'value',
-      '#default_value' => $field_name,
-    ];
-    $element['db_id'] = [
-      '#type' => 'select',
-      '#empty_option' => t('Database Name'),
-      '#required' => FALSE,
-      '#weight' => 1,
-      '#options' => $databases,
-      '#default_value' => $db_id,
-      '#ajax' => [
-        'callback' =>  [$this, 'widgetAjaxCallback'],
-        'event' => 'change',
-        'progress' => [
-          'type' => 'throbber',
-          'message' => $this->t('Preparing Accession field...'),
-        ],
-        'wrapper' => 'edit-' . $machine_name . '-accession-' . $delta,
-      ],
-    ];
-    $element['dbxref_accession'] = [
+
+    // CV term autocomplete
+    $term_autocomplete_default = ''; //@todo
+    $element['term'] = [
       '#type' => 'textfield',
-      '#attributes' => [
-        'placeholder' => t('Database Accession'),
-      ],
-      '#prefix' => '<div id="edit-' . $machine_name . '-accession-' . $delta . '">',
-      '#suffix' => '</div>',
-      '#weight' => 2,
-      '#default_value' => $accession ? $db_name . ':' . $accession : '',
-      '#disabled' => $db_id?FALSE:TRUE,
-      '#autocomplete_route_name' => 'tripal_chado.dbxref_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 5, 'db_id' => $db_id],
+      '#title' => 'Controlled Vocabulary Term',
+      '#required' => FALSE,
+      '#description' => $this->t('Enter a vocabulary term name. A set of matching'
+          . ' candidates will be provided to choose from. You may find the multiple matching terms'
+          . ' from different vocabularies. The full accession for each term is provided'
+          . ' to help choose. Only the top 10 best matches are shown at a time.'),
+      '#default_value' => $term_autocomplete_default,
+      '#disabled' => FALSE,
+      '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 10],
+      '#element_validate' => [[static::class, 'validateAutocomplete']],
     ];
 
-    // We also need these two to have a specific combined wrapper in addition to the fieldset.
-    $element['db_id']['#prefix'] = '<div class="chado-dbxref-field-wrapper form-item">' . ($element['db_id']['#prefix'] ?? '');
-    $element['dbxref_accession']['#suffix'] .= '</div>';
+    // Related record
+    $related_record_default = 'xx'; //@todo
+dpm($base_table, "CP22a base_table=");//@@@
+dpm($base_column, "CP22b base_column=");//@@@
+    $element['related_record'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Related @table record', ['@table' => $base_table]),
+      '#required' => FALSE,
+      '#description' => $this->t('Select the record that is related to the current record.'),
+      '#default_value' => $related_record_default,
+      '#disabled' => FALSE,
+      '#autocomplete_route_name' => 'tripal_chado.generic_autocomplete',
+//@@@{base_table}/{column_name}/{type_column}/{property_table}/{match_limit}/{type_id}
+      '#autocomplete_route_parameters' => [
+        'base_table' => $base_table,
+        'column_name' => $base_column,
+        'type_column' => 'x',
+        'property_table' => $base_table,
+        'match_limit' => 10,
+        'type_id' => 0,
+      ],
+      '#element_validate' => [[static::class, 'validateRelatedRecord']],
+    ];
 
-    // If there are any additional columns present in the linker table,
-    // use a default of 1 which will work for type_id or rank.
-    // or pub_id. Any existing value will pass through as the default.
-    foreach ($property_definitions as $property => $definition) {
-      if (($property != 'linker_id') and preg_match('/^linker_/', $property)) {
-        $default_value = $item_vals[$property] ?? 1;
-        $element[$property] = [
-          '#type' => 'value',
-          '#default_value' => $default_value,
-        ];
-      }
-    }
+    $direction_default = 1; //@todo
+    $element['direction'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Orientation of the relationship'),
+      '#options' => [
+        '1' => $this->t('Related @table record is the subject of the relationship', ['@table' => $base_table]),
+        '-1' => $this->t('Related @table record is the object of the relationship', ['@table' => $base_table]),
+      ],
+      '#default_value' => $direction_default,
+    ];
 
     // Save some initial values to allow later handling of the "Remove" button
     $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
-}
 
     return $element;
   }
@@ -208,51 +120,104 @@ if (FALSE) {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $new_values = [];
+    foreach ($values as $delta => $value) {
+dpm($value, "CP25 massageFormValues delta=$delta value=");//@@@
+      // Look up cvterm_id from term name returned from autocomplete
+      $cv_autocomplete = new ChadoCVTermAutocompleteController();
+      $cvterm_id = $cv_autocomplete->getCVtermId($value['term']);
+dpm($cvterm_id, "CP26 cvterm_id=");//@@@
+      $record_id = $value['record_id'];
+      $generic_autocomplete = new ChadoGenericAutocompleteController();
+      $related_record_id = $generic_autocomplete->getPkeyId($value['related_record']);
+dpm($record_id, "CP27 record_id=");//@@@
+dpm($related_record_id, "CP28 related_record_id=");//@@@
+      // We need to put the correct values in the subject and object columns
+      $direction = $value['direction'];
+dpm($direction, "CP29 direction=");//@@@
+      // Construct a $values as expected by the field type
+      $new_value = $value;
 
-    // If the accession does not exist in the DB, then create it.
-    foreach ($values as $val_key => $value) {
-      $db_id = $value['db_id'];
-      $accession = $value['dbxref_accession'];
-      if ($accession != '') {
-        // See if we can convert the returned string to its dbxref_id value
-        $dbxref_autocomplete = new ChadoDbxrefAutocompleteController();
-        $dbxref_id = $dbxref_autocomplete->getDbxrefId($accession, $db_id);
+      $new_value['type_id'] = $cvterm_id;
+      unset($new_value['term']);
 
-        // If this is a new dbxref, we need to insert it and retrieve the dbxref_id.
-        if (!$dbxref_id) {
-          $chado = \Drupal::service('tripal_chado.database');
-
-          $db_name = '';
-          if (preg_match('/([^:]+):(.+)$/', $accession, $matches)) {
-            $db_name = $matches[1];
-            $accession = $matches[2];
-          }
-
-          // Get database db_id from db_name
-          if ($db_name) {
-            $query = $chado->select('1:db', 'db');
-            $query->fields('db', ['db_id']);
-            $query->condition('db.name', $db_name, '=');
-            $db_id = $query->execute()->fetchField();
-          }
-
-          if ($db_id) {
-            $insert = $chado->insert('1:dbxref');
-              $insert->fields([
-                'accession' => $accession,
-                'db_id' => $db_id,
-              ]);
-            $dbxref_id = $insert->execute();
-          }
-        }
-        $values[$val_key]['dbxref_id'] = $dbxref_id;
+      if ($direction == 1) {
+        $new_value['subject_id'] = $record_id;
+        $new_value['object_id'] = $related_record_id;
       }
       else {
-        // Placeholder for massageLinkingFormValues()
-        $values[$val_key]['dbxref_id'] = '';
+        $new_value['subect_id'] = $related_record_id;
+        $new_value['object_id'] = $record_id;
+      }
+      unset($new_value['related_record']);
+      unset($new_value['direction']);
+dpm($new_value, "CP30 new_value=");//@@@
+      $new_values[$delta] = $new_value;
+    }
+
+    return $new_values;
+  }
+
+  /**
+   * Form element validation handler for the CV term field
+   *
+   * @param array $element
+   *   The form element being validated
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form
+   */
+  public static function validateAutocomplete($element, FormStateInterface $form_state) {
+    $element_parents = $element['#parents'];
+    $element_value = $element['#value'];
+    if ($element_value != '') {
+      $cv_autocomplete = new ChadoCVTermAutocompleteController();
+      $cvterm_id = $cv_autocomplete->getCVtermId($element_value);
+      if (!$cvterm_id) {
+        $form_state->setErrorByName(implode('][', $element_parents),
+            t('The Controlled Vocabulary Term "@term" is not a valid term', ['@term' => $element_value]));
+      }
+      // We permit entering a term without a related record, it will just be ignored
+    }
+  }
+
+  /**
+   * Form element validation handler for the related record field
+   *
+   * @param array $element
+   *   The form element being validated
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form
+   */
+  public static function validateRelatedRecord($element, FormStateInterface $form_state) {
+    $element_parents = $element['#parents'];
+    // element_parents e.g. 0 => "project_relationship", 1 => 0, 2 => "related_record"
+    $element_value = $element['#value'];
+    if ($element_value != '') {
+      $generic_autocomplete = new ChadoGenericAutocompleteController();
+      $related_record_id = $generic_autocomplete->getPkeyId($element_value);
+      if (!$related_record_id) {
+        $form_state->setErrorByName(implode('][', $element_parents),
+            t('The specified record does not include a numeric record ID in parentheses'));
+      }
+
+      // The related record cannot be the same as the current record @todo
+#      $values = $form_state->getValues();
+#dpm($values, "valrr values");//@@@
+#      $entity_id = $values['path'][$element_parents[1]]['pid'] ?? 0;
+#dpm($parent_id, "CP311 parent_id"); dpm($related_record_id, "CP312 related_record_id");//@@@
+#      if ($parent_id && $parent_id == $related_record_id) {
+#        $form_state->setErrorByName(implode('][', $element_parents),
+#            t('The specified record cannot be the same as this entity'));
+#      }
+
+      // We will not permit having a related record without also specifying a term.
+      // The term has its own validation, we just need to check for not empty.
+      $term = $values[$element_parents[0]][$element_parents[1]]['term'] ?? 'missing';
+      if (!$term) {
+        $form_state->setErrorByName(implode('][', [$element_parents[0], $element_parents[1], 'term']),
+            t('A record has been entered, but a term has not been specified'));
       }
     }
-    return $this->massageLinkingFormValues('dbxref_id', $values, $form_state);
   }
 
   /**
@@ -263,18 +228,19 @@ if (FALSE) {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
    */
-  public function widgetAjaxCallback($form, &$form_state) {
-
-    // Extract the field's machine name and delta from the triggering element,
-    // e.g. "field_study_dbxref[0][dbxref][db_id]".
-    $triggering_element = $form_state->getTriggeringElement()['#name'];
-    preg_match('/^([^\[]+)\[(\d+)\]/', $triggering_element, $matches);
-    $machine_name = $matches[1];
-    $delta = $matches[2];
-
-    $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-' . $machine_name . '-accession-' . $delta,
-        $form[$machine_name]['widget'][$delta]['dbxref_accession']));
-    return $response;
-  }
+# Not likely to be needed, using cvterm autocomplete instead
+#  public function widgetAjaxCallback($form, &$form_state) {
+#dpm("CP92 widgetAjaxCallback");//@@@
+#    // Extract the field's machine name and delta from the triggering element,
+#    // e.g. "field_study_dbxref[0][dbxref][db_id]".
+#    $triggering_element = $form_state->getTriggeringElement()['#name'];
+#    preg_match('/^([^\[]+)\[(\d+)\]/', $triggering_element, $matches);
+#    $machine_name = $matches[1];
+#    $delta = $matches[2];
+#
+#    $response = new AjaxResponse();
+#    $response->addCommand(new ReplaceCommand('#edit-' . $machine_name . '-accession-' . $delta,
+#        $form[$machine_name]['widget'][$delta]['dbxref_accession']));
+#    return $response;
+#  }
 }

@@ -24,6 +24,12 @@ use Drupal\tripal\Entity\TripalEntityType;
 class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_relationship_type_default';
+  protected static $termIdSpace = 'SBO';
+  protected static $termAccession = '0000374';
+
+  // This is a flag to the ChadoFieldItemBase parent
+  // class to provide a column selector in the form
+  protected static $select_base_column = TRUE;
 
   /**
    * {@inheritdoc}
@@ -40,8 +46,9 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $storage_settings = parent::defaultStorageSettings();
 #    $storage_settings['storage_plugin_settings']['linking_method'] = '';
     $storage_settings['storage_plugin_settings']['linker_table'] = '';
-    $storage_settings['storage_plugin_settings']['linker_fkey_column'] = '';
+#    $storage_settings['storage_plugin_settings']['linker_fkey_column'] = '';
 #    $storage_settings['storage_plugin_settings']['object_table'] = self::$object_table;
+    $storage_settings['base_column'] = '';
     return $storage_settings;
   }
 
@@ -51,8 +58,8 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
     // CV Term is 'Relationship'
-    $field_settings['termIdSpace'] = 'SBO';
-    $field_settings['termAccession'] = '0000374';
+    $field_settings['termIdSpace'] = self::$termIdSpace;
+    $field_settings['termAccession'] = self::$termAccession;
     return $field_settings;
   }
 
@@ -60,10 +67,11 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function tripalTypes($field_definition) {
-dpm($field_definition, "CP2 field_definition");//@@@
+//dpm($field_definition, "CP02 field_definition");//@@@
 
     // Create a variable for easy access to settings.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
+dpm($storage_settings, "CP02 storage_settings tripalTypes");//@@@
     $base_table = $storage_settings['base_table'];
 
     // If we don't have a base table then we're not ready to specify the
@@ -96,17 +104,14 @@ dpm($field_definition, "CP2 field_definition");//@@@
     $linker_type_col = 'type_id';
     $linker_subject_term = self::getColumnTermId($linker_table, $linker_subject_col, self::$record_id_term);
     $linker_object_term = self::getColumnTermId($linker_table, $linker_object_col, self::$record_id_term);
-    $linker_type_term = self::getColumnTermId($linker_table, $linker_type_col, self::$record_id_term);
+#    $linker_type_term = self::getColumnTermId($linker_table, $linker_type_col, self::$record_id_term);
+#dpm($linker_type_term, "CP03 linker_type_term=");//@@@
 
     // Columns from linked tables to specify the relationship type
     $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
-    $dbxref_term = self::getColumnTermId('dbxref', 'accession', 'data:2091');
-    $db_term = self::getColumnTermId('db', 'name', 'ERO:0001716');
     $type_term = self::getColumnTermId('cvterm', 'name', 'schema:additionalType');
     $type_len = $cvterm_schema_def['fields']['name']['size'];
-
-
-
+dpm($type_term, "CP04 type_len=$type_len, type_term=");//@@@
 
     $properties = [];
 
@@ -185,14 +190,90 @@ dpm($field_definition, "CP2 field_definition");//@@@
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
     // Relationship tables have a standard naming method
-    $linker_table = $base_table . '_relationship';
-    $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
-    if ($linker_schema_def) {
+    $relationship_table = $base_table . '_relationship';
+    $relationship_schema_def = $schema->getTableDef($relationship_table, ['format' => 'Drupal']);
+    if ($relationship_schema_def) {
       $compatible = TRUE;
     }
 
-dpm($compatible, "CP1 compatible with table $base_table");//@@@
+dpm($compatible, "CP81 compatible with table $base_table=");//@@@
     return $compatible;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances, array $options = []): array {
+dpm("CP41 discover()");//@@@
+
+    // Initialize with an empty field list.
+    $field_list = [];
+
+    // Make sure the base table setting exists.
+    $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
+dpm($base_table, "CP42 base_table");//@@@
+    if ($base_table) {
+      // We need to know which column in the base table should be used for
+      // an autocomplete.
+      // @todo maybe check title format, for now hardcoded
+      $base_column = 'name';
+  dpm($base_column, "CP43 base_column");//@@@
+      if ($base_column) {
+        /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+        $chado = \Drupal::service('tripal_chado.database');
+
+        // Make sure the relationship table exists in Chado.
+        $relationship_table = $base_table . '_relationship';
+    dpm($relationship_table, "CP44 relationship table");//@@@
+        if ($chado->schema()->tableExists($relationship_table)) {
+    dpm("CP45 relationship table exists");//@@@
+          if ($chado->schema()->fieldExists($base_table, $base_column)) {
+
+            $field_list[] = [
+              'name' => self::generateFieldName($bundle, 'relationship'),
+              'content_type' => $bundle->getID(),
+              'label' => 'Relationship',
+              'type' => self::$id,
+              'description' => 'Relationships between records.',
+              'cardinality' => -1,
+              'required' => FALSE,
+              'storage_settings' => [
+                'storage_plugin_id' => 'chado_storage',
+                'storage_plugin_settings' => [
+                  'base_table' => $base_table,
+                  'base_column' => $base_column,
+                  'linker_table' => $relationship_table,
+                  #'prop_table' => $prop_table
+                ],
+              ],
+              'settings' => [
+                'termIdSpace' => self::$termIdSpace,
+                'termAccession' => self::$termAccession,
+              ],
+              'display' => [
+                'view' => [
+                  'default' => [
+                    'region' => 'content',
+                    'label' => 'above',
+                    'weight' => 10,
+                  ],
+                ],
+                'form' => [
+                  'default' => [
+                    'region' => 'content',
+                    'weight' => 10
+                  ],
+                ],
+              ],
+            ];
+            // The parent class adds collection plugin IDs
+            $field_list = parent::discoverPostprocess($field_list);
+          }
+        }
+      }
+    }
+    return $field_list;
   }
 
 }
