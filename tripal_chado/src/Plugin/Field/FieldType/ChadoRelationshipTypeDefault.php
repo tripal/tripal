@@ -5,7 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+#@@@use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
@@ -44,11 +44,12 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $storage_settings = parent::defaultStorageSettings();
+dpm($storage_settings, "CP01SS defaultStorageSettings");//@@@
+    $storage_settings['base_column'] = '';
 #    $storage_settings['storage_plugin_settings']['linking_method'] = '';
     $storage_settings['storage_plugin_settings']['linker_table'] = '';
 #    $storage_settings['storage_plugin_settings']['linker_fkey_column'] = '';
 #    $storage_settings['storage_plugin_settings']['object_table'] = self::$object_table;
-    $storage_settings['base_column'] = '';
     return $storage_settings;
   }
 
@@ -57,6 +58,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
+dpm($field_settings, "CP01FS defaultFieldSettings");//@@@
     // CV Term is 'Relationship'
     $field_settings['termIdSpace'] = self::$termIdSpace;
     $field_settings['termAccession'] = self::$termAccession;
@@ -67,7 +69,6 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function tripalTypes($field_definition) {
-//dpm($field_definition, "CP02 field_definition");//@@@
 
     // Create a variable for easy access to settings.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
@@ -90,8 +91,10 @@ dpm($storage_settings, "CP02 storage_settings tripalTypes");//@@@
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_schema_def['primary key'];
 
-    // Relationship tables have a standard naming method
-    $linker_table = $base_table . '_relationship';
+    // Relationship table
+dpm($storage_settings['linker_table'] ?? 'undef-use default', "CP03A storage settings linker table");//@@@
+    $linker_table = $storage_settings['linker_table'] ?? ($base_table . '_relationship');
+dpm($linker_table, "CP03B linker_table");//@@@
 #    $linker_fkey_column = $storage_settings['linker_fkey_column']
 #      ?? $storage_settings['base_column'] ?? $object_pkey_col;
 
@@ -104,7 +107,7 @@ dpm($storage_settings, "CP02 storage_settings tripalTypes");//@@@
     $linker_type_col = 'type_id';
     $linker_subject_term = self::getColumnTermId($linker_table, $linker_subject_col, self::$record_id_term);
     $linker_object_term = self::getColumnTermId($linker_table, $linker_object_col, self::$record_id_term);
-#    $linker_type_term = self::getColumnTermId($linker_table, $linker_type_col, self::$record_id_term);
+    $linker_type_term = self::getColumnTermId($linker_table, $linker_type_col, self::$record_id_term);
 #dpm($linker_type_term, "CP03 linker_type_term=");//@@@
 
     // Columns from linked tables to specify the relationship type
@@ -125,22 +128,22 @@ dpm($type_term, "CP04 type_len=$type_len, type_term=");//@@@
     // This property will store the Drupal entity ID of the referenced chado
     // record, if one exists. For this field, this can be either the
     // subject or the object.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_entity_id', self::$drupal_entity_term, [
-      'action' => 'function',
-      'drupal_store' => TRUE,
-      'namespace' => self::$chadostorage_namespace,
-      'function' => self::$drupal_entity_callback,
-      'ftable' => $base_table,
-      'fkey' => $linker_subject_col,
-    ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_entity_id', self::$drupal_entity_term, [
-      'action' => 'function',
-      'drupal_store' => TRUE,
-      'namespace' => self::$chadostorage_namespace,
-      'function' => self::$drupal_entity_callback,
-      'ftable' => $base_table,
-      'fkey' => $linker_object_col,
-    ]);
+#    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_entity_id', self::$drupal_entity_term, [
+#      'action' => 'function',
+#      'drupal_store' => TRUE,
+#      'namespace' => self::$chadostorage_namespace,
+#      'function' => self::$drupal_entity_callback,
+#      'ftable' => $base_table,
+#      'fkey' => $linker_subject_col,
+#    ]);
+#    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_entity_id', self::$drupal_entity_term, [
+#      'action' => 'function',
+#      'drupal_store' => TRUE,
+#      'namespace' => self::$chadostorage_namespace,
+#      'function' => self::$drupal_entity_callback,
+#      'ftable' => $base_table,
+#      'fkey' => $linker_object_col,
+#    ]);
 
     // Define the relationship table that links the base table back to itself at another record.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
@@ -150,7 +153,7 @@ dpm($type_term, "CP04 type_len=$type_len, type_term=");//@@@
     ]);
 
     // Define the link between the base table and the relationship subject.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject', $linker_subject_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $linker_subject_term, [
       'action' => 'store_link',
       'drupal_store' => FALSE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_subject_col,
@@ -159,7 +162,7 @@ dpm($type_term, "CP04 type_len=$type_len, type_term=");//@@@
     ]);
 
     // Define the link between the relationship object and the base table.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object', $linker_object_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $linker_object_term, [
       'action' => 'store',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_object_col,
@@ -168,6 +171,12 @@ dpm($type_term, "CP04 type_len=$type_len, type_term=");//@@@
     ]);
 
     // The type of relationship
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $linker_type_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_type_col,
+      'as' => 'type_id',
+    ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'relationship_type', $type_term, $type_len, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
@@ -244,7 +253,6 @@ dpm($base_table, "CP42 base_table");//@@@
                   'base_table' => $base_table,
                   'base_column' => $base_column,
                   'linker_table' => $relationship_table,
-                  #'prop_table' => $prop_table
                 ],
               ],
               'settings' => [

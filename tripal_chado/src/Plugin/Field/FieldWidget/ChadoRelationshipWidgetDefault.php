@@ -36,26 +36,32 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_name = $field_definition->get('field_name');
-dpm($field_name, "CP20 field_name=");//@@@
+dpm($field_name, "CP20 field_name=");//@@@ OK
 #    $field_settings = $field_definition->getSettings();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
-dpm($base_table, "CP20B base_table=");//@@@
-dpm($base_column ?? 'undef', "CP20C base_column=");//@@@
-#if (!$base_table) {
-#  return $element;
-#}
-  $base_column = $storage_settings['base_column'];
+dpm($storage_settings, "CP20B widget formElement storage_settings=");//@@@ OK base_table and base_column
+    // During manual field addition there may be no base table selected yet, so bypass this form
+    if (!$base_table) {
+      return $element;
+    }
+    $base_column = $storage_settings['base_column'];
+dpm($base_column ?? 'undef', "CP20C base_column=");//@@@ OK
 
     // Get the default values.
     $item_vals = $items[$delta]->getValue();
-dpm($item_vals, "CP21 widget item_vals=");  //@@@
+dpm($item_vals, "CP21 widget item_vals=");  //@@@ NOT OK? empty array
     $record_id = $item_vals['record_id'] ?? 0;
+#if(!$record_id){ dpm($items[$delta], "CP21R no record_id items[$delta]=");}//@@@
     $linker_id = $item_vals['linker_id'] ?? 0;
 
     $element['record_id'] = [
       '#type' => 'value',
       '#default_value' => $record_id,
+    ];
+    $element['linker_id'] = [
+      '#type' => 'value',
+      '#default_value' => $linker_id,
     ];
 
     // CV term autocomplete
@@ -135,7 +141,7 @@ dpm($related_record_id, "CP28 related_record_id=");//@@@
       // We need to put the correct values in the subject and object columns
       $direction = $value['direction'];
 dpm($direction, "CP29 direction=");//@@@
-      // Construct a $values as expected by the field type
+      // Construct a $value as expected by the field type
       $new_value = $value;
 
       $new_value['type_id'] = $cvterm_id;
@@ -146,13 +152,15 @@ dpm($direction, "CP29 direction=");//@@@
         $new_value['object_id'] = $related_record_id;
       }
       else {
-        $new_value['subect_id'] = $related_record_id;
+        $new_value['subject_id'] = $related_record_id;
         $new_value['object_id'] = $record_id;
       }
       unset($new_value['related_record']);
       unset($new_value['direction']);
 dpm($new_value, "CP30 new_value=");//@@@
       $new_values[$delta] = $new_value;
+#$x = debug_backtrace(); for ($i = 0; $i<count($x); $i++) { //@@@
+#$caller = $x[$i]['function'];dpm("CP31 caller $i = $caller"); }//@@@
     }
 
     return $new_values;

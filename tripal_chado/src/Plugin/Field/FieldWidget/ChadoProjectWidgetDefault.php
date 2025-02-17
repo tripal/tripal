@@ -34,6 +34,7 @@ class ChadoProjectWidgetDefault extends ChadoWidgetBase {
     $field_name = $items->getFieldDefinition()->get('field_name');
 
     $item_vals = $items[$delta]->getValue();
+dpm($item_vals, "CP1021 project widget item_vals=");  //@@@
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
@@ -97,7 +98,9 @@ class ChadoProjectWidgetDefault extends ChadoWidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     $values = $this->genericSelectMassageFormValues('project_id', $values);
-    return $this->massageLinkingFormValues('project_id', $values, $form_state);
+$x = $this->massageLinkingFormValues('project_id', $values, $form_state); dpm($x, 'CP1022 Project massaged values');//@@@
+    return $x;
+//@@@$this->massageLinkingFormValues('project_id', $values, $form_state);
   }
 
   /**

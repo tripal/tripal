@@ -567,10 +567,14 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * {@inheritdoc}
    */
   public function tripalSave($field_item, $field_name, $prop_types, $prop_values, $entity) {
+if ($field_name == 'contact_relationship'){ dpm("CP500 tripalSave()"); }//@@@
     $delta = $field_item->getName();
+if ($field_name == 'contact_relationship'){ dpm("CP501 delta=\"$delta\""); }//@@@
     foreach ($prop_values as $property) {
       $prop_key = $property->getKey();
+if ($field_name == 'contact_relationship'){ dpm("CP502 property key=\"$prop_key\""); }//@@@
       $value = $entity->get($field_name)->get($delta)->get($prop_key)->getValue();
+if (($field_name == 'contact_relationship')) { dpm($value, "CP503 $prop_key value="); }//@@@
       $property->setValue($value);
     }
   }
