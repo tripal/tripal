@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
-use Drupal\tripal\Entity\TripalEntity;
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
@@ -1304,103 +1303,6 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // This return value is currently only used for unit tests, so is limited to 100 records.
     return $this->published_or_updated_entities;
-  }
-
-  /**
-   * Updates a single published entity with new chado values.
-   *
-   * This function updates the specified field of a published entity with the
-   * new chado values. It initializes the publishing process, prepares the
-   * update statement, and executes it.
-   *
-   * @param TripalEntity $entity
-   *   The entity to be updated.
-   * @param string $field_name
-   *   The name of the field to be updated.
-   * @param mixed $delta
-   *   The delta value indicating the specific instance of the field.
-   * @param array $values
-   *   The (incomplete) entity values to update the field with.
-   * @param string $bundle
-   *   The bundle type of the TripalEntity.
-   * @param string $tsid
-   *   The datastore identifier.
-   *
-   * @return TripalEntity|null
-   *   The updated entity if it was successful and null otherwise.
-   */
-  public function updatePublishedEntity(TripalEntity $entity, string $field_name, mixed $delta, array $values, string $bundle, string $tsid): TripalEntity|null {
-
-    // Initialization for publish.
-    $success = $this->publish_init(options:['bundle' => $bundle, 'datastore' => $tsid]);
-    if (!$success) {
-      \Drupal::messenger()->addError('Error initializing the update process');
-      return NULL;
-    }
-
-    // Populates the $this->field_info variable with field information.
-    $this->setFieldInfo();
-
-    // Get the required field properties that will uniquely identify an entity.
-    // TODO: check if this should be called in publish_init.
-    $this->required_types = $this->storage->getStoredTypes();
-    if (empty($this->required_types[$field_name])) {
-      \Drupal::messenger()->addError('Field ' . $field_name . ' is not supported for update');
-      return NULL;
-    }
-
-    // Find the record_id of the entity to update.
-    $record_id = $values[$field_name][0]['record_id']['value'];
-    \Drupal::messenger()->addMessage('Updating entity with record_id: ' . $record_id->getValue());
-
-    // Find the entity Values for all fields to update.
-    // This is necessary to update the entity cache, because TripalEntity
-    // itself updates only the 'direct' value fields, not the entire entity
-    // cache fields from ancilliary tables.
-    $matches = $this->storage->findValues($values, $this->main_property_names, [$record_id->getValue()]);
-
-    if (empty($matches)) {
-      \Drupal::messenger()->addError('No matching records found');
-      return NULL;
-    }
-
-    // Prepare the statement.
-    $field_table = 'tripal_entity__' . $field_name;
-    // Update the field values in the entity table.
-    $fields = [];
-    // Update only the fields that are cached in the entity tables
-    // non-required types will stay having the default empty value.
-    foreach ($this->required_types[$field_name] as $key => $properties) {
-      $value = $matches[0][$field_name][$delta][$key]['value'];
-      $field_value = (is_object($value)) ? $value->getValue() : null;
-      if (empty($field_value)) {
-        // Allow to delete the field value, if the value is empty,
-        // but need to use the default value.
-        $field_value = $properties->getDefaultValue();
-      }
-      else {
-        $fields["{$field_name}_$key"] = $field_value;
-      }
-    }
-    $query = $this->connection->update($field_table);
-    $query->fields($fields);
-    // Set the conditions for the update.
-    $query->condition('entity_id', $entity->getID());
-    $query->condition('delta', $delta);
-
-    // Execute the query and catch any exceptions. If the query fails,
-    // log the error, which is not fatal because it only means that the field
-    // cache was not updated. If the query is successful, log the success
-    // and return the updated entity.
-    try {
-      $query->execute();
-      $this->logger->info("Field $field_name updated successfully");
-    }
-    catch (\Exception $e) {
-      \Drupal::messenger()->addError('Error updating field entity cache' . $field_name . ': ' . $e->getMessage());
-      $this->logger->error('Error updating field ' . $field_name . ': ' . $e->getMessage());
-    }
-    return $entity;
   }
 
 }

@@ -783,6 +783,14 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           return;
         }
       }
+
+      // Right now the assumption that only key values will be saved is baked
+      // into ChadoStorage insert/update. That means, the non-key properties
+      // do not have a value after saving because ChadoStorage didn't bother
+      // to set them... if it did, then the following loadValues would not be
+      // needed since the values would already be set.
+      // @todo look into fixing insert/update to return all values.
+      $tripal_storages[$tsid]->loadValues($tsid_values);
     }
 
     // Set the property values that should be saved in Drupal, everything
@@ -833,12 +841,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // to ask the fielditem to load all indicated property values into
         // the entity and the item. In this way, we can ensure they are slated
         // for Drupal to cache to the database during the TripalEntity::save().
-        // @todo right now the assumption that only key values will be saved is
-        // baked into ChadoStorage. That means, the non-key properties do not
-        // have a value after saving because ChadoStorage didn't bother to set
-        // them... if it did, then the following would be all that was needed
-        // but since it doesn't, we have to republish after were done saving
-        // since publish doesn't seem to make that assumption.
         if (count($prop_values) > 0) {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
           // Keep track of elements that have no value.
@@ -861,118 +863,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
               'logs for more details or contact the site administrator if you ' .
               'cannot view the logs.');
-        }
-      }
-    }
-  }
-
-  /**
-   * Performs actions after the entity is saved.
-   *
-   * The Entity::postSave() method is called after the entity has been
-   * persisted to the database.
-   *
-   * In the context of Tripal and Chado, the postSave method can be used to
-   * update Chado values. For example, when a Tripal entity is saved, the
-   * postSave method can be used to ensure that the corresponding Chado records
-   * are cached and updated in the entity storage tables.
-   *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $storage
-   *   The entity storage handler.
-   * @param bool $update
-   *   (optional) Whether the entity is being updated (TRUE) or created (FALSE).
-   *   Defaults to TRUE.
-   */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
-    parent::postSave($storage);
-
-    // If this site has been configured to cache chado values in the database
-    // then we will want to call the update function to do so.
-    if ($this->shouldUpdateCache()) {
-
-      // First we get the chado service.
-      $chado_publish = $this->getChadoPublishService();
-      if (!$chado_publish) {
-        return;
-      }
-
-      // Next get the values that were submitted for saving.
-      [$values, $tripal_storages] = TripalEntity::getValuesArray($this);
-      // Plus the bundle and its associated fields.
-      $fields = $this->getFields();
-      $bundle = $this->getBundle()->getID();
-
-      // Make sure we let people know if we were unable to retrieve the bundle.
-      if (empty($bundle)) {
-        \Drupal::messenger()->addMessage('No bundle information found!');
-        return;
-      }
-
-      // Indicate that we are going to republish these fields in order to
-      // update the cache.
-      \Drupal::messenger()->addMessage('Republishing ' . count($fields) . ' fields in bundle ' . $bundle .
-        ' for entity ' . $this->getType() . ' with ID ' . $this->getID());
-
-      $this->updateFields($values, $fields, $bundle, $chado_publish);
-    }
-  }
-
-  /**
-   * Determine if this site has been configured to cache chado values.
-   *
-   * @return bool
-   *   TRUE if we should cache the values and FALSE otherwise.
-   */
-  private function shouldUpdateCache(): bool {
-    return \Drupal::config('tripal.settings')
-      ->get('tripal_entity_type.default_cache_backend_field_values') ?? FALSE;
-  }
-
-  /**
-   * Retrieve the chado publish service.
-   *
-   * @return Drupal\tripal_chado\Plugin\TripalBackendPublish\ChadoPublish|null
-   *   Returns the chadopulish service if we are able to and null otherwise.
-   */
-  private function getChadoPublishService(): ChadoPublish|null {
-    try {
-      $publish_service = \Drupal::service('tripal.backend_publish');
-      return $publish_service->createInstance('chado_storage', []);
-    }
-    catch (PluginNotFoundException $e) {
-      \Drupal::logger('tripal')->warning('Chado storage plugin not found (this may happen due to partial bootstrap): @message', ['@message' => $e->getMessage()]);
-      \Drupal::messenger()->addWarning('Chado storage plugin could not be initialized. Please check the configuration.');
-      return NULL;
-    }
-  }
-
-  /**
-   * Update the field cache.
-   *
-   * @param array $values
-   *   The values submitted to be saved.
-   * @param array $fields
-   *   Fields associated with this entity.
-   * @param string $bundle
-   *   The bundle of this entity.
-   * @param Drupal\tripal_chado\Plugin\TripalBackendPublish\ChadoPublish $chado_publish
-   *   The chado publish service.
-   */
-  private function updateFields(array $values, array $fields, string $bundle, $chado_publish): void {
-    foreach ($values as $tsid => $tsid_values) {
-      foreach ($fields as $field_name => $items) {
-        foreach ($items as $item) {
-          if (!($item instanceof TripalFieldItemInterface)) {
-            continue;
-          }
-          $delta = 0;
-          $entities = $chado_publish->updatePublishedEntity($this, $field_name, $tsid_values, $delta, $bundle, $tsid);
-          if (count(value: $entities) > 0) {
-            \Drupal::messenger()->addMessage("Updated $field_name in bundle $bundle");
-          }
-          else {
-            \Drupal::messenger()->addMessage("Nothing was updated in bundle $bundle");
-          }
         }
       }
     }
