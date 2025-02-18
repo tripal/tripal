@@ -179,6 +179,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   public function setJob($job) {
     $this->job = $job;
     $this->logger->setJob($job);
+    $this->logger->setGlobalOption('logger', FALSE);
   }
 
   /**
