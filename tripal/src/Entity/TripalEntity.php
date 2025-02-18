@@ -829,6 +829,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           }
         }
 
+        // Now that we have a list of property values to be cached, we want
+        // to ask the fielditem to load all indicated property values into
+        // the entity and the item. In this way, we can ensure they are slated
+        // for Drupal to cache to the database during the TripalEntity::save().
+        // @todo right now the assumption that only key values will be saved is
+        // baked into ChadoStorage. That means, the non-key properties do not
+        // have a value after saving because ChadoStorage didn't bother to set
+        // them... if it did, then the following would be all that was needed
+        // but since it doesn't, we have to republish after were done saving
+        // since publish doesn't seem to make that assumption.
         if (count($prop_values) > 0) {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
           // Keep track of elements that have no value.

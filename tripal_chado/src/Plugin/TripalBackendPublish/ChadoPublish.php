@@ -1306,7 +1306,6 @@ class ChadoPublish extends TripalBackendPublishBase {
     return $this->published_or_updated_entities;
   }
 
-
   /**
    * Updates a single published entity with new chado values.
    *
