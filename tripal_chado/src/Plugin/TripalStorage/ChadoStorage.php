@@ -45,14 +45,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   protected $records = NULL;
 
   /**
-   * Caches the default value for entity field caching from the configuration.
-   *
-   * @var bool
-   */
-  protected bool $default_is_required = TRUE;
-
-
-  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
@@ -97,8 +89,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $this->connection = $connection;
     $this->field_debugger = $field_debugger;
-    $this->default_is_required = \Drupal::config('tripal.settings')
-      ->get('tripal_entity_type.default_cache_backend_field_values') ?? TRUE;
   }
 
   /**
@@ -137,52 +127,25 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
-   * Helper function: check if a single field property should be cached.
-   *
-   * @param string $field_name
-   *   The name of the chado field to check.
-   * @param string $key
-   *   The storage property key to check.
-   *
-   * @return bool
-   *   TRUE if it should be saved to the Drupal field table and FALSE otherwise.
+   * {@inheritDoc}
    */
-  public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool {
+  public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool|null {
 
-    $storage_settings = $this->property_types[$field_name][$key]->getStorageSettings();
+    // First get our parent to do the generic check.
+    $is_required = parent::isDrupalStoreByFieldNameKey($field_name, $key);
 
-    // Get the default from the configuration.
-    $is_required = $this->default_is_required;
+    // Then grab the property type and its storage properties in order to
+    // make any chado-specific decisions.
+    $property_type = $this->getPropertyType($field_name, $key);
+    if ($property_type === NULL) {
+      return NULL;
+    }
+    $storage_settings = $property_type->getStorageSettings();
 
     // In chado, all table columns containing sequence are named 'residues'.
     // We want to exclude sequences from drupal storage even if the default is TRUE.
     if (array_key_exists('path', $storage_settings) and str_ends_with($storage_settings['path'], 'residues')) {
       $is_required = FALSE;
-    }
-
-    // Any field that stores a base record id, a primary key, or a foreign key
-    // link is required. This takes precedence and cannot be overridden.
-    if (
-      ($storage_settings['action'] == 'store_id') or
-      ($storage_settings['action'] == 'store_pkey') or
-      ($storage_settings['action'] == 'store_link')
-    ) {
-      $is_required = TRUE;
-    }
-    // For any other fields that have 'drupal_exclude' set, we want to ensure it
-    // is excluded regardless of the default configuration. To force exclusion
-    // of the field from entity storage, add `drupal_exclude: true` in the
-    // `storage_settings` of the field definition in its
-    // tripalfield_collection*_chado.yml file.
-    elseif ((array_key_exists('drupal_exclude', $storage_settings)) and ($storage_settings['drupal_exclude'] === TRUE)) {
-      $is_required = FALSE;
-    }
-    // Stay compatible with the original behavior and allow to force drupal
-    // storage. To force inclusion of the field into Entity storage, add
-    // `drupal_store: true` in the section `storage_settings` of the field
-    // definition in its tripal field collection.
-    elseif ((array_key_exists('drupal_store', $storage_settings)) and ($storage_settings['drupal_store'] === TRUE)) {
-      $is_required = TRUE;
     }
 
     return $is_required;
