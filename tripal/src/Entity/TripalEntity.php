@@ -9,8 +9,6 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
-use Drupal\tripal_chado\Plugin\TripalBackendPublish\ChadoPublish;
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 
 /**
  * Defines the Tripal Content entity.
