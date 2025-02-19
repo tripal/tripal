@@ -23,7 +23,7 @@ use Drupal\Core\Url;
  */
 function template_preprocess_tripal_entity_type(array &$variables) {
 
-  // Fetch TripalEntity Entity Object.
+  // Fetch TripalEntityType Object.
   $tripal_entity_type = $variables['elements']['#tripal_entity_type'];
 
   // Take information from the entity and add it to the content.
