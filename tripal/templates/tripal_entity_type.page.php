@@ -26,13 +26,41 @@ function template_preprocess_tripal_entity_type(array &$variables) {
   // Fetch TripalEntity Entity Object.
   $tripal_entity_type = $variables['elements']['#tripal_entity_type'];
 
+  // Take information from the entity and add it to the content.
+  $variables['content']['label'] = [
+    '#type' => 'item',
+    '#title' => 'Label',
+    '#markup' => $tripal_entity_type->getLabel(),
+    '#wrapper_attributes' => [
+      'class' => ['container-inline'],
+    ],
+  ];
+  $variables['content']['term'] = [
+    '#type' => 'item',
+    '#title' => 'Term',
+    '#markup' => $tripal_entity_type->getTermIdSpace() . ':' . $tripal_entity_type->getTermAccession(),
+    '#wrapper_attributes' => [
+      'class' => ['container-inline'],
+    ],
+  ];
+  $variables['content']['category'] = [
+    '#type' => 'item',
+    '#title' => 'Category',
+    '#markup' => $tripal_entity_type->getCategory(),
+    '#wrapper_attributes' => [
+      'class' => ['container-inline'],
+    ],
+  ];
+  $variables['content']['description'] = [
+    '#type' => 'item',
+    '#title' => 'Help Text for Curators',
+    '#markup' => $tripal_entity_type->getHelpText(),
+  ];
+
   // Helpful $content variable for templates.
+  // Only adds fields which TripalEntityType may not have.
   foreach (Element::children($variables['elements']) as $key) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
 
-  // See issue #2123 for the history of this
-  $variables['content']['warning'] = [
-    '#markup' => t('This tripal entity type page is a placeholder and is not currently implemented'),
-  ];
 }
