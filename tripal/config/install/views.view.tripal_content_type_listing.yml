@@ -394,7 +394,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: '<p>There are no tripal content entities yet.</p>'
+          content: '<p>No Tripal content available.</p>'
           tokenize: false
       sorts:
         created:
