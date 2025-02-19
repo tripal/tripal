@@ -51,6 +51,12 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
 function tripal_theme() {
   $theme = [];
 
+  $theme['tripal_entity_type'] = [
+    'render element' => 'elements',
+    'file' => 'templates/tripal_entity_type.page.php',
+    'template' => 'tripal_entity_type',
+  ];
+
   $theme['tripal_entity'] = array(
     'render element' => 'elements',
     'file' => 'templates/tripal_entity.page.php',
