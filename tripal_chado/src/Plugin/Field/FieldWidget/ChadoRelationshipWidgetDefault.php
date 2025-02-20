@@ -10,6 +10,7 @@ use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 
+
 /**
  * Plugin implementation of default Chado relationship widget.
  *
@@ -29,31 +30,40 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-//    $chado = \Drupal::service('tripal_chado.database');
-//dpm($element, "CP001 passed element");//@@@
-#    $element = [];
-
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_name = $field_definition->get('field_name');
-dpm($field_name, "CP20 field_name=");//@@@ OK
-#    $field_settings = $field_definition->getSettings();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
-dpm($storage_settings, "CP20B widget formElement storage_settings=");//@@@ OK base_table and base_column
-    // During manual field addition there may be no base table selected yet, so bypass this form
+    // During manual field addition there may be no base table
+    // selected yet, in which case bypass this form
     if (!$base_table) {
       return $element;
     }
     $base_column = $storage_settings['base_column'];
-dpm($base_column ?? 'undef', "CP20C base_column=");//@@@ OK
 
     // Get the default values.
     $item_vals = $items[$delta]->getValue();
-dpm($item_vals, "CP21 widget item_vals=");  //@@@ NOT OK? empty array
     $record_id = $item_vals['record_id'] ?? 0;
-#if(!$record_id){ dpm($items[$delta], "CP21R no record_id items[$delta]=");}//@@@
+    $type_id = $item_vals['type_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
+    $subject_id = $item_vals['subject_id'] ?? 0;
+    $subject_name = $item_vals['subject_name'] ?? '';
+    $object_id = $item_vals['object_id'] ?? 0;
+    $object_name = $item_vals['object_name'] ?? '';
+    if ($subject_id) {
+      $subject_name .= ' (' . $subject_id . ')';
+    }
+    if ($object_id) {
+      $object_name .= ' (' . $object_id . ')';
+    }
+
+    $direction_default = 1;
+    $related_default = $subject_name;
+    if ($record_id and $subject_id and ($record_id == $subject_id)) {
+      $direction_default = -1;
+      $related_default = $object_name;
+    }
 
     $element['record_id'] = [
       '#type' => 'value',
@@ -63,9 +73,17 @@ dpm($item_vals, "CP21 widget item_vals=");  //@@@ NOT OK? empty array
       '#type' => 'value',
       '#default_value' => $linker_id,
     ];
+    $element['type_id'] = [
+      '#type' => 'value',
+      '#default_value' => $type_id,
+    ];
 
-    // CV term autocomplete
-    $term_autocomplete_default = ''; //@todo
+    // CV term autocomplete. This controller includes synonyms
+    $term_autocomplete_default = '';
+    if ($type_id) {
+      $cv_autocomplete = new ChadoCVTermAutocompleteController();
+      $term_autocomplete_default = $cv_autocomplete->formatCVterm($type_id);
+    }
     $element['term'] = [
       '#type' => 'textfield',
       '#title' => 'Controlled Vocabulary Term',
@@ -82,18 +100,14 @@ dpm($item_vals, "CP21 widget item_vals=");  //@@@ NOT OK? empty array
     ];
 
     // Related record
-    $related_record_default = 'xx'; //@todo
-dpm($base_table, "CP22a base_table=");//@@@
-dpm($base_column, "CP22b base_column=");//@@@
     $element['related_record'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Related @table record', ['@table' => $base_table]),
       '#required' => FALSE,
       '#description' => $this->t('Select the record that is related to the current record.'),
-      '#default_value' => $related_record_default,
+      '#default_value' => $related_default,
       '#disabled' => FALSE,
       '#autocomplete_route_name' => 'tripal_chado.generic_autocomplete',
-//@@@{base_table}/{column_name}/{type_column}/{property_table}/{match_limit}/{type_id}
       '#autocomplete_route_parameters' => [
         'base_table' => $base_table,
         'column_name' => $base_column,
@@ -105,7 +119,6 @@ dpm($base_column, "CP22b base_column=");//@@@
       '#element_validate' => [[static::class, 'validateRelatedRecord']],
     ];
 
-    $direction_default = 1; //@todo
     $element['direction'] = [
       '#type' => 'radios',
       '#title' => $this->t('Orientation of the relationship'),
@@ -128,39 +141,47 @@ dpm($base_column, "CP22b base_column=");//@@@
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     $new_values = [];
     foreach ($values as $delta => $value) {
-dpm($value, "CP25 massageFormValues delta=$delta value=");//@@@
-      // Look up cvterm_id from term name returned from autocomplete
-      $cv_autocomplete = new ChadoCVTermAutocompleteController();
-      $cvterm_id = $cv_autocomplete->getCVtermId($value['term']);
-dpm($cvterm_id, "CP26 cvterm_id=");//@@@
-      $record_id = $value['record_id'];
-      $generic_autocomplete = new ChadoGenericAutocompleteController();
-      $related_record_id = $generic_autocomplete->getPkeyId($value['related_record']);
-dpm($record_id, "CP27 record_id=");//@@@
-dpm($related_record_id, "CP28 related_record_id=");//@@@
-      // We need to put the correct values in the subject and object columns
-      $direction = $value['direction'];
-dpm($direction, "CP29 direction=");//@@@
-      // Construct a $value as expected by the field type
-      $new_value = $value;
+      // Construct an updated $value array as expected by the field type
+      $new_value = [];
 
-      $new_value['type_id'] = $cvterm_id;
-      unset($new_value['term']);
+      // Use autocomplete to replace term with cvterm_id value
+      $cvterm_id = 0;
+      if ($value['term']) {
+        $cv_autocomplete = new ChadoCVTermAutocompleteController();
+        $cvterm_id = $cv_autocomplete->getCVtermId($value['term']);
 
-      if ($direction == 1) {
-        $new_value['subject_id'] = $record_id;
-        $new_value['object_id'] = $related_record_id;
+        // Use autocomplete to convert related record to its ID value
+        $record_id = $value['record_id'];
+        $related_record_id = 0;
+        if ($value['related_record']) {
+          $new_value = $value;
+          $new_value['subject_id'] = 0;
+          $new_value['object_id'] = 0;
+          $new_value['type_id'] = $cvterm_id;
+          $generic_autocomplete = new ChadoGenericAutocompleteController();
+          $related_record_id = $generic_autocomplete->getPkeyId($value['related_record']);
+
+          // We need to know the orientation to put the correct
+          // values in the subject and object columns
+          $direction = $value['direction'];
+
+          if ($direction == 1) {
+            $new_value['subject_id'] = $related_record_id;
+            $new_value['object_id'] = $record_id;
+          }
+          else {
+            $new_value['subject_id'] = $record_id;
+            $new_value['object_id'] = $related_record_id;
+          }
+
+          // Remove items that are no longer needed
+          unset($new_value['term']);
+          unset($new_value['related_record']);
+          unset($new_value['direction']);
+        }
       }
-      else {
-        $new_value['subject_id'] = $related_record_id;
-        $new_value['object_id'] = $record_id;
-      }
-      unset($new_value['related_record']);
-      unset($new_value['direction']);
-dpm($new_value, "CP30 new_value=");//@@@
+
       $new_values[$delta] = $new_value;
-#$x = debug_backtrace(); for ($i = 0; $i<count($x); $i++) { //@@@
-#$caller = $x[$i]['function'];dpm("CP31 caller $i = $caller"); }//@@@
     }
 
     return $new_values;
@@ -208,18 +229,16 @@ dpm($new_value, "CP30 new_value=");//@@@
             t('The specified record does not include a numeric record ID in parentheses'));
       }
 
-      // The related record cannot be the same as the current record @todo
-#      $values = $form_state->getValues();
-#dpm($values, "valrr values");//@@@
-#      $entity_id = $values['path'][$element_parents[1]]['pid'] ?? 0;
-#dpm($parent_id, "CP311 parent_id"); dpm($related_record_id, "CP312 related_record_id");//@@@
-#      if ($parent_id && $parent_id == $related_record_id) {
-#        $form_state->setErrorByName(implode('][', $element_parents),
-#            t('The specified record cannot be the same as this entity'));
-#      }
+      // The related record cannot be the same as the current record
+      $values = $form_state->getValues();
+      $record_id = $values[$element_parents[0]][$element_parents[1]]['record_id'] ?? 0;
+      if ($record_id and ($record_id == $related_record_id)) {
+        $form_state->setErrorByName(implode('][', $element_parents),
+            t('The specified record cannot be the same as this entity'));
+      }
 
       // We will not permit having a related record without also specifying a term.
-      // The term has its own validation, we just need to check for not empty.
+      // The term has its own validation, we just need to check that one was entered.
       $term = $values[$element_parents[0]][$element_parents[1]]['term'] ?? 'missing';
       if (!$term) {
         $form_state->setErrorByName(implode('][', [$element_parents[0], $element_parents[1], 'term']),
@@ -227,28 +246,4 @@ dpm($new_value, "CP30 new_value=");//@@@
       }
     }
   }
-
-  /**
-   * Ajax callback to update the db_id for the accession autocomplete.
-   *
-   * @param array $form
-   *   The form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state object.
-   */
-# Not likely to be needed, using cvterm autocomplete instead
-#  public function widgetAjaxCallback($form, &$form_state) {
-#dpm("CP92 widgetAjaxCallback");//@@@
-#    // Extract the field's machine name and delta from the triggering element,
-#    // e.g. "field_study_dbxref[0][dbxref][db_id]".
-#    $triggering_element = $form_state->getTriggeringElement()['#name'];
-#    preg_match('/^([^\[]+)\[(\d+)\]/', $triggering_element, $matches);
-#    $machine_name = $matches[1];
-#    $delta = $matches[2];
-#
-#    $response = new AjaxResponse();
-#    $response->addCommand(new ReplaceCommand('#edit-' . $machine_name . '-accession-' . $delta,
-#        $form[$machine_name]['widget'][$delta]['dbxref_accession']));
-#    return $response;
-#  }
 }

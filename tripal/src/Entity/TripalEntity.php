@@ -659,11 +659,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // Specifically, for each field...
     foreach ($fields as $field_name => $items) {
-if($field_name == 'contact_relationship'){ dpm($field_name, "CP401 getValuesArray field_name="); }//@@@
       foreach($items as $item) {
-if($field_name == 'contact_relationship'){ dpm("CP402 contact_relationship"); }//@@@ NOT OK
-if($field_name == 'contact_name'){ dpm("CP403 contact_name"); }//@@@
-if($field_name == 'contact_project'){ dpm("CP404 contact_project"); }//@@@
+
         // If it is not a TripalField then skip it.
         if (! $item instanceof TripalFieldItemInterface) {
           continue;
@@ -694,7 +691,6 @@ if($field_name == 'contact_project'){ dpm("CP404 contact_project"); }//@@@
         }
 
         // Add the field definition to the storage for this field.
-if($field_name == 'contact_relationship'){ dpm("CP405 Add the field definition"); }//@@@
         $tripal_storages[$tsid]->addFieldDefinition($field_name, $item->getFieldDefinition());
 
         // Get the empty property values for this field item and the
@@ -702,7 +698,6 @@ if($field_name == 'contact_relationship'){ dpm("CP405 Add the field definition")
         $prop_values = $item->tripalValuesTemplate($item->getFieldDefinition());
         $prop_types = get_class($item)::tripalTypes($item->getFieldDefinition());
 
-if($field_name == 'contact_relationship'){ dpm("CP406 Get the empty property values"); }//@@@
         // Sets the values from the entity on both the property and in entity.
         // Despite the function name, no values are saved to the database.
         $item->tripalSave($item, $field_name, $prop_types, $prop_values, $entity);
@@ -735,7 +730,6 @@ if($field_name == 'contact_relationship'){ dpm("CP406 Get the empty property val
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
-dpm("CP400 preSave");//@@@
     parent::preSave($storage);
 
     // Create a values array appropriate for `loadValues()`

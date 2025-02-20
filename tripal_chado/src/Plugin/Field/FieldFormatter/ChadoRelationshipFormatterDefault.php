@@ -36,7 +36,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $settings['token_string'] = '[db_urlprefix]';
+    $settings['token_string'] = '[subject_name] [type_name] [object_name]';
     return $settings;
   }
 
@@ -47,36 +47,38 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
     $elements = [];
     $list = [];
     $token_string = $this->getSetting('token_string');
+$token_string = '[subject_name]([subject_id]) [type_name]([type_id]) [object_name]([object_id])'; //@@@ FOR DEBUGGING
+    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     foreach ($items as $delta => $item) {
       $values = [
-        'subject' => $item->get('relationship_subject')->getString(),
-        'object' => $item->get('relationship_object')->getString(),
-        'type' => $item->get('relationship_type')->getString(),
-#        'db_name' => $item->get('dbxref_db_name')->getString(),
-#        'db_description' => $item->get('dbxref_db_description')->getString(),
-#        'db_urlprefix' => $item->get('dbxref_db_urlprefix')->getString(),
-#        'db_url' => $item->get('dbxref_db_url')->getString(),
+        'record_id' => $item->get('record_id')->getString(),
+        'subject_id' => $item->get('subject_id')->getString(),
+        'subject_name' => $item->get('subject_name')->getString(),
+        'subject_entity_id' => $item->get('subject_entity_id')->getString(),
+        'object_id' => $item->get('object_id')->getString(),
+        'object_name' => $item->get('object_name')->getString(),
+        'object_entity_id' => $item->get('object_entity_id')->getString(),
+        'type_id' => $item->get('type_id')->getString(),
+        'type_name' => $item->get('type_name')->getString(),
       ];
-
-if (FALSE) {
-      // If this database does not have a urlprefix, generate a default one.
-      if (($values['db_name'] or $values['accession']) and !$values['db_urlprefix']) {
-        $values['db_urlprefix'] = '{db}:{accession}';
+      $direction = 1;
+      if ($values['subject_id'] == $values['record_id']) {
+        $direction = -1;
       }
 
-      // Substitue db or accession into db_urlprefix
-      $values['db_urlprefix'] = preg_replace('/\{db\}/', $values['db_name'], $values['db_urlprefix']);
-      $values['db_urlprefix'] = preg_replace('/\{accession\}/', $values['accession'], $values['db_urlprefix']);
+      // As we did in Tripal 3, the term is processed up a bit to make for nicer display
+      $this->formatTypeName($values);
 
-      // Convert urlprefix and url into clickable urls
-      if (UrlHelper::isExternal($values['db_url'])) {
-        $values['db_url'] = Link::fromTextAndUrl($values['db_name'],
-            Url::fromUri($values['db_url']))->toString();
+      // Create a clickable link to the corresponding related entity when one exists.
+      // We need to pre-render so that we can replace into the token string.
+      if ($direction == 1) {
+        $item = $lookup_manager->getRenderableItem($values['subject_name'], $values['subject_entity_id']);
+        $values['subject_name'] = \Drupal::service('renderer')->render($item);
       }
-      if (UrlHelper::isExternal($values['db_urlprefix'])) {
-        $values['db_urlprefix'] = Link::fromTextAndUrl($values['db_name'] . ':' . $values['accession'],
-            Url::fromUri($values['db_urlprefix']))->toString();
+      else {
+        $item = $lookup_manager->getRenderableItem($values['object_name'], $values['object_entity_id']);
+        $values['object_name'] = \Drupal::service('renderer')->render($item);
       }
 
       // Substitute values in token string to generate displayed string.
@@ -89,7 +91,7 @@ if (FALSE) {
         '#markup' => $displayed_string,
       ];
     }
-}
+
     // If only one element has been found, don't make into a list.
     if (count($list) == 1) {
       $elements = $list;
@@ -107,6 +109,18 @@ if (FALSE) {
     }
 
     return $elements;
+  }
+
+  /**
+   * Format the controlled vocabulary term for nicer display.
+   * Tripal 3: tripal_chado/includes/TripalFields/sbo__relationship/sbo__relationship_formatter.inc
+   *
+   * @param array &$values
+   *   The associative array of field values.
+   *   The value with the key 'term_name' is updated.
+   */
+  protected function formatTypeName(&$values): void {
+    $values['type_name'] = preg_replace('/_/', ' ', $values['type_name']);
   }
 
 }
