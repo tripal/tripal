@@ -72,8 +72,6 @@ class TripalEntitySettingsForm extends FormBase {
       '#required' => FALSE,
     ];
 
-<<<<<<< HEAD
-=======
     $form['default_cache_backend_field_values'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Cache Backend Storage field values in Drupal'),
@@ -82,7 +80,6 @@ class TripalEntitySettingsForm extends FormBase {
       '#required' => FALSE,
     ];
 
->>>>>>> 944972587 (Document new functions and Clean-up to match standards.)
     $form['widget_global_select_limit'] = [
       '#type' => 'number',
       '#min' => 0,
