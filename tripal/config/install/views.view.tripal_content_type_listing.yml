@@ -1,3 +1,4 @@
+uuid: c99e6739-ccab-4512-9a1c-de5d208686c4
 langcode: en
 status: true
 dependencies:
@@ -5,7 +6,7 @@ dependencies:
     - tripal
     - user
 _core:
-  default_config_hash: pW72ou_ok2gGi1X6U3oPn631_rvNA_Q4W_PJHDFVNTg
+  default_config_hash: Bkx9Iy16THW-fIBoCMoaUpI8M_N301WjHNLpq1ztcBQ
 id: tripal_content_type_listing
 label: 'Tripal Content Type Listing'
 module: views
@@ -35,8 +36,8 @@ display:
           label: Title
           exclude: false
           alter:
-            alter_text: false
-            text: ''
+            alter_text: true
+            text: '{{ title__value | raw }}'
             make_link: false
             path: ''
             absolute: false
@@ -383,7 +384,18 @@ display:
       cache:
         type: none
         options: {  }
-      empty: {  }
+      empty:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: text_custom
+          empty: true
+          content: '<p>No Tripal content available.</p>'
+          tokenize: false
       sorts:
         created:
           id: created
@@ -458,7 +470,7 @@ display:
           entity_type: tripal_entity
           entity_field: title
           plugin_id: string
-          operator: 'contains'
+          operator: contains
           value: ''
           group: 1
           exposed: true
