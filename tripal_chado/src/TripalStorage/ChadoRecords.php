@@ -694,15 +694,17 @@ class ChadoRecords  {
       foreach ($items as $delta => $record) {
         foreach (array_keys($record['values']) as $column_alias) {
 
-          // if this column is an ID field and links to this base table then update the value.
+          // if this column is an ID field and links to this base table then add the value.
           if (array_key_exists($column_alias, $record['link_columns'])) {
             $base_table = $record['link_columns'][$column_alias];
-            $this->setColumnValue($base_table, $table_alias, $delta, $column_alias, $record_id);
+            $current_value = $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['values'][$column_alias] ?? NULL;
+            if (!$current_value) {
+              $this->setColumnValue($base_table, $table_alias, $delta, $column_alias, $record_id);
 
-
-            // If a condition exists for this id set it as well.
-            if (array_key_exists($column_alias, $record['conditions'])) {
-              $this->setConditionValue($base_table, $table_alias, $delta, $column_alias, $record_id);
+              // If a condition exists for this id set it as well.
+              if (array_key_exists($column_alias, $record['conditions'])) {
+                $this->setConditionValue($base_table, $table_alias, $delta, $column_alias, $record_id);
+              }
             }
           }
         }
