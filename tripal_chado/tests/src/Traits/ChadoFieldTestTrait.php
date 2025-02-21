@@ -156,8 +156,10 @@ trait ChadoFieldTestTrait {
     // If information about the environment to be setup was provided, then we
     // will set it up for them :-).
     if (!empty($system_under_test)) {
-      $this->setupFieldSystemUnderTest($system_under_test);
+      return $this->setupFieldSystemUnderTest($system_under_test);
     }
+
+    return [];
   }
 
   /**

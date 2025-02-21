@@ -66,6 +66,13 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
   protected array $system_under_test;
 
   /**
+   * The TripalEntityType id of the bundle being used in this test.
+   *
+   * @var string
+   */
+  protected string $bundle_name;
+
+  /**
    * Describes the scenarios to test.
    *
    * This will be used in combination with the data provider. It can't be
@@ -98,6 +105,7 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
 
     // First retrieve info from the YAML file for this particular test.
     [$this->system_under_test, $this->scenarios] = $this->getTestInfoFromYaml($this->yaml_info_file);
+    $this->bundle_name = $this->system_under_test['bundle']['id'];
 
     // Create the test Chado installation we will be using.
     if (!array_key_exists('chado_version', $this->system_under_test)) {
@@ -117,5 +125,22 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
    */
   public function testCRUD() {
 
+    $current_scenario = $this->scenarios[0];
+
+    // -- create the entity with that value set
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
+
+    // Retrieve values using the Drupal infrastructure.
+    // Tests basic Tripal Storage and TripalField interactions.
+    $expected_values = $current_scenario['create'];
+    list($retrieved_values, $tripalStorages) = TripalEntity::getValuesArray($entity);
+    $this->assertArrayHasKey('chado_storage', $retrieved_values, "The retrieved values should include ChadoStorage since that is what this field uses.");
+
+    // Save the entity and check it saves in chado.
+    $entity->save();
   }
 }

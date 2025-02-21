@@ -71,17 +71,59 @@ system-under-test:
           base_table: project
           prop_table: projectprop
 scenarios:
-  - label:
-    description:
+  - label: "Simple Project with no metadata"
+    description: "Create a page without setting any properties."
     create:
       project_name:
+        record_id: NULL
+        value: "Simple Project"
       project_description:
+        record_id: NULL
+        value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
       project_type:
+        record_id: NULL
+        type_id: 0
+        term_name: Project
+        id_space: NCIT
+        accession: C47885
       project_prop1:
+        record_id: NULL
+        prop_id: NULL
+        linker_id: NULL
+        value: ''
+        rank: 0
+        type_id: 0
       project_prop2:
+        record_id: NULL
+        prop_id: NULL
+        linker_id: NULL
+        value: ''
+        rank: 0
+        type_id: 0
     edit:
       project_name:
+        record_id: NULL
+        value: "Simple Project Still"
       project_description:
+        record_id: NULL
+        value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
       project_type:
+        record_id: NULL
+        type_id: 0
+        term_name: Project
+        id_space: NCIT
+        accession: C47885
       project_prop1:
+        record_id: NULL
+        prop_id: NULL
+        linker_id: NULL
+        value: ''
+        rank: 0
+        type_id: 0
       project_prop2:
+        record_id: NULL
+        prop_id: NULL
+        linker_id: NULL
+        value: ''
+        rank: 0
+        type_id: 0
