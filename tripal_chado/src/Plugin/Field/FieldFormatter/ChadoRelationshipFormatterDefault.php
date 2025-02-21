@@ -36,7 +36,7 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $settings['token_string'] = '[subject_name] [type_name] [object_name]';
+    $settings['token_string'] = 'The [subject_bundle] <strong>[subject_name]</strong> [type_name] [object_bundle] <strong>[object_name]</strong>';
     return $settings;
   }
 
@@ -47,7 +47,8 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
     $elements = [];
     $list = [];
     $token_string = $this->getSetting('token_string');
-$token_string = '[subject_name]([subject_id]) [type_name]([type_id]) [object_name]([object_id])'; //@@@ FOR DEBUGGING
+#$token_string = '<strong>[subject_name]</strong>([subject_id]) [type_name]([type_id]) <strong>[object_name]</strong>([object_id])'; //@@@ FOR DEBUGGING
+$token_string = 'The [subject_bundle] <strong>[subject_name]</strong> [type_name] [object_bundle] <strong>[object_name]</strong>';//@@@
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     foreach ($items as $delta => $item) {
@@ -71,7 +72,7 @@ $token_string = '[subject_name]([subject_id]) [type_name]([type_id]) [object_nam
       $this->formatTypeName($values);
 
       // Create a clickable link to the corresponding related entity when one exists.
-      // We need to pre-render so that we can replace into the token string.
+      // We need to pre-render so that we can replace this into the token string.
       if ($direction == 1) {
         $item = $lookup_manager->getRenderableItem($values['subject_name'], $values['subject_entity_id']);
         $values['subject_name'] = \Drupal::service('renderer')->render($item);
@@ -79,6 +80,22 @@ $token_string = '[subject_name]([subject_id]) [type_name]([type_id]) [object_nam
       else {
         $item = $lookup_manager->getRenderableItem($values['object_name'], $values['object_entity_id']);
         $values['object_name'] = \Drupal::service('renderer')->render($item);
+      }
+
+      // Lookup subject and object entity bundle names. ID may be -1 if unpublished.
+      // e.g. for features: mRNA xxx is part of gene yyy
+      $entityManagerStorage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
+      if ($values['subject_entity_id'] && $values['subject_entity_id'] > 0) {
+        $values['subject_bundle'] = $entityManagerStorage->load($values['subject_entity_id'])->bundle();
+      }
+      else {
+        $values['subject_bundle'] = '';
+      }
+      if ($values['object_entity_id'] && $values['object_entity_id'] > 0) {
+        $values['object_bundle'] = $entityManagerStorage->load($values['object_entity_id'])->bundle();
+      }
+      else {
+        $values['object_bundle'] = '';
       }
 
       // Substitute values in token string to generate displayed string.
@@ -120,7 +137,55 @@ $token_string = '[subject_name]([subject_id]) [type_name]([type_id]) [object_nam
    *   The value with the key 'term_name' is updated.
    */
   protected function formatTypeName(&$values): void {
-    $values['type_name'] = preg_replace('/_/', ' ', $values['type_name']);
+    $verb = $this->get_rel_verb($values['type_name']);
+    $values['type_name'] = $verb . preg_replace('/_/', ' ', $values['type_name']);
   }
 
+  /**
+   * A helper function to define English verbs for relationship types.
+   *
+   * @param string $rel_type
+   *   The vocabulary term name for the relationship.
+   *
+   * @return string
+   *   The verb to use when creating a sentence of the relationship.
+   */
+  protected function get_rel_verb(string $rel_type): string {
+    $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
+    $verb = '';
+    // can skip anything already starting with 'is' or 'has'
+    if (!preg_match('/^(is|has) /', $rel_type_clean)) {
+      switch ($rel_type_clean) {
+        case 'integral part of':
+        case 'instance of':
+          $verb = 'is an';
+          break;
+        case 'genome of':
+        case 'part of':
+        case 'position of':
+        case 'proper part of':
+        case 'sequence of':
+        case 'transformation of':
+        case 'variant of':
+          $verb = 'is a';
+          break;
+        case 'connects on':
+        case 'contains':
+        case 'derives from':
+        case 'finishes':
+        case 'guides':
+        case 'maximally overlaps':
+        case 'overlaps':
+        case 'starts':
+          break;
+        default:
+          $verb = 'is';
+      }
+    }
+    // Since verb may be an empty string, only space pad when something is present.
+    if ($verb) {
+      $verb .= ' ';
+    }
+    return $verb;
+  }
 }

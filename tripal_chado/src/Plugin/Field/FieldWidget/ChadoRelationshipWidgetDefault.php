@@ -35,12 +35,12 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     $field_name = $field_definition->get('field_name');
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
+    $base_column = $storage_settings['base_column'] ?? NULL;
     // During manual field addition there may be no base table
     // selected yet, in which case bypass this form
-    if (!$base_table) {
+    if (!$base_table || !$base_column) {
       return $element;
     }
-    $base_column = $storage_settings['base_column'];
 
     // Get the default values.
     $item_vals = $items[$delta]->getValue();
