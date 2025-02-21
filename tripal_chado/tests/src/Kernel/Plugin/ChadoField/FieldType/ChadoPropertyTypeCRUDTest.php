@@ -123,24 +123,33 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
   /**
    * Tests the ChadoPropertyType field through TripalEntity->save().
    */
-  public function testCRUD() {
+  public function testChadoPropertyTypeEntityCRUD() {
 
     $current_scenario = $this->scenarios[0];
+    $current_scenario['create']['user_input']['project_type'][0]['type_id'] = $this->getCvtermID('NCIT', 'C47885');
 
-    // -- create the entity with that value set
+    // 1. create the entity with that value set.
     $entity = TripalEntity::create([
       'title' => $this->randomString(),
       'type' => $this->bundle_name,
-    ] + $current_scenario['create']);
+    ] + $current_scenario['create']['user_input']);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
+    $status = $entity->save();
+    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
 
-    // Retrieve values using the Drupal infrastructure.
-    // Tests basic Tripal Storage and TripalField interactions.
-    $expected_values = $current_scenario['create'];
-    list($retrieved_values, $tripalStorages) = TripalEntity::getValuesArray($entity);
-    $this->assertArrayHasKey('chado_storage', $retrieved_values, "The retrieved values should include ChadoStorage since that is what this field uses.");
+    // 2. Load the entity we just created so we can check the values.
+    $created_entity = TripalEntity::load($entity->id());
+    $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, $current_scenario['label'] . ' CREATE');
 
-    // Save the entity and check it saves in chado.
-    $entity->save();
+    // 3. Make changes and then save again.
+    foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
+      $created_entity->set($field_name, $new_values);
+    }
+    $status = $created_entity->save();
+    $this->assertEquals(SAVED_UPDATED, $status, "We expected to have updated the existing entity for our " . $current_scenario['label'] . " scenario.");
+
+    // 4. Load the entity we just updated so we can check the values.
+    $updated_entity = TripalEntity::load($created_entity->id());
+    $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT');
   }
 }

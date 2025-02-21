@@ -1,12 +1,14 @@
 <?php
 namespace Drupal\Tests\tripal_chado\Traits;
 
-use \Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\Core\Field\FieldItemList;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\tripal\Entity\TripalEntity;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\Entity\TripalEntity;
+use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -61,30 +63,24 @@ trait ChadoFieldTestTrait {
    *  A nested array of expected values following the format:
    *    - delta (e.g. 0):
    *      - property key => expected value
-   * @param array $expected_property_types
-   *  A nested array of the expected property types for this field following the format:
-   *    - property key (e.g. record_id):
-   *      - key (string; e.g. record_id)
-   *      - term (string of IDSPACE:ACCESSION; e.g. schema:additionalType)
-   * @param array $retrieved_values
-   *  A nested array keyed in the following levels:
-   *    - 3rd: Delta value of the field item.
-   *    - 4th: the property key.
-   *    - 5th: One of the following keys:
-   *      - 'value': the property value object.
-   *      - 'operation': the operation to use when matching this value.
-   * @return void
+   * @param TripalEntity $entity
+   *   An entity whose field values we want to check against those expected.
    */
-  public function assertFieldValuesMatch($expected_values, $expected_property_types, $retrieved_values) {
-    foreach ($retrieved_values as $delta => $ret_values) {
-      foreach ($expected_property_types as $property_key => $details) {
-        $this->assertArrayHasKey($property_key, $ret_values, "The expected property type did not appear in the retrieved values for delta $delta.");
-        $this->assertIsArray($ret_values[$property_key], "Each property key should be an array with a 'value' and 'operation' but [$delta][$property_key] is not an array.");
-        /** Currently not always the case...
-        $this->assertArrayHasKey('operation', $ret_values[$property_key], "Each property key should be an array with a 'value' and 'operation' but [$delta][$property_key] does not have a operation key.");*/
-        $this->assertArrayHasKey('value', $ret_values[$property_key], "Each property key should be an array with a 'value' and 'operation' but [$delta][$property_key] does not have a value key.");
-        $this->assertInstanceOf(\Drupal\tripal\TripalStorage\StoragePropertyValue::class, $ret_values[$property_key]['value'], "The value for [$delta][$property_key] is not a StoragePropertyValue object.");
-        $this->assertEquals($expected_values[$delta][$property_key], $ret_values[$property_key]['value']->getValue(), "The value of [$delta][$property_key] does not match what we expected.");
+  public function assertFieldValuesMatch(array $expected_values, TripalEntity $entity, string $message_prefix = '') {
+
+    // Check that each expected field exists in the provided entity.
+    foreach ($expected_values as $expected_field_name => $expected_field_delta) {
+      $this->assertTrue($entity->hasField($expected_field_name), $message_prefix . ": field '$expected_field_name' was not found in the provided entity.");
+      $field_item_list = $entity->get($expected_field_name);
+      $this->assertInstanceOf(FieldItemList::class,$field_item_list, $message_prefix . ": we could not retrieve the values of field '$expected_field_name' in the provided entity.");
+      $this->assertCount(sizeof($expected_field_delta), $field_item_list, $message_prefix . ": field '$expected_field_name' did not have the expected number of values.");
+      foreach ($expected_field_delta as $expected_delta => $expected_delta_values) {
+        $field_item = $field_item_list->get($expected_delta);
+        $this->assertInstanceOf(TripalFieldItemInterface::class, $field_item, $message_prefix . ": $expected_field_name [$expected_delta] could not be retrieved.");
+        foreach ($expected_delta_values as $expected_property_type => $expected_value) {
+          $property_value = $field_item->get($expected_property_type)->getValue();
+          $this->assertEquals($expected_value, $property_value, $message_prefix . ": $expected_field_name [$expected_delta] [$expected_property_type] value did not match what we expected.");
+        }
       }
     }
   }
