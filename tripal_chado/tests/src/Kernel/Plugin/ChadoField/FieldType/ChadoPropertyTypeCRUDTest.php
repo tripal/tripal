@@ -121,14 +121,91 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
   }
 
   /**
-   * Tests the ChadoPropertyType field through TripalEntity->save().
+   * Data Provider: works with the YAML to provide scenarios for testing.
+   *
+   * @return array
+   *   List of scenarios to test where each one matches a key and label in the
+   *   associated YAML scenarios.
    */
-  public function testChadoPropertyTypeEntityCRUD() {
+  public static function provideScenarios() {
+    $scenarios = [];
 
-    $current_scenario = $this->scenarios[0];
-    $current_scenario['create']['user_input']['project_type'][0]['type_id'] = $this->getCvtermID('NCIT', 'C47885');
+    $scenarios[] = [
+      'key' => 0,
+      'label' => "Simple Project with no metadata",
+    ];
 
-    // 1. create the entity with that value set.
+    $scenarios[] = [
+      'key' => 1,
+      'label' => "Simple Project with metadata added on edit",
+    ];
+
+    return $scenarios;
+  }
+
+  /**
+   * Retrieves the current scenario based on the data provider.
+   *
+   * NOTE: Also ensures the type_ids match what is currently in the database.
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @return array
+   *   The scenario to be tested as defined in the YAML.
+   */
+  public function retrieveCurrentScenario(int $current_scenario_key, string $current_scenario_label) {
+
+    // Retrieve the correct scenario.
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+
+    // Set the project type just in case.
+    $type_id = $this->getCvtermID('NCIT', 'C47885');
+    $current_scenario['create']['user_input']['project_type'][0]['type_id'] = $type_id;
+    $current_scenario['create']['expected']['project_type'][0]['type_id'] = $type_id;
+    $current_scenario['edit']['expected']['project_type'][0]['type_id'] = $type_id;
+    // Set the property field types just in case.
+    $comment_type_id = $this->getCvtermID('rdfs', 'comment');
+    $location_type_id = $this->getCvtermID('NCIT', 'C25341');
+    foreach (['create', 'edit'] as $process_key) {
+      foreach (['user_input', 'expected'] as $input_type) {
+        if (array_key_exists('project_prop1', $current_scenario[$process_key][$input_type])) {
+          foreach ($current_scenario[$process_key][$input_type]['project_prop1'] as $delta => $values) {
+            if ($values['type_id'] === 181) {
+              $current_scenario[$process_key][$input_type]['project_prop1'][$delta]['type_id'] = $comment_type_id;
+            }
+          }
+        }
+        if (array_key_exists('project_prop2', $current_scenario[$process_key][$input_type])) {
+          foreach ($current_scenario[$process_key][$input_type]['project_prop2'] as $delta => $values) {
+            if ($values['type_id'] === 159) {
+              $current_scenario[$process_key][$input_type]['project_prop2'][$delta]['type_id'] = $location_type_id;
+            }
+          }
+        }
+      }
+    }
+
+    return $current_scenario;
+  }
+
+  /**
+   * Tests the ChadoPropertyType field through TripalEntity->save().
+   *
+   * @dataProvider provideScenarios
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   */
+  public function testChadoPropertyTypeEntityCRUD(int $current_scenario_key, string $current_scenario_label) {
+    $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
+
+    // 1. Create the entity with that value set.
     $entity = TripalEntity::create([
       'title' => $this->randomString(),
       'type' => $this->bundle_name,
@@ -145,11 +222,13 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
       $created_entity->set($field_name, $new_values);
     }
+    // @debug print_r($created_entity->toArray());
     $status = $created_entity->save();
     $this->assertEquals(SAVED_UPDATED, $status, "We expected to have updated the existing entity for our " . $current_scenario['label'] . " scenario.");
 
     // 4. Load the entity we just updated so we can check the values.
     $updated_entity = TripalEntity::load($created_entity->id());
+    // @debug print_r($updated_entity->toArray());
     $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT');
   }
 }
