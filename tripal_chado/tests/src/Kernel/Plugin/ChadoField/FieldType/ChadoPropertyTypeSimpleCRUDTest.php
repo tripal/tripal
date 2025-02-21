@@ -188,11 +188,6 @@ class ChadoPropertyTypeSimpleCRUDTest extends ChadoTestKernelBase {
     // Setup the field to be tested based on the data provider values.
     $this->field_name = $this->randomMachineName();
 
-    // Next create the terms for the properies this field will use.
-    foreach ($this->terms as $key => $term_deets) {
-      $this->createTripalTerm($term_deets, 'chado_id_space', 'chado_vocabulary');
-    }
-
     // Then create the Tripal Content Type.
     $bundle = $this->createTripalContentType([
       'id' => $this->bundle_name,
