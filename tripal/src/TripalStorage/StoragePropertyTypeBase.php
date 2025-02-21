@@ -14,25 +14,23 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @param string entityType
    *   The entity type associated with this storage property type base.
-   *
    * @param string fieldType
    *   The field type associated with this storage property type base.
-   *
    * @param string key
    *   The key associated with this storage property type base.
-   *
    * @param string term_id
    *   The controlled vocabulary term asssociated with this property. It must be
    *   in the form of "IdSpace:Accession" (e.g. "rdfs:label" or "OBI:0100026")
-   *
    * @param string id
    *   The id of this storage property type base.
-   *
    * @param array storage_settings
    *   An array of settings required for this property by the storage backend.
+   * @param string $idspace_plugin_id
+   *   The plugin_id associated with the term. This is optional but if provided
+   *   allows a missing ID Space to be looked up in the backend storage.
    */
-  public function __construct($entityType, $fieldType, $key, $term_id, $id, $storage_settings = []) {
-    parent::__construct($entityType, $fieldType, $key, $term_id);
+  public function __construct($entityType, $fieldType, $key, $term_id, $id, $storage_settings = [], $idspace_plugin_id = '') {
+    parent::__construct($entityType, $fieldType, $key, $term_id, $idspace_plugin_id);
     $this->id = $id;
     $this->cardinality = 1;
     $this->searchability = TRUE;
