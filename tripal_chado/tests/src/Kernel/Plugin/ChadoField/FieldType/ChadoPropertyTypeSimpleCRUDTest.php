@@ -46,51 +46,6 @@ class ChadoPropertyTypeSimpleCRUDTest extends ChadoTestKernelBase {
   ];
 
   /**
-   * An array of terms that need to be created for this field to work.
-   *
-   * @var array
-   *  A list of terms keyed by the IDSPACE:ACCESSION format where the value is
-   *  and array including the parameters for createTripalTerm().
-   */
-  protected array $terms = [
-    'SIO:000729' => [
-      'vocab_name' => 'SIO',
-      'id_space_name' => 'SIO',
-      'term' => [
-        'accession' => '000729',
-      ]
-    ],
-    'NCIT:C25712' => [
-      'vocab_name' => 'ncit',
-      'id_space_name' => 'NCIT',
-      'term' => [
-        'accession' => 'C25712',
-      ],
-    ],
-    'OBCS:0000117' => [
-      'vocab_name' => 'OBCS',
-      'id_space_name' => 'OBCS',
-      'term' => [
-        'accession' => '0000117',
-      ],
-    ],
-    'schema:additionalType' => [
-      'vocab_name' => 'schema',
-      'id_space_name' => 'schema',
-      'term' => [
-        'accession' => 'additionalType',
-      ],
-    ],
-    'OBI:0100026' => [
-      'vocab_name' => 'obi',
-      'id_space_name' => 'OBI',
-      'term' => [
-        'accession' => '0100026',
-      ],
-    ],
-  ];
-
-  /**
    * A List of the expected property types for this field.
    *
    * @var array
