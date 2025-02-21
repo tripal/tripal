@@ -25,6 +25,6 @@ class ChadoBoolStoragePropertyType extends BoolStoragePropertyType {
    *   An array of settings required for this property by the storage backend.
    */
   public function __construct($entityType, $fieldType, $key, $term_id, $storage_settings = []) {
-    parent::__construct($entityType, $fieldType, $key, $term_id, "bool", $storage_settings, 'chado_id_space');
+    parent::__construct($entityType, $fieldType, $key, $term_id, $storage_settings, 'chado_id_space');
   }
 }
