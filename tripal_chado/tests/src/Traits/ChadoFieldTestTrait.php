@@ -7,6 +7,7 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\tripal\Entity\TripalEntityType;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Provides functions related to testing Chado Fields.
@@ -42,24 +43,6 @@ trait ChadoFieldTestTrait {
    * @var EntityViewDisplay[]
    */
   protected array $entityViewDisplay = [];
-
-  /**
-   * Called in the test setUp() for kernel tests to ensure all the needed
-   * resources are available.
-   */
-  public function setupFieldTestEnvironment() {
-
-    // Ensure we see all logging in tests.
-    \Drupal::state()->set('is_a_test_environment', TRUE);
-
-    // Ensure we install the schema/modules we need.
-    $this->prepareEnvironment(['TripalTerm', 'TripalEntity', 'ChadoField']);
-    // -- we need the chado term mapping for our properties.
-    $this->installEntitySchema('chado_term_mapping');
-    // -- we need access to the core term mappings.
-    tripal_chado_rebuild_chado_term_mappings();
-
-  }
 
   /**
    * Confirms that the retrieved values match the expected ones.
@@ -104,6 +87,118 @@ trait ChadoFieldTestTrait {
         $this->assertEquals($expected_values[$delta][$property_key], $ret_values[$property_key]['value']->getValue(), "The value of [$delta][$property_key] does not match what we expected.");
       }
     }
+  }
+
+  /**
+   * Allows you to set the 'fields' by specifying the top level key of a YAML file.
+   *
+   * @param string $yaml_file
+   *   The full path to a yaml file which follows the format descripbed above.
+   *
+   * @return array
+   *   The first array returned describes the state of the test environment to
+   *   be setup and the second describes the scenarios to test. For a
+   *   description of the structure of these arrays, see the YAML file directly.
+   */
+  public function getTestInfoFromYaml($yaml_file) {
+
+    if (!file_exists($yaml_file)) {
+      throw new \Exception("Cannot open YAML file $yaml_file.");
+    }
+
+    $file_contents = file_get_contents($yaml_file);
+    if (empty($file_contents)) {
+      throw new \Exception("Unable to retrieve contents for YAML file $yaml_file.");
+    }
+
+    $yaml_data = Yaml::parse($file_contents);
+    if (empty($yaml_data)) {
+      throw new \Exception("Unable to parse YAML file $yaml_file.");
+    }
+
+    if (!array_key_exists('system-under-test', $yaml_data)) {
+      throw new \Exception("The 'system-under-test' key is missing from the $yaml_file.");
+    }
+    if (!array_key_exists('scenarios', $yaml_data)) {
+      throw new \Exception("The 'scenarios' key is missing from the $yaml_file.");
+    }
+
+    return [$yaml_data['system-under-test'], $yaml_data['scenarios']];
+  }
+
+  /**
+   * Called in the test setUp() for kernel tests to ensure all the needed
+   * resources are available.
+   *
+   * @param array $system_under_test
+   *   An array defining the environment to setup with the following keys:
+   *   - chado_version: the version of chado to test under.
+   *   - bundle: an array defining the tripal entity type to create.
+   *   - fields: a list of fields to be attached the above bundle.
+   *
+   * @return array
+   *   A list containing first the TripalEntityType object created and then an
+   *   array of FieldConfig objects keyed by the associated field name. If the
+   *   system-under-test was not provided then this will be an empty array.
+   */
+  public function setupFieldTestEnvironment(array $system_under_test = []): array {
+
+    // Ensure we see all logging in tests.
+    \Drupal::state()->set('is_a_test_environment', TRUE);
+
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalTerm', 'TripalEntity', 'ChadoField']);
+    // -- we need the chado term mapping for our properties.
+    $this->installEntitySchema('chado_term_mapping');
+    // -- we need access to the core term mappings.
+    tripal_chado_rebuild_chado_term_mappings();
+
+    // If information about the environment to be setup was provided, then we
+    // will set it up for them :-).
+    if (!empty($system_under_test)) {
+      $this->setupFieldSystemUnderTest($system_under_test);
+    }
+  }
+
+  /**
+   * Setup the test environment according to the details provided.
+   *
+   * @param array $system_under_test
+   *   An array defining the environment to setup with the following keys:
+   *   - chado_version: the version of chado to test under.
+   *   - bundle: an array defining the tripal entity type to create.
+   *   - fields: a list of fields to be attached the above bundle.
+   *
+   * @return array
+   *   A list containing first the TripalEntityType object created and then an
+   *   array of FieldConfig objects keyed by the associated field name.
+   */
+  public function setupFieldSystemUnderTest(array $system_under_test): array {
+
+    // 1. Create the bundle.
+    $bundle = $this->createTripalContentType($system_under_test['bundle']);
+    $bundle->setThirdPartySetting('tripal', 'chado_base_table', $system_under_test['bundle']['settings']['chado_base_table']);
+    $bundle_name = $bundle->id();
+
+    // 2. Create the fields.
+    $fields = [];
+    foreach ($system_under_test['fields'] as $field_details) {
+
+      // Create both the FieldConfig and FieldStorageConfig.
+      $fields[$field_details['name']] = $this->createFieldInstance(
+        'tripal_entity',
+        [
+          'field_name' => $field_details['name'],
+          'bundle_name' => $bundle_name,
+          'field_type' => $field_details['type'],
+          'widget_id' => $field_details['widget'],
+          'formatter_id' => $field_details['formatter'],
+          'settings' => $field_details['settings'],
+        ]
+      );
+    }
+
+    return [$bundle, $fields];
   }
 
   /**
@@ -182,16 +277,21 @@ trait ChadoFieldTestTrait {
     $values['formatter_id'] = $values['formatter_id'] ?? 'default_tripal_string_type_formatter';
     $values['field_type'] = $values['field_type'] ?? 'tripal_string_type';
     // -- Bundle
-    if (!array_key_exists('bundle_name', $values)) {
-      $bundle = $this->createTripalContentType();
+    if (array_key_exists('bundle', $values)) {
+      $bundle = $values['bundle'];
       $values['bundle_name'] = $bundle->getID();
     }
-    else {
+    elseif (array_key_exists('bundle_name', $values)) {
       $bundle = \Drupal::entityTypeManager()
         ->getStorage('tripal_entity_type')
         ->loadByProperties(['id' => $values['bundle_name']]);
       $bundle = array_pop($bundle);
     }
+    else {
+      $bundle = $this->createTripalContentType();
+      $values['bundle_name'] = $bundle->getID();
+    }
+
     // -- Field Storage Config
     if (!array_key_exists('fieldStorage', $values)) {
       $values['fieldStorage'] = $this->createFieldType(
