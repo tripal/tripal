@@ -58,13 +58,14 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       $object_name .= ' (' . $object_id . ')';
     }
 
-    $direction_default = 1;
-    $related_default = $subject_name;
-    if ($record_id and $subject_id and ($record_id == $subject_id)) {
-      $direction_default = -1;
-      $related_default = $object_name;
+    $reverse_default = 0;
+    $related_default = $object_name;
+    if ($record_id and $object_id and ($record_id == $object_id)) {
+      $reverse_default = 1;
+      $related_default = $subject_name;
     }
 
+    $element['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoRelationshipWidgetDefault';
     $element['record_id'] = [
       '#type' => 'value',
       '#default_value' => $record_id,
@@ -86,12 +87,11 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     }
     $element['term'] = [
       '#type' => 'textfield',
-      '#title' => 'Controlled Vocabulary Term',
       '#required' => FALSE,
-      '#description' => $this->t('Enter a vocabulary term name. A set of matching'
-          . ' candidates will be provided to choose from. You may find the multiple matching terms'
-          . ' from different vocabularies. The full accession for each term is provided'
-          . ' to help choose. Only the top 10 best matches are shown at a time.'),
+#      '#description' => $this->t('Enter a vocabulary term name. A set of matching'
+#          . ' candidates will be provided to choose from. You may find the multiple matching terms'
+#          . ' from different vocabularies. The full accession for each term is provided'
+#          . ' to help choose. Only the top 10 best matches are shown at a time.'),
       '#default_value' => $term_autocomplete_default,
       '#disabled' => FALSE,
       '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
@@ -102,9 +102,8 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     // Related record
     $element['related_record'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Related @table record', ['@table' => $base_table]),
       '#required' => FALSE,
-      '#description' => $this->t('Select the record that is related to the current record.'),
+#      '#description' => $this->t('Select the record that is related to the current record.'),
       '#default_value' => $related_default,
       '#disabled' => FALSE,
       '#autocomplete_route_name' => 'tripal_chado.generic_autocomplete',
@@ -119,15 +118,22 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       '#element_validate' => [[static::class, 'validateRelatedRecord']],
     ];
 
-    $element['direction'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Orientation of the relationship'),
-      '#options' => [
-        '1' => $this->t('Related @table record is the subject of the relationship', ['@table' => $base_table]),
-        '-1' => $this->t('Related @table record is the object of the relationship', ['@table' => $base_table]),
-      ],
-      '#default_value' => $direction_default,
+    $element['reverse'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Reverse'),
+      '#default_value' => $reverse_default,
     ];
+
+    // To reduce clutter, only display these on the first row
+    if ($delta == 0) {
+      $element['term']['#title'] = t('Controlled Vocabulary Term');
+      $element['related_record']['#title'] = $this->t('Related @table record', ['@table' => $base_table]);
+      $element['reverse']['#description'] = $this->t('if this is the subject of the relationship', ['@table' => $base_table]);
+    }
+
+    // We also need these two to have a specific combined wrapper in addition to the fieldset.
+    $element['term']['#prefix'] = '<div class="chado-relationship-field-wrapper form-item">' . ($element['term']['#prefix'] ?? '');
+    $element['direction']['#suffix'] = ($element['direction']['#suffix'] ?? '') . '</div>';
 
     // Save some initial values to allow later handling of the "Remove" button
     $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
@@ -163,9 +169,9 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
 
           // We need to know the orientation to put the correct
           // values in the subject and object columns
-          $direction = $value['direction'];
+          $reverse = $value['reverse'];
 
-          if ($direction == 1) {
+          if ($reverse == 1) {
             $new_value['subject_id'] = $related_record_id;
             $new_value['object_id'] = $record_id;
           }
