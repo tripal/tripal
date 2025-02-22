@@ -47,8 +47,6 @@ class ChadoRelationshipFormatterDefault extends ChadoFormatterBase {
     $elements = [];
     $list = [];
     $token_string = $this->getSetting('token_string');
-#$token_string = '<strong>[subject_name]</strong>([subject_id]) [type_name]([type_id]) <strong>[object_name]</strong>([object_id])'; //@@@ FOR DEBUGGING
-$token_string = 'The [subject_bundle] <strong>[subject_name]</strong> [type_name] [object_bundle] <strong>[object_name]</strong>';//@@@
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     foreach ($items as $delta => $item) {
@@ -83,20 +81,9 @@ $token_string = 'The [subject_bundle] <strong>[subject_name]</strong> [type_name
       }
 
       // Lookup subject and object entity bundle names. ID may be -1 if unpublished.
-      // e.g. for features: mRNA xxx is part of gene yyy
-      $entityManagerStorage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
-      if ($values['subject_entity_id'] && $values['subject_entity_id'] > 0) {
-        $values['subject_bundle'] = $entityManagerStorage->load($values['subject_entity_id'])->bundle();
-      }
-      else {
-        $values['subject_bundle'] = '';
-      }
-      if ($values['object_entity_id'] && $values['object_entity_id'] > 0) {
-        $values['object_bundle'] = $entityManagerStorage->load($values['object_entity_id'])->bundle();
-      }
-      else {
-        $values['object_bundle'] = '';
-      }
+      // e.g. for features: mRNA xxx is part of Gene yyy
+      $values['subject_bundle'] = $lookup_manager->getBundleLabel($values['subject_entity_id']);
+      $values['object_bundle'] = $lookup_manager->getBundleLabel($values['object_entity_id']);
 
       // Substitute values in token string to generate displayed string.
       $displayed_string = $token_string;
