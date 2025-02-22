@@ -1,0 +1,16 @@
+
+.field--widget-chado-relationship-widget-default .chado-relationship-field-wrapper {
+  display: flex !important;
+}
+.field--widget-chado-relationship-widget-default .chado-relationship-field-wrapper .form-item {
+  margin: 0 0.5rem;
+  flex: 3 1 0;
+}
+.field--widget-chado-relationship-widget-default .chado-relationship-field-wrapper .form-type--checkbox {
+  margin: 0 0.5rem;
+  flex: 1 1 0;
+}
+.field--widget-chado-relationship-widget-default .chado-relationship-field-wrapper .form-item select {
+  width: 100%;
+  min-width: max-content;
+}

@@ -239,64 +239,61 @@ dpm("CP01 adding column settings");//@@@
     // Make sure the base table setting exists.
     $base_table = $bundle->getThirdPartySetting('tripal', 'chado_base_table');
     if ($base_table) {
-      // We need to know which column in the base table should be used for
-      // an autocomplete. When field is added through UI this can be selected.
+      /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
+      $chado = \Drupal::service('tripal_chado.database');
+      // We need to know which column in the base table should be used for an
+      // autocomplete. When this field is added through UI this can be selected.
       // @todo maybe check title format, for now hardcoded
       $base_column = 'name';
-      if ($base_column) {
-        /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-        $chado = \Drupal::service('tripal_chado.database');
-
+      if ($base_column and $chado->schema()->fieldExists($base_table, $base_column)) {
         // Make sure the relationship table exists in Chado.
         $relationship_table = $base_table . '_relationship';
         if ($chado->schema()->tableExists($relationship_table)) {
-          if ($chado->schema()->fieldExists($base_table, $base_column)) {
 
-            // Lookup actual names of subject_id and object_id columns
-            list($subject_column, $object_column) = self::getRelationshipColumns($chado, $base_table, $relationship_table);
-            if ($subject_column and $object_column) {
+          // Lookup actual names of subject_id and object_id columns
+          list($subject_column, $object_column) = self::getRelationshipColumns($chado, $base_table, $relationship_table);
+          if ($subject_column and $object_column) {
 
-              $field_list[] = [
-                'name' => self::generateFieldName($bundle, 'relationship'),
-                'content_type' => $bundle->getID(),
-                'label' => 'Relationship',
-                'type' => self::$id,
-                'description' => 'Relationships between records.',
-                'cardinality' => -1,
-                'required' => FALSE,
-                'storage_settings' => [
-                  'storage_plugin_id' => 'chado_storage',
-                  'storage_plugin_settings' => [
-                    'base_table' => $base_table,
-                    'base_column' => $base_column,
-                    'linker_table' => $relationship_table,
-                    'subject_column' => $subject_column,
-                    'object_column' => $object_column,
+            $field_list[] = [
+              'name' => self::generateFieldName($bundle, 'relationship'),
+              'content_type' => $bundle->getID(),
+              'label' => 'Relationship',
+              'type' => self::$id,
+              'description' => 'Other records with relationships to this record.',
+              'cardinality' => -1,
+              'required' => FALSE,
+              'storage_settings' => [
+                'storage_plugin_id' => 'chado_storage',
+                'storage_plugin_settings' => [
+                  'base_table' => $base_table,
+                  'base_column' => $base_column,
+                  'linker_table' => $relationship_table,
+                  'subject_column' => $subject_column,
+                  'object_column' => $object_column,
+                ],
+              ],
+              'settings' => [
+                'termIdSpace' => self::$termIdSpace,
+                'termAccession' => self::$termAccession,
+              ],
+              'display' => [
+                'view' => [
+                  'default' => [
+                    'region' => 'content',
+                    'label' => 'above',
+                    'weight' => 10,
                   ],
                 ],
-                'settings' => [
-                  'termIdSpace' => self::$termIdSpace,
-                  'termAccession' => self::$termAccession,
-                ],
-                'display' => [
-                  'view' => [
-                    'default' => [
-                      'region' => 'content',
-                      'label' => 'above',
-                      'weight' => 10,
-                    ],
-                  ],
-                  'form' => [
-                    'default' => [
-                      'region' => 'content',
-                      'weight' => 10
-                    ],
+                'form' => [
+                  'default' => [
+                    'region' => 'content',
+                    'weight' => 10
                   ],
                 ],
-              ];
-              // The parent class adds collection plugin IDs
-              $field_list = parent::discoverPostprocess($field_list);
-            }
+              ],
+            ];
+            // The parent class adds collection plugin IDs
+            $field_list = parent::discoverPostprocess($field_list);
           }
         }
       }
@@ -320,14 +317,14 @@ dpm("CP01 adding column settings");//@@@
   protected static function getRelationshipColumns($chado, string $base_table, string $relationship_table): array {
     $subject_column = '';
     $object_column = '';
-    // The subject and object columns should be among the foreign keys to the base table
+    // The subject and object columns will be among the foreign keys to the base table
     $table_schema_def = $chado->schema()->getTableDef($relationship_table, ['format' => 'Drupal']);
     if ($table_schema_def['foreign keys'][$base_table]['columns'] ?? NULL) {
       foreach (array_keys($table_schema_def['foreign keys'][$base_table]['columns']) as $relationship_column) {
         if (preg_match('/subject/', $relationship_column)) {
           $subject_column = $relationship_column;
         }
-        if (preg_match('/object/', $relationship_column)) {
+        elseif (preg_match('/object/', $relationship_column)) {
           $object_column = $relationship_column;
         }
       }
