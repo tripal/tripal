@@ -4,9 +4,6 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
-use Drupal\Core\Link;
-use Drupal\Core\Url;
-use Drupal\Component\Utility\UrlHelper;
 
 /**
  * Plugin implementation of default Tripal Relationship formatter.

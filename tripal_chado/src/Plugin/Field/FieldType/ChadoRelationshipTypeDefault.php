@@ -99,8 +99,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $linker_subject_col = $storage_settings['subject_column'] ?? NULL;
     $linker_object_col = $storage_settings['object_column'] ?? NULL;
     if (!$linker_subject_col || !$linker_object_col) {
-      // When this field is added through the UI these will not be set yet, so save the settings
-dpm("CP01 adding column settings");//@@@
+      // When this field is added through the UI, these will not have been set yet, so save the settings
       list($linker_subject_col, $linker_object_col) = self::getRelationshipColumns($chado, $base_table, $linker_table);
       $storage_settings['subject_column'] = $linker_subject_col;
       $storage_settings['object_column'] = $linker_object_col;
@@ -154,7 +153,6 @@ dpm("CP01 adding column settings");//@@@
 
     // Define the link between the base table and the relationship subject.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $linker_subject_term, [
-#    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_subject_col, $linker_subject_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_subject_col,
@@ -165,7 +163,6 @@ dpm("CP01 adding column settings");//@@@
 
     // Define the link between the relationship object and the base table.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $linker_object_term, [
-#    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_object_col, $linker_object_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_object_col,
@@ -194,6 +191,7 @@ dpm("CP01 adding column settings");//@@@
       'action' => 'store',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_type_col,
+      'delete_if_empty' => TRUE,
       'empty_value' => 0,
     ]);
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'type_name', $type_term, $type_len, [
