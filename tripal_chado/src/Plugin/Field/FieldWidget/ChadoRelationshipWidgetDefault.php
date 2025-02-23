@@ -245,7 +245,8 @@ dpm("CPW02C remove at delta $delta");//@@@
         }
       }
     }
-dpm($retained_records, "CPW03 retained records");//@@@
+dpm($retained_records, "CPW03A retained records");//@@@
+dpm($values, "CPW03B values");//@@@
 
 
 
@@ -257,33 +258,39 @@ dpm($retained_records, "CPW03 retained records");//@@@
     $next_delta = $values ? array_key_last($values) + 1 : 0;
     $storage_values = $form_state->getStorage();
     $initial_values = $storage_values['initial_values'][$field_name];
-dpm($initial_values, "CPW04 initial_values");//@@@
+dpm($initial_values, "CPW04 initial_values. next_delta=$next_delta");//@@@
     foreach ($initial_values as $initial_value) {
       // For initial values, the key is always 'linker_id'
       $linker_id = $initial_value['linker_id'] ?? 0;
-      if ($linker_id and !in_array($linker_id, $retained_records)) {
-        // This item was removed from the form. Add back a value
-        // so that chado storage knows to remove the chado record.
-        $values[$next_delta]['linker_id'] = $linker_id;
-        // Because both of these are set as store_link, we need to have
-        // the related record present for deletion.
-        if ($initial_value['reverse'] == 1) {
-          $values[$next_delta]['subject_id'] = $initial_value['related_record_id'];
-          $values[$next_delta]['object_id'] = 0;
+      if ($linker_id) {
+        $initial_reverse = $initial_value['reverse'];
+        if (!in_array($linker_id, $retained_records)) {
+          // This item was removed from the form. Add back a value
+          // so that chado storage knows to remove the chado record.
+          $values[$next_delta]['linker_id'] = $linker_id;
+          $this->markForDeletion($values, $next_delta, $initial_reverse, $initial_value['related_record_id']);
+dpm($values[$next_delta], "CPW05 adding back value at $next_delta");//@@@
+          $next_delta++;
         }
         else {
-          $values[$next_delta]['subject_id'] = 0;
-          $values[$next_delta]['object_id'] = $initial_value['related_record_id'];
+          // The item is still in the form.
+          // Handle the case where the related record is changed, which happens
+          // either by selecting a different record, or by changing the state
+          // of the reverse toggle. If either of these changed, then the
+          // original record needs to be removed, and then a new record created.
+          $delta = array_search($linker_id, $retained_records);
+          $check_key = ($initial_reverse == 1) ? 'subject_id' : 'object_id';
+          if ($values[$delta][$check_key] != $initial_value['related_record_id']) {
+            // Move the new info from the form to the end and remove linker_id so it will be inserted as new
+            $values[$next_delta] = $values[$delta];
+            $values[$next_delta]['linker_id'] = 0;
+dpm("CPW06 Mark edited delta=$delta for deletion and add $next_delta for insertion");//@@@
+            $next_delta++;
+            // mark the current record for deletion in chado storage
+            $this->markForDeletion($values, $delta, $initial_reverse, $initial_value['related_record_id']);
+          }
         }
-        // This field is configured as delete_if_empty, and will be the one that triggers chado deletion
-        $values[$next_delta]['type_id'] = 0;
-dpm($values[$next_delta], "CPW05 adding back value at $next_delta");//@@@
-        $next_delta++;
       }
-          // Handle the case where one or more of the values on a row
-          // was changed. In such a case, the original record needs to be
-          // removed and a new different one created.
-          //@todo
     }
 
 
@@ -299,6 +306,34 @@ dpm($values[$next_delta], "CPW05 adding back value at $next_delta");//@@@
 
 dpm($values, "CPW09 Widget massage values out");//@@@
     return $values;
+  }
+
+  /**
+   * Configures a single record so that it will be deleted by chado storage.
+   * Because both subject_id and object_id are set as "store_link", we need to
+   * have the original related record ID present in the correct one for deletion.
+   *
+   * @param array &$values
+   *   The values array presented by massageFormValues
+   * @param int $delta
+   *   The numeric index of the item.
+   * @param int $reverse
+   *   The checkbox to reverse subject:object orientation
+   * @param int $related_record_id
+   *   The non-host record, either from subject_id or object_id depending on direction
+   * @return void
+   */
+  protected function markForDeletion(array &$values, $delta, $reverse, $related_record_id): void {
+    if ($reverse == 1) {
+      $values[$delta]['subject_id'] = $related_record_id;
+      $values[$delta]['object_id'] = 0;
+    }
+    else {
+      $values[$delta]['subject_id'] = 0;
+      $values[$delta]['object_id'] = $related_record_id;
+    }
+    // This field is configured as delete_if_empty, and will be the one that triggers chado deletion
+    $values[$delta]['type_id'] = 0;
   }
 
   /**
