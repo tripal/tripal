@@ -60,6 +60,14 @@ class TripalEntitySettingsForm extends FormBase {
 
     $form['tripal_entity_settings']['#markup'] = 'Settings form for Tripal Content entities.';
 
+    $form['default_cache_backend_field_values'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Cache Backend Storage field values in Drupal'),
+      '#description' => $this->t('When enabled, a copy of data from the backend storage will be stored in the Drupal field tables. This is needed for Drupal views filtering and sorting and is recommended for most sites. Changing this setting does not affect already published content. When this option is changed from OFF to ON on an already populated site, all Tripal Content needs to be re-published to take effect. Note: values that have already been cached will not be removed when turning switching option OFF.'),
+      '#default_value' => $drupal_entity_field_store,
+      '#required' => FALSE,
+    ];
+
     $form['allowed_title_tags'] = [
       '#type' => 'textfield',
       '#title' => t('HTML tags allowed in page titles'),
@@ -69,14 +77,6 @@ class TripalEntitySettingsForm extends FormBase {
                         . ' Any tag not in this list will be filtered out if present in a page title.'
                         . ' You may need to rebuild the cache for changes to take effect.'),
       '#default_value' => $allowed_title_tags,
-      '#required' => FALSE,
-    ];
-
-    $form['default_cache_backend_field_values'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Cache Backend Storage field values in Drupal'),
-      '#description' => $this->t('When enabled, a copy of data from the backend storage will be stored in the Drupal field tables. This is needed for Drupal views filtering and sorting and is recommended for most sites. Changing this setting does not affect already published content. When this option is changed from OFF to ON on an already populated site, all Tripal Content needs to be re-published to take effect. Note: values that have already been cached will not be removed when turning switching option OFF.'),
-      '#default_value' => $drupal_entity_field_store,
       '#required' => FALSE,
     ];
 
@@ -96,19 +96,6 @@ class TripalEntitySettingsForm extends FormBase {
       '#default_value' => $widget_global_select_limit,
       '#required' => FALSE,
     ];
-
-    $form['default_cache_backend_field_values'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Cache Backend Storage field values in Drupal'),
-      '#description' => t('When enabled, a copy of data from the backend storage will be stored in the Drupal field tables.'
-        . 'This is needed for Drupal views filtering and sorting and is recommended for most sites.'
-        . 'Changing this setting does not affect already published content.'
-        . 'When this option is changed from OFF to ON on an already populated site, all Tripal Content needs to be re-published to take effect.'
-        . 'Note: values that have already been cached will not be removed when turning switching option OFF.'),
-      '#default_value' => $drupal_entity_field_store,
-      '#required' => false,
-    ];
-
 
     $form['submit'] = [
       '#type' => 'submit',
