@@ -231,4 +231,24 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     // @debug print_r($updated_entity->toArray());
     $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT');
   }
+
+  /**
+   * Tests the ChadoPropertyType field through ChadoStorage exactly.
+   *
+   * @dataProvider provideScenarios
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   *
+   * @todo evaluate if we really feel the need to test ChadoStorage indirectly
+   * or if the above indirect ChadoStorage tests are enough.
+  public function testChadoPropertyTypeChadoStorageCRUD(int $current_scenario_key, string $current_scenario_label) {
+    $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
+
+    $this->prepareTestingChadoStorage();
+  }
+  */
+
 }

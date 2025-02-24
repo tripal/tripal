@@ -9,6 +9,7 @@ use Drupal\field\Entity\FieldConfig;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
+use Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -45,6 +46,48 @@ trait ChadoFieldTestTrait {
    * @var EntityViewDisplay[]
    */
   protected array $entityViewDisplay = [];
+
+  /**
+   * A ChadoStorage object to run your tests on.
+   *
+   * @var \Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage
+   */
+  protected ChadoStorage $chadoStorage;
+
+  /**
+   * An array of propertyType objects initialized based on the $fields
+   * properties array.
+   *
+   * @var array
+   *   This is an array of property types 3 levels deep:
+   *     The 1st level is the bundle name (e.g. bio_data_1).
+   *     The 2st level is the field name (e.g. ChadoOrganismDefault).
+   *     The 3rd level is the property key => PropertyType object
+   */
+  protected array $propertyTypes = [];
+
+  /**
+   * An array of propertyValue objects initialized based on the $fields
+   * properties array.
+   *
+   * @var array
+   */
+  protected array $propertyValues = [];
+
+  /**
+   * An array for testing ChadoStorage::*Values methods for the current fields.
+   * This is an associative array 5-levels deep.
+   *    The 1st level is the field name (e.g. ChadoOrganismDefault).
+   *    The 2nd level is the delta value (e.g. 0).
+   *    The 3rd level is a field key name (i.e. record_id + value).
+   *    The 4th level must contain the following three keys/value pairs
+   *      - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
+   *      - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
+   *      - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *
+   * @var array
+   */
+  protected array $dataStoreValues;
 
   /**
    * Confirms that the retrieved values match the expected ones.
@@ -329,5 +372,28 @@ trait ChadoFieldTestTrait {
     $this->fieldConfig[$values['field_name']] = $fieldConfig;
     $this->tripalEntityType[$values['bundle_name']] = $bundle;
     return $fieldConfig;
+  }
+
+  /**
+   * Prepares the environment for testing ChadoStorage directly.
+   *
+   * This uses the bundle to setup the testing environment similarily to the
+   * original ChadoStorage tests. In this manner we don't need YAML files
+   * describing the fields nor do we need to create them because that has
+   * already been done by setupFieldSystemUnderTest().
+   */
+  public function prepareTestingChadoStorage() {
+    $this->propertyTypes = [];
+    $this->propertyValues = [];
+    $this->dataStoreValues = [];
+
+    // Get plugin managers we need for our testing.
+    $storage_manager = \Drupal::service('tripal.storage');
+    $this->chadoStorage = $storage_manager->createInstance('chado_storage');
+
+    // We need to add each field to the ChadoStorage object.
+    foreach ($this->fieldConfig as $field_name => $fieldConfig) {
+      $this->chadoStorage->addFieldDefinition($field_name, $fieldConfig);
+    }
   }
 }
