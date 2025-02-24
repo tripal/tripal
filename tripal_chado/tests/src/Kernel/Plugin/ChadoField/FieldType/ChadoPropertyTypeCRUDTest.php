@@ -48,6 +48,13 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
   protected object $chado_connection;
 
   /**
+   * The test drupal connection. It is also set in the container.
+   *
+   * @var object
+   */
+  protected object $drupal_connection;
+
+  /**
    * The YAML file indicating the scenarios to test and how to setup the enviro.
    *
    * @var string
@@ -102,6 +109,10 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
    */
   protected function setUp(): void {
     parent::setUp();
+
+    // The Drupal connection will be created in the parent. This is used
+    // when checking the Drupal field tables.
+    $this->drupal_connection = $this->container->get('database');
 
     // First retrieve info from the YAML file for this particular test.
     [$this->system_under_test, $this->scenarios] = $this->getTestInfoFromYaml($this->yaml_info_file);

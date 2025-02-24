@@ -111,20 +111,59 @@ trait ChadoFieldTestTrait {
    */
   public function assertFieldValuesMatch(array $expected_values, TripalEntity $entity, string $message_prefix = '') {
 
-    // Check that each expected field exists in the provided entity.
     foreach ($expected_values as $expected_field_name => $expected_field_delta) {
+
+      // Check that each expected field exists in the provided entity.
       $this->assertTrue($entity->hasField($expected_field_name), $message_prefix . ": field '$expected_field_name' was not found in the provided entity.");
+
+      // Check that we were able to retrieve the field values.
       $field_item_list = $entity->get($expected_field_name);
       $this->assertInstanceOf(FieldItemList::class,$field_item_list, $message_prefix . ": we could not retrieve the values of field '$expected_field_name' in the provided entity.");
-      $this->assertCount(sizeof($expected_field_delta), $field_item_list, $message_prefix . ": field '$expected_field_name' did not have the expected number of values.");
+
+      // Retrieve the Drupal field table values for this entity to check
+      // against later.
+      $drupal_field_table = 'tripal_entity__' . $expected_field_name;
+      $query = $this->drupal_connection->select($drupal_field_table, 'drupal')
+        ->fields('drupal')
+        ->condition('entity_id', $entity->id(), "=")
+        ->execute();
+      $drupal_field_records = $query->fetchAllAssoc('delta');
+
       foreach ($expected_field_delta as $expected_delta => $expected_delta_values) {
+
+        // Check that we were able to retrieve a specific field value.
         $field_item = $field_item_list->get($expected_delta);
         $this->assertInstanceOf(TripalFieldItemInterface::class, $field_item, $message_prefix . ": $expected_field_name [$expected_delta] could not be retrieved.");
+
+        // Check that there is a record in the Drupal field table for this delta.
+        $this->assertArrayHasKey($expected_delta, $drupal_field_records, $message_prefix . ": $expected_field_name [$expected_delta] should have a record in the Drupal field table '$drupal_field_table'.");
+        $drupal_field_record = $drupal_field_records[$expected_delta];
+
         foreach ($expected_delta_values as $expected_property_type => $expected_value) {
+
+          // Check that the property value matched what we expected.
           $property_value = $field_item->get($expected_property_type)->getValue();
           $this->assertEquals($expected_value, $property_value, $message_prefix . ": $expected_field_name [$expected_delta] [$expected_property_type] value did not match what we expected.");
+
+          // Check that the Drupal field table matches what we expected.
+          $drupal_column_name = $expected_field_name . '_' . $expected_property_type;
+          $this->assertEquals($expected_value, $drupal_field_record->{$drupal_column_name}, $message_prefix . ": $expected_field_name [$expected_delta] [$expected_property_type] did not match what we expected in the drupal field table ($drupal_field_table).");
+
+          // If the current property type is a rank, then check the rank and
+          // delta match.
+          // @todo waiting to confirm the above change worked first.
         }
       }
+
+      // Check that there were the right number of field values.
+      // This ensures there were not more then expected. It's checked after the
+      // property values/delta are checked to ensure we get more tailored
+      // feedback if there are less than expected.
+      $this->assertCount(sizeof($expected_field_delta), $field_item_list, $message_prefix . ": field '$expected_field_name' did not have the expected number of values.");
+
+      // Check that there are the right number of records in the Drupal field table.
+      $this->assertCount(sizeof($expected_field_delta), $drupal_field_records,
+      $message_prefix . ": field '$expected_field_name' did not have the expected number of records in the drupal field table ($drupal_field_table).");
     }
   }
 
