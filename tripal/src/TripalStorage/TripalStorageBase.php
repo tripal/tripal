@@ -41,6 +41,13 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   protected $property_types = [];
 
   /**
+   * Caches the default value for entity field caching from the configuration.
+   *
+   * @var bool
+   */
+  protected bool $default_is_required = TRUE;
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
@@ -80,6 +87,9 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->logger = $logger;
+
+    $this->default_is_required = \Drupal::config('tripal.settings')
+    ->get('tripal_entity_type.default_cache_backend_field_values') ?? TRUE;
   }
 
   /**
@@ -257,6 +267,48 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
       }
       $values[$field_name][$delta][$key]['value']->setValue(NULL);
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool|null {
+
+    $property_type = $this->getPropertyType($field_name, $key);
+    if ($property_type === NULL) {
+      return NULL;
+    }
+    $storage_settings = $property_type->getStorageSettings();
+
+    // Get the default from the configuration.
+    $is_required = $this->default_is_required;
+
+    // Any field that stores a base record id, a primary key, or a foreign key
+    // link is required. This takes precedence and cannot be overridden.
+    if (
+      ($storage_settings['action'] == 'store_id') or
+      ($storage_settings['action'] == 'store_pkey') or
+      ($storage_settings['action'] == 'store_link')
+    ) {
+      $is_required = TRUE;
+    }
+    // For any other fields that have 'drupal_exclude' set, we want to ensure it
+    // is excluded regardless of the default configuration. To force exclusion
+    // of the field from entity storage, add `drupal_exclude: true` in the
+    // `storage_settings` of the field definition in its
+    // tripalfield_collection*_chado.yml file.
+    elseif ((array_key_exists('drupal_exclude', $storage_settings)) and ($storage_settings['drupal_exclude'] === TRUE)) {
+      $is_required = FALSE;
+    }
+    // Stay compatible with the original behavior and allow to force drupal
+    // storage. To force inclusion of the field into Entity storage, add
+    // `drupal_store: true` in the section `storage_settings` of the field
+    // definition in its tripal field collection.
+    elseif ((array_key_exists('drupal_store', $storage_settings)) and ($storage_settings['drupal_store'] === TRUE)) {
+      $is_required = TRUE;
+    }
+
+    return $is_required;
   }
 
   /**

@@ -222,8 +222,6 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    */
   public function findValues($values);
 
-
-
   /**
    * Performs validation checks on values.
    *
@@ -235,6 +233,25 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    */
   public function validateValues($values);
 
+  /**
+   * Check if a single field property should be cached in the Drupal tables.
+   *
+   * This interacts with the tripal_entity_type.default_cache_backend_field_values
+   * setting in the base implementation of this method.
+   *
+   * WARNING: This method should only be called after the property type for this
+   * field.key combo has been added.
+   *
+   * @param string $field_name
+   *   The name of the field thhe property to check is part of.
+   * @param string $key
+   *   The storage property key to check.
+   *
+   * @return bool|null
+   *   TRUE if it should be saved to the Drupal field table and FALSE otherwise.
+   *   If an error is encountered then NULL is returned.
+   */
+  public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool|null;
 
   /**
    * Provides form elements to be added to the Tripal entity publish form.
@@ -270,6 +287,5 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   The form state object.
    */
   public function publishFromSubmit($form, FormStateInterface &$form_state);
-
 
 }

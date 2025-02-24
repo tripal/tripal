@@ -140,6 +140,13 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected bool $lenient_migration = FALSE;
 
   /**
+   * Flag to indicate if we should republish in order to cache chado values.
+   *
+   * @var bool
+   */
+  protected $republish = TRUE;
+
+  /**
    * Populates the $this->field_info variable with field information
    *
    * @param string $filename
@@ -816,8 +823,11 @@ class ChadoPublish extends TripalBackendPublishBase {
     $init_sql = "
       INSERT INTO {" . $field_table . "}
         (bundle, deleted, entity_id, revision_id, langcode, delta, ";
-    foreach (array_keys(array_merge($this->required_types[$field_name],
-                                    $this->non_required_types[$field_name])) as $key) {
+    $all_types = array_merge(
+      $this->required_types[$field_name] ?? [],
+      $this->non_required_types[$field_name] ?? []
+    );
+    foreach (array_keys($all_types) as $key) {
       $init_sql .= $field_name . '_'. $key . ', ';
     }
     $init_sql = rtrim($init_sql, ', ') . ") VALUES\n";
@@ -959,10 +969,13 @@ class ChadoPublish extends TripalBackendPublishBase {
       $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
     }
     // Non-required types never have a value stored, just a placeholder.
-    foreach ($this->non_required_types[$field_name] as $key => $properties) {
-      $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
-      $sql .=  $placeholder . ', ';
-      $args[$placeholder] = $properties->getDefaultValue();
+    // There might not be non_required_types for this field.
+    if (isset($this->non_required_types[$field_name])) {
+      foreach ($this->non_required_types[$field_name] as $key => $properties) {
+        $placeholder = ':' . $field_name . '_' . $key . '_' . $j;
+        $sql .= $placeholder . ', ';
+        $args[$placeholder] = $properties->getDefaultValue();
+      }
     }
     $sql = rtrim($sql, ", ");
     $sql .= "),\n";
@@ -1046,6 +1059,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     if (!$this->republish) {
       $record_ids = array_diff($record_ids, array_keys($this->existing_published_entities));
     }
+
     return $record_ids;
   }
 
@@ -1081,7 +1095,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
     // Optional values
     $this->schema_name = $options['schema_name'] ?? 'chado';
-    $this->republish = ($options['republish'] ?? FALSE) ? TRUE : FALSE;
+    $this->republish = boolval($options['republish'] ?? 1);
     $this->job = $options['job'] ?? NULL;
     if ($options['batch_size'] ?? 0) {
       $this->batch_size = $options['batch_size'];
@@ -1290,4 +1304,5 @@ class ChadoPublish extends TripalBackendPublishBase {
     // This return value is currently only used for unit tests, so is limited to 100 records.
     return $this->published_or_updated_entities;
   }
+
 }

@@ -6,6 +6,7 @@ tripal_entity_type:
   max_id: 0
   # HTML tags allowed in entity titles
   allowed_title_tags: 'em i strong u'
+  default_cache_backend_field_values: true
 
 files:
   # Maximum size for file uploads (defaults to 1 GB)
