@@ -143,7 +143,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $storage_settings = $property_type->getStorageSettings();
 
     // In chado, all table columns containing sequence are named 'residues'.
-    // We want to exclude sequences from drupal storage even if the default is TRUE.
+    // We want to exclude sequences from drupal storage even if the default is TRUE
+    // because this field can contain a very large string, for example an entire chromosome.
     if (array_key_exists('path', $storage_settings) and str_ends_with($storage_settings['path'], 'residues')) {
       $is_required = FALSE;
     }
