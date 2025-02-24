@@ -1095,7 +1095,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
     // Optional values
     $this->schema_name = $options['schema_name'] ?? 'chado';
-    $this->republish = $options['republish'] ?? TRUE;
+    $this->republish = boolval($options['republish'] ?? 1);
     $this->job = $options['job'] ?? NULL;
     if ($options['batch_size'] ?? 0) {
       $this->batch_size = $options['batch_size'];
