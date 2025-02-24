@@ -273,6 +273,7 @@ trait ChadoFieldTestTrait {
           'field_type' => $field_details['type'],
           'widget_id' => $field_details['widget'],
           'formatter_id' => $field_details['formatter'],
+          'cardinality' => $field_details['cardinality'] ?? 1,
           'settings' => $field_details['settings'],
         ]
       );
@@ -321,6 +322,7 @@ trait ChadoFieldTestTrait {
       'field_name' => $values['field_name'],
       'entity_type' => $entity_type,
       'type' => $values['field_type'],
+      'cardinality' => $values['cardinality'] ?? 1,
       'settings' => [
         'termIdSpace' => $term_values['id_space_name'],
         'termAccession' => $term_values['term']['accession'],

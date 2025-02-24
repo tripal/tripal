@@ -15,6 +15,7 @@ system-under-test:
     formatter: chado_string_type_formatter
     termIdSpace: schema
     termAccession: name
+    cardinality: 1
     settings:
       storage_plugin_id: chado_storage
       storage_plugin_settings:
@@ -28,6 +29,7 @@ system-under-test:
     formatter: chado_text_type_formatter
     termIdSpace: schema
     termAccession: description
+    cardinality: 1
     settings:
       storage_plugin_id: chado_storage
       storage_plugin_settings:
@@ -40,6 +42,7 @@ system-under-test:
     formatter: chado_additional_type_formatter_default
     termIdSpace: schema
     termAccession: additionalType
+    cardinality: 1
     settings:
       storage_plugin_id: chado_storage
       storage_plugin_settings:
@@ -53,6 +56,7 @@ system-under-test:
     formatter: chado_property_formatter_default
     termIdSpace: rdfs
     termAccession: 'comment'
+    cardinality: -1
     settings:
       storage_plugin_id: chado_storage
       storage_plugin_settings:
@@ -65,6 +69,7 @@ system-under-test:
     formatter: chado_property_formatter_default
     termIdSpace: NCIT
     termAccession: C25341
+    cardinality: -1
     settings:
       storage_plugin_id: chado_storage
       storage_plugin_settings:

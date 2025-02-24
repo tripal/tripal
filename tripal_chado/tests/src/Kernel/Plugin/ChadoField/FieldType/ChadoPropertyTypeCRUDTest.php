@@ -142,13 +142,13 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     $scenarios = [];
 
     $scenarios[] = [
-      'key' => 0,
-      'label' => "Simple Project with no metadata",
+      0,
+      "Simple Project with no metadata",
     ];
 
     $scenarios[] = [
-      'key' => 1,
-      'label' => "Simple Project with metadata added on edit",
+      1,
+      "Simple Project with metadata added on edit",
     ];
 
     return $scenarios;
