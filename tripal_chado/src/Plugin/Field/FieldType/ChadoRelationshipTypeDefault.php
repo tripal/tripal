@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
@@ -169,13 +170,13 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
 
     // The column which will be used for the record name. One will be the hosting record,
     // but we don't know in advance which it is, so store both.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_name', $base_column_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'subject_name', $base_column_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_subject_col . '>' . $base_table . '.' . $base_pkey_col . ';' . $base_column,
       'as' => 'subject_name',
     ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_name', $base_column_term, [
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'object_name', $base_column_term, [
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_object_col . '>' . $base_table . '.' . $base_pkey_col . ';' . $base_column,
