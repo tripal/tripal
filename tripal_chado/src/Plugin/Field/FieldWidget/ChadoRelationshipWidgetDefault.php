@@ -31,6 +31,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_name = $field_definition->get('field_name');
+    $property_definitions = $field_definition->getFieldStorageDefinition()->getPropertyDefinitions();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
     $base_column = $storage_settings['base_column'] ?? '';
@@ -153,6 +154,24 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     // We also need these two to have a specific combined wrapper in addition to the fieldset.
     $element['term']['#prefix'] = '<div class="chado-relationship-field-wrapper form-item">' . ($element['term']['#prefix'] ?? '');
     $element['direction']['#suffix'] = ($element['direction']['#suffix'] ?? '') . '</div>';
+
+    // If there is a relationship value and it is not already set,
+    // then we want to use '' as the default.
+    if (array_key_exists('relationship_value', $property_definitions)) {
+      $element['relationship_value'] = [
+        '#type' => 'value',
+        '#default_value' => $item_vals['relationship_value'] ?? '',
+      ];
+    }
+
+    // If there is a rank and it is not already set,
+    // then we want to use 0 as the default.
+    if (array_key_exists('relationship_rank', $property_definitions)) {
+      $element['relationship_rank'] = [
+        '#type' => 'value',
+        '#default_value' => $item_vals['relationship_rank'] ?? 0,
+      ];
+    }
 
     // Save some initial values to allow later handling of the "Remove" button
     $this->saveRelatedInitialValues($delta, $field_name, $linker_id, $type_id, $related_id, $reverse_default, $form_state);
@@ -281,7 +300,6 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       $values[$delta]['_weight'] = $i;
       $i++;
     }
-
     return $values;
   }
 

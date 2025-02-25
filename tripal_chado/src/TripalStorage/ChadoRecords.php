@@ -1982,7 +1982,7 @@ class ChadoRecords  {
       }
 
       // Check if conditions are wrapped inside "OR"
-      if ($record['or_conditions'] ?? FALSE) {
+      if ($record['or_conditions']) {
         $conditon_group = $select->orConditionGroup();
       }
       else {

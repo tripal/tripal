@@ -92,8 +92,6 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
 
     // Relationship table
     $linker_table = $storage_settings['linker_table'] ?? ($base_table . '_relationship');
-
-    // Relationship table
     $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
     $linker_pkey_col = $linker_schema_def['primary key'];
     // Relationship table column naming is not consistent for nd_reagent and project
@@ -197,6 +195,28 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
       'path' => $linker_table . '.' . $linker_type_col . '>cvterm.cvterm_id;name',
       'as' => 'type_name',
     ]);
+
+    // Some but not all relationship tables contain value or rank columns.
+    // These are conditionally added only if they exist in the relationship
+    // table.
+    if (array_key_exists('value', $linker_schema_def['fields'])) {
+      $term = self::getColumnTermId($linker_table, 'value', 'NCIT:C25712');
+      $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'relationship_value', $term, [
+        'action' => 'store',
+        'drupal_store' => FALSE,
+        'path' => $linker_table . '.value',
+        'as' => 'relationship_value',
+      ]);
+    }
+    if (array_key_exists('rank', $linker_schema_def['fields'])) {
+      $term = self::getColumnTermId($linker_table, 'rank', 'OBCS:0000117');
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'relationship_rank', $term, [
+        'action' => 'store',
+        'drupal_store' => FALSE,
+        'path' => $linker_table . '.rank',
+        'as' => 'relationship_rank',
+      ]);
+    }
 
     return $properties;
   }
