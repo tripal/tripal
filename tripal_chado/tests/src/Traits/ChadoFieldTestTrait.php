@@ -2,6 +2,7 @@
 namespace Drupal\Tests\tripal_chado\Traits;
 
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Core\Datetime\Entity\DateFormat;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\field\Entity\FieldStorageConfig;
@@ -228,8 +229,22 @@ trait ChadoFieldTestTrait {
     $this->prepareEnvironment(['TripalTerm', 'TripalEntity', 'ChadoField']);
     // -- we need the chado term mapping for our properties.
     $this->installEntitySchema('chado_term_mapping');
+    // -- we need the date_format entity to render the entity form.
+    $this->installEntitySchema('date_format');
+    $this->installConfig('datetime');
     // -- we need access to the core term mappings.
     tripal_chado_rebuild_chado_term_mappings();
+
+    // We also need to be able to access date formats for created/updated.
+    $formats = [
+      ['id' => 'short', 'pattern' => 'j M Y - H:i'],
+      ['id' => 'html_date', 'pattern' => 'Y-m-d'],
+      ['id' => 'html_time', 'pattern' => 'H:i:s'],
+    ];
+    foreach ($formats as $values) {
+      $short = new DateFormat($values, 'date_format');
+      $short->save();
+    }
 
     // If information about the environment to be setup was provided, then we
     // will set it up for them :-).

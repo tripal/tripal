@@ -38,7 +38,7 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'tripal', 'tripal_chado'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal', 'tripal_chado'];
 
   /**
    * The test chado connection. It is also set in the container.
@@ -241,6 +241,33 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     $updated_entity = TripalEntity::load($created_entity->id());
     // @debug print_r($updated_entity->toArray());
     $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT');
+  }
+
+  /**
+   * Tests the ChadoPropertyType field through entity form + field widget.
+   *
+   * @dataProvider provideScenarios
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   */
+  public function testChadoPropertyWidgetUpdate(int $current_scenario_key, string $current_scenario_label) {
+    $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
+
+    // 1. Create the entity with that value set.
+    $entity = TripalEntity::create([
+      'title' => $this->randomString(),
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']['user_input']);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
+    $status = $entity->save();
+    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
+
+    $form = \Drupal::service('entity.form_builder')->getForm($entity, 'default');
+    $this->assertIsArray($form, "We were unable to retrieve the TripalEntity form.");
+    //print_r(array_keys($form));
   }
 
   /**
