@@ -264,10 +264,19 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
     $status = $entity->save();
     $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
+    // We need to reload it to have access to the new values.
+    $created_entity = TripalEntity::load($entity->id());
 
-    $form = \Drupal::service('entity.form_builder')->getForm($entity, 'default');
+    // 2. Test the form build / widget build.
+    // Build the TripalEntity edit form.
+    $form = \Drupal::service('entity.form_builder')->getForm($created_entity, 'default');
     $this->assertIsArray($form, "We were unable to retrieve the TripalEntity form.");
-    //print_r(array_keys($form));
+
+    // Confirm that all the property widget elements are as expected.
+    $this->assertFieldWidgetsMatch($current_scenario['create']['expected'], $this->system_under_test['fields'], $form, $current_scenario['label']);
+
+    // 3. Test the form submit / widget submit.
+    // Setup the form state with the user input.
   }
 
   /**

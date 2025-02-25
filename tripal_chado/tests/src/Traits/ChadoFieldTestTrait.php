@@ -3,6 +3,7 @@ namespace Drupal\Tests\tripal_chado\Traits;
 
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Core\Datetime\Entity\DateFormat;
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\field\Entity\FieldStorageConfig;
@@ -47,6 +48,13 @@ trait ChadoFieldTestTrait {
    * @var EntityViewDisplay[]
    */
   protected array $entityViewDisplay = [];
+
+  /**
+   * An array of display objects keyed by Tripal Content Type bundle name.
+   *
+   * @var EntityFormDisplay[]
+   */
+  protected array $entityFormDisplay = [];
 
   /**
    * A ChadoStorage object to run your tests on.
@@ -109,6 +117,8 @@ trait ChadoFieldTestTrait {
    *      - property key => expected value
    * @param TripalEntity $entity
    *   An entity whose field values we want to check against those expected.
+   * @param string $message_prefix
+   *   A short string that all assert messages will be prefixed with.
    */
   public function assertFieldValuesMatch(array $expected_values, TripalEntity $entity, string $message_prefix = '') {
 
@@ -165,6 +175,61 @@ trait ChadoFieldTestTrait {
       // Check that there are the right number of records in the Drupal field table.
       $this->assertCount(sizeof($expected_field_delta), $drupal_field_records,
       $message_prefix . ": field '$expected_field_name' did not have the expected number of records in the drupal field table ($drupal_field_table).");
+    }
+  }
+
+  /**
+   * Confirms the widget element is as expected in the TripalEntity form.
+   *
+   * @param mixed $expected_default
+   *   The default value we expect to be set in the widget form for each field
+   *   defined in the fields_expected param.
+   * @param array $fields_expected
+   *   The system_under_test information for the fields whose widget elements we
+   *   want to check.
+   * @param array $form
+   *   The full TripalEntity form array we want to check for the field widget
+   *   elements in.
+   * @param string $message_prefix
+   *   A short string that all assert messages will be prefixed with.
+   */
+  public function assertFieldWidgetsMatch(mixed $expected_field_defaults, array $fields_expected, array $form, string $message_prefix = '') {
+
+    // Test the widget form for each expected field.
+    foreach ($fields_expected as $field_details) {
+      $field_name = $field_details['name'];
+      $expected_defaults = $expected_field_defaults[$field_name];
+
+      // Check the form has an element for this field.
+      $this->assertArrayHasKey($field_name, $form,
+        $message_prefix . ": We expect the TripalEntity form to have an element $field_name.");
+      $this->assertArrayHasKey('widget', $form[$field_name],
+        $message_prefix . ": We expect the widget element for $field_name to have a widget key containing the widget form elements.");
+
+      $widget_form_element = $form[$field_name]['widget'];
+
+      // Check that the default is set properly after create.
+      // @todo finish this.
+      foreach (\Drupal\Core\Render\Element::children($widget_form_element) as $element_key) {
+        $element = $widget_form_element[$element_key];
+        $expected_values = $expected_defaults[$element_key];
+
+        // Check that there is an element for each expected value.
+        foreach ($expected_values as $key => $value) {
+          $this->assertArrayHasKey($key, $element, $message_prefix . ": $field_name [$element_key] widget element should contain an element with this name.");
+          /** @todo Figure out how to check the value.
+          if (array_key_exists('#value', $element[$key])) {
+            $this->assertEquals($value, $element[$key]['#value'], $message_prefix . ": $field_name [$element_key] [$key][#value] doesn't match what we expect. Element:" . print_r($element[$key], TRUE));
+          }
+          elseif (array_key_exists('#default_value', $element[$key])) {
+            $this->assertEquals($value, $element[$key]['#default_value'], $message_prefix . ": $field_name [$element_key] [$key][#default_value] doesn't match what we expect. Element:" . print_r($element[$key], TRUE));
+          }
+          else {
+            print "\n$field_name [$element_key] [$key]: " . print_r(array_keys($element[$key]), TRUE);
+          }
+            */
+        }
+      }
     }
   }
 
@@ -405,6 +470,28 @@ trait ChadoFieldTestTrait {
     ]);
     $fieldConfig
       ->save();
+
+    // WIDGET.
+    $display_options = [
+      'type' => $values['widget_id'],
+      'region' => 'content',
+      'settings' => [],
+    ];
+    if (array_key_exists($values['bundle_name'], $this->entityFormDisplay)) {
+      $display = $this->entityFormDisplay[$values['bundle_name']];
+    } else {
+      $display = EntityFormDisplay::create([
+        'targetEntityType' => $fieldConfig->getTargetEntityTypeId(),
+        'bundle' => $values['bundle_name'],
+        'mode' => 'default',
+        'status' => TRUE,
+      ]);
+      $this->entityFormDisplay[$values['bundle_name']] = $display;
+    }
+    $display->setComponent($values['fieldStorage']->getName(), $display_options);
+    $display->save();
+
+    // FORMATTER.
     $display_options = [
       'type' => $values['formatter_id'],
       'label' => 'hidden',
