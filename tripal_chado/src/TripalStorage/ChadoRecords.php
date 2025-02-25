@@ -192,7 +192,7 @@ class ChadoRecords  {
         // for each field/property that uses the value.
         'field_columns' => [],
 
-        // Conditinos for this table when performing a query.
+        // Conditions for this table when performing a query.
         'conditions' => [],
 
         // Joins that should be made with this table. The keys in this
@@ -226,6 +226,10 @@ class ChadoRecords  {
         // get set when a query is successful for the table and values have
         // been set.
         'has_values' => FALSE,
+
+        // A boolean to indicate that the conditions should be wrapped in
+        // an OR condition group
+        'or_conditions' => FALSE,
       ];
     }
     return TRUE;
@@ -369,11 +373,13 @@ class ChadoRecords  {
    *   - column_alias: the alias used for the column (set via the setField()
    *     function.
    *   - value: a value for the column to use as the condition.
+   * @param bool $is_or_condition
+   *   Indicates that multiple conditions are wrapped inside an OR condition group
    *
    * @throws \Exception
    *   If the any required fields are missing an error is thrown.
    */
-  public function addCondition(array $elements) {
+  public function addCondition(array $elements, bool $is_or_condition=FALSE) {
 
     // Initialize the table. If the function returns FALSE
     // then the caller is trying to re-initialize the base table so just quit.
@@ -396,13 +402,16 @@ class ChadoRecords  {
 
     // Add the condition.
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['conditions'][$column_alias] = ['value' => $value, 'operation' => $operation];
+    if ($is_or_condition) {
+      $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['or_conditions'] = TRUE;
+    }
   }
 
   /**
    * Sets the value for a condition that has been added.
    *
    * A condition is used when querying to limit the set of records returned.
-   * A condition sould not be added if the field for the same foe;d has not
+   * A condition should not be added if the field for the same field has not
    * been added first.
    *
    * @param string $base_table
@@ -1055,7 +1064,7 @@ class ChadoRecords  {
    * @param string $column_alias
    *   The alias for the column.
    * @param mixed $value
-   *   The value t oset for the field.
+   *   The value to set for the field.
    *
    * @throws \Exception
    *   If the base_table, table_alias or delta don't exist then an error is
@@ -1972,12 +1981,24 @@ class ChadoRecords  {
         }
       }
 
+      // Check if conditions are wrapped inside "OR"
+      if ($record['or_conditions'] ?? FALSE) {
+        $conditon_group = $select->orConditionGroup();
+      }
+      else {
+        $conditon_group = $select->andConditionGroup();
+      }
       // Add the select condition
+      $count = 0;
       foreach ($record['conditions'] as $column_alias => $value) {
         if (!empty($value['value'])) {
           $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
-          $select->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
+          $conditon_group->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
+          $count++;
         }
+      }
+      if ($count) {
+        $select->condition($conditon_group);
       }
 
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");

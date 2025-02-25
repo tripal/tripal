@@ -954,7 +954,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ];
     $this->records->addColumn($elements, TRUE);
 
-    $this->records->addCondition($elements);
+    // TRUE option wraps conditions in an OR condition group
+    $this->records->addCondition($elements, TRUE);
   }
 
   /**
