@@ -209,7 +209,7 @@ trait ChadoFieldTestTrait {
       $widget_form_element = $form[$field_name]['widget'];
 
       // Check that the default is set properly after create.
-      // @todo finish this.
+      /** @todo finish this...
       foreach (\Drupal\Core\Render\Element::children($widget_form_element) as $element_key) {
         $element = $widget_form_element[$element_key];
         $expected_values = $expected_defaults[$element_key];
@@ -227,9 +227,9 @@ trait ChadoFieldTestTrait {
           else {
             print "\n$field_name [$element_key] [$key]: " . print_r(array_keys($element[$key]), TRUE);
           }
-            */
         }
       }
+        */
     }
   }
 
@@ -290,6 +290,8 @@ trait ChadoFieldTestTrait {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
+    $this->setUpCurrentUser(['uid' => 1]);
+
     // Ensure we install the schema/modules we need.
     $this->prepareEnvironment(['TripalTerm', 'TripalEntity', 'ChadoField']);
     // -- we need the chado term mapping for our properties.
@@ -307,8 +309,8 @@ trait ChadoFieldTestTrait {
       ['id' => 'html_time', 'pattern' => 'H:i:s'],
     ];
     foreach ($formats as $values) {
-      $short = new DateFormat($values, 'date_format');
-      $short->save();
+      DateFormat::create($values)
+        ->save();
     }
 
     // If information about the environment to be setup was provided, then we
