@@ -677,6 +677,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $storage_plugin_settings = $definition->getSettings()['storage_plugin_settings'];
 
       foreach ($deltas as $delta => $keys) {
+        $n_store_link = 0;
         foreach ($keys as $key => $info) {
 
           // Ensure we have a value to work with.
@@ -759,7 +760,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               $this->handleStorePkey($context, $prop_value);
               break;
             case 'store_link':
-              $this->handleStoreLink($context, $prop_value);
+              $n_store_link++;
+              $this->handleStoreLink($context, $prop_value, $n_store_link);
               break;
             case 'store':
               $this->handleStore($context, $prop_value);
@@ -920,8 +922,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
    *   the value is not set. This method is expected to check if the value is empty or not.
+   * @param int $link_count
+   *   Indicates how many store_link properties have been handled.
+   *   If more than one (e.g. relationship field), we will add an OR condtion group.
    */
-  protected function handleStoreLink(array $context, StoragePropertyValue $prop_value) {
+  protected function handleStoreLink(array $context, StoragePropertyValue $prop_value, int $link_count) {
 
     $base_table = $context['base_table'];
     $value_col_info = $this->getPathValueColumn($context['path_array']);
@@ -954,8 +959,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ];
     $this->records->addColumn($elements, TRUE);
 
-    // TRUE option wraps conditions in an OR condition group
-    $this->records->addCondition($elements, TRUE);
+    // When second parameter is TRUE, conditions will be wrapped in an OR condition group
+    $this->records->addCondition($elements, ($link_count > 1));
   }
 
   /**
