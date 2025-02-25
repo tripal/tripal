@@ -100,7 +100,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $linker_object_col = $storage_settings['object_column'] ?? NULL;
     if (!$linker_subject_col || !$linker_object_col) {
       // When this field is added through the UI, these will not have been set yet, so save the settings
-      list($linker_subject_col, $linker_object_col) = self::getRelationshipColumns($chado, $base_table, $linker_table);
+      [$linker_subject_col, $linker_object_col] = self::getRelationshipColumns($chado, $base_table, $linker_table);
       $storage_settings['subject_column'] = $linker_subject_col;
       $storage_settings['object_column'] = $linker_object_col;
       $field_definition->setSetting('storage_plugin_settings', $storage_settings);
@@ -249,7 +249,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
         if ($chado->schema()->tableExists($relationship_table)) {
 
           // Lookup actual names of subject_id and object_id columns
-          list($subject_column, $object_column) = self::getRelationshipColumns($chado, $base_table, $relationship_table);
+          [$subject_column, $object_column] = self::getRelationshipColumns($chado, $base_table, $relationship_table);
           if ($subject_column and $object_column) {
 
             $field_list[] = [
