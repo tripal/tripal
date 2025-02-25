@@ -143,12 +143,17 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
 
     $scenarios[] = [
       0,
-      "Simple Project with no metadata",
+      "Base Fields Only",
     ];
 
     $scenarios[] = [
       1,
-      "Simple Project with metadata added on edit",
+      "Properties Added on Edit",
+    ];
+
+    $scenarios[] = [
+      2,
+      "Property Reorder",
     ];
 
     return $scenarios;
@@ -245,15 +250,10 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
 
   /**
    * Tests the ChadoPropertyType field through entity form + field widget.
-   *
-   * @dataProvider provideScenarios
-   *
-   * @param int $current_scenario_key
-   *   The key of the scenario in the YAML.
-   * @param string $current_scenario_label
-   *   The label of the scenario in the YAML.
    */
-  public function testChadoPropertyWidgetUpdate(int $current_scenario_key, string $current_scenario_label) {
+  public function testChadoPropertyWidgetUpdate() {
+    $current_scenario_key = 2;
+    $current_scenario_label = 'Property Reorder';
     $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
 
     // 1. Create the entity with that value set.

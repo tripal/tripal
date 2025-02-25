@@ -76,7 +76,7 @@ system-under-test:
           base_table: project
           prop_table: projectprop
 scenarios:
-  - label: "Simple Project with no metadata"
+  - label: "Base Fields Only"
     description: "Create a page without setting any properties."
     create:
       user_input:
@@ -168,7 +168,7 @@ scenarios:
           value: ''
           rank: 0
           type_id: 0
-  - label: "Simple Project with metadata added on edit"
+  - label: "Properties Added on Edit"
     description: "Create a page without setting any properties and then when we update it we will set 2 properties for each property field."
     create:
       user_input:
@@ -290,5 +290,153 @@ scenarios:
           prop_id: 4
           linker_id: 1
           value: 'Pullman, Washington'
+          rank: 1
+          type_id: 159
+  - label: "Property Reorder"
+    description: "Create a page with 2 properties for each property field then change the order of the first field properties on update."
+    create:
+      user_input:
+        project_name:
+        - record_id: 0
+          value: "Project 3"
+        project_description:
+        - record_id: 0
+          value: "Some useless description."
+        project_type:
+        - record_id: 0
+          type_id: 165
+          term_name: ''
+          id_space: ''
+          accession: ''
+        project_prop1:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: 'prop1 A'
+          rank: 0
+          type_id: 181
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: 'prop1 B'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: 'prop2 A'
+          rank: 0
+          type_id: 159
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: 'prop2 B'
+          rank: 1
+          type_id: 159
+      expected:
+        project_name:
+        - record_id: 1
+          value: "Project 3"
+        project_description:
+        - record_id: 1
+          value: "Some useless description."
+        project_type:
+        - record_id: 1
+          type_id: 165
+          term_name: Project
+          id_space: NCIT
+          accession: C47885
+        project_prop1:
+        - record_id: 1
+          prop_id: 1
+          linker_id: 1
+          value: 'prop1 A'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 2
+          linker_id: 1
+          value: 'prop1 B'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 3
+          linker_id: 1
+          value: 'prop2 A'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 4
+          linker_id: 1
+          value: 'prop2 B'
+          rank: 1
+          type_id: 159
+    edit:
+      user_input:
+        project_prop1:
+        - record_id: 1
+          prop_id: 2
+          linker_id: 1
+          value: 'prop1 B'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 1
+          linker_id: 1
+          value: 'prop1 A'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 3
+          linker_id: 1
+          value: 'prop2 A'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 4
+          linker_id: 1
+          value: 'prop2 B'
+          rank: 1
+          type_id: 159
+      expected:
+        project_name:
+        - record_id: 1
+          value: "Project 3"
+        project_description:
+        - record_id: 1
+          value: "Some useless description."
+        project_type:
+        - record_id: 1
+          type_id: 165
+          term_name: Project
+          id_space: NCIT
+          accession: C47885
+        project_prop1:
+        - record_id: 1
+          prop_id: 5
+          linker_id: 1
+          value: 'prop1 B'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 6
+          linker_id: 1
+          value: 'prop1 A'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 7
+          linker_id: 1
+          value: 'prop2 A'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 8
+          linker_id: 1
+          value: 'prop2 B'
           rank: 1
           type_id: 159
