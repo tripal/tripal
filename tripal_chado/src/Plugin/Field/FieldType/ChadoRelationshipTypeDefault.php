@@ -156,8 +156,6 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_subject_col,
-      'delete_if_empty' => TRUE,
-      'empty_value' => 0,
       'as' => 'subject_id',
     ]);
 
@@ -166,8 +164,6 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_object_col,
-      'delete_if_empty' => TRUE,
-      'empty_value' => 0,
       'as' => 'object_id',
     ]);
 
@@ -186,7 +182,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
       'as' => 'object_name',
     ]);
 
-    // The type of relationship
+    // The type of relationship. This is used as the delete if empty trigger.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $linker_type_term, [
       'action' => 'store',
       'drupal_store' => FALSE,
