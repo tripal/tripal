@@ -44,7 +44,6 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
 
     // Get the default values.
     $item_vals = $items[$delta]->getValue();
-#dpm($item_vals, "CPWF3 item_vals");//@@@
     $record_id = $item_vals['record_id'] ?? 0;
     $type_id = $item_vals['type_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
@@ -106,10 +105,11 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     $element['term'] = [
       '#type' => 'textfield',
       '#required' => FALSE,
-#      '#description' => $this->t('Enter a vocabulary term name. A set of matching'
-#          . ' candidates will be provided to choose from. You may find the multiple matching terms'
-#          . ' from different vocabularies. The full accession for each term is provided'
-#          . ' to help choose. Only the top 10 best matches are shown at a time.'),
+// Removing this for a more compact form
+//      '#description' => $this->t('Enter a vocabulary term name. A set of matching'
+//          . ' candidates will be provided to choose from. You may find the multiple matching terms'
+//          . ' from different vocabularies. The full accession for each term is provided'
+//          . ' to help choose. Only the top 10 best matches are shown at a time.'),
       '#default_value' => $term_autocomplete_default,
       '#disabled' => FALSE,
       '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
@@ -121,7 +121,8 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     $element['related_record'] = [
       '#type' => 'textfield',
       '#required' => FALSE,
-#      '#description' => $this->t('Select the record that is related to the current record.'),
+// Removing this for a more compact form
+//      '#description' => $this->t('Select the record that is related to the current record.'),
       '#default_value' => $related_default,
       '#disabled' => FALSE,
       '#autocomplete_route_name' => 'tripal_chado.generic_autocomplete',
@@ -201,20 +202,11 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     $linker_key = 'linker_id';
     $first_delta = array_key_first($values);
-dpm($values, "CPW01A Widget massage values in");//@@@
     $field_name = $values[$first_delta]['field_name'];
-
-
-
-
 
     // Convert the widget fields into an updated $values array
     // with the items expected by the field type
     $this->preMassageFormValues($values);
-dpm($values, "CPW01B Widget massage values after first processing");//@@@
-
-
-
 
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
@@ -222,7 +214,6 @@ dpm($values, "CPW01B Widget massage values after first processing");//@@@
     $retained_records = [];
     foreach ($values as $delta => $value) {
       if ($value[$linker_key]) {
-dpm("CPW02A save retained record at delta $delta");//@@@
         $retained_records[$delta] = $value[$linker_key];
       }
       if ((($value['subject_id'] == 0) and ($value['object_id'] == 0)) or ($value['type_id'] == 0)) {
@@ -232,7 +223,6 @@ dpm("CPW02A save retained record at delta $delta");//@@@
           // to have the linker record be deleted there. To do
           // this, we need to have the correct primitive type for
           // this field, so change from empty string to zero.
-dpm("CPW02B set to zero at delta $delta");//@@@
           $values[$delta]['subject_id'] = 0;
           $values[$delta]['object_id'] = 0;
           $values[$delta]['type_id'] = 0;
@@ -240,15 +230,10 @@ dpm("CPW02B set to zero at delta $delta");//@@@
         else {
           // If there is no record_id, then it is the empty
           // field at the end of the list, and can be ignored.
-dpm("CPW02C remove at delta $delta");//@@@
           unset($values[$delta]);
         }
       }
     }
-dpm($retained_records, "CPW03A retained records");//@@@
-dpm($values, "CPW03B values");//@@@
-
-
 
     // If there were any values in the initial values that are not
     // present in the current form state, then an existing record
@@ -258,7 +243,6 @@ dpm($values, "CPW03B values");//@@@
     $next_delta = $values ? array_key_last($values) + 1 : 0;
     $storage_values = $form_state->getStorage();
     $initial_values = $storage_values['initial_values'][$field_name];
-dpm($initial_values, "CPW04 initial_values. next_delta=$next_delta");//@@@
     foreach ($initial_values as $initial_value) {
       // For initial values, the key is always 'linker_id'
       $linker_id = $initial_value['linker_id'] ?? 0;
@@ -269,7 +253,6 @@ dpm($initial_values, "CPW04 initial_values. next_delta=$next_delta");//@@@
           // so that chado storage knows to remove the chado record.
           $values[$next_delta]['linker_id'] = $linker_id;
           $this->markForDeletion($values, $next_delta, $initial_reverse, $initial_value['related_record_id']);
-dpm($values[$next_delta], "CPW05 adding back value at $next_delta");//@@@
           $next_delta++;
         }
         else {
@@ -284,7 +267,6 @@ dpm($values[$next_delta], "CPW05 adding back value at $next_delta");//@@@
             // Move the new info from the form to the end and remove linker_id so it will be inserted as new
             $values[$next_delta] = $values[$delta];
             $values[$next_delta]['linker_id'] = 0;
-dpm("CPW06 Mark edited delta=$delta for deletion and add $next_delta for insertion");//@@@
             $next_delta++;
             // mark the current record for deletion in chado storage
             $this->markForDeletion($values, $delta, $initial_reverse, $initial_value['related_record_id']);
@@ -293,8 +275,6 @@ dpm("CPW06 Mark edited delta=$delta for deletion and add $next_delta for inserti
       }
     }
 
-
-
     // Reset the weights
     $i = 0;
     foreach ($values as $delta => $value) {
@@ -302,9 +282,6 @@ dpm("CPW06 Mark edited delta=$delta for deletion and add $next_delta for inserti
       $i++;
     }
 
-
-
-dpm($values, "CPW09 Widget massage values out");//@@@
     return $values;
   }
 
