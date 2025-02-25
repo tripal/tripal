@@ -9,6 +9,8 @@ tripal.settings:
           type: integer
         allowed_title_tags:
           type: string
+        default_cache_backend_field_values:
+          type: boolean
     files:
       type: config_object
       mapping:
