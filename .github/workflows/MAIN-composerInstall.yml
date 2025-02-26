@@ -1,4 +1,4 @@
-name: PHPUnit
+name: Composer Install
 on:
   workflow_dispatch:
   push:
@@ -12,7 +12,7 @@ on:
     - cron: '0 2 * * *'
 
 jobs:
-  run-tests:
+  test:
     runs-on: ubuntu-latest
 
     strategy:
@@ -34,4 +34,4 @@ jobs:
       # Now download Tripal using composer and install it in the docker.
       - name: Install Tripal via docker
         run: |
-          docker exec --workdir=/var/www/drupal drupaldocker composer require tripal/tripal:4.x-dev --yes
+          docker exec --workdir=/var/www/drupal drupaldocker composer require --dev tripal/tripal:4.x-dev --no-interaction
