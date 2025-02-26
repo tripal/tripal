@@ -36,7 +36,7 @@ jobs:
         env:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
         run: |
-          && if [ "$BRANCH_NAME" = "4.x" ]; then
+          if [ "$BRANCH_NAME" = "4.x" ]; then
             docker exec --workdir=/var/www/drupal drupaldocker composer require --dev tripal/tripal:4.x-dev --no-interaction
           else
             docker exec --workdir=/var/www/drupal drupaldocker composer require --dev "tripal/tripal:$BRANCH_NAME" --no-interaction
