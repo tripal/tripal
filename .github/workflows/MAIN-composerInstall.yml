@@ -37,8 +37,8 @@ jobs:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
         run: |
           && if [ "$BRANCH_NAME" = "4.x" ]; then
-            docker exec --workdir=/var/www/drupal drupaldocker composer require --dev tripal/tripal:4.x-dev --no-interaction;
+            docker exec --workdir=/var/www/drupal drupaldocker composer require --dev tripal/tripal:4.x-dev --no-interaction
           else
-            docker exec --workdir=/var/www/drupal drupaldocker composer require --dev "tripal/tripal:$BRANCH_NAME" --no-interaction;
-          fi \
-          && docker exec drupaldocker drush pm-install tripal tripal_biodb tripal_chado tripal_layout --yes
+            docker exec --workdir=/var/www/drupal drupaldocker composer require --dev "tripal/tripal:$BRANCH_NAME" --no-interaction
+          fi
+          docker exec drupaldocker drush pm-install tripal tripal_biodb tripal_chado tripal_layout --yes
