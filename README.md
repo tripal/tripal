@@ -41,10 +41,10 @@ This project uses Code Climate to determine the quality of our codebase and the 
 
 ### Compatibility of past Tripal versions
 
+**NOTE: We currently recommend running the most recent development version when developing your production sites.**
+
 | Tripal     | Drupal              | PHP         | PostgreSQL |
 |------------|---------------------|-------------|------------|
-| 4.x-dev    | >=10.3 <11.0        | >=8.1 <=8.3 | >=13 <=17  |
-| 4.x-dev    | >=11.0 <=11.1.x-dev | 8.3         | >=16 <=17  |
 | 4.0-alpha1 | >=9.2 <=10.0        | >=8.0 <=8.1 | 13         |
 | 4.0-alpha2 | >=10.0 <= 10.1      | >=8.1 <=8.2 | 13         |
 
@@ -52,9 +52,9 @@ This project uses Code Climate to determine the quality of our codebase and the 
 
 ### Required for Tripal 4.alpha3 Release
 
-- Display suite / page work (partially complete)
+- Display suite / page work (partially complete; needs default layouts for existing content types + auto application).
 - ✅ Importers: Publications
-- Search (ElasticSearch + Views)
+- Search via Views (partially complete; waiting on default views for existing content types)
 
 ## How to get involved!
 
