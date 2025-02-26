@@ -41,4 +41,4 @@ jobs:
           else
             docker exec --workdir=/var/www/drupal drupaldocker composer require --dev "tripal/tripal:dev-$BRANCH_NAME" --no-interaction --with-all-dependencies
           fi
-          docker exec drupaldocker drush pm-install tripal tripal_biodb tripal_chado tripal_layout --yes
+          docker exec drupaldocker /var/www/drupal/vendor/drush/drush/drush pm-install tripal tripal_biodb tripal_chado tripal_layout --yes
