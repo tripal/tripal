@@ -33,5 +33,12 @@ jobs:
           docker run --publish=80:80 --name=drupaldocker -tid $DOCKER_IMAGE
       # Now download Tripal using composer and install it in the docker.
       - name: Install Tripal via docker
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
         run: |
-          docker exec --workdir=/var/www/drupal drupaldocker composer require --dev tripal/tripal:4.x-dev --no-interaction
+          && if [ "$BRANCH_NAME" = "4.x" ]; then
+            docker exec --workdir=/var/www/drupal drupaldocker composer require --dev tripal/tripal:4.x-dev --no-interaction;
+          else
+            docker exec --workdir=/var/www/drupal drupaldocker composer require --dev "tripal/tripal:$BRANCH_NAME" --no-interaction;
+          fi \
+          && docker exec drupaldocker drush pm-install tripal tripal_biodb tripal_chado tripal_layout --yes
