@@ -1,12 +1,14 @@
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
-# Tripal 4 (Drupal 10)
+# Tripal 4 (Drupal 11)
 
 ## Compatibility
 
-![Target Drupal Version 10.4.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-10.4.x-informational)
+![Target Drupal Version 11.1.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-11.1.x-informational)
 
 Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) - ![PostgreSQL 17](https://img.shields.io/badge/PostreSQL-17-success)
+
+The following table proves the compatibility for the current development version of Tripal.
 
 | Drupal      | 10.3.x              | 10.4.x              | 10.5.x              | 11.0.x              | 11.1.x              |
 |-------------|---------------------|---------------------|---------------------|---------------------|---------------------|
@@ -37,17 +39,26 @@ This project uses Code Climate to determine the quality of our codebase and the 
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/994fcd39a0eef9cff742/maintainability)](https://codeclimate.com/github/tripal/tripal/maintainability)
 
+### Compatibility of past Tripal versions
+
+**NOTE: We currently recommend running the most recent development version when developing your production sites.**
+
+| Tripal     | Drupal              | PHP         | PostgreSQL |
+|------------|---------------------|-------------|------------|
+| 4.0-alpha1 | >=9.2 <=10.0        | >=8.0 <=8.1 | 13         |
+| 4.0-alpha2 | >=10.0 <= 10.1      | >=8.1 <=8.2 | 13         |
+
 ## Current Timeline
 
 ### Required for Tripal 4.alpha3 Release
 
-- Display suite / page work
-- Importers: Publications
-- Search (ElasticSearch + Views)
+- Display suite / page work (partially complete; needs default layouts for existing content types + auto application).
+- ✅ Importers: Publications
+- Search via Views (partially complete; waiting on default views for existing content types)
 
 ## How to get involved!
 
-This upgrade to Drupal 10 is a community effort. As such, we NEED YOUR HELP!
+This upgrade to Drupal 11 is a community effort. As such, we NEED YOUR HELP!
 
   - To get involved, please join [our Tripal Slack](http://tripal.info/join/slack) and comment in the #core-dev channel.
     - Alternatively, feel free to contact Lacey-Anne Sanderson through Slack direct message.
