@@ -280,7 +280,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         ->execute();
       $bundle_ids = array_keys($bundles);
       if (!$bundle_ids) {
-        return;
+        continue;
       }
 
       // For each of these bundles, get its defining DB and
