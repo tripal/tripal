@@ -948,9 +948,17 @@ function tripal_chado_update_10414() {
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['project_bundle_type']);
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['pub_bundle_type']);
     addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.general_chado.yml', ['study_bundle_type']);
-    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['array_design_bundle_type']);
-    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['assay_bundle_type']);
-    addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['biomaterial_bundle_type']);
+    // For the next three, first check that the bundle from the expression type collection has been imported
+    $entity_type_storage = \Drupal::entityTypeManager()->getStorage('tripal_entity_type');
+    if ($entity_type_storage->loadByProperties(['id' => 'array_design'])) {
+      addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['array_design_bundle_type']);
+    }
+    if ($entity_type_storage->loadByProperties(['id' => 'assay'])) {
+      addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['assay_bundle_type']);
+    }
+    if ($entity_type_storage->loadByProperties(['id' => 'biomaterial'])) {
+      addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['biomaterial_bundle_type']);
+    }
     $messenger->addMessage(t('Successfully completed update'));
   }
   catch (\Exception $e) {
