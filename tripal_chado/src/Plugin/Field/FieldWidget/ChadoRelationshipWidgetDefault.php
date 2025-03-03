@@ -175,7 +175,6 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
 
     // Save some initial values to allow later handling of the "Remove" button
     $this->saveRelatedInitialValues($delta, $field_name, $linker_id, $type_id, $related_id, $reverse_default, $form_state);
-    // Additional initial values specific to this field
 
     return $element;
   }
@@ -201,17 +200,18 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
    * @param FormStateInterface &$form_state
    *   The current form state.
    */
-  protected function saveRelatedInitialValues(int $delta, string $field_name, int $linker_id, int $type_id, int $related_record_id, int $reverse, FormStateInterface &$form_state) {
-    $storage = $form_state->getStorage();
+  protected function saveRelatedInitialValues(int $delta, string $field_name, int $linker_id, int $type_id,
+                                              int $related_record_id, int $reverse, FormStateInterface &$form_state) {
+    $storage_values = $form_state->getStorage();
     // We want the initial values, so never update them once saved.
-    if (!($storage['initial_values'][$field_name][$delta] ?? FALSE)) {
-      $storage['initial_values'][$field_name][$delta] = [
+    if (!($storage_values['initial_values'][$field_name][$delta] ?? FALSE)) {
+      $storage_values['initial_values'][$field_name][$delta] = [
         'linker_id' => $linker_id,
         'type_id' => $type_id,
         'related_record_id' => $related_record_id,
         'reverse' => $reverse,
       ];
-      $form_state->setStorage($storage);
+      $form_state->setStorage($storage_values);
     }
   }
 
@@ -262,7 +262,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     $next_delta = $values ? array_key_last($values) + 1 : 0;
     $storage_values = $form_state->getStorage();
     $initial_values = $storage_values['initial_values'][$field_name];
-    foreach ($initial_values as $initial_value) {
+    foreach ($initial_values as $initial_key => $initial_value) {
       // For initial values, the key is always 'linker_id'
       $linker_id = $initial_value['linker_id'] ?? 0;
       if ($linker_id) {
@@ -293,6 +293,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
         }
       }
     }
+    $form_state->setStorage($storage_values);
 
     // Reset the weights
     $i = 0;
@@ -327,13 +328,14 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       $values[$delta]['subject_id'] = 0;
       $values[$delta]['object_id'] = $related_record_id;
     }
-    // This field is configured as delete_if_empty, and will be the one that triggers chado deletion
+    // This field is configured as delete_if_empty, and this field will be the
+    // one that triggers chado deletion.
     $values[$delta]['type_id'] = 0;
   }
 
   /**
-   * Convert the values from the form fields into an updated
-   * array containing the items expected by the field type.
+   * Convert the values from the widget form fields into an updated
+   * array containing the items that are expected by the field type.
    *
    * @param array &$values
    *   The values array passed to massageFormValues
@@ -346,24 +348,24 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       $new_value['object_id'] = 0;
       $new_value['type_id'] = 0;
 
-      // Use autocomplete to replace term with cvterm_id value
+      // Use autocomplete to replace the term with its cvterm_id value
       $cvterm_id = 0;
       if ($value['term']) {
         $cv_autocomplete = new ChadoCVTermAutocompleteController();
         $cvterm_id = $cv_autocomplete->getCVtermId($value['term']);
 
-        // Use the autocomplete to convert the related record to its ID value
+        // Use the autocomplete to convert the related record to its numeric ID value
         $record_id = $value['record_id'];
         $related_record_id = 0;
         if ($value['related_record']) {
           // If you add a term but no record, it will just be ignored, thus
-          // we don't add the term until here when we know there is a record.
+          // we don't add the term until this point, when we know there is a record.
           $new_value['type_id'] = $cvterm_id;
           $generic_autocomplete = new ChadoGenericAutocompleteController();
           $related_record_id = $generic_autocomplete->getPkeyId($value['related_record']);
 
-          // We need to know the orientation to put the correct
-          // values in the subject and object columns
+          // We need to know the orientation to put the appropriate
+          // values in the subject and object columns.
           if ($value['reverse'] == 1) {
             $new_value['subject_id'] = $related_record_id;
             $new_value['object_id'] = $record_id;
@@ -372,10 +374,10 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
             $new_value['subject_id'] = $record_id;
             $new_value['object_id'] = $related_record_id;
           }
-
         }
       }
-      // Remove form items that are not needed for the field
+
+      // Remove widget form items that are not needed for the field
       unset($new_value['term']);
       unset($new_value['related_record']);
       unset($new_value['reverse']);
@@ -431,7 +433,7 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       $record_id = $values[$element_parents[0]][$element_parents[1]]['record_id'] ?? 0;
       if ($record_id and ($record_id == $related_record_id)) {
         $form_state->setErrorByName(implode('][', $element_parents),
-            t('The specified record cannot be the same as this entity'));
+            t('The specified related record cannot be the same as this entity'));
       }
 
       // We will not permit having a related record without also specifying a term.
