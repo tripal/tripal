@@ -1186,6 +1186,34 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
+   * Provides a final summary message for publish
+   *
+   * @param bool $success
+   *   TRUE if no errors encountered
+   * @param array $stats
+   *   Various statistics to display
+   * @return void
+   */
+  protected function publish_summarize(bool $success, array $stats): void {
+    $message = "Publish " . ($success?'completed.':'encountered errors.');
+    $message .= " Published " . number_format($stats['total_new_entities']) . " new entities";
+    // This summary value is displayed only when republish is specified
+    if ($this->republish) {
+      $message .= ", checked " . number_format($stats['total_existing_entities']) . " existing entities";
+    }
+    // Titles will be updated only if the entity title format was changed
+    if ($total_updated_titles) {
+      $message .= ", updated titles for " . number_format($stats['total_updated_titles']) . " entities";
+    }
+    $message .= ", added " . number_format($stats['total_new_field_items']) . " new field values";
+    if ($this->republish) {
+      $message .= ", and republished ". number_format($stats['total_republished_field_items']) . " existing field values";
+    }
+    $message .= '.';
+    $this->logger->notice($message);
+  }
+
+  /**
    * Publishes Chado content to Tripal entities.
    *
    * @param array $options
@@ -1333,22 +1361,13 @@ class ChadoPublish extends TripalBackendPublishBase {
     } // end of the batch loop
 
     // Present a final summary message, cumulative for all batches
-    $message = "Publish " . ($success?'completed.':'encountered errors.');
-    $message .= " Published " . number_format($total_new_entities) . " new entities";
-    // This summary value is displayed only when republish is specified
-    if ($this->republish) {
-      $message .= ", checked " . number_format($total_existing_entities) . " existing entities";
-    }
-    // Titles will be updated only if the entity title format was changed
-    if ($total_updated_titles) {
-      $message .= ", updated titles for " . number_format($total_updated_titles) . " entities";
-    }
-    $message .= ", added " . number_format($total_new_field_items) . " new field values";
-    if ($this->republish) {
-      $message .= ", and republished ". number_format($total_republished_field_items) . " existing field values";
-    }
-    $message .= '.';
-    $this->logger->notice($message);
+    $this->publish_summarize($success, [
+      'total_new_entities' => $total_new_entities,
+      'total_existing_entities' => $total_existing_entities,
+      'total_updated_titles' => $total_updated_titles,
+      'total_new_field_items' => $total_new_field_items,
+      'total_republished_field_items' => $total_republished_field_items,
+    ]);
 
     // This return value is currently only used for unit tests, so is limited to 100 records.
     return $this->published_or_updated_entities;
