@@ -1119,9 +1119,9 @@ class ChadoPublish extends TripalBackendPublishBase {
    *         data, rather just skip over them.
    *
    * @return bool
-   *   TRUE if successful, FALSE if error occurred
+   *   TRUE if successful, FALSE if an error occurred
    */
-  public function publish_init(array $options) : bool {
+  public function publish_init(array $options): bool {
     $this->logger->notice('Initializing publish');
 
     // Required options
@@ -1149,7 +1149,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       return FALSE;
     }
 
-    // Current user will be the author of newly published entitites
+    // The current user will be the author of any newly published entitites
     $this->uid = \Drupal::currentUser()->id();
 
     // Initialize class variables that may persist between consecutive jobs
@@ -1202,7 +1202,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $message .= ", checked " . number_format($stats['total_existing_entities']) . " existing entities";
     }
     // Titles will be updated only if the entity title format was changed
-    if ($total_updated_titles) {
+    if ($stats['total_updated_titles']) {
       $message .= ", updated titles for " . number_format($stats['total_updated_titles']) . " entities";
     }
     $message .= ", added " . number_format($stats['total_new_field_items']) . " new field values";
@@ -1237,10 +1237,9 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   keyed by their titles, and the value being the entity_id.
    *
    */
-  public function publish($options) {
+  public function publish(array $options): array {
     // Initialization for publish
-    $success = $this->publish_init($options);
-    if (!$success) {
+    if (!$this->publish_init($options)) {
       return [];
     }
 
