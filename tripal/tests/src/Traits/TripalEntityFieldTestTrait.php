@@ -217,6 +217,9 @@ trait TripalEntityFieldTestTrait {
       $term_values['term'] = [];
       $term_values['term']['accession'] = $values['termAccession'];
     }
+    if (!array_key_exists('settings', $values)) {
+      $values['settings'] = [];
+    }
     // @todo allow this to be set via variables.
     $term = $this->createTripalTerm($term_values, 'tripal_default_id_space', 'tripal_default_vocabulary');
 
