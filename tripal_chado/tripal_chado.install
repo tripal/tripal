@@ -956,8 +956,8 @@ function tripal_chado_update_10414() {
     if ($entity_type_storage->loadByProperties(['id' => 'assay'])) {
       addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['assay_bundle_type']);
     }
-    if ($entity_type_storage->loadByProperties(['id' => 'biomaterial'])) {
-      addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['biomaterial_bundle_type']);
+    if ($entity_type_storage->loadByProperties(['id' => 'biosample'])) {
+      addFieldFromYaml($yaml_base . '/tripal.tripalfield_collection.expression_chado.yml', ['biosample_bundle_type']);
     }
     $messenger->addMessage(t('Successfully completed update'));
   }
