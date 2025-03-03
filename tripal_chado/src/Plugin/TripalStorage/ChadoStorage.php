@@ -11,7 +11,6 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal_chado\TripalStorage\ChadoRecords;
-use Drupal\Core\Render\Element\Token;
 
 /**
  * Chado implementation of the TripalStorageInterface.
@@ -128,6 +127,32 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   }
 
   /**
+   * {@inheritDoc}
+   */
+  public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool|null {
+
+    // First get our parent to do the generic check.
+    $is_required = parent::isDrupalStoreByFieldNameKey($field_name, $key);
+
+    // Then grab the property type and its storage properties in order to
+    // make any chado-specific decisions.
+    $property_type = $this->getPropertyType($field_name, $key);
+    if ($property_type === NULL) {
+      return NULL;
+    }
+    $storage_settings = $property_type->getStorageSettings();
+
+    // In chado, all table columns containing sequence are named 'residues'.
+    // We want to exclude sequences from drupal storage even if the default is TRUE
+    // because this field can contain a very large string, for example an entire chromosome.
+    if (array_key_exists('path', $storage_settings) and str_ends_with($storage_settings['path'], 'residues')) {
+      $is_required = FALSE;
+    }
+
+    return $is_required;
+  }
+
+  /**
    * Helper function for getStoredTypes() and getNonStoredTypes().
    *
    * @param bool $required
@@ -140,24 +165,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   protected function getStoredTypesFilter(bool $required) {
     $ret_types = [];
     foreach ($this->property_types as $field_name => $keys) {
-      $field_definition = $this->field_definitions[$field_name];
       foreach ($keys as $key => $prop_type) {
-        $storage_settings = $prop_type->getStorageSettings();
-
-        // Any field that stores a base record id, a primary key,
-        // or a foreign key link is required.
-        $is_required = FALSE;
-        if (($storage_settings['action'] == 'store_id') or
-            ($storage_settings['action'] == 'store_pkey') or
-            ($storage_settings['action'] == 'store_link')) {
-          $is_required = TRUE;
-        }
-        // For any other fields that have 'drupal_store' set,
-        // it is required too.
-        elseif ((array_key_exists('drupal_store', $storage_settings)) and
-                ($storage_settings['drupal_store'] === TRUE)) {
-          $is_required = TRUE;
-        }
+        $is_required = $this->isDrupalStoreByFieldNameKey($field_name, $key);
         if (($is_required and $required) or (!$is_required and !$required)) {
           $ret_types[$field_name][$key] = $prop_type;
         }
@@ -235,16 +244,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // constraints if we don't e.g. changing the order of records with a
       // rank.
       foreach ($base_tables as $base_table) {
+        // While iterating over all tables only once, this improves performance
+        // by only calling this once per base_table.
         $tables = $this->records->getAncillaryTables($base_table);
+
+
         foreach ($tables as $table_alias) {
           $this->records->deleteRecords($base_table, $table_alias, TRUE);
-        }
-      }
-
-      // Now insert all new values for the non-base table records.
-      foreach ($base_tables as $base_table) {
-        $tables = $this->records->getAncillaryTables($base_table);
-        foreach ($tables as $table_alias) {
           $this->records->insertRecords($base_table, $table_alias);
         }
       }

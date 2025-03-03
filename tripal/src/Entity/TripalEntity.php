@@ -4,16 +4,11 @@ namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
-use Drupal\field\Entity\FieldConfig;
-use Symfony\Component\Routing\Route;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
-use \Drupal\tripal\Services\TripalTokenParser;
 
 /**
  * Defines the Tripal Content entity.
@@ -727,14 +722,31 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Helper function: Confirm array contains all null elements.
+   *
+   * @param array $array_to_check
+   *   The array to check for null values. It is expected to be a flat array.
+   *
+   * @return bool
+   *   True IFF all elements are null; False if even one element is not null.
+   */
+  public static function allNull(array $array_to_check) : bool {
+    foreach ($array_to_check as $value) {
+      if (isset($value)) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     // Create a values array appropriate for `loadValues()`
-    list($values, $tripal_storages) = TripalEntity::getValuesArray($this);
-
+    [$values, $tripal_storages] = TripalEntity::getValuesArray($this);
     // Perform the Insert or Update of the submitted values to the
     // underlying data store.
     foreach ($values as $tsid => $tsid_values) {
@@ -745,10 +757,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $tripal_storages[$tsid]->insertValues($tsid_values);
         }
         catch (\Exception $e) {
-          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::logger('tripal')->error($e->getMessage());
           \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
               'logs for more details or contact the site administrator if you ' .
               'cannot view the logs.');
+          // We cannot safely continue after such error.
+          return;
         }
         $values[$tsid] = $tsid_values;
       }
@@ -759,12 +773,22 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $tripal_storages[$tsid]->updateValues($tsid_values);
         }
         catch (\Exception $e) {
-          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::logger('tripal')->error($e->getMessage());
           \Drupal::messenger()->addError('Cannot update this entity. See the recent ' .
               'logs for more details or contact the site administrator if you cannot ' .
               'view the logs.');
+          // We cannot safely continue after such error.
+          return;
         }
       }
+
+      // Right now the assumption that only key values will be saved is baked
+      // into ChadoStorage insert/update. That means, the non-key properties
+      // do not have a value after saving because ChadoStorage didn't bother
+      // to set them... if it did, then the following loadValues would not be
+      // needed since the values would already be set.
+      // @todo look into fixing insert/update to return all values.
+      $tripal_storages[$tsid]->loadValues($tsid_values);
     }
 
     // Set the property values that should be saved in Drupal, everything
@@ -799,27 +823,28 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $prop_values = [];
         $prop_types = [];
         foreach ($values[$tsid][$field_name][$delta] as $key => $prop_info) {
-          $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $key);
+          $storage = $tripal_storages[$tsid];
+          $prop_type = $storage->getPropertyType($field_name, $key);
+
           $prop_value = $prop_info['value'];
-          $settings = $prop_type->getStorageSettings();
-          if (array_key_exists('drupal_store', $settings) and $settings['drupal_store'] == TRUE) {
+          // Determine whether the property values are to be cached in the
+          // Drupal Entity Field tables.
+          if ($storage->isDrupalStoreByFieldNameKey($field_name, $key)) {
             $prop_values[] = $prop_value;
             $prop_types[] = $prop_type;
           }
         }
+
+        // Now that we have a list of property values to be cached, we want
+        // to ask the fielditem to load all indicated property values into
+        // the entity and the item. In this way, we can ensure they are slated
+        // for Drupal to cache to the database during the TripalEntity::save().
         if (count($prop_values) > 0) {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
-
           // Keep track of elements that have no value.
-          foreach ($prop_values as $i => $prop_value) {
-            $prop_value_value = $prop_value->getValue();
-            if (is_null($prop_value_value)) {
-              // A given delta should only be present once here.
-              if (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name])) {
-                $delta_remove[$field_name][] = $delta;
-              }
-              continue;
-            }
+          // A given delta should only be present once here.
+          if ($this->allNull($prop_values) and (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name]))) {
+            $delta_remove[$field_name][] = $delta;
           }
         }
       }
@@ -832,7 +857,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $this->get($field_name)->removeItem($delta);
         }
         catch (\Exception $e) {
-          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::logger('tripal')->error($e->getMessage());
           \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
               'logs for more details or contact the site administrator if you ' .
               'cannot view the logs.');
@@ -844,9 +869,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postLoad(EntityStorageInterface $storage, array &$entities) {
+  public static function postLoad(EntityStorageInterface $storage, array &$entities): void {
     parent::postLoad($storage, $entities);
-
 
     // If we are doing a listing of content types there is no way in Drupal 10
     // to specify which fields to load.  By default the SqlContentEntityStorage
@@ -873,7 +897,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $bundle = $entity->bundle();
 
       // Create a values array appropriate for `loadValues()`
-      list($values, $tripal_storages) = TripalEntity::getValuesArray($entity);
+      [$values, $tripal_storages] = TripalEntity::getValuesArray($entity);
 
       // Call the loadValues() function for each storage type.
       $load_success = False;

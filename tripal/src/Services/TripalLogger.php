@@ -19,9 +19,14 @@ class TripalLogger {
    */
   protected $job = NULL;
 
+  /**
+   * Global settings for $options
+   * @var array $global_options
+   */
+  protected $global_options = [];
 
   /**
-   * Intiailizes the Drupal logger.
+   * Initializes the Drupal logger.
    */
   protected function initLogger() {
     $this->logger = \Drupal::logger($this->module);
@@ -41,6 +46,40 @@ class TripalLogger {
       return TRUE;
     }
     return FALSE;
+  }
+
+  /**
+   * Returns all global options
+   *
+   * @return array
+   *   An associative array of current global options
+   */
+  public function getGlobalOptions(): array {
+    return $this->global_options;
+  }
+
+  /**
+   * Returns a single global option, or NULL if the key is not defined
+   *
+   * @param string $key
+   *   The name of the option to retrieve
+   * @return mixed
+   *   The value of the option
+   */
+  public function getGlobalOption(string $key): mixed {
+    return $this->global_options[$key] ?? NULL;
+  }
+
+  /**
+   * Sets a single global option
+   *
+   * @param string $key
+   *   The name of the option to set
+   * @param mixed $value
+   *   The value to set it to
+   */
+  public function setGlobalOption(string $key, mixed $value): void {
+    $this->global_options[$key] = $value;
   }
 
   /**
@@ -213,6 +252,8 @@ class TripalLogger {
   public function notice($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
 
+    $options = array_merge($this->global_options, $options);
+
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
@@ -250,6 +291,8 @@ class TripalLogger {
    */
   public function info($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
+
+    $options = array_merge($this->global_options, $options);
 
     $this->log2Job($message, $context);
 
@@ -296,6 +339,8 @@ class TripalLogger {
    */
   public function error($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
+
+    $options = array_merge($this->global_options, $options);
 
     $message = 'ERROR: ' . $message;
     $this->log2Job($message, $context);
@@ -346,6 +391,8 @@ class TripalLogger {
   public function warning($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
 
+    $options = array_merge($this->global_options, $options);
+
     $message = 'WARNING: ' . $message;
     $this->log2Job($message, $context);
 
@@ -394,6 +441,8 @@ class TripalLogger {
    */
   public function emergency($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
+
+    $options = array_merge($this->global_options, $options);
 
     $message = 'EMERGENCY: ' . $message;
     $this->log2Job($message, $context);
@@ -444,6 +493,8 @@ class TripalLogger {
   public function alert($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
 
+    $options = array_merge($this->global_options, $options);
+
     $message = 'ALERT: ' . $message;
     $this->log2Job($message, $context);
 
@@ -492,6 +543,8 @@ class TripalLogger {
    */
   public function critical($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
+
+    $options = array_merge($this->global_options, $options);
 
     $message = 'CRITICAL: ' . $message;
     $this->log2Job($message, $context);
@@ -544,6 +597,8 @@ class TripalLogger {
   public function debug($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
 
+    $options = array_merge($this->global_options, $options);
+
     // If we want to implement a toggle for debug messages in the
     // future, it could go here. Tripal 3 had an environment variable
     // TRIPAL_DEBUG to perform this function.
@@ -555,7 +610,7 @@ class TripalLogger {
         $function = $backtrace[$i];
         $message .= "  $i) " . $function['function'] . "\n";
       }
-      $this->log2job('DEBUG: ' . $message, $context);
+      $this->log2Job('DEBUG: ' . $message, $context);
       if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
         $message_str = $this->messageString($message, $context);
         $this->logger->debug($message_str);
@@ -606,6 +661,8 @@ class TripalLogger {
    */
   public function log($level, $message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
+
+    $options = array_merge($this->global_options, $options);
 
     $level = strtolower($level);
     if ($level != 'info' and $level != 'notice') {

@@ -1,0 +1,22 @@
+{#
+/**
+ * @file tripal_entity_type.html.twig
+ * Default theme implementation to present Tripal Entity Type (bundle) data.
+ *
+ * This template is used when viewing Tripal Entity Type pages.
+ *
+ *
+ * Available variables:
+ * - content: A list of content items. Use 'content' to print all content, or
+ * - attributes: HTML attributes for the container element.
+ *
+ * @see template_preprocess_tripal_entity()
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes.addClass('tripal_entity_type') }}>
+  {% if content %}
+    {{- content -}}
+  {% endif %}
+</div>
