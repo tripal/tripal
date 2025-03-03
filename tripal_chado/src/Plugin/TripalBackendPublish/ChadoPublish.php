@@ -1082,6 +1082,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   TRUE if successful, FALSE if error occurred
    */
   public function publish_init(array $options) : bool {
+    $this->logger->setGlobalOption('logger', FALSE);
     $this->logger->notice('Initializing publish');
 
     // Required options
