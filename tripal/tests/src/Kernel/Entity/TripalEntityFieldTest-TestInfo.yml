@@ -1,0 +1,53 @@
+system-under-test:
+  bundle:
+    label: Gemstones
+    termIdSpace: FAKE
+    termAccession: '123456'
+    id: test_gemstone
+  fields:
+  - name: common_name
+    type: tripal_string_type
+    type_class: Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem
+    widget: default_tripal_string_type_widget
+    formatter: default_tripal_string_type_formatter
+    termIdSpace: FAKE
+    termAccession: name
+    cardinality: 1
+    settings:
+      storage_plugin_id: drupal_sql_storage
+      max_length: 255
+  - name: metaphysical_props
+    type: tripal_text_type
+    type_class: Drupal\tripal\Plugin\Field\FieldType\TripalTextTypeItem
+    widget: default_tripal_text_type_widget
+    formatter: default_tripal_text_type_formatter
+    termIdSpace: META
+    termAccession: properties
+    cardinality: 1
+    settings:
+      storage_plugin_id: drupal_sql_storage
+scenarios:
+  - label: "Simple Gemstone"
+    description: "Create a page where every field has one value."
+    create:
+      user_input:
+        common_name:
+        - value: "amazonite"
+        metaphysical_props:
+        - value: "soothing, calming, healing from grief"
+      expected:
+        common_name:
+        - value: "amazonite"
+        metaphysical_props:
+        - value: "soothing, calming, healing from grief"
+    edit:
+      user_input:
+        common_name:
+        - value: "Amazonite"
+        metaphysical_props:
+        - value: "Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work."
+      expected:
+        common_name:
+        - value: "Amazonite"
+        metaphysical_props:
+        - value: "Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work."

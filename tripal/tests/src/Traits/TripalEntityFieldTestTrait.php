@@ -160,7 +160,7 @@ trait TripalEntityFieldTestTrait {
    *   A list containing first the TripalEntityType object created and then an
    *   array of FieldConfig objects keyed by the associated field name.
    */
-  public function setupFieldSystemUnderTest(array $system_under_test): array {
+  public function setupEntityFieldSystemUnderTest(array $system_under_test): array {
 
     // 1. Create the bundle.
     $bundle = $this->createTripalContentType($system_under_test['bundle']);
