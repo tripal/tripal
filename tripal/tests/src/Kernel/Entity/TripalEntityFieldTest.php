@@ -115,6 +115,6 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
 
     // 2. Load the entity we just created so we can check the values.
     $created_entity = TripalEntity::load($entity->id());
-    //$this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, $current_scenario['label'] . ' CREATE');
+    $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, '"' . $current_scenario['label'] . '" being created. ');
   }
 }

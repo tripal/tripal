@@ -99,6 +99,92 @@ trait TripalEntityFieldTestTrait {
   protected array $dataStoreValues;
 
   /**
+   * Confirms that the retrieved values match the expected ones.
+   *
+   * More specifically, it checks the following for each expected field:
+   *  1. The expected field exists in the provided entity.
+   *  2. We were able to retrieve the field values.
+   *  3. There is a record in the Drupal field table for each delta.
+   *  4. For each delta[property key]:
+   *       - the value in the entity matches what we expected.
+   *       - the value in the drupal field table matches what we expected.
+   *       - the delta[property key][value] is a StoragePropertyValue instance.
+   *       - the delta[property key][value]->value matches the expected value.
+   *  5. There are the expected number of items in the entity.
+   *  6. There are the expected number of items in the drupal field table.
+   *
+   * @param array $expected_values
+   *   A nested array of expected values following the format:
+   *    - field name (i.e. project_name):
+   *      - delta (e.g. 0):
+   *        - property key => expected value
+   * @param TripalEntity $entity
+   *   An entity whose field values we want to check against those expected.
+   * @param string $message_prefix
+   *   A short string that all assert messages will be prefixed with.
+   */
+  public function assertFieldValuesMatch(array $expected_values, TripalEntity $entity, string $message_prefix = '') {
+
+    // For each expected field...
+    foreach ($expected_values as $expected_field_name => $expected_field_delta) {
+
+      // Check that each expected field exists in the provided entity.
+      $this->assertTrue($entity->hasField($expected_field_name), $message_prefix . "Field '$expected_field_name' was not found in the provided entity.");
+
+      // Check that we were able to retrieve the field values.
+      $field_item_list = $entity->get($expected_field_name);
+      $this->assertInstanceOf(FieldItemList::class, $field_item_list, $message_prefix . "We could not retrieve the values of field '$expected_field_name' in the provided entity.");
+
+      // Retrieve the Drupal field table values for this entity to check
+      // against later.
+      $drupal_field_table = 'tripal_entity__' . $expected_field_name;
+      $query = $this->drupal_connection->select($drupal_field_table, 'drupal')
+        ->fields('drupal')
+        ->condition('entity_id', $entity->id(), "=")
+        ->execute();
+      $drupal_field_records = $query->fetchAllAssoc('delta');
+
+      // For each delta in this field...
+      foreach ($expected_field_delta as $expected_delta => $expected_delta_values) {
+
+        // Check that we were able to retrieve a specific field value.
+        $field_item = $field_item_list->get($expected_delta);
+        $this->assertInstanceOf(TripalFieldItemInterface::class, $field_item, $message_prefix . "$expected_field_name [$expected_delta] could not be retrieved.");
+
+        // Check that there is a record in the Drupal field table for this delta.
+        $this->assertArrayHasKey($expected_delta, $drupal_field_records, $message_prefix . "$expected_field_name [$expected_delta] should have a record in the Drupal field table '$drupal_field_table'.");
+        $drupal_field_record = $drupal_field_records[$expected_delta];
+
+        // For each property of the field...
+        foreach ($expected_delta_values as $expected_property_type => $expected_value) {
+
+          // Check that the property value matched what we expected.
+          $property_value = $field_item->get($expected_property_type)->getValue();
+          $this->assertEquals($expected_value, $property_value, $message_prefix . ": $expected_field_name [$expected_delta] [$expected_property_type] value did not match what we expected.");
+
+          // Check that the Drupal field table matches what we expected.
+          $drupal_column_name = $expected_field_name . '_' . $expected_property_type;
+          $this->assertEquals($expected_value, $drupal_field_record->{$drupal_column_name}, $message_prefix . ": $expected_field_name [$expected_delta] [$expected_property_type] did not match what we expected in the drupal field table ($drupal_field_table).");
+
+        }
+      }
+
+      // Check that there were the right number of field values.
+      // This ensures there were not more then expected. It's checked after the
+      // property values/delta are checked to ensure we get more tailored
+      // feedback if there are less than expected.
+      $this->assertCount(sizeof($expected_field_delta), $field_item_list, $message_prefix . ": field '$expected_field_name' did not have the expected number of values.");
+
+      // Check that there are the right number of records in the Drupal field table.
+      $this->assertCount(
+        sizeof($expected_field_delta),
+        $drupal_field_records,
+        $message_prefix . ": field '$expected_field_name' did not have the expected number of records in the drupal field table ($drupal_field_table)."
+      );
+    }
+  }
+
+  /**
    * Called in the test setUp() for kernel tests to ensure all the needed
    * resources are available.
    *
