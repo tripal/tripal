@@ -746,6 +746,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
+    // Set the tokens for title/URL replacement now so that they include all
+    // of the field values (i.e. set it before Tripal/Chado storage clears any).
+    $this->setTokenValues();
+
     // Create a values array appropriate for `loadValues()`
     [$values, $tripal_storages] = TripalEntity::getValuesArray($this);
     // Perform the Insert or Update of the submitted values to the
