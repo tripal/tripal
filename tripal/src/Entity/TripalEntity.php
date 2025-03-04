@@ -188,6 +188,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     $this->title = $title;
+    return $title;
   }
 
   /**
@@ -863,6 +864,26 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
               'cannot view the logs.');
         }
       }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+
+    // We need to generate the title here since it requires tokens to already
+    // have been populated/saved in the entity. Since save has already happened,
+    // we need to directly write to the base table to update the title.
+    $title = $this->setTitle();
+    $base_table = $storage->getBaseTable();
+    $entity_id = $this->id();
+    if ($base_table AND $entity_id) {
+      \Drupal::service('database')->update($base_table)
+        ->fields(['title' => $title])
+        ->condition('id', $entity_id)
+        ->execute();
     }
   }
 
