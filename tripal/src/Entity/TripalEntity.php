@@ -889,6 +889,17 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         ->condition('id', $entity_id)
         ->execute();
     }
+
+    // We also want to set the URL alias here for the same reason we set the
+    // title at this point. This setter does not need a save of the entity
+    // afterwards so calling it should be sufficient. If an empty string is
+    // passed to setAlias() then an alias is generated based on the url_format.
+    $path_alias = '';
+    $path_values = $this->get('path')->getValue();
+    if (array_key_exists(0, $path_values) && array_key_exists('alias', $path_values[0])) {
+      $path_alias = (string) $path_values[0]['alias'];
+    }
+    $this->setAlias($path_alias);
   }
 
   /**
