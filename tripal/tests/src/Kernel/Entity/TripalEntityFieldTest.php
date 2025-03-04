@@ -102,11 +102,12 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
    */
   public function testTripalEntitySaveUrlAlias() {
     $current_scenario = $this->scenarios[0];
-    $this->assertEquals('Simple Gemstone', $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+    $this->assertEquals('Use format for title + URL', $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
 
     // 1. Create the entity with that value set.
+    $submitted_title = $this->randomString();
     $entity = TripalEntity::create([
-      'title' => $this->randomString(),
+      'title' => $submitted_title,
       'type' => $this->bundle_name,
     ] + $current_scenario['create']['user_input']);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
@@ -116,6 +117,9 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     // 2. Load the entity we just created so we can check the values.
     $created_entity = TripalEntity::load($entity->id());
     $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, '"' . $current_scenario['label'] . '" being created. ');
+    // -- Title.
+    $this->assertNotEquals($submitted_title, $created_entity->getTitle(), "The submitted title should never be used but it was when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertEquals($current_scenario['create']['title'], $created_entity->getTitle(), "We did not get the title we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
 
     // 3. Make changes and then save again.
     foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
@@ -129,5 +133,8 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     $updated_entity = TripalEntity::load($created_entity->id());
     // @debug print_r($updated_entity->toArray());
     $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, '"' . $current_scenario['label'] . '" being updated. ');
+    // -- Title.
+    $this->assertNotEquals($submitted_title, $updated_entity->getTitle(), "The submitted title should never be used but it was when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertEquals($current_scenario['edit']['title'], $updated_entity->getTitle(), "We did not get the title we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
 }

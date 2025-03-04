@@ -4,6 +4,8 @@ system-under-test:
     termIdSpace: FAKE
     termAccession: '123456'
     id: test_gemstone
+    title_format: 'TEST [TripalEntityType__label] <em>[common_name]</em> Entity #[TripalEntity__entity_id]'
+    url_format: 'test/[TripalEntityType__entity_id]/[common_name]/[TripalEntity__entity_id]'
   fields:
   - name: common_name
     type: tripal_string_type
@@ -27,9 +29,11 @@ system-under-test:
     settings:
       storage_plugin_id: drupal_sql_storage
 scenarios:
-  - label: "Simple Gemstone"
+  - label: "Use format for title + URL"
     description: "Create a page where every field has one value."
     create:
+      title: 'TEST Gemstones <em>amazonite</em> Entity #1'
+      url: 'test/test_gemstone/amazonite/1'
       user_input:
         common_name:
         - value: "amazonite"
@@ -41,6 +45,8 @@ scenarios:
         metaphysical_props:
         - value: "soothing, calming, healing from grief"
     edit:
+      title: 'TEST Gemstones <em>Amazonite</em> Entity #1'
+      url: 'test/test_gemstone/Amazonite/1'
       user_input:
         common_name:
         - value: "Amazonite"
