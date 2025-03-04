@@ -285,11 +285,11 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
 
     // Any field that stores a base record id, a primary key, or a foreign key
     // link is required. This takes precedence and cannot be overridden.
-    if (
+    if (array_key_exists('action', $storage_settings) AND (
       ($storage_settings['action'] == 'store_id') or
       ($storage_settings['action'] == 'store_pkey') or
       ($storage_settings['action'] == 'store_link')
-    ) {
+    )) {
       $is_required = TRUE;
     }
     // For any other fields that have 'drupal_exclude' set, we want to ensure it
