@@ -98,11 +98,41 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests that TripalEntity::save() handles URL alias' with substitutions.
+   * Data Provider: works with the YAML to provide scenarios for testing.
+   *
+   * @return array
+   *   List of scenarios to test where each one matches a key and label in the
+   *   associated YAML scenarios.
    */
-  public function testTripalEntitySaveUrlAlias() {
-    $current_scenario = $this->scenarios[0];
-    $this->assertEquals('Use format for title + URL', $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+  public static function provideScenarios() {
+    $scenarios = [];
+
+    $scenarios[] = [
+      0,
+      "Use format for title + URL",
+    ];
+
+    $scenarios[] = [
+      1,
+      "User submitted alias when creating",
+    ];
+
+    return $scenarios;
+  }
+
+  /**
+   * Tests that TripalEntity::save() handles URL alias' with substitutions.
+   *
+   * @dataProvider provideScenarios
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   */
+  public function testTripalEntitySaveUrlAlias(int $current_scenario_key, string $current_scenario_label) {
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
 
     // 1. Create the entity with that value set.
     $submitted_title = $this->randomString();
@@ -120,6 +150,11 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     // -- Title.
     $this->assertNotEquals($submitted_title, $created_entity->getTitle(), "The submitted title should never be used but it was when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['create']['title'], $created_entity->getTitle(), "We did not get the title we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    // -- URL.
+    $retrieved_alias = $created_entity->getAlias();
+    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertEquals($current_scenario['create']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
 
     // 3. Make changes and then save again.
     foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
@@ -136,5 +171,10 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
     // -- Title.
     $this->assertNotEquals($submitted_title, $updated_entity->getTitle(), "The submitted title should never be used but it was when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['edit']['title'], $updated_entity->getTitle(), "We did not get the title we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    // -- URL.
+    $retrieved_alias = $created_entity->getAlias();
+    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
 }
