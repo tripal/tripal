@@ -133,6 +133,11 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     // -- Title.
     $this->assertNotEquals($submitted_title, $created_entity->getTitle(), "The submitted title should never be used but it was when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['create']['title'], $created_entity->getTitle(), "We did not get the title we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    // -- URL.
+    $retrieved_alias = $created_entity->getAlias();
+    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertEquals($current_scenario['create']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
 
     // 3. Make changes and then save again.
     foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
@@ -149,5 +154,10 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
     // -- Title.
     $this->assertNotEquals($submitted_title, $updated_entity->getTitle(), "The submitted title should never be used but it was when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     $this->assertEquals($current_scenario['edit']['title'], $updated_entity->getTitle(), "We did not get the title we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    // -- URL.
+    $retrieved_alias = $created_entity->getAlias();
+    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertEquals($current_scenario['edit']['url'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
 }

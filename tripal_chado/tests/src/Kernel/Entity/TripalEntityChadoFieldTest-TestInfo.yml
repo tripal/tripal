@@ -41,7 +41,7 @@ scenarios:
     description: "Create a page where every field has one value."
     create:
       title: 'TEST Gemstones <em>amazonite</em> Entity #1'
-      url: 'test/test_gemstone/amazonite/1'
+      url: '/test/test_gemstone/amazonite/1'
       user_input:
         project_name:
         - record_id: 0
@@ -58,7 +58,7 @@ scenarios:
           value: "soothing, calming, healing from grief"
     edit:
       title: 'TEST Gemstones <em>Amazonite</em> Entity #1'
-      url: 'test/test_gemstone/Amazonite/1'
+      url: '/test/test_gemstone/amazonite/1'
       user_input:
         project_name:
         - record_id: 1
