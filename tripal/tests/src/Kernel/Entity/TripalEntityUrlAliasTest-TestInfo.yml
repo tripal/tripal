@@ -1,0 +1,35 @@
+system-under-test:
+  bundle:
+    label: Gemstones
+    termIdSpace: FAKE
+    termAccession: '123456'
+    id: test_gemstone
+    title_format: 'TEST [TripalEntityType__label] <em>[common_name]</em> Entity #[TripalEntity__entity_id]'
+    url_format: 'test/[TripalEntityType__entity_id]/[common_name]/[TripalEntity__entity_id]'
+  fields:
+  - name: common_name
+    type: tripal_string_type
+    type_class: Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem
+    widget: default_tripal_string_type_widget
+    formatter: default_tripal_string_type_formatter
+    termIdSpace: FAKE
+    termAccession: name
+    cardinality: 1
+    settings:
+      storage_plugin_id: drupal_sql_storage
+      max_length: 255
+scenarios:
+  - label: "Use format for URL alias (multi-word)"
+    description: "Check proper field substitution in URL alias containing multiple word token. Confirm there is no change on edit even though the field value changed."
+  - label: "Use format for URL alias (optional value)"
+    description: "Check proper field substitution in URL alias containing empty optional token. Confirm there is no change on edit even though the field value was set."
+  - label: "Use format for URL (duplicate already exists)"
+    description: "Check that the right exception is thrown when the substituted URL alias matches one already existing for another entity."
+  - label: "Use form element value on create for URL alias"
+    description: "Check that the user provided value is used for the alias when present and that the format is not used."
+  - label: "Use form element value on update for URL alias"
+    description: "Check that the user provided value is used for the alias when present on update and that it can override a previous alias generate by format on create."
+  - label: "Use form element value for URL alias (duplicate already exists)"
+    description: "Check that the right exception is thrown if the user provided alias matches one already used for another page."
+  - label: "Provided URL alias is not valid"
+    description: "Check that the right exception is thrown if the user provided alias is not valid."
