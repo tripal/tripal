@@ -702,6 +702,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Despite the function name, no values are saved to the database.
         $item->tripalSave($item, $field_name, $prop_types, $prop_values, $entity);
 
+        // Ensure that only the properties that should be are cleared.
+        $tripal_storage->markPropertiesForCaching($field_name, $prop_types);
+
         // Clears the values from the entity (does not clear them from the
         // property).
         $item->tripalClear($item, $field_name, $prop_types, $prop_values, $entity);
