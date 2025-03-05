@@ -80,8 +80,11 @@ class TripalEntityTest extends TripalTestKernelBase {
 
     // Create an extremely basic tripal entity without any fields
     // to confirm the most basic state.
+    // Title will use the format "Entity [entity_id]" by default rather then
+    // what we set below. That said, just set what we expect below so that
+    // we check for the right value.
     $details = [
-      'title' => 'Test Tripal Entity',
+      'title' => 'Entity 1',
       'type' => $this->bundle_name,
     ];
     $entity = TripalEntity::create($details);
