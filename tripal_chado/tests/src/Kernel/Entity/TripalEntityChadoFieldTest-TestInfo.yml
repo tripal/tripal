@@ -4,8 +4,8 @@ system-under-test:
     termIdSpace: NCIT
     termAccession: C47885
     id: test_gemstone
-    title_format: 'TEST [TripalEntityType__label] <em>[project_name]</em> Entity #[TripalEntity__entity_id]'
-    url_format: 'test/[TripalEntityType__entity_id]/[project_name]/[TripalEntity__entity_id]'
+    title_format: 'TEST [TripalEntityType__label] <em>[project_name]</em> Entity #[TripalEntity__entity_id][ aquired by [gemologist]]'
+    url_format: 'test/[TripalEntityType__entity_id][/[gemologist]]/[project_name]/[TripalEntity__entity_id]'
     settings:
       chado_base_table: project
   fields:
@@ -91,7 +91,7 @@ scenarios:
     description: "Create a page where every field has one value."
     create:
       title: 'TEST Gemstones <em>amazonite</em> Entity #1 aquired by Zhanna Beissekova'
-      url: '/test/test_gemstone/amazonite/Zhanna-Beissekova/1'
+      url: '/test/test_gemstone/Zhanna-Beissekova/amazonite/1'
       user_input:
         project_name:
         - record_id: 0
@@ -103,7 +103,7 @@ scenarios:
         - record_id: 1
           linker_id: 1
           link: 1
-          contact_id: 1
+          contact_id: 2
       expected:
         project_name:
         - record_id: 1
@@ -115,11 +115,11 @@ scenarios:
         - record_id: 1
           linker_id: 1
           link: 1
-          contact_id: 1
+          contact_id: 2
           contact_name: 'Zhanna Beissekova'
           contact_description: 'Enjoys grading and is fascinated by how each stone is different, even within the same species'
     edit:
-      title: 'TEST Gemstones <em>amazonite</em> Entity #1 aquired by Zhanna Beissekova'
+      title: 'TEST Gemstones <em>Amazonite</em> Entity #1 aquired by Zhanna Beissekova'
       url: '/my/user/set/url/alias'
       user_input:
         project_name:
@@ -132,7 +132,9 @@ scenarios:
         - record_id: 1
           linker_id: 1
           link: 1
-          contact_id: 1
+          contact_id: 2
+        path:
+        - alias: '/my/user/set/url/alias'
       expected:
         project_name:
         - record_id: 1
@@ -142,9 +144,8 @@ scenarios:
           value: "Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work."
         gemologist:
         - record_id: 1
-          linker_id: 1
+          linker_id: 2
           link: 1
-          contact_id: 1
+          contact_id: 2
           contact_name: 'Zhanna Beissekova'
           contact_description: 'Enjoys grading and is fascinated by how each stone is different, even within the same species'
-          contact_type: 'Person'

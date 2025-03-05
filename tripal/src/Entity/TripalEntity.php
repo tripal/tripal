@@ -753,10 +753,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
-    // Set the tokens for title/URL replacement now so that they include all
-    // of the field values (i.e. set it before Tripal/Chado storage clears any).
-    $this->setTokenValues();
-
     // Create a values array appropriate for `loadValues()`
     [$values, $tripal_storages] = TripalEntity::getValuesArray($this);
     // Perform the Insert or Update of the submitted values to the
@@ -800,7 +796,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       // to set them... if it did, then the following loadValues would not be
       // needed since the values would already be set.
       // @todo look into fixing insert/update to return all values.
-      // $tripal_storages[$tsid]->loadValues($tsid_values);
+      $tripal_storages[$tsid]->loadValues($tsid_values);
     }
 
     // Set the property values that should be saved in Drupal, everything
@@ -883,6 +879,10 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
+
+    // Set the tokens for title/URL replacement now so that they include all
+    // of the field values (i.e. set it before Tripal/Chado storage clears any).
+    $this->setTokenValues();
 
     // We need to generate the title here since it requires tokens to already
     // have been populated/saved in the entity. Since save has already happened,
