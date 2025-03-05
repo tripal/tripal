@@ -153,7 +153,7 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
    */
-  public function testTripalEntitySaveUrlAlias(int $current_scenario_key, string $current_scenario_label) {
+  public function testTripalChadoEntitySaveUrlAlias(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->scenarios[$current_scenario_key];
     $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
 

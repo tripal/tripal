@@ -800,7 +800,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       // to set them... if it did, then the following loadValues would not be
       // needed since the values would already be set.
       // @todo look into fixing insert/update to return all values.
-      $tripal_storages[$tsid]->loadValues($tsid_values);
+      // $tripal_storages[$tsid]->loadValues($tsid_values);
     }
 
     // Set the property values that should be saved in Drupal, everything
