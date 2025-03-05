@@ -234,29 +234,9 @@ class TripalEntityForm extends ContentEntityForm {
     $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle);
     $this->entity->setOwnerId($values['uid'][0]['target_id']);
 
-    $status = parent::save($form, $form_state);
-
-    // Entity ID is only available post-save, so we have waited
-    // to set the title and URL path alias until after saving.
-    // Unfortunately we have to re-load the entity as it is not
-    // fully updated post-save.
     $msg = '';
     try {
-      $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['id' => $this->entity->id()]);
-      $this->entity = $entities[$this->entity->id()];
-      $this->entity->setTokenValues();
-      $this->entity->setTitle();
-      // We need to save here to save the title, but the alias will be saved
-      // with setAlias(). We save now, because if we save after setAlias(),
-      // the saved alias reverts to the form value!
-      $this->entity->save();
-      $set_value = $this->entity->setAlias($values['path'][0]['alias']);
-      // The $set_value will be an empty string if the alias, after
-      // token replacement and HTML tag removal, now matches an existing
-      // alias. In this case, the alias will not be set to anything.
-      if (!$set_value) {
-        $status = 'duplicate_alias';
-      }
+      $status = parent::save($form, $form_state);
     }
     catch (\Exception $e) {
       $status = 'exception';
@@ -270,14 +250,14 @@ class TripalEntityForm extends ContentEntityForm {
         ]));
         break;
 
-      case 'duplicate_alias':
-        $this->messenger()->addError($this->t('Saved the %label, but the processed value for the URL alias already exists so an alias has not been set.', [
+      case SAVED_UPDATED:
+        $this->messenger()->addMessage($this->t('Updated the %label.', [
           '%label' => $bundle_entity->label(),
         ]));
         break;
 
       case 'exception':
-        $this->messenger()->addError($this->t('Error, title or alias may be incorrect: %msg', [
+        $this->messenger()->addError($this->t('Error, we were unable to save this page. %msg', [
           '%msg' => $msg,
         ]));
         break;
