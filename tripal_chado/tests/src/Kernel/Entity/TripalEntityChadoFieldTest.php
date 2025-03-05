@@ -107,15 +107,55 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
       ChadoTestKernelBase::PREPARE_TEST_CHADO
     );
 
+    // Adds contact which will be referred to by linker field in some scenarios.
+    $values = [
+      'name' => 'Zhanna Beissekova',
+      'description' => 'Enjoys grading and is fascinated by how each stone is different, even within the same species'
+    ];
+    $this->chado_connection->insert('1:contact')
+      ->fields($values)
+      ->execute();
+
+    // Setup the environment.
     $this->setupEntityFieldTestEnvironment($this->system_under_test);
   }
 
   /**
-   * Tests that TripalEntity::save() handles URL alias' with substitutions.
+   * Data Provider: works with the YAML to provide scenarios for testing.
+   *
+   * @return array
+   *   List of scenarios to test where each one matches a key and label in the
+   *   associated YAML scenarios.
    */
-  public function testTripalEntitySaveUrlAlias() {
-    $current_scenario = $this->scenarios[0];
-    $this->assertEquals('Use format for title + URL', $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
+  public static function provideScenarios() {
+    $scenarios = [];
+
+    $scenarios[] = [
+      0,
+      "Use format for title + URL",
+    ];
+
+    $scenarios[] = [
+      1,
+      'Use format with read_value for title + URL + override url on edit',
+    ];
+
+    return $scenarios;
+  }
+
+  /**
+   * Tests that TripalEntity::save() handles URL alias' with substitutions.
+   *
+   * @dataProvider provideScenarios
+   *
+   * @param int $current_scenario_key
+   *   The key of the scenario in the YAML.
+   * @param string $current_scenario_label
+   *   The label of the scenario in the YAML.
+   */
+  public function testTripalEntitySaveUrlAlias(int $current_scenario_key, string $current_scenario_label) {
+    $current_scenario = $this->scenarios[$current_scenario_key];
+    $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
 
     // 1. Create the entity with that value set.
     $submitted_title = $this->randomString();
