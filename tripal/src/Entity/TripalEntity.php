@@ -277,7 +277,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     if (!$existing_alias or ($existing_alias['alias'] != $new_alias)) {
       $entities = \Drupal::entityTypeManager()->getStorage('path_alias')->loadByProperties(['alias' => $new_alias]);
       if ($entities) {
-        $new_alias = '';
+        $links = [];
+        foreach ($entities as $e) {
+          $links[] = $e->toLink();
+        }
+        throw new \Exception("We were unable to set the alias '$new_alias' because it already refers to the following: " . implode(', ', $links));
       }
     }
 
@@ -289,7 +293,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         'alias' => $new_alias,
       ]);
       if (!is_object($new_alias_object)) {
-        throw new \Exception(t('Did not create a PathAlias object for ":new_alias"',
+        throw new \Exception(t("We were unable to create the alias: ':new_alias'",
           [':new_alias' => $new_alias]));
       }
       $new_alias_object->save();
@@ -298,7 +302,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     elseif ($existing_alias and ($existing_alias['alias'] != $new_alias)) {
       $existing_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->load($existing_alias['id']);
       if (!is_object($existing_alias_object)) {
-        throw new \Exception(t('Unable to load the PathAlias object for ":existing_alias"',
+        throw new \Exception(t("Unable to load the existing alias ':existing_alias' in order to update it.",
           [':existing_alias' => $existing_alias['alias']]));
       }
       // $new_alias will be an empty string here if there was a conflict
@@ -884,10 +888,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $base_table = $storage->getBaseTable();
     $entity_id = $this->id();
     if ($base_table AND $entity_id) {
-      \Drupal::service('database')->update($base_table)
-        ->fields(['title' => $title])
-        ->condition('id', $entity_id)
-        ->execute();
+      try {
+        \Drupal::service('database')->update($base_table)
+          ->fields(['title' => $title])
+          ->condition('id', $entity_id)
+          ->execute();
+      }
+      catch (\Exception $e) {
+        $message = "We were unable to update the title '" . $title . "' directly. " . $e->getMessage();
+        throw new \Exception($message);
+      }
     }
 
     // We also want to set the URL alias here for the same reason we set the
