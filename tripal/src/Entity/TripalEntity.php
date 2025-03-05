@@ -417,8 +417,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $field_values = $this->getFieldValues();
     // Convert to a simple key=>value array
     $processed_values = $this->processFieldValues($field_values);
-    // Merge in any passed values and store
-    $this->token_values = array_merge($processed_values, $extra_values);
+    // Merge in any passed values and store.
+    // Note: We pass in the original token values to ensure that any values set
+    // outside a save() are retained. However, if an updated value for a field
+    // exists, it should override previously set tokens, which is why the
+    // original tokens are first in the array_merge below.
+    $this->token_values = array_merge($this->token_values, $processed_values, $extra_values);
   }
 
   /**
