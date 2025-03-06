@@ -279,7 +279,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       if ($entities) {
         $links = [];
         foreach ($entities as $e) {
-          $links[] = $e->toLink();
+          $path = $e->getPath();
+          $links[$path] = $path;
         }
         throw new \Exception("We were unable to set the alias '$new_alias' because it already refers to the following: " . implode(', ', $links));
       }
