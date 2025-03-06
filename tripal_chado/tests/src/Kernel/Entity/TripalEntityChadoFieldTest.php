@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Kernel\Entity;
+namespace Drupal\Tests\tripal_chado\Kernel\Entity;
 
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;

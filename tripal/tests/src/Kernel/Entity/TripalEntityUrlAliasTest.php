@@ -111,10 +111,9 @@ class TripalEntityUrlAliasTest extends TripalTestKernelBase {
       "Use format for URL alias (multi-word)",
       "Use format for URL alias (optional value)",
       "Use format for URL (duplicate already exists)",
-      "Use form element value on create for URL alias",
+      "Use form element value on create + edit for URL alias",
       "Use form element value on update for URL alias",
       "Use form element value for URL alias (duplicate already exists)",
-      "Provided URL alias is not valid",
     ];
     foreach ($labels as $key => $label) {
       $scenarios[] = [$key, $label];
@@ -137,5 +136,94 @@ class TripalEntityUrlAliasTest extends TripalTestKernelBase {
     $current_scenario = $this->scenarios[$current_scenario_key];
     $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
 
+    // 0. Create any pre-existing entities before the test if some are specified.
+    if (array_key_exists('pre_create', $current_scenario)) {
+      $entity = TripalEntity::create([
+        'type' => $this->bundle_name,
+      ] + $current_scenario['pre_create']);
+      $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to SET UP FOR our " . $current_scenario['label'] . " scenario.");
+      $status = $entity->save();
+    }
+
+    // 1. Create the entity with that value set.
+    $entity = TripalEntity::create([
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']['user_input']);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $current_scenario['label'] . " scenario.");
+
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $status = $entity->save();
+    }
+    catch (\Exception $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+
+    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
+    $this->assertEquals(
+      $current_scenario['create']['expected']['exception'],
+      $exception_caught,
+      "Regarding an exception being thrown on create, we did not get what we expected."
+    );
+    $this->assertEquals(
+      $current_scenario['create']['expected']['exception_message'],
+      $exception_message,
+      "The message of the exception thrown on create was not what we expected."
+    );
+
+    // We cannot test update if create failed.
+    if ($exception_caught) {
+      return;
+    }
+
+    // 2. Load the entity we just created so we can check the values.
+    $created_entity = TripalEntity::load($entity->id());
+    $this->assertFieldValuesMatch($current_scenario['create']['expected_values'], $created_entity, '"' . $current_scenario['label'] . '" being created. ');
+    // -- Title.
+    $this->assertEquals($current_scenario['create']['expected']['title'], $created_entity->getTitle(), "We did not get the title we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    // -- URL.
+    $retrieved_alias = $created_entity->getAlias();
+    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertEquals($current_scenario['create']['expected']['url_alias'], $retrieved_alias['alias'], "We did not get the url alias we expected when CREATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+
+    // 3. Make changes and then save again.
+    foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
+      $created_entity->set($field_name, $new_values);
+    }
+
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $status = $created_entity->save();
+    } catch (\Exception $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+
+    $this->assertEquals(SAVED_UPDATED, $status, "We expected to have updated the existing entity for our " . $current_scenario['label'] . " scenario.");
+    $this->assertEquals(
+      $current_scenario['edit']['expected']['exception'],
+      $exception_caught,
+      "Regarding an exception being thrown on update, we did not get what we expected. The message thrown was '$exception_message'."
+    );
+    $this->assertEquals(
+      $current_scenario['edit']['expected']['exception_message'],
+      $exception_message,
+      "The message of the exception thrown on update was not what we expected."
+    );
+
+    // 4. Load the entity we just updated so we can check the values.
+    $updated_entity = TripalEntity::load($created_entity->id());
+    $this->assertFieldValuesMatch($current_scenario['edit']['expected_values'], $updated_entity, '"' . $current_scenario['label'] . '" being updated. ');
+    // -- Title.
+    $this->assertEquals($current_scenario['edit']['expected']['title'], $updated_entity->getTitle(), "We did not get the title we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    // -- URL.
+    $retrieved_alias = $created_entity->getAlias();
+    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    $this->assertEquals($current_scenario['edit']['expected']['url_alias'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
   }
 }

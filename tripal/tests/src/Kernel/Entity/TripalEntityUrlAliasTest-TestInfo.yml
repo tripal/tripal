@@ -4,8 +4,8 @@ system-under-test:
     termIdSpace: FAKE
     termAccession: '123456'
     id: test_gemstone
-    title_format: 'TEST [TripalEntityType__label] <em>[common_name]</em> Entity #[TripalEntity__entity_id]'
-    url_format: 'test/[TripalEntityType__entity_id]/[common_name]/[TripalEntity__entity_id]'
+    title_format: 'TEST [TripalEntityType__label][ <em>[common_name]</em>] Entity #[TripalEntity__entity_id]'
+    url_format: 'test/[TripalEntityType__entity_id][/[common_name]]/[TripalEntity__entity_id]'
   fields:
   - name: common_name
     type: tripal_string_type
@@ -21,15 +21,141 @@ system-under-test:
 scenarios:
   - label: "Use format for URL alias (multi-word)"
     description: "Check proper field substitution in URL alias containing multiple word token. Confirm there is no change on edit even though the field value changed."
+    create:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper"
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #1'
+        url_alias: '/test/test_gemstone/Ocean-Jasper/1'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper"
+    edit:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper (Orbicular Jasper)"
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper (Orbicular Jasper)</em> Entity #1'
+        url_alias: '/test/test_gemstone/Ocean-Jasper/1'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper (Orbicular Jasper)"
   - label: "Use format for URL alias (optional value)"
     description: "Check proper field substitution in URL alias containing empty optional token. Confirm there is no change on edit even though the field value was set."
+    create:
+      user_input:
+        common_name:
+        - value: ""
+      expected:
+        title: 'TEST Gemstones Entity #1'
+        url_alias: '/test/test_gemstone/1'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: ""
+    edit:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper"
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #1'
+        url_alias: '/test/test_gemstone/1'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper"
   - label: "Use format for URL (duplicate already exists)"
     description: "Check that the right exception is thrown when the substituted URL alias matches one already existing for another entity."
-  - label: "Use form element value on create for URL alias"
+    pre_create:
+        path:
+        - alias: '/test/test_gemstone/Ocean-Jasper/2'
+    create:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper"
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #2'
+        url_alias: '/test/test_gemstone/Ocean-Jasper/2'
+        exception: TRUE
+        exception_message: "We were unable to set the alias '/test/test_gemstone/Ocean-Jasper/2' because it already refers to the following: /bio_data/1"
+  - label: "Use form element value on create + edit for URL alias"
     description: "Check that the user provided value is used for the alias when present and that the format is not used."
+    create:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper"
+        path:
+        - alias: '/test/Ocean-Jasper/SET'
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #1'
+        url_alias: '/test/Ocean-Jasper/SET'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper"
+    edit:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper (Orbicular Jasper)"
+        path:
+        - alias: '/test/Ocean-Jasper-Gemstone'
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper (Orbicular Jasper)</em> Entity #1'
+        url_alias: '/test/Ocean-Jasper-Gemstone'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper (Orbicular Jasper)"
   - label: "Use form element value on update for URL alias"
     description: "Check that the user provided value is used for the alias when present on update and that it can override a previous alias generate by format on create."
+    create:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper"
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #1'
+        url_alias: '/test/test_gemstone/Ocean-Jasper/1'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper"
+    edit:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper (Orbicular Jasper)"
+        path:
+        - alias: '/test/Ocean-Jasper-Gemstone'
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper (Orbicular Jasper)</em> Entity #1'
+        url_alias: '/test/Ocean-Jasper-Gemstone'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper (Orbicular Jasper)"
   - label: "Use form element value for URL alias (duplicate already exists)"
     description: "Check that the right exception is thrown if the user provided alias matches one already used for another page."
-  - label: "Provided URL alias is not valid"
-    description: "Check that the right exception is thrown if the user provided alias is not valid."
+    pre_create:
+        path:
+        - alias: '/test/Ocean-Jasper/SET'
+    create:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper"
+        path:
+        - alias: '/test/Ocean-Jasper/SET'
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #2'
+        url_alias: '/test/Ocean-Jasper/SET'
+        exception: TRUE
+        exception_message: "We were unable to set the alias '/test/Ocean-Jasper/SET' because it already refers to the following: /bio_data/1"
