@@ -309,7 +309,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // Query gets the list of records without a bundle term
       $query = $this->chado->select('1:' . $table, 'BT');
       $query->leftJoin('1:' . $prop_table, 'P', '"BT".' . $pkey . '=' . '"P".' . $pkey);
-      $query->condition('"P".' . $pkey, $subquery, 'NOT IN');
+      $query->condition('"BT".' . $pkey, $subquery, 'NOT IN');
       $query->addField('BT', $pkey, 'pkey_id');
       $query->distinct();
       $count = $query->countQuery()->execute()->fetchField();
