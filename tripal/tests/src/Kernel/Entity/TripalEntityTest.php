@@ -45,7 +45,10 @@ class TripalEntityTest extends TripalTestKernelBase {
     // Create a term to use for the entity
     $term_values = [
       'id_space_name' => 'FAKE',
-      'accession' => 'ORGANISM',
+      'term' => [
+        'accession' => 'ORGANISM',
+        'name' => 'Organism'
+      ],
     ];
     // @var \Drupal\tripal\TripalVocabTerms\TripalTerm $term //
     $term = $this->createTripalTerm($term_values, 'tripal_default_id_space', 'tripal_default_vocabulary');
@@ -61,8 +64,8 @@ class TripalEntityTest extends TripalTestKernelBase {
       'term' => $term,
       'help_text' => 'You are on your own here',
       'category' => '',
-      'title_format' => '',
-      'url_format' => '',
+      'title_format' => '[TripalEntityType__term_label] Entity #[TripalEntity__entity_id]',
+      'url_format' => '/[TripalEntityType__term_namespace]/[TripalEntityType__term_accession]/[TripalEntity__entity_id]',
       'hide_empty_field' => '',
       'ajax_field' => '',
     ]);
@@ -104,8 +107,12 @@ class TripalEntityTest extends TripalTestKernelBase {
     // Core metadata.
     // -- title.
     $ret_title = $entity->getTitle();
-    $this->assertEquals($details['title'], $ret_title,
-      "The title should be set on creation to what we passed in.");
+    $this->assertEquals('Organism Entity #1', $ret_title,
+      "The title should match the format set.");
+    // -- alias.
+    $ret_alias = $entity->getAlias();
+    $this->assertEquals('/FAKE/ORGANISM/1', $ret_alias['alias'],
+      "The alias returned should match the format set.");
     // -- bundle.
     $ret_type = $entity->getType();
     $this->assertEquals($this->bundle_name, $ret_type,
@@ -122,7 +129,7 @@ class TripalEntityTest extends TripalTestKernelBase {
       "The retrieved entity_id should be the same one returned fom save()");
     // -- label (i.e. title).
     $ret_label = $entity->label();
-    $this->assertEquals($details['title'], $ret_label,
+    $this->assertEquals($ret_title, $ret_label,
       "The label should match the title.");
 
     // Published Status.
@@ -203,6 +210,12 @@ class TripalEntityTest extends TripalTestKernelBase {
       $ret_owner_set->id(),
       "The owner returned after setting should be the user we set it to."
     );
+
+    // allNull Helper method.
+    $ret_all_null = TripalEntity::allNull([NULL,NULL,NULL,NULL]);
+    $this->assertTrue($ret_all_null, "We passed in an array of NULL therefore, the helper method should have confirmed that they were all null.");
+    $ret_all_null = TripalEntity::allNull([NULL, NULL, NULL, NULL, 5, NULL]);
+    $this->assertFalse($ret_all_null, "We passed in an array with one integer near the end therefore, the helper method should have confirmed that they were NOT all null.");
   }
 
 }
