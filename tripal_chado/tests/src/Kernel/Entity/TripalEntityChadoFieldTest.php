@@ -74,7 +74,7 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
    *  A list of scenarios where each one has the following keys:
    *  - label: A human-readable label for the scenario to be used in assert
    *    messages.
-   *  - descrition: A description of the scenario and what you are wanting to
+   *  - description: A description of the scenario and what you are wanting to
    *    test. This will not be used in the test but is rather there to help
    *    people reading the YAML file and to make it easier to maintain.
    *  - create: An array of the values to be provided when creating a

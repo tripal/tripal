@@ -4,7 +4,7 @@ system-under-test:
     termIdSpace: NCIT
     termAccession: C47885
     id: test_gemstone
-    title_format: 'TEST [TripalEntityType__label] <em>[project_name]</em> Entity #[TripalEntity__entity_id][ aquired by [gemologist]]'
+    title_format: 'TEST [TripalEntityType__label] <em>[project_name]</em> Entity #[TripalEntity__entity_id][ acquired by [gemologist]]'
     url_format: 'test/[TripalEntityType__entity_id][/[gemologist]]/[project_name]/[TripalEntity__entity_id]'
     settings:
       chado_base_table: project
@@ -90,7 +90,7 @@ scenarios:
   - label: "Use format with read_value for title + URL + override url on edit"
     description: "Create a page where every field has one value."
     create:
-      title: 'TEST Gemstones <em>amazonite</em> Entity #1 aquired by Zhanna Beissekova'
+      title: 'TEST Gemstones <em>amazonite</em> Entity #1 acquired by Zhanna Beissekova'
       url: '/test/test_gemstone/Zhanna-Beissekova/amazonite/1'
       user_input:
         project_name:
@@ -119,7 +119,7 @@ scenarios:
           contact_name: 'Zhanna Beissekova'
           contact_description: 'Enjoys grading and is fascinated by how each stone is different, even within the same species'
     edit:
-      title: 'TEST Gemstones <em>Amazonite</em> Entity #1 aquired by Zhanna Beissekova'
+      title: 'TEST Gemstones <em>Amazonite</em> Entity #1 acquired by Zhanna Beissekova'
       url: '/my/user/set/url/alias'
       user_input:
         project_name:
