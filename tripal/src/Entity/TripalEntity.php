@@ -137,7 +137,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @return Drupal\tripal\Entity\TripalEntityType
    *   The bundle object
    */
-  protected function getBundle() {
+  public function getBundle() {
     $bundle_id = $this->getType();
     $bundle = NULL;
     if (array_key_exists($bundle_id, $this->bundle_cache)) {
@@ -400,7 +400,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * {@inheritdoc}
    */
   public function setPublished($published) {
-    $this->set('status', $published ? NODE_PUBLISHED : NODE_NOT_PUBLISHED);
+    $this->set('status', $published ? TRUE : FALSE);
     return $this;
   }
 
