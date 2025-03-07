@@ -108,7 +108,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-     $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
