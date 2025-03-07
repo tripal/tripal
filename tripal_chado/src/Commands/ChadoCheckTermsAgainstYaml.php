@@ -1089,7 +1089,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
       // Next subquery gets the list of records without a bundle term
       $subquery1 = $this->chado->select('1:' . $table, 'BT');
       $subquery1->leftJoin('1:' . $context['prop_table'], 'P', '"BT".' . $context['pkey'] . '=' . '"P".' . $context['pkey']);
-      $subquery1->condition('"P".' . $context['pkey'], $subquery2, 'NOT IN');
+      $subquery1->condition('"BT".' . $context['pkey'], $subquery2, 'NOT IN');
       $subquery1->addField('BT', $context['pkey']);
       $subquery1->distinct();
       // Add static values needed for the insert
