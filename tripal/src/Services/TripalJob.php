@@ -726,13 +726,14 @@ class TripalJob {
    *   stack trace, it MUST be in a key named "exception".
    */
   public function log($message, $context=[]) {
-    // Generate a translated message.
-    $tmessage = t($message, $context);
-
+    // Generate a translated message. If $message is an object, it is already translated.
+    $tmessage = $message;
+    if (is_string($message)) {
+      $tmessage = t($message, $context);
+    }
     // For the sake of the command-line user, print the message to the
     // terminal.
     print $tmessage . "\n";
-
     // Add this message to the job's log.
     $this->job->error_msg .= "\n" . $tmessage;
   }
