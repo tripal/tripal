@@ -86,9 +86,12 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * Retrieves one or more publications from PubMed based on a search query specification
    *
    * @param array $query
-   *   An unserialized search query obtained from the tripal_pub_library_query table
+   *   An associative array defining a publication query,
+   *   specifying the database and query parameters for
+   *   a particular publication repository.
+   *
    * @return array
-   *   An associative array of information for the publications that were retrieved
+   *   The uniform publication information array.
    */
   public function run(array $query) {
     // Go through all results until pubs is empty
