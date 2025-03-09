@@ -527,6 +527,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   ready to use for token replacement.
    */
   protected function getBundleTokenValues(string $tokenized_string, ?int $entity_id): array {
+    $values = [];
     if (preg_match_all('/\[([^\[\]]+)\]/', $tokenized_string, $matches)) {
       $tokens = $matches[1];
       foreach ($tokens as $token) {
@@ -557,7 +558,6 @@ class ChadoPublish extends TripalBackendPublishBase {
         }
       }
     }
-
     return $values;
   }
 
