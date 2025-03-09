@@ -96,11 +96,11 @@ fields:
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table:
-                base_column:
+                base_table: feature
+                base_column: residues
         settings:
-            termIdSpace: data
-            termAccession: "90399"
+            termIdSpace: SO
+            termAccession: "0000001"
         display:
           view:
             default:
