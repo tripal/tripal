@@ -231,7 +231,7 @@ class GenomicFeatureHelper {
      *
      */
 
-    function translate_DNA_to_protein($seq,$genetic_code): string|null{
+    function translate_DNA_to_protein($seq, $genetic_code): string|null{
         if (empty($seq) or $seq == '') return '';
         // $aminoacids is the array of aminoacids
         $aminoacids=array("F","L","I","M","V","S","P","T","A","Y","*","H","Q","N","K","D","E","C","W","R","G","X");

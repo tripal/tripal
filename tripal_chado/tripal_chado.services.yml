@@ -32,7 +32,7 @@ services:
     class: Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager
     parent: default_plugin_manager
     arguments: ['@tripal_chado.database']
-  tripal_chado.feature_helper:
+  tripal_chado.genomic_feature_helper:
     class: Drupal\tripal_chado\Services\GenomicFeatureHelper
     arguments: ['@database', '@string_translation', '@messenger']
 

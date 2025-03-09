@@ -86,6 +86,32 @@ fields:
               region: content
               weight: 20
 
+    -   name: gene_derived_sequence
+        content_type: gene
+        label: Sequence from alignment
+        type: chado_sequence_type_default
+        description: Sequence derived from alignment
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table:
+                base_column:
+        settings:
+            termIdSpace: data
+            termAccession: "90399"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 40
+          form:
+            default:
+              region: content
+              weight: 40
+
     -   name: gene_length
         content_type: gene
         label: Sequence Length

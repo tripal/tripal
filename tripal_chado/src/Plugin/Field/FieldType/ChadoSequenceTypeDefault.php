@@ -52,6 +52,19 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
+  public static function retrieveSequenceUsingService (): string {
+    $sequence="Hello World!";
+    // Use params to extract info needed for the service.
+/*
+    // Call the service to get the sequence.
+    $helper = \Drupal::service('tripal_chado.genomic_feature_helper');
+    $sequence = $helper->getSeq($entity->id());
+*/
+    // Can't remember what Chadostorage expects for a return value but I think it's the
+    //  value that should be applied to the property.
+    return $sequence;
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -65,11 +78,14 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
 
     // Return the properties for this field.
     $properties = [];
+
+
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'path' => 'feature.feature_id',
     ]);
+
     $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'residues', $residues_term, [
       'action' => 'store',
       'path' => 'feature.residues',
@@ -85,6 +101,13 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5checksum_len, [
       'action' => 'store',
       'path' => 'feature.md5checksum',
+    ]);
+
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'derived_sequence', $residues_term, [
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => 'Drupal\tripal_chado\Plugin\Field\FieldType',
+      'function' => 'ChadoSequenceTypeDefault::retrieveSequenceUsingService',
     ]);
 
     return $properties;
