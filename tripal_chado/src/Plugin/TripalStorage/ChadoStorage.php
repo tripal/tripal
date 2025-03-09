@@ -581,8 +581,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         $this->logger->error('Callback function for field @field does not exist: @namespace::@function.',
           ['@field' => $field_name, '@namespace' => $namespace, '@function' => $callback_function]
         );
+        \Drupal::messenger()->addError(sprintf('Callback function for field %s %s %s does not exist:',
+    $field_name, $namespace, $callback_function)
+    );
       }
-
+      \Drupal::messenger()->addMessage(sprintf('Now some %s should show %s',
+      $field_name, $value)
+      );
       if ($value !== NULL && is_string($value)) {
         $values[$field_name][$delta][$key]['value']->setValue(trim($value));
       }

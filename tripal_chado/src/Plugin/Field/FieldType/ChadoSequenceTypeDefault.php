@@ -65,6 +65,12 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     return $sequence;
   }
 
+  public static function foo(): string {
+    \Drupal::messenger()->addMessage("Now a field should show foo");
+    return "foo";
+  }
+
+
   /**
    * {@inheritdoc}
    */
@@ -99,17 +105,19 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     // Hard-coded as the length of MD5Checksum supported by the chado feature.md5checksum column.
     $md5checksum_len = 32;
     $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5checksum_len, [
-      'action' => 'store',
-      'path' => 'feature.md5checksum',
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => '\Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceTypeDefault',
+      'function' => "foo",
     ]);
-
-    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'derived_sequence', $residues_term, [
+/*
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'derived_sequence','SO:0000001', [
       'action' => 'function',
       'drupal_store' => TRUE,
       'namespace' => 'Drupal\tripal_chado\Plugin\Field\FieldType',
       'function' => 'ChadoSequenceTypeDefault::retrieveSequenceUsingService',
     ]);
-
+*/
     return $properties;
   }
 
