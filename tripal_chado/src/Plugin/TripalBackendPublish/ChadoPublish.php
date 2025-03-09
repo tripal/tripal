@@ -485,12 +485,15 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // Iterate through each match we are checking for an existing entity for.
     foreach ($matches as $match) {
-
       // Retrieve the chado record pkey ID for this match
       $record_id = $this->getChadoRecordID($match);
+      $entity_id = $this->existing_published_entities[$record_id] ?? NULL;
 
       // Build an array of token keys and values to use for token replacement.
-      $token_values = [];
+      // n.b. We do not currently support the entity_id field in the title for
+      // a newly published entity, as the entity gets created later.
+      $token_values = $this->getBundleTokenValues($title_format, $entity_id);
+
       foreach ($match as $field_name => $field_items) {
         if ($field_items) {
           foreach($field_items as $delta => $properties) {
@@ -509,6 +512,53 @@ class ChadoPublish extends TripalBackendPublishBase {
       $titles[$record_id] = $entity_title;
     }
     return $titles;
+  }
+
+  /**
+   * Implements bundle token lookup similar to that done in
+   * Drupal\tripal\Entity\getBundleEntityTokenValues getBundleEntityTokenValues()
+   *
+   * @param string $tokenized_string
+   *   The title format template
+   * @param int|null $entity_id
+   *   The drupal entity numeric ID. Not known for a newly published entity.
+   * @return array
+   *   Associative array of all tokens and their values,
+   *   ready to use for token replacement.
+   */
+  protected function getBundleTokenValues(string $tokenized_string, ?int $entity_id): array {
+    if (preg_match_all('/\[([^\[\]]+)\]/', $tokenized_string, $matches)) {
+      $tokens = $matches[1];
+      foreach ($tokens as $token) {
+        $value = NULL;
+
+        // Look for values for bundle or entity related tokens.
+        if (($token === 'TripalEntityType__entity_id') OR ($token === 'TripalBundle__bundle_id')) {
+          $value = $this->entity_type->getID();
+        }
+        elseif ($token == 'TripalEntityType__label') {
+          $value = $this->entity_type->getLabel();
+        }
+        elseif ($token === 'TripalEntity__entity_id') {
+          $value = $entity_id;
+        }
+        elseif ($token == 'TripalEntityType__term_namespace') {
+          $value = $this->entity_type->get('termIdSpace');
+        }
+        elseif ($token == 'TripalEntityType__term_accession') {
+          $value = $this->entity_type->get('termAccession');
+        }
+        elseif ($token == 'TripalEntityType__term_label') {
+          $value = $this->entity_type->getTerm()->getName();
+        }
+        // We skip over any tokens other than those defined here
+        if (!is_null($value)) {
+          $values[$token] = $value;
+        }
+      }
+    }
+
+    return $values;
   }
 
   /**
