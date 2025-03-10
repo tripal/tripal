@@ -876,16 +876,14 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // to specify which fields to load.  By default the SqlContentEntityStorage
     // storage system we're using will always attach all fields.  But we can
     // control what fields get attached to entities with this postLoad function.
-    // In the TripalEntityListBuilder::load() function we set the
-    // `tripal_load_listing` session variable to TRUE.  If it is TRUE then
-    // we skip this. @todo: in the future if we want to only attach
-    // specific fields we can get more fancy.
-    if (\Drupal::request()->hasSession()) {
-      $session = \Drupal::request()->getSession();
-      $is_listing = $session->get('tripal_load_listing');
-      if ($is_listing === TRUE) {
-        return;
-      }
+    // We don't want to attach fields if we are in the Tripal Content Listing.
+    // With PR #1736 in the TripalEntityListBuilder::load() function the
+    // `tripal_load_listing` session variable was used to control this.
+    // PR #2117 changed the listing to use a view. Now we can detect we are
+    // being called from this view by using the route name.
+    $route_name = \Drupal::routeMatch()->getRouteName();
+    if ($route_name == 'entity.tripal_entity.collection') {
+      return;
     }
 
     $entity_type_id = $storage->getEntityTypeId();
