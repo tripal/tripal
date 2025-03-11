@@ -195,12 +195,33 @@ class TripalEntityForm extends ContentEntityForm {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+
+    // Ensure that the URL alias provided is valid.
+    // Drupals Drupal\Core\Render\Element\Url::validateUrl() does a fair amount
+    // of validation but we want to check some cases they missed.
+    // -- User enters '/' which is an invalid path.
+    if ($form_state->hasValue('path')) {
+      foreach ($form_state->getValue('path') as $path) {
+        if ($path['alias'] == '/') {
+          $form_state->setErrorByName('path', $this->t("The url alias entered is not valid."));
+        }
+      }
+    }
+
+    parent::validateForm($form, $form_state);
+  }
+
+  /**
    * Check the title format for this content type for validity.
    *
    * @return bool
    *   TRUE if title_format is valid, FALSE if not valid.
    */
   private function validateTripalEntityTypeFormats() {
+    $errors_found = FALSE;
 
     // Retrieve the TripalEntityType (i.e. bundle).
     $bundle_id = $this->entity->getType();
@@ -217,6 +238,7 @@ class TripalEntityForm extends ContentEntityForm {
          ':bundle' => $bundle_entity->label()]
       );
       $this->messenger()->addError($message);
+      $errors_found = TRUE;
     }
     elseif ($title_format == 'Entity [TripalEntity__entity_id]') {
       $message = $this->t('The Page Title Format for this content type is the default generic format. <strong>This will result in very uninformative titles!</strong>' . $title_message_suffix);
@@ -233,12 +255,15 @@ class TripalEntityForm extends ContentEntityForm {
         [':url' => $url]
       );
       $this->messenger()->addError($message);
+      $errors_found = TRUE;
     } elseif ($url_format == '[TripalEntityType__term_label]/[TripalEntity__entity_id]') {
       $message = $this->t('The URL Alias Format for this content type is the default generic format. We suggest updating it to include meaningful tokens for more readable URLs.' . $url_message_suffix,
         [':url' => $url]
       );
       $this->messenger()->addWarning($message);
     }
+
+    return $errors_found;
   }
 
   /**
