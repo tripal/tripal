@@ -137,7 +137,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @return Drupal\tripal\Entity\TripalEntityType
    *   The bundle object
    */
-  protected function getBundle() {
+  public function getBundle() {
     $bundle_id = $this->getType();
     $bundle = NULL;
     if (array_key_exists($bundle_id, $this->bundle_cache)) {
