@@ -92,10 +92,8 @@ class TripalEntityForm extends ContentEntityForm {
     $form = parent::form($form, $form_state);
     $entity = $this->entity;
 
-    // Display an error message if the title format is not valid.
-    if (!$this->validateTitleFormat()) {
-      // @todo I would like to disable the save button here, but it's not in the form yet.
-    }
+    // Display an error message if the title or URL format is not valid.
+    $this->validateTripalEntityTypeFormats();
 
     // -- Setup advanced sidebar.
     // Additional collapsed regions can be added to this group by creating
@@ -202,26 +200,44 @@ class TripalEntityForm extends ContentEntityForm {
    * @return bool
    *   TRUE if title_format is valid, FALSE if not valid.
    */
-  private function validateTitleFormat() {
+  private function validateTripalEntityTypeFormats() {
+
+    // Retrieve the TripalEntityType (i.e. bundle).
     $bundle_id = $this->entity->getType();
-    $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle_id);
+    $bundle_entity = $this->entity->getBundle();
+
+    // First check the title format.
     $title_format = $bundle_entity->getTitleFormat();
-    $message = '';
+    $url = '/admin/structure/bio_data/manage/' . $bundle_id;
+    $title_message_suffix = ' We recommend you update the title format before creating any new content.'
+      . ' <a href=":url" target="_blank">Click here</a> to update the title format.';
     if (!preg_match('/\[.*\]/', $title_format)) {
-      $message = 'The Page Title Format for this content type does not contain any tokens.';
+      $message = $this->t('The Page Title Format for this content type does not contain any tokens. <strong>This will result in all titles for :bundle being the same!</strong>' . $title_message_suffix,
+        [':url' => $url]
+      );
+      $this->messenger()->addWarning($message);
     }
     elseif ($title_format == 'Entity [TripalEntity__entity_id]') {
-      $message = 'The Page Title Format for this content type is the default generic format.';
+      $message = $this->t('The Page Title Format for this content type is the default generic format. <strong>This will result in very uninformative titles!</strong>' . $title_message_suffix);
+      $this->messenger()->addWarning($message);
     }
-    if ($message) {
-      $url = '/admin/structure/bio_data/manage/' . $bundle_id;
-      $message .= ' You must update the title format before creating any new content.'
-        . ' <a href=":url">Click here</a> to update the title format.';
-      \Drupal::messenger()->addError($this->t($message, [':url' => $url]));
-      return FALSE;
-    }
-    else {
-      return TRUE;
+
+    // Then check the URL Alias format.
+    $url_format = $bundle_entity->getURLFormat();
+    $url = '/admin/structure/bio_data/manage/' . $bundle_id;
+    $url_message_suffix = ' <a href=":url" target="_blank">Click here</a> to update the url format before creating any new content.';
+    if (!preg_match('/\[.*\]/', $url_format)) {
+      $message = $this->t(
+        'The URL Alias Format for this content type does not contain any tokens. <strong>This will result in no alias being added due to duplicate aliases.</strong>' . $url_message_suffix,
+        [':url' => $url]
+      );
+      $this->messenger()->addWarning($message);
+      $this->format_errors['path'][] = $message;
+    } elseif ($url_format == '[TripalEntityType__term_label]/[TripalEntity__entity_id]') {
+      $message = $this->t('The URL Alias Format for this content type is the default generic format. We suggest updating it to include meaningful tokens for more readable URLs.' . $url_message_suffix,
+        [':url' => $url]
+      );
+      $this->messenger()->addWarning($message);
     }
   }
 
@@ -235,10 +251,12 @@ class TripalEntityForm extends ContentEntityForm {
     $this->entity->setOwnerId($values['uid'][0]['target_id']);
 
     $msg = '';
+    $exception_caught = FALSE;
     try {
       $status = parent::save($form, $form_state);
     }
     catch (\Exception $e) {
+      $exception_caught = TRUE;
       $status = 'exception';
       $msg = $e->getMessage();
     }
@@ -260,6 +278,7 @@ class TripalEntityForm extends ContentEntityForm {
         $this->messenger()->addError($this->t('Error, we were unable to save this page. %msg', [
           '%msg' => $msg,
         ]));
+        $form_state->setRebuild(FALSE);
         break;
 
       default:
@@ -267,7 +286,10 @@ class TripalEntityForm extends ContentEntityForm {
           '%label' => $bundle_entity->label(),
         ]));
     }
-    $form_state->setRedirect('entity.tripal_entity.canonical', ['tripal_entity' => $this->entity->id()]);
+
+    if (!$exception_caught) {
+      $form_state->setRedirect('entity.tripal_entity.canonical', ['tripal_entity' => $this->entity->id()]);
+    }
   }
 
   /**
