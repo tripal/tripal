@@ -213,9 +213,10 @@ class TripalEntityForm extends ContentEntityForm {
       . ' <a href=":url" target="_blank">Click here</a> to update the title format.';
     if (!preg_match('/\[.*\]/', $title_format)) {
       $message = $this->t('The Page Title Format for this content type does not contain any tokens. <strong>This will result in all titles for :bundle being the same!</strong>' . $title_message_suffix,
-        [':url' => $url]
+        [':url' => $url,
+         ':bundle' => $bundle_entity->label()]
       );
-      $this->messenger()->addWarning($message);
+      $this->messenger()->addError($message);
     }
     elseif ($title_format == 'Entity [TripalEntity__entity_id]') {
       $message = $this->t('The Page Title Format for this content type is the default generic format. <strong>This will result in very uninformative titles!</strong>' . $title_message_suffix);
@@ -231,8 +232,7 @@ class TripalEntityForm extends ContentEntityForm {
         'The URL Alias Format for this content type does not contain any tokens. <strong>This will result in no alias being added due to duplicate aliases.</strong>' . $url_message_suffix,
         [':url' => $url]
       );
-      $this->messenger()->addWarning($message);
-      $this->format_errors['path'][] = $message;
+      $this->messenger()->addError($message);
     } elseif ($url_format == '[TripalEntityType__term_label]/[TripalEntity__entity_id]') {
       $message = $this->t('The URL Alias Format for this content type is the default generic format. We suggest updating it to include meaningful tokens for more readable URLs.' . $url_message_suffix,
         [':url' => $url]
@@ -261,6 +261,25 @@ class TripalEntityForm extends ContentEntityForm {
       $msg = $e->getMessage();
     }
 
+    // If errors are encountered in the postSave they are documented within
+    // the entity. Lets retrieve those and pass the information onto the user
+    // and to the Drupal watchdog through the logger.
+    $post_save_errors = $this->entity->getPostSaveErrors();
+    foreach ($post_save_errors as $details) {
+      $status = 'postSave errors';
+      $this->messenger()->addError($this->t($details['message'], $details['message_args']));
+      if ($details['exception']) {
+        $this->logger('TripalEntity')->error(
+          $this->t($details['message'] . ' Exception Caught: ' . $details['exception_message'], $details['message_args'])
+        );
+      }
+      else {
+        $this->logger('TripalEntity')->error(
+          $this->t($details['message'], $details['message_args'])
+        );
+      }
+    }
+
     switch ($status) {
       case SAVED_NEW:
         $this->messenger()->addMessage($this->t('Created the %label.', [
@@ -279,6 +298,10 @@ class TripalEntityForm extends ContentEntityForm {
           '%msg' => $msg,
         ]));
         $form_state->setRebuild(FALSE);
+        break;
+
+      case 'postSave errors':
+        $this->messenger()->addError($this->t('Error, we were able to save the core content of this page but encountered an error during the final stage. We recommend you use the other errors reported to fix the root cause and then come back and edit this page. Contact your administrator for more details.'));
         break;
 
       default:

@@ -61,6 +61,26 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
   use EntityChangedTrait;
 
+  /**
+   * Any errors encountered during the postSave() process.
+   *
+   * These are saved here to provide context to the TripalEntityForm or any
+   * other programatic interface for creating entities.
+   *
+   * NOTE: We cannot just throw an exception in the postSave() as it mangles
+   * the entity. Only inconsequential things should be done in the postSave()
+   * and any errors should be handled gracefully.
+   *
+   * @var array
+   *   A list of arrays where each one described an error enountered.
+   *   Keys included in sub-array elements are:
+   *    - code (string): a developer code for the error.
+   *    - exception (bool): indicates if an exception was thrown.
+   *    - exception_message (string): the message string of the exception.
+   *    - message (string): describes the error encountered. May include tokens.
+   *    - message_args (array): an array of tokens with their value for the message.
+   */
+  protected $post_save_errors = [];
 
   /**
    * An array of potential token replacement values where the key is
@@ -402,6 +422,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function setPublished($published) {
     $this->set('status', $published ? NODE_PUBLISHED : NODE_NOT_PUBLISHED);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPostSaveErrors() {
+    return $this->post_save_errors;
   }
 
   /**
@@ -903,8 +930,17 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           ->execute();
       }
       catch (\Exception $e) {
-        $message = "We were unable to update the title '" . $title . "' directly. " . $e->getMessage();
-        throw new \Exception($message);
+        // Throwing an exception in postSave() mangles the entity!
+        // Warn the curator that the title was not set so they can fix it.
+        // Drupal does not require unique titles so it is ok to leave
+        // things in this state.
+        $this->post_save_errors[] = [
+          'code' => 'TITLE-DB-SAVE',
+          'exception' => TRUE,
+          'exception_message' => $e->getMessage(),
+          'message' => "We were unable to update the title ':title' directly.  Once the root cause is fixed, the title can be created by updating this :bundle.",
+          'message_args' => [':title' => $title, ':bundle' => $this->getBundle()->label()],
+        ];
       }
     }
 
@@ -917,7 +953,22 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     if (array_key_exists(0, $path_values) && array_key_exists('alias', $path_values[0])) {
       $path_alias = (string) $path_values[0]['alias'];
     }
-    $this->setAlias($path_alias);
+    try {
+      $this->setAlias($path_alias);
+    }
+    catch(\Exception $e) {
+      // Throwing an exception in postSave() mangles the entity!
+      // Warn the curator that the title was not set so they can fix it.
+      // Drupal does not require unique titles so it is ok to leave
+      // things in this state.
+      $this->post_save_errors[] = [
+        'code' => 'URL-ALIAS-SAVE',
+        'exception' => TRUE,
+        'exception_message' => $e->getMessage(),
+        'message' => $e->getMessage(),
+        'message_args' => [],
+      ];
+    }
   }
 
   /**
