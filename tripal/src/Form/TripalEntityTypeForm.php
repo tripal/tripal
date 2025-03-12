@@ -220,9 +220,28 @@ class TripalEntityTypeForm extends EntityForm {
     parent::validateForm($form, $form_state);
 
     $values = $form_state->getValues();
-    $tripal_entity_type = $this->entity;
 
-    if ($tripal_entity_type->getLabel() != $values['label']) {
+    $this->validateLabel($values, $form_state);
+    $this->validateTerm($values, $form_state);
+    $this->validateTokenFormats($values, $form_state);
+  }
+
+  /**
+   * Validate the label for the bundle.
+   *
+   * Helper method for validateForm().
+   *
+   * @param array $values
+   *   The values submitted to the form.
+   * @param FormStateInterface $form_state
+   *   The form state (used to set errors).
+   * @return bool
+   *   Returns TRUE if the label is valid and FALSE if any errors were set on the form.
+   */
+  protected function validateLabel(array $values, FormStateInterface $form_state) {
+    $valid = TRUE;
+
+    if ($this->entity->getLabel() != $values['label']) {
 
       // Ensure the label is not already taken.
       $entities = \Drupal::entityTypeManager()
@@ -230,10 +249,29 @@ class TripalEntityTypeForm extends EntityForm {
         ->loadByProperties(['label' => $values['label']]);
       unset($entities[ $values['label'] ]);
       if (!empty($entities)) {
+        $valid = FALSE;
         $form_state->setErrorByName('label',
           $this->t('A Tripal Content type with the label :label already exists. Please choose a unique label.', [':label' => $values['label']]));
       }
     }
+
+    return $valid;
+  }
+
+  /**
+   * Validate the term for the bundle.
+   *
+   * Helper method for validateForm().
+   *
+   * @param array $values
+   *   The values submitted to the form.
+   * @param FormStateInterface $form_state
+   *   The form state (used to set errors).
+   * @return bool
+   *   Returns TRUE if the term is valid and FALSE if any errors were set on the form.
+   */
+  protected function validateTerm(array $values, FormStateInterface $form_state) {
+    $valid = TRUE;
 
     $term_str = $form_state->getValue('term');
     $matches = [];
@@ -242,7 +280,7 @@ class TripalEntityTypeForm extends EntityForm {
       $accession = $matches[3];
 
       // Ensure the term has not already been used for another Content Type.
-      if ($tripal_entity_type->isNew()) {
+      if ($this->entity->isNew()) {
         $entity_query = \Drupal::entityTypeManager()
           ->getStorage('tripal_entity_type')
           ->getQuery();
@@ -256,6 +294,7 @@ class TripalEntityTypeForm extends EntityForm {
         $entities = $entity_query->execute();
 
         if (!empty($entities)) {
+          $valid = FALSE;
           $form_state->setErrorByName('term',
           $this->t('A Tripal Content Type with this controlled vocabulay term already exists. Please choose a unique term.'));
         }
@@ -266,6 +305,7 @@ class TripalEntityTypeForm extends EntityForm {
       $idSpace_object = \Drupal::service('tripal.collection_plugin_manager.idspace')
         ->loadCollection($idSpace);
       if ($idSpace_object === NULL) {
+        $valid = FALSE;
         $form_state->setErrorByName('term',
           $this->t('You entered "%termStr" but the ID Space, "%idspace", does not exist. Please select an existing term from the autocomplete drop-down.',
           ['%termStr' => $term_str, '%idspace' => $idSpace]
@@ -274,6 +314,7 @@ class TripalEntityTypeForm extends EntityForm {
       else {
       $term_object = $idSpace_object->getTerm($accession);
         if ($term_object === NULL) {
+          $valid = FALSE;
           $form_state->setErrorByName('term',
             $this->t('You entered "%termStr" but a term with the accession, "%accession", does not exist in that ID Space. Please select an existing term from the autocomplete drop-down.',
             ['%termStr' => $term_str, '%accession' => $accession]
@@ -282,10 +323,30 @@ class TripalEntityTypeForm extends EntityForm {
       }
     }
     else {
+      $valid = FALSE;
       $form_state->setErrorByName('term',
           'Please select a term from the autocomplete drop-down. It must have the ID space and accession in parenthesis.');
     }
-    $tokens = $this->getValidTokens($tripal_entity_type, FALSE);
+
+    return $valid;
+  }
+
+  /**
+   * Validate the title + url alias token formats for the bundle.
+   *
+   * Helper method for validateForm().
+   *
+   * @param array $values
+   *   The values submitted to the form.
+   * @param FormStateInterface $form_state
+   *   The form state (used to set errors).
+   * @return bool
+   *   Returns TRUE if the formats is valid and FALSE if any errors were set on the form.
+   */
+  protected function validateTokenFormats(array $values, FormStateInterface $form_state) {
+    $valid = TRUE;
+
+    $tokens = $this->getValidTokens($this->entity, FALSE);
 
     // If the title format has been set, make sure that there is
     // at least one token, and that all tokens used are valid
@@ -293,10 +354,12 @@ class TripalEntityTypeForm extends EntityForm {
     if ($title_format) {
       $invalid_tokens = $this->validateTokens($title_format, $tokens);
       if ($invalid_tokens) {
+        $valid = FALSE;
         $form_state->setErrorByName('title_format',
             $this->t('One or more invalid title tokens detected: %tokens', ['%tokens' => $invalid_tokens]));
       }
       if (!preg_match('/\[.*\]/', $title_format)) {
+        $valid = FALSE;
         $form_state->setErrorByName('title_format',
             $this->t('The Page Title Format must contain at least one token'));
       }
@@ -307,15 +370,18 @@ class TripalEntityTypeForm extends EntityForm {
     if ($url_format) {
       $invalid_tokens = $this->validateTokens($url_format, $tokens);
       if ($invalid_tokens) {
+        $valid = FALSE;
         $form_state->setErrorByName('url_format',
             $this->t('One or more invalid URL Alias tokens detected: %tokens', ['%tokens' => $invalid_tokens]));
       }
       if (!preg_match('/\[.*\]/', $url_format)) {
+        $valid = FALSE;
         $form_state->setErrorByName('url_format',
             $this->t('The URL Alias Format must contain at least one token'));
       }
     }
 
+    return $valid;
   }
 
   /**
