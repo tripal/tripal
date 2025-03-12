@@ -281,7 +281,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @return string
    *   Returns the path alias that was used with tokens replaced
    */
-  public function setAlias(string $path_alias = ''): string {
+  public function setAlias(string $path_alias = '', bool $during_save = FALSE): string {
     // Check if an alias already exists for this entity's system path
     /** @var array $existing_alias **/
     $existing_alias = $this->getAlias();
@@ -297,6 +297,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     if (!$existing_alias or ($existing_alias['alias'] != $new_alias)) {
       $entities = \Drupal::entityTypeManager()->getStorage('path_alias')->loadByProperties(['alias' => $new_alias]);
       if ($entities) {
+
+        // Reset the internal path field.
+        $path_item =  $this->path->first();
+        $path_item->set('alias', '');
+        $path_item->set('pid', NULL);
+
+        // Exception message...
         $links = [];
         foreach ($entities as $e) {
           $path = $e->getPath();
@@ -308,16 +315,28 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // If an alias does not exist, then create one
     if (!$existing_alias and $new_alias) {
-      $system_path = '/bio_data/' . $this->getID();
-      $new_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
-        'path' => $system_path,
-        'alias' => $new_alias,
-      ]);
-      if (!is_object($new_alias_object)) {
-        throw new \Exception(t("We were unable to create the alias: ':new_alias'",
-          [':new_alias' => $new_alias]));
+      // the field will create the alias for us so just ensure its set to the new one.
+      if ($during_save) {
+        $path_item =  $this->path->first();
+        $path_item->set('alias', $new_alias);
       }
-      $new_alias_object->save();
+      // we have to create the path alias ourselves.
+      else {
+        $system_path = '/bio_data/' . $this->getID();
+        $new_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+          'path' => $system_path,
+          'alias' => $new_alias,
+        ]);
+        if (!is_object($new_alias_object)) {
+          throw new \Exception(t("We were unable to create the alias: ':new_alias'",
+            [':new_alias' => $new_alias]));
+        }
+        $new_alias_object->save();
+        // and update the internal path field.
+        $path_item =  $this->path->first();
+        $path_item->set('alias', $new_alias);
+        $path_item->set('pid', $new_alias_object->id());
+      }
     }
     // If an alias already exists, and is different, we can just update it
     elseif ($existing_alias and ($existing_alias['alias'] != $new_alias)) {
@@ -333,9 +352,15 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       if ($new_alias) {
         $existing_alias_object->setAlias($new_alias);
         $existing_alias_object->save();
+        $path_item =  $this->path->first();
+        $path_item->set('alias', $new_alias);
+        $path_item->set('pid', $existing_alias['id']);
       }
       else {
         $existing_alias_object->delete();
+        $path_item =  $this->path->first();
+        $path_item->set('alias', '');
+        $path_item->set('pid', NULL);
       }
     }
 
@@ -910,7 +935,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * {@inheritdoc}
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
-    parent::postSave($storage, $update);
 
     // Set the tokens for title/URL replacement now so that they include all
     // of the field values (i.e. set it before Tripal/Chado storage clears any).
@@ -954,13 +978,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $path_alias = (string) $path_values[0]['alias'];
     }
     try {
-      $this->setAlias($path_alias);
+      $this->setAlias($path_alias, TRUE);
     }
     catch(\Exception $e) {
       // Throwing an exception in postSave() mangles the entity!
-      // Warn the curator that the title was not set so they can fix it.
-      // Drupal does not require unique titles so it is ok to leave
-      // things in this state.
+      // Warn the curator that the URL alias was not set so they can fix it.
+      // This entity will just not have an alias.
       $this->post_save_errors[] = [
         'code' => 'URL-ALIAS-SAVE',
         'exception' => TRUE,
@@ -969,6 +992,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         'message_args' => [],
       ];
     }
+
+    // Now we've done our last minute processing let the parent do it's thing.
+    // This includes postSaving all the fields which is where the path field
+    // will create the alias if one is provided.
+    parent::postSave($storage, $update);
   }
 
   /**
