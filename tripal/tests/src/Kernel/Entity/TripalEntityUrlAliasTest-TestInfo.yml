@@ -82,9 +82,28 @@ scenarios:
         - value: "Ocean Jasper"
       expected:
         title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #2'
-        url_alias: '/test/test_gemstone/Ocean-Jasper/2'
-        exception: TRUE
-        exception_message: "We were unable to set the alias '/test/test_gemstone/Ocean-Jasper/2' because it already refers to the following: /bio_data/1"
+        url_alias: NULL
+        exception: FALSE
+        exception_message: ''
+        postSave:
+        - code: 'URL-ALIAS-SAVE'
+          exception: TRUE
+          exception_message: "We were unable to set the alias '/test/test_gemstone/Ocean-Jasper/2' because it already refers to the following: /bio_data/1"
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper"
+    edit:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper UNIQUE"
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper UNIQUE</em> Entity #2'
+        url_alias: '/test/test_gemstone/Ocean-Jasper-UNIQUE/2'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper UNIQUE"
   - label: "Use form element value on create + edit for URL alias"
     description: "Check that the user provided value is used for the alias when present and that the format is not used."
     create:
@@ -156,6 +175,27 @@ scenarios:
         - alias: '/test/Ocean-Jasper/SET'
       expected:
         title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #2'
-        url_alias: '/test/Ocean-Jasper/SET'
-        exception: TRUE
-        exception_message: "We were unable to set the alias '/test/Ocean-Jasper/SET' because it already refers to the following: /bio_data/1"
+        url_alias: NULL
+        exception: FALSE
+        exception_message: ''
+        postSave:
+        - code: 'URL-ALIAS-SAVE'
+          exception: TRUE
+          exception_message: "We were unable to set the alias '/test/Ocean-Jasper/SET' because it already refers to the following: /bio_data/1"
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper"
+    edit:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper"
+        path:
+        - alias: '/test/Ocean-Jasper/SET/unique'
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #2'
+        url_alias: '/test/Ocean-Jasper/SET/unique'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper"
