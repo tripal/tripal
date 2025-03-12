@@ -372,12 +372,18 @@ class TripalEntityTypeForm extends EntityForm {
    * @param string|null $title_format
    *   The token string format for the entity title
    *
-   * @return bool
-   *   TRUE if title_format is valid, FALSE if not valid.
+   * @return void
    */
-  private function validateTitleFormat(?string $title_format) {
+  private function validateTitleFormat(?string $title_format): void {
     $bundle_id = $this->entity->id();
     $bundle_label = $this->entity->label();
+
+    // This validation may be called when creating a new content type, at which
+    // point the bundle may not yet exist. In such a case just return.
+    if (!$bundle_id) {
+      return;
+    }
+
     // The title format from the form during submission is passed into this
     // function, but on form build, we look it up from the entity.
     if (!$title_format) {
@@ -395,9 +401,6 @@ class TripalEntityTypeForm extends EntityForm {
         '%bundle' => $bundle_label,
         ':url' => $url
       ]));
-      return FALSE;
-    } else {
-      return TRUE;
     }
   }
 
