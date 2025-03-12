@@ -234,3 +234,34 @@ scenarios:
       expected_values:
         common_name:
         - value: "Ocean Jasper"
+  - label: "format for title generates duplicate, fix on update"
+    description: "Check that when the format generates a duplicate title that the user is warned but there is no error. Also check we can fix it on edit."
+    alter_bundle:
+      title_format: 'TEST [TripalEntityType__label][ <em>[common_name]</em>]'
+    pre_create:
+      common_name:
+      - value: "Ocean Jasper"
+    create:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper"
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper</em>'
+        url_alias: '/test/test_gemstone/Ocean-Jasper/2'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper"
+    edit:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper (Orbicular Jasper)"
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper (Orbicular Jasper)</em>'
+        url_alias: '/test/test_gemstone/Ocean-Jasper/2'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper (Orbicular Jasper)"

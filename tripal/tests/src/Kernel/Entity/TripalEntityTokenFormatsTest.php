@@ -114,7 +114,8 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
       "use form element value on create + edit for URL alias",
       "use form element value on update for URL alias",
       "use form element value for URL alias (duplicate already exists)",
-      "use format for URL alias on create then form on edit (duplicate on edit)"
+      "use format for URL alias on create then form on edit (duplicate on edit)",
+      "format for title generates duplicate, fix on update"
     ];
     foreach ($labels as $key => $label) {
       $scenarios[] = [$key, $label];
@@ -124,7 +125,7 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests that TripalEntity::save() handles URL alias' with substitutions.
+   * Tests that TripalEntity::save() handles URL alias' + titles.
    *
    * @dataProvider provideScenarios
    *
@@ -133,11 +134,22 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
    */
-  public function testTripalEntitySaveUrlAlias(int $current_scenario_key, string $current_scenario_label) {
+  public function testTripalEntitySaveContent(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->scenarios[$current_scenario_key];
     $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");
 
-    // 0. Create any pre-existing entities before the test if some are specified.
+    // 0.a Make any changes needed to the bundle.
+    if (array_key_exists('alter_bundle', $current_scenario)) {
+      if (array_key_exists('title_format', $current_scenario['alter_bundle'])) {
+        $this->tripalEntityType['test_gemstone']->setTitleFormat($current_scenario['alter_bundle']['title_format']);
+      }
+      if (array_key_exists('url_format', $current_scenario['alter_bundle'])) {
+        $this->tripalEntityType['test_gemstone']->setURLFormat($current_scenario['alter_bundle']['url_format']);
+      }
+      $this->tripalEntityType['test_gemstone']->save();
+    }
+
+    // 0.b Create any pre-existing entities before the test if some are specified.
     if (array_key_exists('pre_create', $current_scenario)) {
       $entity = TripalEntity::create([
         'type' => $this->bundle_name,
@@ -273,5 +285,92 @@ class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
     else {
       $this->assertEquals(NULL, $retrieved_alias, "We did not expect an alias to be set when CREATING the entity for the '" . $current_scenario['label'] . "' scenario and yet it was.");
     }
+  }
+
+  /**
+   * Updates the URL alias after create without saving the entity.
+   */
+  public function testSetAliasOutsideOfSave() {
+
+    // Use only a single scenario to test this since the only path we are
+    // trying to cover with this is accessed when
+    // - an alias is not yet set (i.e. was duplicate on entity create)
+    // - the new alias is unique.
+    // - we set the new alias outside of entity save.
+    // Specifically: "use format for URL (duplicate already exists)"
+    $current_scenario = $this->scenarios[2];
+
+    // Create any pre-existing entities before the test if some are specified.
+    if (array_key_exists('pre_create', $current_scenario)) {
+      $entity = TripalEntity::create([
+        'type' => $this->bundle_name,
+      ] + $current_scenario['pre_create']);
+      $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to SET UP FOR testSetAliasOutsideOfSave().");
+      $status = $entity->save();
+    }
+
+    // 1. Create the entity with that value set.
+    $entity = TripalEntity::create([
+      'type' => $this->bundle_name,
+    ] + $current_scenario['create']['user_input']);
+    $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test testSetAliasOutsideOfSave().");
+
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $status = $entity->save();
+    } catch (\Exception $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+
+    $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
+    $this->assertEquals(
+      $current_scenario['create']['expected']['exception'],
+      $exception_caught,
+      "Regarding an exception being thrown on create, we did not get what we expected."
+    );
+    $this->assertEquals(
+      $current_scenario['create']['expected']['exception_message'],
+      $exception_message,
+      "The message of the exception thrown on create was not what we expected."
+    );
+
+    // 2. Load the entity we just created so we can check the values.
+    $created_entity = TripalEntity::load($entity->id());
+    $this->assertFieldValuesMatch($current_scenario['create']['expected_values'], $created_entity, '"testSetAliasOutsideOfSave()" being created. ');
+    // -- Title.
+    $this->assertEquals($current_scenario['create']['expected']['title'], $created_entity->getTitle(), "We did not get the title we expected when CREATING the entity for testSetAliasOutsideOfSave().");
+    // -- URL.
+    $retrieved_alias = $created_entity->getAlias();
+    $this->assertEquals(NULL, $retrieved_alias, "We retrieved an alias despite not expecting one when CREATING the entity for testSetAliasOutsideOfSave().");
+
+    // 3. Update URL outside of an entity save + check alias.
+    $expected_alias = '/new/alias/set/directly';
+
+    $exception_caught = FALSE;
+    $exception_message = '';
+    try {
+      $set_alias = $created_entity->setAlias($expected_alias);
+    }
+    catch( \Exception $e) {
+      $exception_caught = TRUE;
+      $exception_message = $e->getMessage();
+    }
+
+    $this->assertEquals($expected_alias, $set_alias, "setAlias() did not return the alias we passed in.");
+    $this->assertFalse($exception_caught, "We did not expect an exception when setting an alias outside of entity save.");
+
+    $retrieved_alias = $created_entity->getAlias();
+    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array.");
+    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property.");
+    $this->assertEquals($expected_alias, $retrieved_alias['alias'], "We did not get the url alias we expected after setting it outside of an entity save.");
+
+    // 4. Reload the entity and ensure the alias was truely set.
+    $loaded_entity = TripalEntity::load($entity->id());
+    $retrieved_alias = $created_entity->getAlias();
+    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array.");
+    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property.");
+    $this->assertEquals($expected_alias, $retrieved_alias['alias'], "We did not get the url alias we expected after re-loading the entity whose url alias was set outside of save.");
   }
 }
