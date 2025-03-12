@@ -282,8 +282,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   Returns the path alias that was used with tokens replaced
    */
   public function setAlias(string $path_alias = '', bool $during_save = FALSE): string {
+
+    // Keep track of when a duplicate is found in order to throw an exception
+    // at the very end.
+    $duplicates = [];
+
     // Check if an alias already exists for this entity's system path
-    /** @var array $existing_alias **/
     $existing_alias = $this->getAlias();
 
     // Gets and uses default template, or replaces tokens
@@ -303,18 +307,17 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $path_item->set('alias', '');
         $path_item->set('pid', NULL);
 
-        // Exception message...
-        $links = [];
+        // Keep track of the duplicates here but DO NOT throw the exception
+        // until the end so we can still remove previous alias' if that applies.
         foreach ($entities as $e) {
           $path = $e->getPath();
-          $links[$path] = $path;
+          $duplicates[$path] = $path;
         }
-        throw new \Exception("We were unable to set the alias '$new_alias' because it already refers to the following: " . implode(', ', $links));
       }
     }
 
     // If an alias does not exist, then create one
-    if (!$existing_alias and $new_alias) {
+    if (!$existing_alias and $new_alias and empty($duplicates)) {
       // the field will create the alias for us so just ensure its set to the new one.
       if ($during_save) {
         $path_item =  $this->path->first();
@@ -338,30 +341,34 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $path_item->set('pid', $new_alias_object->id());
       }
     }
-    // If an alias already exists, and is different, we can just update it
+    // If an alias already exists, and is different...
     elseif ($existing_alias and ($existing_alias['alias'] != $new_alias)) {
       $existing_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->load($existing_alias['id']);
       if (!is_object($existing_alias_object)) {
         throw new \Exception(t("Unable to load the existing alias ':existing_alias' in order to update it.",
           [':existing_alias' => $existing_alias['alias']]));
       }
-      // $new_alias will be an empty string here if there was a conflict
-      // with an already existing alias. Here we just remove the alias,
-      // the entity form is responsible for displaying an error message
-      // if the return value is an empty string.
-      if ($new_alias) {
+
+      // As long as there were no duplicates, we can update the existing one.
+      if (empty($duplicates)) {
         $existing_alias_object->setAlias($new_alias);
         $existing_alias_object->save();
         $path_item =  $this->path->first();
         $path_item->set('alias', $new_alias);
         $path_item->set('pid', $existing_alias['id']);
       }
+      // If there are duplcates then we just remove the alias.
+      // An exception will be thrown below to help inform the user what happened.
       else {
         $existing_alias_object->delete();
         $path_item =  $this->path->first();
         $path_item->set('alias', '');
         $path_item->set('pid', NULL);
       }
+    }
+
+    if (!empty($duplicates)) {
+      throw new \Exception("We were unable to set the alias '$new_alias' because it already refers to the following: " . implode(', ', $duplicates));
     }
 
     return $new_alias;

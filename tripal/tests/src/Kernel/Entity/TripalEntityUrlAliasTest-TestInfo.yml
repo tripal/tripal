@@ -199,3 +199,38 @@ scenarios:
       expected_values:
         common_name:
         - value: "Ocean Jasper"
+  - label: "Use format for URL alias on create then form on edit (duplicate on edit)"
+    description: "Check that coming across a duplicate URL alias on edit is detected and deletes the original alias."
+    pre_create:
+        path:
+        - alias: '/test/Ocean-Jasper/SET'
+    create:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper"
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #2'
+        url_alias: '/test/test_gemstone/Ocean-Jasper/2'
+        exception: FALSE
+        exception_message: ''
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper"
+    edit:
+      user_input:
+        common_name:
+        - value: "Ocean Jasper"
+        path:
+        - alias: '/test/Ocean-Jasper/SET'
+      expected:
+        title: 'TEST Gemstones <em>Ocean Jasper</em> Entity #2'
+        url_alias: NULL
+        exception: FALSE
+        exception_message: ''
+        postSave:
+        - code: 'URL-ALIAS-SAVE'
+          exception: TRUE
+          exception_message: "We were unable to set the alias '/test/Ocean-Jasper/SET' because it already refers to the following: /bio_data/1"
+      expected_values:
+        common_name:
+        - value: "Ocean Jasper"

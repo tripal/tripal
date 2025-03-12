@@ -114,6 +114,7 @@ class TripalEntityUrlAliasTest extends TripalTestKernelBase {
       "Use form element value on create + edit for URL alias",
       "Use form element value on update for URL alias",
       "Use form element value for URL alias (duplicate already exists)",
+      "Use format for URL alias on create then form on edit (duplicate on edit)"
     ];
     foreach ($labels as $key => $label) {
       $scenarios[] = [$key, $label];
@@ -262,8 +263,15 @@ class TripalEntityUrlAliasTest extends TripalTestKernelBase {
     $this->assertEquals($current_scenario['edit']['expected']['title'], $updated_entity->getTitle(), "We did not get the title we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
     // -- URL.
     $retrieved_alias = $created_entity->getAlias();
-    $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
-    $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
-    $this->assertEquals($current_scenario['edit']['expected']['url_alias'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    // when an alias expected...
+    if ($current_scenario['edit']['expected']['url_alias']) {
+      $this->assertIsArray($retrieved_alias, "The retrieved path should be an array when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+      $this->assertArrayHasKey('alias', $retrieved_alias, "The retrieved path should have an alias property when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+      $this->assertEquals($current_scenario['edit']['expected']['url_alias'], $retrieved_alias['alias'], "We did not get the url alias we expected when UPDATING the entity for the '" . $current_scenario['label'] . "' scenario.");
+    }
+    // if an alias is NOT expected...
+    else {
+      $this->assertEquals(NULL, $retrieved_alias, "We did not expect an alias to be set when CREATING the entity for the '" . $current_scenario['label'] . "' scenario and yet it was.");
+    }
   }
 }
