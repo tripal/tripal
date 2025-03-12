@@ -173,6 +173,23 @@ class TripalEntityUrlAliasTest extends TripalTestKernelBase {
       "The message of the exception thrown on create was not what we expected."
     );
 
+    // If we expected postSave errors then check they were present and as expected.
+    $ret_postSave_errors = $entity->getPostSaveErrors();
+    if (isset($current_scenario['create']['expected']['postSave'])) {
+      $expected_postSave_errors = $current_scenario['create']['expected']['postSave'];
+      $expected_num_postSave = count($current_scenario['create']['expected']['postSave']);
+      $this->assertCount($expected_num_postSave, $ret_postSave_errors, "We did not get the number of errors on postSave() as we expected.");
+      foreach ($ret_postSave_errors as $i => $ret_error) {
+        $expected_error = $expected_postSave_errors[$i];
+        foreach ($expected_error as $key => $expected_value) {
+          $this->assertEquals($expected_value, $ret_error[$key], "The '$key' for this error encountered during postSave() did not match what we expected.");
+        }
+      }
+    }
+    else {
+      $this->assertCount(0, $ret_postSave_errors, "We did not expect any errors on postSave() and yet we retrieved some.");
+    }
+
     // We cannot test update if create failed.
     if ($exception_caught) {
       return;
@@ -221,6 +238,22 @@ class TripalEntityUrlAliasTest extends TripalTestKernelBase {
       $exception_message,
       "The message of the exception thrown on update was not what we expected."
     );
+
+    // If we expected postSave errors then check they were present and as expected.
+    $ret_postSave_errors = $created_entity->getPostSaveErrors();
+    if (isset($current_scenario['edit']['expected']['postSave'])) {
+      $expected_postSave_errors = $current_scenario['edit']['expected']['postSave'];
+      $expected_num_postSave = count($current_scenario['edit']['expected']['postSave']);
+      $this->assertCount($expected_num_postSave, $ret_postSave_errors, "We did not get the number of errors on postSave() as we expected.");
+      foreach ($ret_postSave_errors as $i => $ret_error) {
+        $expected_error = $expected_postSave_errors[$i];
+        foreach ($expected_error as $key => $expected_value) {
+          $this->assertEquals($expected_value, $ret_error[$key], "The '$key' for this error encountered during postSave() did not match what we expected.");
+        }
+      }
+    } else {
+      $this->assertCount(0, $ret_postSave_errors, "We did not expect any errors on postSave() and yet we retrieved some.");
+    }
 
     // 4. Load the entity we just updated so we can check the values.
     $updated_entity = TripalEntity::load($created_entity->id());
