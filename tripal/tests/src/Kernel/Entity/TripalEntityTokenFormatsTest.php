@@ -15,7 +15,7 @@ use Drupal\tripal\Entity\TripalEntityType;
  * @group TripalEntity
  * @group TripalTokenParser
  */
-class TripalEntityUrlAliasTest extends TripalTestKernelBase {
+class TripalEntityTokenFormatsTest extends TripalTestKernelBase {
 
   use TripalEntityFieldTestTrait;
 
@@ -36,7 +36,7 @@ class TripalEntityUrlAliasTest extends TripalTestKernelBase {
    *
    * @var string
    */
-  protected string $yaml_info_file = __DIR__ . '/TripalEntityUrlAliasTest-TestInfo.yml';
+  protected string $yaml_info_file = __DIR__ . '/TripalEntityTokenFormatsTest-TestInfo.yml';
 
   /**
    * Describes the environment to setup for this test.
@@ -108,13 +108,13 @@ class TripalEntityUrlAliasTest extends TripalTestKernelBase {
     $scenarios = [];
 
     $labels = [
-      "Use format for URL alias (multi-word)",
-      "Use format for URL alias (optional value)",
-      "Use format for URL (duplicate already exists)",
-      "Use form element value on create + edit for URL alias",
-      "Use form element value on update for URL alias",
-      "Use form element value for URL alias (duplicate already exists)",
-      "Use format for URL alias on create then form on edit (duplicate on edit)"
+      "multi-word token values for URL + title",
+      "optional + empty tokens for URL + title",
+      "use format for URL (duplicate already exists)",
+      "use form element value on create + edit for URL alias",
+      "use form element value on update for URL alias",
+      "use form element value for URL alias (duplicate already exists)",
+      "use format for URL alias on create then form on edit (duplicate on edit)"
     ];
     foreach ($labels as $key => $label) {
       $scenarios[] = [$key, $label];

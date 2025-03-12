@@ -19,7 +19,7 @@ system-under-test:
       storage_plugin_id: drupal_sql_storage
       max_length: 255
 scenarios:
-  - label: "Use format for URL alias (multi-word)"
+  - label: "multi-word token values for URL + title"
     description: "Check proper field substitution in URL alias containing multiple word token. Confirm there is no change on edit even though the field value changed."
     create:
       user_input:
@@ -45,7 +45,7 @@ scenarios:
       expected_values:
         common_name:
         - value: "Ocean Jasper (Orbicular Jasper)"
-  - label: "Use format for URL alias (optional value)"
+  - label: "optional + empty tokens for URL + title"
     description: "Check proper field substitution in URL alias containing empty optional token. Confirm there is no change on edit even though the field value was set."
     create:
       user_input:
@@ -71,7 +71,7 @@ scenarios:
       expected_values:
         common_name:
         - value: "Ocean Jasper"
-  - label: "Use format for URL (duplicate already exists)"
+  - label: "use format for URL (duplicate already exists)"
     description: "Check that the right exception is thrown when the substituted URL alias matches one already existing for another entity."
     pre_create:
         path:
@@ -104,7 +104,7 @@ scenarios:
       expected_values:
         common_name:
         - value: "Ocean Jasper UNIQUE"
-  - label: "Use form element value on create + edit for URL alias"
+  - label: "use form element value on create + edit for URL alias"
     description: "Check that the user provided value is used for the alias when present and that the format is not used."
     create:
       user_input:
@@ -134,7 +134,7 @@ scenarios:
       expected_values:
         common_name:
         - value: "Ocean Jasper (Orbicular Jasper)"
-  - label: "Use form element value on update for URL alias"
+  - label: "use form element value on update for URL alias"
     description: "Check that the user provided value is used for the alias when present on update and that it can override a previous alias generate by format on create."
     create:
       user_input:
@@ -162,7 +162,7 @@ scenarios:
       expected_values:
         common_name:
         - value: "Ocean Jasper (Orbicular Jasper)"
-  - label: "Use form element value for URL alias (duplicate already exists)"
+  - label: "use form element value for URL alias (duplicate already exists)"
     description: "Check that the right exception is thrown if the user provided alias matches one already used for another page."
     pre_create:
         path:
@@ -199,7 +199,7 @@ scenarios:
       expected_values:
         common_name:
         - value: "Ocean Jasper"
-  - label: "Use format for URL alias on create then form on edit (duplicate on edit)"
+  - label: "use format for URL alias on create then form on edit (duplicate on edit)"
     description: "Check that coming across a duplicate URL alias on edit is detected and deletes the original alias."
     pre_create:
         path:
