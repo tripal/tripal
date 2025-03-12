@@ -20,10 +20,10 @@ class TripalEntityTypeForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    // Display an error message if the title format is not valid.
+    // Display a warning if the title format is the default generic format.
     // Note: We don't want to stop saving of this form because they may need
     // more fields before they can complete this form.
-    $this->validateTitleFormat();
+    $this->validateTitleFormat($form_state->getUserInput()['title_format'] ?? NULL);
 
     $tripal_entity_type = $this->entity;
     $tripal_entity_type->setDefaults();
@@ -287,20 +287,33 @@ class TripalEntityTypeForm extends EntityForm {
     }
     $tokens = $this->getValidTokens($tripal_entity_type, FALSE);
 
-    // Make sure all title tokens used are valid
+    // If the title format has been set, make sure that there is
+    // at least one token, and that all tokens used are valid
     $title_format = $form_state->getValue('title_format');
-    $invalid_token = $this->validateTokens($title_format, $tokens);
-    if ($invalid_token) {
-      $form_state->setErrorByName('title_format',
-          "One or more invalid title tokens detected: " . $invalid_token);
+    if ($title_format) {
+      $invalid_tokens = $this->validateTokens($title_format, $tokens);
+      if ($invalid_tokens) {
+        $form_state->setErrorByName('title_format',
+            $this->t('One or more invalid title tokens detected: %tokens', ['%tokens' => $invalid_tokens]));
+      }
+      if (!preg_match('/\[.*\]/', $title_format)) {
+        $form_state->setErrorByName('title_format',
+            $this->t('The Page Title Format must contain at least one token'));
+      }
     }
 
     // Make sure all url tokens used are valid
     $url_format = $form_state->getValue('url_format');
-    $invalid_token = $this->validateTokens($url_format, $tokens);
-    if ($invalid_token) {
-      $form_state->setErrorByName('url_format',
-          "One or more invalid url tokens detected: " . $invalid_token);
+    if ($url_format) {
+      $invalid_tokens = $this->validateTokens($url_format, $tokens);
+      if ($invalid_tokens) {
+        $form_state->setErrorByName('url_format',
+            $this->t('One or more invalid URL Alias tokens detected: %tokens', ['%tokens' => $invalid_tokens]));
+      }
+      if (!preg_match('/\[.*\]/', $url_format)) {
+        $form_state->setErrorByName('url_format',
+            $this->t('The URL Alias Format must contain at least one token'));
+      }
     }
 
   }
@@ -356,27 +369,38 @@ class TripalEntityTypeForm extends EntityForm {
   /**
    * Check the title format for this content type for validity.
    *
-   * @return bool
-   *   TRUE if title_format is valid, FALSE if not valid.
+   * @param string|null $title_format
+   *   The token string format for the entity title
+   *
+   * @return void
    */
-  private function validateTitleFormat() {
+  private function validateTitleFormat(?string $title_format): void {
     $bundle_id = $this->entity->id();
-    $bundle_entity = $this->entity;
-    $title_format = $bundle_entity->getTitleFormat();
+    $bundle_label = $this->entity->label();
 
-    $message = '';
-    if (!preg_match('/\[.*\]/', $title_format)) {
-      $message = 'The Page Title Format for this content type does not contain any tokens.';
-    } elseif ($title_format == 'Entity [TripalEntity__entity_id]') {
-      $message = 'The Page Title Format for this content type is the default generic format.';
+    // This validation may be called when creating a new content type, at which
+    // point the bundle may not yet exist. In such a case just return.
+    if (!$bundle_id) {
+      return;
     }
-    if ($message) {
+
+    // The title format from the form during submission is passed into this
+    // function, but on form build, we look it up from the entity.
+    if (!$title_format) {
+      $title_format = $this->entity->getTitleFormat();
+    }
+
+    if ($title_format == 'Entity [TripalEntity__entity_id]') {
       $url = '/admin/structure/bio_data/manage/' . $bundle_id . '/fields';
-      $message .= ' You must update the title format before creating any new content. You can do so by scrolling down to the "Page title options" section of this form and adding more readable tokens. If the tokens you want to use are not available, you may need to add more fields first by going to the <a href=":url">Manage Fields page for this content type</a>.';
-      \Drupal::messenger()->addError($this->t($message, [':url' => $url]));
-      return FALSE;
-    } else {
-      return TRUE;
+      $message = 'The Page Title Format for the %bundle content type is the default generic format.'
+        . ' You should update the title format before creating any new content. You can do so by scrolling'
+        . ' down to the "Page title options" section of this form and adding more readable tokens. If the'
+        . ' tokens you want to use are not available, you may need to add more fields first by going to the'
+        . ' <a href=":url">Manage Fields page for this content type</a>.';
+      \Drupal::messenger()->addWarning($this->t($message, [
+        '%bundle' => $bundle_label,
+        ':url' => $url
+      ]));
     }
   }
 
