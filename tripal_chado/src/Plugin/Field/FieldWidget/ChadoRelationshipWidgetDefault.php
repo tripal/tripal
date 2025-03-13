@@ -144,15 +144,17 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
       '#default_value' => $reverse_default,
     ];
 
-    // To reduce clutter, only display these on the first row
+    // To reduce clutter, only display these items on the first row
     if ($delta == 0) {
       $element['term']['#title'] = t('Controlled Vocabulary Term');
       $element['related_record']['#title'] = $this->t('Related @table record', ['@table' => $base_table]);
-      $element['reverse']['#description'] = $this->t('if this is the subject of the relationship', ['@table' => $base_table]);
+      $element['reverse']['#description'] = $this->t('if this is the subject of the relationship',
+          ['@table' => $base_table]);
     }
 
-    // We also need these two to have a specific combined wrapper in addition to the fieldset.
-    $element['term']['#prefix'] = '<div class="chado-relationship-field-wrapper form-item">' . ($element['term']['#prefix'] ?? '');
+    // We also need a div to have a specific combined wrapper in addition to the fieldset.
+    $element['term']['#prefix'] = '<div class="chado-relationship-field-wrapper form-item">'
+        . ($element['term']['#prefix'] ?? '');
     $element['direction']['#suffix'] = ($element['direction']['#suffix'] ?? '') . '</div>';
 
     // If there is a relationship value and it is not already set,
