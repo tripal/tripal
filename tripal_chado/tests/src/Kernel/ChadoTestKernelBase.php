@@ -136,9 +136,6 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
     }
 
     if (in_array('TripalField', $functionality)) {
-      if (floatval(\Drupal::VERSION) < 11) {
-        $this->installSchema('system', 'sequences');
-      }
       $this->installConfig(['field']);
     }
 
