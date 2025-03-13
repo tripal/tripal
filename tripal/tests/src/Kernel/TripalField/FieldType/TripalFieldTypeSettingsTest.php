@@ -4,7 +4,7 @@ namespace Drupal\Tests\tripal\Kernel\TripalField;
 
 use Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\Tests\tripal\Traits\TripalFieldTestTrait;
+use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\tripal\Entity\TripalEntity;
@@ -19,9 +19,9 @@ use Drupal\Core\Form\FormState;
 class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'tripal'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal'];
 
-  use TripalFieldTestTrait;
+  use TripalEntityFieldTestTrait;
 
   /**
    * {@inheritdoc}
@@ -29,7 +29,7 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->setupFieldTestEnvironment();
+    $this->setupEntityFieldTestEnvironment();
   }
 
   public static function provideFieldsToTest() {
@@ -114,14 +114,16 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
         'formatter_id' => $field_info['formatter_id'],
       ]
     );
+    $bundle_name = $fieldConfig->getTargetBundle();
+    $fieldStorage = reset($this->fieldStorage);
 
     // Build the form using the Drupal form builder.
     $formBuilder = \Drupal\field_ui\Form\FieldStorageConfigEditForm::create($this->container);
-    $formBuilder->setEntity($this->fieldStorage);
+    $formBuilder->setEntity($fieldStorage);
     $form_state = new \Drupal\Core\Form\FormState();
     $form_state->set('field_config', $fieldConfig);
     $form_state->set('entity_type_id', 'tripal_entity');
-    $form_state->set('bundle', $this->TripalEntityType->getID());
+    $form_state->set('bundle', $bundle_name);
     $form = $formBuilder->form([], $form_state);
     $this->assertIsArray(
       $form,

@@ -129,16 +129,18 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * {@inheritDoc}
    */
-  public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool|null {
+  public function isDrupalStoreByFieldNameKey(string $field_name, string $key, object|null $property_type = NULL): bool|null {
 
     // First get our parent to do the generic check.
-    $is_required = parent::isDrupalStoreByFieldNameKey($field_name, $key);
+    $is_required = parent::isDrupalStoreByFieldNameKey($field_name, $key, $property_type);
 
     // Then grab the property type and its storage properties in order to
     // make any chado-specific decisions.
-    $property_type = $this->getPropertyType($field_name, $key);
     if ($property_type === NULL) {
-      return NULL;
+      $property_type = $this->getPropertyType($field_name, $key);
+      if ($property_type === NULL) {
+        return NULL;
+      }
     }
     $storage_settings = $property_type->getStorageSettings();
 

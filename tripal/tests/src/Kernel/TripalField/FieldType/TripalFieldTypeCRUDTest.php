@@ -4,7 +4,7 @@ namespace Drupal\Tests\tripal\Kernel\TripalField;
 
 use Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\Tests\tripal\Traits\TripalFieldTestTrait;
+use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\tripal\Entity\TripalEntity;
@@ -19,9 +19,9 @@ use Drupal\Core\Form\FormState;
 class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'tripal'];
+  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal'];
 
-  use TripalFieldTestTrait;
+  use TripalEntityFieldTestTrait;
 
   /**
    * {@inheritdoc}
@@ -29,7 +29,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->setupFieldTestEnvironment();
+    $this->setupEntityFieldTestEnvironment();
   }
 
   public static function provideFieldsToTest() {
@@ -123,6 +123,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
         'formatter_id' => $field_formatter['id'],
       ]
     );
+    $bundle_name = $fieldConfig->getTargetBundle();
 
     // Create an entity with a specific value for this field
     // -- use the sample value generating to get a value for this field.
@@ -132,7 +133,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
     // -- create the entity with that value set
     $entity = TripalEntity::create([
       'title' => $this->randomString(),
-      'type' => $this->TripalEntityType->getID(),
+      'type' => $bundle_name,
       $field_name => $field_value,
     ]);
     $this->assertInstanceOf(TripalEntity::class, $entity, "We were not able to create a piece of tripal content to test our " . $field_type['id'] . " field.");

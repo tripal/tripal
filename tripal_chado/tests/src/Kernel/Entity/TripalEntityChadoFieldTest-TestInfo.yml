@@ -1,0 +1,151 @@
+system-under-test:
+  bundle:
+    label: Gemstones
+    termIdSpace: NCIT
+    termAccession: C47885
+    id: test_gemstone
+    title_format: 'TEST [TripalEntityType__label] <em>[project_name]</em> Entity #[TripalEntity__entity_id][ acquired by [gemologist]]'
+    url_format: 'test/[TripalEntityType__entity_id][/[gemologist]]/[project_name]/[TripalEntity__entity_id]'
+    settings:
+      chado_base_table: project
+  fields:
+  - name: project_name
+    type: chado_string_type_default
+    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault
+    widget: chado_string_type_widget
+    formatter: chado_string_type_formatter
+    termIdSpace: schema
+    termAccession: name
+    cardinality: 1
+    settings:
+      storage_plugin_id: chado_storage
+      storage_plugin_settings:
+          base_table: project
+          base_column: name
+      max_length: 255
+  - name: metaphysical_props
+    type: chado_text_type_default
+    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault
+    widget: chado_text_type_widget
+    formatter: chado_text_type_formatter
+    termIdSpace: schema
+    termAccession: description
+    cardinality: 1
+    settings:
+      storage_plugin_id: chado_storage
+      storage_plugin_settings:
+          base_table: project
+          base_column: description
+  - name: gemologist
+    type: chado_contact_type_default
+    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoContactTypeDefault
+    widget: chado_contact_widget_default
+    formatter: chado_contact_formatter_default
+    termIdSpace: TCONTACT
+    termAccession: '0000003'
+    cardinality: 1
+    settings:
+      storage_plugin_id: chado_storage
+      storage_plugin_settings:
+        base_table: project
+        linker_table: project_contact
+        linker_fkey_column: contact_id
+scenarios:
+  - label: "Use format for title + URL"
+    description: "Create a page where every field has one value."
+    create:
+      title: 'TEST Gemstones <em>amazonite</em> Entity #1'
+      url: '/test/test_gemstone/amazonite/1'
+      user_input:
+        project_name:
+        - record_id: 0
+          value: "amazonite"
+        metaphysical_props:
+        - record_id: 0
+          value: "soothing, calming, healing from grief"
+      expected:
+        project_name:
+        - record_id: 1
+          value: "amazonite"
+        metaphysical_props:
+        - record_id: 1
+          value: "soothing, calming, healing from grief"
+    edit:
+      title: 'TEST Gemstones <em>Amazonite</em> Entity #1'
+      url: '/test/test_gemstone/amazonite/1'
+      user_input:
+        project_name:
+        - record_id: 1
+          value: "Amazonite"
+        metaphysical_props:
+        - record_id: 1
+          value: "Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work."
+      expected:
+        project_name:
+        - record_id: 1
+          value: "Amazonite"
+        metaphysical_props:
+        - record_id: 1
+          value: "Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work."
+  - label: "Use format with read_value for title + URL + override url on edit"
+    description: "Create a page where every field has one value."
+    create:
+      title: 'TEST Gemstones <em>amazonite</em> Entity #1 acquired by Zhanna Beissekova'
+      url: '/test/test_gemstone/Zhanna-Beissekova/amazonite/1'
+      user_input:
+        project_name:
+        - record_id: 0
+          value: "amazonite"
+        metaphysical_props:
+        - record_id: 0
+          value: "soothing, calming, healing from grief"
+        gemologist:
+        - record_id: 1
+          linker_id: 1
+          link: 1
+          contact_id: 2
+      expected:
+        project_name:
+        - record_id: 1
+          value: "amazonite"
+        metaphysical_props:
+        - record_id: 1
+          value: "soothing, calming, healing from grief"
+        gemologist:
+        - record_id: 1
+          linker_id: 1
+          link: 1
+          contact_id: 2
+          contact_name: 'Zhanna Beissekova'
+          contact_description: 'Enjoys grading and is fascinated by how each stone is different, even within the same species'
+    edit:
+      title: 'TEST Gemstones <em>Amazonite</em> Entity #1 acquired by Zhanna Beissekova'
+      url: '/my/user/set/url/alias'
+      user_input:
+        project_name:
+        - record_id: 1
+          value: "Amazonite"
+        metaphysical_props:
+        - record_id: 1
+          value: "Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work."
+        gemologist:
+        - record_id: 1
+          linker_id: 1
+          link: 1
+          contact_id: 2
+        path:
+        - alias: '/my/user/set/url/alias'
+      expected:
+        project_name:
+        - record_id: 1
+          value: "Amazonite"
+        metaphysical_props:
+        - record_id: 1
+          value: "Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work."
+        gemologist:
+        - record_id: 1
+          linker_id: 2
+          link: 1
+          contact_id: 2
+          contact_name: 'Zhanna Beissekova'
+          contact_description: 'Enjoys grading and is fascinated by how each stone is different, even within the same species'
