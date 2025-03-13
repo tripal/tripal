@@ -226,10 +226,6 @@ class ChadoRecords  {
         // get set when a query is successful for the table and values have
         // been set.
         'has_values' => FALSE,
-
-        // A boolean to indicate that the conditions should be wrapped in
-        // an OR condition group
-        'or_conditions' => FALSE,
       ];
     }
     return TRUE;
@@ -374,7 +370,8 @@ class ChadoRecords  {
    *     function.
    *   - value: a value for the column to use as the condition.
    * @param bool $is_or_condition
-   *   Indicates that multiple conditions are wrapped inside an OR condition group
+   *   Indicates that this condition should be wrapped inside an OR condition
+   *   group along with any others with this flag set
    *
    * @throws \Exception
    *   If the any required fields are missing an error is thrown.
@@ -401,10 +398,8 @@ class ChadoRecords  {
     $operation = array_key_exists('operation', $elements) ? $elements['operation'] : '=';
 
     // Add the condition.
-    $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['conditions'][$column_alias] = ['value' => $value, 'operation' => $operation];
-    if ($is_or_condition) {
-      $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['or_conditions'] = TRUE;
-    }
+    $condition_key = $is_or_condition?'or_conditions':'conditions';
+    $this->records[$base_table]['tables'][$table_alias]['items'][$delta][$condition_key][$column_alias] = ['value' => $value, 'operation' => $operation];
   }
 
   /**
@@ -1981,24 +1976,32 @@ class ChadoRecords  {
         }
       }
 
-      // Check if conditions are wrapped inside "OR"
-      if ($record['or_conditions']) {
-        $conditon_group = $select->orConditionGroup();
+      // Add select OR conditions if present
+      $or_condition_group = NULL;
+      if (array_key_exists('or_conditions', $record)) {
+        // Only use an OR condition group when there is more than one OR condition
+        if (count($record['or_conditions']) > 1) {
+          $or_condition_group = $select->orConditionGroup();
+        }
+        foreach ($record['or_conditions'] as $column_alias => $value) {
+          $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
+          if ($or_condition_group) {
+            $or_condition_group->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
+          }
+          else {
+            $select->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
+          }
+        }
       }
-      else {
-        $conditon_group = $select->andConditionGroup();
+      if ($or_condition_group) {
+        $select->condition($or_condition_group);
       }
-      // Add the select condition
-      $count = 0;
+      // Add select AND conditions
       foreach ($record['conditions'] as $column_alias => $value) {
         if (!empty($value['value'])) {
           $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
-          $conditon_group->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
-          $count++;
+          $select->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
         }
-      }
-      if ($count) {
-        $select->condition($conditon_group);
       }
 
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");

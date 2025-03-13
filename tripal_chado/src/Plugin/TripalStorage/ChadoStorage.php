@@ -961,8 +961,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ];
     $this->records->addColumn($elements, TRUE);
 
-    // When second parameter is TRUE, conditions will be wrapped in an OR condition group
-    $this->records->addCondition($elements, ($link_count > 1));
+    // Setting the second parameter to TRUE indicates that conditions will be
+    // wrapped in an OR condition group if there is more than one condition.
+    $this->records->addCondition($elements, TRUE);
   }
 
   /**
