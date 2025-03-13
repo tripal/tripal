@@ -108,9 +108,9 @@ class TripalEntityPublishForm extends FormBase {
     $form['republish'] = [
       '#type' => 'checkbox',
       '#title' => 'Republish Existing Content',
-      '#description' => 'Check this if the title format has been changed, or if'
-         . ' new fields have been added to the content type. The entity ID number'
-         . ' will not be changed.',
+      '#description' => 'Check this if the title format has been changed, if'
+         . ' new fields have been added to the content type, or if records have'
+         . ' been changed in Chado. The entity ID number will not be changed.',
     ];
 
     $form['batch_size'] = [
