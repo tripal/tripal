@@ -256,11 +256,6 @@ class TripalEntityForm extends ContentEntityForm {
       );
       $this->messenger()->addError($message);
       $errors_found = TRUE;
-    } elseif ($url_format == '[TripalEntityType__term_label]/[TripalEntity__entity_id]') {
-      $message = $this->t('The URL Alias Format for this content type is the default generic format. We suggest updating it to include meaningful tokens for more readable URLs.' . $url_message_suffix,
-        [':url' => $url]
-      );
-      $this->messenger()->addWarning($message);
     }
 
     return $errors_found;
