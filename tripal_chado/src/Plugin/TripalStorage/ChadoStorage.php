@@ -278,7 +278,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // We can actually skip this entire process if all the fields are 100% cached.
     // The cached_fields indicates for each field (key) if it is fully cached (TRUE)
-    // or not (FALSE). Thus is not fields in this variable are false then
+    // or not (FALSE). Thus if no fields in this variable are false then
     // all the fields are cached!
     if ($ignore_cached_fields AND (array_search(FALSE, $this->cached_fields, TRUE) === FALSE)) {
       return TRUE;
