@@ -860,7 +860,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       // to set them... if it did, then the following loadValues would not be
       // needed since the values would already be set.
       // @todo look into fixing insert/update to return all values.
-      $tripal_storages[$tsid]->loadValues($tsid_values);
+      // NOTE: We use FALSE here so that the values are loaded from the database.
+      $tripal_storages[$tsid]->loadValues($tsid_values, FALSE);
     }
 
     // Set the property values that should be saved in Drupal, everything
@@ -1041,6 +1042,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $load_success = False;
       foreach ($values as $tsid => $tsid_values) {
         try {
+          // If this storage backend is cache-aware then only the values for
+          // fields which have un-cached properties will be loaded here.
           $load_success = $tripal_storages[$tsid]->loadValues($tsid_values);
           if ($load_success) {
             $values[$tsid] = $tsid_values;

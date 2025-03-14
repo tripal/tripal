@@ -182,11 +182,14 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
    *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
    *   - "definition": a \Drupal\Field\Entity\FieldConfig object
+   * @param bool $ignore_cached_fields
+   *   If TRUE then values from fully cached fields should be ignored as they
+   *   will be loaded by Drupal; if FALSE then load them from the storage backend.
    *
    * @return bool
    *   True if successful. False otherwise.
    */
-  public function loadValues(&$values) : bool;
+  public function loadValues(&$values, bool $ignore_cached_fields = TRUE) : bool;
 
   /**
    * Deletes the given array of property values from this tripal storage plugin.

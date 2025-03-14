@@ -78,7 +78,7 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
   /**
    * {@inheritDoc}
    */
-  public function loadValues(&$values): bool {
+  public function loadValues(&$values, bool $ignore_cached_fields = TRUE): bool {
     // No need to do anything here.  This is handled by the
     // default SQL storage provided by Drupal
     return TRUE;

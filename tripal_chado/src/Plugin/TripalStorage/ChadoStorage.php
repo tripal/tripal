@@ -270,7 +270,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * @{inheritdoc}
    */
-  public function loadValues(&$values) : bool {
+  public function loadValues(&$values, bool $ignore_cached_fields = TRUE) : bool {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Load');
@@ -280,16 +280,21 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // The cached_fields indicates for each field (key) if it is fully cached (TRUE)
     // or not (FALSE). Thus is not fields in this variable are false then
     // all the fields are cached!
-    if (array_search(FALSE, $this->cached_fields, TRUE) === FALSE) {
+    if ($ignore_cached_fields AND (array_search(FALSE, $this->cached_fields, TRUE) === FALSE)) {
       return TRUE;
     }
 
     // Build the ChadoRecords object.
     $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
 
-    // Parameters indicate this is not a find action and that we should not add
-    // any properties for fields which are 100% cached in drupal to ChadoRecords.
-    $this->buildChadoRecords($values, FALSE, TRUE);
+    if ($ignore_cached_fields) {
+      // Parameters indicate this is not a find action and that we should not add
+      // any properties for fields which are 100% cached in drupal to ChadoRecords.
+      $this->buildChadoRecords($values, FALSE, TRUE);
+    }
+    else {
+      $this->buildChadoRecords($values);
+    }
 
     $transaction_chado = $this->connection->startTransaction();
     try {
