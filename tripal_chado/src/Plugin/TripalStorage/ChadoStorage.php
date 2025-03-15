@@ -470,12 +470,16 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
           $action = $prop_storage_settings['action'];
+          $base_table = $storage_plugin_settings['base_table'];
+          $current_record_id = $records->getRecordID($base_table);
 
           // Get the values of properties that can be stored.
           if ($action == 'replace') {
             $replace[] = [$field_name, $delta, $key, $info];
           }
           else if ($action == 'function') {
+            \Drupal::messenger()->
+            addMessage(sprintf('Current Record ID: %s', $this->records->getRecordID($base_table)));
             // Create a context array to pass information to the callback function.
             $context = [
               'field_name' => $field_name,
@@ -484,6 +488,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               'info' => $info,
               'prop_type' => $prop_type,
               'field_settings' => $field_settings,
+              // Pass the current feature_id to extract info needed for the service.
+              'current_record_id' => $current_record_id,
             ];
             $function[] = $context;
           }
@@ -497,7 +503,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $path_array = $this->parsePath($field_name, $base_table, $path, $table_alias_mapping, $as);
 
             // Get the value column information for this property.
-            $base_table = $storage_plugin_settings['base_table'];
             $value_col_info = $this->getPathValueColumn($path_array);
             $table_alias  = $value_col_info['table_alias'];
             $column_alias  = $value_col_info['column_alias'];
