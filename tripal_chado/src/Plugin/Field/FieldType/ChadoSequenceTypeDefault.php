@@ -69,12 +69,15 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     \Drupal::messenger()->addMessage("Now a field should show foo");
     return "foo";
   }
-
+  public static function foo1(): string {
+    \Drupal::messenger()->addMessage("Now a field should show foo 1");
+    return "foo 1";
+  }
 
   /**
    * {@inheritdoc}
    */
-  public static function tripalTypes($field_definition) {
+ public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Get the property terms by using the Chado table columns they map to.
@@ -93,8 +96,11 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
     ]);
 
     $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'residues', $residues_term, [
-      'action' => 'store',
-      'path' => 'feature.residues',
+
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => '\Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceTypeDefault',
+      'function' => "foo1",
     ]);
 
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
@@ -104,20 +110,16 @@ class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
 
     // Hard-coded as the length of MD5Checksum supported by the chado feature.md5checksum column.
     $md5checksum_len = 32;
-    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5checksum_len, [
-      'action' => 'function',
-      'drupal_store' => TRUE,
-      'namespace' => '\Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceTypeDefault',
-      'function' => "foo",
-    ]);
-/*
+
+
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'derived_sequence','SO:0000001', [
       'action' => 'function',
-      'drupal_store' => TRUE,
-      'namespace' => 'Drupal\tripal_chado\Plugin\Field\FieldType',
-      'function' => 'ChadoSequenceTypeDefault::retrieveSequenceUsingService',
+      'drupal_store' => FALSE,
+      'namespace' => '\Drupal\tripal_chado\Plugin\Field\FieldType\ChadoSequenceTypeDefault',
+      'function' => "foo1",
+
     ]);
-*/
+
     return $properties;
   }
 

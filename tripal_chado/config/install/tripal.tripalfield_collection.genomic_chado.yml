@@ -97,7 +97,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                base_column: residues
+                base_column: dummy_derived_sequence # Need to define a dummy column because its mandatory
+                drupal_exclude: true # This field is not stored in drupal but is populated by a function
         settings:
             termIdSpace: SO
             termAccession: "0000001"
