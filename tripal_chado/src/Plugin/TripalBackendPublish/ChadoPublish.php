@@ -140,6 +140,13 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected bool $lenient_migration = FALSE;
 
   /**
+   * Entity and field values used for token replacement, keyed by record_id.
+   *
+   * @var array $token_values
+   */
+  protected array $token_values = [];
+
+  /**
    * Flag to indicate if we should republish in order to cache chado values.
    *
    * @var bool
@@ -510,6 +517,8 @@ class ChadoPublish extends TripalBackendPublishBase {
       // we can use the token parser to get the title!
       $entity_title = $this->token_parser->replaceTokens($title_format, $token_values);
       $titles[$record_id] = $entity_title;
+      // Save the token values, we will need them again when we generate the URL Alias
+      $this->token_values[$record_id] = $token_values;
     }
     return $titles;
   }
@@ -777,10 +786,12 @@ class ChadoPublish extends TripalBackendPublishBase {
     // Insert the default URL alias for each new entity
     $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
     $entities = $storage->loadMultiple($entity_ids);
+    $index = 0;
     foreach ($entities as $entity_id => $entity) {
-      $entity->setTokenValues();
+      $record_id = $added_record_ids[$index];
+      $entity->setTokenValues($this->token_values[$record_id]);
       $entity->setAlias();
-      $entity->save();
+      $index++;
     }
   }
 
