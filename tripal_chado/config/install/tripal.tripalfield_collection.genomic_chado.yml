@@ -89,7 +89,7 @@ fields:
     -   name: gene_derived_sequence
         content_type: gene
         label: Sequence from alignment
-        type: chado_sequence_type_default
+        type: chado_aligned_sequence_type_default
         description: Sequence derived from alignment
         cardinality: 1
         required: false
@@ -97,8 +97,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-                base_column: dummy_derived_sequence # Need to define a dummy column because its mandatory
-                drupal_exclude: true # This field is not stored in drupal but is populated by a function
+                base_column: dummy_derived_sequence # Need to define a dummy column because it's mandatory.
+                drupal_exclude: true # This field is not stored in drupal but is populated by a function.
         settings:
             termIdSpace: SO
             termAccession: "0000001"
