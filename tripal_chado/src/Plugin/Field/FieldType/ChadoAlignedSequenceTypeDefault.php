@@ -5,7 +5,6 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
@@ -53,17 +52,22 @@ class ChadoAlignedSequenceTypeDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
-public static function retrieveSequenceUsingService (): string {
-    $sequence="Hello World!";
-    // Use params to extract info needed for the service.
-/*
-     // Call the service to get the sequence.
-    $helper = \Drupal::service('tripal_chado.genomic_feature_helper');
-    $sequence = $helper->getSeq($entity->id());
-*/
-    // Can't remember what Chadostorage expects for a return value but I think it's the
-    //  value that should be applied to the property.
-    return $sequence;
+
+public static function retrieveSequenceUsingService ($context): string {
+
+  // TODO: Retrieve the current feature_id to extract info needed for the service.
+    \Drupal::messenger()->addMessage("The following keys are found in \$context, they should contain my_record_id but hey don't ".join(',', array_keys($context)));
+   if (empty($context['my_record_id'])) {
+    \Drupal::messenger()->addError('No feature_id provided to retrieveSequenceUsingService. This is a bug.');
+    return 'The record_id is missing!';
+   };
+
+    // Call the service to get the sequence.
+    //$helper = \Drupal::service('tripal_chado.genomic_feature_helper');
+    // TODO: This is hardcoded!  Need to get the feature_id from the entity somehow.
+    //$sequence = $helper->getSeq(9); // Works for feature_id = 9
+    //return array_values(array: $sequence)[0];
+    return "Hello World";
 }
 
 public static function getSequenceLength (): int {
@@ -107,6 +111,7 @@ public static function getSequenceLength (): int {
       'drupal_store' => FALSE,
       'namespace' => '\Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAlignedSequenceTypeDefault',
       'function' => "retrieveSequenceUsingService",
+      'function_params_from_path' => ['feature_id' => 'feature.feature_id'], // TODO: This is an example how this could be done.
 
     ]);
 
