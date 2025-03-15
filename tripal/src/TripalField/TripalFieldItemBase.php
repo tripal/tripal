@@ -597,15 +597,15 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       $prop_key = $prop_value->getKey();
 
       // Get the settings from the property type whose key matches this value.
-      $settings = ['drupal_store' => FALSE];
+      $cache = TRUE;
       foreach ($prop_types as $prop_type) {
         if ($prop_type->getKey() == $prop_key) {
-          $settings = $prop_type->getStorageSettings();
+          $cache = $prop_type->getCacheStatus();
         }
       }
 
       // Keep properties that have caching enabled.
-      if (array_key_exists('drupal_store', $settings) and $settings['drupal_store'] == TRUE) {
+      if ($cache) {
         continue;
       }
       // Clear all other properties.

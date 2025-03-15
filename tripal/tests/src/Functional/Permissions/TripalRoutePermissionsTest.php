@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal\Functional;
 
+use Drupal\Tests\tripal\Traits\TripalTestTrait;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\file\Entity\File;
 use Drupal\user\Entity\Role;
@@ -17,10 +18,12 @@ use Drupal\Core\Url;
  */
 class TripalRoutePermissionsTest extends BrowserTestBase {
 
+  use TripalTestTrait;
+
   // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stark';
 
-  protected static $modules = ['user', 'path', 'node', 'file', 'field_ui', 'tripal'];
+  protected static $modules = ['system', 'user', 'path', 'node', 'file', 'field_ui', 'tripal'];
 
   /**
    * Test all the base Tripal admin paths.
@@ -244,6 +247,13 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     $session = $this->getSession();
 
     // Create a Content Type + Entity for this test.
+    // -- Term.
+    $values = [];
+    $values['id_space_name'] = 'FRED';
+    $values['term'] = [
+      'accession' => '1g2h3j4k5'
+    ];
+    $this->createTripalTerm($values, 'tripal_default_id_space', 'tripal_default_vocabulary');
     // -- Content Type.
     $values = [];
     $values['label'] = 'Freddyopolis-' . uniqid();
