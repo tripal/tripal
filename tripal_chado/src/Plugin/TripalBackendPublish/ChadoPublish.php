@@ -867,26 +867,25 @@ class ChadoPublish extends TripalBackendPublishBase {
     $field_table = 'tripal_entity__' . $field_name;
 
     $insert_batch_size = 1000;
-    $num_matches = $this->countFieldMatches($field_name, $matches);
+    $num_total_matches = $this->countFieldMatches($field_name, $matches);
 
-    // Generate the insert SQL and add the field-specific columns to it.
-    $init_sql = "
-      INSERT INTO {" . $field_table . "}
-        (bundle, deleted, entity_id, revision_id, langcode, delta, ";
+    // Construct a list of the columns in the field table
+    $fields = ['bundle', 'deleted', 'entity_id', 'revision_id', 'langcode', 'delta'];
     $all_types = array_merge(
       $this->required_types[$field_name] ?? [],
       $this->non_required_types[$field_name] ?? []
     );
     foreach (array_keys($all_types) as $key) {
-      $init_sql .= $field_name . '_'. $key . ', ';
+      $fields[] = $field_name . '_'. $key;
     }
-    $init_sql = rtrim($init_sql, ', ') . ") VALUES\n";
 
-    $j = 0;
-    $total = 0;
-    $sql = '';
-    $args = [];
+    // Initialize queries
+    $insert_query = $this->connection->insert($field_table)->fields($fields);
+    $insert_count = 0;
+    $num_processed_matches = 0;
     $num_inserted = 0;
+    $num_updated = 0;
+    $batch_num_values = 0;
 
     // Iterate through the matches. Each match corresponds to a single
     // entity.
@@ -898,40 +897,35 @@ class ChadoPublish extends TripalBackendPublishBase {
       // for each non-empty item.
       $num_items = count(array_keys($match[$field_name]));
       for ($delta = 0; $delta < $num_items; $delta++) {
-        // Leave these increments outside the add_record check
-        // to keep our count predictable, just note that some
-        // values of $j may not be used, however, $num_inserted
-        // will be accurate.
-        $j++;
-        $total++;
+        $num_processed_matches++;
 
         // No need to add items to those that are already published.
         $add_record = $this->checkOneFieldItem($field_name, $match, $existing, $titles, $entity_id, $delta, $record_id);
         if ($add_record) {
-          $this->insertOneFieldItem($sql, $args, $j, $match, $entity_id, $delta, $field_name);
+          $this->insertOneFieldItem($insert_query, $match, $entity_id, $delta, $field_name);
           $num_inserted++;
+          $batch_num_values++;
+        }
+        elseif ($this->republish) {
+          $this->updateOneFieldItem($match, $entity_id, $delta, $field_name, $field_table);
+          $num_updated++;
         }
 
         // If we've reached the size of the batch then let's do the insert.
-        if ($j == $insert_batch_size or $total == $num_matches) {
-          if (count($args) > 0) {
-            $sql = rtrim($sql, ",\n");
-            $sql = $init_sql . $sql;
-            $this->connection->query($sql, $args);
+        if ($batch_num_values) {
+          if (($batch_num_values == $insert_batch_size) or ($num_processed_matches == $num_total_matches)) {
+            $insert_query->execute();
+            $batch_num_values = 0;
+            $insert_query = $this->connection->insert($field_table)->fields($fields);
           }
-
-          // Now reset all of the variables for the next batch.
-          $sql = '';
-          $j = 0;
-          $args = [];
         }
       }
     }
-    return $num_inserted;
+    return [$num_inserted, $num_updated];
   }
 
   /**
-   * Determine if a particular field item needs to be published.
+   * Determine if a particular field item is new and needs to be published.
    *
    * @param string $field_name
    *   Name of the field being published
@@ -982,15 +976,11 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Add a single field item to the sql and args.
+   * Add a single field item to the insert query.
    * This is a helper function for insertFieldItems().
    *
-   * @param string &$sql
-   *   The sql command under construction
-   * @param array &$args
-   *   Values for the placeholders
-   * @param int $j
-   *   Index for the placeholders
+   * @param &$insert_query
+   *   The query builder object under construction
    * @param array $match
    *   Contains all data to be published
    * @param int $entity_id
@@ -999,36 +989,86 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   Field delta
    * @param string $field_name
    *   Name of the field being published
+   * @return void
    */
-  private function insertOneFieldItem(&$sql, &$args, $j, $match, $entity_id, $delta, $field_name) {
-    $sql .= "(:bundle_$j, :deleted_$j, :entity_id_$j, :revision_id_$j, :langcode_$j, :delta_$j, ";
-    $args[":bundle_$j"] = $this->bundle;
-    $args[":deleted_$j"] = 0;
-    $args[":entity_id_$j"] = $entity_id;
-    $args[":revision_id_$j"] = $entity_id;  // For an unversioned entity this is the same as the entity id
-    $args[":langcode_$j"] = 'und';
-    $args[":delta_$j"] = $delta;
+  private function insertOneFieldItem(&$insert_query, $match, $entity_id, $delta, $field_name): void {
+    $values = [
+      'bundle' => $this->bundle,
+      'deleted' => 0,
+      'entity_id' => $entity_id,
+      'revision_id' => $entity_id,  // For an unversioned entity this is the same as the entity id
+      'langcode' => 'und',
+      'delta' => $delta,
+    ];
     foreach ($this->required_types[$field_name] as $key => $properties) {
-      $placeholder = ':' . $field_name . '_'. $key . '_' . $j;
-      $sql .=  $placeholder . ', ';
+      $column = $field_name . '_'. $key;
       $value = $match[$field_name][$delta][$key]['value']->getValue();
       // If there is no value, use a placeholder of the correct type, string '', int 0, etc.
       if (is_null($value)) {
         $value = $properties->getDefaultValue();
       }
-      $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+      $values[$column] = $value;
     }
     // Non-required types never have a value stored, just a placeholder.
     // There might not be non_required_types for this field.
     if (isset($this->non_required_types[$field_name])) {
       foreach ($this->non_required_types[$field_name] as $key => $properties) {
-        $placeholder = ':' . $field_name . '_' . $key . '_' . $j;
-        $sql .= $placeholder . ', ';
-        $args[$placeholder] = $properties->getDefaultValue();
+        $column = $field_name . '_'. $key;
+        $values[$column] = $properties->getDefaultValue();
       }
     }
-    $sql = rtrim($sql, ", ");
-    $sql .= "),\n";
+    $insert_query->values($values);
+  }
+
+  /**
+   * Update an existing published field item.
+   * This is a helper function for insertFieldItems().
+   * Unlike insertOneFieldItem(), each update is a separate
+   * query because we need to include conditions.
+   *
+   * @param array $match
+   *   Contains all data to be published
+   * @param int $entity_id
+   *   Id of the entity for this field
+   * @param int $delta
+   *   Field delta
+   * @param string $field_name
+   *   Name of the field being published
+   * @param string $field_table
+   *   Name of the drupal field table
+   * @return void
+   */
+  private function updateOneFieldItem($match, $entity_id, $delta, $field_name, $field_table): void {
+    $values = [
+      'bundle' => $this->bundle,
+      'deleted' => 0,
+      'entity_id' => $entity_id,
+      'revision_id' => $entity_id,  // For an unversioned entity this is the same as the entity id
+      'langcode' => 'und',
+      'delta' => $delta,
+    ];
+    foreach ($this->required_types[$field_name] as $key => $properties) {
+      $column = $field_name . '_'. $key;
+      $value = $match[$field_name][$delta][$key]['value']->getValue();
+      // If there is no value, use a placeholder of the correct type, string '', int 0, etc.
+      if (is_null($value)) {
+        $value = $properties->getDefaultValue();
+      }
+      $values[$column] = $value;
+    }
+    // Non-required types never have a value stored, just a placeholder.
+    // There might not be non_required_types for this field.
+    if (isset($this->non_required_types[$field_name])) {
+      foreach ($this->non_required_types[$field_name] as $key => $properties) {
+        $column = $field_name . '_'. $key;
+        $values[$column] = $properties->getDefaultValue();
+      }
+    }
+    $update_query = $this->connection->update($field_table, [])->fields($values);
+    $update_query->condition('bundle', $this->bundle, '=');
+    $update_query->condition('entity_id', $entity_id, '=');
+    $update_query->condition('delta', $delta, '=');
+    $update_query->execute();
   }
 
   /**
@@ -1129,9 +1169,9 @@ class ChadoPublish extends TripalBackendPublishBase {
    *         data, rather just skip over them.
    *
    * @return bool
-   *   TRUE if successful, FALSE if error occurred
+   *   TRUE if successful, FALSE if an error occurred
    */
-  public function publish_init(array $options) : bool {
+  public function publish_init(array $options): bool {
     $this->logger->notice('Initializing publish');
 
     // Required options
@@ -1159,7 +1199,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       return FALSE;
     }
 
-    // Current user will be the author of newly published entitites
+    // The current user will be the author of any newly published entitites
     $this->uid = \Drupal::currentUser()->id();
 
     // Initialize class variables that may persist between consecutive jobs
@@ -1196,6 +1236,34 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
+   * Provides a final summary message for publish
+   *
+   * @param bool $success
+   *   TRUE if no errors encountered
+   * @param array $stats
+   *   Various statistics to display
+   * @return void
+   */
+  protected function publish_summarize(bool $success, array $stats): void {
+    $message = "Publish " . ($success?'completed.':'encountered errors.');
+    $message .= " Published " . number_format($stats['total_new_entities']) . " new entities";
+    // This summary value is displayed only when republish is specified
+    if ($this->republish) {
+      $message .= ", checked " . number_format($stats['total_existing_entities']) . " existing entities";
+    }
+    // Titles will be updated only if the entity title format was changed
+    if ($stats['total_updated_titles']) {
+      $message .= ", updated titles for " . number_format($stats['total_updated_titles']) . " entities";
+    }
+    $message .= ", added " . number_format($stats['total_new_field_items']) . " new field values";
+    if ($this->republish) {
+      $message .= ", and republished ". number_format($stats['total_republished_field_items']) . " existing field values";
+    }
+    $message .= '.';
+    $this->logger->notice($message);
+  }
+
+  /**
    * Publishes Chado content to Tripal entities.
    *
    * @param array $options
@@ -1219,10 +1287,9 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   keyed by their titles, and the value being the entity_id.
    *
    */
-  public function publish($options) {
+  public function publish(array $options): array {
     // Initialization for publish
-    $success = $this->publish_init($options);
-    if (!$success) {
+    if (!$this->publish_init($options)) {
       return [];
     }
 
@@ -1252,7 +1319,8 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
     $this->logger->notice($message);
 
-    $total_items = 0;
+    $total_new_field_items = 0;
+    $total_republished_field_items = 0;
     $total_existing_entities = 0;
     $total_new_entities = 0;
     $total_updated_titles = 0;
@@ -1319,12 +1387,16 @@ class ChadoPublish extends TripalBackendPublishBase {
         foreach (array_keys($this->field_info) as $field_name) {
 
           $existing_field_items = $this->findFieldItems($field_name, $record_id_batch);
-          $num_inserted = $this->insertFieldItems($field_name, $matches, $existing_field_items, $titles);
+          [$num_inserted, $num_updated] = $this->insertFieldItems($field_name, $matches, $existing_field_items, $titles);
 
           // To reduce clutter, a log message is not shown for fields with no items added
           if ($num_inserted) {
             $this->logger->notice('  Published ' . number_format($num_inserted) . " items for field \"$field_name\"");
-            $total_items += $num_inserted;
+            $total_new_field_items += $num_inserted;
+          }
+          if ($num_updated) {
+            $this->logger->notice('  Republished ' . number_format($num_updated) . " items for field \"$field_name\"");
+            $total_republished_field_items += $num_updated;
           }
         }
       }
@@ -1338,18 +1410,13 @@ class ChadoPublish extends TripalBackendPublishBase {
     } // end of the batch loop
 
     // Present a final summary message, cumulative for all batches
-    $message = "Publish " . ($success?'completed.':'encountered errors.');
-    $message .= " Published " . number_format($total_new_entities) . " new entities";
-    // This summary value is displayed only when republish is specified
-    if ($this->republish) {
-      $message .= ", checked " . number_format($total_existing_entities) . " existing entities";
-    }
-    // Titles will be updated only if the entity title format was changed
-    if ($total_updated_titles) {
-      $message .= ", updated titles for " . number_format($total_updated_titles) . " entities";
-    }
-    $message .= ", and added " . number_format($total_items) . " field values.";
-    $this->logger->notice($message);
+    $this->publish_summarize($success, [
+      'total_new_entities' => $total_new_entities,
+      'total_existing_entities' => $total_existing_entities,
+      'total_updated_titles' => $total_updated_titles,
+      'total_new_field_items' => $total_new_field_items,
+      'total_republished_field_items' => $total_republished_field_items,
+    ]);
 
     // This return value is currently only used for unit tests, so is limited to 100 records.
     return $this->published_or_updated_entities;

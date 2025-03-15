@@ -10,6 +10,14 @@ use Drupal\tripal\TripalStorage\StoragePropertyBase;
 class StoragePropertyTypeBase extends StoragePropertyBase {
 
   /**
+   * TRUE if this property should be saved in the Drupal field table, and
+   * FALSE otherwise.
+   *
+   * @var bool
+   */
+  public bool $cache_status;
+
+  /**
    * Constructs a new tripal storage property type base.
    *
    * @param string entityType
@@ -220,6 +228,26 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    */
   public function getRequired() {
     return $this->required;
+  }
+
+  /**
+   * Sets whether this property should be cached in the drupal tables or not.
+   *
+   * @param bool $status
+   *   TRUE if it should be saved in Drupal and false if not.
+   */
+  public function setCacheStatus(bool $status) {
+    $this->cache_status = $status;
+  }
+
+  /**
+   * Whether or not this property should be cached in the Drupal tables or not.
+   *
+   * @return bool
+   *   TRUE if it should be saved in Drupal and false if not.
+   */
+  public function getCacheStatus() {
+    return $this->cache_status;
   }
 
   /**
