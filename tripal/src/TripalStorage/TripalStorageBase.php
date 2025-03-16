@@ -272,11 +272,29 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   /**
    * {@inheritDoc}
    */
-  public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool|null {
+  public function markPropertiesForCaching(string $field_name, array &$prop_types) {
 
-    $property_type = $this->getPropertyType($field_name, $key);
+    // For each of the property types, we want to check if they should be cached.
+    foreach ($prop_types as $k => $prop_type) {
+      $key = $prop_type->getKey();
+
+      // Now actually perform the cache.
+      $is_required = $this->isDrupalStoreByFieldNameKey($field_name, $key, $prop_type);
+      // And set it on the property type.
+      $prop_types[$k]->setCacheStatus($is_required);
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function isDrupalStoreByFieldNameKey(string $field_name, string $key, object|null $property_type = NULL): bool|null {
+
     if ($property_type === NULL) {
-      return NULL;
+      $property_type = $this->getPropertyType($field_name, $key);
+      if ($property_type === NULL) {
+        return NULL;
+      }
     }
     $storage_settings = $property_type->getStorageSettings();
 
@@ -285,11 +303,11 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
 
     // Any field that stores a base record id, a primary key, or a foreign key
     // link is required. This takes precedence and cannot be overridden.
-    if (
+    if (array_key_exists('action', $storage_settings) AND (
       ($storage_settings['action'] == 'store_id') or
       ($storage_settings['action'] == 'store_pkey') or
       ($storage_settings['action'] == 'store_link')
-    ) {
+    )) {
       $is_required = TRUE;
     }
     // For any other fields that have 'drupal_exclude' set, we want to ensure it
