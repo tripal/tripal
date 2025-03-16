@@ -219,14 +219,15 @@ RUN cd /var/www/drupal \
 
 ############# Scripts #########################################################
 
-## Configuration files & Activation script
+## Configuration files & Activation script, and done with /app
 RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
   && mv /app/tripaldocker/default_files/000-default.conf /etc/apache2/sites-available/000-default.conf \
   && echo "\$settings['trusted_host_patterns'] = [ '^localhost$', '^127\.0\.0\.1$', \$_SERVER['SERVER_NAME'] ];" >> /var/www/drupal/web/sites/default/settings.php \
   && mv /app/tripaldocker/init_scripts/init.sh /usr/bin/init.sh \
   && chmod +x /usr/bin/init.sh \
   && mv /app/tripaldocker/default_files/xdebug/xdebug_toggle.sh /usr/bin/xdebug_toggle.sh \
-  && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal/web/sites/default/settings.php
+  && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal/web/sites/default/settings.php \
+  && rm -rf /app
 
 ## Make global commands. Symlink for drupal9 is for backward compatibility.
 RUN ln -s /var/www/drupal/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \

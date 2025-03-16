@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains tripal.module..
+ * Contains tripal.module.
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -15,6 +15,7 @@ use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
+use Drupal\views\ViewExecutable;
 
 require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
@@ -26,6 +27,7 @@ require_once 'src/api/tripal.upload.api.php';
 require_once 'src/api/tripal.jobs.api.php';
 require_once 'src/api/tripal.deprecated.api.php';
 require_once 'src/api/tripal.importer.api.php';
+require_once 'src/api/tripal.viewsdata.inc';
 
 /**
  * Implements hook_help().
@@ -48,6 +50,12 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
  */
 function tripal_theme() {
   $theme = [];
+
+  $theme['tripal_entity_type'] = [
+    'render element' => 'elements',
+    'file' => 'templates/tripal_entity_type.page.php',
+    'template' => 'tripal_entity_type',
+  ];
 
   $theme['tripal_entity'] = array(
     'render element' => 'elements',
@@ -578,6 +586,18 @@ function tripal_rebuild() {
     $view = $storage->create($config);
     $view->save();
   }
+
+  /* Installs the Manage Pub Search Queries View */
+  $config = $fileStorage->read('config/install/views.view.manage_pub_search_queries');
+
+  // Next load the storage system for views entities and check if the view
+  // already exists. If it does then don't reload it.
+  $storage = \Drupal::entityTypeManager()->getStorage('view');
+  $view = $storage->load('manage_pub_search_queries');
+  if (!$view) {
+    $view = $storage->create($config);
+    $view->save();
+  }
 }
 
 /**
@@ -674,4 +694,38 @@ function tripal_gin_content_form_routes() {
   $route_names[] = 'entity.tripal_entity.edit_form';
 
   return $route_names;
+}
+
+/**
+ * Implements hook_views_pre_view().
+ */
+function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
+  // Override permission of Tripal Content Type listing (admin/content/bio_data)
+  // in order to support OR when evaluating permissions since views UI does
+  // not support this. 
+  // WARNING: requires you to have NO Permissions on this view through the UI!
+  if ($view->id() == 'tripal_content_type_listing') {
+    // The user must have 1+ of the following permissions to access the
+    // Tripal Content Type listing (admin/content/bio_data).
+    $perm = [
+      'access tripal content overview',
+      'administer tripal content',
+    ];
+
+    // Check if current user has either permissions when attempting to view listing.
+    $user = \Drupal::currentUser();
+
+    $has_permission = FALSE;
+    foreach ($perm as $permission) {
+      if ($user->hasPermission($permission)) {
+        $has_permission = TRUE;
+        break;
+      }
+    }
+
+    // Deny access if user does not have necessary permission.
+    if (!$has_permission) {
+      throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
+    }
+  }
 }

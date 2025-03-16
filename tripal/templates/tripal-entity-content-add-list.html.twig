@@ -15,21 +15,19 @@
  * @ingroup themeable
  */
 #}
-{% apply spaceless %}
 <div id="tripal-entity-add-content">
-  {% for category in types  %}
+  {% for category in types %}
   <div id="category-{{ category.class }}" class="category-wrapper">
     <h3>{{category.title}}</h3>
     <div class="admin-list gin-layer-wrapper">
-      {% for type in category.members  %}
-        <div id="bundle-{{ type.id }}" class="admin-item">
-          <a class="admin-item__link" href=" {{type.url}} ">{{ type.title }}</a>
-          <div class="admin-item__title" aria-details="{{ type.class }}-desc">{{ type.title }}</div>
-          <div id="{{ type.class }}-desc" class="admin-item__description">{{ type.help }}</div>
+      {% for type in category.members %}
+        <div id="bundle-{{type.id}}" class="admin-item">
+          <a class="admin-item__link" href=" {{type.url}} ">{{type.title}}</a>
+          <div class="admin-item__title" aria-details="{{type.class}}-desc">{{type.title}}</div>
+          <div id="{{type.class}}-desc" class="admin-item__description">{{type.help}}</div>
         </div>
       {% endfor %}
     </div>
   </div>
   {% endfor %}
 </div>
-{% endapply %}

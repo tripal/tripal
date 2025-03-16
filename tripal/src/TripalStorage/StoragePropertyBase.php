@@ -21,18 +21,18 @@ class StoragePropertyBase {
    *
    * @param string entityType
    *   The entity type associated with this storage property base object.
-   *
    * @param string fieldType
    *   The field type associated with this storage property base object.
-   *
    * @param string key
    *   The key associated with this storage property base object.
-   *
    * @param string term_id
    *   The controlled vocabulary term asssociated with this property. It must be
    *   in the form of "IdSpace:Accession" (e.g. "rdfs:label" or "OBI:0100026")
+   * @param string $idspace_plugin_id
+   *   The plugin_id associated with the term. This is optional but if provided
+   *   allows a missing ID Space to be looked up in the backend storage.
    */
-  public function __construct($entityType, $fieldType, $key, $term_id) {
+  public function __construct($entityType, $fieldType, $key, $term_id, $idspace_plugin_id = '') {
     $this->entityType = $entityType;
     $this->fieldType = $fieldType;
 
@@ -66,11 +66,16 @@ class StoragePropertyBase {
       $this->termIdSpace = $matches[1];
       $this->termAccession = $matches[2];
 
-      $idspace = $this->idSpaceService->loadCollection($this->termIdSpace);
+      if ($idspace_plugin_id) {
+        $idspace = $this->idSpaceService->loadCollection($this->termIdSpace, $idspace_plugin_id);
+      }
+      else {
+        $idspace = $this->idSpaceService->loadCollection($this->termIdSpace);
+      }
       if (!$idspace) {
         throw new \Exception('Cannot create a StorageProperty object for entity type "' . $entityType
             . '", field type "' . $fieldType . '", key "' . $key
-            . '" as IdSpace for the property term is not recognized: "' . $term_id . '"');
+            . '" as IdSpace for the property term is not recognized: "' . $term_id . '" (' . $idspace_plugin_id . ')');
       }
       $term = $idspace->getTerm($this->termAccession);
       if (!$term) {

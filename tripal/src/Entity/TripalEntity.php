@@ -4,16 +4,11 @@ namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
-use Drupal\field\Entity\FieldConfig;
-use Symfony\Component\Routing\Route;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
-use \Drupal\tripal\Services\TripalTokenParser;
 
 /**
  * Defines the Tripal Content entity.
@@ -66,6 +61,26 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
   use EntityChangedTrait;
 
+  /**
+   * Any errors encountered during the postSave() process.
+   *
+   * These are saved here to provide context to the TripalEntityForm or any
+   * other programatic interface for creating entities.
+   *
+   * NOTE: We cannot just throw an exception in the postSave() as it mangles
+   * the entity. Only inconsequential things should be done in the postSave()
+   * and any errors should be handled gracefully.
+   *
+   * @var array
+   *   A list of arrays where each one described an error enountered.
+   *   Keys included in sub-array elements are:
+   *    - code (string): a developer code for the error.
+   *    - exception (bool): indicates if an exception was thrown.
+   *    - exception_message (string): the message string of the exception.
+   *    - message (string): describes the error encountered. May include tokens.
+   *    - message_args (array): an array of tokens with their value for the message.
+   */
+  protected $post_save_errors = [];
 
   /**
    * An array of potential token replacement values where the key is
@@ -142,7 +157,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @return Drupal\tripal\Entity\TripalEntityType
    *   The bundle object
    */
-  protected function getBundle() {
+  public function getBundle() {
     $bundle_id = $this->getType();
     $bundle = NULL;
     if (array_key_exists($bundle_id, $this->bundle_cache)) {
@@ -193,6 +208,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     $this->title = $title;
+    return $title;
   }
 
   /**
@@ -265,9 +281,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @return string
    *   Returns the path alias that was used with tokens replaced
    */
-  public function setAlias(string $path_alias = ''): string {
+  public function setAlias(string $path_alias = '', bool $during_save = FALSE): string {
+
+    // Keep track of when a duplicate is found in order to throw an exception
+    // at the very end.
+    $duplicates = [];
+
     // Check if an alias already exists for this entity's system path
-    /** @var array $existing_alias **/
     $existing_alias = $this->getAlias();
 
     // Gets and uses default template, or replaces tokens
@@ -281,41 +301,74 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     if (!$existing_alias or ($existing_alias['alias'] != $new_alias)) {
       $entities = \Drupal::entityTypeManager()->getStorage('path_alias')->loadByProperties(['alias' => $new_alias]);
       if ($entities) {
-        $new_alias = '';
+
+        // Reset the internal path field.
+        $path_item =  $this->path->first();
+        $path_item->set('alias', '');
+        $path_item->set('pid', NULL);
+
+        // Keep track of the duplicates here but DO NOT throw the exception
+        // until the end so we can still remove previous alias' if that applies.
+        foreach ($entities as $e) {
+          $path = $e->getPath();
+          $duplicates[$path] = $path;
+        }
       }
     }
 
     // If an alias does not exist, then create one
-    if (!$existing_alias and $new_alias) {
-      $system_path = '/bio_data/' . $this->getID();
-      $new_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
-        'path' => $system_path,
-        'alias' => $new_alias,
-      ]);
-      if (!is_object($new_alias_object)) {
-        throw new \Exception(t('Did not create a PathAlias object for ":new_alias"',
-          [':new_alias' => $new_alias]));
+    if (!$existing_alias and $new_alias and empty($duplicates)) {
+      // the field will create the alias for us so just ensure its set to the new one.
+      if ($during_save) {
+        $path_item =  $this->path->first();
+        $path_item->set('alias', $new_alias);
       }
-      $new_alias_object->save();
+      // we have to create the path alias ourselves.
+      else {
+        $system_path = '/bio_data/' . $this->getID();
+        $new_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+          'path' => $system_path,
+          'alias' => $new_alias,
+        ]);
+        if (!is_object($new_alias_object)) {
+          throw new \Exception(t("We were unable to create the alias: ':new_alias'",
+            [':new_alias' => $new_alias]));
+        }
+        $new_alias_object->save();
+        // and update the internal path field.
+        $path_item =  $this->path->first();
+        $path_item->set('alias', $new_alias);
+        $path_item->set('pid', $new_alias_object->id());
+      }
     }
-    // If an alias already exists, and is different, we can just update it
+    // If an alias already exists, and is different...
     elseif ($existing_alias and ($existing_alias['alias'] != $new_alias)) {
       $existing_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->load($existing_alias['id']);
       if (!is_object($existing_alias_object)) {
-        throw new \Exception(t('Unable to load the PathAlias object for ":existing_alias"',
+        throw new \Exception(t("Unable to load the existing alias ':existing_alias' in order to update it.",
           [':existing_alias' => $existing_alias['alias']]));
       }
-      // $new_alias will be an empty string here if there was a conflict
-      // with an already existing alias. Here we just remove the alias,
-      // the entity form is responsible for displaying an error message
-      // if the return value is an empty string.
-      if ($new_alias) {
+
+      // As long as there were no duplicates, we can update the existing one.
+      if (empty($duplicates)) {
         $existing_alias_object->setAlias($new_alias);
         $existing_alias_object->save();
+        $path_item =  $this->path->first();
+        $path_item->set('alias', $new_alias);
+        $path_item->set('pid', $existing_alias['id']);
       }
+      // If there are duplcates then we just remove the alias.
+      // An exception will be thrown below to help inform the user what happened.
       else {
         $existing_alias_object->delete();
+        $path_item =  $this->path->first();
+        $path_item->set('alias', '');
+        $path_item->set('pid', NULL);
       }
+    }
+
+    if (!empty($duplicates)) {
+      throw new \Exception("We were unable to set the alias '$new_alias' because it already refers to the following: " . implode(', ', $duplicates));
     }
 
     return $new_alias;
@@ -399,8 +452,15 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * {@inheritdoc}
    */
   public function setPublished($published) {
-    $this->set('status', $published ? NODE_PUBLISHED : NODE_NOT_PUBLISHED);
+    $this->set('status', $published ? TRUE : FALSE);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPostSaveErrors() {
+    return $this->post_save_errors;
   }
 
   /**
@@ -417,8 +477,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $field_values = $this->getFieldValues();
     // Convert to a simple key=>value array
     $processed_values = $this->processFieldValues($field_values);
-    // Merge in any passed values and store
-    $this->token_values = array_merge($processed_values, $extra_values);
+    // Merge in any passed values and store.
+    // Note: We pass in the original token values to ensure that any values set
+    // outside a save() are retained. However, if an updated value for a field
+    // exists, it should override previously set tokens, which is why the
+    // original tokens are first in the array_merge below.
+    $this->token_values = array_merge($this->token_values, $processed_values, $extra_values);
   }
 
   /**
@@ -702,6 +766,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Despite the function name, no values are saved to the database.
         $item->tripalSave($item, $field_name, $prop_types, $prop_values, $entity);
 
+        // Ensure that only the properties that should be are cleared.
+        $tripal_storage->markPropertiesForCaching($field_name, $prop_types);
+
         // Clears the values from the entity (does not clear them from the
         // property).
         $item->tripalClear($item, $field_name, $prop_types, $prop_values, $entity);
@@ -727,14 +794,31 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
+   * Helper function: Confirm array contains all null elements.
+   *
+   * @param array $array_to_check
+   *   The array to check for null values. It is expected to be a flat array.
+   *
+   * @return bool
+   *   True IFF all elements are null; False if even one element is not null.
+   */
+  public static function allNull(array $array_to_check) : bool {
+    foreach ($array_to_check as $value) {
+      if (isset($value)) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     // Create a values array appropriate for `loadValues()`
-    list($values, $tripal_storages) = TripalEntity::getValuesArray($this);
-
+    [$values, $tripal_storages] = TripalEntity::getValuesArray($this);
     // Perform the Insert or Update of the submitted values to the
     // underlying data store.
     foreach ($values as $tsid => $tsid_values) {
@@ -745,10 +829,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $tripal_storages[$tsid]->insertValues($tsid_values);
         }
         catch (\Exception $e) {
-          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::logger('tripal')->error($e->getMessage());
           \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
               'logs for more details or contact the site administrator if you ' .
               'cannot view the logs.');
+          // We cannot safely continue after such error.
+          return;
         }
         $values[$tsid] = $tsid_values;
       }
@@ -759,12 +845,22 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $tripal_storages[$tsid]->updateValues($tsid_values);
         }
         catch (\Exception $e) {
-          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::logger('tripal')->error($e->getMessage());
           \Drupal::messenger()->addError('Cannot update this entity. See the recent ' .
               'logs for more details or contact the site administrator if you cannot ' .
               'view the logs.');
+          // We cannot safely continue after such error.
+          return;
         }
       }
+
+      // Right now the assumption that only key values will be saved is baked
+      // into ChadoStorage insert/update. That means, the non-key properties
+      // do not have a value after saving because ChadoStorage didn't bother
+      // to set them... if it did, then the following loadValues would not be
+      // needed since the values would already be set.
+      // @todo look into fixing insert/update to return all values.
+      $tripal_storages[$tsid]->loadValues($tsid_values);
     }
 
     // Set the property values that should be saved in Drupal, everything
@@ -799,27 +895,28 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $prop_values = [];
         $prop_types = [];
         foreach ($values[$tsid][$field_name][$delta] as $key => $prop_info) {
-          $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $key);
+          $storage = $tripal_storages[$tsid];
+          $prop_type = $storage->getPropertyType($field_name, $key);
+
           $prop_value = $prop_info['value'];
-          $settings = $prop_type->getStorageSettings();
-          if (array_key_exists('drupal_store', $settings) and $settings['drupal_store'] == TRUE) {
+          // Determine whether the property values are to be cached in the
+          // Drupal Entity Field tables.
+          if ($storage->isDrupalStoreByFieldNameKey($field_name, $key)) {
             $prop_values[] = $prop_value;
             $prop_types[] = $prop_type;
           }
         }
+
+        // Now that we have a list of property values to be cached, we want
+        // to ask the fielditem to load all indicated property values into
+        // the entity and the item. In this way, we can ensure they are slated
+        // for Drupal to cache to the database during the TripalEntity::save().
         if (count($prop_values) > 0) {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
-
           // Keep track of elements that have no value.
-          foreach ($prop_values as $i => $prop_value) {
-            $prop_value_value = $prop_value->getValue();
-            if (is_null($prop_value_value)) {
-              // A given delta should only be present once here.
-              if (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name])) {
-                $delta_remove[$field_name][] = $delta;
-              }
-              continue;
-            }
+          // A given delta should only be present once here.
+          if ($this->allNull($prop_values) and (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name]))) {
+            $delta_remove[$field_name][] = $delta;
           }
         }
       }
@@ -832,7 +929,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $this->get($field_name)->removeItem($delta);
         }
         catch (\Exception $e) {
-          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::logger('tripal')->error($e->getMessage());
           \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
               'logs for more details or contact the site administrator if you ' .
               'cannot view the logs.');
@@ -844,24 +941,89 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postLoad(EntityStorageInterface $storage, array &$entities) {
-    parent::postLoad($storage, $entities);
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
 
+    // Set the tokens for title/URL replacement now so that they include all
+    // of the field values (i.e. set it before Tripal/Chado storage clears any).
+    $this->setTokenValues();
+
+    // We need to generate the title here since it requires tokens to already
+    // have been populated/saved in the entity. Since save has already happened,
+    // we need to directly write to the base table to update the title.
+    $title = $this->setTitle();
+    $base_table = $storage->getBaseTable();
+    $entity_id = $this->id();
+    if ($base_table AND $entity_id) {
+      try {
+        \Drupal::service('database')->update($base_table)
+          ->fields(['title' => $title])
+          ->condition('id', $entity_id)
+          ->execute();
+      }
+      catch (\Exception $e) {
+        // Throwing an exception in postSave() mangles the entity!
+        // Warn the curator that the title was not set so they can fix it.
+        // Drupal does not require unique titles so it is ok to leave
+        // things in this state.
+        $this->post_save_errors[] = [
+          'code' => 'TITLE-DB-SAVE',
+          'exception' => TRUE,
+          'exception_message' => $e->getMessage(),
+          'message' => "We were unable to update the title ':title' directly.  Once the root cause is fixed, the title can be created by updating this :bundle.",
+          'message_args' => [':title' => $title, ':bundle' => $this->getBundle()->label()],
+        ];
+      }
+    }
+
+    // We also want to set the URL alias here for the same reason we set the
+    // title at this point. This setter does not need a save of the entity
+    // afterwards so calling it should be sufficient. If an empty string is
+    // passed to setAlias() then an alias is generated based on the url_format.
+    $path_alias = '';
+    $path_values = $this->get('path')->getValue();
+    if (array_key_exists(0, $path_values) && array_key_exists('alias', $path_values[0])) {
+      $path_alias = (string) $path_values[0]['alias'];
+    }
+    try {
+      $this->setAlias($path_alias, TRUE);
+    }
+    catch(\Exception $e) {
+      // Throwing an exception in postSave() mangles the entity!
+      // Warn the curator that the URL alias was not set so they can fix it.
+      // This entity will just not have an alias.
+      $this->post_save_errors[] = [
+        'code' => 'URL-ALIAS-SAVE',
+        'exception' => TRUE,
+        'exception_message' => $e->getMessage(),
+        'message' => $e->getMessage(),
+        'message_args' => [],
+      ];
+    }
+
+    // Now we've done our last minute processing let the parent do it's thing.
+    // This includes postSaving all the fields which is where the path field
+    // will create the alias if one is provided.
+    parent::postSave($storage, $update);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postLoad(EntityStorageInterface $storage, array &$entities): void {
+    parent::postLoad($storage, $entities);
 
     // If we are doing a listing of content types there is no way in Drupal 10
     // to specify which fields to load.  By default the SqlContentEntityStorage
     // storage system we're using will always attach all fields.  But we can
     // control what fields get attached to entities with this postLoad function.
-    // In the TripalEntityListBuilder::load() function we set the
-    // `tripal_load_listing` session variable to TRUE.  If it is TRUE then
-    // we skip this. @todo: in the future if we want to only attach
-    // specific fields we can get more fancy.
-    if (\Drupal::request()->hasSession()) {
-      $session = \Drupal::request()->getSession();
-      $is_listing = $session->get('tripal_load_listing');
-      if ($is_listing === TRUE) {
-        return;
-      }
+    // We don't want to attach fields if we are in the Tripal Content Listing.
+    // With PR #1736 in the TripalEntityListBuilder::load() function the
+    // `tripal_load_listing` session variable was used to control this.
+    // PR #2117 changed the listing to use a view. Now we can detect we are
+    // being called from this view by using the route name.
+    $route_name = \Drupal::routeMatch()->getRouteName();
+    if ($route_name == 'entity.tripal_entity.collection') {
+      return;
     }
 
     $entity_type_id = $storage->getEntityTypeId();
@@ -873,7 +1035,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $bundle = $entity->bundle();
 
       // Create a values array appropriate for `loadValues()`
-      list($values, $tripal_storages) = TripalEntity::getValuesArray($entity);
+      [$values, $tripal_storages] = TripalEntity::getValuesArray($entity);
 
       // Call the loadValues() function for each storage type.
       $load_success = False;
