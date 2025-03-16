@@ -196,8 +196,10 @@ class GenomicFeatureHelper {
 
 
     /*
+     * Authors Joseba Bikandi, Michael Dondrup
+     * original source code available at biophp.org
      * Table taken from: https://www.biophp.org/minitools/sequence_manipulation_and_data/
-     * But allows to preserve lower case
+     * Modification allows to preserve lower case.
      */
 
     function Complement($seq): string{
@@ -226,8 +228,10 @@ class GenomicFeatureHelper {
     }
 
     /**
+     * Authors Joseba Bikandi, Michael Dondrup
+     * original source code available at biophp.org
      * Found in BioPHP
-     * (https://www.biophp.org/minitools/dna_to_protein/) by joseba
+     * (https://www.biophp.org/minitools/dna_to_protein/)
      *
      */
 
