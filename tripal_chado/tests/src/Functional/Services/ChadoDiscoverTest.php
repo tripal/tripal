@@ -41,6 +41,7 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
       'CO_010' => 'CO_010',
       'SO' => 'sequence',
       'data' => 'EDAM',
+      'UO' => 'uo',
     ];
     foreach ($new_collections as $id => $cv) {
       $idspace[$id] = $idsmanager->createCollection($id, 'tripal_default_id_space');
@@ -74,6 +75,23 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
       'definition' => 'Test pub',
     ]);
     $idspace['TPUB']->saveTerm($terms['pub']);
+
+    $terms['map'] = new TripalTerm([
+      'name' => 'map',
+      'idSpace' => 'data',
+      'vocabulary' => 'EDAM',
+      'accession' => '1278',
+      'definition' => 'Test map',
+    ]);
+    $idspace['data']->saveTerm($terms['map']);
+    $terms['unit'] = new TripalTerm([
+      'name' => 'unit',
+      'idSpace' => 'UO',
+      'vocabulary' => 'uo',
+      'accession' => '0000000',
+      'definition' => 'Test unit',
+    ]);
+    $idspace['UO']->saveTerm($terms['unit']);
 
     $terms['gene'] = new TripalTerm([
       'name' => 'gene',
@@ -159,6 +177,22 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
     $content_types['pub']->setThirdPartySetting('tripal', 'chado_base_table', 'pub');
 
     $ct_details = [
+      'label' => 'Map',
+      'term' => $terms['map'],
+      'help_text' => 'Generic map content type',
+      'category' => 'General',
+      'id' => 'map',
+      'title_format' => '[map_name]',
+      'url_format' => 'map/[TripalEntity__entity_id]',
+      'synonyms' => ['bio_data_5'],
+      'settings' => [
+        'chado_base_table' => 'featuremap',
+      ],
+    ];
+    $content_types['map'] = $content_type_service->createContentType($ct_details);
+    $content_types['map']->setThirdPartySetting('tripal', 'chado_base_table', 'featuremap');
+
+    $ct_details = [
       'label' => 'Gene',
       'term' => $terms['gene'],
       'help_text' => 'Generic Gene content type',
@@ -202,6 +236,10 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
     $this->assertArrayHasKey('stock_feature', $discovered_fields['invalid'], 'The feature field was not flagged as invalid for stock');
     $this->assertArrayHasKey('stock_featuremap', $discovered_fields['invalid'], 'The featuremap field was not flagged as invalid for stock');
     $this->assertArrayHasKey('stock_project', $discovered_fields['invalid'], 'The project field was not flagged as invalid for stock');
+
+    // Test of the unit field on a generic map (featuremap table)
+    $discovered_fields = $fields_service->discover($content_types['map']);
+    $this->assertArrayHasKey('map_cvterm', $discovered_fields['new'], 'The unit type field was not discovered for featuremap');
 
     // Test discovery of a field using a column in the base table
     $discovered_fields = $fields_service->discover($content_types['gene']);
