@@ -7,6 +7,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Component\Utility\Xss;
 use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 
@@ -206,6 +207,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $token_values = $this->getBundleEntityTokenValues($title_format, $bundle);
       $title = $token_parser->replaceTokens($title_format, $token_values);
     }
+
+    // HTML token filtering for titles
+    $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags') ?? '';
+    $allowed_title_tags = explode(' ', $tag_string);
+    $title = Xss::filter($title, $allowed_title_tags);
 
     $this->title = $title;
     return $title;
