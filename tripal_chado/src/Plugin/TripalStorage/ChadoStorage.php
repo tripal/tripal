@@ -290,10 +290,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     if ($ignore_cached_fields) {
       // Parameters indicate this is not a find action and that we should not add
       // any properties for fields which are 100% cached in drupal to ChadoRecords.
-      $this->buildChadoRecords($values, FALSE, TRUE);
+      $this->buildChadoRecords($values, TRUE, TRUE);
     }
     else {
-      $this->buildChadoRecords($values);
+      $this->buildChadoRecords($values, TRUE);
     }
 
     $transaction_chado = $this->connection->startTransaction();
