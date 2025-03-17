@@ -619,7 +619,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     $num_updated = 0;
     foreach ($titles as $record_id => $new_title) {
       $existing_title = $existing_titles[$record_id] ?? NULL;
-      if ($existing_title and ($new_title != $existing_title)) {
+      if (!$existing_title or ($new_title != $existing_title)) {
         $entity_id = $this->existing_published_entities[$record_id];
         $query = $this->connection->update('tripal_entity')
           ->fields(['title' => $new_title])
