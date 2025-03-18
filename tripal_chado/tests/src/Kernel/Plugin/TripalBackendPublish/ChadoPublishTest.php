@@ -40,7 +40,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     // Get Chado in place
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
-    // Update configuration to match tripal/config/install/tripal.settings.yml
+    // Update entity settings to match tripal/config/install/tripal.settings.yml
     $allowed_title_tags = 'em i strong u';
     \Drupal::configFactory()
       ->getEditable('tripal.settings')
