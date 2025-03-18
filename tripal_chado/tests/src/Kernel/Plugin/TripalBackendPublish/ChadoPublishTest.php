@@ -40,6 +40,13 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     // Get Chado in place
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
+    // Update configuration to match tripal/config/install/tripal.settings.yml
+    $allowed_title_tags = 'em i strong u';
+    \Drupal::configFactory()
+      ->getEditable('tripal.settings')
+      ->set('tripal_entity_type.allowed_title_tags', $allowed_title_tags)
+      ->save();
+
     // Create three organisms in chado to be published.
     for ($i=1; $i <= 3; $i++) {
       $this->connection->insert('1:organism')
