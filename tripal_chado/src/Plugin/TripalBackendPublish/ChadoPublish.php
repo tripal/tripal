@@ -666,6 +666,16 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
     }
 
+    // If we are going to republish, then clear the cache for all of the
+    // existing entities because we may change titles or field values.
+    if ($this->republish) {
+      $tags = [];
+      foreach ($this->existing_published_entities as $entity_id) {
+        $tags[] = 'tripal_entity:' . $entity_id;
+      }
+      \Drupal::service('cache_tags.invalidator')->invalidateTags($tags);
+    }
+
     return $titles;
   }
 
