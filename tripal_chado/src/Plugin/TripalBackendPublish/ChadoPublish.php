@@ -791,6 +791,7 @@ class ChadoPublish extends TripalBackendPublishBase {
       $record_id = $added_record_ids[$index];
       $entity->setTokenValues($this->token_values[$record_id]);
       $entity->setAlias();
+      $entity->save();
       $index++;
     }
   }
