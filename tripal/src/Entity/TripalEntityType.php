@@ -593,7 +593,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $token = 'TripalEntityType__entity_id';
     $tokens[$token] = [
       'label' => 'Content Type/Bundle ID',
-      'description' => 'The machine name for this Tripal Content Type. By default this will be similar to the label you entered. For example, if you created a content type with the label "Genome Annoation" then it\'s machine name/id would be "genome_annotation".',
+      'description' => 'The machine name for this Tripal Content Type. By default this will be similar to the label you entered. For example, if you created a content type with the label "Genome Annotation" then its machine name/id would be "genome_annotation".',
       'token' => $token,
       'field_name' => NULL,
       'required' => TRUE,

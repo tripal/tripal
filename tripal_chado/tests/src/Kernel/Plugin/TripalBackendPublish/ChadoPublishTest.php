@@ -130,6 +130,67 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
     $this->assertCount(3, $confirmed_entities,
       "We expected there to be the same number of organism entities as we inserted.");
+
+    // confirm they have the expected titles and URL aliases
+    $i = 1;
+    foreach ($confirmed_entities as $key => $entity) {
+      $expected_title = "<em>Tripalus databasica $i</em>";
+      $expected_url = "/organism/$i";
+      $title_string = $confirmed_entities[$key]->getTitle();
+      $url_string = $confirmed_entities[$key]->toUrl()->toString();
+      $this->assertEquals($expected_title, $title_string, "Published title differs from the expected value");
+      $this->assertEquals($expected_url, $url_string, "Published URL differs from the expected value");
+      $i++;
+    }
+
+    // Change the title and URL templates and confirm that all entity fields work.
+    // Because of the length limit on the template, do a few at a time.
+    $templates = [
+      4 => '1[TripalEntityType__entity_id]2[TripalBundle__bundle_id]3',
+      5 => '1[TripalEntityType__label]2[TripalEntityType__term_namespace]3',
+      6 => '1[TripalEntityType__term_accession]2[TripalEntityType__term_label]3',
+      7 => '1[TripalEntity__entity_id]2',
+    ];
+    $expected = [
+      4 => '1organism2organism3',
+      5 => '1Organism2OBI3',
+      6 => '101000262organism3',
+      7 => '172',
+    ];
+    foreach ($templates as $key => $template) {
+      $this->connection->insert('1:organism')
+        ->fields([
+          'genus' => 'Tripalus',
+          'species' => 'databasica ' . $key,
+            'comment' => "Entry $key: we are adding a comment to ensure that we do have working fields that are not required.",
+          ])->execute();
+      $test_title_format = '=T=' . $template;
+      $test_url_format = '/U/' . $template;
+      $organism_bundle = \Drupal\tripal\Entity\TripalEntityType::load('organism');
+      $organism_bundle->setTitleFormat($test_title_format);
+      $organism_bundle->setURLFormat($test_url_format);
+      $organism_bundle->save();
+      $published_entities = $this->chado_publish->publish($publish_options);
+      $this->assertCount(1, $published_entities,
+        "We did not publish the expected number of entities.");
+      // confirm the entities are added.
+      $all_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'organism']);
+      $this->assertCount($key, $all_entities,
+        "We expected there to be the same total number of organism entities as we inserted so far.");
+
+      // Finally confirm title and URL are correct
+      $expected_title = '=T=' . $expected[$key];
+      $expected_url = '/U/' . $expected[$key];
+      $title_string = $all_entities[$key]->getTitle();
+      $url_string = $all_entities[$key]->toUrl()->toString();
+      // Publish does not currently support the [TripalEntity__entity_id] on a new entity, see PR #2154
+      if ($key != 7) {
+        $this->assertEquals($expected_title, $title_string, "Published title differs from the expected value");
+      }
+      $this->assertEquals($expected_url, $url_string, "Published URL differs from the expected value");
+      $i++;
+    }
+
   }
 
   /**
