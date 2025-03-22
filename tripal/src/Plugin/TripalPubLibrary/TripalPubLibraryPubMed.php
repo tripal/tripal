@@ -257,7 +257,6 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     $pubs = [];
     foreach ($pmids as $pmid) {
       // Retrieve and parse each record.
-print "CPP1 downloading $pmid\n";//@@@
       $pub_xml = $this->pmidFetch('null', 'xml', 0, 1, ['id' => $pmid]);
       $pub = $this->parse_xml($pub_xml);
       $pubs[] = $pub;

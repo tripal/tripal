@@ -524,10 +524,9 @@ class PubSearchQueryImporter extends ChadoImporterBase {
           $this->addBundleTypeProperty('pub_id', $pub_id, 'pubprop', 'TPUB', '0000002', 'publication');
         }
         else {
-          // If there is no type_id, we cannot process this publication further
+          // If there is no type_id, we cannot process this publication further. This was logged earlier
           unset($publications[$index]);
           unset($this->pub_index[$accession]);
-          $this->logger->warning('Publication accession @acc is missing a type, so will not be imported', ['@acc' => $accession]);
         }
       }
     }
@@ -558,8 +557,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       }
       $type_id = $this->cvterm_lookups[$type] ?? 0;
       if (!$type_id) {
-        $this->logger->warning('Publication with accession @acc has a type "@type" which is not present in the tripal_pub vocabulary',
-          ['@acc' => $accession, '@type', $type]);
+        $this->logger->warning('Publication with accession @acc has a type "@type" which is not present in the tripal_pub vocabulary, so will not be imported',
+          ['@acc' => $accession, '@type' => $type]);
       }
     }
     return $type_id;
@@ -922,7 +921,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     $n_groups = '?';
     $completed = FALSE;
     $prefix = '';
-$this->batch_size = 5;//@@@
 
     while (!$completed) {
 
