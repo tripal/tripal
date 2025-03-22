@@ -11,18 +11,18 @@ use Drupal\tripal\Entity\TripalEntityType;
  * Plugin implementation of Default Tripal field for sequence data.
  *
  * @FieldType(
- *   id = "chado_aligned_sequence_type_default",
+ *   id = "chado_derived_sequence_type_default",
  *   category = "tripal_chado",
- *   label = @Translation("Chado Aligned Sequence"),
- *   description = @Translation("Extracts aligned sequence data from a chado feature"),
+ *   label = @Translation("Chado Derived Sequence"),
+ *   description = @Translation("Extracts derived sequence data from a chado feature"),
  *   default_widget = "chado_sequence_widget_default",
  *   default_formatter = "chado_sequence_formatter_default",
  *   cardinality = 1,
  * )
  */
-class ChadoAlignedSequenceTypeDefault extends ChadoFieldItemBase {
+class ChadoDerivedSequenceTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_aligned_sequence_type_default";
+  public static $id = "chado_derived_sequence_type_default";
 
   /**
    * {@inheritdoc}
@@ -98,14 +98,14 @@ public static function getSequenceLength (): int {
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
       'action' => 'function',
       'drupal_store' => FALSE,
-      'namespace' => '\Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAlignedSequenceTypeDefault',
+      'namespace' => '\Drupal\tripal_chado\Plugin\Field\FieldType\ChadoDerivedSequenceTypeDefault',
       'function' => "getSequenceLength",
     ]);
     // These properties are read by the formatter and the standard formatter expects 'residues'
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'residues','SO:0000001', [
       'action' => 'function',
       'drupal_store' => FALSE,
-      'namespace' => '\Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAlignedSequenceTypeDefault',
+      'namespace' => '\Drupal\tripal_chado\Plugin\Field\FieldType\ChadoDerivedSequenceTypeDefault',
       'function' => "retrieveSequenceUsingService",
 
     ]);
