@@ -47,6 +47,7 @@ class TripalPubParserManager extends DefaultPluginManager {
   // All elements need to be under the 'pub_parser' array index since
   // a placeholder exists for this to be updated by the Ajax callback.
   public function form($form, $form_state) {
+dpm("Calling form in class TripalPubParserManager extends DefaultPluginManager");//@@@
     //@todo get these values
     $disabled = '';
     $do_contact = '';

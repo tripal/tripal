@@ -36,8 +36,10 @@ interface TripalPubLibraryInterface extends PluginInspectionInterface {
    *   The form array definition.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
+   *
+   * @return void
    */
-  public function formSubmit(array $form, \Drupal\Core\Form\FormStateInterface &$form_state);
+  public function formSubmit(array $form, \Drupal\Core\Form\FormStateInterface &$form_state): void;
 
   /**
    * Handles validation of the form elements.

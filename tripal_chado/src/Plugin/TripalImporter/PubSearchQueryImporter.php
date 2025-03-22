@@ -390,6 +390,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     // Get all publication accessions
     $all_publications_dbxref = [];
+    $this->pub_index = [];
     foreach ($publications as $index => $publication) {
       $accession = $publication['Publication Dbxref'];
       $all_publications_dbxref[] = $accession;
@@ -473,6 +474,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    *   The list is stored at $this->new_accessions
    */
   protected function getNewPublicationAccessions(array $publications): void {
+    $this->new_accessions = [];
     // Create the list of new accessions to be imported
     foreach ($this->pub_index as $accession => $info) {
       if ($info['is_new']) {
@@ -497,10 +499,10 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
         // Assemble the values for the pub table columns
         $title = $publication['Title'];
-        $series_name = trim(explode('(', $publication['Journal Name'])[0]);
+        $series_name = trim(explode('(', $publication['Journal Name'] ?? '')[0]);
         $pyear = $publication['Year'];
         // Here for the uniquename field in the pub table we use the citation,
-        // which should be unique, and we should have already generated it for
+        // which should be unique, and we should have already generated it
         // for all importers, but a simple default is provided as a fallback.
         $uniquename = $publication['Citation']
           ?? trim(str_replace(',', ';', $publication['Authors'] ?? '') . ' ' . $title . ' ' . $series_name . '; ' . $pyear);
@@ -524,6 +526,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         else {
           // If there is no type_id, we cannot process this publication further
           unset($publications[$index]);
+          unset($this->pub_index[$accession]);
+          $this->logger->warning('Publication accession @acc is missing a type, so will not be imported', ['@acc' => $accession]);
         }
       }
     }
@@ -542,7 +546,10 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    */
   protected function getPublicationTypeId(array $publication): int {
     $type_id = 0;
-    $type = $publication['Publication Type'] ?? NULL;
+    // In the event that the publication has no type, e.g. 39755038,
+    // then assign a generic 'Publication' type.
+    $type = $publication['Publication Type'] ?? 'Publication';
+    $accession = $publication['Publication Dbxref'] ?? 'accession_unknown';
     if ($type) {
       if (is_array($type)) {
         // A publication can have more than one type. We can't support
@@ -550,13 +557,10 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $type = $type[array_key_first($type)];
       }
       $type_id = $this->cvterm_lookups[$type] ?? 0;
-      // @todo change to just issue warning so we can skip over this publication
       if (!$type_id) {
-        $this->logger->warning('Type ID for Publication Type: ' . $type . ' is not present in the tripal_pub vocabulary');
+        $this->logger->warning('Publication with accession @acc has a type "@type" which is not present in the tripal_pub vocabulary',
+          ['@acc' => $accession, '@type', $type]);
       }
-    }
-    else {
-      $this->logger->warning('Publication is missing a type: ' . print_r($publication, TRUE));
     }
     return $type_id;
   }
@@ -857,6 +861,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    * n.b. the calling function will wrap this in a database transaction
    */
   public function run() {
+    $this->logger->notice('Initializing publication importer');
+
     $arguments = $this->arguments['run_args'];
     $pub_library_manager = \Drupal::service('tripal.pub_library');
 
@@ -898,68 +904,96 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       $this->logger->error('This query cannot be executed because it is marked as "Disabled"');
       return FALSE;
     }
-    // This is stored as an integer in the database table, convert to boolean
+    // This is stored as an integer in the database table, this converts it to a boolean
     $do_contact = (($criteria['do_contact'] ?? 0) > 0);
 
-    // Initialize chado variable (used in other helper functions within this class)
+    // Initialize chado connection (used in other helper functions within this class)
     $this->chado = $this->getChadoConnection();
 
-    // Lookup the db_id for the external database
-    $this->logger->notice('Step 1 of 9: Find db_id for remote database (table: db) ...');
+    // Lookup the db_id for the external database for the plugin
     $this->getRemoteDbId($criteria['remote_db']);
-    $this->logger->notice('  🗸 Found db_id: ' . $this->db_id);
 
-    // Preload all tripal_pub ontology terms
-    $this->logger->notice('Step 2 of 9: CVTERMs lookup and caching ...');
+    // Preload all tripal_pub ontology terms to $this->cvterm_lookups
     $this->cachePublicationCvterms();
-    $this->logger->notice('  🗸 Cached cvterms: ' . count($this->cvterm_lookups));
 
-    // Use the appropriate plugin to run the query and process the results
-    $this->logger->notice('Step 3 of 9: Retrieving publication data from remote database ...');
+    // Set up a loop to load publications in batches
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
-    $publications = $plugin->run($criteria);
+    $page = 0;
+    $n_groups = '?';
+    $completed = FALSE;
+    $prefix = '';
+$this->batch_size = 5;//@@@
 
-    if (!is_array($publications)) {
-      $this->logger->error('  ✗ ERROR: Unable to connect to external database to lookup publications');
-    }
-    else {
-      $this->logger->notice('  🗸 Found publications: ' . count($publications));
+    while (!$completed) {
 
-      // Determine the number of new publications to be inserted
-      $n_to_insert = 0;
-      if (count($publications)) {
-        $this->logger->notice('Step 4 of 9: Check for already imported publications ...');
-        $n_to_insert = $this->findExistingPublications($publications);
-        $this->logger->notice('  🗸 New publications to be inserted: ' . $n_to_insert);
+      // Use the appropriate plugin to run the query and process the results, in groups of 100
+      $this->logger->notice($prefix . 'Step 1 of 7: Retrieving publication data from remote database ' . $plugin_id);
+      $criteria['page'] = $page;
+      $criteria['count'] = $this->batch_size;
+      $page_results = $plugin->run($criteria);
+
+      // NULL indicates exception caught
+      if (!is_array($page_results)) {
+        $this->logger->error('  ✗ ERROR: Unable to connect to external database to lookup publications');
+        $completed = TRUE;
       }
-
-      // If no new publications, then nothing to do
-      if (!$n_to_insert) {
-        $this->logger->notice('  ✗ No new publications were found, there is nothing to import');
+      elseif ($page_results['total_records'] == 0) {
+        $this->logger->notice('  🗸 No records matched the search criteria');
+        $completed = TRUE;
       }
       else {
-        $this->logger->notice('Step 5 of 9: Insert database crossreferences ...');
-        $n_inserted = $this->insertMissingPublicationsDbxref($publications);
-        $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
+        $publications = $page_results['pubs'];
+        $total_records = $page_results['total_records'];
+        $n_groups = intval(($total_records - 1) / $this->batch_size) + 1;
+        if (count($publications) >= $this->batch_size) {
+          $prefix = 'Group ' . ($page+1) . ' of ' . $n_groups . ', ';
+          if ($page == 0) {
+            $this->logger->notice('  🗸 Publications will be imported in @group groups of @size publications each',
+              ['@group' => $n_groups, '@size' => $this->batch_size]);
+          }
+        }
+        $this->logger->notice('  🗸 Importing @count publications', ['@count' => count($publications)]);
 
-        $this->logger->notice('Step 6 of 9: Insert new publications ...');
-        $n_inserted = $this->insertPublications($publications);
-        $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
+        // Determine the number of new publications to be inserted
+        $n_to_insert = 0;
+        if (count($publications)) {
+          $this->logger->notice($prefix . 'Step 2 of 7: Check for already imported publications');
+          $n_to_insert = $this->findExistingPublications($publications);
+          $this->logger->notice('  🗸 New publications to be inserted: ' . $n_to_insert);
+        }
 
-        $this->logger->notice('Step 7 of 9: Link publications to database crossreferences ...');
-        $n_inserted = $this->insertPubDbxrefs();
-        $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
+        // If no new publications, then nothing to do
+        if (!$n_to_insert) {
+          $this->logger->notice('  ✗ No new publications were found, there is nothing to import');
+        }
+        else {
+          $this->logger->notice($prefix . 'Step 3 of 7: Insert new publications');
+          $n_inserted = $this->insertPublications($publications);
+          $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
 
-        $this->logger->notice('Step 8 of 9: Insert publication properties ...');
-        $n_inserted = $this->insertPubProps($publications);
-        $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
+          $this->logger->notice($prefix . 'Step 4 of 7: Insert database crossreferences');
+          $n_inserted = $this->insertMissingPublicationsDbxref($publications);
+          $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
 
-        $this->logger->notice('Step 9 of 9: Insert authors ...');
-        $n_added = $this->insertContacts($publications, $do_contact);
-        $this->logger->notice('  🗸 Inserted: ' . $n_added);
+          $this->logger->notice($prefix . 'Step 5 of 7: Link publications to database crossreferences');
+          $n_inserted = $this->insertPubDbxrefs();
+          $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
+
+          $this->logger->notice($prefix . 'Step 6 of 7: Insert publication properties');
+          $n_inserted = $this->insertPubProps($publications);
+          $this->logger->notice('  🗸 Inserted: ' . $n_inserted);
+
+          $this->logger->notice($prefix . 'Step 7 of 7: Insert authors');
+          $n_added = $this->insertContacts($publications, $do_contact);
+          $this->logger->notice('  🗸 Inserted: ' . $n_added);
+        }
+      }
+      $page++;
+      $prefix = 'Group ' . ($page+1) . ', ';
+      if ($page == $n_groups) {
+        $completed = TRUE;
       }
     }
-
     return;
   }
 
