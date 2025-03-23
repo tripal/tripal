@@ -109,6 +109,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    *
    * @return array|NULL
    *   - 'total_records' = The number of records available for retrieval
+   *   - 'skipped_records' = The number of records where download failed
    *   - 'search_str' = The query string used for the search
    *   - 'pubs' = The uniform publication information array.
    *   or NULL if query failed and an exception was caught
@@ -130,10 +131,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       $results = $this->remoteSearchPMID($query, $limit, $page);
     }
     catch (\Exception $e) {
-      $msg = $e->getMessage();
-      \Drupal::messenger()->addMessage('ERROR: ' . $msg, 'error');
-      \Drupal::service('tripal.logger')->error($msg);
-      return NULL;
+      \Drupal::service('tripal.logger')->error($e->getMessage());
     }
     return $results;
   }
@@ -150,12 +148,16 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    *   Indicates the page to retrieve.  This corresponds to a paged table, where
    *   each page has $num_to_retrieve publications.
    *
-   * @return
-   *  An array of publications.
+   * @return array|NULL
+   *   - 'total_records' = The number of records available for retrieval
+   *   - 'skipped_records' = The number of records where download failed
+   *   - 'search_str' = The query string used for the search
+   *   - 'pubs' = The uniform publication information array.
+   *   or NULL if query failed and an exception was caught
    *
    * @ingroup tripal_pub
    */
-  public function remoteSearchPMID($search_array, $num_to_retrieve, $page, $row_mode = 1) {
+  public function remoteSearchPMID($search_array, $num_to_retrieve, $page, $row_mode = 1): ?array {
     // Only initialize for page zero, subsequent pages use the established query
     if ($page == 0) {
       // convert the terms list provided by the caller into a string with words
@@ -233,7 +235,9 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       }
 
       // Initialize the remote query
-      $this->pmidSearchInit($search_str, $num_to_retrieve);
+      if (!$this->pmidSearchInit($search_str, $num_to_retrieve)) {
+        return NULL;
+      }
     }
 
     // initialize the retrieval loop
@@ -244,6 +248,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     if (($total_records == 0) or ($start > $total_records)) {
       return [
         'total_records' => $total_records,
+        'skipped_records' => 0,
         'search_str' => '',
         'pubs' => [],
       ];
@@ -251,41 +256,55 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
     // Get the list of PMIDs from the initialized search
     $pmids_txt = $this->pmidFetch('uilist', 'text', $start, $num_to_retrieve);
+    if (is_null($pmids_txt)) {
+      return NULL;
+    }
 
     // Iterate through each PMID and download and parse its publication record.
     $pmids = explode("\n", trim($pmids_txt));
     $pubs = [];
+    $n_skipped = 0;
     foreach ($pmids as $pmid) {
       // Retrieve and parse each record.
       $pub_xml = $this->pmidFetch('null', 'xml', 0, 1, ['id' => $pmid]);
-      $pub = $this->parse_xml($pub_xml);
-      $pubs[] = $pub;
+      if (is_null($pub_xml)) {
+        // Skip over any individual publication that had a download error
+        $n_skipped++;
+        \Drupal::service('tripal.logger')->error('Skipping publication @acc due to download error.',
+          ['@acc' => $pmid]);
+      }
+      else {
+        $pub = $this->parse_xml($pub_xml);
+        $pubs[] = $pub;
+      }
     }
 
     // Note that search_str is only returned for the first page
     return [
       'total_records' => $total_records,
+      'skipped_records' => $n_skipped,
       'search_str' => $search_str ?? '',
       'pubs' => $pubs,
     ];
   }
 
   /**
-   * Initailizes a PubMed Search using a given search string
+   * Initailizes a PubMed Search using a given search string.
+   * Values are stored in $this->webquery, which is an array
+   * containing the Count, WebEnv and QueryKey as returned
+   * by PubMed's esearch utility.
    *
    * @param $search_str
    *   The PubMed Search string
    * @param $retmax
    *   The maximum number of records to return
    *
-   * @return void
-   *   Values are stored in $this->webquery, which is an array
-   *   containing the Count, WebEnv and QueryKey as returned
-   *   by PubMed's esearch utility
+   * @return bool
+   *   TRUE for success, FALSE for error.
    *
    * @ingroup tripal_pub
    */
-  private function pmidSearchInit($search_str, $retmax) {
+  private function pmidSearchInit($search_str, $retmax): bool {
 
     // do a search for a single result so that we can establish a history, and get
     // the number of records. Once we have the number of records we can retrieve
@@ -306,9 +325,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
     $rfh = fopen($query_url, "r");
     if (!$rfh) {
-      \Drupal::messenger()->addMessage('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
       \Drupal::service('tripal.logger')->error("Could not perform Pubmed query. Cannot connect to Entrez.");
-      return 0;
+      return FALSE;
     }
 
     // retrieve the XML results
@@ -348,6 +366,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         }
       }
     }
+    return TRUE;
   }
 
   /**
@@ -365,13 +384,12 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * @param $args
    *   Any additional arguments to add the efetch query URL
    *
-   * @return
-   *  An array containing the total_records in the dataset, the search string
-   *  and an array of the publications that were retrieved.
+   * @return string|NULL
+   *   XML as returned from NCBI. Returns NULL if a download error occurred.
    *
    * @ingroup tripal_pub
    */
-  private function pmidFetch($rettype = 'null', $retmod = 'null', $start = 0, $limit = 10, $args = []) {
+  private function pmidFetch($rettype = 'null', $retmod = 'null', $start = 0, $limit = 10, $args = []): ?string {
 
     // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
     // the PMID's within the range specied.  The PMIDs will be returned as a text list
@@ -406,9 +424,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
     $rfh = fopen($fetch_url, "r");
     if (!$rfh) {
-      \Drupal::messenger()->addMessage('ERROR: Could not perform PubMed query.', 'error');
       \Drupal::service('tripal.logger')->error("Could not perform PubMed query: $fetch_url.");
-      return '';
+      return NULL;
     }
     $results = '';
     if ($rfh) {
@@ -539,12 +556,11 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
   }
 
   /**
-   * Creates Citation
+   * Creates a citation for a publication.
    *
    * This function generates a citation for a publication. It requires
    * an array structure with keys being the terms in the Tripal
-   * publication ontology.  This function is intended to be used
-   * for any function that needs to generate a citation.
+   * publication ontology.
    *
    * @param $pub
    *   An array structure containing publication details where the keys
@@ -595,12 +611,12 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     $pub_type = '';
     if (array_key_exists('Publication Type', $pub)) {
       $known_types = [
-        'Journal Article',
-        'Conference Proceedings',
-        'Review',
         'Book',
-        'Letter',
         'Book Chapter',
+        'Conference Proceedings',
+        'Journal Article',
+        'Letter',
+        'Review',
       ];
 
       // An article may have more than one publication type. For example,
