@@ -131,7 +131,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       $results = $this->remoteSearchPMID($query, $limit, $page);
     }
     catch (\Exception $e) {
-      \Drupal::service('tripal.logger')->error($e->getMessage());
+      $this->logger->error($e->getMessage());
     }
     return $results;
   }
@@ -270,7 +270,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       if (is_null($pub_xml)) {
         // Skip over any individual publication that had a download error
         $n_skipped++;
-        \Drupal::service('tripal.logger')->error('Skipping publication @acc due to download error.',
+        $this->logger->error('Skipping publication @acc due to download error.',
           ['@acc' => $pmid]);
       }
       else {
@@ -325,7 +325,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
     $rfh = fopen($query_url, "r");
     if (!$rfh) {
-      \Drupal::service('tripal.logger')->error("Could not perform Pubmed query. Cannot connect to Entrez.");
+      $this->logger->error("Could not perform Pubmed query. Cannot connect to Entrez.");
       return FALSE;
     }
 
@@ -424,7 +424,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
     $rfh = fopen($fetch_url, "r");
     if (!$rfh) {
-      \Drupal::service('tripal.logger')->error("Could not perform PubMed query: $fetch_url.");
+      $this->logger->error("Could not perform PubMed query: $fetch_url.");
       return NULL;
     }
     $results = '';
@@ -495,7 +495,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
             break;
           case 'ERROR':
             $xml->read(); // get the value for this element
-            \Drupal::service('tripal.logger')->error('XML Internal Error: @err', ['@err' => $xml->value]);
+            $this->logger->error('XML Internal Error: @err', ['@err' => $xml->value]);
             break;
           case 'GeneralNote':
             // TODO: handle this
