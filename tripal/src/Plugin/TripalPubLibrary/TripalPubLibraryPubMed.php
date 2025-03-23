@@ -481,52 +481,52 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
           case 'BookDocument':
             $this->pmidParseBookDocument($xml, $pub);
             break;
-          case 'ChemicalList':
+          // case 'ChemicalList':
             // TODO: handle this
-            break;
-          case 'CitationSubset':
+            // break;
+          // case 'CitationSubset':
             // TODO: not sure this is needed.
-            break;
-          case 'CommentsCorrections':
+            // break;
+          // case 'CommentsCorrections':
             // TODO: handle this
-            break;
-          case 'DeleteCitation':
+            // break;
+          // case 'DeleteCitation':
             // TODO: need to know how to handle this
-            break;
+            // break;
           case 'ERROR':
             $xml->read(); // get the value for this element
             $this->logger->error('XML Internal Error: @err', ['@err' => $xml->value]);
             break;
-          case 'GeneralNote':
+          // case 'GeneralNote':
             // TODO: handle this
-            break;
-          case 'GeneSymbolList':
+            // break;
+          // case 'GeneSymbolList':
             // TODO: handle this
-            break;
-          case 'InvestigatorList':
+            // break;
+          // case 'InvestigatorList':
             // TODO: personal names of individuals who are not authors (can be used with collection)
-            break;
-          case 'KeywordList':
+            // break;
+          // case 'KeywordList':
             // TODO: handle this
-            break;
+            // break;
           case 'MedlineJournalInfo':
             $this->pmidParseMedlineJournalInfo($xml, $pub);
             break;
-          case 'MeshHeadingList':
+          // case 'MeshHeadingList':
             // TODO: Medical subject headings
-            break;
-          case 'NumberOfReferences':
+            // break;
+          // case 'NumberOfReferences':
             // TODO: not sure we should keep this as it changes frequently.
-            break;
-          case 'OtherAbstract':
+            // break;
+          // case 'OtherAbstract':
             // TODO: when the journal does not contain an abstract for the publication.
-            break;
-          case 'OtherID':
+            // break;
+          // case 'OtherID':
             // TODO: ID's from another NLM partner.
-            break;
-          case 'PersonalNameSubjectList':
+            // break;
+          // case 'PersonalNameSubjectList':
             // TODO: for works about an individual or with biographical note/obituary.
-            break;
+            // break;
           case 'PMID':
             // There are multiple places where a PMID is present in the XML and
             // since this code does not descend into every branch of the XML tree,
@@ -539,9 +539,9 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
               $pub['Publication Dbxref'] = $xml->value;
             }
             break;
-          case 'SupplMeshList':
+          // case 'SupplMeshList':
             // TODO: meant for protocol list
-            break;
+            // break;
           default:
             break;
         }
