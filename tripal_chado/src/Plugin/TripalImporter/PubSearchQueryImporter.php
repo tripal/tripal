@@ -36,6 +36,12 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   protected $chado = NULL;
 
   /**
+   * Publication library manager service
+   * @var Drupal\tripal_chado\Plugin\TripalImporter\PubSearchQueryImporter $pub_library_manager
+   */
+  protected $pub_library_manager = NULL;
+
+  /**
    * db_id value from the chado.db table for the external database
    * @var ?int $db_id
    */
@@ -158,8 +164,10 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    */
   protected function formQueryIdNotSet(&$form, $form_state) {
     // Get list of database/libraries
-    $pub_library_manager = \Drupal::service('tripal.pub_library');
-    $plugins = $pub_library_manager->getLibraryOptions();
+    if (is_null($this->pub_library_manager)) {
+      $this->pub_library_manager = \Drupal::service('tripal.pub_library');
+    }
+    $plugins = $this->pub_library_manager->getLibraryOptions();
     $form_state_values = $form_state->getValues();
 
     $form['database'] = [
@@ -321,8 +329,10 @@ class PubSearchQueryImporter extends ChadoImporterBase {
           t('The query name must include its ID value in parentheses'));
     }
     else {
-      $pub_library_manager = \Drupal::service('tripal.pub_library');
-      $pub_record = $pub_library_manager->getSearchQuery($query_id);
+      if (is_null($this->pub_library_manager)) {
+        $this->pub_library_manager = \Drupal::service('tripal.pub_library');
+      }
+      $pub_record = $this->pub_library_manager->getSearchQuery($query_id);
       if (!$pub_record) {
         $form_state->setErrorByName('search_query_name',
             t('There is no query with an ID value of @id', ['@id' => $query_id]));
@@ -856,19 +866,23 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   }
 
   /**
-   * @see TripalImporter::run()
+   * Handles initialization for the run() function
    *
-   * n.b. the calling function will wrap this in a database transaction
+   * @return array|NULL
+   *   The criteria array, or NULL if an error occurred
    */
-  public function run() {
+  protected function run_init(): ?array {
+
     $this->logger->notice('Initializing publication importer');
 
-    $arguments = $this->arguments['run_args'];
-    $pub_library_manager = \Drupal::service('tripal.pub_library');
+    // Initialize services
+    $this->chado = $this->getChadoConnection();
+    $this->pub_library_manager = \Drupal::service('tripal.pub_library');
 
-    // We can pass either a query_id value, in which case we retrieve a criteria
-    // array from the public.tripal_pub_library_query table. Alternatively we can
-    // pass a criteria array directly.
+    // We can pass a query_id value, in which case we retrieve a criteria
+    // array from the public.tripal_pub_library_query table. Alternatively we
+    // can pass a criteria array directly.
+    $arguments = $this->arguments['run_args'];
     $criteria = [];
     if ($arguments['criteria'] ?? NULL) {
       $criteria = $arguments['criteria'];
@@ -884,31 +898,29 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       }
       if (!$query_id) {
         $this->logger->error('A query ID was not supplied, cannot continue');
-        return FALSE;
+        return NULL;
       }
 
       // Use the query_id to retrieve the query information from the database
-      $pub_record = $pub_library_manager->getSearchQuery($query_id);
+      $pub_record = $this->pub_library_manager->getSearchQuery($query_id);
       if (!$pub_record) {
         $this->logger->error('There is no search query defined for the supplied identifier "'. $query_id . '"');
-        return FALSE;
+        return NULL;
       }
       $criteria = unserialize($pub_record->criteria);
     }
-    $plugin_id = $criteria['form_state_user_input']['plugin_id'] ?? NULL;
-    if (is_null($plugin_id)) {
-      $this->logger->error('Could not find the plugin_id, could not find adequate query information');
-      return FALSE;
+    if (!($criteria['plugin_id'] ?? NULL)) {
+      $plugin_id = $criteria['form_state_user_input']['plugin_id'] ?? NULL;
+      if (is_null($plugin_id)) {
+        $this->logger->error('Could not find the plugin_id, could not find adequate query information');
+        return NULL;
+      }
+      $criteria['plugin_id'] = $plugin_id;
     }
     if (($criteria['disabled'] ?? 0) > 0) {
       $this->logger->error('This query cannot be executed because it is marked as "Disabled"');
-      return FALSE;
+      return NULL;
     }
-    // This is stored as an integer in the database table, this converts it to a boolean
-    $do_contact = (($criteria['do_contact'] ?? 0) > 0);
-
-    // Initialize chado connection (used in other helper functions within this class)
-    $this->chado = $this->getChadoConnection();
 
     // Lookup the db_id for the external database for the plugin
     $this->getRemoteDbId($criteria['remote_db']);
@@ -916,8 +928,27 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     // Preload all tripal_pub ontology terms to $this->cvterm_lookups
     $this->cachePublicationCvterms();
 
+    return $criteria;
+  }
+
+  /**
+   * @see TripalImporter::run()
+   *
+   * n.b. the calling function will wrap this in a database transaction
+   */
+  public function run() {
+
+    $criteria = $this->run_init();
+    if (is_null($criteria)) {
+      return;
+    }
+
+    // This is stored as an integer in the database table, this converts it to a boolean
+    $do_contact = (($criteria['do_contact'] ?? 0) > 0);
+
     // Set up a loop to load publications in batches
-    $plugin = $pub_library_manager->createInstance($plugin_id, []);
+    $plugin_id = $criteria['plugin_id'];
+    $plugin = $this->pub_library_manager->createInstance($plugin_id, []);
     $page = 0;
     $n_groups = '?';
     $completed = FALSE;
@@ -947,8 +978,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         if ($n_groups > 1) {
           $prefix = 'Group ' . ($page+1) . ' of ' . $n_groups . ', ';
           if ($page == 0) {
-            $this->logger->notice('  🗸 Publications will be imported in @group groups of @size publications each',
-              ['@group' => $n_groups, '@size' => $this->batch_size]);
+            $this->logger->notice('  🗸 @total publications will be imported in @group groups of @size publications each',
+              ['@total' => number_format($total_records), '@group' => $n_groups, '@size' => $this->batch_size]);
           }
         }
         $this->logger->notice('  🗸 Importing @count publications', ['@count' => count($publications)]);
