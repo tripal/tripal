@@ -557,7 +557,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       }
       $type_id = $this->cvterm_lookups[$type] ?? 0;
       if (!$type_id) {
-        $this->logger->warning('Publication with accession @acc has a type "@type" which is not present in the tripal_pub vocabulary, so will not be imported',
+        $this->logger->warning('Publication with accession @acc has a type "@type" which is not present'
+          . ' in the tripal_pub vocabulary, so will not be imported. Consider adding a term for this type.',
           ['@acc' => $accession, '@type' => $type]);
       }
     }
@@ -943,7 +944,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         $publications = $page_results['pubs'];
         $total_records = $page_results['total_records'];
         $n_groups = intval(($total_records - 1) / $this->batch_size) + 1;
-        if (count($publications) >= $this->batch_size) {
+        if ($n_groups > 1) {
           $prefix = 'Group ' . ($page+1) . ' of ' . $n_groups . ', ';
           if ($page == 0) {
             $this->logger->notice('  🗸 Publications will be imported in @group groups of @size publications each',
@@ -986,10 +987,13 @@ class PubSearchQueryImporter extends ChadoImporterBase {
           $this->logger->notice('  🗸 Inserted: ' . $n_added);
         }
       }
+      // n.b. $page starts at 0 so last page is $n_groups-1
       $page++;
-      $prefix = 'Group ' . ($page+1) . ', ';
       if ($page == $n_groups) {
         $completed = TRUE;
+      }
+      else {
+        $prefix = 'Group ' . ($page+1) . ' of ' . $n_groups . ', ';
       }
     }
     return;
