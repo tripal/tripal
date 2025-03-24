@@ -668,6 +668,19 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
     }
 
+    // If we are going to republish, then clear the cache for all of the
+    // existing entities because we may change titles or field values.
+    if ($this->republish) {
+      $tags = [];
+      foreach ($this->existing_published_entities as $entity_id) {
+        $tags[] = 'values:tripal_entity:' . $entity_id;
+      }
+      if ($tags) {
+        \Drupal::service('cache.entity')->invalidateMultiple($tags);
+        \Drupal::service('cache_tags.invalidator')->invalidateTags(['rendered']);
+      }
+    }
+
     return $titles;
   }
 
@@ -789,12 +802,18 @@ class ChadoPublish extends TripalBackendPublishBase {
     $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
     $entities = $storage->loadMultiple($entity_ids);
     $index = 0;
+    $tags = [];
     foreach ($entities as $entity_id => $entity) {
       $record_id = $added_record_ids[$index];
       $entity->setTokenValues($this->token_values[$record_id]);
       $entity->setAlias();
-      $entity->save();
+      $tags[] = 'values:tripal_entity:' . $entity_id;
       $index++;
+    }
+    // Clear cache so that fields will appear on new entities
+    if ($index) {
+      \Drupal::service('cache.entity')->invalidateMultiple($tags);
+      \Drupal::service('cache_tags.invalidator')->invalidateTags(['rendered']);
     }
   }
 
