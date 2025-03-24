@@ -48,10 +48,12 @@ class ChadoPublishTest extends ChadoTestKernelBase {
       ->save();
 
     // Create three organisms in chado to be published.
+    // Note: We added HTML to the genus (not approved tag) to confirm that
+    // unallowed tags are being filtered and allowed ones are being kept.
     for ($i=1; $i <= 3; $i++) {
       $this->connection->insert('1:organism')
         ->fields([
-          'genus' => 'Tripalus',
+          'genus' => '<p>Tripalus</p>',
           'species' => 'databasica ' . $i,
           'comment' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
         ])->execute();
