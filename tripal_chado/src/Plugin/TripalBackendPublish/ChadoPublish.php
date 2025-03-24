@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
+use Drupal\Component\Utility\Xss;
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
@@ -516,7 +517,8 @@ class ChadoPublish extends TripalBackendPublishBase {
       // Now that we've gotten the values out of the property value objects,
       // we can use the token parser to get the title!
       $entity_title = $this->token_parser->replaceTokens($title_format, $token_values);
-      $titles[$record_id] = $entity_title;
+      $sanitized_title = Xss::filter($entity_title, $this->allowed_title_tags);
+      $titles[$record_id] = $sanitized_title;
       // Save the token values, we will need them again when we generate the URL Alias
       $this->token_values[$record_id] = $token_values;
     }
@@ -1232,6 +1234,10 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // The current user will be the author of any newly published entitites
     $this->uid = \Drupal::currentUser()->id();
+
+    // List of allowed HTML tags in entity titles
+    $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
+    $this->allowed_title_tags = explode(' ', $tag_string ?? '');
 
     // Initialize class variables that may persist between consecutive jobs
     $this->field_info = [];
