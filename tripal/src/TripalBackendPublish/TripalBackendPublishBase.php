@@ -117,6 +117,14 @@ abstract class TripalBackendPublishBase extends PluginBase implements TripalBack
   protected $republish = FALSE;
 
   /**
+   * Valid HTML tags for titles.
+   * This is configurable through entity settings at /admin/tripal/config/entity_settings
+   *
+   * @var array $allowed_title_tags
+   */
+  protected array $allowed_title_tags = [];
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
