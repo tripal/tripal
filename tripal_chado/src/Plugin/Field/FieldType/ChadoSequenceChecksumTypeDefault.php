@@ -100,4 +100,27 @@ class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
     return $compatible;
   }
 
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    $options += [
+      'id' => self::$id,
+      'base_table' => 'feature',
+      'base_column' => 'md5checksum',
+      'label' => 'Sequence MD5 Checksum',
+      'termIdSpace' => 'data',
+      'termAccession' => '2190',
+      'description' => 'The 32-character checksum of the sequence, calculated using the MD5 algorithm.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+    return $field_list;
+  }
+
 }
