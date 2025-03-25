@@ -119,7 +119,8 @@ class ChadoUnitTypeDefault extends ChadoFieldItemBase {
     // Specific settings for this field
     $options += [
       'id' => self::$id,
-      'table' => 'cvterm',
+      'base_table' => 'featuremap',
+      'base_column' => 'unittype_id',
       'label' => 'Unit Type',
       'termIdSpace' => 'UO',
       'termAccession' => '0000000',
