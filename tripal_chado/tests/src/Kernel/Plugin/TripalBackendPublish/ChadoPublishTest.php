@@ -40,11 +40,20 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     // Get Chado in place
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
+    // Update entity settings to match tripal/config/install/tripal.settings.yml
+    $allowed_title_tags = 'em i strong u';
+    \Drupal::configFactory()
+      ->getEditable('tripal.settings')
+      ->set('tripal_entity_type.allowed_title_tags', $allowed_title_tags)
+      ->save();
+
     // Create three organisms in chado to be published.
+    // Note: We added HTML to the genus (not approved tag) to confirm that
+    // unallowed tags are being filtered and allowed ones are being kept.
     for ($i=1; $i <= 3; $i++) {
       $this->connection->insert('1:organism')
         ->fields([
-          'genus' => 'Tripalus',
+          'genus' => '<p>Tripalus</p>',
           'species' => 'databasica ' . $i,
           'comment' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
         ])->execute();
