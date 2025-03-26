@@ -42,12 +42,20 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
   public function form_submit(array $form, \Drupal\Core\Form\FormStateInterface $form_state, array &$criteria): void {
     $user_input = $form_state->getUserInput();
     $criteria['days'] = $user_input['days'];
+    $criteria['ncbi_api_key'] = $user_input['ncbi_api_key'];
+
+    // If an NCBI API key was entered, store it as the default for new queries
+    if ($criteria['ncbi_api_key']) {
+      \Drupal::state()->set('tripal_pub_importer_ncbi_api_key', $criteria['ncbi_api_key']);
+    }
   }
 
   /**
    * Adds plugin specific form items and returns the $form array
    */
   public function form(array $form, \Drupal\Core\Form\FormStateInterface &$form_state): array {
+    $default_api_key = \Drupal::state()->get('tripal_pub_importer_ncbi_api_key', '');
+
     // Add form elements specific to this parser.
     $api_key_description = t('Tripal imports publications using NCBI\'s ')
       . Link::fromTextAndUrl('EUtils API',
@@ -71,7 +79,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       '#type' => 'textfield',
       '#description' => $api_key_description,
       '#required' => FALSE,
-      //to-do add ajax callback to populate?
+      '#default_value' => $default_api_key,
       '#size' => 20,
     ];
 
