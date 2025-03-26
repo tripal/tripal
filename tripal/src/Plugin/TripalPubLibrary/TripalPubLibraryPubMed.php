@@ -158,16 +158,14 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * @ingroup tripal_pub
    */
   public function remoteSearchPMID($search_array, $num_to_retrieve, $page, $row_mode = 1): ?array {
+    $api_key = $search_array['ncbi_api_key'] ?? $search_array['form_state_user_input']['ncbi_api_key'] ?? '';
     // Only initialize for page zero, subsequent pages use the established query
     if ($page == 0) {
+      $days = $search_array['days'] ?? '';
+
       // convert the terms list provided by the caller into a string with words
       // separated by a '+' symbol.
       $num_criteria = $search_array['num_criteria'];
-      $days = NULL;
-      if (isset($search_array['days'])) {
-        $days = $search_array['days'];
-      }
-
       $search_str = '';
 
       for ($i = 1; $i <= $num_criteria; $i++) {
@@ -235,7 +233,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       }
 
       // Initialize the remote query
-      if (!$this->pmidSearchInit($search_str, $num_to_retrieve)) {
+      if (!$this->pmidSearchInit($search_str, $num_to_retrieve, $api_key)) {
         return NULL;
       }
     }
@@ -255,7 +253,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     }
 
     // Get the list of PMIDs from the initialized search
-    $pmids_txt = $this->pmidFetch('uilist', 'text', $start, $num_to_retrieve);
+    $pmids_txt = $this->pmidFetch('uilist', 'text', $start, $num_to_retrieve, $api_key, []);
     if (is_null($pmids_txt)) {
       return NULL;
     }
@@ -266,7 +264,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     $n_skipped = 0;
     foreach ($pmids as $pmid) {
       // Retrieve and parse each record.
-      $pub_xml = $this->pmidFetch('null', 'xml', 0, 1, ['id' => $pmid]);
+      $pub_xml = $this->pmidFetch('null', 'xml', 0, 1, $api_key, ['id' => $pmid]);
       if (is_null($pub_xml)) {
         // Skip over any individual publication that had a download error
         $n_skipped++;
@@ -294,17 +292,19 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * containing the Count, WebEnv and QueryKey as returned
    * by PubMed's esearch utility.
    *
-   * @param $search_str
+   * @param string $search_str
    *   The PubMed Search string
-   * @param $retmax
+   * @param int $retmax
    *   The maximum number of records to return
+   * @param string $api_key
+   *   The optional NCBI API key
    *
    * @return bool
    *   TRUE for success, FALSE for error.
    *
    * @ingroup tripal_pub
    */
-  private function pmidSearchInit($search_str, $retmax): bool {
+  private function pmidSearchInit(string $search_str, int $retmax, string $api_key = ''): bool {
 
     // do a search for a single result so that we can establish a history, and get
     // the number of records. Once we have the number of records we can retrieve
@@ -315,9 +315,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       "&usehistory=y" .
       "&term=" . urlencode($search_str);
 
-    $api_key = \Drupal::state()->get('tripal_pub_importer_ncbi_api_key', NULL);
     $sleep_time = 333334;
-    if (!empty($api_key)) {
+    if ($api_key) {
       $query_url .= "&api_key=" . $api_key;
       $sleep_time = 100000;
     }
@@ -373,15 +372,17 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * Retrieves from PubMed a set of publications from the
    * previously initiated query.
    *
-   * @param $rettype
+   * @param string $rettype
    *   The efetch return type
-   * @param $retmod
+   * @param string $retmod
    *   The efetch return mode
-   * @param $start
+   * @param int $start
    *   The start of the range to retrieve
-   * @param $limit
+   * @param int $limit
    *   The number of publications to retrieve
-   * @param $args
+   * @param string $api_key
+   *   The optional NCBI API key
+   * @param array $args
    *   Any additional arguments to add the efetch query URL
    *
    * @return string|NULL
@@ -389,7 +390,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  private function pmidFetch($rettype = 'null', $retmod = 'null', $start = 0, $limit = 10, $args = []): ?string {
+  private function pmidFetch(string $rettype, string $retmod, int $start,
+                             int $limit, string $api_key, array $args): ?string {
 
     // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
     // the PMID's within the range specied.  The PMIDs will be returned as a text list
@@ -402,9 +404,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       "&query_key=" . $this->webquery['QueryKey'] .
       "&WebEnv=" . $this->webquery['WebEnv'];
 
-    $api_key = \Drupal::state()->get('tripal_pub_importer_ncbi_api_key', NULL);
     $sleep_time = 333334;
-    if (!empty($api_key)) {
+    if ($api_key) {
       $fetch_url .= "&api_key=" . $api_key;
       $sleep_time = 100000;
     }
@@ -421,7 +422,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         $fetch_url .= "&$key=$value";
       }
     }
-    usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
+    usleep($sleep_time);  // 1/3 or 1/10 of a second delay, NCBI limits requests to 3 / second without API key
     $rfh = fopen($fetch_url, "r");
     if (!$rfh) {
       $this->logger->error("Could not perform PubMed query: $fetch_url.");
