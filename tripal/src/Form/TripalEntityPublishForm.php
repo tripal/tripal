@@ -339,7 +339,7 @@ class TripalEntityPublishForm extends FormBase {
       $options[$key] = $values[$key];
     }
 
-    // Store the current republish setting as the default for the next time publish is run
+    // Store the current form settings as the default for the next time publish is run
     \Drupal::state()->set('tripal_publish_form_defaults', $options);
 
     // Run the form submit for the storage backend.
