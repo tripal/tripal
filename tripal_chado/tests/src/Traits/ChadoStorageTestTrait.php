@@ -247,6 +247,8 @@ trait ChadoStorageTestTrait {
 
     $success = $this->chadoStorage->insertValues($this->dataStoreValues);
     $this->assertTrue($success, 'We were not able to insert the data.');
+
+    $this->chadoStorage->loadValues($this->dataStoreValues, FALSE);
   }
 
   /**
@@ -333,7 +335,7 @@ trait ChadoStorageTestTrait {
     // Set the values in the propertyValue objects.
     $this->setExpectedValues($field_names, $values);
 
-    $success = $this->chadoStorage->loadValues($this->dataStoreValues);
+    $success = $this->chadoStorage->loadValues($this->dataStoreValues, FALSE);
     $this->assertTrue($success, 'We were not able to load the data.');
 
     return $this->dataStoreValues;
@@ -427,6 +429,8 @@ trait ChadoStorageTestTrait {
 
     $success = $this->chadoStorage->updateValues($this->dataStoreValues);
     $this->assertTrue($success, 'We were not able to update the data.');
+
+    $this->chadoStorage->loadValues($this->dataStoreValues, FALSE);
 
     return $this->dataStoreValues;
   }
@@ -609,6 +613,7 @@ trait ChadoStorageTestTrait {
   public function addPropertyTypes2ChadoStorage($field_names, $expected_property_counts) {
 
     foreach ($this->propertyTypes as $field_name => $properties) {
+      $this->chadoStorage->markPropertiesForCaching($field_name, $properties);
       $this->chadoStorage->addTypes($field_name, $properties);
     }
     $retrieved_types = $this->chadoStorage->getTypes();
