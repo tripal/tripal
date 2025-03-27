@@ -952,11 +952,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   The value object for the property we are adding records for.
    *   Note: We will always have a StoragePropertyValue for a property even if
    *   the value is not set. This method is expected to check if the value is empty or not.
-   * @param int $link_count
-   *   Indicates how many store_link properties have been handled.
-   *   If more than one (e.g. relationship field), we will add an OR condtion group.
    */
-  protected function handleStoreLink(array $context, StoragePropertyValue $prop_value, int $link_count) {
+  protected function handleStoreLink(array $context, StoragePropertyValue $prop_value) {
 
     $base_table = $context['base_table'];
     $value_col_info = $this->getPathValueColumn($context['path_array']);
