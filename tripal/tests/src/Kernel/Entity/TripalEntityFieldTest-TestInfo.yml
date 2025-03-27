@@ -57,6 +57,34 @@ scenarios:
         - value: "Amazonite"
         metaphysical_props:
         - value: "Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work."
+  - label: "Use format for title + URL with HTML included"
+    description: "Create a page where every field has one value and the title/path are left empty."
+    create:
+      title: 'TEST Gemstones <em>amazonite</em> Entity #1'
+      url: '/test/test_gemstone/amazonite/1'
+      user_input:
+        common_name:
+        - value: "<p>amazonite</p>"
+        metaphysical_props:
+        - value: "soothing, calming, healing from grief"
+      expected:
+        common_name:
+        - value: "<p>amazonite</p>"
+        metaphysical_props:
+        - value: "soothing, calming, healing from grief"
+    edit:
+      title: 'TEST Gemstones <em><i>Amazo</i>nite</em> Entity #1'
+      url: '/test/test_gemstone/amazonite/1'
+      user_input:
+        common_name:
+        - value: "<p><i>Amazo</i>nite</p>"
+        metaphysical_props:
+        - value: "Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work."
+      expected:
+        common_name:
+        - value: "<p><i>Amazo</i>nite</p>"
+        metaphysical_props:
+        - value: "Amazonite is a stone of peace, truth, harmony, and communication. It gently soothes the nerves, and it’s energies can be felt to the touch. It brings emotional balance, mental clarity and physical health benefits while encouraging spiritual growth & energy work."
   - label: "User submitted alias when creating"
     description: "Create a page where every field has one value, the title sets a value (should be ignored) and the path is set (should be respected)."
     create:

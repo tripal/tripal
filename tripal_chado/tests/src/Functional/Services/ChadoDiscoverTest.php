@@ -35,10 +35,17 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     $idspaces = [];
-    $new_collections = ['OBI', 'TPUB', 'CO_010'];
-    foreach ($new_collections as $id) {
+    $new_collections = [
+      'OBI' => 'OBI',
+      'TPUB' => 'TPUB',
+      'CO_010' => 'CO_010',
+      'SO' => 'sequence',
+      'data' => 'EDAM',
+      'UO' => 'uo',
+    ];
+    foreach ($new_collections as $id => $cv) {
       $idspace[$id] = $idsmanager->createCollection($id, 'tripal_default_id_space');
-      $vocab = $vmanager->createCollection($id, 'tripal_default_vocabulary');
+      $vocab = $vmanager->createCollection($cv, 'tripal_default_vocabulary');
     }
     $terms = [];
 
@@ -68,6 +75,56 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
       'definition' => 'Test pub',
     ]);
     $idspace['TPUB']->saveTerm($terms['pub']);
+
+    $terms['map'] = new TripalTerm([
+      'name' => 'map',
+      'idSpace' => 'data',
+      'vocabulary' => 'EDAM',
+      'accession' => '1278',
+      'definition' => 'Test map',
+    ]);
+    $idspace['data']->saveTerm($terms['map']);
+    $terms['unit'] = new TripalTerm([
+      'name' => 'unit',
+      'idSpace' => 'UO',
+      'vocabulary' => 'uo',
+      'accession' => '0000000',
+      'definition' => 'Test unit',
+    ]);
+    $idspace['UO']->saveTerm($terms['unit']);
+
+    $terms['gene'] = new TripalTerm([
+      'name' => 'gene',
+      'idSpace' => 'SO',
+      'vocabulary' => 'sequence',
+      'accession' => '0000704',
+      'definition' => 'Test gene',
+    ]);
+    $idspace['SO']->saveTerm($terms['gene']);
+    $terms['Sequence'] = new TripalTerm([
+      'name' => 'Sequence',
+      'idSpace' => 'data',
+      'vocabulary' => 'EDAM',
+      'accession' => '2044',
+      'definition' => 'Test sequence residues',
+    ]);
+    $idspace['data']->saveTerm($terms['Sequence']);
+    $terms['Sequence'] = new TripalTerm([
+      'name' => 'Sequence length',
+      'idSpace' => 'data',
+      'vocabulary' => 'EDAM',
+      'accession' => '1249',
+      'definition' => 'Test sequence length',
+    ]);
+    $idspace['data']->saveTerm($terms['Sequence']);
+    $terms['Sequence'] = new TripalTerm([
+      'name' => 'Sequence checksum',
+      'idSpace' => 'data',
+      'vocabulary' => 'EDAM',
+      'accession' => '2190',
+      'definition' => 'Test sequence checksum',
+    ]);
+    $idspace['data']->saveTerm($terms['Sequence']);
 
     $content_types = [];
 
@@ -99,7 +156,6 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
       'settings' => [
         'chado_base_table' => 'pub',
       ],
-
     ];
     $content_types['stock'] = $content_type_service->createContentType($ct_details);
     $content_types['stock']->setThirdPartySetting('tripal', 'chado_base_table', 'stock');
@@ -116,10 +172,41 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
       'settings' => [
         'chado_base_table' => 'pub',
       ],
-
     ];
     $content_types['pub'] = $content_type_service->createContentType($ct_details);
     $content_types['pub']->setThirdPartySetting('tripal', 'chado_base_table', 'pub');
+
+    $ct_details = [
+      'label' => 'Map',
+      'term' => $terms['map'],
+      'help_text' => 'Generic map content type',
+      'category' => 'General',
+      'id' => 'map',
+      'title_format' => '[map_name]',
+      'url_format' => 'map/[TripalEntity__entity_id]',
+      'synonyms' => ['bio_data_5'],
+      'settings' => [
+        'chado_base_table' => 'featuremap',
+      ],
+    ];
+    $content_types['map'] = $content_type_service->createContentType($ct_details);
+    $content_types['map']->setThirdPartySetting('tripal', 'chado_base_table', 'featuremap');
+
+    $ct_details = [
+      'label' => 'Gene',
+      'term' => $terms['gene'],
+      'help_text' => 'Generic Gene content type',
+      'category' => 'General',
+      'id' => 'gene',
+      'title_format' => '[gene_name]',
+      'url_format' => 'gene/[TripalEntity__entity_id]',
+      'synonyms' => ['bio_data_4'],
+      'settings' => [
+        'chado_base_table' => 'feature',
+      ],
+    ];
+    $content_types['gene'] = $content_type_service->createContentType($ct_details);
+    $content_types['gene']->setThirdPartySetting('tripal', 'chado_base_table', 'feature');
 
     // Perform discover() on the stock content type
     // This has a direct link to organism (organism_id) and an indirect link
@@ -150,5 +237,14 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
     $this->assertArrayHasKey('stock_featuremap', $discovered_fields['invalid'], 'The featuremap field was not flagged as invalid for stock');
     $this->assertArrayHasKey('stock_project', $discovered_fields['invalid'], 'The project field was not flagged as invalid for stock');
 
+    // Test of the unit field on a generic map (featuremap table)
+    $discovered_fields = $fields_service->discover($content_types['map']);
+    $this->assertArrayHasKey('map_cvterm', $discovered_fields['new'], 'The unit type field was not discovered for featuremap');
+
+    // Test discovery of a field using a column in the base table
+    $discovered_fields = $fields_service->discover($content_types['gene']);
+    $this->assertArrayHasKey('gene_residues', $discovered_fields['new'], 'The sequence residues field was not discovered for gene');
+    $this->assertArrayHasKey('gene_seqlen', $discovered_fields['new'], 'The sequence length field was not discovered for gene');
+    $this->assertArrayHasKey('gene_md5checksum', $discovered_fields['new'], 'The MD5 checksum field was not discovered for gene');
   }
 }

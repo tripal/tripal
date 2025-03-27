@@ -48,7 +48,6 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     $pub_library_manager = \Drupal::service('tripal.pub_library');
     $pub_record = $pub_library_manager->getSearchQuery(intval($query_id));
 
-
     $criteria = unserialize($pub_record->criteria);
     $this->assertEquals($criteria['form_state_user_input']['plugin_id'], 'tripal_pub_library_PMID', 'This should have returned the plugin id as tripal_pub_library_PMID but did not');
     $plugin_id = $criteria['form_state_user_input']['plugin_id'];
@@ -182,5 +181,46 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     }
     $this->assertGreaterThan(0, $row_count, 'Title was not found in pubprop table');
 
+    // Tests supplying a criteria array directly to the publication importer and
+    // running it directly. This is the use case for a different importer wanting
+    // to be able to import a publication using its pubmed ID number.
+    $pmid = '91111';
+    $title = 'Lysozyme-induced T-suppressor cells and antibodies have a predominant idiotype.';
+    $arguments = [
+      'run_args' => [
+        'criteria' => [
+          'criteria' => [
+            1 => [
+              'search_terms' => $pmid,
+              'scope' => 'id',
+              'is_phrase' => 0,
+              'operation' => '',
+            ],
+          ],
+          'days' => '',
+          'disabled' => 0,
+          'do_contact' => 0,
+          'form_state_user_input' => [
+            'plugin_id' => 'tripal_pub_library_PMID'
+          ],
+          'loader_name' => 'internal',
+          'num_criteria' => 1,
+          'remote_db' => 'PMID',
+          'pub_import_id' => NULL,
+        ],
+        'schema_name' => $schema_name,
+      ],
+    ];
+    // We need a clean instance for the test
+    $pub_search_query_loader_importer = $importer_manager->createInstance('pub_search_query_loader');
+    $pub_search_query_loader_importer->setArguments($arguments);
+    $result = $pub_search_query_loader_importer->run();
+    $pub = $chado->select('1:pub', 'p')
+      ->fields('p')
+      ->condition('p.title', $title)
+      ->execute()
+      ->fetchObject();
+    $this->assertIsObject($pub, "Publication for PMID $pmid was not imported as expected");
+    $this->assertEquals('Nature', $pub->series_name, "Publication for PMID $pmid has an incorrect series_name");
   }
 }

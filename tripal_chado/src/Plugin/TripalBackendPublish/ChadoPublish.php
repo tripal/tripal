@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
+use Drupal\Component\Utility\Xss;
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
@@ -138,6 +139,13 @@ class ChadoPublish extends TripalBackendPublishBase {
    * @var bool $lenient_migration
    */
   protected bool $lenient_migration = FALSE;
+
+  /**
+   * Entity and field values used for token replacement, keyed by record_id.
+   *
+   * @var array $token_values
+   */
+  protected array $token_values = [];
 
   /**
    * Flag to indicate if we should republish in order to cache chado values.
@@ -485,12 +493,15 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // Iterate through each match we are checking for an existing entity for.
     foreach ($matches as $match) {
-
       // Retrieve the chado record pkey ID for this match
       $record_id = $this->getChadoRecordID($match);
+      $entity_id = $this->existing_published_entities[$record_id] ?? NULL;
 
       // Build an array of token keys and values to use for token replacement.
-      $token_values = [];
+      // n.b. We do not currently support the entity_id field in the title for
+      // a newly published entity, as the entity gets created later.
+      $token_values = $this->getBundleTokenValues($title_format, $entity_id);
+
       foreach ($match as $field_name => $field_items) {
         if ($field_items) {
           foreach($field_items as $delta => $properties) {
@@ -506,9 +517,59 @@ class ChadoPublish extends TripalBackendPublishBase {
       // Now that we've gotten the values out of the property value objects,
       // we can use the token parser to get the title!
       $entity_title = $this->token_parser->replaceTokens($title_format, $token_values);
-      $titles[$record_id] = $entity_title;
+      $sanitized_title = Xss::filter($entity_title, $this->allowed_title_tags);
+      $titles[$record_id] = $sanitized_title;
+      // Save the token values, we will need them again when we generate the URL Alias
+      $this->token_values[$record_id] = $token_values;
     }
     return $titles;
+  }
+
+  /**
+   * Implements bundle token lookup similar to that done in
+   * Drupal\tripal\Entity\getBundleEntityTokenValues getBundleEntityTokenValues()
+   *
+   * @param string $tokenized_string
+   *   The title format template
+   * @param int|null $entity_id
+   *   The drupal entity numeric ID. Not known for a newly published entity.
+   * @return array
+   *   Associative array of all tokens and their values,
+   *   ready to use for token replacement.
+   */
+  protected function getBundleTokenValues(string $tokenized_string, ?int $entity_id): array {
+    $values = [];
+    if (preg_match_all('/\[([^\[\]]+)\]/', $tokenized_string, $matches)) {
+      $tokens = $matches[1];
+      foreach ($tokens as $token) {
+        $value = NULL;
+
+        // Look for values for bundle or entity related tokens.
+        if (($token === 'TripalEntityType__entity_id') OR ($token === 'TripalBundle__bundle_id')) {
+          $value = $this->entity_type->getID();
+        }
+        elseif ($token == 'TripalEntityType__label') {
+          $value = $this->entity_type->getLabel();
+        }
+        elseif ($token === 'TripalEntity__entity_id') {
+          $value = $entity_id;
+        }
+        elseif ($token == 'TripalEntityType__term_namespace') {
+          $value = $this->entity_type->get('termIdSpace');
+        }
+        elseif ($token == 'TripalEntityType__term_accession') {
+          $value = $this->entity_type->get('termAccession');
+        }
+        elseif ($token == 'TripalEntityType__term_label') {
+          $value = $this->entity_type->getTerm()->getName();
+        }
+        // We skip over any tokens other than those defined here
+        if (!is_null($value)) {
+          $values[$token] = $value;
+        }
+      }
+    }
+    return $values;
   }
 
   /**
@@ -560,7 +621,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     $num_updated = 0;
     foreach ($titles as $record_id => $new_title) {
       $existing_title = $existing_titles[$record_id] ?? NULL;
-      if ($existing_title and ($new_title != $existing_title)) {
+      if (!is_null($existing_title) and ($new_title != $existing_title)) {
         $entity_id = $this->existing_published_entities[$record_id];
         $query = $this->connection->update('tripal_entity')
           ->fields(['title' => $new_title])
@@ -604,6 +665,19 @@ class ChadoPublish extends TripalBackendPublishBase {
         $entity_id = $record->id;
         $chado_record_id = array_search($entity_id, $this->existing_published_entities);
         $titles[$chado_record_id] = $record->title;
+      }
+    }
+
+    // If we are going to republish, then clear the cache for all of the
+    // existing entities because we may change titles or field values.
+    if ($this->republish) {
+      $tags = [];
+      foreach ($this->existing_published_entities as $entity_id) {
+        $tags[] = 'values:tripal_entity:' . $entity_id;
+      }
+      if ($tags) {
+        \Drupal::service('cache.entity')->invalidateMultiple($tags);
+        \Drupal::service('cache_tags.invalidator')->invalidateTags(['rendered']);
       }
     }
 
@@ -727,10 +801,19 @@ class ChadoPublish extends TripalBackendPublishBase {
     // Insert the default URL alias for each new entity
     $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
     $entities = $storage->loadMultiple($entity_ids);
+    $index = 0;
+    $tags = [];
     foreach ($entities as $entity_id => $entity) {
-      $entity->setTokenValues();
+      $record_id = $added_record_ids[$index];
+      $entity->setTokenValues($this->token_values[$record_id]);
       $entity->setAlias();
-      $entity->save();
+      $tags[] = 'values:tripal_entity:' . $entity_id;
+      $index++;
+    }
+    // Clear cache so that fields will appear on new entities
+    if ($index) {
+      \Drupal::service('cache.entity')->invalidateMultiple($tags);
+      \Drupal::service('cache_tags.invalidator')->invalidateTags(['rendered']);
     }
   }
 
@@ -1151,6 +1234,10 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // The current user will be the author of any newly published entitites
     $this->uid = \Drupal::currentUser()->id();
+
+    // List of allowed HTML tags in entity titles
+    $tag_string = \Drupal::config('tripal.settings')->get('tripal_entity_type.allowed_title_tags');
+    $this->allowed_title_tags = explode(' ', $tag_string ?? '');
 
     // Initialize class variables that may persist between consecutive jobs
     $this->field_info = [];

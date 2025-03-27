@@ -83,18 +83,17 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
 
   /**
-   * More documentation can be found in TripalPubLibraryInterface
+   * Retrieves one or more publications from PubMed based on a search query specification
+   *
+   * @param array $query
+   *   An associative array defining a publication query,
+   *   specifying the database and query parameters for
+   *   a particular publication repository.
+   *
+   * @return array
+   *   The uniform publication information array.
    */
-  public function run(int $query_id) {
-    // public connection is already defined due to dependency injection happening on TripalPubLibraryBase
-    $row = $this->public->select('tripal_pub_library_query', 'tpi')
-    ->fields('tpi')
-    ->condition('pub_library_query_id', $query_id, '=')
-    ->execute()
-    ->fetchObject();
-    // Get the criteria column which has serialized data, so unserialize it into $query variable
-    $query = unserialize($row->criteria);
-
+  public function run(array $query) {
     // Go through all results until pubs is empty
     $page_results = $this->retrieve($query);
     $publications = [];
