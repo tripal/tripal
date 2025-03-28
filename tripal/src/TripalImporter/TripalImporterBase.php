@@ -143,7 +143,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     $this->prev_update = 0;
     $this->reported = 0;
 
-
     // Initialize the logger.
     $this->logger = \Drupal::service('tripal.logger');
 
@@ -310,7 +309,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       }
 
       // Store the arguments in the class and serialize for table insertion.
-      $this->arguments = $arguments;
+      $this->setArguments($arguments);
       $values['arguments'] = base64_encode(serialize($arguments));
 
       // Insert the importer record.
@@ -351,7 +350,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     }
 
     //$this->arguments = unserialize($import->arguments);
-    $this->arguments = unserialize(base64_decode($import->arguments));
+    $this->setArguments(unserialize(base64_decode($import->arguments)));
     $this->import_id = $import_id;
 
   }
@@ -592,6 +591,16 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   protected function setInterval($interval) {
     $this->interval = $interval;
+  }
+
+  /**
+   * Stores a set of arguments for the importer
+   *
+   * @param array $arguments
+   *   Associative array
+   */
+  public function setArguments(array $arguments) {
+    $this->arguments = $arguments;
   }
 
   /**
