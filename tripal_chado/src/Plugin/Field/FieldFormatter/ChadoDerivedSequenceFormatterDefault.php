@@ -37,15 +37,30 @@ class ChadoDerivedSequenceFormatterDefault extends ChadoFormatterBase {
     $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoSequenceFormatterDefault';
     $wrap_setting = $this->getSetting('wrap_setting');
     if (!$wrap_setting or ($wrap_setting < 1)) {
-      $wrap_setting = 50;
+      $wrap_setting = 60;
     }
 
     foreach($items as $delta => $item) {
       $residues = $item->get('residues')->getString();
+      // claculate the format length and wrap the sequence residues to the
+      // specified length.
+      $length = strlen($residues);
+      $lformat = intval(log($length,10))+1;
+      // Split the sequence into chuncs of 10 residues and add a line break.
+      $residues = trim(chunk_split($residues, 10, " "));
+      $residues = wordwrap($residues, $wrap_setting);
+      $lines = explode("\n", $residues);
+      $line_count = 0;
+      $modified_lines = [];
+      foreach($lines as $line){
+            $modified_lines[] = '<span style="color: #000;">'.sprintf('%'.$lformat.'d', $line_count*$wrap_setting+1).': </span>'.$line;
+            $line_count ++;
+        }
+
+      $residues = implode('<br>', $modified_lines);
       if (!empty($residues)) {
         $elements[$delta] = [
-          "#markup" => "<pre id='tripal-chado-sequence-format'> Derived sequence: <br>"
-              . wordwrap($residues, $wrap_setting, '<br>', TRUE) . "</pre>",
+          "#markup" => "<pre>" . $residues . "</pre>",
         ];
       }
     }

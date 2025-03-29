@@ -27,23 +27,9 @@ class ChadoDerivedSequenceWidgetDefault extends ChadoWidgetBase {
    * add any form elements the settings form.
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-
-    $item_vals = $items[$delta]->getValue();
-
-    $elements = [];
-    $elements['record_id'] = [
-      '#type' => 'value',
-      '#default_value' => $item_vals['record_id'] ?? 0,
-    ];
-
-    $elements['residues'] = $element + [
-      '#type' => 'textarea',
-      '#default_value' => $item_vals['residues'] ?? '',
-      '#placeholder' => $this->getSetting('placeholder'),
-      '#attributes' => ['class' => ['js-text-full', 'text-full']],
-    ];
-
-    return $elements;
+    // The derived sequence is not editable, so we do not need to add any
+    // form elements.
+    return [];
   }
 
 
