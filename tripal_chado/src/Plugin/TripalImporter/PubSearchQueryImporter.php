@@ -858,28 +858,37 @@ class PubSearchQueryImporter extends ChadoImporterBase {
    */
   public function run() {
     $arguments = $this->arguments['run_args'];
-
-    $query_id = $arguments['query_id'] ?? NULL;
-    if (!$query_id) {
-      // This will extract the query id from the query name selected from the autocomplete field
-      $search_query_name = $arguments['search_query_name'] ?? '';
-      if (preg_match('/\((\d+)\)/', $search_query_name, $matches)) {
-        $query_id = $matches[1];
-      }
-    }
-    if (!$query_id) {
-      $this->logger->error('A query ID was not supplied, cannot continue');
-      return FALSE;
-    }
-
-    // Use the query_id to retrieve the query information from the database
     $pub_library_manager = \Drupal::service('tripal.pub_library');
-    $pub_record = $pub_library_manager->getSearchQuery($query_id);
-    if (!$pub_record) {
-      $this->logger->error('There is no search query defined for the supplied identifier "'. $query_id . '"');
-      return FALSE;
+
+    // We can pass either a query_id value, in which case we retrieve a criteria
+    // array from the public.tripal_pub_library_query table. Alternatively we can
+    // pass a criteria array directly.
+    $criteria = [];
+    if ($arguments['criteria'] ?? NULL) {
+      $criteria = $arguments['criteria'];
     }
-    $criteria = unserialize($pub_record->criteria);
+    else {
+      $query_id = $arguments['query_id'] ?? NULL;
+      if (!$query_id) {
+        // This will extract the query id from the query name selected from the autocomplete field
+        $search_query_name = $arguments['search_query_name'] ?? '';
+        if (preg_match('/\((\d+)\)/', $search_query_name, $matches)) {
+          $query_id = $matches[1];
+        }
+      }
+      if (!$query_id) {
+        $this->logger->error('A query ID was not supplied, cannot continue');
+        return FALSE;
+      }
+
+      // Use the query_id to retrieve the query information from the database
+      $pub_record = $pub_library_manager->getSearchQuery($query_id);
+      if (!$pub_record) {
+        $this->logger->error('There is no search query defined for the supplied identifier "'. $query_id . '"');
+        return FALSE;
+      }
+      $criteria = unserialize($pub_record->criteria);
+    }
     $plugin_id = $criteria['form_state_user_input']['plugin_id'] ?? NULL;
     if (is_null($plugin_id)) {
       $this->logger->error('Could not find the plugin_id, could not find adequate query information');
@@ -907,9 +916,8 @@ class PubSearchQueryImporter extends ChadoImporterBase {
 
     // Use the appropriate plugin to run the query and process the results
     $this->logger->notice('Step 3 of 9: Retrieving publication data from remote database ...');
-    $pub_library_manager = \Drupal::service('tripal.pub_library');
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
-    $publications = $plugin->run($query_id);
+    $publications = $plugin->run($criteria);
 
     if (!is_array($publications)) {
       $this->logger->error('  ✗ ERROR: Unable to connect to external database to lookup publications');

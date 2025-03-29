@@ -114,6 +114,11 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
 
     $scenarios[] = [
       1,
+      "Use format for title + URL with HTML included"
+    ];
+
+    $scenarios[] = [
+      2,
       "User submitted alias when creating",
     ];
 

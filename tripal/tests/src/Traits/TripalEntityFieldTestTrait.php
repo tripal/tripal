@@ -223,6 +223,13 @@ trait TripalEntityFieldTestTrait {
         ->save();
     }
 
+    // Update entity settings to match tripal/config/install/tripal.settings.yml
+    $allowed_title_tags = 'em i strong u';
+    \Drupal::configFactory()
+      ->getEditable('tripal.settings')
+      ->set('tripal_entity_type.allowed_title_tags', $allowed_title_tags)
+      ->save();
+
     // If information about the environment to be setup was provided, then we
     // will set it up for them :-).
     if (!empty($system_under_test)) {
