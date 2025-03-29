@@ -48,7 +48,7 @@ class ChadoDerivedSequenceFormatterDefault extends ChadoFormatterBase {
       $lformat = intval(log($length,10))+1;
       // Split the sequence into chuncs of 10 residues and add a line break.
       $residues = trim(chunk_split($residues, 10, " "));
-      $residues = wordwrap($residues, $wrap_setting);
+      $residues = wordwrap($residues, $wrap_setting+$wrap_setting/10, "\n", FALSE);
       $lines = explode("\n", $residues);
       $line_count = 0;
       $modified_lines = [];
