@@ -88,7 +88,7 @@ fields:
 
     -   name: gene_derived_sequence
         content_type: gene
-        label: Sequence from alignment
+        label: Derived sequence
         type: chado_derived_sequence_type_default
         description: Sequence derived from alignment
         cardinality: 1
