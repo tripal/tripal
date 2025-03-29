@@ -496,9 +496,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $replace[] = [$field_name, $delta, $key, $info];
           }
           else if ($action == 'function') {
-            \Drupal::messenger()->
-            addMessage(sprintf('Current Record ID: %s', $this->records->getRecordID($base_table)));
-            // Create a context array to pass information to the callback function.
+            // Get the function name and namespace.
+            // Create a context array to pass information to the callback
+            // function.
             $context = [
               'field_name' => $field_name,
               'delta' => $delta,
@@ -506,7 +506,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               'info' => $info,
               'prop_type' => $prop_type,
               'field_settings' => $field_settings,
-              // Pass the current feature_id to extract info needed for the service.
+              // Pass the current record id to allow extracting info needed for
+              // the service.
               'current_record_id' => $current_record_id,
             ];
             $function[] = $context;
@@ -608,9 +609,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $field_name, $namespace, $callback_function)
     );
       }
-      \Drupal::messenger()->addMessage(sprintf('Now some %s should show %s',
-      $field_name, $value)
-      );
+      // If the value is a string, trim it.
       if ($value !== NULL && is_string($value)) {
         $values[$field_name][$delta][$key]['value']->setValue(trim($value));
       }
