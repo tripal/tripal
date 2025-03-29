@@ -107,11 +107,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 40
+              weight: 25
           form:
             default:
               region: content
-              weight: 40
+              weight: 25
 
     -   name: gene_length
         content_type: gene

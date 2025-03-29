@@ -15,8 +15,8 @@ use Drupal\tripal\Entity\TripalEntityType;
  *   category = "tripal_chado",
  *   label = @Translation("Chado Derived Sequence"),
  *   description = @Translation("Extracts derived sequence data from a chado feature"),
- *   default_widget = "chado_sequence_widget_default",
- *   default_formatter = "chado_sequence_formatter_default",
+ *   default_widget = "chado_derived_sequence_widget_default",
+ *   default_formatter = "chado_derived_sequence_formatter_default",
  *   cardinality = 1,
  * )
  */
@@ -56,7 +56,7 @@ class ChadoDerivedSequenceTypeDefault extends ChadoFieldItemBase {
 public static function retrieveSequenceUsingService ($context): string|null {
    // Extract the feature_id from the context.
    if (empty($context['current_record_id'])) {
-    \Drupal::messenger()->addError('No feature_id provided to retrieveSequenceUsingService. This is a bug.');
+    \Drupal::messenger()->addError('No feature_id provided to retrieveSequenceUsingService.');
     return NULL;
    };
 
