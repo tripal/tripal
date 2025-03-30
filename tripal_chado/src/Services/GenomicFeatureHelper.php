@@ -181,15 +181,27 @@ class GenomicFeatureHelper {
         $select->condition('f.feature_id', $id);
         return $select->execute()->fetch();
     }
+    /**
+     * Get the genetic code for a given organism.
+     *
+     * @param int $id
+     *   The organism id.
+     * @param bool $mito
+     *   Whether to get the mitochondrial genetic code.
+     *
+     * @return string
+     *   The genetic code.
+     *
+     * TODO: Support different chado schemas. (Now hardcoded)
+     */
 
     public function getGeneticCodeByOrganism(int $id, bool $mito = FALSE) {
         $sql= "SELECT abbreviation, op.value, cvt.name FROM chado.organism o
             INNER JOIN chado.organismprop op ON o.organism_id = op.organism_id
             INNER JOIN chado.cvterm cvt ON op.type_id = cvt.cvterm_id
             WHERE cvt.name = :code AND op.organism_id = :id";
-
         $query = \Drupal::database()->query($sql, ['code' => ($mito) ? 'mitochondrial_genetic_code' : 'genetic_code' , 'id' => $id]);
-        return($query->fetch()->value);
+        return $query->fetch()->value;
 
     }
 
@@ -340,103 +352,138 @@ class GenomicFeatureHelper {
 }
 
 
-
-
-
+    /**
+     * Splice the sequence according to the featureloc table.
+     * If necessary, reverse and complement the sequence.
+     *
+     * @param string $seq The landmark sequence
+     * @param int $fid  The feature id
+     * @param int $sid  The source feature id
+     *
+     * @return string The spliced and sequence strand corected sequence
+     *
+     * TODO: Currently, this function does not take into account the
+     * exon/intron structure of the feature. It simply concatenates the
+     * sequences of the source features. This is not a problem for
+     * genes or CDS features, but for mRNA features, this needs to be
+     * extended to take into account the exons.
+     * TODO: As it is now, the function will not work for features that
+     * are not located on the same source feature.
+     *
+     *
+     */
     public function spliceSeq(string $seq, int $fid, int $sid) {
 
         $select = $this->connection
-            ->select('chado.featureloc', 'l');
-
-        $select->fields('l');
-        $select->condition('feature_id', $fid);
-        $select->condition('srcfeature_id', $sid);
+            ->select('chado.featureloc', 'l')
+            ->fields('l')
+            ->condition('l.feature_id', $fid)
+            ->condition('l.srcfeature_id', $sid)
+            ->groupBy('l.locgroup')
+            ->orderBy('l.locgroup, l.rank');
         $ranges = $select->execute()->fetchAll();
 
         $subseq = '';
 
         foreach ($ranges as $range) {
             // suseq is 0-based
-            $fmin = (int) $range->fmin; $fmax = (int) $range->fmax;
+            $fmin = (int) $range->fmin;
+            $fmax = (int) $range->fmax;
 
-            $substr = substr($seq, $fmin, $fmax - $fmin);
+            $substr = substr(string: $seq, offset: $fmin, length: $fmax - $fmin);
 
             if ($range->strand < 0){
                 $substr = strrev($this->Complement($substr));
-
             }
             $subseq .= $substr;
-
         }
-
         return $subseq;
 
     }
 
     /**
-     * Retrieve the sequence recursively from the source feature
+     * Retrieve the sequence recursively from the source feature.
+     * @param int $id  The feature id
+     * @return array  An array with the feature id as key and the sequence as value
+     * @throws \Drupal\Core\Database\ConnectionException
+     * @throws \Drupal\Core\Database\InvalidQueryException
+     *
+     * This function retrieves the sequence of a feature recursively.
+     * It first checks if the feature has a sequence itself. If not, it
+     * retrieves the sequence of the source feature. It does this recursively
+     * until it finds a feature with a sequence.
+     *
+     * TODO: The function currently does not take into account the
+     * exon/intron structure of the feature.
+     * TODO: While the database schema allows for nested source features,
+     * it is doubtful that this ever occurs in practice. The GFF importer, for
+     * example, creates features that are not nested.
+     * TODO: The chado scheme is hardcoded in the function. This should be
+     * changed to allow for different chado schemes.
      *
      **/
-    public function getSeqRecursive(int $id) {
-	    // get the residues, if any
-	error_log("getSeqRecursive: Looking for feature ". $id);
-	$select = $this->connection
+    public function getSeqRecursive(int $id)
+    {
+        // get the residues, if any
+        //error_log("getSeqRecursive: Looking for feature ". $id);
+        $select = $this->connection
             ->select('chado.feature', 'f');
         $select->addField('f', 'residues');
         $select->condition('f.feature_id', $id);
         $entry = $select->execute()->fetchAssoc();
-	\Drupal::messenger()->addWarning(t('Finished parsing entry..'));
-	error_log('finished getting entry');
-        $residues = $entry['residues'];
+        //\Drupal::messenger()->addMessage(t('Finished parsing entry..'));
+       $residues = $entry['residues'];
         // Check if this feature has a featureloc entry
         $select = $this->connection
             ->select('chado.featureloc', 'l');
         $select->fields('l');
         $select->condition('l.feature_id', $id)->distinct()
-        ->orderBy('l.srcfeature_id');
-        $entries =  $select->execute()->fetchAll();
-	// if there are no sourcefeatures, we are done and can return the residues
-	// some source features could have their own id as source
-	//
-	error_log("found ".count($entries). " srcfeatures");
+            ->orderBy('l.srcfeature_id');
+        $entries = $select->execute()->fetchAll();
+        // if there are no sourcefeatures, we are done and can return the residues
+        // some source features could have their own id as source
+        //
+        error_log("found " . count($entries) . " srcfeatures");
 
-	    if ($entry->srcfeature_id == $id) {
-		error_log("Feature $id has itself as srcfeature!");
-	    }
-	    if (empty($residues) or $residues == '' ) {
-		error_log("Empty residues for feature $id");
-	    }
-	    error_log("returning residues: ". $residues);
-
-      if (count($entries) == 0 or $entries[0]->srcfeature_id == $id)  {
-        // list is empty.
-	    return [$id => $residues];
+        if ($entry->srcfeature_id == $id) {
+            error_log("Feature $id has itself as srcfeature!");
         }
-        // We need to get the sequence of the source feature, hope it has residues
-        // If the sequences were imported from GFF, the coordinates should always
-        // be given with respect to a landmark,
-        // so there shouldn't be the need to look for nested alignments
-        // In principle we simply bail out if the nesting is deeper, even though the
-        // DB schema allows for it
+        if (empty($residues) or $residues == '') {
+            error_log("Empty residues for feature $id");
+        }
+        error_log("returning residues: " . $residues);
+
+        if (count($entries) == 0 or $entries[0]->srcfeature_id == $id) {
+            // Result is empty or the the feature has itself as source
+            // we are done. Checking for itself is required to avoid
+            // infinite recursion.
+            return [$id => $residues];
+        }
+        // We need to get the sequence of the source feature,
+        // hope it has residues.
+        // If the sequences were imported from GFF, the coordinates
+        // should always be given with respect to a landmark,
+        // so there shouldn't be the need to look for nested alignments.
+        // In principle we simply bail out if the nesting is
+        // deeper, even though the  DB schema allows for it.
         $retarray = [];
         // First, check what kind of feature we have
         $select = $this->connection->select('chado.f_type', 'ft')
             ->fields('ft', ['type'])->condition('ft.feature_id', $id);
         $type = $select->execute()->fetch()->type;
-	foreach ($entries as $entry) {
-		error_log("looking up Srcfeatureid: ".$entry->srcfeature_id);
-            if ($entry->srcfeature_id  and $entry->srcfeature_id != $id ) {
+        foreach ($entries as $entry) {
+            if ($entry->srcfeature_id and $entry->srcfeature_id != $id) {
                 $srcseqs = $this->getSeqRecursive($entry->srcfeature_id);
                 // splice the sequences, one by one
                 foreach ($srcseqs as $sid => $sseq) {
                     $myseq = $this->spliceSeq($sseq, $id, $sid);
-                    // check if we need to translate the sequence
-                    // for a standard gff import, checking if this is a polypeptide should be ok
-                    // however, there might be cases where this is not sufficient
+                    // Check if we need to translate the sequence.
+                    // For a standard gff import, checking if this is a
+                    // polypeptide should be ok.
+                    // However, there might be cases where this is not sufficient
                     if ($type == 'polypeptide') {
-                        // in principle, we need to infer the genetic code from the organism,
+                        // In principle, we need to infer the genetic code from the organism,
                         // however, this information is not stored in the organsim table
-
                         $gcode = $this->getGeneticCodeByOrganism($this->defaultLookup('feature', $id)->organism_id);
                         $myseq = $this->translate_DNA_to_protein($myseq, $gcode);
                     }
@@ -445,8 +492,8 @@ class GenomicFeatureHelper {
             } else {
                 $retarray[$id] = $residues;
             }
-	}
-	//error_log(var_dump($retarray));
+        }
+        //error_log(var_dump($retarray));
         return $retarray;
     }
 
@@ -459,9 +506,7 @@ class GenomicFeatureHelper {
         $out = [];
         foreach ($seqArr as $sid => $value) {
             if ($id != $sid) {
-                $uname = $this->defaultLookup('feature', $sid)->uniquename;
-
-
+                $uname = $this->defaultLookup('feature', $sid)->uniquename ?? $sid;
                 $out[$uname] = $value;
             }
         }
