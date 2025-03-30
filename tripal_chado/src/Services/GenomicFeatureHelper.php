@@ -15,17 +15,12 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 /**
  * Repository for database-related helper methods for our example.
  *
- * This repository is a service named 'dbtng_example.repository'. You can see
- * how the service is defined in dbtng_example/dbtng_example.services.yml.
+ * This repository is a service named 'GenomicFeatureHelper'.
  *
  * For projects where there are many specialized queries, it can be useful to
- * group them into 'repositories' of queries. We can also architect this
- * repository to be a service, so that it gathers the database connections it
- * needs. This way other classes which use the repository don't need to concern
- * themselves with database connections, only with business logic.
- *
- * This repository demonstrates basic CRUD behaviors, and also has an advanced
- * query which performs a join with the user table.
+ * group them into 'repositories' of queries.
+ * It encapsulates the database Chado connection and provides a set of methods
+ * to interact with the sequences.
  *
  * @ingroup dbtng_example
  */
