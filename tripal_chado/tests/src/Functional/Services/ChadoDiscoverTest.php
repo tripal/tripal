@@ -239,7 +239,7 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
 
     // Test of the unit field on a generic map (featuremap table)
     $discovered_fields = $fields_service->discover($content_types['map']);
-    $this->assertArrayHasKey('map_cvterm', $discovered_fields['new'], 'The unit type field was not discovered for featuremap');
+    $this->assertArrayHasKey('map_unittype_id', $discovered_fields['new'], 'The unit type field was not discovered for featuremap');
 
     // Test discovery of a field using a column in the base table
     $discovered_fields = $fields_service->discover($content_types['gene']);
