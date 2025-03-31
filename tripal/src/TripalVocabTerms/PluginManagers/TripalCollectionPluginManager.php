@@ -97,11 +97,15 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *
    * @param string $name
    *   The collection name.
+   * @param bool $delete_backend
+   *   TRUE if we want to delete the record in the storage backend (e.g. chado)
+   *   FALSE if we only want to remove it as a Tripal-managed Collection but
+   *   leave the storage backend alone.
    *
    * @return bool
    *   True if the matching collection was removed or false otherwise.
    */
-  public function removeCollection($name) {
+  public function removeCollection(string $name, bool $delete_backend = FALSE) {
     if (!is_string($name)) {
       return NULL;
     }
@@ -119,7 +123,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
       return FALSE;
     }
     $collection = $this->createInstance($record->plugin_id, ["collection_name" => $name]);
-    if ($collection->recordExists() == True) {
+    if (($collection->recordExists() == TRUE) && $delete_backend) {
       $collection->destroy();
     }
     return TRUE;
