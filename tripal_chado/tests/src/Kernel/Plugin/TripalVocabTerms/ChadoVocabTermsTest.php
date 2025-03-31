@@ -1,12 +1,13 @@
 <?php
-
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalVocabTerms;
 
-use Drupal\Core\Database\Database;
 use Drupal\Core\Test\FunctionalTestSetupTrait;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
-
-
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
+use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use Drupal\tripal\Services\TripalLogger;
 
 /**
  * Tests for the ChadoCVTerm classes
@@ -15,146 +16,114 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  * @group Tripal Chado
  * @group Tripal Chado ChadoVocabTerms
  */
-class ChadoVocabTermsTest extends ChadoTestBrowserBase {
+class ChadoVocabTermsTest extends ChadoTestKernelBase {
+
+  protected static $modules = ['system', 'tripal_chado'];
 
   /**
-   * A helper function to retrieve a Chado cv record.
+   * The current test chado schema.
    *
-   * @param $dbname
-   *   The name of the database to lookup.
-   *
-   * @return A database query result.
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected function getCV($cvname) {
+  protected ChadoConnection $chado_connection;
 
-    // Retrieve the test schema created in testTripalVocabularyClasses().
-    $chado = $this->getTestSchema();
+  /**
+   * The Tripal IDSpace plugin manager.
+   *
+   * @var Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager
+   */
+  protected TripalIdSpaceManager $idsmanager;
 
-    $query = $chado->select('1:cv', 'cv')
-      ->condition('cv.name', $cvname, '=')
-      ->fields('cv', ['name', 'definition']);
-    $result = $query->execute();
-    if (!$result) {
-      return [];
-    }
-    return $result->fetchAssoc();
+  /**
+   * The TripalVocab plugin manager.
+   *
+   * @var Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager
+   */
+  protected TripalVocabularyManager $vmanager;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    // Ensure we install the schema/modules we need.
+    $this->prepareEnvironment(['TripalTerm']);
+
+    // Get Chado in place
+    $this->chado_connection = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY);
+
+    // Ensure the db2cv table exists.
+    $create_sql = "CREATE TABLE {1:db2cv_mview} (
+         cv_id integer NOT NULL,
+         cvname character varying(255) NOT NULL,
+         db_id integer NOT NULL,
+         dbname character varying(255) NOT NULL,
+         num_terms integer NOT NULL
+       )";
+    $this->chado_connection->query($create_sql);
+
+    // We need to mock the logger.
+    $mock_logger = $this->getMockBuilder(TripalLogger::class)
+      ->onlyMethods(['notice', 'error'])
+      ->getMock();
+    $mock_logger->method('notice')
+      ->willReturnCallback(function ($message, $context, $options) {
+        print str_replace(array_keys($context), $context, $message);
+        return NULL;
+      });
+    $mock_logger->method('error')
+      ->willReturnCallback(function ($message, $context, $options) {
+        print str_replace(array_keys($context), $context, $message);
+        return NULL;
+      });
+    $this->container->set('tripal.logger', $mock_logger);
+
+    // Get the plugin managers.
+    $this->vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $this->idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
   }
 
-  /**
-   * A helper function to retrieve a Chado db record.
-   *
-   * @param string $dbname
-   *   The name of the database to lookup.
-   *
-   * @return A database query result.
-   */
-  protected function getDB($dbname) {
+    /**
+     * Update a chado record assuming the name is unique.
+     *
+     * @param string $table
+     *   The name of chado table to update.
+     * @param string $name
+     *   The value of the [table].name record in chado you want to update.
+     * @param string $field
+     *   The name of the column in the chado [table] you want to update.
+     * @param mixed $value
+     *   The value to update [table].[field] to.
+     */
+  protected function updateRecord(string $table, string $name, string $field, mixed $value): void {
 
-    // Retrieve the test schema created in testTripalVocabularyClasses().
-    $chado = $this->getTestSchema();
-
-    $query = $chado->select('1:db', 'db')
-      ->condition('db.name', $dbname, '=')
-      ->fields('db', ['name', 'urlprefix', 'url', 'description']);
-    $result = $query->execute();
-    if (!$result) {
-      return [];
-    }
-    return $result->fetchAssoc();
-  }
-
-  /**
-   * A helper function to retrieve a Chado cvterm record.
-   *
-   * @param string $cvname
-   * @param string $cvterm_name
-   */
-  protected function getCVterm($cvname, $cvterm_name) {
-
-    // Retrieve the test schema created in testTripalVocabularyClasses().
-    $chado = $this->getTestSchema();
-
-    $query = $chado->select('1:cvterm', 'CVT');
-    $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
-    $query->fields('CVT', ['cv_id', 'name', 'cvterm_id', 'definition', 'is_obsolete', 'is_relationshiptype'])
-      ->condition('CVT.name', $cvterm_name, '=')
-      ->condition('CV.name', $cvname, '=');
-    $result = $query->execute();
-    if (!$result) {
-      return [];
-    }
-    return $result->fetchAssoc();
-  }
-
-  /**
-   * A helper function to update a Chado db record.
-   *
-   * @param $dbname
-   *   The name of the database to lookup.
-   *
-   * @return A database query result.
-   */
-  protected function updateRecord($table, $name, $field, $value) {
-
-    // Retrieve the test schema created in testTripalVocabularyClasses().
-    $chado = $this->getTestSchema();
-
-    $query = $chado->update('1:' . $table)
+    $query = $this->chado_connection->update('1:' . $table)
       ->condition('name', $name, '=')
       ->fields([$field => $value]);
-    return $query->execute();
+    $query->execute();
   }
 
   /**
-   * A helper function to delete a Chado db record.
+   * Delete a chado record assuming the name is unique.
    *
-   * @param $dbname
-   *   The name of the database to lookup.
-   *
-   * @return The number of records deleted.
+   * @param string $table
+   *   The name of chado table whose record you want to delete.
+   * @param string $name
+   *   The value of the [table].name record in chado you want to delete.
    */
-  protected function cleanDB($dbname) {
+  protected function cleanRecord(string $table, string $name): void {
 
-    // Retrieve the test schema created in testTripalVocabularyClasses().
-    $chado = $this->getTestSchema();
-
-    $query = $chado->delete('1:db')
-      ->condition('name', $dbname, '=');
-    return $query->execute();
-  }
-
-  /**
-   * A helper function to delete a Chado cv record.
-   *
-   * @param $dbname
-   *   The name of the database to lookup.
-   *
-   * @return The number of records deleted.
-   */
-  protected function cleanCV($cvname) {
-
-    // Retrieve the test schema created in testTripalVocabularyClasses().
-    $chado = $this->getTestSchema();
-
-    $query = $chado->delete('1:cv', 'cv')
-      ->condition('name', $cvname, '=');
-    return $query->execute();
+    $query = $this->chado_connection->delete('1:' . $table)
+      ->condition('name', $name, '=');
+    $query->execute();
   }
 
   /**
    * Tests the ChadoIdSpace Class
-   *
-   * @Depends Drupal\tripal_chado\Task\ChadoInstallerTest::testPerformTaskInstaller
-   *
    */
-  public function testTripalVocabularyClasses() {
-
-    // Create a new test schema for us to use.
-    $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
-
-    // Create Collection managers.
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+  public function testTripalIDSpaceClass() {
 
     // These are the values we'll use for the ID space and vocablary.
     $GO_idspace = 'GO';
@@ -168,69 +137,33 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $GO_urlprefix = "http://amigo.geneontology.org/amigo/term/{db}:{accession}";
     $GO_url = 'http://geneontology.org/';
 
-    // Ensure the db2cv table exists.
-    $create_sql = "CREATE TABLE {1:db2cv_mview} (
-         cv_id integer NOT NULL,
-         cvname character varying(255) NOT NULL,
-         db_id integer NOT NULL,
-         dbname character varying(255) NOT NULL,
-         num_terms integer NOT NULL
-       )";
-    \Drupal::service('tripal_chado.database')->query($create_sql);
-
-    // Setting up to check that dependency injection worked properly.
-    // Since the database connection and logger are protected properties, we cannot test them directly.
-    // As such, we will use PHP closures to access these properties for testing.
-    //  -- Create a variable to store a copy of this test object for use within the closure.
-    $that = $this;
-    //  -- Create a closure (i.e. a function tied to a variable) that does not need any parameters.
-    //     Within this function we will want all of the assertions we will use to test the private methods.
-    //     Also, $this within the function will actually be the plugin object that you bind later (mind blown).
-    // This closure will be used below to do the actual testing once we have a plugin object to bind.
-    $assertDependencyInjectionClosure = function ()  use ($that){
-      $that->assertIsObject($this->connection,
-        "The connection object in our plugin was not set properly.");
-      $that->assertIsObject($this->messageLogger,
-        "The message logging object in our plugin was not set properly.");
-    };
-
-    //
-    // Testing ChadoIdSpace Functionality
-    //
-
     // Make sure the IDspace doesn't yet exist.
-    $db = $this->getDB($GO_idspace);
+    $db = $this->getChadoDbRecord($GO_idspace);
     $this->assertEmpty($db, 'The Chado db has a conflicting record.');
 
     // Create the ID space object and make sure a Chado record got created.
-    $GO = $idsmanager->createCollection($GO_idspace, "chado_id_space");
-    $db = $this->getDB($GO_idspace);
-    $this->assertTrue($db['name'] == $GO_idspace, 'The name was not set correctly by the ChadoIdSpace object.');
-    $this->assertEmpty($db['description'], 'The description should not be set by the ChadoIdSpace object just yet.');
-    $this->assertEmpty($db['urlprefix'], 'The URL prefix should not be set by the ChadoIdSpace object just yet.');
-    $this->assertEmpty($db['url'], 'The URL should not be set by the ChadoIdSpace object just yet.');
-
-    // Check Dependency Injection by binding our assertion closure to the $GO object.
-    // This is what makes the plugin available inside the function.
-    $doAssertDIidspace = $assertDependencyInjectionClosure->bindTo($GO, get_class($GO));
-    //  -- Finally, call our bound closure function to run the assertions on our plugin.
-    $doAssertDIidspace();
+    $GO = $this->idsmanager->createCollection($GO_idspace, "chado_id_space");
+    $db = $this->getChadoDbRecord($GO_idspace);
+    $this->assertTrue($db->name == $GO_idspace, 'The name was not set correctly by the ChadoIdSpace object.');
+    $this->assertEmpty($db->description, 'The description should not be set by the ChadoIdSpace object just yet.');
+    $this->assertEmpty($db->urlprefix, 'The URL prefix should not be set by the ChadoIdSpace object just yet.');
+    $this->assertEmpty($db->url, 'The URL should not be set by the ChadoIdSpace object just yet.');
 
     // Set the description to make sure it gets set in Chado.
     $GO->setDescription($GO_description);
-    $db = $this->getDB($GO_idspace);
-    $this->assertTrue($db['name'] == $GO_idspace, 'The name was not set correctly after updating by the ChadoIdSpace object.');
-    $this->assertTrue($db['description'] == $GO_description, 'The description was not set correctly by the ChadoIdSpace object.');
-    $this->assertEmpty($db['urlprefix'], 'The URL prefix should not be set by the ChadoIdSpace object just yet.');
-    $this->assertEmpty($db['url'], 'The URL should not be set by the ChadoIdSpace object just yet.');
+    $db = $this->getChadoDbRecord($GO_idspace);
+    $this->assertTrue($db->name == $GO_idspace, 'The name was not set correctly after updating by the ChadoIdSpace object.');
+    $this->assertTrue($db->description == $GO_description, 'The description was not set correctly by the ChadoIdSpace object.');
+    $this->assertEmpty($db->urlprefix, 'The URL prefix should not be set by the ChadoIdSpace object just yet.');
+    $this->assertEmpty($db->url, 'The URL should not be set by the ChadoIdSpace object just yet.');
 
     // Set the URL prefix to make sure it gets set in Chado.
     $GO->setURLPrefix($GO_urlprefix);
-    $db = $this->getDB($GO_idspace);
-    $this->assertTrue($db['name'] == $GO_idspace, 'The name was not set correctly after updating by the ChadoIdSpace object.');
-    $this->assertTrue($db['description'] == $GO_description, 'The description was not set correctly after updating by the ChadoIdSpace object.');
-    $this->assertTrue($db['urlprefix'] == $GO_urlprefix, 'The URL prefix was not set correctly by the ChadoIdSpace object.');
-    $this->assertEmpty($db['url'], 'The URL should not be set by the ChadoIdSpace object just yet.');
+    $db = $this->getChadoDbRecord($GO_idspace);
+    $this->assertTrue($db->name == $GO_idspace, 'The name was not set correctly after updating by the ChadoIdSpace object.');
+    $this->assertTrue($db->description == $GO_description, 'The description was not set correctly after updating by the ChadoIdSpace object.');
+    $this->assertTrue($db->urlprefix == $GO_urlprefix, 'The URL prefix was not set correctly by the ChadoIdSpace object.');
+    $this->assertEmpty($db->url, 'The URL should not be set by the ChadoIdSpace object just yet.');
 
     // Make sure the getters work.
     $this->assertTrue($GO->getURLPrefix() == $GO_urlprefix, "The ChadoIdSpace object did not return a correct URL prefix.");
@@ -249,46 +182,51 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $this->assertTrue($GO->getDescription() == 'Replace Me', "The ChadoIdSpace object did not pick up an update to the description from an external source.");
 
     // Destroy the ID Space and make sure it's gone from Tripal but not Chado.
-    $idsmanager->removeCollection($GO_idspace);
-    $GO = $idsmanager->loadCollection($GO_idspace);
+    $this->idsmanager->removeCollection($GO_idspace);
+    $GO = $this->idsmanager->loadCollection($GO_idspace);
     $this->assertTrue($GO === NULL, "The ID Space should be removed from Tripal.");
-    $db = $this->getDB($GO_idspace);
-    $this->assertTrue($db['urlprefix'] == 'http://replace.me/', "The ID Space was removed from Tripal but should not have been removed from Chado.");
+    $db = $this->getChadoDbRecord($GO_idspace);
+    $this->assertNotFalse($db, "The ID Space was removed from Tripal but should not have been removed from Chado.");
+    $this->assertEquals($db->urlprefix, 'http://replace.me/', "The ID Space should not have been changed in chado when it was removed from Tripal.");
 
-    // ID Space cleanup
-    $this->cleanDB($GO_idspace);
-    $db = $this->getDB($GO_idspace);
-    $this->assertEmpty($db, 'The db record should have been removed.');
+  }
 
-    //
-    // Testing ChadoVocabulary Functionality
-    //
+  /**
+   * Tests the ChadoVocab Class
+   */
+  public function testTripalVocabClass() {
+
+    // These are the values we'll use for the ID space and vocablary.
+    $GO_idspace = 'GO';
+    $GO_cc_namespace = 'cellular_component';
+    $GO_bp_namespace = 'biological_process';
+    $GO_mf_namespace = 'molecular_function';
+    $GO_description = "The Gene Ontology (GO) knowledgebase is the world’s largest source of information on the functions of genes";
+    $GO_cc_label = 'Gene Ontology Cellular Component Vocabulary';
+    $GO_bp_label = 'Gene Ontology Biological Process Vocabulary';
+    $GO_mf_label = 'Gene Ontology Molecular Function Vocabulary';
+    $GO_urlprefix = "http://amigo.geneontology.org/amigo/term/{db}:{accession}";
+    $GO_url = 'http://geneontology.org/';
 
     // Make sure the IDspace doesn't yet exist.
-    $db = $this->getDB($GO_idspace);
+    $db = $this->getChadoDbRecord($GO_idspace);
     $this->assertEmpty($db, 'The Chado db has a conflicting record.');
 
     // Make sure the Vocabulary doesn't yet exist.
-    $cv = $this->getCV($GO_cc_namespace);
+    $cv = $this->getChadoCvRecord($GO_cc_namespace);
     $this->assertEmpty($cv, 'The Chado cv has a conflicting record.');
 
     // Create the vocab.
-    $cc = $vmanager->createCollection($GO_cc_namespace, "chado_vocabulary");
-    $cv = $this->getCV($GO_cc_namespace);
-    $this->assertTrue($cv['name'] == $GO_cc_namespace, 'The name was not set correctly by the ChadoVocabulary object.');
-    $this->assertEmpty($cv['definition'], 'The definition should not be set by the ChadoVocabulary object just yet.');
-
-    // Check Dependency Injection by binding our assertion closure to the $cc object.
-    // This is what makes the plugin available inside the function.
-    $doAssertDIvocab = $assertDependencyInjectionClosure->bindTo($cc, get_class($cc));
-    //  -- Finally, call our bound closure function to run the assertions on our plugin.
-    $doAssertDIvocab();
+    $cc = $this->vmanager->createCollection($GO_cc_namespace, "chado_vocabulary");
+    $cv = $this->getChadoCvRecord($GO_cc_namespace);
+    $this->assertTrue($cv->name == $GO_cc_namespace, 'The name was not set correctly by the ChadoVocabulary object.');
+    $this->assertEmpty($cv->definition, 'The definition should not be set by the ChadoVocabulary object just yet.');
 
     // Set the definition to make sure it gets set in Chado.
     $cc->setLabel($GO_cc_label);
-    $cv = $this->getCV($GO_cc_namespace);
-    $this->assertTrue($cv['name'] == $GO_cc_namespace, 'The name was not set correctly by the ChadoVocabulary object.');
-    $this->assertTrue($cv['definition'] == $GO_cc_label, 'The label was not set correctly by the ChadoVocabulary object.');
+    $cv = $this->getChadoCvRecord($GO_cc_namespace);
+    $this->assertTrue($cv->name == $GO_cc_namespace, 'The name was not set correctly by the ChadoVocabulary object.');
+    $this->assertTrue($cv->definition == $GO_cc_label, 'The label was not set correctly by the ChadoVocabulary object.');
 
     // Make sure the getter works.
     $this->assertTrue($cc->getLabel() == $GO_cc_label, "The ChadoVocabulary object did not return a correct label.");
@@ -298,7 +236,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $this->assertTrue($cc->getLabel() == 'Replace Me', "The ChadoVocabulary object did not pick up an update to the label from an external source.");
 
     // Associate the IDSpace with the vocabulary,
-    $GO = $idsmanager->createCollection($GO_idspace, "chado_id_space");
+    $GO = $this->idsmanager->createCollection($GO_idspace, "chado_id_space");
     $id_spaces = $cc->getIdSpaceNames();
     $this->assertFalse(in_array($GO_idspace, $id_spaces), 'ID spaces should not be set yet in the ChadoVocabulary');
     $cc->addIdSpace($GO_idspace);
@@ -307,18 +245,31 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
 
     // Add a URL to the vocabulary, it should show up in the
     // database table for the ID space.
-    $db = $this->getDB($GO_idspace);
-    $this->assertEmpty($db['url'], 'The URL should not be set by the ChadoVocabulary object just yet.');
+    $db = $this->getChadoDbRecord($GO_idspace);
+    $this->assertEmpty($db->url, 'The URL should not be set by the ChadoVocabulary object just yet.');
     $cc->setURL($GO_url);
-    $db = $this->getDB($GO_idspace);
-    $this->assertTrue($db['url'] == $GO_url, 'The URL was not set correctly by the ChadoVocabulary object.');
+
+    $db = $this->getChadoDbRecord($GO_idspace);
+    $this->assertTrue($db->url == $GO_url, 'The URL was not set correctly by the ChadoVocabulary object.');
     $this->assertTrue($cc->getURL() == $GO_url, 'The URL was not retrieved by the ChadoVocabulary object.');
 
     // Test adding a URL without an ID space.
-    $bp = $vmanager->createCollection($GO_bp_namespace, "chado_vocabulary");
+    $bp = $this->vmanager->createCollection($GO_bp_namespace, "chado_vocabulary");
     $bp->setLabel($GO_bp_label);
+    $printed_output = '';
+    $expected_message = 'ChadoVocabulary: Cannot set the URL when no ID spaces are present for the vocabulary.';
+    ob_start();
     $bp->setURL($GO_url);
-    $this->assertFalse($bp->getURL() == $GO_url, 'The URL should not be set without an ID Space');
+    $printed_output = ob_get_clean();
+    $this->assertStringContainsString($expected_message, $printed_output, "We did not get the log message we expected when trying to the the URL on a vocab without an ID Space.");
+    // Also test getting it in the same scenario.
+    $printed_output = '';
+    $expected_message = 'ChadoVocabulary: Cannot get the URL when no ID spaces are present for the vocabulary.';
+    ob_start();
+    $returned_url = $bp->getURL();
+    $printed_output = ob_get_clean();
+    $this->assertStringContainsString($expected_message, $printed_output, "We did not get the log message we expected when trying to the the URL on a vocab without an ID Space.");
+    $this->assertFalse($returned_url == $GO_url, 'The URL should not be set without an ID Space');
 
     // Test adding a default vocabulary to an ID space.  This should call the
     // addIdSpace() function on the vocabulary as well.
@@ -342,11 +293,11 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $EDAM_label = 'Gene Ontology Cellular Component Vocabulary';
     $EDAM_urlprefix = "http://edamontology.org/{db}_{accession}";
     $EDAM_url = 'http://edamontology.org';
-    $edam = $vmanager->createCollection($EDAM_namespace, "chado_vocabulary");
-    $edam_data = $idsmanager->createCollection($EDAM_data_idspace, "chado_id_space");
-    $edam_format = $idsmanager->createCollection($EDAM_format_idspace, "chado_id_space");
-    $edam_operation = $idsmanager->createCollection($EDAM_operation_idspace, "chado_id_space");
-    $edam_topic = $idsmanager->createCollection($EDAM_topic_idspace, "chado_id_space");
+    $edam = $this->vmanager->createCollection($EDAM_namespace, "chado_vocabulary");
+    $edam_data = $this->idsmanager->createCollection($EDAM_data_idspace, "chado_id_space");
+    $edam_format = $this->idsmanager->createCollection($EDAM_format_idspace, "chado_id_space");
+    $edam_operation = $this->idsmanager->createCollection($EDAM_operation_idspace, "chado_id_space");
+    $edam_topic = $this->idsmanager->createCollection($EDAM_topic_idspace, "chado_id_space");
     $edam_data->setDefaultVocabulary($EDAM_namespace);
     $edam_format->setDefaultVocabulary($EDAM_namespace);
     $edam_operation->setDefaultVocabulary($EDAM_namespace);
@@ -395,19 +346,28 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $this->assertTrue(in_array($EDAM_operation_idspace, $id_spaces), "The EDAM operation ID space is missing from the vocabulary ID spaces.");
     $this->assertFalse(in_array($EDAM_topic_idspace, $id_spaces), "The EDAM topic ID space is not missing from the vocabulary ID spaces.");
 
-    //
-    // Testing TripalTerms
-    //
-    $GO->setURLPrefix($GO_urlprefix);
+  }
+
+  /**
+   * Tests the TripalTerm Class
+   */
+  public function testTripalTermClass() {
+
+    // Create the GO ID space as we will use it later.
+    $GO = $this->idsmanager->createCollection('GO', "chado_id_space");
+    $GO->setURLPrefix("http://amigo.geneontology.org/amigo/term/{db}:{accession}");
+    // Same with the biological process Vocabulary.
+    $bp = $this->vmanager->createCollection('biological_process', "chado_vocabulary");
+    $bp->setLabel('Gene Ontology Biological Process Vocabulary');
 
     // First create a term for the comment property.
-    $rdfs_vocab = $vmanager->createCollection("rdfs", "chado_vocabulary");
+    $rdfs_vocab = $this->vmanager->createCollection("rdfs", "chado_vocabulary");
     $rdfs_vocab->setLabel('Resource Description Framework Schema');
-    $rdfs_vocab->setURL('https://www.w3.org/TR/rdf-schema/');
-    $rdfs_id = $idsmanager->createCollection('rdfs', "chado_id_space");
+    $rdfs_id = $this->idsmanager->createCollection('rdfs', "chado_id_space");
     $rdfs_id->setDescription('Resource Description Framework Schema	');
     $rdfs_id->setURLPrefix('http://www.w3.org/2000/01/rdf-schema#{accession}');
     $rdfs_id->setDefaultVocabulary('rdfs', 'chado_vocabulary');
+    $rdfs_vocab->setURL('https://www.w3.org/TR/rdf-schema/');
     $comment = new TripalTerm();
     $comment->setName('comment');
     $comment->setIdSpace('rdfs');
@@ -611,8 +571,8 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $GO->saveTerm($parent);
     $GO->saveTerm($is_a);
 
-    $cvterm = $this->getCVterm('rdfs', 'comment');
-    $this->assertTrue(!empty($cvterm) and $cvterm['name'] == 'comment', 'The term did not save a proper cvterm record  (Test #1).');
+    $cvterm = $this->getChadoCvtermRecord('rdfs', 'comment');
+    $this->assertTrue(!empty($cvterm) and $cvterm->name == 'comment', 'The term did not save a proper cvterm record  (Test #1).');
     $comment2 = $rdfs_id->getTerm('comment');
     $this->assertFalse($comment2->isRelationshipType(), 'The getTerm function did not return a term with the is_relationshiptype value loaded properly.');
 
@@ -644,8 +604,8 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
       ],
     ]);
     $GO->saveTerm($new_child);
-    $cvterm = $this->getCVterm('biological_process', 'behavior');
-    $this->assertTrue(!empty($cvterm) and $cvterm['name'] == 'behavior', 'The term did not save a proper cvterm record (Test #2).');
+    $cvterm = $this->getChadoCvtermRecord('biological_process', 'behavior');
+    $this->assertTrue(!empty($cvterm) and $cvterm->name == 'behavior', 'The term did not save a proper cvterm record (Test #2).');
 
     // Now that the term is saved, load it and see if all of the attributes are properly set.
     $new_child2 = $GO->getTerm('0007610');
@@ -822,8 +782,8 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     //
 
     // Create a type for the synonyms.
-    $syn_vocab = $vmanager->createCollection("synonym_type", "chado_vocabulary");
-    $syn_id = $idsmanager->createCollection('synonym_type', "chado_id_space");
+    $syn_vocab = $this->vmanager->createCollection("synonym_type", "chado_vocabulary");
+    $syn_id = $this->idsmanager->createCollection('synonym_type', "chado_id_space");
     $exact = new TripalTerm();
     $exact->setName('exact');
     $exact->setIdSpace('synonym_type');
@@ -905,24 +865,77 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Saving an invalid term
     //
     $dummy = new TripalTerm();
+    // -- Test 1.
+    $expected_message = 'ChadoIdSpace::saveTerm(). The term, ":" is not valid and cannot be saved.';
     $dummy->setName('dummy');
+    ob_start();
     $this->assertFalse($GO->saveTerm($dummy), 'An invalid term did not return False when saving (Test #1)');
+    $printed_output = ob_get_clean();
+    $this->assertStringContainsString(
+      $expected_message,
+      $printed_output,
+      'An invalid term did not log expected message when saving (Test #1)'
+    );
+
+    // -- Test 2.
+    $expected_message = 'ChadoIdSpace::saveTerm(). The term, ":" is not valid and cannot be saved.';
     $dummy->setDefinition('dummy');
+    ob_start();
     $this->assertFalse($GO->saveTerm($dummy), 'An invalid term did not return False when saving (Test #2)');
+    $printed_output = ob_get_clean();
+    $this->assertStringContainsString(
+      $expected_message,
+      $printed_output,
+      'An invalid term did not log expected message when saving (Test #2)'
+    );
+
+    // -- Test 3.
+    $expected_message = 'ChadoIdSpace::saveTerm(). The term, ":dummy" is not valid and cannot be saved.';
     $dummy->setAccession('dummy');
+    ob_start();
     $this->assertFalse($GO->saveTerm($dummy), 'An invalid term did not return False when saving (Test #3)');
+    $printed_output = ob_get_clean();
+    $this->assertStringContainsString(
+      $expected_message,
+      $printed_output,
+      'An invalid term did not log expected message when saving (Test #3)'
+    );
+
+    // -- Test 4.
+    $expected_message = 'ChadoIdSpace::saveTerm(). The term, "GO:dummy" is not valid and cannot be saved.';
     $dummy->setIdSpace('GO');
+    ob_start();
     $this->assertFalse($GO->saveTerm($dummy), 'An invalid term did not return False when saving (Test #4)');
+    $printed_output = ob_get_clean();
+    $this->assertStringContainsString(
+      $expected_message,
+      $printed_output,
+      'An invalid term did not log expected message when saving (Test #4)'
+    );
+
     $dummy->setVocabulary('biological_process');
     $this->assertTrue($GO->saveTerm($dummy), 'A valid term did not return True when saving');
 
-    // Try to save a term that doesn't belong to the idSpace
-    $this->assertFalse($rdfs_id->saveTerm($dummy), 'A term that did not belong to an idSpace should not have been saved.');
+    // Try to save a term that doesn't belong to the idSpace.
+    $expected_message = 'ChadoIdSpace::saveTerm(). The term, "GO:dummy", does not have the same ID space as this one.';
+    ob_start();
+    $success = $rdfs_id->saveTerm($dummy);
+    $printed_output = ob_get_clean();
+    $this->assertStringContainsString(
+      $expected_message,
+      $printed_output,
+      'Should not be able to save a term that does not belong to the id space.'
+    );
+    $this->assertFalse($success, 'A term that did not belong to an idSpace should not have been saved.');
+  }
 
-    //
-    // Testing idSpace and Vocabulary collection with new db or cv.
-    // Importers may create new ID spaces and vocabularies. Test that these work (issue #2032).
-    //
+  /**
+   * Testing idSpace and Vocabulary collection with new db or cv.
+   * Importers may create new ID spaces and vocabularies.
+   * Test that these work (issue #2032).
+   */
+  public function testIssue2032() {
+
     $chado = $this->getTestSchema();
     $db_name = 'imported_db';
     $cv_name = 'imported_cv';
@@ -940,8 +953,24 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $imported_term = new TripalTerm();
     $this->assertIsObject($imported_term, "Failure to create an empty TripalTerm");
     $imported_term->setName('imported_term');
+    $expected_message = 'TripalTerm::setIdSpace(). The specified ID space, "imported_db", does not exist';
+    ob_start();
     $imported_term->setIdSpace($db_name);
+    $printed_output = ob_get_clean();
+    $this->assertStringContainsString(
+      $expected_message,
+      $printed_output,
+      'Should not be able to set the IDspace because the plugin is not yet specified.'
+    );
+    $expected_message = 'TripalTerm::setVocabulary(). The specified vocabulary, "imported_cv" does not exist.';
+    ob_start();
     $imported_term->setVocabulary($cv_name);
+    $printed_output = ob_get_clean();
+    $this->assertStringContainsString(
+      $expected_message,
+      $printed_output,
+      'Should not be able to set the vocab because the plugin is not yet specified.'
+    );
     $imported_term->setAccession('imported_term');
     // Expect not valid because plugins are not yet specified
     $is_valid = $imported_term->isValid();
