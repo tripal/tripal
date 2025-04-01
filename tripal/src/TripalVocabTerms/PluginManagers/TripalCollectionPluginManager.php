@@ -192,8 +192,10 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
     // Now that we have a collection, check that it is valid and that the
     // record exists in the backend. This confirms the above stanza worked as expected.
     if ($collection) {
-      if ($collection->isValid() and $collection->recordExists() == FALSE) {
-        $collection->createRecord();
+      if ($collection->isValid()) {
+        if ($collection->recordExists() == FALSE) {
+          $collection->createRecord();
+        }
       }
       else {
         $collection = NULL;
