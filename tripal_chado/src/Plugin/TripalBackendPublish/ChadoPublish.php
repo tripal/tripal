@@ -810,10 +810,14 @@ class ChadoPublish extends TripalBackendPublishBase {
       $tags[] = 'values:tripal_entity:' . $entity_id;
       $index++;
     }
-    // Clear cache so that fields will appear on new entities
     if ($index) {
+      // Clear cache so that fields will appear on new entities
       \Drupal::service('cache.entity')->invalidateMultiple($tags);
       \Drupal::service('cache_tags.invalidator')->invalidateTags(['rendered']);
+
+      // The Drupal memory cache can get quite large with large
+      // publish jobs. Clear it since we are done with these entities.
+      \Drupal::service('entity.memory_cache')->deleteAll();
     }
   }
 
