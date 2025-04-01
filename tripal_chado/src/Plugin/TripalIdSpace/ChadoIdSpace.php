@@ -33,6 +33,14 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    */
   protected $db_def = NULL;
 
+  /**
+   * A record in the chado.db table for this ID Space.
+   *
+   * @see @see Drupal\tripal_chado\Plugin\TripalIdSpace\ChadoIdSpace::loadIdSpace().
+   *
+   * @var array|null
+   */
+  protected array|null $chado_record = NULL;
 
   /**
    * An instance of the TripalLogger.
@@ -119,7 +127,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function recordExists() {
-    $db = $this->loadIdSpace();
+    $db = $this->loadIdSpace(TRUE);
     if ($db and $db['name'] == $this->getName()) {
       return True;
     }
@@ -163,21 +171,35 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    * This function queries the `db` table of Chado to get the values
    * for the ID space.
    *
+   * @param bool $force_reload
+   *   If true the record will always be loaded from chado, if false the cache
+   *   will be used if it exists.
+   *
    * @return array
    *   An associative array containing the columns of the `db1 table
    *   of Chado or NULL if the db could not be found.
    */
-  protected function loadIdSpace() {
+  protected function loadIdSpace(bool $force_reload = TRUE) {
 
-    // Get the Chado `db` record for this ID space.
-    $query = $this->connection->select('1:db', 'db')
-      ->condition('db.name', $this->getName(), '=')
-      ->fields('db', ['name', 'url', 'urlprefix', 'description']);
-    $result = $query->execute();
-    if (!$result) {
-      return NULL;
+    if ($force_reload OR $this->chado_record === NULL) {
+      // Get the Chado `db` record for this ID space.
+      $query = $this->connection->select('1:db', 'db')
+        ->condition('db.name', $this->getName(), '=')
+        ->fields('db', ['name', 'url', 'urlprefix', 'description']);
+      $result = $query->execute();
+      if (!$result) {
+        $this->chado_record = NULL;
+      }
+      $record = $result->fetchAssoc();
+      if (is_array($record)) {
+        $this->chado_record = $record;
+      }
+      else {
+        $this->chado_record = NULL;
+      }
     }
-    return $result->fetchAssoc();
+
+    return $this->chado_record;
 
   }
 
