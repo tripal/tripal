@@ -165,25 +165,41 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
     if (!is_string($name)) {
       return NULL;
     }
+
+    // Check to see if this collection is registered with us.
     $db = \Drupal::database();
     $result = $db->select($this->table, 'n')
       ->condition('n.name', $name)
       ->fields('n', ['name', 'plugin_id'])
       ->execute();
     $first = $result->fetchAssoc();
+
+    // If it is then create an instance.
+    // Note: If the backend record already exists this will load that into the
+    // object but if not, then a record will be added to the backend.
     if ($first) {
       $collection = $this->createInstance($first["plugin_id"], ["collection_name" => $name]);
     }
+    // If not then create the collection.
+    // Note: This registers the collection with us and then does what
+    // createInstance does above.
     else {
       if ($pluginId) {
         $collection = $this->createCollection($name, $pluginId);
       }
     }
+
+    // Now that we have a collection, check that it is valid and that the
+    // record exists in the backend. This confirms the above stanza worked as expected.
     if ($collection) {
       if ($collection->isValid() and $collection->recordExists() == FALSE) {
         $collection->createRecord();
       }
+      else {
+        $collection = NULL;
+      }
     }
+
     return $collection;
   }
 
