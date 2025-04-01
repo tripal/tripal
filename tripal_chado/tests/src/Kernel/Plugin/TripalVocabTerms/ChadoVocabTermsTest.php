@@ -5,7 +5,9 @@ use Drupal\Core\Test\FunctionalTestSetupTrait;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
+use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
+use Drupal\tripal\TripalVocabTerms\Interfaces\TripalVocabularyInterface;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\Services\TripalLogger;
 
@@ -989,5 +991,49 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $is_valid = $imported_term->isValid();
     $this->assertTrue($is_valid, "Term is not valid but should be");
 
+  }
+
+  /**
+   * Testing idSpace and Vocabulary collection with missing db or cv.
+   * This can happen when a TripalTerm is created and then the underlying
+   * cd/db is deleted.
+   *
+   * Tests that loading a collection whose undelying record is gone returns
+   * NULL so the underlying backend record can be recreated (Issue #1354; PR #2185).
+   */
+  public function testIssue1354() {
+
+    $cv_name = 'randomCV';
+    $db_name = 'randomDB';
+
+    // Create the backend records.
+    $query = $this->chado_connection->insert('1:db');
+    $query->fields(['name' => $db_name]);
+    $db_id = $query->execute();
+    $this->assertTrue(is_numeric($db_id), "Unable to insert new DB $db_name");
+    $query = $this->chado_connection->insert('1:cv');
+    $query->fields(['name' => $cv_name]);
+    $cv_id = $query->execute();
+    $this->assertTrue(is_numeric($cv_id), "Unable to insert new vocabulary $cv_name");
+
+    // Now create the vocab and ID Space collections.
+    $idspace = $this->idsmanager->createCollection($db_name, "chado_id_space");
+    $this->assertInstanceOf(TripalIdSpaceInterface::class, $idspace, "The created ID space did not implement the right interface.");
+    $this->assertEquals($db_name, $idspace->getName(), "The name of the ID space does not match what we expected.");
+    $vocab = $this->vmanager->createCollection($cv_name, "chado_vocabulary");
+    $this->assertInstanceOf(TripalVocabularyInterface::class, $vocab, "The created vocab did not implement the right interface.");
+    $this->assertEquals($cv_name, $vocab->getName(), "The name of the vocab does not match what we expected.");
+
+    // Delete the underlying cv/db from chado.
+    $this->cleanRecord('db', $db_name);
+    $this->assertFalse($this->getChadoDbRecord($db_name), "We expected not to be able to retrieve the $db_name record since we deleted it.");
+    $this->cleanRecord('cv', $cv_name);
+    $this->assertFalse($this->getChadoCvRecord($cv_name), "We expected not to be able to retrieve the $cv_name record since we deleted it.");
+
+    // Now try to load the vocab and ID space and confirm we were not able to.
+    $ret_idspace = $this->idsmanager->loadCollection($db_name, "chado_id_space");
+    $this->assertNull($ret_idspace, "We should not have been able to load the Tripal ID Space because the underlying record was deleted from chado.");
+    $ret_vocab = $this->vmanager->loadCollection($cv_name, "chado_vocabulary");
+    $this->assertNull($ret_vocab, "We should not have been able to load the Tripal Vocab because the underlying record was deleted from chado.");
   }
 }
