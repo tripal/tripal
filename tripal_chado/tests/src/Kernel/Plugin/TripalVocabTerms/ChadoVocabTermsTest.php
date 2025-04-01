@@ -132,21 +132,23 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
    *   - chado_record: TRUE OR FALSE depending on if the record should exist.
    * @param mixed $idspace
    *   An ID Space collection instance to be checked.
+   * @param string $prefix
+   *   Will be prefixed to the message for all our asserts to provide context.
    */
-  protected function assertIdSpaceEquals(array $expectations, mixed $idspace) {
+  protected function assertIdSpaceEquals(array $expectations, mixed $idspace, string $prefix = '') {
 
-    $this->assertInstanceOf(TripalIdSpaceInterface::class, $idspace, "ID space did not implement the right interface.");
-    $this->assertEquals($expectations['name'], $idspace->getName(), "ID space name does not match.");
-    //$this->assertEquals($expectations['description'], $idspace->getDescription(), "ID space description does not match.");
+    $this->assertInstanceOf(TripalIdSpaceInterface::class, $idspace, $prefix . "ID space did not implement the right interface.");
+    $this->assertEquals($expectations['name'], $idspace->getName(), $prefix . "ID space name does not match.");
+    $this->assertEquals($expectations['description'], $idspace->getDescription(), $prefix . "ID space description does not match.");
 
     $chado_record = $this->getChadoDbRecord($expectations['name']);
     if (array_key_exists('chado_record', $expectations) && ($expectations['chado_record'] === TRUE)) {
-      $this->assertIsObject($chado_record, "Chado Record did not exist.");
-      $this->assertEquals($expectations['name'], $chado_record->name, "The chado record name does not match.");
-      //$this->assertEquals($expectations['description'], $chado_record->description, "The chado record description does not match.");
+      $this->assertIsObject($chado_record, $prefix . "Chado Record did not exist.");
+      $this->assertEquals($expectations['name'], $chado_record->name, $prefix . "The chado record name does not match.");
+      $this->assertEquals($expectations['description'], $chado_record->description, $prefix . "The chado record description does not match.");
     }
     else {
-      $this->assertFalse($chado_record, "Chado Record should not have existed.");
+      $this->assertFalse($chado_record, $prefix . "Chado Record should not have existed.");
     }
   }
 
@@ -160,20 +162,22 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
    *   - chado_record: TRUE OR FALSE depending on if the record should exist.
    * @param mixed $idspace
    *   An Vocab collection instance to be checked.
+   * @param string $prefix
+   *   Will be prefixed to the message for all our asserts to provide context.
    */
-  protected function assertVocabEquals(array $expectations, mixed $vocab) {
+  protected function assertVocabEquals(array $expectations, mixed $vocab, string $prefix = '') {
 
-    $this->assertInstanceOf(TripalVocabularyInterface::class, $vocab, "Vocab did not implement the right interface.");
-    $this->assertEquals($expectations['name'], $vocab->getName(), "Vocab name does not match.");
-    //$this->assertEquals($expectations['definition'], $idspace->getLabel(), "Vocab label/definition does not match.");
+    $this->assertInstanceOf(TripalVocabularyInterface::class, $vocab, $prefix . "Vocab did not implement the right interface.");
+    $this->assertEquals($expectations['name'], $vocab->getName(), $prefix . "Vocab name does not match.");
+    $this->assertEquals($expectations['definition'], $vocab->getLabel(), $prefix . "Vocab label/definition does not match.");
 
     $chado_record = $this->getChadoCvRecord($expectations['name']);
     if (array_key_exists('chado_record', $expectations) && ($expectations['chado_record'] === TRUE)) {
-      $this->assertIsObject($chado_record, "Chado Record did not exist.");
-      $this->assertEquals($expectations['name'], $chado_record->name, "The Chado Record name does not match.");
-      //$this->assertEquals($expectations['definition'], $chado_record->definition, "The Chado Record definition does not match.");
+      $this->assertIsObject($chado_record, $prefix . "Chado Record did not exist.");
+      $this->assertEquals($expectations['name'], $chado_record->name, $prefix . "The Chado Record name does not match.");
+      $this->assertEquals($expectations['definition'], $chado_record->definition, $prefix . "The Chado Record definition does not match.");
     } else {
-      $this->assertFalse($chado_record, "Chado Record should not have existed.");
+      $this->assertFalse($chado_record, $prefix . "Chado Record should not have existed.");
     }
   }
 
@@ -1077,25 +1081,29 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $idspace = $this->idsmanager->createCollection($db_name, "chado_id_space");
     $this->assertIdSpaceEquals(
       ['name' => $db_name, 'description' => $db_txt, 'chado_record' => TRUE],
-      $idspace
+      $idspace,
+      "ID Space created by createCollection(): "
     );
     $vocab = $this->vmanager->createCollection($cv_name, "chado_vocabulary");
     $this->assertVocabEquals(
       ['name' => $cv_name, 'definition' => $cv_txt, 'chado_record' => TRUE],
-      $vocab
+      $vocab,
+      "Vocab created by createCollection(): "
     );
 
     // Delete the underlying cv/db from chado.
     // Confirm the idspace/vocab are unchanged but the chado record is gone.
     $this->cleanRecord('db', $db_name);
     $this->assertIdSpaceEquals(
-      ['name' => $db_name, 'description' => $db_txt, 'chado_record' => FALSE],
-      $idspace
+      ['name' => $db_name, 'description' => '', 'chado_record' => FALSE],
+      $idspace,
+      "Chado DB record deleted: "
     );
     $this->cleanRecord('cv', $cv_name);
     $this->assertVocabEquals(
-      ['name' => $cv_name, 'definition' => $cv_txt, 'chado_record' => FALSE],
-      $vocab
+      ['name' => $cv_name, 'definition' => '', 'chado_record' => FALSE],
+      $vocab,
+      "Chado CV record deleted: "
     );
 
     // Now try to load the vocab and ID space.
@@ -1104,12 +1112,14 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
     $ret_idspace = $this->idsmanager->loadCollection($db_name, "chado_id_space");
     $this->assertIdSpaceEquals(
       ['name' => $db_name, 'description' => '', 'chado_record' => TRUE],
-      $idspace
+      $idspace,
+      "ID Space loaded with missing chado.db record: "
     );
     $ret_vocab = $this->vmanager->loadCollection($cv_name, "chado_vocabulary");
     $this->assertVocabEquals(
       ['name' => $cv_name, 'definition' => '', 'chado_record' => TRUE],
-      $vocab
+      $vocab,
+      "Vocab loaded with missing chado.cv record: "
     );
 
   }
