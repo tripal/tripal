@@ -128,7 +128,7 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     );
 
     // Next setup the environment according to the system under test.
-    $this->setupFieldTestEnvironment($this->system_under_test);
+    $this->setupChadoEntityFieldTestEnvironment($this->system_under_test);
   }
 
   /**

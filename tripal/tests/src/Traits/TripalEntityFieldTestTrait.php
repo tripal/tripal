@@ -292,10 +292,14 @@ trait TripalEntityFieldTestTrait {
    *    - field_type (string)
    *    - termIdSpace (string)
    *    - termAccession (string)
+   * @aparam array $options
+   *   Options to customize how the field type is created. Supported key are:
+   *    - idspace_plugin_id: the TripalIdSpace plugin to use.
+   *    - vocab_plugin_id: the TripalVocab plugin to use.
    * @return FieldStorageConfig
    *   The field storage object that was just created.
    */
-  public function createFieldType(string $entity_type, array $values = []) {
+  public function createFieldType(string $entity_type, array $values = [], array $options = []) {
 
     // Defaults
     $random = $this->getRandomGenerator();
@@ -313,8 +317,14 @@ trait TripalEntityFieldTestTrait {
     if (!array_key_exists('settings', $values)) {
       $values['settings'] = [];
     }
-    // @todo allow this to be set via variables.
-    $term = $this->createTripalTerm($term_values, 'tripal_default_id_space', 'tripal_default_vocabulary');
+    if (!array_key_exists('idspace_plugin_id', $options)) {
+      $options['idspace_plugin_id'] = 'tripal_default_id_space';
+    }
+    if (!array_key_exists('vocab_plugin_id', $options)) {
+      $options['vocab_plugin_id'] = 'tripal_default_vocabulary';
+    }
+
+    $term = $this->createTripalTerm($term_values, $options['idspace_plugin_id'], $options['vocab_plugin_id']);
 
     // Now for the field storage.
     $fieldStorage = FieldStorageConfig::create([
@@ -349,10 +359,14 @@ trait TripalEntityFieldTestTrait {
    *    - formatter_id (string)
    *    - widget_id (string)
    *    - fieldStorage (FieldStorageConfig)
+   * @aparam array $options
+   *   Options to customize how the field type is created. Supported key are:
+   *    - idspace_plugin_id: the TripalIdSpace plugin to use.
+   *    - vocab_plugin_id: the TripalVocab plugin to use.
    * @return FieldConfig
    *   The field object that was just created.
    */
-  public function createFieldInstance(string $entity_type, array $values = []) {
+  public function createFieldInstance(string $entity_type, array $values = [], $options = []) {
 
     // Defaults
     $random = $this->getRandomGenerator();
