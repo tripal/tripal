@@ -123,6 +123,61 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
   }
 
   /**
+   * Confirms the ID Space collection matches our expectations.
+   *
+   * @param array $expectations
+   *   An array listing our expections. It supports the following:
+   *   - name: the name of the ID Space.
+   *   - description: the description of the id space.
+   *   - chado_record: TRUE OR FALSE depending on if the record should exist.
+   * @param mixed $idspace
+   *   An ID Space collection instance to be checked.
+   */
+  protected function assertIdSpaceEquals(array $expectations, mixed $idspace) {
+
+    $this->assertInstanceOf(TripalIdSpaceInterface::class, $idspace, "ID space did not implement the right interface.");
+    $this->assertEquals($expectations['name'], $idspace->getName(), "ID space name does not match.");
+    //$this->assertEquals($expectations['description'], $idspace->getDescription(), "ID space description does not match.");
+
+    $chado_record = $this->getChadoDbRecord($expectations['name']);
+    if (array_key_exists('chado_record', $expectations) && ($expectations['chado_record'] === TRUE)) {
+      $this->assertIsObject($chado_record, "Chado Record did not exist.");
+      $this->assertEquals($expectations['name'], $chado_record->name, "The chado record name does not match.");
+      //$this->assertEquals($expectations['description'], $chado_record->description, "The chado record description does not match.");
+    }
+    else {
+      $this->assertFalse($chado_record, "Chado Record should not have existed.");
+    }
+  }
+
+  /**
+   * Confirms the Vocab collection matches our expectations.
+   *
+   * @param array $expectations
+   *   An array listing our expections. It supports the following:
+   *   - name: the name of the Vocab.
+   *   - definition: the definition of the Vocab.
+   *   - chado_record: TRUE OR FALSE depending on if the record should exist.
+   * @param mixed $idspace
+   *   An Vocab collection instance to be checked.
+   */
+  protected function assertVocabEquals(array $expectations, mixed $vocab) {
+
+    $this->assertInstanceOf(TripalVocabularyInterface::class, $vocab, "Vocab did not implement the right interface.");
+    $this->assertEquals($expectations['name'], $vocab->getName(), "Vocab name does not match.");
+    //$this->assertEquals($expectations['definition'], $idspace->getLabel(), "Vocab label/definition does not match.");
+
+    $chado_record = $this->getChadoCvRecord($expectations['name']);
+    if (array_key_exists('chado_record', $expectations) && ($expectations['chado_record'] === TRUE)) {
+      $this->assertIsObject($chado_record, "Chado Record did not exist.");
+      $this->assertEquals($expectations['name'], $chado_record->name, "The Chado Record name does not match.");
+      //$this->assertEquals($expectations['definition'], $chado_record->definition, "The Chado Record definition does not match.");
+    } else {
+      $this->assertFalse($chado_record, "Chado Record should not have existed.");
+    }
+  }
+
+  /**
    * Tests the ChadoIdSpace Class
    */
   public function testTripalIDSpaceClass() {
@@ -998,42 +1053,64 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
    * This can happen when a TripalTerm is created and then the underlying
    * cd/db is deleted.
    *
-   * Tests that loading a collection whose undelying record is gone returns
-   * NULL so the underlying backend record can be recreated (Issue #1354; PR #2185).
+   * Tests that loading a collection whose undelying record is gone recreates
+   * the record in the underlying backend (Issue #1354; PR #2185).
    */
   public function testIssue1354() {
 
     $cv_name = 'randomCV';
+    $cv_txt = 'Describing my random VOCAB with mostly meaningless chatter';
     $db_name = 'randomDB';
+    $db_txt = 'Describing my random ID SPACE with mostly meaningless chatter';
 
     // Create the backend records.
     $query = $this->chado_connection->insert('1:db');
-    $query->fields(['name' => $db_name]);
+    $query->fields(['name' => $db_name, 'description' => $db_txt]);
     $db_id = $query->execute();
     $this->assertTrue(is_numeric($db_id), "Unable to insert new DB $db_name");
     $query = $this->chado_connection->insert('1:cv');
-    $query->fields(['name' => $cv_name]);
+    $query->fields(['name' => $cv_name, 'definition' => $cv_txt]);
     $cv_id = $query->execute();
     $this->assertTrue(is_numeric($cv_id), "Unable to insert new vocabulary $cv_name");
 
     // Now create the vocab and ID Space collections.
     $idspace = $this->idsmanager->createCollection($db_name, "chado_id_space");
-    $this->assertInstanceOf(TripalIdSpaceInterface::class, $idspace, "The created ID space did not implement the right interface.");
-    $this->assertEquals($db_name, $idspace->getName(), "The name of the ID space does not match what we expected.");
+    $this->assertIdSpaceEquals(
+      ['name' => $db_name, 'description' => $db_txt, 'chado_record' => TRUE],
+      $idspace
+    );
     $vocab = $this->vmanager->createCollection($cv_name, "chado_vocabulary");
-    $this->assertInstanceOf(TripalVocabularyInterface::class, $vocab, "The created vocab did not implement the right interface.");
-    $this->assertEquals($cv_name, $vocab->getName(), "The name of the vocab does not match what we expected.");
+    $this->assertVocabEquals(
+      ['name' => $cv_name, 'definition' => $cv_txt, 'chado_record' => TRUE],
+      $vocab
+    );
 
     // Delete the underlying cv/db from chado.
+    // Confirm the idspace/vocab are unchanged but the chado record is gone.
     $this->cleanRecord('db', $db_name);
-    $this->assertFalse($this->getChadoDbRecord($db_name), "We expected not to be able to retrieve the $db_name record since we deleted it.");
+    $this->assertIdSpaceEquals(
+      ['name' => $db_name, 'description' => $db_txt, 'chado_record' => FALSE],
+      $idspace
+    );
     $this->cleanRecord('cv', $cv_name);
-    $this->assertFalse($this->getChadoCvRecord($cv_name), "We expected not to be able to retrieve the $cv_name record since we deleted it.");
+    $this->assertVocabEquals(
+      ['name' => $cv_name, 'definition' => $cv_txt, 'chado_record' => FALSE],
+      $vocab
+    );
 
-    // Now try to load the vocab and ID space and confirm we were not able to.
+    // Now try to load the vocab and ID space.
+    // Confirm the chado record was recreated but the description/definition
+    // is no longer set because we didn't have it on load.
     $ret_idspace = $this->idsmanager->loadCollection($db_name, "chado_id_space");
-    $this->assertNull($ret_idspace, "We should not have been able to load the Tripal ID Space because the underlying record was deleted from chado.");
+    $this->assertIdSpaceEquals(
+      ['name' => $db_name, 'description' => '', 'chado_record' => TRUE],
+      $idspace
+    );
     $ret_vocab = $this->vmanager->loadCollection($cv_name, "chado_vocabulary");
-    $this->assertNull($ret_vocab, "We should not have been able to load the Tripal Vocab because the underlying record was deleted from chado.");
+    $this->assertVocabEquals(
+      ['name' => $cv_name, 'definition' => '', 'chado_record' => TRUE],
+      $vocab
+    );
+
   }
 }
