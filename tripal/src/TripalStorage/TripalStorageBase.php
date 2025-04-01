@@ -32,13 +32,26 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
 
   /**
    * An associative array that contains all of the property types that
-   * have been added to this object. It is indexed by entityType ->
-   * fieldName -> key and the value is the
-   * Drupal\tripal\TripalStorage\StoragePropertyValue object.
+   * have been added to this object. It is indexed by fieldName -> key and the
+   * value is the Drupal\tripal\TripalStorage\StoragePropertyValue object.
    *
    * @var array
    */
   protected $property_types = [];
+
+  /**
+   * Keeps track of which fields are fully cached by Drupal and which are not.
+   *
+   * This should be used by the specific storage backend during loadValues()
+   * to improve performance by not looking up the values of fields which do
+   * not need it.
+   *
+   * @var array
+   *   This array will contain an entry (key) for each field where the value
+   *   is either TRUE to indicate that all properties for this field are cached
+   *   or FALSE if at least one property in the field is not cached.
+   */
+  protected $cached_fields = [];
 
   /**
    * Caches the default value for entity field caching from the configuration.
@@ -124,7 +137,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
    */
   public function addTypes(string $field_name, array $types) {
 
-    // Index the types by their entity type, field type and key.
+    // Index the types by their field name and key.
     foreach ($types as $index => $type) {
       if (!is_object($type)) {
         $this->logger->error('Type provided must be an object but instead index @index was a @type',
@@ -272,11 +285,38 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   /**
    * {@inheritDoc}
    */
-  public function isDrupalStoreByFieldNameKey(string $field_name, string $key): bool|null {
+  public function markPropertiesForCaching(string $field_name, array &$prop_types) {
 
-    $property_type = $this->getPropertyType($field_name, $key);
+    // We want to keep track of whether all the properties are cached (TRUE).
+    $all_cached = TRUE;
+
+    // For each of the property types, we want to check if they should be cached.
+    foreach ($prop_types as $k => $prop_type) {
+      $key = $prop_type->getKey();
+
+      // Now actually perform the cache.
+      $is_required = $this->isDrupalStoreByFieldNameKey($field_name, $key, $prop_type);
+      // And set it on the property type.
+      $prop_types[$k]->setCacheStatus($is_required);
+
+      if (!$is_required) {
+        $all_cached = FALSE;
+      }
+    }
+
+    $this->cached_fields[$field_name] = $all_cached;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function isDrupalStoreByFieldNameKey(string $field_name, string $key, object|null $property_type = NULL): bool|null {
+
     if ($property_type === NULL) {
-      return NULL;
+      $property_type = $this->getPropertyType($field_name, $key);
+      if ($property_type === NULL) {
+        return NULL;
+      }
     }
     $storage_settings = $property_type->getStorageSettings();
 
@@ -285,11 +325,11 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
 
     // Any field that stores a base record id, a primary key, or a foreign key
     // link is required. This takes precedence and cannot be overridden.
-    if (
+    if (array_key_exists('action', $storage_settings) AND (
       ($storage_settings['action'] == 'store_id') or
       ($storage_settings['action'] == 'store_pkey') or
       ($storage_settings['action'] == 'store_link')
-    ) {
+    )) {
       $is_required = TRUE;
     }
     // For any other fields that have 'drupal_exclude' set, we want to ensure it

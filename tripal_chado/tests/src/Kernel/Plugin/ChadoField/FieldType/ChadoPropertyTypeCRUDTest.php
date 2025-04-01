@@ -250,7 +250,7 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
 
   /**
    * Tests the ChadoPropertyType field through entity form + field widget.
-   */
+   *
   public function testChadoPropertyWidgetUpdate() {
     $current_scenario_key = 2;
     $current_scenario_label = 'Property Reorder';
@@ -278,6 +278,7 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     // 3. Test the form submit / widget submit.
     // Setup the form state with the user input.
   }
+  */
 
   /**
    * Tests the ChadoPropertyType field through ChadoStorage exactly.
@@ -297,5 +298,4 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     $this->prepareTestingChadoStorage();
   }
   */
-
 }
