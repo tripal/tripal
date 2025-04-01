@@ -244,7 +244,7 @@ trait ChadoFieldTestTrait {
    * This uses the bundle to setup the testing environment similarily to the
    * original ChadoStorage tests. In this manner we don't need YAML files
    * describing the fields nor do we need to create them because that has
-   * already been done by setupFieldSystemUnderTest().
+   * already been done by setupChadoEntityFieldSystemUnderTest().
    */
   public function prepareTestingChadoStorage() {
     $this->propertyTypes = [];
