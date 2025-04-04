@@ -349,7 +349,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $this->records->deleteRecords($base_table, $table);
         }
 
-        // Second, delete the record in the base talbe.
+        // Second, delete the record in the base table.
         $this->records->deleteRecords($base_table, $base_table);
       }
 
@@ -1192,7 +1192,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       return $ret_array;
     }
 
-    // If the path is not a join but has a period then this specifices
+    // If the path is not a join but has a period then this specifies
     // the table and the column with the value.
     else if (preg_match('/\./', $curr_path)) {
 
@@ -1204,7 +1204,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       }
 
       // If the base table is not the same as the root table then
-      // we should add the field name to the colun alias. Otherwise
+      // we should add the field name to the column alias. Otherwise
       // we may have conflicts if mutiple fields use the same alias.
       $value_alias = $as ? $as : $value_column;
       if ($base_table != $root_table) {
