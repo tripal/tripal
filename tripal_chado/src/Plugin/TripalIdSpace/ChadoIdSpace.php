@@ -36,7 +36,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   /**
    * A record in the chado.db table for this ID Space.
    *
-   * @see @see Drupal\tripal_chado\Plugin\TripalIdSpace\ChadoIdSpace::loadIdSpace().
+   * @see Drupal\tripal_chado\Plugin\TripalIdSpace\ChadoIdSpace::loadIdSpace().
    *
    * @var array|null
    */
@@ -181,7 +181,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    */
   protected function loadIdSpace(bool $force_reload = TRUE) {
 
-    if ($force_reload OR $this->chado_record === NULL) {
+    if ($force_reload or $this->chado_record === NULL) {
       // Get the Chado `db` record for this ID space.
       $query = $this->connection->select('1:db', 'db')
         ->condition('db.name', $this->getName(), '=')

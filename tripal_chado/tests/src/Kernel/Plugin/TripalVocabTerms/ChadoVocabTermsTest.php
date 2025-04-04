@@ -1055,7 +1055,7 @@ class ChadoVocabTermsTest extends ChadoTestKernelBase {
   /**
    * Testing idSpace and Vocabulary collection with missing db or cv.
    * This can happen when a TripalTerm is created and then the underlying
-   * cd/db is deleted.
+   * cv/db is deleted.
    *
    * Tests that loading a collection whose undelying record is gone recreates
    * the record in the underlying backend (Issue #1354; PR #2185).
