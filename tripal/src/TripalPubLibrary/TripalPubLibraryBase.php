@@ -17,6 +17,13 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
   protected $public;
 
   /**
+   * The logger for reporting progress, warnings and errors to admin.
+   *
+   * @var \Drupal\tripal\Services\TripalLogger
+   */
+  protected $logger;
+
+  /**
    * The Tripal Citation generation service.
    *
    * @var \Drupal\tripal\Services\TripalCitationManager $citation_manager
@@ -57,6 +64,7 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
       $plugin_id,
       $plugin_definition,
       $container->get('database'),
+      $container->get('tripal.logger'),
       $container->get('tripal.citation'),
     );
   }
@@ -65,11 +73,15 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition,
-                              Connection $public, \Drupal\tripal\Services\TripalCitationManager $citation_manager) {
+                              Connection $public,
+                              \Drupal\tripal\Services\TripalLogger $logger,
+                              \Drupal\tripal\Services\TripalCitationManager $citation_manager) {
+
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    // Dependency injection for public schema
+    // Dependency injection for public schema, tripal logger, and citation generator
     $this->public = $public;
+    $this->logger = $logger;
     $this->citation_manager = $citation_manager;
   }
 
