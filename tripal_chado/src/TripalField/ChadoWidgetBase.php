@@ -373,7 +373,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
         }
         else {
           // If there is no record_id, then it is the empty
-          // field at the end of the list, and can be ignored.
+          // field at the end of the list, and should be removed
+          // so that drupal does not try to save it.
           unset($values[$val_key]);
         }
       }

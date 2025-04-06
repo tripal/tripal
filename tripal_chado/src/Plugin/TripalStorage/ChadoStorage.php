@@ -1440,8 +1440,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   to calculate the field's final value.
    *
    * @return int
-   *   The Drupal entity ID, or -1 if it doesn't exist.
-   *   We use -1 because Tripal preSave will flag a zero for deletion.
+   *   The Drupal entity ID, or a negative value if there is no corresponding entity.
+   *   -1 signifies that the record exists, but is not published.
+   *   -2 signifies that the record exists but has no value.
+   *      This happens during edit if the widget removes a record.
+   *   -3 signifies that the record doesn't exist.
+   *   -4 will only occur due to an incorrect field definition, fkey is missing.
+   *   Note that Tripal preSave will flag a zero for deletion.
    */
   static public function drupalEntityIdLookupCallback($context) {
 
@@ -1458,17 +1463,17 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $fkey = $prop_storage_settings['fkey'] ?? NULL;
     if (!$fkey) {
       // Maybe throw an exception here so developers know they forgot the 'fkey'
-      return -1;
+      return -4;
     }
 
     $record_id = $context['values'][$field_name][$delta][$fkey]['value'] ?? NULL;
     if (!$record_id) {
-      return -1;
+      return -3;
     }
     $record_id = $record_id->getValue('value');
 
     if (!$record_id) {
-      return -1;
+      return -2;
     }
 
     // Given the Chado record ID and bundle term, we can lookup the Drupal entity ID,

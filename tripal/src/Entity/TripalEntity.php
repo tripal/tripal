@@ -813,7 +813,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The array to check for null values. It is expected to be a flat array.
    *
    * @return bool
-   *   True IFF all elements are null; False if even one element is not null.
+   *   True if all elements are null; False if even one element is not null.
    */
   public static function allNull(array $array_to_check) : bool {
     foreach ($array_to_check as $value) {
@@ -835,7 +835,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Perform the Insert or Update of the submitted values to the
     // underlying data store.
     foreach ($values as $tsid => $tsid_values) {
-
       // Do an insert
       if ($this->isDefaultRevision() and $this->isNewRevision()) {
         try {
@@ -911,13 +910,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         foreach ($values[$tsid][$field_name][$delta] as $key => $prop_info) {
           $storage = $tripal_storages[$tsid];
           $prop_type = $storage->getPropertyType($field_name, $key);
-
           $prop_value = $prop_info['value'];
           // Determine whether the property values are to be cached in the
           // Drupal Entity Field tables.
           if ($storage->isDrupalStoreByFieldNameKey($field_name, $key)) {
-            $prop_values[] = $prop_value;
-            $prop_types[] = $prop_type;
+            $prop_values[$key] = $prop_value;
+            $prop_types[$key] = $prop_type;
           }
         }
 
@@ -930,6 +928,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           // Keep track of elements that have no value.
           // A given delta should only be present once here.
           if ($this->allNull($prop_values) and (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name]))) {
+            $delta_remove[$field_name][] = $delta;
+          }
+          // When we choose -Select- in a widget, or remove the row with the
+          // "Remove" button, then we will see the entity_id here as -2 or -3.
+          // Chado storage has already done its work, so now remove this
+          // delta so that Drupal doesn't make a blank field table entry.
+          if (array_key_exists('entity_id', $prop_values) and $prop_values['entity_id']->getValue() <= -2) {
             $delta_remove[$field_name][] = $delta;
           }
         }
@@ -1183,6 +1188,5 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       }
     }
   }
-
 
 }
