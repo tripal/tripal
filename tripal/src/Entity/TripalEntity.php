@@ -915,8 +915,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           // Determine whether the property values are to be cached in the
           // Drupal Entity Field tables.
           if ($storage->isDrupalStoreByFieldNameKey($field_name, $key)) {
-            $prop_values[$key] = $prop_value;
-            $prop_types[$key] = $prop_type;
+            $prop_values[] = $prop_value;
+            $prop_types[] = $prop_type;
           }
         }
 
