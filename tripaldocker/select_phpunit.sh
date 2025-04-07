@@ -5,7 +5,7 @@
 
 drupalversion=$(drush core-status --field='Drupal version')
 phpunit_config="/var/www/drupal/web/modules/contrib/tripal/phpunit.xml"
-if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); then
+if $(dpkg --compare-versions "${drupalversion}" "le" "10.9"); then
   phpunit_config="/var/www/drupal/web/modules/contrib/tripal/phpunit.9.6.xml"
 fi
 
