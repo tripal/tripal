@@ -19,26 +19,43 @@ use Drupal\Core\Url;
  */
 class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
-  public function formSubmit($form, &$form_state) {
+  /**
+   * Stores information of an initialized search.
+   * Array keys are 'Count', 'WebEnv', and 'QueryKey'
+   * with values as returned by PubMed's esearch utility
+   *
+   * @var array $webquery
+   */
+  protected array $webquery = [];
+
+  public function formSubmit(array $form, \Drupal\Core\Form\FormStateInterface &$form_state): void {
     // DUMMY function from inheritance so it had to be kept.
     // The form_submit function which is called by TripalPubLibrary
     // is needed to receive and process the criteria data. See below.
   }
 
   /**
-   * Plugin specific form submit to add form values for example to criteria array
+   * Plugin specific form submit to add form values to the criteria array.
    * The criteria array eventually gets serialized and stored in the tripal_pub_import
    * database table. (This code gets called from ChadoNewPublicationForm)
    */
-  public function form_submit($form, $form_state, &$criteria) {
+  public function form_submit(array $form, \Drupal\Core\Form\FormStateInterface $form_state, array &$criteria): void {
     $user_input = $form_state->getUserInput();
     $criteria['days'] = $user_input['days'];
+    $criteria['ncbi_api_key'] = $user_input['ncbi_api_key'];
+
+    // If an NCBI API key was entered, store it as the default for new queries
+    if ($criteria['ncbi_api_key']) {
+      \Drupal::state()->set('tripal_pub_importer_ncbi_api_key', $criteria['ncbi_api_key']);
+    }
   }
 
   /**
    * Adds plugin specific form items and returns the $form array
    */
-  public function form($form, &$form_state) {
+  public function form(array $form, \Drupal\Core\Form\FormStateInterface &$form_state): array {
+    $default_api_key = \Drupal::state()->get('tripal_pub_importer_ncbi_api_key', '');
+
     // Add form elements specific to this parser.
     $api_key_description = t('Tripal imports publications using NCBI\'s ')
       . Link::fromTextAndUrl('EUtils API',
@@ -62,7 +79,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       '#type' => 'textfield',
       '#description' => $api_key_description,
       '#required' => FALSE,
-      //to-do add ajax callback to populate?
+      '#default_value' => $default_api_key,
       '#size' => 20,
     ];
 
@@ -77,48 +94,52 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     return $form;
   }
 
-  public function formValidate($form, &$form_state) {
+  /**
+   * @see TripalImporter::formValidate()
+   */
+  public function formValidate(array $form, \Drupal\Core\Form\FormStateInterface &$form_state): void {
     // Perform any form validations necessary with the form data
+    $form_state_values = $form_state->getValues();
+    $days = $form_state_values['days'] ?? '';
+    if (preg_match('/\D/', $days)) {
+      $form_state->setErrorByName('days', t('"Days since record modified" must be a non-negative integer, or blank'));
+    }
   }
 
 
   /**
-   * More documentation can be found in TripalPubLibraryInterface
+   * Retrieves one or more publications from PubMed based on a search query specification
+   *
+   * @param array $query
+   *   An associative array defining a publication query,
+   *   specifying the database and query parameters for
+   *   a particular publication repository.
+   *
+   * @return array|NULL
+   *   - 'total_records' = The number of records available for retrieval
+   *   - 'skipped_records' = The number of records where download failed
+   *   - 'search_str' = The query string used for the search
+   *   - 'pubs' = The uniform publication information array.
+   *   or NULL if query failed and an exception was caught
    */
-  public function run(int $query_id) {
-    // public connection is already defined due to dependency injection happening on TripalPubLibraryBase
-    $row = $this->public->select('tripal_pub_library_query', 'tpi')
-    ->fields('tpi')
-    ->condition('pub_library_query_id', $query_id, '=')
-    ->execute()
-    ->fetchObject();
-    // Get the criteria column which has serialized data, so unserialize it into $query variable
-    $query = unserialize($row->criteria);
+  public function run(array $query): ?array {
+    $page = $query['page'];
+    $num_to_retrieve = $query['count'];
 
-    // Go through all results until pubs is empty
-    $page_results = $this->retrieve($query);
-    $publications = [];
-    if (is_array($page_results) && array_key_exists('pubs', $page_results)) {
-      if (count($page_results['pubs']) != 0) {
-        $publications = array_merge($publications, $page_results['pubs']);
-      }
-    }
-    else {
-      return NULL;
-    }
-    return $publications;
+    $page_results = $this->retrieve($query, $num_to_retrieve, $page);
+    return $page_results;
   }
 
   /**
    * More documentation can be found in TripalPubLibraryInterface
    */
-  public function retrieve(array $query, int $limit = 10, int $page = 0) {
+  public function retrieve(array $query, int $limit = 10, int $page = 0): ?array {
     $results = NULL;
     try {
       $results = $this->remoteSearchPMID($query, $limit, $page);
     }
-    catch (\Exception $ex) {
-
+    catch (\Exception $e) {
+      $this->logger->error($e->getMessage());
     }
     return $results;
   }
@@ -135,137 +156,163 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    *   Indicates the page to retrieve.  This corresponds to a paged table, where
    *   each page has $num_to_retrieve publications.
    *
-   * @return
-   *  An array of publications.
+   * @return array|NULL
+   *   - 'total_records' = The number of records available for retrieval
+   *   - 'skipped_records' = The number of records where download failed
+   *   - 'search_str' = The query string used for the search
+   *   - 'pubs' = The uniform publication information array.
+   *   or NULL if query failed and an exception was caught
    *
    * @ingroup tripal_pub
    */
-  public function remoteSearchPMID($search_array, $num_to_retrieve, $page, $row_mode = 1) {
-    // convert the terms list provided by the caller into a string with words
-    // separated by a '+' symbol.
-    $num_criteria = $search_array['num_criteria'];
-    $days = NULL;
-    if (isset($search_array['days'])) {
-      $days = $search_array['days'];
-    }
+  public function remoteSearchPMID($search_array, $num_to_retrieve, $page, $row_mode = 1): ?array {
+    $api_key = $search_array['ncbi_api_key'] ?? $search_array['form_state_user_input']['ncbi_api_key'] ?? '';
+    // Only initialize for page zero, subsequent pages use the established query
+    if ($page == 0) {
+      $days = $search_array['days'] ?? '';
 
-    $search_str = '';
+      // convert the terms list provided by the caller into a string with words
+      // separated by a '+' symbol.
+      $num_criteria = $search_array['num_criteria'];
+      $search_str = '';
 
-    for ($i = 1; $i <= $num_criteria; $i++) {
-      $search_terms = trim($search_array['criteria'][$i]['search_terms']);
-      $scope = $search_array['criteria'][$i]['scope'];
-      $is_phrase = $search_array['criteria'][$i]['is_phrase'];
-      $op = $search_array['criteria'][$i]['operation'];
+      for ($i = 1; $i <= $num_criteria; $i++) {
+        $search_terms = trim($search_array['criteria'][$i]['search_terms']);
+        $scope = $search_array['criteria'][$i]['scope'];
+        $is_phrase = $search_array['criteria'][$i]['is_phrase'];
+        $op = $search_array['criteria'][$i]['operation'];
 
-      if ($op) {
-        $search_str .= "$op ";
-      }
-
-      // if this is phrase make sure the search terms are surrounded by quotes
-      if ($is_phrase) {
-        $search_str .= "(\"$search_terms\" |SCOPE|)";
-      }
-      // if this is not a phase then we want to separate each 'OR or 'AND' into a unique criteria
-      else {
-        $search_str .= "(";
-        if (preg_match('/\s+and+\s/i', $search_terms)) {
-          $elements = preg_split('/\s+and+\s/i', $search_terms);
-          foreach ($elements as $element) {
-            $search_str .= "($element |SCOPE|) AND ";
-          }
-          $search_str = substr($search_str, 0, -5); // remove trailing 'AND '
+        if ($op) {
+          $search_str .= "$op ";
         }
-        elseif (preg_match('/\s+or+\s/i', $search_terms)) {
-          $elements = preg_split('/\s+or+\s/i', $search_terms);
-          foreach ($elements as $element) {
-            $search_str .= "($element |SCOPE|) OR ";
+
+        // if this is phrase make sure the search terms are surrounded by quotes
+        if ($is_phrase) {
+          $search_str .= "(\"$search_terms\" |SCOPE|)";
+        }
+        // if this is not a phase then we want to separate each 'OR or 'AND' into a unique criteria
+        else {
+          $search_str .= "(";
+          if (preg_match('/\s+and+\s/i', $search_terms)) {
+            $elements = preg_split('/\s+and+\s/i', $search_terms);
+            foreach ($elements as $element) {
+              $search_str .= "($element |SCOPE|) AND ";
+            }
+            $search_str = substr($search_str, 0, -5); // remove trailing 'AND '
           }
-          $search_str = substr($search_str, 0, -4); // remove trailing 'OR '
+          elseif (preg_match('/\s+or+\s/i', $search_terms)) {
+            $elements = preg_split('/\s+or+\s/i', $search_terms);
+            foreach ($elements as $element) {
+              $search_str .= "($element |SCOPE|) OR ";
+            }
+            $search_str = substr($search_str, 0, -4); // remove trailing 'OR '
+          }
+          else {
+            $search_str .= "($search_terms |SCOPE|)";
+          }
+          $search_str .= ')';
+        }
+
+        if ($scope == 'title') {
+          $search_str = preg_replace('/\|SCOPE\|/', '[Title]', $search_str);
+        }
+        elseif ($scope == 'author') {
+          $search_str = preg_replace('/\|SCOPE\|/', '[Author]', $search_str);
+        }
+        elseif ($scope == 'abstract') {
+          $search_str = preg_replace('/\|SCOPE\|/', '[Title/Abstract]', $search_str);
+        }
+        elseif ($scope == 'journal') {
+          $search_str = preg_replace('/\|SCOPE\|/', '[Journal]', $search_str);
+        }
+        elseif ($scope == 'id') {
+          $search_str = preg_replace('/PMID:([^\s]*)/', '$1', $search_str);
+          $search_str = preg_replace('/\|SCOPE\|/', '[Uid]', $search_str);
         }
         else {
-          $search_str .= "($search_terms |SCOPE|)";
+          $search_str = preg_replace('/\|SCOPE\|/', '', $search_str);
         }
-        $search_str .= ')';
+      }
+      if ($days) {
+        // get the date of the day suggested
+        $past_timestamp = time() - ($days * 86400);
+        $past_date = getdate($past_timestamp);
+        $search_str .= " AND (\"" . sprintf("%04d/%02d/%02d", $past_date['year'], $past_date['mon'], $past_date['mday']) . "\"[Date - Create] : \"3000\"[Date - Create]))";
       }
 
-      if ($scope == 'title') {
-        $search_str = preg_replace('/\|SCOPE\|/', '[Title]', $search_str);
-      }
-      elseif ($scope == 'author') {
-        $search_str = preg_replace('/\|SCOPE\|/', '[Author]', $search_str);
-      }
-      elseif ($scope == 'abstract') {
-        $search_str = preg_replace('/\|SCOPE\|/', '[Title/Abstract]', $search_str);
-      }
-      elseif ($scope == 'journal') {
-        $search_str = preg_replace('/\|SCOPE\|/', '[Journal]', $search_str);
-      }
-      elseif ($scope == 'id') {
-        $search_str = preg_replace('/PMID:([^\s]*)/', '$1', $search_str);
-        $search_str = preg_replace('/\|SCOPE\|/', '[Uid]', $search_str);
-      }
-      else {
-        $search_str = preg_replace('/\|SCOPE\|/', '', $search_str);
+      // Initialize the remote query
+      if (!$this->pmidSearchInit($search_str, $num_to_retrieve, $api_key)) {
+        return NULL;
       }
     }
-    if ($days) {
-      // get the date of the day suggested
-      $past_timestamp = time() - ($days * 86400);
-      $past_date = getdate($past_timestamp);
-      $search_str .= " AND (\"" . sprintf("%04d/%02d/%02d", $past_date['year'], $past_date['mon'], $past_date['mday']) . "\"[Date - Create] : \"3000\"[Date - Create]))";
-    }
 
-    // now initialize the query
-    $results = $this->pmidSearchInit($search_str, $num_to_retrieve);
-    $total_records = $results['Count'];
-    $query_key = $results['QueryKey'];
-    $web_env = $results['WebEnv'];
-
-    // initialize the pager
+    // initialize the retrieval loop
+    $total_records = $this->webquery['Count'];
     $start = $page * $num_to_retrieve;
 
     // if we have no records then return an empty array
-    if ($total_records == 0) {
+    if (($total_records == 0) or ($start > $total_records)) {
       return [
         'total_records' => $total_records,
-        'search_str' => $search_str,
+        'skipped_records' => 0,
+        'search_str' => '',
         'pubs' => [],
       ];
     }
-    // now get the list of PMIDs from the initialized search
-    $pmids_txt = $this->pmidFetch($query_key, $web_env, 'uilist', 'text', $start, $num_to_retrieve);
 
-    // iterate through each PMID and get the publication record. This requires a new search and new fetch
+    // Get the list of PMIDs from the initialized search
+    $pmids_txt = $this->pmidFetch('uilist', 'text', $start, $num_to_retrieve, $api_key, []);
+    if (is_null($pmids_txt)) {
+      return NULL;
+    }
+
+    // Iterate through each PMID and download and parse its publication record.
     $pmids = explode("\n", trim($pmids_txt));
     $pubs = [];
+    $n_skipped = 0;
     foreach ($pmids as $pmid) {
-      // now retrieve the individual record
-      $pub_xml = $this->pmidFetch($query_key, $web_env, 'null', 'xml', 0, 1, ['id' => $pmid]);
-      $pub = $this->parse($pub_xml);
-      $pubs[] = $pub;
+      // Retrieve and parse each record.
+      $pub_xml = $this->pmidFetch('null', 'xml', 0, 1, $api_key, ['id' => $pmid]);
+      if (is_null($pub_xml)) {
+        // Skip over any individual publication that had a download error
+        $n_skipped++;
+        $this->logger->error('Skipping publication @acc due to download error.',
+          ['@acc' => $pmid]);
+      }
+      else {
+        $pub = $this->parse_xml($pub_xml);
+        $pubs[] = $pub;
+      }
     }
+
+    // Note that search_str is only returned for the first page
     return [
       'total_records' => $total_records,
-      'search_str' => $search_str,
+      'skipped_records' => $n_skipped,
+      'search_str' => $search_str ?? '',
       'pubs' => $pubs,
     ];
   }
 
   /**
-   * Initailizes a PubMed Search using a given search string
+   * Initailizes a PubMed Search using a given search string.
+   * Values are stored in $this->webquery, which is an array
+   * containing the Count, WebEnv and QueryKey as returned
+   * by PubMed's esearch utility.
    *
-   * @param $search_str
+   * @param string $search_str
    *   The PubMed Search string
-   * @param $retmax
+   * @param int $retmax
    *   The maximum number of records to return
+   * @param string $api_key
+   *   The optional NCBI API key
    *
-   * @return
-   *   An array containing the Count, WebEnv and QueryKey as return
-   *   by PubMed's esearch utility
+   * @return bool
+   *   TRUE for success, FALSE for error.
    *
    * @ingroup tripal_pub
    */
-  private function pmidSearchInit($search_str, $retmax) {
+  private function pmidSearchInit(string $search_str, int $retmax, string $api_key = ''): bool {
 
     // do a search for a single result so that we can establish a history, and get
     // the number of records. Once we have the number of records we can retrieve
@@ -276,9 +323,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       "&usehistory=y" .
       "&term=" . urlencode($search_str);
 
-    $api_key = \Drupal::state()->get('tripal_pub_importer_ncbi_api_key', NULL);
     $sleep_time = 333334;
-    if (!empty($api_key)) {
+    if ($api_key) {
       $query_url .= "&api_key=" . $api_key;
       $sleep_time = 100000;
     }
@@ -286,9 +332,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
     $rfh = fopen($query_url, "r");
     if (!$rfh) {
-      \Drupal::messenger()->addMessage('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
-      \Drupal::service('tripal.logger')->error("Could not perform Pubmed query. Cannot connect to Entrez.");
-      return 0;
+      $this->logger->error("Could not perform Pubmed query. Cannot connect to Entrez.");
+      return FALSE;
     }
 
     // retrieve the XML results
@@ -301,7 +346,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     $xml->xml($query_xml);
 
     // iterate though the child nodes of the <eSearchResult> tag and get the count, history and query_id
-    $result = [];
+    $this->webquery = [];
     while ($xml->read()) {
       $element = $xml->name;
 
@@ -315,49 +360,46 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         switch ($element) {
           case 'Count':
             $xml->read();
-            $result['Count'] = $xml->value;
+            $this->webquery['Count'] = $xml->value;
             break;
           case 'WebEnv':
             $xml->read();
-            $result['WebEnv'] = $xml->value;
+            $this->webquery['WebEnv'] = $xml->value;
             break;
           case 'QueryKey':
             $xml->read();
-            $result['QueryKey'] = $xml->value;
+            $this->webquery['QueryKey'] = $xml->value;
             break;
         }
       }
     }
-    return $result;
+    return TRUE;
   }
 
   /**
    * Retrieves from PubMed a set of publications from the
    * previously initiated query.
    *
-   * @param $query_key
-   *   The esearch QueryKey
-   * @param $web_env
-   *   The esearch WebEnv
-   * @param $rettype
+   * @param string $rettype
    *   The efetch return type
-   * @param $retmod
+   * @param string $retmod
    *   The efetch return mode
-   * @param $start
+   * @param int $start
    *   The start of the range to retrieve
-   * @param $limit
+   * @param int $limit
    *   The number of publications to retrieve
-   * @param $args
+   * @param string $api_key
+   *   The optional NCBI API key
+   * @param array $args
    *   Any additional arguments to add the efetch query URL
    *
-   * @return
-   *  An array containing the total_records in the dataset, the search string
-   *  and an array of the publications that were retrieved.
+   * @return string|NULL
+   *   XML as returned from NCBI. Returns NULL if a download error occurred.
    *
    * @ingroup tripal_pub
    */
-  private function pmidFetch($query_key, $web_env, $rettype = 'null',
-                                 $retmod = 'null', $start = 0, $limit = 10, $args = []) {
+  private function pmidFetch(string $rettype, string $retmod, int $start,
+                             int $limit, string $api_key, array $args): ?string {
 
     // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
     // the PMID's within the range specied.  The PMIDs will be returned as a text list
@@ -367,12 +409,11 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       "&retstart=$start" .
       "&retmax=$limit" .
       "&db=Pubmed" .
-      "&query_key=$query_key" .
-      "&WebEnv=$web_env";
+      "&query_key=" . $this->webquery['QueryKey'] .
+      "&WebEnv=" . $this->webquery['WebEnv'];
 
-    $api_key = \Drupal::state()->get('tripal_pub_importer_ncbi_api_key', NULL);
     $sleep_time = 333334;
-    if (!empty($api_key)) {
+    if ($api_key) {
       $fetch_url .= "&api_key=" . $api_key;
       $sleep_time = 100000;
     }
@@ -389,12 +430,11 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         $fetch_url .= "&$key=$value";
       }
     }
-    usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
+    usleep($sleep_time);  // 1/3 or 1/10 of a second delay, NCBI limits requests to 3 / second without API key
     $rfh = fopen($fetch_url, "r");
     if (!$rfh) {
-      \Drupal::messenger()->addMessage('ERROR: Could not perform PubMed query.', 'error');
-      \Drupal::service('tripal.logger')->error("Could not perform PubMed query: $fetch_url.");
-      return '';
+      $this->logger->error("Could not perform PubMed query: $fetch_url.");
+      return NULL;
     }
     $results = '';
     if ($rfh) {
@@ -427,7 +467,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    *
    * @ingroup tripal_pub
    */
-  public function parse(string $pub_xml): array {
+  public function parse_xml(string $pub_xml): array {
     $pub = [];
 
     if (!$pub_xml) {
@@ -450,52 +490,52 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
           case 'BookDocument':
             $this->pmidParseBookDocument($xml, $pub);
             break;
-          case 'ChemicalList':
+          // case 'ChemicalList':
             // TODO: handle this
-            break;
-          case 'CitationSubset':
+            // break;
+          // case 'CitationSubset':
             // TODO: not sure this is needed.
-            break;
-          case 'CommentsCorrections':
+            // break;
+          // case 'CommentsCorrections':
             // TODO: handle this
-            break;
-          case 'DeleteCitation':
+            // break;
+          // case 'DeleteCitation':
             // TODO: need to know how to handle this
-            break;
+            // break;
           case 'ERROR':
             $xml->read(); // get the value for this element
-            \Drupal::service('tripal.logger')->error("Error: " . $xml->value);
+            $this->logger->error('XML Internal Error: @err', ['@err' => $xml->value]);
             break;
-          case 'GeneralNote':
+          // case 'GeneralNote':
             // TODO: handle this
-            break;
-          case 'GeneSymbolList':
+            // break;
+          // case 'GeneSymbolList':
             // TODO: handle this
-            break;
-          case 'InvestigatorList':
+            // break;
+          // case 'InvestigatorList':
             // TODO: personal names of individuals who are not authors (can be used with collection)
-            break;
-          case 'KeywordList':
+            // break;
+          // case 'KeywordList':
             // TODO: handle this
-            break;
+            // break;
           case 'MedlineJournalInfo':
             $this->pmidParseMedlineJournalInfo($xml, $pub);
             break;
-          case 'MeshHeadingList':
+          // case 'MeshHeadingList':
             // TODO: Medical subject headings
-            break;
-          case 'NumberOfReferences':
+            // break;
+          // case 'NumberOfReferences':
             // TODO: not sure we should keep this as it changes frequently.
-            break;
-          case 'OtherAbstract':
+            // break;
+          // case 'OtherAbstract':
             // TODO: when the journal does not contain an abstract for the publication.
-            break;
-          case 'OtherID':
+            // break;
+          // case 'OtherID':
             // TODO: ID's from another NLM partner.
-            break;
-          case 'PersonalNameSubjectList':
+            // break;
+          // case 'PersonalNameSubjectList':
             // TODO: for works about an individual or with biographical note/obituary.
-            break;
+            // break;
           case 'PMID':
             // There are multiple places where a PMID is present in the XML and
             // since this code does not descend into every branch of the XML tree,
@@ -508,27 +548,28 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
               $pub['Publication Dbxref'] = $xml->value;
             }
             break;
-          case 'SupplMeshList':
+          // case 'SupplMeshList':
             // TODO: meant for protocol list
-            break;
+            // break;
           default:
             break;
         }
       }
     }
 
-    $pub['Citation'] = $this->pmid_generate_citation($pub);
+    if ($pub) {
+      $pub['Citation'] = $this->pmid_generate_citation($pub);
+    }
 
     return $pub;
   }
 
   /**
-   * Creates Citation
+   * Creates a citation for a publication.
    *
    * This function generates a citation for a publication. It requires
    * an array structure with keys being the terms in the Tripal
-   * publication ontology.  This function is intended to be used
-   * for any function that needs to generate a citation.
+   * publication ontology.
    *
    * @param $pub
    *   An array structure containing publication details where the keys
@@ -577,40 +618,42 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    */
   private function pmid_get_pub_type($pub): string {
     $pub_type = '';
-    $known_types = [
-      'Journal Article',
-      'Conference Proceedings',
-      'Review',
-      'Book',
-      'Letter',
-      'Book Chapter',
-    ];
+    if (array_key_exists('Publication Type', $pub)) {
+      $known_types = [
+        'Book',
+        'Book Chapter',
+        'Conference Proceedings',
+        'Journal Article',
+        'Letter',
+        'Review',
+      ];
 
-    // An article may have more than one publication type. For example,
-    // a publication type can be 'Journal Article' but also a 'Clinical Trial'.
-    // Therefore, we need to select the type that makes most sense for
-    // construction of the citation. Here we'll iterate through them all
-    // and select the one that matches best.
-    if (is_array($pub['Publication Type'])) {
-      foreach ($pub['Publication Type'] as $ptype) {
-        if (in_array($ptype, $known_types)) {
-          $pub_type = $ptype;
-          break;
+      // An article may have more than one publication type. For example,
+      // a publication type can be 'Journal Article' but also a 'Clinical Trial'.
+      // Therefore, we need to select the type that makes most sense for
+      // construction of the citation. Here we'll iterate through them all
+      // and select the one that matches best.
+      if (is_array($pub['Publication Type'])) {
+        foreach ($pub['Publication Type'] as $ptype) {
+          if (in_array($ptype, $known_types)) {
+            $pub_type = $ptype;
+            break;
+          }
+          elseif ($ptype == "Research Support, Non-U.S. Gov't") {
+            $pub_type = $ptype;
+            // We don't break because if the article is also a Journal Article
+            // we prefer that type.
+          }
         }
-        elseif ($ptype == "Research Support, Non-U.S. Gov't") {
-          $pub_type = $ptype;
-          // We don't break because if the article is also a Journal Article
-          // we prefer that type.
+        // If we don't have a recognized publication type, then just use the
+        // first one in the list.
+        if (!$pub_type) {
+          $pub_type = $pub['Publication Type'][0];
         }
       }
-      // If we don't have a recognized publication type, then just use the
-      // first one in the list.
-      if (!$pub_type) {
-        $pub_type = $pub['Publication Type'][0];
+      else {
+        $pub_type = $pub['Publication Type'];
       }
-    }
-    else {
-      $pub_type = $pub['Publication Type'];
     }
     return $pub_type;
   }
@@ -918,35 +961,12 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    * @ingroup tripal_pub
    */
   private function pmidParsePublicationType($xml, &$pub) {
-    $chado = \Drupal::service('tripal_chado.database');
     $xml->read();
     $value = $xml->value;
-
-    $identifiers = [
-      'name' => $value,
-      'cv_id' => [
-        'name' => 'tripal_pub',
-      ],
-    ];
-    $options = ['case_insensitive_columns' => ['name']];
-    $pub_cvterm = chado_get_cvterm($identifiers, $options, $chado->getSchemaName());
-    if (!$pub_cvterm) {
-      // see if this we can find the name using a synonym
-      $identifiers = [
-        'synonym' => [
-          'name' => $value,
-          'cv_name' => 'tripal_pub',
-        ],
-      ];
-      $pub_cvterm = chado_get_cvterm($identifiers, $options, $chado->getSchemaName());
-      if (!$pub_cvterm) {
-        \Drupal::service('tripal.logger')->error('Cannot find a valid vocabulary term for the publication type: "' .
-          $value . '"');
-      }
+    if ($value) {
+      $pub['Publication Type'][] = $value;
     }
-    else {
-      $pub['Publication Type'][] = $pub_cvterm->name;
-    }
+    return;
   }
 
   /**

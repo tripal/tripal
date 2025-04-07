@@ -92,10 +92,8 @@ class TripalEntityForm extends ContentEntityForm {
     $form = parent::form($form, $form_state);
     $entity = $this->entity;
 
-    // Display an error message if the title format is not valid.
-    if (!$this->validateTitleFormat()) {
-      // @todo I would like to disable the save button here, but it's not in the form yet.
-    }
+    // Display an error message if the title or URL format is not valid.
+    $this->validateTripalEntityTypeFormats();
 
     // -- Setup advanced sidebar.
     // Additional collapsed regions can be added to this group by creating
@@ -197,32 +195,70 @@ class TripalEntityForm extends ContentEntityForm {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+
+    // Ensure that the URL alias provided is valid.
+    // Drupals Drupal\Core\Render\Element\Url::validateUrl() does a fair amount
+    // of validation but we want to check some cases they missed.
+    // -- User enters '/' which is an invalid path.
+    if ($form_state->hasValue('path')) {
+      foreach ($form_state->getValue('path') as $path) {
+        if ($path['alias'] == '/') {
+          $form_state->setErrorByName('path', $this->t("The url alias entered is not valid."));
+        }
+      }
+    }
+
+    parent::validateForm($form, $form_state);
+  }
+
+  /**
    * Check the title format for this content type for validity.
    *
    * @return bool
    *   TRUE if title_format is valid, FALSE if not valid.
    */
-  private function validateTitleFormat() {
+  private function validateTripalEntityTypeFormats() {
+    $errors_found = FALSE;
+
+    // Retrieve the TripalEntityType (i.e. bundle).
     $bundle_id = $this->entity->getType();
-    $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle_id);
+    $bundle_entity = $this->entity->getBundle();
+
+    // First check the title format.
     $title_format = $bundle_entity->getTitleFormat();
-    $message = '';
+    $url = '/admin/structure/bio_data/manage/' . $bundle_id;
+    $title_message_suffix = ' We recommend you update the title format before creating any new content.'
+      . ' <a href=":url" target="_blank">Click here</a> to update the title format.';
     if (!preg_match('/\[.*\]/', $title_format)) {
-      $message = 'The Page Title Format for this content type does not contain any tokens.';
+      $message = $this->t('The Page Title Format for this content type does not contain any tokens. <strong>This will result in all titles for :bundle being the same!</strong>' . $title_message_suffix,
+        [':url' => $url,
+         ':bundle' => $bundle_entity->label()]
+      );
+      $this->messenger()->addError($message);
+      $errors_found = TRUE;
     }
     elseif ($title_format == 'Entity [TripalEntity__entity_id]') {
-      $message = 'The Page Title Format for this content type is the default generic format.';
+      $message = $this->t('The Page Title Format for this content type is the default generic format. <strong>This will result in very uninformative titles!</strong>' . $title_message_suffix);
+      $this->messenger()->addWarning($message);
     }
-    if ($message) {
-      $url = '/admin/structure/bio_data/manage/' . $bundle_id;
-      $message .= ' You must update the title format before creating any new content.'
-        . ' <a href=":url">Click here</a> to update the title format.';
-      \Drupal::messenger()->addError($this->t($message, [':url' => $url]));
-      return FALSE;
+
+    // Then check the URL Alias format.
+    $url_format = $bundle_entity->getURLFormat();
+    $url = '/admin/structure/bio_data/manage/' . $bundle_id;
+    $url_message_suffix = ' <a href=":url" target="_blank">Click here</a> to update the url format before creating any new content.';
+    if (!preg_match('/\[.*\]/', $url_format)) {
+      $message = $this->t(
+        'The URL Alias Format for this content type does not contain any tokens. <strong>This will result in no alias being added due to duplicate aliases.</strong>' . $url_message_suffix,
+        [':url' => $url]
+      );
+      $this->messenger()->addError($message);
+      $errors_found = TRUE;
     }
-    else {
-      return TRUE;
-    }
+
+    return $errors_found;
   }
 
   /**
@@ -234,33 +270,34 @@ class TripalEntityForm extends ContentEntityForm {
     $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle);
     $this->entity->setOwnerId($values['uid'][0]['target_id']);
 
-    $status = parent::save($form, $form_state);
-
-    // Entity ID is only available post-save, so we have waited
-    // to set the title and URL path alias until after saving.
-    // Unfortunately we have to re-load the entity as it is not
-    // fully updated post-save.
     $msg = '';
+    $exception_caught = FALSE;
     try {
-      $entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['id' => $this->entity->id()]);
-      $this->entity = $entities[$this->entity->id()];
-      $this->entity->setTokenValues();
-      $this->entity->setTitle();
-      // We need to save here to save the title, but the alias will be saved
-      // with setAlias(). We save now, because if we save after setAlias(),
-      // the saved alias reverts to the form value!
-      $this->entity->save();
-      $set_value = $this->entity->setAlias($values['path'][0]['alias']);
-      // The $set_value will be an empty string if the alias, after
-      // token replacement and HTML tag removal, now matches an existing
-      // alias. In this case, the alias will not be set to anything.
-      if (!$set_value) {
-        $status = 'duplicate_alias';
-      }
+      $status = parent::save($form, $form_state);
     }
     catch (\Exception $e) {
+      $exception_caught = TRUE;
       $status = 'exception';
       $msg = $e->getMessage();
+    }
+
+    // If errors are encountered in the postSave they are documented within
+    // the entity. Lets retrieve those and pass the information onto the user
+    // and to the Drupal watchdog through the logger.
+    $post_save_errors = $this->entity->getPostSaveErrors();
+    foreach ($post_save_errors as $details) {
+      $status = 'postSave errors';
+      $this->messenger()->addError($this->t($details['message'], $details['message_args']));
+      if ($details['exception']) {
+        $this->logger('TripalEntity')->error(
+          $this->t($details['message'] . ' Exception Caught: ' . $details['exception_message'], $details['message_args'])
+        );
+      }
+      else {
+        $this->logger('TripalEntity')->error(
+          $this->t($details['message'], $details['message_args'])
+        );
+      }
     }
 
     switch ($status) {
@@ -270,16 +307,21 @@ class TripalEntityForm extends ContentEntityForm {
         ]));
         break;
 
-      case 'duplicate_alias':
-        $this->messenger()->addError($this->t('Saved the %label, but the processed value for the URL alias already exists so an alias has not been set.', [
+      case SAVED_UPDATED:
+        $this->messenger()->addMessage($this->t('Updated the %label.', [
           '%label' => $bundle_entity->label(),
         ]));
         break;
 
       case 'exception':
-        $this->messenger()->addError($this->t('Error, title or alias may be incorrect: %msg', [
+        $this->messenger()->addError($this->t('Error, we were unable to save this page. %msg', [
           '%msg' => $msg,
         ]));
+        $form_state->setRebuild(FALSE);
+        break;
+
+      case 'postSave errors':
+        $this->messenger()->addError($this->t('Error, we were able to save the core content of this page but encountered an error during the final stage. We recommend you use the other errors reported to fix the root cause and then come back and edit this page. Contact your administrator for more details.'));
         break;
 
       default:
@@ -287,7 +329,10 @@ class TripalEntityForm extends ContentEntityForm {
           '%label' => $bundle_entity->label(),
         ]));
     }
-    $form_state->setRedirect('entity.tripal_entity.canonical', ['tripal_entity' => $this->entity->id()]);
+
+    if (!$exception_caught) {
+      $form_state->setRedirect('entity.tripal_entity.canonical', ['tripal_entity' => $this->entity->id()]);
+    }
   }
 
   /**

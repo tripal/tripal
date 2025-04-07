@@ -31,7 +31,7 @@ class TripalEntityPublishForm extends FormBase {
   function buildForm(array $form, FormStateInterface $form_state) {
     $bundles = [];
     $datastores = [];
-    $default_batch_size = 1000; // @todo make a variable so we can change the default
+    $publish_form_defaults = \Drupal::state()->get('tripal_publish_form_defaults', []);
 
     // Get a list of TripalSTorage plugins
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
@@ -108,16 +108,17 @@ class TripalEntityPublishForm extends FormBase {
     $form['republish'] = [
       '#type' => 'checkbox',
       '#title' => 'Republish Existing Content',
-      '#description' => 'Check this if the title format has been changed, or if'
-         . ' new fields have been added to the content type. The entity ID number'
-         . ' will not be changed.',
+      '#description' => 'Check this if the title format has been changed, if'
+         . ' new fields have been added to the content type, or if records have'
+         . ' been changed in Chado. The entity ID number will not be changed.',
+      '#default_value' => $publish_form_defaults['republish'] ?? 0,
     ];
 
     $form['batch_size'] = [
       '#type' => 'textfield',
       '#title' => 'Batch Size',
       '#description' => t('Divide the publish job into separate batches of the specified size to minimize memory usage'),
-      '#default_value' => $default_batch_size,
+      '#default_value' => $publish_form_defaults['batch_size'] ?? 1000,
     ];
 
     $form['submit_button'] = [
@@ -127,7 +128,7 @@ class TripalEntityPublishForm extends FormBase {
 
     // Add Tripal 3 Migration Settings to the form
     // in a closed-by-default fieldset
-    $form = $this->migration_form($form);
+    $form = $this->migration_form($form, $publish_form_defaults);
 
     return $form;
   }
@@ -137,15 +138,25 @@ class TripalEntityPublishForm extends FormBase {
    *
    * @param array $form
    *   The form array
+   * @param array $publish_form_defaults
+   *   Default values from the previous invocation
+   *
    * @return array
    *   The updated form array
    */
-  protected function migration_form(array $form): array {
+  protected function migration_form(array $form, array $publish_form_defaults): array {
     $allowed_types = ['txt', 'tsv'];
+
+    // If there was a migration file used on the previous invocation,
+    // have this section open, otherwise it is closed by default.
+    $open_state = FALSE;
+    if ($publish_form_defaults['migration_file'] ?? FALSE) {
+      $open_state = TRUE;
+    }
     $form['migration_options'] = [
       '#title' => t('Tripal 3 Migration Options'),
       '#type' => 'details',
-      '#open' => FALSE,
+      '#open' => $open_state,
     ];
 
     $url = 'https://tripaldoc.readthedocs.io/en/latest/upgrade_guide/site/migrating_chado.html';
@@ -187,6 +198,7 @@ class TripalEntityPublishForm extends FormBase {
       '#maxlength' => 5120,
       '#description' => t('If the migration data file is local to the Tripal server,'
                           . ' please provide the full path here.'),
+      '#default_value' => $publish_form_defaults['migration_file'] ?? '',
     ];
     $form['migration_options']['lenient_migration'] = [
       '#type' => 'checkbox',
@@ -194,6 +206,7 @@ class TripalEntityPublishForm extends FormBase {
       '#description' => t('This allows skipping over missing records in the migration data file.'
                           . ' This can happen if there were records on the Tripal 3 site that'
                           . ' had not been published.'),
+      '#default_value' => $publish_form_defaults['lenient_migration'] ?? 0,
     ];
 
     return $form;
@@ -325,6 +338,9 @@ class TripalEntityPublishForm extends FormBase {
     foreach ($publish_options as $key) {
       $options[$key] = $values[$key];
     }
+
+    // Store the current form settings as the default for the next time publish is run
+    \Drupal::state()->set('tripal_publish_form_defaults', $options);
 
     // Run the form submit for the storage backend.
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
