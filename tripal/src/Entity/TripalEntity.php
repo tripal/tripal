@@ -908,10 +908,22 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Load into the entity the properties that are to be stored in Drupal.
         $prop_values = [];
         $prop_types = [];
+        $store_values = [];
         foreach ($values[$tsid][$field_name][$delta] as $key => $prop_info) {
           $storage = $tripal_storages[$tsid];
           $prop_type = $storage->getPropertyType($field_name, $key);
           $prop_value = $prop_info['value'];
+
+          // Store the values of any properties with a "store" action.
+          // There will usually only be one, exceptions are dbxref, relationship.
+          $action = '';
+          if ($prop_type) {
+            $action = $prop_type->getStorageSettings()['action'] ?? '';
+          }
+          if ($action == 'store') {
+            $store_values[$key] = $prop_value->getValue();
+          }
+
           // Determine whether the property values are to be cached in the
           // Drupal Entity Field tables.
           if ($storage->isDrupalStoreByFieldNameKey($field_name, $key)) {
@@ -931,13 +943,19 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           if ($this->allNull($prop_values) && !($delta_remove[$field_name][$delta] ?? NULL)) {
             $delta_remove[$field_name][] = $delta;
           }
-          // When we choose "- Select -" in a widget, or remove the row with the
-          // "Remove" button, then we will see the entity_id here as -2 or -3.
+
+          // If there is a zero value in $store_values, this means that
+          // we choose "- Select -" in a widget, or removed the row with the
+          // "Remove" button.
           // Chado storage has already done its work, so now remove this
           // delta so that Drupal doesn't make a blank field table entry.
-          if (array_key_exists('entity_id', $prop_values)
-              && ($prop_values['entity_id']->getValue() <= -2)
-              && !($delta_remove[$field_name][$delta] ?? NULL)) {
+          $remove = FALSE;
+          foreach ($store_values as $value) {
+            if ($value === 0) {
+              $remove = TRUE;
+            }
+          }
+          if ($remove && !($delta_remove[$field_name][$delta] ?? NULL)) {
             $delta_remove[$field_name][] = $delta;
           }
         }
