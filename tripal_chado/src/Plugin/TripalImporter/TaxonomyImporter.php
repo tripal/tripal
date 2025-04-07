@@ -549,7 +549,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     else {
       $cvterm_records = $this->cvterm_buddy->getCvterm([
         'cv.name' => 'taxonomic_rank',
-        'cvterm.name' => preg_replace('/ /', '_', $infraspecific_type),
+        'cvterm.name' => $infraspecific_type,
       ]);
       if ($cvterm_records) {
         $cvterm_id = $cvterm_records[0]->getValue('cvterm.cvterm_id');
