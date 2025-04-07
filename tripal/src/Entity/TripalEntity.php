@@ -835,6 +835,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Perform the Insert or Update of the submitted values to the
     // underlying data store.
     foreach ($values as $tsid => $tsid_values) {
+
       // Do an insert
       if ($this->isDefaultRevision() and $this->isNewRevision()) {
         try {
@@ -927,14 +928,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
           // Keep track of elements that have no value.
           // A given delta should only be present once here.
-          if ($this->allNull($prop_values) and (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name]))) {
+          if ($this->allNull($prop_values) && !($delta_remove[$field_name][$delta] ?? NULL)) {
             $delta_remove[$field_name][] = $delta;
           }
-          // When we choose -Select- in a widget, or remove the row with the
+          // When we choose "- Select -" in a widget, or remove the row with the
           // "Remove" button, then we will see the entity_id here as -2 or -3.
           // Chado storage has already done its work, so now remove this
           // delta so that Drupal doesn't make a blank field table entry.
-          if (array_key_exists('entity_id', $prop_values) and $prop_values['entity_id']->getValue() <= -2) {
+          if (array_key_exists('entity_id', $prop_values)
+              && ($prop_values['entity_id']->getValue() <= -2)
+              && !($delta_remove[$field_name][$delta] ?? NULL)) {
             $delta_remove[$field_name][] = $delta;
           }
         }
