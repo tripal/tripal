@@ -285,11 +285,15 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
           $delta = array_search($linker_id, $retained_records);
           $check_key = ($initial_reverse == 1) ? 'subject_id' : 'object_id';
           if ($values[$delta][$check_key] != $initial_value['related_record_id']) {
-            // Move the new info from the form to the end and remove linker_id so it will be inserted as new
-            $values[$next_delta] = $values[$delta];
-            $values[$next_delta]['linker_id'] = 0;
-            $next_delta++;
-            // mark the current record for deletion in chado storage
+            // If there is still a record selected in the form, then copy the
+            // information to the end and remove linker_id so it will
+            // be inserted as new.
+            if ($values[$delta]['subject_id'] or $values[$delta]['object_id']) {
+              $values[$next_delta] = $values[$delta];
+              $values[$next_delta]['linker_id'] = 0;
+              $next_delta++;
+            }
+            // Mark the current record for deletion in chado storage
             $this->markForDeletion($values, $delta, $initial_reverse, $initial_value['related_record_id']);
           }
         }
