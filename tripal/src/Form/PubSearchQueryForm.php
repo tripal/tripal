@@ -837,6 +837,17 @@ class PubSearchQueryForm extends FormBase {
           }
         }
       }
+
+      // Call plugin-specific form validation
+      $plugin_id = $user_input['plugin_id'] ?? NULL;
+      if ($plugin_id) {
+        // Instantiate the selected plugin
+        // Pub Library Manager is found in tripal module:
+        // tripal/tripal/src/TripalPubLibrary/PluginManagers/TripalPubLibraryManager.php
+        $pub_library_manager = \Drupal::service('tripal.pub_library');
+        $plugin = $pub_library_manager->createInstance($plugin_id, []);
+        $plugin->formValidate($form, $form_state);
+      }
     }
   }
 

@@ -813,7 +813,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The array to check for null values. It is expected to be a flat array.
    *
    * @return bool
-   *   True IFF all elements are null; False if even one element is not null.
+   *   True if all elements are null; False if even one element is not null.
    */
   public static function allNull(array $array_to_check) : bool {
     foreach ($array_to_check as $value) {
@@ -908,11 +908,22 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Load into the entity the properties that are to be stored in Drupal.
         $prop_values = [];
         $prop_types = [];
+        $store_values = [];
         foreach ($values[$tsid][$field_name][$delta] as $key => $prop_info) {
           $storage = $tripal_storages[$tsid];
           $prop_type = $storage->getPropertyType($field_name, $key);
-
           $prop_value = $prop_info['value'];
+
+          // Store the values of any properties with a "store" action.
+          // There will usually only be one, exceptions are dbxref, relationship.
+          $action = '';
+          if ($prop_type) {
+            $action = $prop_type->getStorageSettings()['action'] ?? '';
+          }
+          if ($action == 'store') {
+            $store_values[$key] = $prop_value->getValue();
+          }
+
           // Determine whether the property values are to be cached in the
           // Drupal Entity Field tables.
           if ($storage->isDrupalStoreByFieldNameKey($field_name, $key)) {
@@ -929,7 +940,22 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
           // Keep track of elements that have no value.
           // A given delta should only be present once here.
-          if ($this->allNull($prop_values) and (!array_key_exists($field_name, $delta_remove) or !in_array($delta, $delta_remove[$field_name]))) {
+          if ($this->allNull($prop_values) && !($delta_remove[$field_name][$delta] ?? NULL)) {
+            $delta_remove[$field_name][] = $delta;
+          }
+
+          // If there is a zero value in $store_values, this means that
+          // we choose "- Select -" in a widget, or removed the row with the
+          // "Remove" button.
+          // Chado storage has already done its work, so now remove this
+          // delta so that Drupal doesn't make a blank field table entry.
+          $remove = FALSE;
+          foreach ($store_values as $value) {
+            if ($value === 0) {
+              $remove = TRUE;
+            }
+          }
+          if ($remove && !($delta_remove[$field_name][$delta] ?? NULL)) {
             $delta_remove[$field_name][] = $delta;
           }
         }
@@ -1183,6 +1209,5 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       }
     }
   }
-
 
 }
