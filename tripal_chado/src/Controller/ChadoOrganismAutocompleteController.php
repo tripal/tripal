@@ -85,10 +85,9 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
     $options['match_operator'] ??= 'CONTAINS';
     $options['match_limit'] ??= 10;
 
-    // Generate a database query
-    $query = NULL;
     // Generate a query only if $string is at least a character
     // long and result count is set to a value greater than 0.
+    $query = NULL;
     if (strlen($string) > 0 && $options['match_limit'] > 0) {
 
       $connection = \Drupal::service('tripal_chado.database');
@@ -126,7 +125,7 @@ class ChadoOrganismAutocompleteController extends ChadoGenericAutocompleteContro
    *
    * @param string $value
    *   A value from an autocomplete with the ID in parentheses at the end,
-   *   e.g. "Tripalus bogusii (123)"
+   *   e.g. "Tripalus bogusii (ignored) (123)"
    *
    * @return int
    *   Primary key ID number of the record, or 0 if an unparsable $value was

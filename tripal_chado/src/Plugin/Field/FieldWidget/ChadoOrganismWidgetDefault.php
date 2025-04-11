@@ -66,8 +66,7 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
 
     // Insert the select element, either a select or an autocomplete depending
     // on the number of options.
-    $options = [
-    ];
+    $options = [];
     $select_element = $this->organismSelectElement($organism_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
