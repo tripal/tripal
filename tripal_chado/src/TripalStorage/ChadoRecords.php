@@ -419,12 +419,14 @@ class ChadoRecords  {
    *   The alias for the column.
    * @param mixed $value
    *   The value to set for the condition
+   * @param bool $is_or_condition
+   *   True if part of an OR condition group
    *
    * @throws \Exception
    *   If the item has not yet been added for the base table, table alias and
    *   delta then an exception is thrown.
    */
-  public function setConditionValue(string $base_table, string $table_alias, int $delta, $column_alias, $value) {
+  public function setConditionValue(string $base_table, string $table_alias, int $delta, $column_alias, $value, $is_or_condition = FALSE) {
 
     if (!array_key_exists($base_table, $this->records)) {
       throw new \Exception(t('ChadoRecords::setConditionValue(): The base table has not been added to the ChadoRecords object: @base_table.',
@@ -438,11 +440,12 @@ class ChadoRecords  {
       throw new \Exception(t('ChadoRecords::setConditionValue(): delta, "@delta", for table_alias, "@alias", does not exist in the records array: @record',
           ['@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
     }
-    if (!array_key_exists($column_alias, $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['conditions'])) {
+    $condition_key = $is_or_condition?'or_conditions':'conditions';
+    if (!array_key_exists($column_alias, $this->records[$base_table]['tables'][$table_alias]['items'][$delta][$condition_key])) {
       throw new \Exception(t('ChadoRecords::setConditionValue(): column_alias, "@calias", for delta, "@delta", of table_alias, "@alias", does not exist in the records array: @record',
           ['@calias' => $column_alias, '@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
     }
-    $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['conditions'][$column_alias]['value'] = $value;
+    $this->records[$base_table]['tables'][$table_alias]['items'][$delta][$condition_key][$column_alias]['value'] = $value;
   }
 
   /**
@@ -706,8 +709,11 @@ class ChadoRecords  {
               $this->setColumnValue($base_table, $table_alias, $delta, $column_alias, $record_id);
 
               // If a condition exists for this id set it as well.
-              if (array_key_exists($column_alias, $record['conditions'])) {
+              if ($record['conditions'][$column_alias] ?? NULL) {
                 $this->setConditionValue($base_table, $table_alias, $delta, $column_alias, $record_id);
+              }
+              elseif ($record['or_conditions'][$column_alias] ?? NULL) {
+                $this->setConditionValue($base_table, $table_alias, $delta, $column_alias, $record_id, TRUE);
               }
             }
           }
@@ -1976,26 +1982,9 @@ class ChadoRecords  {
         }
       }
 
-      // Add select OR conditions if present
-      $or_condition_group = NULL;
-      if (array_key_exists('or_conditions', $record)) {
-        // Only use an OR condition group when there is more than one OR condition
-        if (count($record['or_conditions']) > 1) {
-          $or_condition_group = $select->orConditionGroup();
-        }
-        foreach ($record['or_conditions'] as $column_alias => $value) {
-          $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
-          if ($or_condition_group) {
-            $or_condition_group->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
-          }
-          else {
-            $select->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
-          }
-        }
-      }
-      if ($or_condition_group) {
-        $select->condition($or_condition_group);
-      }
+      // Add OR conditions to select, if more than one is present and has a value
+      $this->createOrConditionGroup($select, $record, $table_alias, $column_alias);
+
       // Add select AND conditions
       foreach ($record['conditions'] as $column_alias => $value) {
         if (!empty($value['value'])) {
@@ -2040,6 +2029,52 @@ class ChadoRecords  {
       }
     }
     return $items_found;
+  }
+
+  /**
+   * Checks if there is more than one OR condition with a value,
+   * and if so creates an or condition group.
+   *
+   * @param \Drupal\pgsql\Driver\Database\pgsql\Select &$select
+   *   An existing database select query
+   * @param array $record
+   *   The record being considered
+   * @param string $table_alias
+   *
+   * @return void
+   *   Changes are made to the select.
+   */
+  protected function createOrConditionGroup(\Drupal\pgsql\Driver\Database\pgsql\Select &$select, array $record, string $table_alias): void {
+    $or_condition_group = NULL;
+    if (array_key_exists('or_conditions', $record)) {
+      // Get a count of all the non empty values. Only create an
+      // or condition group if there is more than one OR condition.
+      $or_count = 0;
+      foreach ($record['or_conditions'] as $column_alias => $value) {
+        if (!empty($value['value'])) {
+          $or_count++;
+        }
+      }
+      // Only use an OR condition group when there is more than one OR condition
+      if ($or_count > 1) {
+        $or_condition_group = $select->orConditionGroup();
+      }
+      foreach ($record['or_conditions'] as $column_alias => $value) {
+        if (!empty($value['value'])) {
+          $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
+          if ($or_condition_group) {
+            $or_condition_group->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
+          }
+          else {
+            $select->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
+          }
+        }
+      }
+    }
+    if ($or_condition_group) {
+      $select->condition($or_condition_group);
+    }
+    return;
   }
 
   /**
