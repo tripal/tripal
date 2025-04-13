@@ -248,7 +248,39 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
         }
       }
     }
+    // Handle items that were removed with the "Remove" button.
+    $this->handleRemove($values, $form, $form_state, $field_name, $retained_records);
 
+    // Reset the weights
+    $i = 0;
+    foreach ($values as $delta => $value) {
+      $values[$delta]['_weight'] = $i;
+      $i++;
+    }
+    return $values;
+  }
+
+
+
+
+  /**
+   * Handle items removed using the "Remove" button
+   *
+   * @param array &$values
+   *   The submitted form values produced by the widget.
+   * @param array $form
+   *   The form array definition.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   * @param string $field_name
+   *   The machine name of this field.
+   * @param array $retained_records
+   *   Records in the form state at the time of massaging
+   * @return void
+   *   Changes are made to the $values array
+   */
+  protected function handleRemove(array &$values, array $form, FormStateInterface $form_state,
+      string $field_name, array $retained_records): void {
     // If there were any values in the initial values that are not
     // present in the current form state, then an existing record
     // was deleted by clicking the "Remove" button. Similarly to
@@ -292,15 +324,6 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
         }
       }
     }
-    $form_state->setStorage($storage_values);
-
-    // Reset the weights
-    $i = 0;
-    foreach ($values as $delta => $value) {
-      $values[$delta]['_weight'] = $i;
-      $i++;
-    }
-    return $values;
   }
 
   /**
