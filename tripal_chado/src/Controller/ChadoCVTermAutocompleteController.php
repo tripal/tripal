@@ -172,6 +172,7 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
         $term = $result->fetchField();
       }
     }
+
     return $term;
   }
 }
