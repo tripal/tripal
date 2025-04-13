@@ -387,7 +387,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // so that chado storage is informed to delete the linking record.
     $next_delta = $values ? array_key_last($values) + 1 : 0;
     $storage_values = $form_state->getStorage();
-    $initial_values = $storage_values['initial_values'][$field_name];
+    $initial_values = $storage_values['initial_values'][$field_name] ?? [];
     foreach ($initial_values as $initial_value) {
       // For initial values, the key is always 'linker_id', regardless of $linker_key value.
       $linker_id = $initial_value['linker_id'] ?? 0;
