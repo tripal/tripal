@@ -707,7 +707,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $storage_plugin_settings = $definition->getSettings()['storage_plugin_settings'];
 
       foreach ($deltas as $delta => $keys) {
-        $n_store_link = 0;
         foreach ($keys as $key => $info) {
 
           // Ensure we have a value to work with.
@@ -790,8 +789,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               $this->handleStorePkey($context, $prop_value);
               break;
             case 'store_link':
-              $n_store_link++;
-              $this->handleStoreLink($context, $prop_value, $n_store_link);
+              $this->handleStoreLink($context, $prop_value);
               break;
             case 'store':
               $this->handleStore($context, $prop_value);
