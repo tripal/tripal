@@ -398,8 +398,11 @@ class ChadoRecords  {
     $operation = array_key_exists('operation', $elements) ? $elements['operation'] : '=';
 
     // Add the condition.
-    $condition_key = $is_or_condition?'or_conditions':'conditions';
-    $this->records[$base_table]['tables'][$table_alias]['items'][$delta][$condition_key][$column_alias] = ['value' => $value, 'operation' => $operation];
+    $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['conditions'][$column_alias] = [
+      'value' => $value,
+      'operation' => $operation,
+      'condition_type' => $is_or_condition?'or':'and',
+    ];
   }
 
   /**
@@ -440,12 +443,11 @@ class ChadoRecords  {
       throw new \Exception(t('ChadoRecords::setConditionValue(): delta, "@delta", for table_alias, "@alias", does not exist in the records array: @record',
           ['@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
     }
-    $condition_key = $is_or_condition?'or_conditions':'conditions';
-    if (!array_key_exists($column_alias, $this->records[$base_table]['tables'][$table_alias]['items'][$delta][$condition_key])) {
+    if (!array_key_exists($column_alias, $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['conditions'])) {
       throw new \Exception(t('ChadoRecords::setConditionValue(): column_alias, "@calias", for delta, "@delta", of table_alias, "@alias", does not exist in the records array: @record',
           ['@calias' => $column_alias, '@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
     }
-    $this->records[$base_table]['tables'][$table_alias]['items'][$delta][$condition_key][$column_alias]['value'] = $value;
+    $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['conditions'][$column_alias]['value'] = $value;
   }
 
   /**
@@ -858,6 +860,9 @@ class ChadoRecords  {
     foreach ($tables as $table_alias) {
       $items = $this->getTableItems($base_table, $table_alias);
       foreach (array_keys($items[0]['conditions']) as $column_alias) {
+        $ret_val[$table_alias] = 1;
+      }
+      foreach (array_keys($items[0]['or_conditions'] ?? []) as $column_alias) {
         $ret_val[$table_alias] = 1;
       }
     }
@@ -1982,17 +1987,9 @@ class ChadoRecords  {
         }
       }
 
-      // Add OR conditions to select, if more than one is present and has a value
-      $this->createOrConditionGroup($select, $record, $table_alias, $column_alias);
-
-      // Add select AND conditions
-      foreach ($record['conditions'] as $column_alias => $value) {
-        if (!empty($value['value'])) {
-          $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
-          $select->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
-        }
-      }
-
+      // Add OR conditions to select, if more than one is present and has a value,
+      // otherwise all remaining conditions are effectively added as AND.
+      $this->addConditions($select, $record, $table_alias, $column_alias);
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
 
       // Execute the query.
@@ -2033,7 +2030,9 @@ class ChadoRecords  {
 
   /**
    * Checks if there is more than one OR condition with a value,
-   * and if so creates an or condition group.
+   * and if so creates an or condition group. If only one, and for
+   * remaining conditions with a value, added directly, i.e. as an
+   * AND condition.
    *
    * @param \Drupal\pgsql\Driver\Database\pgsql\Select &$select
    *   An existing database select query
@@ -2044,30 +2043,33 @@ class ChadoRecords  {
    * @return void
    *   Changes are made to the select.
    */
-  protected function createOrConditionGroup(\Drupal\pgsql\Driver\Database\pgsql\Select &$select, array $record, string $table_alias): void {
+  protected function addConditions(\Drupal\pgsql\Driver\Database\pgsql\Select &$select, array $record, string $table_alias): void {
     $or_condition_group = NULL;
-    if (array_key_exists('or_conditions', $record)) {
-      // Get a count of all the non empty values. Only create an
-      // or condition group if there is more than one OR condition.
-      $or_count = 0;
-      foreach ($record['or_conditions'] as $column_alias => $value) {
+
+    // Get a count of all the non empty OR condition values. Only create an
+    // OR condition group if there is more than one OR condition with a value.
+    // If just one, it is handled the same as other conditions.
+    $or_count = 0;
+    foreach ($record['conditions'] as $column_alias => $value) {
+      if ($value['condition_type'] == 'or') {
         if (!empty($value['value'])) {
           $or_count++;
         }
       }
-      // Only use an OR condition group when there is more than one OR condition
-      if ($or_count > 1) {
-        $or_condition_group = $select->orConditionGroup();
-      }
-      foreach ($record['or_conditions'] as $column_alias => $value) {
-        if (!empty($value['value'])) {
-          $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
-          if ($or_condition_group) {
-            $or_condition_group->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
-          }
-          else {
-            $select->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
-          }
+    }
+    if ($or_count > 1) {
+      $or_condition_group = $select->orConditionGroup();
+    }
+
+    // Now add all of the WHERE conditions.
+    foreach ($record['conditions'] as $column_alias => $value) {
+      if (!empty($value['value'])) {
+        $chado_column = $record['column_aliases'][$column_alias]['chado_column'];
+        if ($or_condition_group and ($value['condition_type'] == 'or')) {
+          $or_condition_group->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
+        }
+        else {
+          $select->condition($table_alias . '.' . $chado_column, $value['value'], $value['operation']);
         }
       }
     }
