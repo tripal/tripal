@@ -429,7 +429,7 @@ class ChadoRecords  {
    *   If the item has not yet been added for the base table, table alias and
    *   delta then an exception is thrown.
    */
-  public function setConditionValue(string $base_table, string $table_alias, int $delta, $column_alias, $value, $is_or_condition = FALSE) {
+  public function setConditionValue(string $base_table, string $table_alias, int $delta, string $column_alias, $value, $is_or_condition = FALSE) {
 
     if (!array_key_exists($base_table, $this->records)) {
       throw new \Exception(t('ChadoRecords::setConditionValue(): The base table has not been added to the ChadoRecords object: @base_table.',
