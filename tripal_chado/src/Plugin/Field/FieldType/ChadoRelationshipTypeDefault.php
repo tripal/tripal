@@ -258,9 +258,10 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
       $chado = \Drupal::service('tripal_chado.database');
       // We need to know which column in the base table should be used for an
       // autocomplete. When this field is added through UI this can be selected.
-      // @todo maybe check title format, for now hardcoded
-      $base_column = 'name';
-      if ($base_column and $chado->schema()->fieldExists($base_table, $base_column)) {
+      // We will get this from the title format if possible, otherwise use 'name'.
+      $base_column = self::getBaseColumnFromTitleFormat($chado, $bundle, $base_table);
+
+      if ($base_column) {
         // Make sure the relationship table exists in Chado.
         $relationship_table = $base_table . '_relationship';
         if ($chado->schema()->tableExists($relationship_table)) {
@@ -314,6 +315,42 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
       }
     }
     return $field_list;
+  }
+
+  /**
+   * Finds the name of the base table column to be used for discovery.
+   *
+   * @param \Drupal\tripal_chado\Database\ChadoConnection $chado
+   *   Connection to the chado database
+   * @param \Drupal\tripal\Entity\TripalEntityType $bundle
+   *   The bundle object
+   * @param string $base_table
+   *   The name of the chado base table
+   * @return string
+   *   The name of a column in the base table, or an empty string.
+   */
+  protected static function getBaseColumnFromTitleFormat(\Drupal\tripal_chado\Database\ChadoConnection $chado,
+      \Drupal\tripal\Entity\TripalEntityType $bundle, string $base_table): string {
+    $title_format = $bundle->getTitleFormat();
+    $bundle_id = $bundle->id();
+
+    // We default to 'name', but if the title format has just a single token
+    // from the bundle, then use that. For example, for bundle 'pub' the token
+    // is '[pub_title]' so we will use the 'title' column.
+    // The notable case of failure for this is for organism.
+    $base_column = 'name';
+    if (preg_match_all('/\[' . $bundle_id . '_([^\[\]]+)\]/', $title_format, $matches)) {
+      // Use the captured pattern
+      if (count($matches[1]) == 1) {
+        $base_column = $matches[1][0];
+      }
+    }
+
+    // Validation that the column exists
+    if (!$base_column or !$chado->schema()->fieldExists($base_table, $base_column)) {
+      $base_column = '';
+    }
+    return $base_column;
   }
 
   /**
