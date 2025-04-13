@@ -104,7 +104,7 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
       $connection = \Drupal::service('tripal_chado.database');
       // If we have (db:accession) then use that.
       // The actual term name is ignored, because it can also be a synonym.
-      if (preg_match('/\((\S+):(\S+)\)/', $term, $matches)) {
+      if (preg_match('/\(([^:()]+):([^()]+)\)/', $term, $matches)) {
         $db = $matches[1];
         $accession = $matches[2];
         $select = $connection->select('1:cvterm', 'ct');
@@ -172,7 +172,6 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
         $term = $result->fetchField();
       }
     }
-
     return $term;
   }
 }
