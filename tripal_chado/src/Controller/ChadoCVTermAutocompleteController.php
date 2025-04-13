@@ -101,36 +101,38 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
     $id = 0;
 
     if (strlen($term) > 0) {
-      $sql = "
-        SELECT ct.cvterm_id FROM {1:cvterm} AS ct
-          LEFT JOIN {1:dbxref} AS dx USING(dbxref_id)
-          LEFT JOIN {1:db} USING(db_id)
-        WHERE CONCAT(ct.name, ' (', db.name, ':', dx.accession, ')') = :term
-      ";
-
       $connection = \Drupal::service('tripal_chado.database');
-      $result = $connection
-        ->query($sql, [':term' => $term])
-        ->fetchAll();
+      // If we have (db:accession) then use that.
+      // The actual term name is ignored, because it can also be a synonym.
+      if (preg_match('/\((\S+):(\S+)\)/', $term, $matches)) {
+        $db = $matches[1];
+        $accession = $matches[2];
+        $select = $connection->select('1:cvterm', 'ct');
+        $select->join('1:dbxref', 'dx', '"ct".dbxref_id = "dx".dbxref_id');
+        $select->join('1:db', 'db', '"dx".db_id = "db".db_id');
+        $select->addField('ct', 'cvterm_id', 'cvterm_id');
+        $select->condition('db.name', $db, '=');
+        $select->condition('dx.accession', $accession, '=');
+        $result = $select->execute()->fetchAll();
 
-      if(count($result) == 1) {
-        $id = $result[0]->cvterm_id;
+        if(count($result) == 1) {
+          $id = $result[0]->cvterm_id;
+        }
       }
 
       // If no match, and if a disambiguating CV was specified,
       // try again using only that CV. This happens if the user
       // types in the term and doesn't let the autocomplete
       // append the (DB:accession).
-      else if ($cv_name) {
-        $sql = "
-          SELECT ct.cvterm_id FROM {1:cvterm} AS ct
-            LEFT JOIN {1:cv} AS cv USING(cv_id)
-          WHERE ct.name = :term AND cv.name = :cvname
-        ";
-
-        $result = $connection
-          ->query($sql, [':term' => $term, ':cvname' => $cv_name])
-          ->fetchAll();
+      // Term synonyms are not supported here.
+      elseif ($cv_name) {
+        $select = $connection->select('1:cvterm', 'ct');
+        $select->join('1:cv', 'cv', '"ct".cv_id = "cv".cv_id');
+        $select->addField('ct', 'cvterm_id', 'cvterm_id');
+        $select->condition('cv.name', $cv_name, '=');
+        $select->condition('ct.name', $term, '=');
+        $select->execute();
+        $result = $select->execute()->fetchAll();
 
         if(count($result) == 1) {
           $id = $result[0]->cvterm_id;
