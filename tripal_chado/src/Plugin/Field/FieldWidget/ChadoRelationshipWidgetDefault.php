@@ -106,11 +106,6 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     $element['term'] = [
       '#type' => 'textfield',
       '#required' => FALSE,
-// Removing this for a more compact form
-//      '#description' => $this->t('Enter a vocabulary term name. A set of matching'
-//          . ' candidates will be provided to choose from. You may find the multiple matching terms'
-//          . ' from different vocabularies. The full accession for each term is provided'
-//          . ' to help choose. Only the top 10 best matches are shown at a time.'),
       '#default_value' => $term_autocomplete_default,
       '#disabled' => FALSE,
       '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
@@ -122,8 +117,6 @@ class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
     $element['related_record'] = [
       '#type' => 'textfield',
       '#required' => FALSE,
-// Removing this for a more compact form
-//      '#description' => $this->t('Select the record that is related to the current record.'),
       '#default_value' => $related_default,
       '#disabled' => FALSE,
       '#autocomplete_route_name' => 'tripal_chado.generic_autocomplete',
