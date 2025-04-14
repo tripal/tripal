@@ -4,6 +4,7 @@
  * Contains functions used to install/uninstall tripal_chado.
  */
 
+use \Drupal\Core\Config\FileStorage;
 use \Drupal\Core\Database\Database;
 use \Drupal\Core\Utility\UpdateException;
 use \Drupal\Component\Serialization\Yaml;
@@ -470,11 +471,20 @@ function tripal_chado_field_reload(array $upgradable_types, array $upgradable_pr
  *   One or more fields to add.
  */
 function addFieldFromYaml(string $yaml_path, array $field_names) {
+  /** @var \Drupal\tripal\Services\TripalFieldCollection $fields_service **/
   $fields_service = \Drupal::service('tripal.tripalfield_collection');
+  /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+  $entity_type_manager = \Drupal::entityTypeManager();
   $fields = Yaml::decode(file_get_contents($yaml_path));
   foreach ($fields['fields'] as $field) {
     if (in_array($field['name'], $field_names)) {
-      $fields_service->addBundleField($field);
+      // Only add the field if its bundle exists
+      $bundle = $field['content_type'];
+      /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+      $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+      if ($entity_type) {
+        $fields_service->addBundleField($field);
+      }
     }
   }
 }
@@ -929,4 +939,33 @@ function tripal_chado_update_10413() {
     'primary key' => ['migration_id'],
   ];
   $schema->createTable($table_name, $table_schema);
+}
+
+/**
+ * Adds the chado relationship field, PR 2128
+ */
+function tripal_chado_update_10414() {
+  try {
+    $messenger = \Drupal::messenger();
+    // Update collection configurations so that any content type 
+    // collections not yet imported will include the relationship fields
+    $collections = ['genomic'];
+    /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+    $active_storage = \Drupal::service('config.storage');
+    $config_dir = __DIR__ . '/config/install';
+    foreach ($collections as $collection) {
+      $name = 'tripal.tripalfield_collection.' . $collection . '_chado';
+      $source = new FileStorage($config_dir);
+      $active_storage->write($name, $source->read($name));
+    }
+
+    // For any collections already imported, including general,
+    // add all of the new relationship fields.
+    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.genomic_chado.yml', ['gene_relationship']);
+    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.genetic_chado.yml', ['marker_relationship']);
+
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not perform update: ' . $e->getMessage());
+  }
 }
