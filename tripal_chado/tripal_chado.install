@@ -946,10 +946,9 @@ function tripal_chado_update_10413() {
  */
 function tripal_chado_update_10414() {
   try {
-    $messenger = \Drupal::messenger();
-    // Update collection configurations so that any content type 
-    // collections not yet imported will include the relationship fields
-    $collections = ['genomic'];
+    // Update collection configurations so that any content type
+    // collections not yet imported will include the new relationship fields
+    $collections = ['expression', 'general', 'genetic', 'genomic', 'germplasm'];
     /** @var \Drupal\Core\Config\StorageInterface $active_storage */
     $active_storage = \Drupal::service('config.storage');
     $config_dir = __DIR__ . '/config/install';
@@ -959,10 +958,17 @@ function tripal_chado_update_10414() {
       $active_storage->write($name, $source->read($name));
     }
 
-    // For any collections already imported, including general,
-    // add all of the new relationship fields.
-    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.genomic_chado.yml', ['gene_relationship']);
-    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.genetic_chado.yml', ['marker_relationship']);
+    // For any collections already imported, add all of the new relationship fields.
+    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.expression_chado.yml',
+      ['biosample_relationship']);
+    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.general_chado.yml',
+      ['analysis_relationship', 'contact_relationship', 'project_relationship', 'pub_relationship']);
+    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.genetic_chado.yml',
+      ['genetic_marker_relationship', 'phenotypic_marker_relationship', 'qtl_relationship', 'sequence_variant_relationship']);
+    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.genomic_chado.yml',
+      ['gene_relationship', 'genome_annotation_relationship', 'genome_assembly_relationship', 'genome_project_relationship', 'mrna_relationship']);
+    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.germplasm_chado.yml',
+      ['breeding_cross_relationship', 'germplasm_relationship', 'germplasm_variety_relationship', 'ril_relationship']);
 
   }
   catch (\Exception $e) {
