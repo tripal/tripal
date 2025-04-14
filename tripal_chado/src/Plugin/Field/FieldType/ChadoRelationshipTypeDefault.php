@@ -45,7 +45,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $storage_settings = parent::defaultStorageSettings();
-    $storage_settings['base_column'] = '';
+    $storage_settings['storage_plugin_settings']['base_column'] = '';
     $storage_settings['storage_plugin_settings']['linker_table'] = '';
     $storage_settings['storage_plugin_settings']['subject_column'] = '';
     $storage_settings['storage_plugin_settings']['object_column'] = '';
