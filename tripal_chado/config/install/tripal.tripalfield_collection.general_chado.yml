@@ -487,6 +487,35 @@ fields:
               settings:
                 filter_format: plain_text
 
+    -   name: analysis_relationship
+        content_type: analysis
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Other analyses with relationships to this record"
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: name
+                linker_table: analysis_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
+
     -   name: analysis_pub
         content_type: analysis
         label: Publication
@@ -708,6 +737,35 @@ fields:
             default:
               region: content
               weight: 30
+
+    -   name: project_relationship
+        content_type: project
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Other projects with relationships to this record"
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: name
+                linker_table: project_relationship
+                subject_column: subject_project_id
+                object_column: object_project_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: project_dbxref
         content_type: project
@@ -963,6 +1021,35 @@ fields:
             default:
               region: content
               weight: 20
+
+    -   name: contact_relationship
+        content_type: contact
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Other contacts with relationships to this record"
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                base_column: name
+                linker_table: contact_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: contact_project
         content_type: contact
@@ -1968,6 +2055,35 @@ fields:
               weight: 34
               settings:
                 filter_format: plain_text
+
+    -   name: pub_relationship
+        content_type: pub
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Other publications with relationships to this record"
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                base_column: uniquename
+                linker_table: pub_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 67
+          form:
+            default:
+              region: content
+              weight: 67
 
     -   name: pub_dbxref
         content_type: pub
