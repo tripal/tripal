@@ -70,6 +70,9 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
       if (!preg_match('/remove_button/', $triggering_element)) {
         $storage['initial_values'][$field_name][$delta]['db_id'] = $db_id;
         $storage['initial_values'][$field_name][$delta]['db_name'] = $db_name;
+        if (!array_key_exists('linker_id', $storage['initial_values'][$field_name][$delta])) {
+          $storage['initial_values'][$field_name][$delta]['linker_id'] = $linker_id;
+        }
         $form_state->setStorage($storage);
       }
     }
@@ -150,9 +153,7 @@ class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
       }
     }
 
-    // Save some initial values to allow later handling of the "Remove" button
-    $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
-
+    // n.b. this field does not use saveInitialValues() because they were saved earlier
     return $element;
   }
 
