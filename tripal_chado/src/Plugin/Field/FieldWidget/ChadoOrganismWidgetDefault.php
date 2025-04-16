@@ -138,11 +138,11 @@ class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
       $default_value = '';
       if ($default_id) {
         // We can reuse the existing query since only one change is needed
-        $query->condition($pkey_column, $default_id, '=');
+        $query->condition('organism_id', $default_id, '=');
         $result = $query->execute()->fetchObject();
         if ($result) {
           // Strip HTML tags if present, e.g. in Pub title
-          $default_value = strip_tags($result->value ?? '');
+          $default_value = strip_tags($result->organism ?? '');
           // Append the chado pkey id value
           $default_value .= ' (' . $default_id . ')';
         }
