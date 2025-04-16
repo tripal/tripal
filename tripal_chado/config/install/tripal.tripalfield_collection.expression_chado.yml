@@ -117,7 +117,7 @@ fields:
         content_type: biosample
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other analyses with relationships to this record"
+        description: "Samples related to this sample. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current sample is the subject; chose Reverse if the object is the current sample."
         cardinality: -1
         required: false
         storage_settings:

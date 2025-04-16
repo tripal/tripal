@@ -171,7 +171,7 @@ fields:
         content_type: germplasm
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other stocks with relationships to this record"
+        description: "Germplasm related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current germplasm is the subject; chose Reverse if the object is the current germplasm."
         cardinality: -1
         required: false
         storage_settings:
@@ -443,7 +443,7 @@ fields:
         content_type: breeding_cross
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other stocks with relationships to this record"
+        description: "Germplasm related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current germplasm is the subject; chose Reverse if the object is the current germplasm."
         cardinality: -1
         required: false
         storage_settings:
@@ -715,7 +715,7 @@ fields:
         content_type: germplasm_variety
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other stocks with relationships to this record"
+        description: "Germplasm related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current germplasm is the subject; chose Reverse if the object is the current germplasm."
         cardinality: -1
         required: false
         storage_settings:
@@ -987,7 +987,7 @@ fields:
         content_type: ril
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other stocks with relationships to this record"
+        description: "Germplasm related to this RIL. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current RIL is the subject; chose Reverse if the object is the current RIL."
         cardinality: -1
         required: false
         storage_settings:

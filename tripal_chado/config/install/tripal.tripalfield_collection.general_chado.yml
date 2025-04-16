@@ -491,7 +491,7 @@ fields:
         content_type: analysis
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other analyses with relationships to this record"
+        description: "Analyses related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current analysis is the subject; chose Reverse if the object is the current analysis."
         cardinality: -1
         required: false
         storage_settings:
@@ -742,7 +742,7 @@ fields:
         content_type: project
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other projects with relationships to this record"
+        description: "Projects related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current project is the subject; chose Reverse if the object is the current project."
         cardinality: -1
         required: false
         storage_settings:
@@ -1026,7 +1026,7 @@ fields:
         content_type: contact
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other contacts with relationships to this record"
+        description: "Contacts related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current contact is the subject; chose Reverse if the object is the current contact."
         cardinality: -1
         required: false
         storage_settings:
@@ -2060,7 +2060,7 @@ fields:
         content_type: pub
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other publications with relationships to this record"
+        description: "Publications related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current publication is the subject; chose Reverse if the object is the current publication."
         cardinality: -1
         required: false
         storage_settings:

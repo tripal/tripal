@@ -196,7 +196,7 @@ fields:
         content_type: gene
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other features with relationships to this record"
+        description: "Sequence features related to this gene. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current gene is the subject; chose Reverse if the object is the current gene."
         cardinality: -1
         required: false
         storage_settings:
@@ -657,7 +657,7 @@ fields:
         content_type: mrna
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other features with relationships to this record"
+        description: "Sequence features related to this mRNA. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current mRNA is the subject; chose Reverse if the object is the current mRNA."
         cardinality: -1
         required: false
         storage_settings:
@@ -1692,7 +1692,7 @@ fields:
         content_type: genome_assembly
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other analyses with relationships to this record"
+        description: "Analyses related to this genome assembly. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genome assembly is the subject; chose Reverse if the object is the current genome assembly."
         cardinality: -1
         required: false
         storage_settings:
@@ -2021,7 +2021,7 @@ fields:
         content_type: genome_annotation
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other analyses with relationships to this record"
+        description: "Analyses related to this genome annotation. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genome annotation is the subject; chose Reverse if the object is the current genome annotation."
         cardinality: -1
         required: false
         storage_settings:
@@ -2214,7 +2214,7 @@ fields:
         content_type: genome_project
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other projects with relationships to this record"
+        description: "Projects related to this genome project. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genome project is the subject; chose Reverse if the object is the current genome project."
         cardinality: -1
         required: false
         storage_settings:

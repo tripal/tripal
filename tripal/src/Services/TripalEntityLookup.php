@@ -231,10 +231,10 @@ class TripalEntityLookup {
   }
 
   /**
-   * Given an entity ID value, return the human-readable bundle label.
+   * Retrieve the human-readable type (i.e. TripalEntityType label) for a given TripalEntity object.
    *
    * @param int $entity_id
-   *   The entity ID value. This might be -1 for an unpublished entity.
+   *   The TripalEntity ID value. This might be -1 for an unpublished entity.
    * @param string $entity_type
    *   The type of entity, only 'tripal_entity' is supported.
    * @return string

@@ -388,7 +388,7 @@ fields:
         content_type: QTL
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other features with relationships to this record"
+        description: "Sequence features related to this QTL. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current QTL is the subject; chose Reverse if the object is the current QTL."
         cardinality: -1
         required: false
         storage_settings:
@@ -792,7 +792,7 @@ fields:
         content_type: sequence_variant
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other features with relationships to this record"
+        description: "Sequence features related to this variant. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current variant is the subject; chose Reverse if the object is the current variant."
         cardinality: -1
         required: false
         storage_settings:
@@ -1196,7 +1196,7 @@ fields:
         content_type: genetic_marker
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other features with relationships to this record"
+        description: "Sequence features related to this genetic marker. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genetic marker is the subject; chose Reverse if the object is the current genetic marker."
         cardinality: -1
         required: false
         storage_settings:
@@ -1600,7 +1600,7 @@ fields:
         content_type: phenotypic_marker
         label: Relationship
         type: chado_relationship_type_default
-        description: "Other features with relationships to this record"
+        description: "Sequence features related to this heritable phenotypic marker. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current heritable phenotypic marker is the subject; chose Reverse if the object is the current heritable phenotypic marker."
         cardinality: -1
         required: false
         storage_settings:
