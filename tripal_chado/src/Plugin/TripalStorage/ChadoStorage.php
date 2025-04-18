@@ -270,15 +270,31 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * @{inheritdoc}
    */
-  public function loadValues(&$values) : bool {
+  public function loadValues(&$values, bool $ignore_cached_fields = TRUE) : bool {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Load');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::loadValues');
 
+    // We can actually skip this entire process if all the fields are 100% cached.
+    // The cached_fields indicates for each field (key) if it is fully cached (TRUE)
+    // or not (FALSE). Thus if no fields in this variable are false then
+    // all the fields are cached!
+    if ($ignore_cached_fields AND (array_search(FALSE, $this->cached_fields, TRUE) === FALSE)) {
+      return TRUE;
+    }
+
     // Build the ChadoRecords object.
     $this->records = new ChadoRecords($this->field_debugger, $this->logger, $this->connection);
-    $this->buildChadoRecords($values);
+
+    if ($ignore_cached_fields) {
+      // Parameters indicate this is not a find action and that we should not add
+      // any properties for fields which are 100% cached in drupal to ChadoRecords.
+      $this->buildChadoRecords($values, TRUE, TRUE);
+    }
+    else {
+      $this->buildChadoRecords($values, TRUE);
+    }
 
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -333,7 +349,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $this->records->deleteRecords($base_table, $table);
         }
 
-        // Second, delete the record in the base talbe.
+        // Second, delete the record in the base table.
         $this->records->deleteRecords($base_table, $base_table);
       }
 
@@ -661,13 +677,25 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   will be set in the StoragePropertyValue object.
    * @param bool $is_find
    *   Set to TRUE if we are building the record array for finding records.
+   * @param bool $ignore_cached
+   *   If this is set to TRUE then any values that are part of a field where
+   *   all properties are cached in Drupal are not added to ChadoRecords.
    */
-  protected function buildChadoRecords($values, bool $is_find = FALSE) {
+  protected function buildChadoRecords($values, bool $is_find = FALSE, bool $ignore_cached = FALSE) {
 
     $this->field_debugger->reportValues($values, 'The values submitted to ChadoStorage');
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Check if this field is 100% cached in drupal.
+      $field_cached = (array_key_exists($field_name, $this->cached_fields)) ? $this->cached_fields[$field_name] : FALSE;
+
+      // If we are supposed to ignore cached fields and the current field is
+      // 100% cached, then we can skip this field.
+      if ($ignore_cached AND $field_cached) {
+        continue;
+      }
 
       // Retrieve the field configuration.
       $definition = $this->getFieldDefinition($field_name);
@@ -1164,7 +1192,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       return $ret_array;
     }
 
-    // If the path is not a join but has a period then this specifices
+    // If the path is not a join but has a period then this specifies
     // the table and the column with the value.
     else if (preg_match('/\./', $curr_path)) {
 
@@ -1176,7 +1204,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       }
 
       // If the base table is not the same as the root table then
-      // we should add the field name to the colun alias. Otherwise
+      // we should add the field name to the column alias. Otherwise
       // we may have conflicts if mutiple fields use the same alias.
       $value_alias = $as ? $as : $value_column;
       if ($base_table != $root_table) {

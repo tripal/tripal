@@ -812,6 +812,74 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
+   * Discover fields that use a column in the base table.
+   *
+   * This is used by ChadoFieldItemBase::discover().
+   *
+   * @param \Drupal\tripal\Entity\TripalEntityType $bundle
+   *   The entity type object for which new field instances should be found.
+   * @param string $field_id
+   *   The id of the field.
+   * @param array $field_types
+   *   An array where each item defines a field type that is attached to this
+   *   bundle. Each item is itself an array of the annotation defined at the top
+   *   of that particular field type class.
+   * @param array $field_instances
+   *   An array of FieldConfig objects where each object defines a field attached
+   *   to this content type.
+   * @param array $options
+   *   Specific options from the field's discover() function. Required keys:
+   *   - id: the field id, e.g. 'chado_organism_type_default'
+   *   - name: the unique name for a specific field instance. The default is
+   *     generated using generateFieldName().
+   *   - base_table: the base table of the entity
+   *   - base_column: the column containing the field's value
+   *   - label: the field's label, e.g. 'Sequence'
+   *   - termIdSpace: The field term's DB
+   *   - termAccession: The field term's accession
+   *   - description: A text description for the discovered field
+   *
+   * @return array
+   *   An associative array of fields to suggest that follows the same structure
+   *   as expected by tripal.tripalfield_collection.* configuration.
+   */
+  protected static function discoverBase(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options): array {
+
+    $field_list = [];
+
+    $table_def = $options['chado']->schema()->getTableDef($options['base_table'], ['format' => 'Drupal']);
+    // Skip if by programming error the column was not specified, or it does not exist in the table
+    if (array_key_exists($options['base_column'], $table_def['fields'])) {
+
+      // Check for existing fields of this type.
+      if (array_key_exists($options['id'], $field_types)) {
+        // If yes, then add it to the field list.
+        foreach ($field_instances as $instance) {
+          if ($instance->getType() == $options['id']) {
+            $field_list[] = TripalFieldCollection::getFieldArrayFromFieldInstance($instance);
+          }
+        }
+      }
+
+      // Use the column not null and default value status to set the field's required status
+      if (!$field_list) {
+        $required = $table_def['fields'][$options['base_column']]['not null'];
+        if ($table_def['fields'][$options['base_column']]['default'] ?? FALSE) {
+          $required = FALSE;
+        }
+        $options['required'] = $required;
+        $options['cardinality'] = 1;  // Direct fields are always single cardinality
+        // This option is used to generate the field machine name
+        $options['table'] = $options['base_column'];
+        $field_list[] = self::createFieldEntry($bundle, $options);
+      }
+    }
+
+    return $field_list;
+  }
+
+  /**
    * Discover fields that use a foreign key in the specified base table.
    *
    * This is used by ChadoFieldItemBase::discover().
@@ -1004,7 +1072,10 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   - id: the field id, e.g. 'chado_organism_type_default'
    *   - name: the unique name for a specific field instance. The default is
    *     generated using generateFieldName().
-   *   - table: the field's table, e.g. 'organism'
+   *   - base_table: the base table of the entity
+   *   - base_column: the column in the base table containing the field's value,
+   *                  only used for fields referencing a column in the base table
+   *   - table: the field's table, e.g. 'organism', not used if base_column is specified
    *   - label: the field's label, e.g. 'Organism'
    *   - termIdSpace: The field term's DB
    *   - termAccession: The field term's accession
@@ -1031,18 +1102,24 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     }
 
     // Ignore linking from table back to itself, e.g. gene to rna both use feature table
-    if ($options['base_table'] == $options['table']) {
+    if (array_key_exists('table', $options) and ($options['base_table'] == $options['table'])) {
       return $field_list;
     }
 
     /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
     $options['chado'] = \Drupal::service('tripal_chado.database');
 
-    // Discovers directly linked fields
-    $field_list = $field_list + self::discoverDirect($bundle, $field_id, $field_types, $field_instances, $options);
+    if (array_key_exists('base_column', $options)) {
+      // Discovers fields in a base table column
+      $field_list = $field_list + self::discoverBase($bundle, $field_id, $field_types, $field_instances, $options);
+    }
+    else {
+      // Discovers directly linked fields
+      $field_list = $field_list + self::discoverDirect($bundle, $field_id, $field_types, $field_instances, $options);
 
-    // Discovers fields linked through an intermediate linker table
-    $field_list = $field_list + self::discoverLinked($bundle, $field_id, $field_types, $field_instances, $options);
+      // Discovers fields linked through an intermediate linker table
+      $field_list = $field_list + self::discoverLinked($bundle, $field_id, $field_types, $field_instances, $options);
+    }
 
     // Adds collection plugin IDs
     $field_list = self::discoverPostprocess($field_list);
