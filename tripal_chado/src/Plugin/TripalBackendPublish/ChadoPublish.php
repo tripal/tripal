@@ -147,6 +147,13 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected array $token_values = [];
 
   /**
+   * Number of entities with blank titles.
+   *
+   * @var int $count_blank_titles
+   */
+  protected int $count_blank_titles = 0;
+
+  /**
    * Flag to indicate if we should republish in order to cache chado values.
    *
    * @var bool
@@ -517,6 +524,10 @@ class ChadoPublish extends TripalBackendPublishBase {
       // we can use the token parser to get the title!
       $entity_title = $this->token_parser->replaceTokens($title_format, $token_values);
       $titles[$record_id] = $entity_title;
+      // Watch for empty titles, e.g. using a token for a column that can be left NULL or blank
+      if (!trim(strip_tags($entity_title))) {
+        $this->count_blank_titles++;
+      }
       // Save the token values, we will need them again when we generate the URL Alias
       $this->token_values[$record_id] = $token_values;
     }
@@ -1222,6 +1233,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     $this->existing_published_entities = [];
     $this->published_or_updated_entities = [];
     $this->search_values = [];
+    $this->count_blank_titles = 0;
 
     if ($this->job) {
       $this->logger->setJob($this->job);
@@ -1421,6 +1433,12 @@ class ChadoPublish extends TripalBackendPublishBase {
     } // end of the batch loop
 
     // Present a final summary message, cumulative for all batches
+    if ($this->count_blank_titles) {
+      $this->logger->warning(t('@count entities have blank titles. You should either'
+          . ' update the source records, or modify the title format tokens, and then republish.',
+          ['@count' => $this->count_blank_titles]));
+    }
+
     $this->publish_summarize($success, [
       'total_new_entities' => $total_new_entities,
       'total_existing_entities' => $total_existing_entities,
