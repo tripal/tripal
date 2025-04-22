@@ -6,7 +6,7 @@ dependencies:
     - tripal
     - user
 _core:
-  default_config_hash: mP9f-XmAQWc4QPnYqqJiE6GnTFEhd9H5qcy-Q3hxzF4
+  default_config_hash: MFwmxO1-UgyEec22hL2SmulHUG_sl8LvW2_nX5MybdQ
 id: tripal_content_type_listing
 label: 'Tripal Content Type Listing'
 module: views
@@ -617,7 +617,7 @@ display:
       filter_groups:
         operator: AND
         groups:
-          1: OR
+          1: AND
       style:
         type: table
         options:

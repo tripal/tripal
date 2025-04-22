@@ -34,7 +34,7 @@ RUN service apache2 start \
   && rm -rf /tripal_app \
   && allmodules="${tripalmodules} ${modules}" \
   && vendor/bin/drush en ${allmodules} -y \
-  && if $(dpkg --compare-versions "${drupalversion}" "lt" "10.6"); then \
+  && if $(dpkg --compare-versions "${drupalversion}" "le" "10.9"); then \
      mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.10.5.xml \
      && mv web/modules/contrib/tripal/phpunit.9.6.xml web/modules/contrib/tripal/phpunit.xml; \
   fi \
