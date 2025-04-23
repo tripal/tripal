@@ -19,9 +19,16 @@ class TripalEntityLookup {
   /**
    * Caches bundle IDs used for a base table
    *
-   * @var array $bundle_cache
+   * @var array $bundle_base_table_cache
    */
-  protected array $bundle_cache = [];
+  protected array $bundle_base_table_cache = [];
+
+  /**
+   * Caches bundle information keyed by bundle machine ID
+   *
+   * @var array $bundle_label_cache
+   */
+  protected array $bundle_label_cache = [];
 
   /**
    * This is used by field formatters to get a ready-to-use render
@@ -156,15 +163,15 @@ class TripalEntityLookup {
    *   The bundle ids, or an empty array if no matches found.
    */
   protected function getBundles(string $base_table): array {
-    if (!array_key_exists($base_table, $this->bundle_cache)) {
+    if (!array_key_exists($base_table, $this->bundle_base_table_cache)) {
       $bundles = \Drupal::entityTypeManager()
         ->getStorage('tripal_entity_type')
         ->getQuery()
         ->condition('third_party_settings.tripal.chado_base_table', $base_table)
         ->execute();
-      $this->bundle_cache[$base_table] = array_keys($bundles);
+      $this->bundle_base_table_cache[$base_table] = array_keys($bundles);
     }
-    return $this->bundle_cache[$base_table];
+    return $this->bundle_base_table_cache[$base_table];
   }
 
   /**
@@ -221,6 +228,34 @@ class TripalEntityLookup {
     }
 
     return $ids;
+  }
+
+  /**
+   * Retrieve the human-readable type (i.e. TripalEntityType label) for a given TripalEntity object.
+   *
+   * @param int $entity_id
+   *   The TripalEntity ID value. This might be -1 for an unpublished entity.
+   * @param string $entity_type
+   *   The type of entity, only 'tripal_entity' is supported.
+   * @return string
+   *   The label, or an empty string if it could not be determined.
+   */
+  public function getBundleLabel(int $entity_id, string $entity_type = 'tripal_entity'): string {
+    $label = '';
+    if ($entity_id > 0) {
+      $entity = \Drupal::entityTypeManager()
+        ->getStorage($entity_type)
+        ->load($entity_id);
+      if ($entity) {
+        $bundle_id = $entity->bundle();
+        if (!$this->bundle_label_cache) {
+          $this->bundle_label_cache = \Drupal::service('entity_type.bundle.info')
+            ->getBundleInfo($entity_type);
+        }
+        $label = $this->bundle_label_cache[$bundle_id]['label'] ?? '';
+      }
+    }
+    return $label;
   }
 
   /**
