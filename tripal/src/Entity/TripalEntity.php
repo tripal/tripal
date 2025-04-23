@@ -945,7 +945,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           }
 
           // If there is a zero value in $store_values, this means that
-          // we choose "- Select -" in a widget, or removed the row with the
+          // we chose "- Select -" in a widget, or removed the row with the
           // "Remove" button.
           // Chado storage has already done its work, so now remove this
           // delta so that Drupal doesn't make a blank field table entry.
