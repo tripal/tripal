@@ -1013,6 +1013,15 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           'message_args' => [':title' => $title, ':bundle' => $this->getBundle()->label()],
         ];
       }
+      // If title is blank or is only HTML tokens, show a warning
+      if (!trim(strip_tags($title))) {
+        $this->post_save_errors[] = [
+          'code' => 'TITLE-DB-SAVE',
+          'exception' => FALSE,
+          'message' => "The entity title is currently blank. You should either update this source record, or modify the title format tokens for :bundle.",
+          'message_args' => [':bundle' => $this->getBundle()->label()],
+        ];
+      }
     }
 
     // We also want to set the URL alias here for the same reason we set the
