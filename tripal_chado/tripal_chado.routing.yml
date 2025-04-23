@@ -168,6 +168,19 @@ tripal_chado.dbxref_autocomplete:
       db_id:
         type: integer
 
+tripal_chado.organism_autocomplete:
+  path: 'chado/organism/autocomplete/{match_limit}'
+  defaults:
+    _controller: '\Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController::handleAutocomplete'
+    _title: 'Chado Organism Autocomplete'
+    _format: json
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      match_limit:
+        type: integer
+
 tripal_chado.generic_autocomplete:
   path: 'chado/generic/autocomplete/{base_table}/{column_name}/{type_column}/{property_table}/{match_limit}/{type_id}'
   defaults:

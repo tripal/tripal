@@ -7,6 +7,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 use Drupal\tripal_chado\Controller\ChadoProjectAutocompleteController;
+use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
 
 /**
  * Tests the Generic Autocomplete.
@@ -15,7 +16,7 @@ use Drupal\tripal_chado\Controller\ChadoProjectAutocompleteController;
  * @group Tripal Chado
  * @group Autocomplete
  */
-class ChadoGenericAutocompleteControllerTest extends ChadoTestKernelBase {
+class ChadoAutocompleteControllerTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 
   protected static $modules = ['system', 'user', 'file', 'tripal', 'tripal_chado'];
@@ -27,6 +28,8 @@ class ChadoGenericAutocompleteControllerTest extends ChadoTestKernelBase {
   protected array $projects;
 
   protected array $project_ids;
+
+  protected array $organisms;
 
   /**
    * {@inheritdoc}
@@ -88,6 +91,31 @@ class ChadoGenericAutocompleteControllerTest extends ChadoTestKernelBase {
       }
     }
 
+    // Create some test organisms
+    $subspecies_id = $this->connection->select('1:cvterm', 'T')
+      ->fields('T', ['cvterm_id'])
+      ->condition('T.name', 'subspecies', '=')
+      ->execute()
+      ->fetchField();
+    $this->organisms = [
+      1 => ['genus' => 'Tripalus', 'species' => 'bogusii', 'type_id' => $subspecies_id, 'infraspecific_name' => 'fakus', 'abbreviation' => 'T. bogusii subsp. fakus'],
+      2 => ['genus' => 'Tripalus', 'species' => 'databasica', 'type_id' => NULL, 'infraspecific_name' => NULL, 'abbreviation' => NULL],
+      3 => ['genus' => 'Drupalus', 'species' => 'fictus', 'type_id' => NULL, 'infraspecific_name' => NULL, 'abbreviation' => 'Drupalus fictus'],
+    ];
+    foreach ($this->organisms as $details) {
+      $insert = $this->connection->insert('1:organism');
+      $insert->fields([
+        'genus' => $details['genus'],
+        'species' => $details['species'],
+        'type_id' => $details['type_id'] ?? NULL,
+        'infraspecific_name' => $details['infraspecific_name'] ?? NULL,
+        'abbreviation' => $details['abbreviation'] ?? NULL,
+        'common_name' => $details['common_name'] ?? NULL,
+        'comment' => $details['comment'] ?? NULL,
+      ]);
+      $insert->execute();
+    }
+
     // Create a large number of pubs of two types
     for ($i=1; $i <= 101; $i++) {
       $this->connection->insert('1:pub')
@@ -109,6 +137,9 @@ class ChadoGenericAutocompleteControllerTest extends ChadoTestKernelBase {
 
     $project_autocomplete = new ChadoProjectAutocompleteController();
     $this->assertIsObject($project_autocomplete, 'Failed to create the ChadoProjectAutocompleteController');
+
+    $organism_autocomplete = new ChadoOrganismAutocompleteController();
+    $this->assertIsObject($organism_autocomplete, 'Failed to create the ChadoOrganismAutocompleteController');
 
     // Test empty string
     $request = Request::create(
@@ -284,5 +315,33 @@ class ChadoGenericAutocompleteControllerTest extends ChadoTestKernelBase {
       $this->assertTrue($is_found, '"%gre" matched to "'.$item->value.'" not to "Project Great" or "Project Green"');
     }
 
+    /**
+     * Tests the organism autocomplete which uses multiple table columns
+     */
+
+    // Any organism containing a 't', all three do have a 't' somewhere
+    $request = Request::create(
+      'chado/organism/autocomplete/10',
+      'GET',
+      ['q' => 't']
+    );
+    $suggest = $organism_autocomplete->handleAutocomplete($request, $count, 0)
+        ->getContent();
+    $this->assertEquals(3, count(json_decode($suggest, FALSE)), 'Number of suggestions incorrect for organisms "t" autocomplete');
+    foreach(json_decode($suggest, FALSE) as $item) {
+      $organism_id = ChadoGenericAutocompleteController::getPkeyId($item->value);
+      $this->assertIsInt($organism_id, 'getPkeyId did not return an integer');
+      $this->assertArrayHasKey($organism_id, $this->organisms, 'Invalid organism_id returned');
+    }
+
+    // Any organism containing a 'k', only one does
+    $request = Request::create(
+      'chado/organism/autocomplete/10',
+      'GET',
+      ['q' => 'k']
+    );
+    $suggest = $organism_autocomplete->handleAutocomplete($request, $count, 0)
+        ->getContent();
+    $this->assertEquals(1, count(json_decode($suggest, FALSE)), 'Number of suggestions incorrect for organisms "k" autocomplete');
   }
 }
