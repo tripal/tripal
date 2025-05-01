@@ -174,6 +174,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
         '#default_value' => $default_value,
         '#autocomplete_route_name' => 'tripal_chado.generic_autocomplete',
         '#size' => $options['size'],
+        '#maxlength' => 1000,
         '#placeholder' => $options['placeholder'],
       ];
       unset($options['size']);
