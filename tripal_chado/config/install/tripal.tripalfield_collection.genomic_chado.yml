@@ -192,6 +192,35 @@ fields:
               region: content
               weight: 10
 
+    -   name: gene_relationship
+        content_type: gene
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Sequence features related to this gene. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current gene is the subject; chose Reverse if the object is the current gene."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+                linker_table: feature_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
+
     -   name: gene_contact
         content_type: gene
         label: Contact
@@ -623,6 +652,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: mrna_relationship
+        content_type: mrna
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Sequence features related to this mRNA. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current mRNA is the subject; chose Reverse if the object is the current mRNA."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+                linker_table: feature_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: mrna_contact
         content_type: mrna
@@ -1630,6 +1688,35 @@ fields:
               region: content
               weight: 10
 
+    -   name: genome_assembly_relationship
+        content_type: genome_assembly
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Analyses related to this genome assembly. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genome assembly is the subject; chose Reverse if the object is the current genome assembly."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: name
+                linker_table: analysis_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
+
     -   name: genome_assembly_dbxref_ann
         content_type: genome_assembly
         label: Database Reference Annotations
@@ -1930,6 +2017,35 @@ fields:
               region: content
               weight: 10
 
+    -   name: genome_annotation_relationship
+        content_type: genome_annotation
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Analyses related to this genome annotation. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genome annotation is the subject; chose Reverse if the object is the current genome annotation."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: name
+                linker_table: analysis_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
+
     -   name: genome_annotation_dbxref_ann
         content_type: genome_annotation
         label: Database Reference Annotations
@@ -2093,6 +2209,35 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: genome_project_relationship
+        content_type: genome_project
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Projects related to this genome project. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current genome project is the subject; chose Reverse if the object is the current genome project."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: name
+                linker_table: project_relationship
+                subject_column: subject_project_id
+                object_column: object_project_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: genome_project_dbxref_ann
         content_type: genome_project
