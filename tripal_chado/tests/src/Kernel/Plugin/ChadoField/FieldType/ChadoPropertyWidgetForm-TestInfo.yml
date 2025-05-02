@@ -73,6 +73,7 @@ scenarios:
         - record_id: 0
           value:
             value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
+        # This field is required for some reason so the value must be populated.
         project_prop1:
         - record_id: 0
           prop_id: 0
@@ -80,8 +81,9 @@ scenarios:
           type_id: 181
           field_name: 'project_prop1'
           value:
-            value: 'fred'
+            value: 'This is a simple comment.'
           rank: 0
+        # This field is required for some reason so the value must be populated.
         project_prop2:
         - record_id: 0
           prop_id: 0
@@ -89,7 +91,7 @@ scenarios:
           type_id: 159
           field_name: 'project_prop2'
           value:
-            value: 'sally'
+            value: 'Here'
           rank: 0
       expected:
         project_name:
@@ -98,34 +100,29 @@ scenarios:
         project_description:
         - record_id: 1
           value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
-        project_type:
-        - record_id: 1
-          type_id: 165
-          term_name: Project
-          id_space: NCIT
-          accession: C47885
         project_prop1:
         - record_id: 1
           prop_id: 0
           linker_id: 1
-          value: ''
+          type_id: 181
+          value: 'This is a simple comment.'
           rank: 0
-          type_id: 0
         project_prop2:
         - record_id: 1
           prop_id: 0
           linker_id: 1
-          value: ''
+          type_id: 159
+          value: 'Here'
           rank: 0
-          type_id: 0
     edit:
       user_input:
         project_name:
         - record_id: 1
           value: "Simple Project Still"
         project_description:
-          record_id: 1
-          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
+        - record_id: 1
+          value:
+            value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
       expected:
         project_name:
         - record_id: 1
@@ -133,23 +130,17 @@ scenarios:
         project_description:
         - record_id: 1
           value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
-        project_type:
-        - record_id: 1
-          type_id: 165
-          term_name: Project
-          id_space: NCIT
-          accession: C47885
         project_prop1:
         - record_id: 1
           prop_id: 0
           linker_id: 1
-          value: ''
+          type_id: 181
+          value: 'This is a simple comment.'
           rank: 0
-          type_id: 0
         project_prop2:
         - record_id: 1
           prop_id: 0
           linker_id: 1
-          value: ''
+          type_id: 159
+          value: 'Here'
           rank: 0
-          type_id: 0

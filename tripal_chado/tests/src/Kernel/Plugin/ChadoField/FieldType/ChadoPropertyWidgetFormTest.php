@@ -222,6 +222,16 @@ class ChadoPropertyWidgetFormTest extends ChadoTestKernelBase {
     if (count($errors) === 0) {
       $form_object->submitForm($form, $form_state);
     }
-    // @todo print_r(array_keys($form['project_name']['widget'][0]));
+
+    // 3. Test editing the entity through the form.
+    $this->populateTripalEntityForm($form_object, $form_state, $current_scenario['edit']['user_input']);
+    // -- now validate it with the data provided.
+    $form_object->validateForm($form, $form_state);
+    $errors = $form_state->getErrors();
+    $this->assertCount(0, $errors, "We got errors when we submitted the EDIT form with the supplied values.");
+    // -- if there are no errors then submit the form.
+    if (count($errors) === 0) {
+      $form_object->submitForm($form, $form_state);
+    }
   }
 }
