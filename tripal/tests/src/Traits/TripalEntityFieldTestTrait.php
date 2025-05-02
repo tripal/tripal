@@ -6,6 +6,7 @@ use Drupal\Core\Datetime\Entity\DateFormat;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Field\FieldItemList;
+use Drupal\Core\Form\FormState;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\tripal\Entity\TripalEntityType;
@@ -486,5 +487,88 @@ trait TripalEntityFieldTestTrait {
     }
 
     return [$yaml_data['system-under-test'], $yaml_data['scenarios']];
+  }
+
+
+  /**
+   * Sets up the TripalEntity Form to create an entity.
+   *
+   * This is typically used when testing fields.
+   *
+   * @param string $bundle_name
+   *   The id of the Tripal Entity Type this form is for.
+   *
+   * @return array
+   *   The parts of an entity form; specifically,
+   *   - ContentEntityFormInterface $form_object: an object that can be used
+   *     with the form state to validate and submit the TripalEntity form.
+   *   - array $form: the complete form including all attached field widget
+   *     form elements.
+   *   - FormState $form_state: the state of this form including relationships
+   *     to both the form object and form array.
+   */
+  public function setupTripalEntityAddForm(string $bundle_name): array {
+    $entity_type_manager = $this->container->get('entity_type.manager');
+
+    // Get the form object in order to test submission.
+    $form_object = $entity_type_manager->getFormObject('tripal_entity', 'add');
+
+    // Create the Form State and set it up to be used by an entity form.
+    $form_state = new FormState();
+
+    // Form state likes to have the form object it will be working with.
+    $form_state->setFormObject($form_object);
+
+    // Create an empty entity object for the form.
+    // This is not saved yet but is needed as an empty husk for the form
+    // to determine the fields, widgets, etc to build the form array.
+    $entity = TripalEntity::create([
+      'type' => $this->bundle_name,
+    ]);
+    $form_object->setEntity($entity);
+
+    // Build the form now as the form state likes to have the full array.
+    $form = $form_object->buildForm([], $form_state);
+    $form_state->setCompleteForm($form);
+
+    return [$form_object, $form, $form_state];
+  }
+
+  /**
+   * Populate the TripalEntity form described by the form object + form state
+   * with the values passed in.
+   *
+   * @param Drupal\Core\Entity\ContentEntityFormInterface $form_object
+   *   The form object like that returned by setupTripalEntityAddForm().
+   *   This is needed in addition to the form state since it contains a
+   *   form display that needs to be set with the form state.
+   * @param Drupal\Core\Form\FormState $form_state
+   *   The current state of the form. This is where we will set the values
+   *   passed in.
+   * @param array $values
+   *   An array of the values to set. This should be keyed by each field name
+   *   and then it's values should map directly to the form elements in that
+   *   fields widget.
+   */
+  public function populateTripalEntityForm(&$form_object, &$form_state, $values) {
+
+    // Retrieve the Tripal Entity Type id
+    // for use when generating the form display.
+    $bundle_name = $form_object->getEntity()->getType();
+
+    // Get the form display object
+    // or load one if it hasn't been set in the form object yet.
+    $form_display = $form_object->getFormDisplay($form_state);
+    if (!$form_display) {
+      $form_display = $entity_type_manager->getStorage('entity_form_display')->load('tripal_entity.' . $bundle_name . '.default');
+    }
+
+    // Now, populate the form state with the user input.
+    foreach ($values as $key => $value) {
+      $form_state->setValue($key, $value);
+    }
+
+    // and finally populate the form display based on the form state.
+    $form_object->setFormDisplay($form_display, $form_state);
   }
 }
