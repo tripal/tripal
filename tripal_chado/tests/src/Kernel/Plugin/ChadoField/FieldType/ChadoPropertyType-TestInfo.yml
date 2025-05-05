@@ -119,20 +119,6 @@ scenarios:
           term_name: Project
           id_space: NCIT
           accession: C47885
-        project_prop1:
-        - record_id: 1
-          prop_id: 0
-          linker_id: 1
-          value: ''
-          rank: 0
-          type_id: 0
-        project_prop2:
-        - record_id: 1
-          prop_id: 0
-          linker_id: 1
-          value: ''
-          rank: 0
-          type_id: 0
     edit:
       user_input:
         project_name:
@@ -154,20 +140,6 @@ scenarios:
           term_name: Project
           id_space: NCIT
           accession: C47885
-        project_prop1:
-        - record_id: 1
-          prop_id: 0
-          linker_id: 1
-          value: ''
-          rank: 0
-          type_id: 0
-        project_prop2:
-        - record_id: 1
-          prop_id: 0
-          linker_id: 1
-          value: ''
-          rank: 0
-          type_id: 0
   - label: "Properties Added on Edit"
     description: "Create a page without setting any properties and then when we update it we will set 2 properties for each property field."
     create:
@@ -211,20 +183,6 @@ scenarios:
           term_name: Project
           id_space: NCIT
           accession: C47885
-        project_prop1:
-        - record_id: 1
-          prop_id: 0
-          linker_id: 1
-          value: ''
-          rank: 0
-          type_id: 0
-        project_prop2:
-        - record_id: 1
-          prop_id: 0
-          linker_id: 1
-          value: ''
-          rank: 0
-          type_id: 0
     edit:
       user_input:
         project_prop1:

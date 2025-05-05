@@ -230,9 +230,11 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     $status = $entity->save();
     $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
 
+    // @debug print_r($entity->toArray());
+
     // 2. Load the entity we just created so we can check the values.
     $created_entity = TripalEntity::load($entity->id());
-    $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, $current_scenario['label'] . ' CREATE');
+    $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, $current_scenario['label'] . ' CREATE ');
 
     // 3. Make changes and then save again.
     foreach ($current_scenario['edit']['user_input'] as $field_name => $new_values) {
@@ -245,6 +247,6 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     // 4. Load the entity we just updated so we can check the values.
     $updated_entity = TripalEntity::load($created_entity->id());
     // @debug print_r($updated_entity->toArray());
-    $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT');
+    $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT ');
   }
 }
