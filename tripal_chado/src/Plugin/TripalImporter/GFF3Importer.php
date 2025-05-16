@@ -380,7 +380,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       '#type' => 'textfield',
       '#required' => FALSE,
       '#description' => t("Use this field to specify a Sequence Ontology type
-       for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
+       for the default landmark sequences in the GFF file (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $sequence_cv_id],
