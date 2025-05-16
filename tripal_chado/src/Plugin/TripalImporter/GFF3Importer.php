@@ -378,7 +378,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $form['landmark_type'] = [
       '#title' => t('Default Landmark Type'),
       '#type' => 'textfield',
-      '#required' => TRUE,
+      '#required' => FALSE,
       '#description' => t("Use this field to specify a Sequence Ontology type
        for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
@@ -560,12 +560,14 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $form_state->setErrorByName('re_protein', t('Invalid replacement string'));
     }
 
-    // check to make sure the types exists
+    // If they were specified, check to make sure the types exist
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
-    $landmark_cvterm_id = $cv_autocomplete->getCVtermId($landmark_type, 'sequence');
-    if (!$landmark_cvterm_id) {
-      $form_state->setErrorByName('landmark_type', t('The Sequence Ontology (SO) term selected for the landmark type is not'
-                                                   . ' available in the database. Please check the spelling or select another'));
+    if ($landmark_type) {
+      $landmark_cvterm_id = $cv_autocomplete->getCVtermId($landmark_type, 'sequence');
+      if (!$landmark_cvterm_id) {
+        $form_state->setErrorByName('landmark_type', t('The Sequence Ontology (SO) term selected for the landmark type is not'
+                                                     . ' available in the database. Please check the spelling or select another'));
+      }
     }
     if ($target_type) {
       $target_type_id = $cv_autocomplete->getCVtermId($target_type, 'sequence');
