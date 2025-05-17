@@ -92,7 +92,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * Prior to running an importer it must be prepared to make sure the file
    * is available.  Preparing the importer will download all the necessary
    * files.  This value is set to TRUE after the importer is prepared for
-   * funning.
+   * running.
    */
   protected $is_prepared;
 
@@ -102,6 +102,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * @var object \Drupal\Core\Messenger\Messenger
    */
   protected $messenger = NULL;
+
+  /**
+   * An instance of the Drupal HTTP client, i.e. Guzzle
+   *
+   * @var object \GuzzleHttp\ClientInterface
+   */
+  protected $httpClient = NULL;
 
   /**
    * Stores the last percentage that progress was reported.
@@ -148,6 +155,9 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
     // Initialize messenger
     $this->messenger = \Drupal::messenger();
+
+    // Initialize http client
+    $this->httpClient = \Drupal::httpClient();
 
   }
 
@@ -389,10 +399,60 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   }
 
   /**
+   * Download the contents of a remote or local file from a specified URL
+   *
+   * @param string $url
+   *   The address of the file to download
+   * @param int $retries
+   *   The number of times to retry the remote download if an error occurs
+   * @param array $options
+   *   Any options to pass to the HTTP request
+   * @return string
+   *   The data obtained from the specified url, or NULL if it could not be downloaded
+   */
+  public function retrieveFile(string $url, int $retries = 3, array $options = []): string|null {
+    // Distinguish between local and remote files
+    $parsed_url = parse_url($url);
+    if ($parsed_url['host'] ?? NULL) {
+      while ($retries > 0) {
+        try {
+          $response = $this->httpClient->get($url, $options);
+          $response_body = (string) $response->getBody();
+          return $response_body;
+        }
+        catch (RequestException $e) {
+          if ($retries > 1) {
+            $this->logger->error('Unable to get response from @url: @exception. Will retry',
+                ['@url' => $url, '@exception' => $e->getMessage()]);
+          }
+          else {
+            $this->logger->error('Unable to get response from @url: @exception',
+                ['@url' => $url, '@exception' => $e->getMessage()]);
+            return NULL;
+          }
+        }
+        $retries--;
+        sleep(1);
+      }
+    }
+    // If there was no host in the url, then it is considered a local file
+    else {
+      $contents = file_get_contents($url);
+      if ($contents === FALSE) {
+        return NULL;
+      }
+      else {
+        return $contents;
+      }
+    }
+  }
+
+  /**
    * Prepares the importer files for execution.
    *
    * This function must be run prior to the run() function to ensure that
-   * the import file is ready to go.
+   * the import file is ready to go, i.e. it is downloaded and if necessary
+   * it has been uncompressed.
    */
   public function prepareFiles() {
 
@@ -403,7 +463,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           $this->logger->notice('Download file: %file_remote...', ['%file_remote' => $file_remote]);
 
           // If this file is compressed then keep the .gz extension so we can
-          // uncompress it.
+          // uncompress it later.
           $ext = '';
           if (preg_match('/^(.*?)\.gz$/', $file_remote)) {
             $ext = '.gz';
@@ -412,23 +472,27 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           $temp = \Drupal::service('file_system')->tempnam("temporary://", 'import_') . $ext;
           $this->logger->notice('Saving as: %file', ['%file' => $temp]);
 
-          $url_fh = fopen($file_remote, "r");
-          $tmp_fh = fopen($temp, "w");
-          if (!$url_fh) {
-            throw new \Exception(t("Unable to download the remote file at %url. Could a firewall be blocking outgoing connections?",
-              ['%url', $file_remote]));
+          // Download the remote file contents.
+          $content = $this->retrieveFile($file_remote);
+          if (is_null($content)) {
+            $this->is_prepared = FALSE;
+            return;
           }
 
-          // Write the contents of the remote file to the temp file.
-          while (!feof($url_fh)) {
-            fwrite($tmp_fh, fread($url_fh, 255), 255);
+          // Write the contents from the remote file to the local temp file.
+          $saved = file_put_contents($temp, $content);
+          if (!$saved) {
+            $this->logger->error('Unable to save to local temporary file @file',
+                ['@file' => $temp]);
+            $this->is_prepared = FALSE;
+            return;
           }
-          // Set the path to the file for the importer to use.
+
+          // Set the path to the local temporary file for the importer to use.
           $this->arguments['files'][$i]['file_path'] = $temp;
-          $this->is_prepared = TRUE;
         }
 
-        // Is this file compressed?  If so, then uncompress it
+        // Is this file compressed? If so, then uncompress it.
         $matches = [];
         if (preg_match('/^(.*?)\.gz$/', $this->arguments['files'][$i]['file_path'], $matches)) {
           $this->logger->notice('Uncompressing: %file', ['%file' => $this->arguments['files'][$i]['file_path']]);
@@ -443,7 +507,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           // Keep repeating until the end of the input file
           while (!gzeof($gzfile)) {
             // Read buffer-size bytes
-            // Both fwrite and gzread and binary-safe
+            // Both fwrite and gzread are binary-safe
             fwrite($out_file, gzread($gzfile, $buffer_size));
           }
 
@@ -462,8 +526,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       throw new \Exception('Cannot prepare the importer: ' . $e->getMessage());
     }
 
-
-    // If we get here and no exception has been thrown then either
+    // If we get here and no exception has been thrown then either:
     // 1) files were added but none needed to be prepared.
     // 2) files were not added (check for files being required happens elsewhere).
     $this->is_prepared = TRUE;
@@ -489,7 +552,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       }
     }
     catch (\Exception $e) {
-      throw new \Exception('Cannot prepare the importer: ' . $e->getMessage());
+      throw new \Exception('Cannot remove importer temporary file: ' . $e->getMessage());
     }
   }
 
