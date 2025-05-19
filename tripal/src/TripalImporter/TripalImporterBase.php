@@ -423,7 +423,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           $this->logger->notice('Saving as: %file', ['%file' => $temp]);
 
           // Download the remote file contents.
-          $content = $this->fileretriever->retreiveFile($file_remote);
+          $content = $this->fileretriever->retrieveFile($file_remote);
           if (is_null($content)) {
             $this->is_prepared = FALSE;
             return;
@@ -431,7 +431,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
           // Write the contents from the remote file to the local temp file.
           $saved = file_put_contents($temp, $content);
-print "CP05 saved to temp file \"$temp\" ";var_dump($saved); //@@@
           if (!$saved) {
             $this->logger->error('Unable to save to local temporary file @file',
                 ['@file' => $temp]);
@@ -446,7 +445,6 @@ print "CP05 saved to temp file \"$temp\" ";var_dump($saved); //@@@
         // Is this file compressed? If so, then uncompress it.
         $matches = [];
         if (preg_match('/^(.*?)\.gz$/', $this->arguments['files'][$i]['file_path'], $matches)) {
-print "CP06 uncompressing\n";//@@@
           $this->logger->notice('Uncompressing: %file', ['%file' => $this->arguments['files'][$i]['file_path']]);
           $buffer_size = 4096;
           $new_file_path = $matches[1];
