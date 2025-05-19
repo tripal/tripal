@@ -156,7 +156,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     // Initialize messenger
     $this->messenger = \Drupal::messenger();
 
-    // Initialize http client
+    // Initialize file retrieval service.
     $this->fileretriever = \Drupal::service('tripal.fileretriever');
   }
 
@@ -423,7 +423,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           $this->logger->notice('Saving as: %file', ['%file' => $temp]);
 
           // Download the remote file contents.
-          $content = $this->fileretriever($file_remote);
+          $content = $this->fileretriever->retreiveFile($file_remote);
           if (is_null($content)) {
             $this->is_prepared = FALSE;
             return;

@@ -431,18 +431,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       }
     }
     usleep($sleep_time);  // 1/3 or 1/10 of a second delay, NCBI limits requests to 3 / second without API key
-    $rfh = fopen($fetch_url, "r");
-    if (!$rfh) {
-      $this->logger->error("Could not perform PubMed query: $fetch_url.");
-      return NULL;
-    }
-    $results = '';
-    if ($rfh) {
-      while (!feof($rfh)) {
-        $results .= fread($rfh, 255);
-      }
-      fclose($rfh);
-    }
+
+    $results = $this->fileretriever->retrieveFile($fetch_url);
 
     return $results;
   }
