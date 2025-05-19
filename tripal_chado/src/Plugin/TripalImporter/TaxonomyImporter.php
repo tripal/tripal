@@ -307,37 +307,13 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         if (!empty($api_key)) {
           $search_url .= "&api_key=" . $api_key;
         }
-        $rfh = NULL;
-        // Query NCBI. To accomodate occasional glitches, retry up to three times.
-        $retries = 3;
-        while (($retries > 0) and (!$rfh)) {
-          $start = microtime(TRUE);
-          // Get the search response from NCBI.
-          $rfh = @fopen($search_url, "r");
-          // If error, delay then retry
-          if ((!$rfh) and ($retries)) {
-            $this->logger->warning("Error contacting NCBI to look up @sci_name, will retry",
-              ['@sci_name' => $sci_name_escaped]
-            );
-          }
-          $retries--;
-          $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
-          if ($remaining_sleep > 0) {
-            usleep($remaining_sleep);
-          }
-        }
-
-        if (!$rfh) {
+        $xml_text = $this->fileretriever->retrieveFile($search_url);
+        if (is_null($xml_text)) {
           $this->logger->warning("Could not look up @sci_name",
             ['@sci_name' => $sci_name_escaped]
           );
           continue;
         }
-        $xml_text = '';
-        while (!feof($rfh)) {
-          $xml_text .= fread($rfh, 255);
-        }
-        fclose($rfh);
 
         // Parse the XML to get the taxonomy ID
         $result = FALSE;
@@ -549,35 +525,10 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $fetch_url .= "&api_key=" . $api_key;
     }
 
-    // Query NCBI. To accomodate occasional glitches, retry up to three times.
-    $xml = FALSE;
-    $rfh = NULL;
-    $retries = 3;
-    while (($retries > 0) and (!$rfh)) {
-      $start = microtime(TRUE);
-      $rfh = @fopen($fetch_url, "r");
-      if ($rfh) {
-        $xml_text = '';
-        while (!feof($rfh)) {
-          $xml_text .= fread($rfh, 255);
-        }
-        fclose($rfh);
-
-        $xml = new \SimpleXMLElement($xml_text);
-      }
-      else {
-        $this->logger->warning("Error contacting NCBI to look up @taxid, will retry",
-          ['@taxid' => $taxid]
-        );
-      }
-      $retries--;
-      $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
-      if ($remaining_sleep > 0) {
-        usleep($remaining_sleep);
-      }
-    }
-
-    if ($xml) {
+    // Query NCBI
+    $xml_text = $this->fileretriever->retrieveFile($fetch_url);
+    if (!is_null($xml_text)) {
+      $xml = new \SimpleXMLElement($xml_text);
       $taxon = $xml->Taxon;
 
       // Get the genus and species from the xml.
