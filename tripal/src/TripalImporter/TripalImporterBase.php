@@ -422,18 +422,9 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           $temp = \Drupal::service('file_system')->tempnam("temporary://", 'import_') . $ext;
           $this->logger->notice('Saving as: %file', ['%file' => $temp]);
 
-          // Download the remote file contents.
-          $content = $this->fileretriever->retrieveFile($file_remote);
-          if (is_null($content)) {
-            $this->is_prepared = FALSE;
-            return;
-          }
-
-          // Write the contents from the remote file to the local temp file.
-          $saved = file_put_contents($temp, $content);
-          if (!$saved) {
-            $this->logger->error('Unable to save to local temporary file @file',
-                ['@file' => $temp]);
+          // Download the remote file contents to a local temporary file
+          $status = $this->fileretriever->downloadFile($file_remote, $temp);
+          if (!$status) {
             $this->is_prepared = FALSE;
             return;
           }

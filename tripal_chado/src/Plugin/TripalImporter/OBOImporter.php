@@ -990,19 +990,13 @@ class OBOImporter extends ChadoImporterBase {
     // first download the OBO
     $temp = tempnam(sys_get_temp_dir(), 'obo_');
     $this->logger->notice("Downloading URL $url, saving to $temp");
-    $url_fh = fopen($url, "r");
-    $obo_fh = fopen($temp, "w");
-    if (!$url_fh) {
+    $status = $this->fileimporter->downloadFile($url, $temp);
+    if (!$status) {
       throw new \Exception("Unable to download the remote OBO file at $url. " .
         "Could a firewall be blocking outgoing connections? If you are unable " .
         "to download the file you may manually download the OBO file and use " .
         "the web interface to specify the location of the file on your server.");
     }
-    while (!feof($url_fh)) {
-      fwrite($obo_fh, fread($url_fh, 255), 255);
-    }
-    fclose($url_fh);
-    fclose($obo_fh);
 
     if ($is_new) {
       tripal_insert_obo($obo_name, $url);
@@ -2878,7 +2872,7 @@ class OBOImporter extends ChadoImporterBase {
    * @ingroup tripal_obo_loader
    */
   private function oboEbiLookup($accession, $type_of_search, $found_iri = NULL, $found_ontology = NULL) {
-    $client = \Drupal::httpClient();
+#@@@    $client = \Drupal::httpClient();
 
     // Grab just the ontology from the $accession.
     $parts = explode(':', $accession);
@@ -2924,15 +2918,14 @@ class OBOImporter extends ChadoImporterBase {
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id';
     }
 
-    try {
-      $response = $client->get($full_url, $options);
-      $response = $response->getBody();
-      $response = Json::decode($response);
+    $content = $this->fileloader->getFileContents($full_url, $options);
+    if ($content) {
+      $response = Json::decode($content);
       return $response;
     }
-    catch (RequestException $e) {
-      $this->logger->error('Unable to get response from @url when trying to retrieve data for @accession. @exception',
-          ['@url' => $full_url, '@accession' => $accession, '@exception' => $e->getMessage()]);
+    else {
+      $this->logger->error('Unable to get response from @url when trying to retrieve data for @accession.',
+          ['@url' => $full_url, '@accession' => $accession]);
     }
 
     return FALSE;
