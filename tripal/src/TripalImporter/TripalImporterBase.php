@@ -419,7 +419,9 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
             $ext = '.gz';
           }
           // Create a temporary file.
-          $temp = \Drupal::service('file_system')->tempnam("temporary://", 'import_') . $ext;
+          $fs_service = \Drupal::service('file_system');
+          $temp = $fs_service->tempnam("temporary://", 'import_') . $ext;
+          $temp = $fs_service->realpath($temp);
           $this->logger->notice('Saving as: %file', ['%file' => $temp]);
 
           // Download the remote file contents to a local temporary file
