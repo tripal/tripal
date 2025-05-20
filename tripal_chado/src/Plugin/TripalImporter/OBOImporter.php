@@ -990,7 +990,7 @@ class OBOImporter extends ChadoImporterBase {
     // first download the OBO
     $temp = tempnam(sys_get_temp_dir(), 'obo_');
     $this->logger->notice("Downloading URL $url, saving to $temp");
-    $status = $this->fileimporter->downloadFile($url, $temp);
+    $status = $this->fileretriever->downloadFile($url, $temp);
     if (!$status) {
       throw new \Exception("Unable to download the remote OBO file at $url. " .
         "Could a firewall be blocking outgoing connections? If you are unable " .
@@ -2872,7 +2872,6 @@ class OBOImporter extends ChadoImporterBase {
    * @ingroup tripal_obo_loader
    */
   private function oboEbiLookup($accession, $type_of_search, $found_iri = NULL, $found_ontology = NULL) {
-#@@@    $client = \Drupal::httpClient();
 
     // Grab just the ontology from the $accession.
     $parts = explode(':', $accession);
@@ -2918,7 +2917,7 @@ class OBOImporter extends ChadoImporterBase {
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id';
     }
 
-    $content = $this->fileloader->getFileContents($full_url, $options);
+    $content = $this->fileretriever->retrieveFileContents($full_url);
     if ($content) {
       $response = Json::decode($content);
       return $response;
