@@ -94,6 +94,9 @@ field.storage.tripal_entity.*:
         termAccession:
           type: string
           label: 'Term Accession'
+        max_delta:
+          type: integer
+          label: 'Maximum number of records to publish'
         max_length:
           type: integer
           label: 'Storage Maximum length'
@@ -124,6 +127,9 @@ field.field.tripal_entity.*.*:
         termAccession:
           type: string
           label: 'Term Accession'
+        max_delta:
+          type: integer
+          label: 'Maximum number of records to publish'
         debug:
           type: boolean
           label: 'Flag to Enable field debugging'
