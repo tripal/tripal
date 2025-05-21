@@ -51,22 +51,24 @@ class TripalFileRetriever {
    *
    * @param string $url
    *   The address of the file to download
-   * @param int $retries
-   *   The number of times to retry the remote download if an error occurs
    * @param array $options
-   *   Any options to pass to the HTTP request
+   *   Valid keys:
+   *     retries - int: how many times to retry a download, default = 3
+   *     delay - int: number of seconds between retries, default = 1
+   *     client_options - array: any options to pass to the http client
    * @return string
    *   The data obtained from the specified url, or NULL if it could not be downloaded
    */
-  public function retrieveFileContents(string $url, int $retries = 3, array $options = []): string|null {
+  public function retrieveFileContents(string $url, array $options = []): string|null {
     $contents = NULL;
+    $retries = $options['retries'] ?? 3;
 
     // Distinguish between local and remote files
     $parsed_url = parse_url($url);
     if ($parsed_url['host'] ?? NULL) {
       while (is_null($contents) && ($retries > 0)) {
         try {
-          $response = $this->httpClient->get($url, $options);
+          $response = $this->httpClient->get($url, $options['client_options'] ?? []);
           $contents = (string) $response->getBody();
         }
         catch (\Exception $e) {
@@ -75,7 +77,7 @@ class TripalFileRetriever {
 $fail = \Drupal::state()->get('FAIL', '0');if ($fail) { $contents = NULL; $retries = 0; $this->logger->error('Unable to get response from @url: mocked_error', ['@url' => $url]); } //@@@ simulate error
         $retries--;
         if (is_null($contents) && ($retries > 0)) {
-          sleep(1);
+          sleep($options['delay'] ?? 1);
         }
       }
     }
@@ -110,27 +112,29 @@ $fail = \Drupal::state()->get('FAIL', '0');if ($fail) { $contents = NULL; $retri
    *   The address of the file to download
    * @param string $localfile
    *   The path to a local file where data is saed
-   * @param int $retries
-   *   The number of times to retry the remote download if an error occurs
    * @param array $options
-   *   Any options to pass to the HTTP request
+   *   Valid keys:
+   *     retries - int: how many times to retry a download, default = 3
+   *     delay - int: number of seconds between retries, default = 1
+   *     client_options - array: any options to pass to the http client
    * @return bool
    *   Returns TRUE if successful, FALSE if error.
    */
-  public function downloadFile(string $url, string $localfile, int $retries = 3, array $options = []): bool {
+  public function downloadFile(string $url, string $localfile, array $options = []): bool {
     $status = FALSE;
+    $retries = $options['retries'] ?? 3;
 
     // Distinguish between local and remote files
     $parsed_url = parse_url($url);
     if ($parsed_url['host'] ?? NULL) {
 
-      $options['sink'] = $localfile;
-      $options['stream'] = FALSE;
+      $options['client_options']['sink'] = $localfile;
+      $options['client_options']['stream'] = FALSE;
 
       while (!$status && ($retries > 0)) {
         try {
           /** @var GuzzleHttp\Psr7\Response **/
-          $response = $this->httpClient->get($url, $options);
+          $response = $this->httpClient->get($url, $options['client_options']);
           $status = TRUE;
         }
         catch (\Exception $e) {
@@ -139,7 +143,7 @@ $fail = \Drupal::state()->get('FAIL', '0');if ($fail) { $contents = NULL; $retri
 $fail = \Drupal::state()->get('FAIL', '0');if ($fail) { $status = FALSE; $retries = 0; $this->logger->error('Unable to get response from @url: mocked_error', ['@url' => $url]); } //@@@ simulate error 10% of the time
         $retries--;
         if (!$status && ($retries > 0)) {
-          sleep(1);
+          sleep($options['delay'] ?? 1);
         }
       }
     }
