@@ -42,7 +42,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
       ->getMock();
     $mock_logger->method('error')
       ->willReturnCallback(function($message, $context, $options) {
-          $this->mock_error = 'ERROR: ' . str_replace(array_keys($context), $context, $message);
+          $this->mock_error .= str_replace(array_keys($context), $context, $message);
           return NULL;
         });
     $container->set('tripal.logger', $mock_logger);
