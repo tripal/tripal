@@ -62,7 +62,6 @@ protected string $mock_error = '';
     // Remove the local temporary file if a test failed
     if ($this->tempfile and file_exists($this->tempfile)) {
       unlink($this->tempfile);
-print "CP24 unlinked \"".$this->tempfile."\"";system('ls -ltr /tmp');//@@@
     }
   }
 
@@ -74,6 +73,23 @@ print "CP24 unlinked \"".$this->tempfile."\"";system('ls -ltr /tmp');//@@@
     $retrieval_service = \Drupal::service('tripal.fileretriever');
 
     // Tests retrieveFileContents()
+
+    // Test retrieval of non-existant local file
+    $url = DRUPAL_ROOT . 'modules/contrib/bogus/NOLICENSE.txt';
+    $this->mock_error = '';
+    $content = $retrieval_service->retrieveFileContents($url);
+    $this->assertStringContainsString('Local file', $this->mock_error,
+      'Did not generate an error for an invalid local file');
+    $this->assertNull($content,
+      'Did not receive NULL for invalid local file');
+
+    // Test retrieval of valid local file
+    $url = DRUPAL_ROOT . '/modules/contrib/tripal/LICENSE.txt';
+    $content = $retrieval_service->retrieveFileContents($url);
+    $this->assertNotNull($content,
+      'Received NULL for valid local file');
+    $this->assertGreaterThan(100, strlen($content),
+      'Received truncated content for valid local file');
 
     // Test retrieval of non-existent URL (invalid host)
     $url = 'https://vmasiufekxlkajfd.org/fail.txt';
@@ -96,29 +112,35 @@ print "CP24 unlinked \"".$this->tempfile."\"";system('ls -ltr /tmp');//@@@
     // Test retrieval of existing URL
     $url = 'https://raw.githubusercontent.com/tripal/tripal/4.x/LICENSE.txt';
     $content = $retrieval_service->retrieveFileContents($url);
-    $this->assertNotNull($content,
-      'Received NULL for valid URL');
+    // Because this test accesses an external site, and it could be unavailable,
+    // do not throw an error for this test
+    if (is_null($content)) {
+      $this->markTestSkipped('Received NULL for valid URL. Remote host might be down, so skipping this test');
+    }
     $this->assertGreaterThan(100, strlen($content),
       'Received truncated content for valid URL');
 
-    // Test retrieval of non-existant local file
+    // Tests downloadFile()
+
+    // Test copy to local file from non-existant local file
     $url = DRUPAL_ROOT . 'modules/contrib/bogus/NOLICENSE.txt';
     $this->mock_error = '';
-    $content = $retrieval_service->retrieveFileContents($url);
+    $status = $retrieval_service->downloadFile($url, $this->tempfile);
+    $this->assertFalse($status,
+      'Local file was incorrectly created, status not FALSE');
     $this->assertStringContainsString('Local file', $this->mock_error,
       'Did not generate an error for an invalid local file');
-    $this->assertNull($content,
-      'Did not receive NULL for invalid local file');
 
-    // Test retrieval of valid local file
+    // Test copy to local file from another local file
     $url = DRUPAL_ROOT . '/modules/contrib/tripal/LICENSE.txt';
-    $content = $retrieval_service->retrieveFileContents($url);
-    $this->assertNotNull($content,
-      'Received NULL for valid local file');
-    $this->assertGreaterThan(100, strlen($content),
-      'Received truncated content for valid local file');
-
-    // Tests downloadFile()
+    $status = $retrieval_service->downloadFile($url, $this->tempfile);
+    $this->assertTrue($status,
+      'Local file not created, status not TRUE');
+    $this->assertTrue(file_exists($this->tempfile),
+      'Local file not created, file not created');
+    $this->assertGreaterThan(100, filesize($this->tempfile),
+      'Local file is too small');
+    unlink($this->tempfile);
 
     // Test copy to local file of non-existent URL (invalid host)
     $url = 'https://vmasiufekxlkajfd.org/fail.txt';
@@ -141,28 +163,11 @@ print "CP24 unlinked \"".$this->tempfile."\"";system('ls -ltr /tmp');//@@@
     // Test copy to local file for valid URL
     $url = 'https://raw.githubusercontent.com/tripal/tripal/4.x/LICENSE.txt';
     $status = $retrieval_service->downloadFile($url, $this->tempfile);
-    $this->assertTrue($status,
-      'Local file not created, status not TRUE');
-    $this->assertTrue(file_exists($this->tempfile),
-      'Local file not created, file not created');
-    $this->assertGreaterThan(100, filesize($this->tempfile),
-      'Local file is too small');
-    unlink($this->tempfile);
-
-    // Test copy to local file from non-existant local file
-    $url = DRUPAL_ROOT . 'modules/contrib/bogus/NOLICENSE.txt';
-    $this->mock_error = '';
-    $status = $retrieval_service->downloadFile($url, $this->tempfile);
-    $this->assertFalse($status,
-      'Local file was incorrectly created, status not FALSE');
-    $this->assertStringContainsString('Local file', $this->mock_error,
-      'Did not generate an error for an invalid local file');
-
-    // Test copy to local file from another local file
-    $url = DRUPAL_ROOT . '/modules/contrib/tripal/LICENSE.txt';
-    $status = $retrieval_service->downloadFile($url, $this->tempfile);
-    $this->assertTrue($status,
-      'Local file not created, status not TRUE');
+    // Because this test accesses an external site, and it could be unavailable,
+    // do not throw an error for this test
+    if ($status === FALSE) {
+      $this->markTestSkipped('Received FALSE for valid URL. Remote host might be down, so skipping this test');
+    }
     $this->assertTrue(file_exists($this->tempfile),
       'Local file not created, file not created');
     $this->assertGreaterThan(100, filesize($this->tempfile),
