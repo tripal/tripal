@@ -69,31 +69,8 @@ class TripalFileRetriever {
           $response = $this->httpClient->get($url, $options);
           $contents = (string) $response->getBody();
         }
-        catch (ConnectException $e) {
-          $this->logger->error('Invalid hostname in URL @url: @exception',
-              ['@url' => $url, '@exception' => $e->getMessage()]);
-          $retries = 0;
-        }
-        catch (ClientException $e) {
-          $this->logger->error('Invalid file in URL @url: @exception',
-              ['@url' => $url, '@exception' => $e->getMessage()]);
-          $retries = 0;
-        }
-        catch (RequestException $e) {
-          if ($retries > 1) {
-            $this->logger->error('Unable to get response from @url: @exception. Will retry',
-                ['@url' => $url, '@exception' => $e->getMessage()]);
-          }
-          else {
-            $this->logger->error('Unable to get response from @url: @exception',
-                ['@url' => $url, '@exception' => $e->getMessage()]);
-            $retries = 0;
-          }
-        }
         catch (\Exception $e) {
-          $this->logger->error('Unhandled exception downloading URL @url: @exception',
-              ['@url' => $url, '@exception' => $e->getMessage()]);
-          $retries = 0;
+          $this->handleURLExceptions($retries, $e, $url);
         }
         $retries--;
         if (is_null($contents) && ($retries > 0)) {
@@ -155,31 +132,8 @@ class TripalFileRetriever {
           $response = $this->httpClient->get($url, $options);
           $status = TRUE;
         }
-        catch (ConnectException $e) {
-          $this->logger->error('Invalid hostname in URL @url: @exception',
-              ['@url' => $url, '@exception' => $e->getMessage()]);
-          $retries = 0;
-        }
-        catch (ClientException $e) {
-          $this->logger->error('Invalid file in URL @url: @exception',
-              ['@url' => $url, '@exception' => $e->getMessage()]);
-          $retries = 0;
-        }
-        catch (RequestException $e) {
-          if ($retries > 1) {
-            $this->logger->error('Unable to get response from @url: @exception. Will retry',
-                ['@url' => $url, '@exception' => $e->getMessage()]);
-          }
-          else {
-            $this->logger->error('Unable to get response from @url: @exception',
-                ['@url' => $url, '@exception' => $e->getMessage()]);
-            $retries = 0;
-          }
-        }
         catch (\Exception $e) {
-          $this->logger->error('Unhandled exception downloading URL @url: @exception',
-              ['@url' => $url, '@exception' => $e->getMessage()]);
-          $retries = 0;
+          $this->handleURLExceptions($retries, $e, $url);
         }
         $retries--;
         if (!$status && ($retries > 0)) {
@@ -205,5 +159,45 @@ class TripalFileRetriever {
       }
     }
     return $status;
+  }
+
+  /**
+   * Logs various types of exceptions that may occur when downloading
+   *
+   * @param int &$retries
+   *   The number of times to retry the remote download if an error occurs
+   * @param \Exception $e
+   *   An exception to be handled
+   * @param string $url
+   *   The URL that caused the exception
+   * @return void
+   *   Any problems are sent to the logger
+   */
+  private function handleURLExceptions (int &$retries, \Exception $e, string $url): void {
+    if ($e instanceof ConnectException) {
+      $this->logger->error('Invalid hostname in URL @url: @exception',
+          ['@url' => $url, '@exception' => $e->getMessage()]);
+      $retries = 0;
+    }
+    elseif ($e instanceof ClientException) {
+      $this->logger->error('Invalid file in URL @url: @exception',
+          ['@url' => $url, '@exception' => $e->getMessage()]);
+      $retries = 0;
+    }
+    elseif ($e instanceof RequestException) {
+      if ($retries > 1) {
+        $this->logger->error('Unable to get response from @url: @exception. Will retry',
+            ['@url' => $url, '@exception' => $e->getMessage()]);
+      }
+      else {
+        $this->logger->error('Unable to get response from @url: @exception',
+            ['@url' => $url, '@exception' => $e->getMessage()]);
+      }
+    }
+    else {
+      $this->logger->error('Unhandled exception downloading URL @url: @exception',
+          ['@url' => $url, '@exception' => $e->getMessage()]);
+      $retries = 0;
+    }
   }
 }
