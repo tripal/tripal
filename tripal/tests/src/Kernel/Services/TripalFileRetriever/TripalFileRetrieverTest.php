@@ -21,7 +21,11 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
 
   private string $tempfile;
 
-protected string $mock_error = '';
+  /**
+   * @var string $mock_error
+   *   The most recent error message from the mocked tripal logger
+   */
+  protected string $mock_error = '';
 
   /**
    * {@inheritdoc}
@@ -32,11 +36,7 @@ protected string $mock_error = '';
     // Grab the container.
     $container = \Drupal::getContainer();
 
-    // Some of our tests will check logged messages that would normally go to
-    // php error_log. PHPUnit will throw an exception if anything is added to
-    // error_log so we want to mock TripalLogger to ensure all errors saved and
-    // not printed to the screen.
-    // We only need to mock the error method. Other methods will not be mocked.
+    // Create a mocked logger so we can access error messages from the Tripal logger
     $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
       ->onlyMethods(['error'])
       ->getMock();
