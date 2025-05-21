@@ -121,7 +121,7 @@ class TripalFileRetriever {
         $contents = NULL;
       }
     }
-    $return $contents;
+    return $contents;
   }
 
   /**
