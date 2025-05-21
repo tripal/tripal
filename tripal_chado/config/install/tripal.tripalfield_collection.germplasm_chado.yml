@@ -167,6 +167,35 @@ fields:
               region: content
               weight: 30
 
+    -   name: germplasm_relationship
+        content_type: germplasm
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Germplasm related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current germplasm is the subject; chose Reverse if the object is the current germplasm."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: name
+                linker_table: stock_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
+
     -   name: germplasm_dbxref
         content_type: germplasm
         label: Primary Database Reference
@@ -409,6 +438,35 @@ fields:
             default:
               region: content
               weight: 30
+
+    -   name: breeding_cross_relationship
+        content_type: breeding_cross
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Germplasm related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current germplasm is the subject; chose Reverse if the object is the current germplasm."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: name
+                linker_table: stock_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: breeding_cross_dbxref
         content_type: breeding_cross
@@ -653,6 +711,35 @@ fields:
               region: content
               weight: 30
 
+    -   name: germplasm_variety_relationship
+        content_type: germplasm_variety
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Germplasm related to this one. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current germplasm is the subject; chose Reverse if the object is the current germplasm."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: name
+                linker_table: stock_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
+
     -   name: germplasm_variety_dbxref
         content_type: germplasm_variety
         label: Primary Database Reference
@@ -895,6 +982,35 @@ fields:
             default:
               region: content
               weight: 30
+
+    -   name: ril_relationship
+        content_type: ril
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Germplasm related to this RIL. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current RIL is the subject; chose Reverse if the object is the current RIL."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: name
+                linker_table: stock_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
 
     -   name: ril_dbxref
         content_type: ril

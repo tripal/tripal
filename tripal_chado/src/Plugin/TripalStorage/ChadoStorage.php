@@ -349,7 +349,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $this->records->deleteRecords($base_table, $table);
         }
 
-        // Second, delete the record in the base talbe.
+        // Second, delete the record in the base table.
         $this->records->deleteRecords($base_table, $base_table);
       }
 
@@ -955,7 +955,16 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $base_table = $context['base_table'];
     $value_col_info = $this->getPathValueColumn($context['path_array']);
-    $link_id = $this->records->getRecordID($base_table);
+    $link_id = $prop_value->getValue();
+    if (!$link_id) {
+      // Setting the value to NULL and indicating this field contains a link
+      // to the base table will cause the value to be set automatically by
+      // ChadoRecord once it's available.
+      $link_id = $this->records->getRecordID($base_table);
+      if (!$link_id) {
+        $link_id = NULL;
+      }
+    }
     $elements = [
       'base_table' => $base_table,
       'root_table' => $context['root_table'],
@@ -967,7 +976,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       // Setting the value to NULL and indicating this field contains a link
       // to the base table will cause the value to be set automatically by
       // ChadoRecord once it's available.
-      'value' => $link_id ? $link_id : NULL,
+      'value' => $link_id,
       'operation' => $context['operation'],
       'delta' => $context['delta'],
       'field_name' => $context['field_name'],
@@ -975,7 +984,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     ];
     $this->records->addColumn($elements, TRUE);
 
-    $this->records->addCondition($elements);
+    // Setting the second parameter to TRUE indicates that conditions will be
+    // wrapped in an OR condition group if there is more than one condition.
+    $this->records->addCondition($elements, TRUE);
   }
 
   /**
@@ -1192,7 +1203,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       return $ret_array;
     }
 
-    // If the path is not a join but has a period then this specifices
+    // If the path is not a join but has a period then this specifies
     // the table and the column with the value.
     else if (preg_match('/\./', $curr_path)) {
 
@@ -1204,7 +1215,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       }
 
       // If the base table is not the same as the root table then
-      // we should add the field name to the colun alias. Otherwise
+      // we should add the field name to the column alias. Otherwise
       // we may have conflicts if mutiple fields use the same alias.
       $value_alias = $as ? $as : $value_column;
       if ($base_table != $root_table) {

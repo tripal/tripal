@@ -174,6 +174,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
         '#default_value' => $default_value,
         '#autocomplete_route_name' => 'tripal_chado.generic_autocomplete',
         '#size' => $options['size'],
+        '#maxlength' => 1000,
         '#placeholder' => $options['placeholder'],
       ];
       unset($options['size']);
@@ -373,7 +374,8 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
         }
         else {
           // If there is no record_id, then it is the empty
-          // field at the end of the list, and can be ignored.
+          // field at the end of the list, and should be removed
+          // so that drupal does not try to save it.
           unset($values[$val_key]);
         }
       }
@@ -386,7 +388,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // so that chado storage is informed to delete the linking record.
     $next_delta = $values ? array_key_last($values) + 1 : 0;
     $storage_values = $form_state->getStorage();
-    $initial_values = $storage_values['initial_values'][$field_name];
+    $initial_values = (array_key_exists($field_name, $storage_values['initial_values'])) ? $storage_values['initial_values'][$field_name] : [];
     foreach ($initial_values as $initial_value) {
       // For initial values, the key is always 'linker_id', regardless of $linker_key value.
       $linker_id = $initial_value['linker_id'] ?? 0;
