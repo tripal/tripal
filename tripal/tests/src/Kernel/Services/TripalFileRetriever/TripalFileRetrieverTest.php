@@ -95,7 +95,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
     $url = 'https://vmasiufekxlkajfd.org/fail.txt';
     $this->mock_error = '';
     $content = $retrieval_service->retrieveFileContents($url);
-    $this->assertStringContainsString('ERROR: Invalid hostname', $this->mock_error,
+    $this->assertStringContainsString('Invalid hostname', $this->mock_error,
       'Did not generate an error for an invalid host name');
     $this->assertNull($content,
       'Did not receive NULL for nonexistent URL');
@@ -148,7 +148,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
     $status = $retrieval_service->downloadFile($url, $this->tempfile);
     $this->assertFalse($status,
       'Local file was incorrectly created, status not FALSE');
-    $this->assertStringContainsString('ERROR: Invalid hostname', $this->mock_error,
+    $this->assertStringContainsString('Invalid hostname', $this->mock_error,
       'Did not generate an error for an invalid host name');
 
     // Test copy to local file of non-existent URL (valid host, invalid file)
