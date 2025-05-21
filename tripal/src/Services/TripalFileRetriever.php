@@ -59,24 +59,25 @@ class TripalFileRetriever {
    *   The data obtained from the specified url, or NULL if it could not be downloaded
    */
   public function retrieveFileContents(string $url, int $retries = 3, array $options = []): string|null {
+    $contents = NULL;
+
     // Distinguish between local and remote files
     $parsed_url = parse_url($url);
     if ($parsed_url['host'] ?? NULL) {
-      while ($retries > 0) {
+      while (is_null($contents) && ($retries > 0)) {
         try {
           $response = $this->httpClient->get($url, $options);
-          $response_body = (string) $response->getBody();
-          return $response_body;
+          $contents = (string) $response->getBody();
         }
         catch (ConnectException $e) {
           $this->logger->error('Invalid hostname in URL @url: @exception',
               ['@url' => $url, '@exception' => $e->getMessage()]);
-          return NULL;
+          $retries = 0;
         }
         catch (ClientException $e) {
           $this->logger->error('Invalid file in URL @url: @exception',
               ['@url' => $url, '@exception' => $e->getMessage()]);
-          return NULL;
+          $retries = 0;
         }
         catch (RequestException $e) {
           if ($retries > 1) {
@@ -86,36 +87,41 @@ class TripalFileRetriever {
           else {
             $this->logger->error('Unable to get response from @url: @exception',
                 ['@url' => $url, '@exception' => $e->getMessage()]);
-            return NULL;
+            $retries = 0;
           }
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
           $this->logger->error('Unhandled exception downloading URL @url: @exception',
               ['@url' => $url, '@exception' => $e->getMessage()]);
-          return NULL;
+          $retries = 0;
         }
         $retries--;
-        sleep(1);
+        if (is_null($contents) && ($retries > 0)) {
+          sleep(1);
+        }
       }
-      return NULL;
     }
     // If there was no host in the url, then it is considered a local file
     else {
-      $contents = FALSE;
       if (!file_exists($url)) {
         $this->logger->error('Local file @url does not exist',
             ['@url' => $url]);
       }
       else {
-        $contents = file_get_contents($url);
+        try {
+          $contents = file_get_contents($url);
+        }
+        catch (\Exception $e) {
+          $this->logger->error('Error reading from local file @url: @exception',
+              ['@url' => $url, '@exception' => $e->getMessage()]);
+        }
       }
+      // file_get_contents() should return FALSE for error, convert to NULL here
       if ($contents === FALSE) {
-        return NULL;
-      }
-      else {
-        return $contents;
+        $contents = NULL;
       }
     }
+    $return $contents;
   }
 
   /**
@@ -134,6 +140,8 @@ class TripalFileRetriever {
    *   Returns TRUE if successful, FALSE if error.
    */
   public function downloadFile(string $url, string $localfile, int $retries = 3, array $options = []): bool {
+    $status = FALSE;
+
     // Distinguish between local and remote files
     $parsed_url = parse_url($url);
     if ($parsed_url['host'] ?? NULL) {
@@ -141,21 +149,21 @@ class TripalFileRetriever {
       $options['sink'] = $localfile;
       $options['stream'] = FALSE;
 
-      while ($retries > 0) {
+      while (!$status && ($retries > 0)) {
         try {
           /** @var GuzzleHttp\Psr7\Response **/
           $response = $this->httpClient->get($url, $options);
-          return TRUE;
+          $status = TRUE;
         }
         catch (ConnectException $e) {
           $this->logger->error('Invalid hostname in URL @url: @exception',
               ['@url' => $url, '@exception' => $e->getMessage()]);
-          return FALSE;
+          $retries = 0;
         }
         catch (ClientException $e) {
           $this->logger->error('Invalid file in URL @url: @exception',
               ['@url' => $url, '@exception' => $e->getMessage()]);
-          return FALSE;
+          $retries = 0;
         }
         catch (RequestException $e) {
           if ($retries > 1) {
@@ -165,30 +173,37 @@ class TripalFileRetriever {
           else {
             $this->logger->error('Unable to get response from @url: @exception',
                 ['@url' => $url, '@exception' => $e->getMessage()]);
-            return FALSE;
+            $retries = 0;
           }
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
           $this->logger->error('Unhandled exception downloading URL @url: @exception',
               ['@url' => $url, '@exception' => $e->getMessage()]);
-          return FALSE;
+          $retries = 0;
         }
         $retries--;
-        sleep(1);
+        if (!$status && ($retries > 0)) {
+          sleep(1);
+        }
       }
-      return NULL;
     }
     // If there was no host in the url, then it is considered a local file
     else {
       if (!file_exists($url)) {
         $this->logger->error('Local file @url does not exist',
             ['@url' => $url]);
-        return FALSE;
       }
       else {
-        copy($url, $localfile);
-        return TRUE;
+        try {
+          copy($url, $localfile);
+          $status = TRUE;
+        }
+        catch (\Exception $e) {
+          $this->logger->error('Error copying @url to @local: @exception',
+              ['@url' => $url, '@local' => $localfile, '@exception' => $e->getMessage()]);
+        }
       }
     }
+    return $status;
   }
 }
