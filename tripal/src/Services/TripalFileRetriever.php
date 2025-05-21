@@ -74,7 +74,9 @@ class TripalFileRetriever {
         catch (\Exception $e) {
           $this->handleURLExceptions($retries, $e, $url);
         }
-$fail = \Drupal::state()->get('FAIL', '0');if ($fail) { $contents = NULL; $retries = 0; $this->logger->error('Unable to get response from @url: mocked_error', ['@url' => $url]); } //@@@ simulate error
+//$fail = \Drupal::state()->get('FAIL', '0');if ($fail) { $contents = NULL; $retries = 0; $this->logger->error('Unable to get response from @url: mocked_error', ['@url' => $url]); } //@@@ simulate error
+// Simulate lots of errors for testing
+$fail = (rand(0,9) <= 5); if ($fail) { $contents = NULL; $retries = 0; $this->logger->error('Unable to get response from @url: mocked_error', ['@url' => $url]); } //@@@ simulate error
         $retries--;
         if (is_null($contents) && ($retries > 0)) {
           sleep($options['delay'] ?? 1);
