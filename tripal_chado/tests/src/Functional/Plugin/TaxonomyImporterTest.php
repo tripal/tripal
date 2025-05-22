@@ -74,7 +74,6 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     ];
 
     $this->mock_error = '';
-\Drupal::state()->set('FAIL', 1); //@@@ Temporary!
     $taxonomy_importer->createImportJob($run_args, $file_details);
     $taxonomy_importer->prepareFiles();
     $taxonomy_importer->run();

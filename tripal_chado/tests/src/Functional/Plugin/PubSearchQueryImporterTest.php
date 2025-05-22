@@ -78,7 +78,6 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
 
     $this->mock_error = '';
-\Drupal::state()->set('FAIL', 1); //@@@ Temporary!
     $results = $plugin->retrieve($criteria, 1, 0);
     // We will have an error message in the logger if there was an intermittent download problem
     if ($this->mock_error) {

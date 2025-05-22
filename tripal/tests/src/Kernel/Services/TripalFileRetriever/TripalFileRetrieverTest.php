@@ -76,7 +76,6 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
 
     // Test retrieval of non-existant local file
     $url = DRUPAL_ROOT . 'modules/contrib/bogus/NOLICENSE.txt';
-\Drupal::state()->set('FAIL', 1); //@@@ Temporary!
     $this->mock_error = '';
     $content = $retrieval_service->retrieveFileContents($url);
     $this->assertStringContainsString('Local file', $this->mock_error,
