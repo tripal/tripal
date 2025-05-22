@@ -1917,13 +1917,15 @@ class ChadoRecords  {
    * @param string $table_alias
    *   The alias of the table.  For the base table, use the same table name as
    *   base tables don't have aliases.
+   * @param int $max_delta
+   *   Maximum number of linked records from a single table to return, zero for no limit.
    *
    * @throws \Exception
    *
    * @return int
    *   Returns the number of items for this table that were found.
    */
-  public function selectItems(string $base_table, string $table_alias) : int {
+  public function selectItems(string $base_table, string $table_alias, int $max_delta = 0) : int {
 
     // Indicates the number of items that were found for this table.
     // We need to return the number found because even if no records are found
@@ -1991,6 +1993,11 @@ class ChadoRecords  {
       // otherwise all remaining conditions are effectively added as AND.
       $this->addConditions($select, $record, $table_alias, $column_alias);
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
+
+      // Implement the max_delta limit if one was specified
+      if ($max_delta) {
+        $select->range(0, $max_delta);
+      }
 
       // Execute the query.
       $results = $select->execute();
