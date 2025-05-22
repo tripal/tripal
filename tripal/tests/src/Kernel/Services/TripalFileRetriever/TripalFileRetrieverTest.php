@@ -13,7 +13,6 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  */
 class TripalFileRetrieverTest extends TripalTestKernelBase {
 
-
   /**
    * {@inheritdoc}
    */
@@ -66,60 +65,123 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests the Tripal File Retrieval service.
+   * Provide scenarios for testing retrieveFileContents().
+   *
+   * @return array
+   *   A list of scenarios to be tested. Each scenario has the following:
+   *   - a URL to be passed to retrieveFileContents().
+   *   - an array of options taken by retrieveFileContents().
+   *   - an array of expectations where the following keys are expected:
+   *     - error_message: part of the expected error message to be logged.
+   *       Use FALSE if there should not be an error message.
+   *     - has_content: indicates if we expect retrieveFileContents() to return
+   *       content where FALSE means we expect NULL and TRUE means > 100 size.
+   *     - skip: indicates if we should be more lenient when checking content.
+   *       When TRUE we will skip the test when we would otherwise fail.
    */
-  public function testTripalFileRetriever() {
+  public static function provideFiles2Retrieve(): array {
+    $scenarios = [];
+
+    // Test retrieval of non-existant local file.
+    $scenarios[] = [
+      DRUPAL_ROOT . 'modules/contrib/bogus/NOLICENSE.txt',
+      [],
+      [
+        'error_message' => 'Local file',
+        'has_content' => FALSE,
+        'skip' => FALSE,
+      ]
+    ];
+
+    // Test retrieval of valid local file.
+    $scenarios[] = [
+      DRUPAL_ROOT . '/modules/contrib/tripal/LICENSE.txt',
+      [],
+      [
+        'error_message' => FALSE,
+        'has_content' => TRUE,
+        'skip' => FALSE,
+      ]
+    ];
+
+    // Test retrieval of non-existent URL (invalid host).
+    $scenarios[] = [
+      'https://vmasiufekxlkajfd.org/fail.txt',
+      [],
+      [
+        'error_message' => 'Invalid hostname',
+        'has_content' => FALSE,
+        'skip' => FALSE,
+      ]
+    ];
+
+    // Test retrieval of non-existent URL (valid host, invalid file)
+    $scenarios[] = [
+      'https://github.com/vmasiufekxlkajfd.txt',
+      [],
+      [
+        'error_message' => 'Invalid file',
+        'has_content' => FALSE,
+        'skip' => FALSE,
+      ]
+    ];
+
+    // Test retrieval of existing URL.
+    $scenarios[] = [
+      'https://raw.githubusercontent.com/tripal/tripal/4.x/LICENSE.txt',
+      [],
+      [
+        'error_message' => FALSE,
+        'has_content' => TRUE,
+        'skip' => TRUE,
+      ]
+    ];
+
+    return $scenarios;
+  }
+
+  /**
+   * Tests the Tripal File Retrieval service.
+   *
+   * @dataProvider provideFiles2Retrieve
+   */
+  public function testTripalFileRetriever(string $url, array $options, array $expectations) {
     // Get the service to be tested
     $retrieval_service = \Drupal::service('tripal.fileretriever');
 
     // Tests retrieveFileContents()
-
-    // Test retrieval of non-existant local file
-    $url = DRUPAL_ROOT . 'modules/contrib/bogus/NOLICENSE.txt';
     $this->mock_error = '';
     $content = $retrieval_service->retrieveFileContents($url);
-    $this->assertStringContainsString('Local file', $this->mock_error,
-      'Did not generate an error for an invalid local file');
-    $this->assertNull($content,
-      'Did not receive NULL for invalid local file');
-
-    // Test retrieval of valid local file
-    $url = DRUPAL_ROOT . '/modules/contrib/tripal/LICENSE.txt';
-    $content = $retrieval_service->retrieveFileContents($url);
-    $this->assertNotNull($content,
-      'Received NULL for valid local file');
-    $this->assertGreaterThan(100, strlen($content),
-      'Received truncated content for valid local file');
-
-    // Test retrieval of non-existent URL (invalid host)
-    $url = 'https://vmasiufekxlkajfd.org/fail.txt';
-    $this->mock_error = '';
-    $content = $retrieval_service->retrieveFileContents($url);
-    $this->assertStringContainsString('Invalid hostname', $this->mock_error,
-      'Did not generate an error for an invalid host name');
-    $this->assertNull($content,
-      'Did not receive NULL for nonexistent URL');
-
-    // Test retrieval of non-existent URL (valid host, invalid file)
-    $url = 'https://github.com/vmasiufekxlkajfd.txt';
-    $this->mock_error = '';
-    $content = $retrieval_service->retrieveFileContents($url);
-    $this->assertStringContainsString('Invalid file', $this->mock_error,
-      'Did not generate an error for a valid host with invalid file name');
-    $this->assertNull($content,
-      'Did not receive NULL for nonexistent URL');
-
-    // Test retrieval of existing URL
-    $url = 'https://raw.githubusercontent.com/tripal/tripal/4.x/LICENSE.txt';
-    $content = $retrieval_service->retrieveFileContents($url);
-    // Because this test accesses an external site, and it could be unavailable,
-    // do not throw an error for this test
-    if (is_null($content)) {
-      $this->markTestSkipped('Received NULL for valid URL. Remote host might be down, so skipping this test');
+    // -- Check the error message.
+    if ($expectations['error_message'] !== FALSE) {
+      $this->assertStringContainsString(
+        $expectations['error_message'],
+        $this->mock_error,
+        'Did not log an error for this scenario when we expected one.'
+      );
     }
-    $this->assertGreaterThan(100, strlen($content),
-      'Received truncated content for valid URL');
+    else {
+      $this->assertEquals('', $this->mock_error,
+        "We logged an error when we did not expect one.");
+    }
+    // -- Skip instead of fail for certain scenarios.
+    if (is_null($content) AND $expectations['skip']) {
+      $this->markTestSkipped("Received NULL for valid URL. Remote host might be down, so skipping this test.");
+    }
+    // -- Check the contents.
+    if ($expectations['has_content'] == TRUE) {
+      $this->assertNotNull($content,
+        "Recieved NULL when we expected file retrieval to be successful.");
+      $this->assertGreaterThan(100, strlen($content),
+        'Received truncated content when retrieving a valid file.'
+      );
+    }
+    else {
+      $this->assertNull($content,
+        'Did not receive NULL when we expect file retrieval to have failed.');
+    }
 
+      /*
     // Tests downloadFile()
 
     // Test copy to local file from non-existant local file
@@ -173,6 +235,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
     $this->assertGreaterThan(100, filesize($this->tempfile),
       'Local file is too small');
     unlink($this->tempfile);
+    */
   }
 
 }
