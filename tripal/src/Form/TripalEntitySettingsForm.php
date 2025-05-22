@@ -58,6 +58,14 @@ class TripalEntitySettingsForm extends FormBase {
       $widget_global_select_limit = 50;
     }
 
+    // The maximum number of linked records of a given type to publish on a single entity
+    $publish_global_max_delta = $form_state->getValue('publish_global_max_delta',
+      $settings->get('tripal_entity_type.publish_global_max_delta'));
+    // If nothing is set, create a default value that matches what the code defines as default
+    if (is_null($publish_global_max_delta) or (trim($publish_global_max_delta) === '')) {
+      $publish_global_max_delta = 100;
+    }
+
     $form['tripal_entity_settings']['#markup'] = 'Settings form for Tripal Content entities.';
 
     $form['default_cache_backend_field_values'] = [
@@ -97,6 +105,22 @@ class TripalEntitySettingsForm extends FormBase {
       '#required' => FALSE,
     ];
 
+    $form['publish_global_max_delta'] = [
+      '#type' => 'number',
+      '#min' => 0,
+      '#step' => 1,
+      '#title' => t('Maximum number of linked records to publish'),
+      '#description' => t('The value here controls how many linked records of a given type'
+                        . ' are published on a single entity.'
+                        . ' For example, there may be tens of thousands of genes linked to'
+                        . ' a single genome annotation, which is too many to display on the'
+                        . ' entity page.'
+                        . ' Enter <em>0</em> to indicate that there is no limit (not recommended).'),
+//@@@ @todo                        . " This value can be overridden by an individual widget's settings."),
+      '#default_value' => $publish_global_max_delta,
+      '#required' => FALSE,
+    ];
+
     $form['submit'] = [
       '#type' => 'submit',
       '#value' => t('Save'),
@@ -116,14 +140,19 @@ class TripalEntitySettingsForm extends FormBase {
 
     if (!preg_match("/^[A-Za-z ]*$/", $allowed_title_tags)) {
       $form_state->setErrorByName('allowed_title_tags',
-        t('Only letters and spaces can be used.'));
+        $this->t('Only letters and spaces can be used.'));
     }
 
     $widget_global_select_limit = trim($form_state->getValue('widget_global_select_limit'));
+    $publish_global_max_delta = trim($form_state->getValue('publish_global_max_delta'));
 
     // Non-negative integers or an empty string are valid
     if (!preg_match('/^\d*$/', $widget_global_select_limit)) {
       $form_state->setErrorByName('widget_global_select_limit',
+        $this->t('This field must contain an integer value, or be left blank.'));
+    }
+    if (!preg_match('/^\d*$/', $publish_global_max_delta)) {
+      $form_state->setErrorByName('publish_global_max_delta',
         $this->t('This field must contain an integer value, or be left blank.'));
     }
   }
@@ -144,6 +173,7 @@ class TripalEntitySettingsForm extends FormBase {
     $allowed_title_tags = preg_replace('/ +/', ' ', $allowed_title_tags);
 
     $widget_global_select_limit = trim($form_state->getValue('widget_global_select_limit'));
+    $publish_global_max_delta = trim($form_state->getValue('publish_global_max_delta'));
 
     // Update configuration
     \Drupal::configFactory()
@@ -151,6 +181,7 @@ class TripalEntitySettingsForm extends FormBase {
       ->set('tripal_entity_type.default_cache_backend_field_values', $drupal_entity_field_store)
       ->set('tripal_entity_type.allowed_title_tags', $allowed_title_tags)
       ->set('tripal_entity_type.widget_global_select_limit', $widget_global_select_limit)
+      ->set('tripal_entity_type.publish_global_max_delta', $publish_global_max_delta)
       ->save();
 
     $this->messenger()->addStatus('Settings have been saved.');
