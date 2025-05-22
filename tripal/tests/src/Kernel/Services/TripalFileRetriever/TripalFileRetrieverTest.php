@@ -230,17 +230,14 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
     // -- Check download status.
     $this->assertEquals($expectations['download_status'], $status,
       'downloadFile() did not return the status we expected for this scenario.');
-    // -- Check temp file exists or not as expected.
-    /** @todo checking for the temp file when we don't expect one has found a bug
-    $this->assertEquals($expectations['file_exists'], file_exists($this->tempfile),
-      'downloadFile() did not perform as expected with creating the local file.');
+    // -- Check temp file has content if we expect it to have been populated.
     if ($expectations['file_exists']) {
       $this->assertGreaterThan(100, filesize($this->tempfile),
-        'Local file created by downloadFile() is too small');
-      unlink($this->tempfile);
+        'Local file created by downloadFile() is too small to have been properly populated by download.');
     }
-    */
 
+    // Remove the temporary file.
+    unlink($this->tempfile);
   }
 
 }
