@@ -70,6 +70,9 @@ jobs:
             --volume=`pwd`:/var/www/drupal/web/modules/contrib/tripal \
             tripaldocker:localdocker
           docker exec tripaldocker service postgresql restart
+          docker exec tripaldocker bash -c 'if $(dpkg --compare-versions "${drupalversion}" "le" "10.9"); then \
+            mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.10.5.xml \
+            && mv web/modules/contrib/tripal/phpunit.9.6.xml web/modules/contrib/tripal/phpunit.xml; fi'
       # Runs the PHPUnit tests.
       - name: Run PHPUnit Tests
         env:
