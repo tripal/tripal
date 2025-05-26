@@ -263,6 +263,49 @@ class ChadoManageCommands extends DrushCommands {
   }
 
   /**
+   * Unpublish previously published Tripal Content. Chado records are not modified.
+   *
+   * @command tripal-chado:unpublish
+   * @aliases trp-chado-unpublish
+   * @options schema-name
+   *   The name of the chado schema to use.
+   * @param string $bundle
+   *   The id of the TripalContentType you would like to unpublish content for.
+   * @param array $options
+   *   Unpublish options. Defaults are
+   *   'orphaned' => TRUE
+   * @usage drush trp-chado-unpublish contact
+   *   Submits a standard chado publish job to unpublish only orphaned records
+   *   in the contact content type
+   * @usage drush trp-chado-unpublish organism --orphaned=FALSE --schema-name=prod
+   *   Submits a chado publish job for the organism content type which
+   *   unpublishes all records based on the prod.organism table.
+   */
+  public function unpublish(string $bundle, array $options = [
+      'schema-name' => '',
+      'datastore' => 'chado_storage',
+      'orphaned' => TRUE,
+    ]) {
+
+    // If schema not supplied then grab default chado schema.
+    if (!$options['schema-name']) {
+      $chado = \Drupal::service('tripal_chado.database');
+      $default_chado_schema = $chado->getSchemaName();
+      $options['schema-name'] = $default_chado_schema;
+    }
+    $values = [
+      'orphaned' => $options['orphaned'],
+      'unpublish' => TRUE,
+    ];
+    // @todo validate the bundle
+    $bundle = $bundle;
+    $datastore = $options['datastore'];
+
+    \Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::runTripalJob(
+      $bundle, $datastore, $values);
+  }
+
+  /**
    * Add a Chado schema to Tripal. Does not set this schema as the default, as
    * there can be more than one Chado schema added to Tripal.
    * See the command tripal-chado:set_default for this functionality.
