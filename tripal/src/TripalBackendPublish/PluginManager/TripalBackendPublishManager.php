@@ -110,7 +110,6 @@ class TripalBackendPublishManager extends DefaultPluginManager {
       $publish_options['bundle'] = $bundle;
       $publish_options['datastore'] = $datastore;
       $publish_options['job'] = $job;
-print "CP5U05 options";var_dump($options);print "===\n";//@@@
       $publish_instance->publish($publish_options);
     }
     catch (Exception $e) {

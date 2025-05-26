@@ -575,7 +575,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // that are no longer present in chado
     $batches = $this->divideIntoBatches($published_entity_ids);
     foreach ($batches as $batch) {
-      $query = $chado->select($this->base_table, 'B');
+      $query = $chado->select('1:' . $this->base_table, 'B');
       $query->addField('B', $pkey, 'pkey');
       $query->condition($pkey, array_keys($batch), 'IN');
       $results = $query->execute()->fetchAllAssoc('pkey');
@@ -586,7 +586,6 @@ class ChadoPublish extends TripalBackendPublishBase {
           $orphaned_entity_ids[] = $entity_id;
         }
       }
-print "CPU03 orphaned entity IDs "; var_dump($orphaned_entity_ids); //@@@
     }
 
     return $orphaned_entity_ids;
@@ -898,7 +897,6 @@ print "CPU03 orphaned entity IDs "; var_dump($orphaned_entity_ids); //@@@
    *   The number of entities deleted
    */
   protected function deleteEntities(array $entity_ids): int {
-print "CPU10 deleteEntities "; var_dump($entity_ids); //@@@
     $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
     $batches = $this->divideIntoBatches($entity_ids);
     $count = 0;
@@ -1073,7 +1071,6 @@ print "CPU10 deleteEntities "; var_dump($entity_ids); //@@@
       ->delete($field_table)
       ->condition('entity_id', $entity_ids, 'IN');
     $count = $delete_query->execute();
-print "CPU21 $field_name count=";var_dump($count);
     return $count;
   }
 
@@ -1604,8 +1601,8 @@ print "CPU21 $field_name count=";var_dump($count);
    *   Optional keys are:
    *     'job' - A Tripal job object
    *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
-   *     'unpublish' - A true value to instead unpublish content.
-   *     'orphaned' - Used for unpublish to only unpublish orphaned content.
+   *     'unpublish' - A true value to instead unpublish content, needed to get to this function.
+   *     'orphaned' - Used for unpublish to only unpublish orphaned content, defaults to TRUE.
    *
    * @return array
    *   For publish the returned array is a list of titles. Here it is just
@@ -1623,7 +1620,7 @@ print "CPU21 $field_name count=";var_dump($count);
     $entity_ids = $this->getEntityIDs();
 
     // If in orphaned mode, generate a subset of which entity IDs to unpublish
-    if ($options['orphaned'] ?? FALSE) {
+    if ($options['orphaned'] ?? TRUE) {
       $entity_ids = $this->findOrphanedEntities($entity_ids);
     }
 

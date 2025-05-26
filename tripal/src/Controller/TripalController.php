@@ -90,13 +90,6 @@ class TripalController extends ControllerBase{
     ];
   }
 
-  public function tripalContentUnpublishMultiple() {
-//@@@ can delete?
-    return [
-      '#markup' => 'CP01 Not yet upgraded.',
-    ];
-  }
-
   /**
    * Provides contents for the File Usgae page.
    */
