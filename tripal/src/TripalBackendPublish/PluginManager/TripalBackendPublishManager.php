@@ -103,12 +103,14 @@ class TripalBackendPublishManager extends DefaultPluginManager {
   public static function runTripalJob($bundle, $datastore, $options = [], \Drupal\tripal\Services\TripalJob $job = NULL) {
     try {
       // Load the specified plugin. An invalid plugin_id is caught during __construct().
-      $publish_service = \Drupal::service('tripal.backend_publish');
+      $service_name = 'tripal.backend_publish';
+      $publish_service = \Drupal::service($service_name);
       $publish_instance = $publish_service->createInstance($datastore, []);
       $publish_options = $options;
       $publish_options['bundle'] = $bundle;
       $publish_options['datastore'] = $datastore;
       $publish_options['job'] = $job;
+print "CP5U05 options";var_dump($options);print "===\n";//@@@
       $publish_instance->publish($publish_options);
     }
     catch (Exception $e) {

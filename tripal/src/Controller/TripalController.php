@@ -90,9 +90,10 @@ class TripalController extends ControllerBase{
     ];
   }
 
-  public function tripalContentUnpublishOrphans() {
+  public function tripalContentUnpublishMultiple() {
+//@@@ can delete?
     return [
-      '#markup' => 'Not yet upgraded.',
+      '#markup' => 'CP01 Not yet upgraded.',
     ];
   }
 
