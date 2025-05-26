@@ -159,7 +159,6 @@ tripal.content_bio_data_publish_form:
 tripal.content_type_unpublish_multiple:
   path: 'admin/content/bio_data/unpublish'
   defaults:
-#@@@    _controller: '\Drupal\tripal\Controller\TripalController::tripalContentUnpublish'
     _form: Drupal\tripal\Form\TripalEntityUnpublishMultipleForm
     _title: 'Unpublish Content'
     _description: 'Unpublish previously published content.'
