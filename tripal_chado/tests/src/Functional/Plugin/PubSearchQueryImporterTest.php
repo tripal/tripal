@@ -14,13 +14,36 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
 {
 
   /**
+   * @var string $mock_error
+   *   The most recent error message from the mocked tripal logger
+   */
+  protected string $mock_error = '';
+
+  protected function setUp() :void {
+    parent::setUp();
+
+    // Grab the container.
+    $container = \Drupal::getContainer();
+
+    // Create a mocked logger so we can access error messages from the Tripal logger
+    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+      ->onlyMethods(['error'])
+      ->getMock();
+    $mock_logger->method('error')
+      ->willReturnCallback(function($message, $context, $options) {
+          $this->mock_error .= str_replace(array_keys($context), $context, $message);
+          return NULL;
+        });
+    $container->set('tripal.logger', $mock_logger);
+  }
+
+  /**
    * Confirm basic Publications importer functionality.
    *
    * @group pub
    */
   public function testPubSearchQueryImporterSimpleTest()
   {
-    $this->assertNotEquals(1, 0);
     // Public schema connection
     $public = \Drupal::database();
 
@@ -53,10 +76,18 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     $plugin_id = $criteria['form_state_user_input']['plugin_id'];
 
     $plugin = $pub_library_manager->createInstance($plugin_id, []);
+
+    $this->mock_error = '';
     $results = $plugin->retrieve($criteria, 1, 0);
-    // This should return a single pub since we used the limit 1 in the retrieve function
-    $pub_count = count($results['pubs']);
-    $this->assertEquals($pub_count, 1, 'One publication should have been retrieved but was not');
+    // We will have an error message in the logger if there was an intermittent download problem
+    if ($this->mock_error) {
+      $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
+    }
+    else {
+      // This should return a single pub since we used the limit 1 in the retrieve function
+      $pub_count = count($results['pubs']);
+      $this->assertEquals($pub_count, 1, 'One publication should have been retrieved but was not');
+    }
 
 
     // Specific PMID
@@ -79,19 +110,23 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     $pub_record = $pub_library_manager->getSearchQuery(intval($query_id));
     $criteria = unserialize($pub_record->criteria);
     // Perform a lookup for the PMID:39125884
+    $this->mock_error = '';
     $results = $plugin->retrieve($criteria, 1, 0);
-
-    // This should return a single pub since we used the limit 1 in the retrieve function
-    $pub_count = count($results['pubs']);
-    $this->assertEquals(1, $pub_count, 'One publication should have been retrieved but was not');
-    $this->assertEquals('39125884', $results['pubs'][0]['Publication Dbxref'], 'Publication Dbxref should have been 39125884 but it is not');
-    $this->assertEquals('10.3390/ijms25158314', $results['pubs'][0]['DOI'], 'DOI should have been 10.3390/ijms25158314 but it is not - parsing issue?');
-    $this->assertEquals('2024', $results['pubs'][0]['Year'], 'Year should have been 2024 but it is not - parsing issue?');
-    $this->assertEquals('Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.', $results['pubs'][0]['Title'], 'Title should have been Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus. but it is not - parsing issue?');
-    $this->assertEquals('Yang X, Zhu P, Gui J. Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus. International journal of molecular sciences. 2024 Jul 30; 25(15).', $results['pubs'][0]['Citation'], 'Citation does not look correct, review test for details');
-    $this->assertGreaterThan(2, count($results['pubs'][0]['Author List']), 'Author List should have more than 2 elements but does not');
-
-
+    // We will have an error message in the logger if there was an intermittent download problem
+    if ($this->mock_error) {
+      $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
+    }
+    else {
+      // This should return a single pub since we used the limit 1 in the retrieve function
+      $pub_count = count($results['pubs']);
+      $this->assertEquals(1, $pub_count, 'One publication should have been retrieved but was not');
+      $this->assertEquals('39125884', $results['pubs'][0]['Publication Dbxref'], 'Publication Dbxref should have been 39125884 but it is not');
+      $this->assertEquals('10.3390/ijms25158314', $results['pubs'][0]['DOI'], 'DOI should have been 10.3390/ijms25158314 but it is not - parsing issue?');
+      $this->assertEquals('2024', $results['pubs'][0]['Year'], 'Year should have been 2024 but it is not - parsing issue?');
+      $this->assertEquals('Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.', $results['pubs'][0]['Title'], 'Title should have been Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus. but it is not - parsing issue?');
+      $this->assertEquals('Yang X, Zhu P, Gui J. Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus. International journal of molecular sciences. 2024 Jul 30; 25(15).', $results['pubs'][0]['Citation'], 'Citation does not look correct, review test for details');
+      $this->assertGreaterThan(2, count($results['pubs'][0]['Author List']), 'Author List should have more than 2 elements but does not');
+    }
     // Perform an actual import with the importer (on our second query - the one above to see if props get imported in)
     $importer_manager = \Drupal::service('tripal.importer');
     $pub_search_query_loader_importer = $importer_manager->createInstance('pub_search_query_loader');
@@ -101,9 +136,10 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
       'query_id' => 2,
     ];
     $pub_search_query_loader_importer->createImportJob($run_args);
+    $this->mock_error = '';
     $able_to_run = $pub_search_query_loader_importer->run();
-    if ($able_to_run === FALSE) {
-      $this->markTestSkipped('Unable to access NCBI to test publication importer.');
+    if ($this->mock_error) {
+      $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
     }
     $pub_records = $chado->query("SELECT * FROM {1:pub}",[]);
     $pub_record = NULL;
@@ -116,9 +152,9 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     even though an import was executed');
 
 
-    $this->assertEquals($pub_record->title, 'Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.', 'Publication title is different');
-    $this->assertEquals($pub_record->series_name, 'International journal of molecular sciences', 'Series name is different');
-    $this->assertEquals($pub_record->pyear, '2024', 'Publication year is different');
+    $this->assertEquals('Advancements of CRISPR-Mediated Base Editing in Crops and Potential Applications in Populus.', $pub_record->title, 'Publication title is different');
+    $this->assertEquals('International journal of molecular sciences', $pub_record->series_name, 'Series name is different');
+    $this->assertEquals('2024', $pub_record->pyear, 'Publication year is different');
 
     $pub_id = $pub_record->pub_id;
     $pub_props = $chado->query("SELECT count(*) as c1 FROM {1:pubprop} WHERE pub_id = :pub_id",[
@@ -214,7 +250,11 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
     // We need a clean instance for the test
     $pub_search_query_loader_importer = $importer_manager->createInstance('pub_search_query_loader');
     $pub_search_query_loader_importer->setArguments($arguments);
+    $this->mock_error = '';
     $result = $pub_search_query_loader_importer->run();
+    if ($this->mock_error) {
+      $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
+    }
     $pub = $chado->select('1:pub', 'p')
       ->fields('p')
       ->condition('p.title', $title)

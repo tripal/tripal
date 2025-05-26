@@ -8,6 +8,10 @@ services:
     class: Drupal\tripal\Services\bulkPgSchemaInstaller
   tripal.job:
     class: Drupal\tripal\Services\TripalJob
+  tripal.fileretriever:
+    class: Drupal\tripal\Services\TripalFileRetriever
+    arguments: ['@http_client',
+                '@tripal.logger']
   tripal.logger:
     class: Drupal\tripal\Services\TripalLogger
   tripal.token_parser:
