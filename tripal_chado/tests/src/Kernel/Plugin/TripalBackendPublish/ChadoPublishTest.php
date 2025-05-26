@@ -187,7 +187,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
       $this->assertCount($key, $all_entities,
         "We expected there to be the same total number of organism entities as we inserted so far.");
 
-      // Finally confirm title and URL are correct
+      // confirm title and URL are correct
       $expected_title = '=T=' . $expected[$key];
       $expected_url = '/U/' . $expected[$key];
       $title_string = $all_entities[$key]->getTitle();
@@ -200,6 +200,24 @@ class ChadoPublishTest extends ChadoTestKernelBase {
       $i++;
     }
 
+    // Tests unpublishing
+    // Try to unpublish orphaned, but since there are no orphaned entities this should do nothing
+    $publish_options = ['bundle' => 'organism', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName, 'unpublish' => TRUE];
+    $unpublished_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(0, $unpublished_entities, 'No orphans, should not have unpublished any records');
+
+    // Delete one chado record and confirm that we can now unpublish it as an orphaned record
+    $n = $this->connection->delete('1:organism')
+      ->condition('organism_id', 2, '=')
+      ->execute();
+    $this->assertEquals(1, $n, 'Did not delete organism from chado where organism_id=2');
+    $unpublished_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(1, $unpublished_entities, 'Did not unpublish one orphaned organism entity');
+
+    // Unpublish all remaining non-orphaned organism entities
+    $publish_options['orphaned'] = FALSE;
+    $unpublished_entities = $this->chado_publish->publish($publish_options);
+    $this->assertCount(6, $unpublished_entities, 'Did not unpublish the 6 remaining organism entities');
   }
 
   /**
