@@ -1996,6 +1996,20 @@ class ChadoRecords  {
 
       // Implement the max_delta limit if one was specified
       if ($max_delta) {
+        $num_rows = $select->range(0, $max_delta + 1)->countQuery()->execute()->fetchField();
+        if ($num_rows > $max_delta) {
+          // Limit reached and some records not returned
+          $first_key = array_key_first($record['conditions']);
+          $first_condition_value = $record['conditions'][$first_key]['value'];
+          $this->logger->warning(t('The number of @chado_table records exceeds the configured limit'
+            . ' for @first_key=@first_condition_value, only @max_delta records will be returned',
+            [
+             '@chado_table' => $chado_table,
+             '@first_key' => $first_key,
+             '@first_condition_value' => $first_condition_value,
+             '@max_delta' => $max_delta
+            ]));
+        }
         $select->range(0, $max_delta);
       }
 
