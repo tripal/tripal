@@ -1,19 +1,10 @@
 <?php
+
 namespace Drupal\Tests\tripal_chado\Traits;
 
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
-use Drupal\Core\Datetime\Entity\DateFormat;
-use Drupal\Core\Entity\Entity\EntityFormDisplay;
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
-use Drupal\Core\Field\FieldItemList;
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\tripal\Entity\TripalEntity;
-use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * Provides functions related to testing Chado Fields.
@@ -26,35 +17,35 @@ trait ChadoFieldTestTrait {
   /**
    * An array of FieldStorageConfig objects keyed by the field name.
    *
-   * @var FieldStorageConfig[]
+   * @var \Drupal\field\Entity\FieldStorageConfig[]
    */
   protected array $fieldStorage = [];
 
   /**
    * An array of FieldConfig objects keyed by the field name.
    *
-   * @var FieldConfig[]
+   * @var \Drupal\field\Entity\FieldConfig[]
    */
   protected array $fieldConfig = [];
 
   /**
    * An array of TripalEntityType objects keyed by the bundle name.
    *
-   * @var TripalEntityType[]
+   * @var \Drupal\tripal\Entity\TripalEntityType[]
    */
   protected array $tripalEntityType = [];
 
   /**
    * An array of display objects keyed by Tripal Content Type bundle name.
    *
-   * @var EntityViewDisplay[]
+   * @var \Drupal\Core\Entity\Entity\EntityViewDisplay[]
    */
   protected array $entityViewDisplay = [];
 
   /**
    * An array of display objects keyed by Tripal Content Type bundle name.
    *
-   * @var EntityFormDisplay[]
+   * @var \Drupal\Core\Entity\Entity\EntityFormDisplay[]
    */
   protected array $entityFormDisplay = [];
 
@@ -66,8 +57,7 @@ trait ChadoFieldTestTrait {
   protected ChadoStorage $chadoStorage;
 
   /**
-   * An array of propertyType objects initialized based on the $fields
-   * properties array.
+   * PropertyType objects initialized based on the $fields properties array.
    *
    * @var array
    *   This is an array of property types 3 levels deep:
@@ -78,8 +68,7 @@ trait ChadoFieldTestTrait {
   protected array $propertyTypes = [];
 
   /**
-   * An array of propertyValue objects initialized based on the $fields
-   * properties array.
+   * PropertyValue objects initialized based on the $fields properties array.
    *
    * @var array
    */
@@ -87,14 +76,15 @@ trait ChadoFieldTestTrait {
 
   /**
    * An array for testing ChadoStorage::*Values methods for the current fields.
+   *
    * This is an associative array 5-levels deep.
    *    The 1st level is the field name (e.g. ChadoOrganismDefault).
    *    The 2nd level is the delta value (e.g. 0).
    *    The 3rd level is a field key name (i.e. record_id + value).
    *    The 4th level must contain the following three keys/value pairs
-   *      - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
-   *      - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
-   *      - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *      - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object.
+   *      - "type": a \Drupal\tripal\TripalStorage\StoragePropertyType object.
+   *      - "definition": a \Drupal\Field\Entity\FieldConfig object.
    *
    * @var array
    */
@@ -103,7 +93,7 @@ trait ChadoFieldTestTrait {
   /**
    * Confirms the widget element is as expected in the TripalEntity form.
    *
-   * @param mixed $expected_default
+   * @param mixed $expected_field_defaults
    *   The default value we expect to be set in the widget form for each field
    *   defined in the fields_expected param.
    * @param array $fields_expected
@@ -132,32 +122,31 @@ trait ChadoFieldTestTrait {
 
       // Check that the default is set properly after create.
       /** @todo finish this...
-      foreach (\Drupal\Core\Render\Element::children($widget_form_element) as $element_key) {
-        $element = $widget_form_element[$element_key];
-        $expected_values = $expected_defaults[$element_key];
-
-        // Check that there is an element for each expected value.
-        foreach ($expected_values as $key => $value) {
-          $this->assertArrayHasKey($key, $element, $message_prefix . ": $field_name [$element_key] widget element should contain an element with this name.");
-          /** @todo Figure out how to check the value.
-          if (array_key_exists('#value', $element[$key])) {
-            $this->assertEquals($value, $element[$key]['#value'], $message_prefix . ": $field_name [$element_key] [$key][#value] doesn't match what we expect. Element:" . print_r($element[$key], TRUE));
-          }
-          elseif (array_key_exists('#default_value', $element[$key])) {
-            $this->assertEquals($value, $element[$key]['#default_value'], $message_prefix . ": $field_name [$element_key] [$key][#default_value] doesn't match what we expect. Element:" . print_r($element[$key], TRUE));
-          }
-          else {
-            print "\n$field_name [$element_key] [$key]: " . print_r(array_keys($element[$key]), TRUE);
-          }
-        }
-      }
+       * foreach (\Drupal\Core\Render\Element::children($widget_form_element) as $element_key) {
+       * $element = $widget_form_element[$element_key];
+       * $expected_values = $expected_defaults[$element_key];
+       *
+       * // Check that there is an element for each expected value.
+       * foreach ($expected_values as $key => $value) {
+       * $this->assertArrayHasKey($key, $element, $message_prefix . ": $field_name [$element_key] widget element should contain an element with this name.");
+       * /** @todo Figure out how to check the value.
+       * if (array_key_exists('#value', $element[$key])) {
+       * $this->assertEquals($value, $element[$key]['#value'], $message_prefix . ": $field_name [$element_key] [$key][#value] doesn't match what we expect. Element:" . print_r($element[$key], TRUE));
+       * }
+       * elseif (array_key_exists('#default_value', $element[$key])) {
+       * $this->assertEquals($value, $element[$key]['#default_value'], $message_prefix . ": $field_name [$element_key] [$key][#default_value] doesn't match what we expect. Element:" . print_r($element[$key], TRUE));
+       * }
+       * else {
+       * print "\n$field_name [$element_key] [$key]: " . print_r(array_keys($element[$key]), TRUE);
+       * }
+       * }
+       * }
         */
     }
   }
 
   /**
-   * Called in the test setUp() for kernel tests to ensure all the needed
-   * resources are available.
+   * Called in kernel test setUp() to ensure needed resources are available.
    *
    * @param array $system_under_test
    *   An array defining the environment to setup with the following keys:
@@ -260,4 +249,5 @@ trait ChadoFieldTestTrait {
       $this->chadoStorage->addFieldDefinition($field_name, $fieldConfig);
     }
   }
+
 }

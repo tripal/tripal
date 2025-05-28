@@ -4,11 +4,6 @@ namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\tripal\Entity\TripalEntity;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\Core\Form\FormState;
 
 /**
  * Tests the ChadoPropertyTypeDefault Field Type.
@@ -196,12 +191,12 @@ class ChadoPropertyWidgetFormTest extends ChadoTestKernelBase {
   /**
    * Tests the ChadoPropertyType field through entity form + field widget.
    *
-   * @dataProvider provideScenarios
-   *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
    */
   public function testChadoPropertyWidgetUpdate(int $current_scenario_key, string $current_scenario_label) {
 
@@ -234,4 +229,5 @@ class ChadoPropertyWidgetFormTest extends ChadoTestKernelBase {
       $form_object->submitForm($form, $form_state);
     }
   }
+
 }

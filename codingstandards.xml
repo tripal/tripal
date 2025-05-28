@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<ruleset name="TripalCultivate">
+    <description>Drupal standards but with a few exceptions.</description>
+
+    <rule ref="Drupal">
+        <!-- We want to allow underscores in class property names. -->
+        <exclude name="Drupal.NamingConventions.ValidVariableName.LowerCamelName"/>
+        <!-- We want to allow docblocks in more places, namely above "use" -->
+        <exclude name="Drupal.Commenting.InlineComment.DocBlock"/>
+    </rule>
+
+    <rule ref="DrupalPractice">
+    </rule>
+
+</ruleset>

@@ -4,11 +4,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
-use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\tripal\Entity\TripalEntity;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\Core\Form\FormState;
 
 /**
  * Tests the ChadoPropertyTypeDefault Field Type.
@@ -211,14 +207,14 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
   /**
    * Tests the ChadoPropertyType field through TripalEntity->save().
    *
-   * @dataProvider provideScenarios
-   *
    * @param int $current_scenario_key
    *   The key of the scenario in the YAML.
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
+   *
+   * @dataProvider provideScenarios
    */
-  public function testChadoPropertyTypeEntityCRUD(int $current_scenario_key, string $current_scenario_label) {
+  public function testChadoPropertyTypeEntityCrud(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
 
     // 1. Create the entity with that value set.
@@ -231,7 +227,6 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     $this->assertEquals(SAVED_NEW, $status, "We expected to have saved a new entity for our " . $current_scenario['label'] . " scenario.");
 
     // @debug print_r($entity->toArray());
-
     // 2. Load the entity we just created so we can check the values.
     $created_entity = TripalEntity::load($entity->id());
     $this->assertFieldValuesMatch($current_scenario['create']['expected'], $created_entity, $current_scenario['label'] . ' CREATE ');
@@ -249,4 +244,5 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
     // @debug print_r($updated_entity->toArray());
     $this->assertFieldValuesMatch($current_scenario['edit']['expected'], $updated_entity, $current_scenario['label'] . ' EDIT ');
   }
+
 }
