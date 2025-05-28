@@ -1931,7 +1931,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
   /**
    * Searches for a landmark as an existing chado feature, and returns
    * the cvterm name for this landmark, and also adds it to
-   * $this->landmarks and $this->landmark_cvterm_id
+   * $this->landmarks and $this->landmark_types_type_ids
    *
    * @param string $uniquename
    *   The landmark's unique identifier
@@ -1946,9 +1946,9 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $query = $chado->select('1:feature', 'F');
     $query->condition('F.uniquename', $uniquename, '=');
     $query->condition('F.organism_id', $organism_id, '=');
-    $query->join('1:cvterm', 'T', 'F.type_id = T.cvterm_id');
+    $query->join('1:cvterm', 'T', '"F".type_id = "T".cvterm_id');
     $query->addField('F', 'feature_id', 'feature_id');
-    $query->addField('F', 'type_', 'type_id');
+    $query->addField('F', 'type_id', 'type_id');
     $query->addField('T', 'name', 'typename');
     // Because the unique constraint for the feature table is
     // "feature_c1" UNIQUE CONSTRAINT, btree (organism_id, uniquename, type_id)
@@ -1958,7 +1958,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $results = $query->execute();
       $record = $results->fetchObject();
       $this->landmarks[$uniquename] = $record->feature_id;
-      $this->landmark_cvterm_id[$uniquename] = $record->type_id;
+      $this->landmark_types_type_ids[$record->typename] = $record->type_id;
       $typename = $record->typename;
     }
     return $typename;
