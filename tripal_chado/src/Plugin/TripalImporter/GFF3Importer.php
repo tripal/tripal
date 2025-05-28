@@ -1929,6 +1929,42 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
   }
 
   /**
+   * Searches for a landmark as an existing chado feature, and returns
+   * the cvterm name for this landmark, and also adds it to
+   * $this->landmarks and $this->landmark_cvterm_id
+   *
+   * @param string $uniquename
+   *   The landmark's unique identifier
+   * @param int $organism_id
+   *   The organism_id for this feature
+   * @return string|NULL
+   *   Name of the cvterm type for the landmark, or NULL if it does not exist in chado
+   */
+  private function queryLandmark(string $uniquename, int $organism_id): ?string {
+    $typename = NULL;
+    $chado = $this->getChadoConnection();
+    $query = $chado->select('1:feature', 'F');
+    $query->condition('F.uniquename', $uniquename, '=');
+    $query->condition('F.organism_id', $organism_id, '=');
+    $query->join('1:cvterm', 'T', 'F.type_id = T.cvterm_id');
+    $query->addField('F', 'feature_id', 'feature_id');
+    $query->addField('F', 'type_', 'type_id');
+    $query->addField('T', 'name', 'typename');
+    // Because the unique constraint for the feature table is
+    // "feature_c1" UNIQUE CONSTRAINT, btree (organism_id, uniquename, type_id)
+    // we might get more than one match. We will only proceed if exactly one.
+    $count = $query->countQuery();
+    if ($count == 1) {
+      $results = $query->execute();
+      $record = $results->fetchObject();
+      $this->landmarks[$uniquename] = $record->feature_id;
+      $this->landmark_cvterm_id[$uniquename] = $record->type_id;
+      $typename = $record->typename;
+    }
+    return $typename;
+  }
+
+  /**
    * Imports the feature records into Chado.
    */
   private function insertFeatures() {
@@ -2423,11 +2459,15 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       if (isset($this->landmark_types[$landmark_name])) {
         $type = $this->landmark_types[$landmark_name];
       }
-      // Else use the default landmark_type
+      // Next look in chado for this landmark in this organism
       else {
+        $type = $this->queryLandmark($landmark_name, $this->organism->organism_id);
+      }
+      // Else use the default landmark_type
+      if (is_null($type)) {
         $type = $this->default_landmark_type;
       }
-      if ($type == NULL) {
+      if (is_null($type)) {
         $error_msg = 'Could not determine a type for landmark name: %landmark_name';
         $error_msg .= '. There was no default landmark type to force either.';
         throw new \Exception(t($error_msg, ['%landmark_name' => $landmark_name]));
