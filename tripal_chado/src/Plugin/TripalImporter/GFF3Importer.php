@@ -1953,7 +1953,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     // Because the unique constraint for the feature table is
     // "feature_c1" UNIQUE CONSTRAINT, btree (organism_id, uniquename, type_id)
     // we might get more than one match. We will only proceed if exactly one.
-    $count = $query->countQuery();
+    $count = $query->countQuery()->execute()->fetchField();
     if ($count == 1) {
       $results = $query->execute();
       $record = $results->fetchObject();
