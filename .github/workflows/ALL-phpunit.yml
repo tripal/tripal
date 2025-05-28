@@ -70,6 +70,12 @@ jobs:
             --volume=`pwd`:/var/www/drupal/web/modules/contrib/tripal \
             tripaldocker:localdocker
           docker exec tripaldocker service postgresql restart
+          docker exec tripaldocker bash -c 'export drupalversion="'${{ matrix.drupal-version }}'"; \
+            if $(dpkg --compare-versions "${drupalversion}" "le" "10.9"); then \
+            echo "Drupal version is ${drupalversion}, copying phpunit config for 10.x" \
+            && mv web/modules/contrib/tripal/phpunit.xml web/modules/contrib/tripal/phpunit.10.5.xml \
+            && mv web/modules/contrib/tripal/phpunit.9.6.xml web/modules/contrib/tripal/phpunit.xml; \
+            else echo "Drupal version is ${drupalversion}, using default phpunit config for 11.x"; fi'
       # Runs the PHPUnit tests.
       - name: Run PHPUnit Tests
         env:
