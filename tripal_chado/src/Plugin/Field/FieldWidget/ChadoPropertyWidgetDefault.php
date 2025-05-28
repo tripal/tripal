@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Render\Element;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
@@ -19,7 +20,6 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  * )
  */
 class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
-
 
   /**
    * {@inheritdoc}
@@ -64,7 +64,7 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#value' => $term_id,
     ];
-    // pass the field machine name through the form for massageFormValues()
+    // Pass the field machine name through the form for massageFormValues().
     $elements['field_name'] = [
       '#type' => 'value',
       '#default_value' => $field_name,
@@ -82,7 +82,7 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
       '#value' => $delta,
     ];
 
-    // Save some initial values to allow later handling of the "Remove" button
+    // Save some initial values to allow later handling of the "Remove" button.
     $this->saveInitialValues($delta, $field_name, $prop_id, $form_state);
 
     return $elements;
@@ -97,9 +97,9 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
     // Alter the format drop down so that it is hidden.
     // We do this because any changes here are not actually saved and thus
     // having it enabled is misleading.
-    // Note: We couldn't disable it or the text format element would stop working ;-)
+    // Note: Can't disable it or the text format element would stop working.
     // This loops through the delta.
-    foreach (\Drupal\Core\Render\Element::children($element) as $key) {
+    foreach (Element::children($element) as $key) {
       // We only want to change the text_format subelement.
       if (array_key_exists('value', $element[$key]) && array_key_exists('format', $element[$key]['value'])) {
         $element[$key]['value']['format']['#attributes']['class'][] = 'hidden';
@@ -120,14 +120,14 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
       $values[$key]['value'] = $item['value']['value'];
     }
 
-    // Look up the rank term
+    // Look up the rank term.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $storage_settings = $this->getFieldSetting('storage_plugin_settings');
     $prop_table = $storage_settings['prop_table'];
     $rank_term = $this->sanitizeKey($mapping->getColumnTermId($prop_table, 'rank'));
 
-    // Call parent massage helper function
+    // Call parent massage helper function.
     $values = $this->massagePropertyFormValues('value', $values, $form_state, $rank_term, 'prop_id');
 
     return $values;
@@ -156,8 +156,8 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
 
     $element['num_rows'] = [
       '#type' => 'number',
-      '#title' => t('Number of Rows'),
-      '#description' => t('Indicate the number of lines to display in the widget by default. A larger number will make for a longer textarea.'),
+      '#title' => $this->t('Number of Rows'),
+      '#description' => $this->t('Indicate the number of lines to display in the widget by default. A larger number will make for a longer textarea.'),
       '#required' => TRUE,
       '#default_value' => $this->getSetting('num_rows'),
       '#min' => 1,
@@ -198,4 +198,5 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
 
     return $summary;
   }
+
 }
