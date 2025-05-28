@@ -559,16 +559,8 @@ trait TripalEntityFieldTestTrait {
 
     // Step 2: Recursive Form Building stage.
     // This triggers the #after_build and $process callbacks of our widgets.
-    // @todo figure out why this gives us the following error:
-    // Drupal\Core\Database\DatabaseExceptionWrapper: SQLSTATE[22P02]: Invalid text representation: 7
-    // ERROR:  invalid input syntax for type bigint: "ly7k3fxv (1)"
-    // LINE 5: WHERE "users_field_data"."uid" IN ('ly7k3fxv (1)')
-    //       ^: SELECT "base_table"."uid" AS "uid", "base_table"."uid" AS "base_table_uid"
-    // FROM "test78899064users" "base_table"
-    // INNER JOIN "test78899064users_field_data" "users_field_data" ON "users_field_data"."uid" = "base_table"."uid"
-    // WHERE "users_field_data"."uid" IN (:db_condition_placeholder_0);
-    // Array( [:db_condition_placeholder_0] => ly7k3fxv (1)  )
-    // $form_builder->processForm($form_id, $form, $form_state);
+    $form_builder->processForm($form_id, $form, $form_state);
+
     return [$form_object, $form, $form_state];
   }
 
@@ -603,6 +595,11 @@ trait TripalEntityFieldTestTrait {
     // Now, populate the form state with the user input.
     foreach ($values as $key => $value) {
       $form_state->setValue($key, $value);
+    }
+
+    // Set the user to the one created in the test unless overriden in values.
+    if (!array_key_exists('uid', $values)) {
+      $form_state->setValue('uid', [['target_id' => 1]]);
     }
 
     // And finally populate the form display based on the form state.
