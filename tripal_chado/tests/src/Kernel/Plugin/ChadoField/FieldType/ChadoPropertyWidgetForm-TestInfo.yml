@@ -72,27 +72,8 @@ scenarios:
         project_description:
         - record_id: 0
           value:
+            format: basic_html
             value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
-        # This field is required for some reason so the value must be populated.
-        project_prop1:
-        - record_id: 0
-          prop_id: 0
-          linker_id: 0
-          type_id: 181
-          field_name: 'project_prop1'
-          value:
-            value: 'This is a simple comment.'
-          rank: 0
-        # This field is required for some reason so the value must be populated.
-        project_prop2:
-        - record_id: 0
-          prop_id: 0
-          linker_id: 0
-          type_id: 159
-          field_name: 'project_prop2'
-          value:
-            value: 'Here'
-          rank: 0
       expected_form_keys:
         project_prop1:
         - record_id:
@@ -133,20 +114,6 @@ scenarios:
         project_description:
         - record_id: 1
           value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
-        project_prop1:
-        - record_id: 1
-          prop_id: 1
-          linker_id: 1
-          value: 'This is a simple comment.'
-          rank: 0
-          type_id: 181
-        project_prop2:
-        - record_id: 1
-          prop_id: 2
-          linker_id: 1
-          value: 'Here'
-          rank: 0
-          type_id: 159
     edit:
       user_input:
         project_name:
@@ -155,6 +122,7 @@ scenarios:
         project_description:
         - record_id: 1
           value:
+            format: basic_html
             value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
       expected_form_keys:
         project_prop1:
@@ -196,3 +164,399 @@ scenarios:
         project_description:
         - record_id: 1
           value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
+  - label: "Properties Added on Edit"
+    description: "Create a page without setting any properties and then when we update it we will set 2 properties for each property field."
+    create:
+      user_input:
+        project_name:
+        - record_id: 0
+          value: "Project 2"
+        project_description:
+        - record_id: 0
+          value:
+            format: basic_html
+            value: "Some useless description."
+      expected_form_keys:
+        project_prop1:
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop1'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
+        project_prop2:
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop2'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
+      expected_field_values:
+        project_name:
+        - record_id: 1
+          value: "Project 2"
+        project_description:
+        - record_id: 1
+          value: "Some useless description."
+    edit:
+      user_input:
+        project_name:
+        - record_id: 0
+          value: "Project 2"
+        project_description:
+        - record_id: 0
+          value:
+            format: basic_html
+            value: "Some useless description."
+        project_prop1:
+        - record_id: 1
+          prop_id: 0
+          linker_id: 1
+          type_id: 181
+          field_name: 'project_prop1'
+          value:
+            format: basic_html
+            value: 'I like dogs.'
+          rank: 0
+        - record_id: 1
+          prop_id: 0
+          linker_id: 1
+          type_id: 181
+          field_name: 'project_prop1'
+          value:
+            format: basic_html
+            value: 'Stars are hot.'
+          rank: 1
+        project_prop2:
+        - record_id: 1
+          prop_id: 0
+          linker_id: 1
+          type_id: 159
+          field_name: 'project_prop2'
+          value:
+            format: basic_html
+            value: 'Saskatoon, Saskatchewan'
+          rank: 0
+        - record_id: 1
+          prop_id: 0
+          linker_id: 1
+          type_id: 159
+          field_name: 'project_prop2'
+          value:
+            format: basic_html
+            value: 'Pullman, Washington'
+          rank: 1
+      expected_form_keys:
+        project_prop1:
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop1'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
+        project_prop2:
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop2'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
+      expected_field_values:
+        project_name:
+        - record_id: 1
+          value: "Project 2"
+        project_description:
+        - record_id: 1
+          value: "Some useless description."
+        project_prop1:
+        - record_id: 1
+          prop_id: 1
+          linker_id: 1
+          value: 'I like dogs.'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 2
+          linker_id: 1
+          value: 'Stars are hot.'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 3
+          linker_id: 1
+          value: 'Saskatoon, Saskatchewan'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 4
+          linker_id: 1
+          value: 'Pullman, Washington'
+          rank: 1
+          type_id: 159
+  - label: "Property Reorder"
+    description: "Create a page with 2 properties for each property field then change the order of the first field properties on update."
+    create:
+      user_input:
+        project_name:
+        - record_id: 0
+          value: "Project 3"
+        project_description:
+        - record_id: 0
+          value:
+            format: basic_html
+            value: "Some useless description."
+        project_prop1:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 181
+          field_name: 'project_prop1'
+          value:
+            format: basic_html
+            value: 'prop1 A'
+          rank: 0
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 181
+          field_name: 'project_prop1'
+          value:
+            format: basic_html
+            value: 'prop1 B'
+          rank: 1
+        project_prop2:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 159
+          field_name: 'project_prop2'
+          value:
+            format: basic_html
+            value: 'prop2 A'
+          rank: 0
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 159
+          field_name: 'project_prop2'
+          value:
+            format: basic_html
+            value: 'prop2 B'
+          rank: 1
+      expected_form_keys:
+        project_prop1:
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop1'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
+        project_prop2:
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop2'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
+      expected_field_values:
+        project_name:
+        - record_id: 1
+          value: "Project 3"
+        project_description:
+        - record_id: 1
+          value: "Some useless description."
+        project_prop1:
+        - record_id: 1
+          prop_id: 1
+          linker_id: 1
+          value: 'prop1 A'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 2
+          linker_id: 1
+          value: 'prop1 B'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 3
+          linker_id: 1
+          value: 'prop2 A'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 4
+          linker_id: 1
+          value: 'prop2 B'
+          rank: 1
+          type_id: 159
+    edit:
+      user_input:
+        project_name:
+        - record_id: 0
+          value: "Project 3"
+        project_description:
+        - record_id: 0
+          value:
+            format: basic_html
+            value: "Some useless description."
+        project_prop1:
+        - record_id: 1
+          prop_id: 2
+          linker_id: 1
+          type_id: 181
+          field_name: 'project_prop1'
+          value:
+            format: basic_html
+            value: 'prop1 B'
+          rank: 0
+        - record_id: 1
+          prop_id: 1
+          linker_id: 1
+          type_id: 181
+          field_name: 'project_prop1'
+          value:
+            format: basic_html
+            value: 'prop1 A'
+          rank: 1
+        project_prop2:
+        - record_id: 1
+          prop_id: 3
+          linker_id: 1
+          type_id: 159
+          field_name: 'project_prop2'
+          value:
+            format: basic_html
+            value: 'prop2 A'
+          rank: 0
+        - record_id: 1
+          prop_id: 4
+          linker_id: 1
+          type_id: 159
+          field_name: 'project_prop2'
+          value:
+            format: basic_html
+            value: 'prop2 B'
+          rank: 1
+      expected_form_keys:
+        project_prop1:
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop1'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
+        project_prop2:
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop2'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
+      expected_field_values:
+        project_name:
+        - record_id: 1
+          value: "Project 3"
+        project_description:
+        - record_id: 1
+          value: "Some useless description."
+        project_prop1:
+        - record_id: 1
+          prop_id: 5
+          linker_id: 1
+          value: 'prop1 B'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 6
+          linker_id: 1
+          value: 'prop1 A'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 7
+          linker_id: 1
+          value: 'prop2 A'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 8
+          linker_id: 1
+          value: 'prop2 B'
+          rank: 1
+          type_id: 159

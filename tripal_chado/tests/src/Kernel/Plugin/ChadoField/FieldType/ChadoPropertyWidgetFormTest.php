@@ -141,6 +141,16 @@ class ChadoPropertyWidgetFormTest extends ChadoTestKernelBase {
       "Base Fields Only",
     ];
 
+    $scenarios[] = [
+      1,
+      "Properties Added on Edit",
+    ];
+
+    $scenarios[] = [
+      2,
+      "Property Reorder",
+    ];
+
     return $scenarios;
   }
 
@@ -214,14 +224,14 @@ class ChadoPropertyWidgetFormTest extends ChadoTestKernelBase {
     // -- now validate it with the data provided.
     $form_object->validateForm($form, $form_state);
     $errors = $form_state->getErrors();
-    $this->assertCount(0, $errors, "We got errors when we submitted the CREATE form with the supplied values.");
+    $this->assertCount(0, $errors, "We got errors when we submitted the CREATE form with the supplied values. Errors: " . print_r($errors, TRUE));
     // -- if there are no errors then submit the form.
     if (count($errors) === 0) {
       $form_object->submitForm($form, $form_state);
       $form_object->save($form, $form_state);
       // -- confirm the entity matches our expectations.
       $entity = $form_object->getEntity();
-      $this->assertFieldValuesMatch($current_scenario['create']['expected_field_values'], $entity, "Field values didn't match our expectations after saving the create form.");
+      $this->assertFieldValuesMatch($current_scenario['create']['expected_field_values'], $entity, "Field values didn't match our expectations after saving the create form");
     }
 
     // 3. Test the edit form is generated properly.
@@ -236,14 +246,14 @@ class ChadoPropertyWidgetFormTest extends ChadoTestKernelBase {
     // -- now validate it with the data provided.
     $form_object->validateForm($form, $form_state);
     $errors = $form_state->getErrors();
-    $this->assertCount(0, $errors, "We got errors when we submitted the EDIT form with the supplied values.");
+    $this->assertCount(0, $errors, "We got errors when we submitted the EDIT form with the supplied values. Errors: " . print_r($errors, TRUE));
     // -- if there are no errors then submit the form.
     if (count($errors) === 0) {
       $form_object->submitForm($form, $form_state);
       $form_object->save($form, $form_state);
       // -- confirm the entity matches our expectations.
       $entity = $form_object->getEntity();
-      $this->assertFieldValuesMatch($current_scenario['edit']['expected_field_values'], $entity, "Field values didn't match our expectations after saving the edit form.");
+      $this->assertFieldValuesMatch($current_scenario['edit']['expected_field_values'], $entity, "Field values didn't match our expectations after saving the edit form");
     }
   }
 
