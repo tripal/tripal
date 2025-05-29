@@ -619,6 +619,12 @@ trait TripalEntityFieldTestTrait {
     $form_state = new FormState();
     $form_state->setFormObject($form_object);
 
+    // -- Set the base user input for the form.
+    $input = [
+      'uid' => 1,
+    ];
+    $form_state->setUserInput($input);
+
     // Step 1: Form Retrieve + Preparation Phase.
     $form = $form_builder->retrieveForm($form_id, $form_state);
     $form_builder->prepareForm($form_id, $form, $form_state);
