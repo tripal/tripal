@@ -126,6 +126,27 @@ scenarios:
             '#type': 'text_format'
           rank:
             '#type': 'value'
+      expected_field_values:
+        project_name:
+        - record_id: 1
+          value: "Simple Project"
+        project_description:
+        - record_id: 1
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
+        project_prop1:
+        - record_id: 1
+          prop_id: 1
+          linker_id: 1
+          value: 'This is a simple comment.'
+          rank: 0
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 2
+          linker_id: 1
+          value: 'Here'
+          rank: 0
+          type_id: 159
     edit:
       user_input:
         project_name:
@@ -168,3 +189,10 @@ scenarios:
             '#type': 'text_format'
           rank:
             '#type': 'value'
+      expected_field_values:
+        project_name:
+        - record_id: 1
+          value: "Simple Project Still"
+        project_description:
+        - record_id: 1
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
