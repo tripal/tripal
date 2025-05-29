@@ -565,6 +565,74 @@ trait TripalEntityFieldTestTrait {
   }
 
   /**
+   * Sets up the TripalEntity Form to EDIT an existing entity.
+   *
+   * This is typically used when testing fields.
+   *
+   * When a Drupal form is built it goes through two main stages:
+   * 1. The retrieve and preparation stage: the form is built using the form's
+   * build function and all the alter form hooks are called. The output of this
+   * stage is a Form API array, an array with all the elements the form should
+   * have, but not the final render array.
+   * 2. Recursive building stage: a recursive process traversing the $form array
+   * calling auxiliary functions like #process and #after_build callbacks. The
+   * goal is to obtain a Drupal render array with the final shape of the form,
+   * with all the required elements.
+   *
+   * This method ensures both are done in order to accurately reflect the
+   * final form.
+   *
+   * @param string $bundle_name
+   *   The id of the Tripal Entity Type this form is for.
+   * @param int|TripalEntity $entity
+   *   The specific TripalEntity to be edited by this form.
+   *   Note: you can pass in the ID or the loaded entity object.
+   *
+   * @return array
+   *   The parts of an entity form; specifically,
+   *   - ContentEntityFormInterface $form_object: an object that can be used
+   *     with the form state to validate and submit the TripalEntity form.
+   *   - array $form: the complete form including all attached field widget
+   *     form elements.
+   *   - FormState $form_state: the state of this form including relationships
+   *     to both the form object and form array.
+   *
+   * @see Drupal\Core\Form\FormBuilder
+   */
+  public function setupTripalEntityEditForm(string $bundle_name, int|TripalEntity $entity): array {
+    $entity_type_manager = $this->container->get('entity_type.manager');
+    $form_builder = \Drupal::formBuilder();
+
+    // Step 0: Prepare Form object and form state.
+    // -- Get the form object from the entity type manager.
+    $form_object = $entity_type_manager->getFormObject('tripal_entity', 'edit');
+    // -- Load the existing entity for the form.
+    // This will allow the defaults to be populated properly.
+    if (is_int($entity)) {
+      $entity = $entity_type_manager->getStorage('tripal_entity')->load($entity);
+    }
+    $form_object->setEntity($entity);
+    // -- Now get the form id (needs the entity first).
+    $form_id = $form_object->getFormId();
+
+    // -- Create the Form State and set it up to be used by an entity form.
+    $form_state = new FormState();
+    $form_state->setFormObject($form_object);
+
+    // Step 1: Form Retrieve + Preparation Phase.
+    $form = $form_builder->retrieveForm($form_id, $form_state);
+    $form_builder->prepareForm($form_id, $form, $form_state);
+    // -- The form state likes to have the full array.
+    $form_state->setCompleteForm($form);
+
+    // Step 2: Recursive Form Building stage.
+    // This triggers the #after_build and $process callbacks of our widgets.
+    $form_builder->processForm($form_id, $form, $form_state);
+
+    return [$form_object, $form, $form_state];
+  }
+
+  /**
    * Populate form state for TripalEntity form with the values passed in.
    *
    * @param Drupal\Core\Entity\ContentEntityFormInterface $form_object
