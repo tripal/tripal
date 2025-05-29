@@ -93,27 +93,39 @@ scenarios:
           value:
             value: 'Here'
           rank: 0
-      expected:
-        project_name:
-        - record_id: 1
-          value: "Simple Project"
-        project_description:
-        - record_id: 1
-          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
+      expected_form_keys:
         project_prop1:
-        - record_id: 1
-          prop_id: 0
-          linker_id: 1
-          type_id: 181
-          value: 'This is a simple comment.'
-          rank: 0
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop1'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
         project_prop2:
-        - record_id: 1
-          prop_id: 0
-          linker_id: 1
-          type_id: 159
-          value: 'Here'
-          rank: 0
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop2'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
     edit:
       user_input:
         project_name:
@@ -123,24 +135,36 @@ scenarios:
         - record_id: 1
           value:
             value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
-      expected:
-        project_name:
-        - record_id: 1
-          value: "Simple Project Still"
-        project_description:
-        - record_id: 1
-          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
+      expected_form_keys:
         project_prop1:
-        - record_id: 1
-          prop_id: 0
-          linker_id: 1
-          type_id: 181
-          value: 'This is a simple comment.'
-          rank: 0
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop1'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'
         project_prop2:
-        - record_id: 1
-          prop_id: 0
-          linker_id: 1
-          type_id: 159
-          value: 'Here'
-          rank: 0
+        - record_id:
+            '#type': 'value'
+          prop_id:
+            '#type': 'value'
+          linker_id:
+            '#type': 'value'
+          type_id:
+            '#type': 'value'
+          field_name:
+            '#value': 'project_prop2'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+          rank:
+            '#type': 'value'

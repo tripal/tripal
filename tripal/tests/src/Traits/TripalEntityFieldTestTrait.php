@@ -565,7 +565,7 @@ trait TripalEntityFieldTestTrait {
   }
 
   /**
-   * Populate TripalEntity form with the values passed in.
+   * Populate form state for TripalEntity form with the values passed in.
    *
    * @param Drupal\Core\Entity\ContentEntityFormInterface $form_object
    *   The form object like that returned by setupTripalEntityAddForm().
@@ -579,7 +579,7 @@ trait TripalEntityFieldTestTrait {
    *   and then it's values should map directly to the form elements in that
    *   fields widget.
    */
-  public function populateTripalEntityForm(&$form_object, &$form_state, $values) {
+  public function populateTripalEntityFormState(&$form_object, &$form_state, $values) {
 
     // Retrieve the Tripal Entity Type id
     // for use when generating the form display.
@@ -592,18 +592,20 @@ trait TripalEntityFieldTestTrait {
       $form_display = $entity_type_manager->getStorage('entity_form_display')->load('tripal_entity.' . $bundle_name . '.default');
     }
 
+    // Set the user to the one created in the test unless overriden in values.
+    if (!array_key_exists('uid', $values)) {
+      $values['uid'] = [['target_id' => 1]];
+    }
+
     // Now, populate the form state with the user input.
+    $form_state->setUserInput($values);
     foreach ($values as $key => $value) {
       $form_state->setValue($key, $value);
     }
 
-    // Set the user to the one created in the test unless overriden in values.
-    if (!array_key_exists('uid', $values)) {
-      $form_state->setValue('uid', [['target_id' => 1]]);
-    }
-
-    // And finally populate the form display based on the form state.
+    // Populate the form display based on the form state.
     $form_object->setFormDisplay($form_display, $form_state);
+
   }
 
 }

@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Traits;
 
+use Drupal\Core\Render\Element;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage;
@@ -110,38 +111,58 @@ trait ChadoFieldTestTrait {
     // Test the widget form for each expected field.
     foreach ($fields_expected as $field_details) {
       $field_name = $field_details['name'];
-      $expected_defaults = $expected_field_defaults[$field_name];
+      // Tester doesn't have to define all fields.
+      if (array_key_exists($field_name, $expected_field_defaults)) {
+        $expected_defaults = $expected_field_defaults[$field_name];
 
-      // Check the form has an element for this field.
-      $this->assertArrayHasKey($field_name, $form,
+        // Check the form has an element for this field.
+        $this->assertArrayHasKey($field_name, $form,
         $message_prefix . ": We expect the TripalEntity form to have an element $field_name.");
-      $this->assertArrayHasKey('widget', $form[$field_name],
-        $message_prefix . ": We expect the widget element for $field_name to have a widget key containing the widget form elements.");
+        $this->assertArrayHasKey('widget', $form[$field_name],
+          $message_prefix . ": We expect the widget element for $field_name to have a widget key containing the widget form elements.");
 
-      $widget_form_element = $form[$field_name]['widget'];
+        $widget_form_element = $form[$field_name]['widget'];
 
-      // Check that the default is set properly after create.
-      /** @todo finish this...
-       * foreach (\Drupal\Core\Render\Element::children($widget_form_element) as $element_key) {
-       * $element = $widget_form_element[$element_key];
-       * $expected_values = $expected_defaults[$element_key];
-       *
-       * // Check that there is an element for each expected value.
-       * foreach ($expected_values as $key => $value) {
-       * $this->assertArrayHasKey($key, $element, $message_prefix . ": $field_name [$element_key] widget element should contain an element with this name.");
-       * /** @todo Figure out how to check the value.
-       * if (array_key_exists('#value', $element[$key])) {
-       * $this->assertEquals($value, $element[$key]['#value'], $message_prefix . ": $field_name [$element_key] [$key][#value] doesn't match what we expect. Element:" . print_r($element[$key], TRUE));
-       * }
-       * elseif (array_key_exists('#default_value', $element[$key])) {
-       * $this->assertEquals($value, $element[$key]['#default_value'], $message_prefix . ": $field_name [$element_key] [$key][#default_value] doesn't match what we expect. Element:" . print_r($element[$key], TRUE));
-       * }
-       * else {
-       * print "\n$field_name [$element_key] [$key]: " . print_r(array_keys($element[$key]), TRUE);
-       * }
-       * }
-       * }
-        */
+        // Check that the expected form element keys match.
+        foreach (Element::children($widget_form_element) as $element_key) {
+          $element = $widget_form_element[$element_key];
+          // The tested does not have to check every element.
+          if (array_key_exists($element_key, $expected_defaults)) {
+            $expected_values = $expected_defaults[$element_key];
+
+            // Check that there is an element for each expected value.
+            foreach ($expected_values as $expected_key => $expected_value) {
+              $this->assertArrayHasKey($expected_key, $element, $message_prefix . ": $field_name [$element_key] widget element should contain an element with this name.");
+              $this->assertArrayContainsElements($expected_value, $element[$expected_key], $message_prefix . ": $field_name [$element_key] [$expected_key] did not contain the value(s) we expected.");
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Recursive check that an array contains a set of elements.
+   *
+   * NOTE: Only the keys passed in will be checked. Additional keys will be
+   * ignored. This is the difference between this method and assertEquals().
+   *
+   * @param array $expected_elements
+   *   An array of expected keys mapped to their expected values.
+   * @param iterable $haystack
+   *   An array to check for the expectations.
+   * @param string $message
+   *   A message to provide if failure is encountered.
+   */
+  public function assertArrayContainsElements(array $expected_elements, iterable $haystack, string $message = ''): void {
+    foreach ($expected_elements as $element_key => $element_value) {
+      $this->assertArrayHasKey($element_key, $haystack, $message);
+      if (is_array($element_value)) {
+        $this->assertArrayContainsElements($element_value, $haystack[$element_key], $message);
+      }
+      else {
+        $this->assertEquals($element_value, $haystack[$element_key], $message);
+      }
     }
   }
 
