@@ -38,8 +38,8 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
     $prop_id = $item_vals['prop_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $default_value = $item_vals['value'] ?? '';
-    $term_id = NULL;
-    if ($field_settings['termIdSpace'] and $field_settings['termAccession']) {
+    $term_id = $item_vals['term_id'] ?? NULL;
+    if ($term_id === NULL and $field_settings['termIdSpace'] and $field_settings['termAccession']) {
       $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
       $idSpace = $idSpace_manager->loadCollection($field_settings['termIdSpace']);
 
@@ -50,11 +50,11 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
     $elements = [];
     $elements['record_id'] = [
       '#type' => 'value',
-      '#default_value' => $record_id,
+      '#value' => $record_id,
     ];
     $elements['prop_id'] = [
       '#type' => 'value',
-      '#default_value' => $prop_id,
+      '#value' => $prop_id,
     ];
     $elements['linker_id'] = [
       '#type' => 'value',
@@ -67,7 +67,7 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
     // Pass the field machine name through the form for massageFormValues().
     $elements['field_name'] = [
       '#type' => 'value',
-      '#default_value' => $field_name,
+      '#value' => $field_name,
     ];
     $elements['value'] = $element + [
       '#base_type' => 'textarea',
