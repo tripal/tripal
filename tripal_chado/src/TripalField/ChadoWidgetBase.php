@@ -477,7 +477,13 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // The field name for the field. There are usually multiple
     // copies of a property field, so this distinguishes them.
     $first_delta = array_key_first($values);
-    $field_name = $values[$first_delta]['field_name'];
+    if (array_key_exists('field_name', $values[$first_delta])) {
+      $field_name = $values[$first_delta]['field_name'];
+    }
+    else {
+      $class_name = get_class($this);
+      throw new \Exception("The field name is not set for this property field (class: $class_name). It is needed when massaging the values in order to keep them unique.");
+    }
 
     // Handle any empty values so that chado storage properly
     // deletes the linking record in chado. This happens when an
@@ -487,7 +493,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
       if ($value[$linker_key]) {
         $retained_records[$val_key] = $value[$linker_key];
       }
-      if ($value[$val] == '') {
+      if (array_key_exists($val, $value) and ($value[$val] == '')) {
         if ($value['record_id']) {
           // If there is a record_id, but no value, this
           // means we need to pass in this record to chado storage
@@ -526,7 +532,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
     // Reset the weights
     $i = 0;
     foreach ($values as $val_key => $value) {
-      if ($values[$val_key][$val]) {
+      if (array_key_exists($val, $values[$val_key]) and ($values[$val_key][$val])) {
         $values[$val_key]['_weight'] = $i;
         if ($rank_term) {
           $values[$val_key][$rank_term] = $i;
