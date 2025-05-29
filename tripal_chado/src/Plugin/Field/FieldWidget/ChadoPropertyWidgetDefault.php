@@ -117,7 +117,10 @@ class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
     // The text_format element returns an item consisting of both a value and a
     // format. We only want to keep the format.
     foreach ($values as $key => $item) {
-      $values[$key]['value'] = $item['value']['value'];
+      // Note: If the property is empty then the value key will not be present.
+      if (array_key_exists('value', $item)) {
+        $values[$key]['value'] = $item['value']['value'];
+      }
     }
 
     // Look up the rank term.
