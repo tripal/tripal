@@ -199,7 +199,20 @@ entity.tripal_entity.unpublish_form:
         type: entity:tripal_entity
   requirements:
     _permission: 'administer tripal content'
-    
+   
+# Adds a refresh link to Tripal entity pages.
+entity.tripal_entity.refresh_form:
+  path: 'bio_data/{tripal_entity}/refresh'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalEntityRefreshForm'
+    _title: 'Refresh'
+  options:
+    parameters:
+      tripal_entity:
+        type: entity:tripal_entity
+  requirements:
+    _permission: 'administer tripal content'
+
 ##
 # Controlled Vocabularies.
 ##

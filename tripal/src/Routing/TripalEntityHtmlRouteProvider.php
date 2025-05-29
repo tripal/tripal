@@ -26,7 +26,10 @@ class TripalEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
       $collection->add("entity.{$entity_type_id}.collection", $collection_route);
     }
     if ($unpublish_route = $this->getUnpublishRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.unpublish", $unpublish_route);
+      $collection->add("entity.{$entity_type_id}.unpublish_form", $unpublish_route);
+    }
+    if ($refresh_route = $this->getRefreshRoute($entity_type)) {
+        $collection->add("entity.{$entity_type_id}.refresh_form", $refresh_route);
     }
 
     return $collection;
@@ -60,6 +63,36 @@ class TripalEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
       }
       return $route;
     }
+  }
+  
+  /**
+   * Gets the refresh route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getRefreshRoute(EntityTypeInterface $entity_type) {
+      
+      if ($entity_type->hasLinkTemplate('refresh-form')) {
+          $entity_type_id = $entity_type->id();
+          $route = new Route($entity_type->getLinkTemplate('refresh-form'));
+          $route->addDefaults([
+              '_entity_form' => "{$entity_type_id}.refresh",
+              '_title' => 'Refresh',
+              ])->setRequirement('_entity_access', "{$entity_type_id}.refresh")
+                ->setOption('parameters', [$entity_type_id => ['type' => 'entity:' . $entity_type_id],
+              ]);
+              
+              // Entity types with serial IDs can specify this in their route
+              // requirements, improving the matching process.
+              if ($this->getEntityTypeIdKeyType($entity_type) === 'integer') {
+                  $route->setRequirement($entity_type_id, '\d+');
+              }
+              return $route;
+      }
   }
 
   /**

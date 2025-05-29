@@ -52,6 +52,7 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
  *     "edit-form" = "/bio_data/{tripal_entity}/edit",
  *     "delete-form" = "/bio_data/{tripal_entity}/delete",
  *     "unpublish-form" = "/bio_data/{tripal_entity}/unpublish",
+ *     "refresh-form" = "/bio_data/{tripal_entity}/refresh",
  *     "collection" = "/admin/content/bio_data",
  *   },
  *   bundle_entity_type = "tripal_entity_type",
