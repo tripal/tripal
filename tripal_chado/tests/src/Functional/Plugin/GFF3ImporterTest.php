@@ -47,7 +47,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     // Test to ensure cvterms are found in the cvterms table
     $cvterms_count_query = $chado->query("SELECT count(*) as c1 FROM {1:cvterm}");
     $cvterms_count_object = $cvterms_count_query->fetchObject();
-    $this->assertNotEquals($cvterms_count_object->c1, 0);
+    $this->assertNotEquals(0, $cvterms_count_object->c1);
 
     // Insert organism
     $organism_id = $chado->insert('1:organism')
@@ -69,19 +69,27 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ->execute();
 
 
-    // Verify that gene is now in the cvterm table (which gets imported from SO obo)
-    $result_gene_cvterm = $chado->query("SELECT * FROM {1:cvterm}
-      WHERE name = 'gene' LIMIT 1;");
-    $cvterm_object = null;
-    $cvterm_object = $result_gene_cvterm->fetchObject();
-    $this->assertNotEquals($cvterm_object, null);
+    // Load and verify several expected terms in the cvterm table (which gets imported from SO obo)
+    $cvterm_id = [];
+    $terms = ['gene', 'contig', 'supercontig'];
+    foreach ($terms as $term) {
+      $query = $chado->select('1:cvterm', 'T');
+      $query->join('1:cv', 'CV', '"T".cv_id = "CV".cv_id');
+      $query->condition('CV.name', 'sequence', '=')
+        ->condition('T.name', $term, '=')
+        ->addField('T', 'cvterm_id', 'cvterm_id');
+      $count = $query->countQuery()->execute()->fetchField();
+      $this->assertEquals(1, $count, "Did not fetch exactly one CV term for \"$term\"");
+      $results = $query->execute()->fetchObject();
+      $cvterm_id[$term] = $results->cvterm_id;
+    }
 
     // Manually insert landmarks into features table
-    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'scaffold00001', 'scaffold00001', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', 474, false, false, '2022-11-26 05:39:59.809424', '2022-11-26 05:39:59.809424');");
-    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'scaffold1', 'scaffold1', 'CAACAAGAAGTAAGCATAGGTTAATTATCATCCACGCATATTAATCAAGAATCGATGCTCGATTAATGTTTTTGAATTGACAAACAAAAGTTTTGTAAAAAGGACTTGTTGGTGGTGGTGGGGTGGTGGTGATGGTGTGGTGGGTAGGTCGCTGGTCGTCGCCGGCGTGGTGGAAGTCTCGCTGGCCGGTGTCTCGGCGGTCTGGTGGCGGCTGGTGGCGGTAGTTGTGAGTTTTTTCTTTCTTTTTTTGTTTTTTTTTTTTACTTTTTACTTTTTTTTCGTCTTGAACAAATTAAAAATAGAGTTTGTTTGTATTTGGTTATTATTTATTGATAAGGGTATATTCGTCCTGTTTGGTCTTGATGTAATAAAATTAAATTAATTTACGGGCTTCAACTAATAAACTCCTTCATGTTGGTTTGAACTAATAAAAAAAGGGGAAATTTGCTAGACACCCCTAATTTTGGACTTATATGGGTAGAAGTCCTAGTTGCTAGATGAATATAGGCCTAGGTCCATCCACATAAAAAAATAATATAAATTAAATAATAAAAATAATATATAGACATAAGTACCCTTATTGAATAAACATATTTTAGGGGATTCAGTTATATACGTAAAGTTGGGAAATCAAATCCCACTAATCACGATTGAAGGCAGAGTATCGTGTAAGACGTTTGGAAAACATATCTTAGTCGATTCCAGTGGAATATGAGATCA', 720, '83578d8afdaec399c682aa6c0ddd29c9', 474, false, false, '2022-11-28 21:44:51.006276', '2022-11-28 21:44:51.006276');");
-    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig10036', 'Contig10036', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', 474, false, false, '2022-11-26 05:39:55.810798', '2022-11-26 05:39:55.810798')");
-    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig1', 'Contig1', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', 474, false, false, '2022-11-26 05:39:57.335594', '2022-11-26 05:39:57.335594');");
-    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig0', 'Contig0', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', 474, false, false, '2022-11-26 05:39:59.809424', '2022-11-26 05:39:59.809424');");
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'scaffold00001', 'scaffold00001', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', ".$cvterm_id['supercontig'].", false, false, '2022-11-26 05:39:59.809424', '2022-11-26 05:39:59.809424');");
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'scaffold1', 'scaffold1', 'CAACAAGAAGTAAGCATAGGTTAATTATCATCCACGCATATTAATCAAGAATCGATGCTCGATTAATGTTTTTGAATTGACAAACAAAAGTTTTGTAAAAAGGACTTGTTGGTGGTGGTGGGGTGGTGGTGATGGTGTGGTGGGTAGGTCGCTGGTCGTCGCCGGCGTGGTGGAAGTCTCGCTGGCCGGTGTCTCGGCGGTCTGGTGGCGGCTGGTGGCGGTAGTTGTGAGTTTTTTCTTTCTTTTTTTGTTTTTTTTTTTTACTTTTTACTTTTTTTTCGTCTTGAACAAATTAAAAATAGAGTTTGTTTGTATTTGGTTATTATTTATTGATAAGGGTATATTCGTCCTGTTTGGTCTTGATGTAATAAAATTAAATTAATTTACGGGCTTCAACTAATAAACTCCTTCATGTTGGTTTGAACTAATAAAAAAAGGGGAAATTTGCTAGACACCCCTAATTTTGGACTTATATGGGTAGAAGTCCTAGTTGCTAGATGAATATAGGCCTAGGTCCATCCACATAAAAAAATAATATAAATTAAATAATAAAAATAATATATAGACATAAGTACCCTTATTGAATAAACATATTTTAGGGGATTCAGTTATATACGTAAAGTTGGGAAATCAAATCCCACTAATCACGATTGAAGGCAGAGTATCGTGTAAGACGTTTGGAAAACATATCTTAGTCGATTCCAGTGGAATATGAGATCA', 720, '83578d8afdaec399c682aa6c0ddd29c9', ".$cvterm_id['supercontig'].", false, false, '2022-11-28 21:44:51.006276', '2022-11-28 21:44:51.006276');");
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig10036', 'Contig10036', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', ".$cvterm_id['contig'].", false, false, '2022-11-26 05:39:55.810798', '2022-11-26 05:39:55.810798')");
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig1', 'Contig1', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', ".$cvterm_id['contig'].", false, false, '2022-11-26 05:39:57.335594', '2022-11-26 05:39:57.335594');");
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig0', 'Contig0', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', ".$cvterm_id['contig'].", false, false, '2022-11-26 05:39:59.809424', '2022-11-26 05:39:59.809424');");
 
     // Perform the GFF3 test by creating an instance of the GFF3 loader
     $importer_manager = \Drupal::service('tripal.importer');
@@ -126,7 +134,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     $results = $chado->query("SELECT * FROM {1:feature} WHERE uniquename='scaffold1';");
     $results_object = $results->fetchObject();
     $scaffold_feature_id = $results_object->feature_id;
-    $this->assertEquals($results_object->uniquename, 'scaffold1');
+    $this->assertEquals('scaffold1', $results_object->uniquename);
     unset($results);
     unset($results_object);
 
@@ -135,7 +143,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       WHERE uniquename='test_gene_001';");
     $results_object = $results->fetchObject();
     $gene_feature_id = $results_object->feature_id;
-    $this->assertEquals($results_object->uniquename, 'test_gene_001');
+    $this->assertEquals('test_gene_001', $results_object->uniquename);
     unset($results);
     unset($results_object);
 
@@ -144,7 +152,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       WHERE uniquename='test_mrna_001.1';");
     $results_object = $results->fetchObject();
     $mrna_feature_id = $results_object->feature_id;
-    $this->assertEquals($results_object->uniquename, 'test_mrna_001.1');
+    $this->assertEquals('test_mrna_001.1', $results_object->uniquename);
     unset($results);
     unset($results_object);
 
@@ -153,7 +161,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       WHERE uniquename='test_protein_001.1';");
     $results_object = $results->fetchObject();
     $polypeptide_feature_id = $results_object->feature_id;
-    $this->assertEquals($results_object->uniquename, 'test_protein_001.1');
+    $this->assertEquals('test_protein_001.1', $results_object->uniquename);
     unset($results);
     unset($results_object);
 
@@ -164,7 +172,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':value' => 'protein_coding'
     ]);
     $results_object = $results->fetchObject();
-    $this->assertEquals($results_object->value, 'protein_coding');
+    $this->assertEquals('protein_coding', $results_object->value);
     unset($results);
     unset($results_object);
 
@@ -176,7 +184,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':value' => 'test_gap_1'
     ]);
     $results_object = $results->fetchObject();
-    $this->assertEquals($results_object->value, 'test_gap_1');
+    $this->assertEquals('test_gap_1', $results_object->value);
     unset($results);
     unset($results_object);
 
@@ -187,7 +195,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':value' => 'test_gene_001_note'
     ]);
     $results_object = $results->fetchObject();
-    $this->assertEquals($results_object->value, 'test_gene_001_note');
+    $this->assertEquals('test_gene_001_note', $results_object->value);
     unset($results);
     unset($results_object);
 
@@ -197,7 +205,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
      *
      * This tests whether the GFF loader detects duplicate IDs which makes a
      * GFF file invalid since IDs should be unique. The GFF loader should throw
-     * and exception which this test checks for
+     * an exception which this test checks for that.
      */
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
     $run_args = [
@@ -243,7 +251,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, "This should have detected an exception since there are
+    $this->assertTrue($has_exception, "This should have detected an exception since there are
       duplicated IDs in this GFF file but no exception was returned.");
 
     /**
@@ -251,6 +259,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
      *
      * This tests whether the GFF loader adds IDs that contain a comma.
      * The GFF loader should allow it
+     * Specifically: ...;TES,T=TEST;...
+     * Also leave the landmark_type as NULL here to test lookup of existing landmarks in chado
      */
     // BEGIN NEW FILE: Perform import on gff_tag_unescaped_character
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
@@ -276,7 +286,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => 'supercontig',
+      'landmark_type' => NULL,
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -296,8 +306,9 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, false, 'Unescaped tag should not throw an error but did.');
+    $this->assertFalse($has_exception, 'Unescaped tag should not throw an error but did. Exception message: '.$message);
   // @TODO check that the feature with the comma in the ID was inserted properly.
+
     /**
      * Run the GFF loader on gff_invalidstartend.gff for testing.
      *
@@ -346,7 +357,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, false, "The GFF3 loader should reverse the values automatically but somehow produced an exception which is an error");
+    $this->assertFalse($has_exception, "The GFF3 loader should reverse the values automatically but somehow produced an exception which is an error");
     // @TODO Add additional assertions for start and end to ensure the loader does the reverse correctly
 
 
@@ -400,7 +411,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, "Should not complete when there
+    $this->assertTrue($has_exception, "Should not complete when there
       is invalid phase value (in this case character a) but did throw error.");
 
     /**
@@ -452,7 +463,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, "Should not complete when there
+    $this->assertTrue($has_exception, "Should not complete when there
       is invalid phase value (in this case a number > 2) but did not throw
       error which should have happened.");
 
@@ -509,7 +520,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     ]);
     $results_object = $results->fetchObject();
     $strand_value = $results_object->strand;
-    $this->assertEquals($strand_value, 1, "Strand value should have been 1 but another value
+    $this->assertEquals(1, $strand_value, "Strand value should have been 1 but another value
       was found.");
 
     /**
@@ -613,7 +624,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       WHERE uniquename = '>FRAEX38873_v2_000000010';");
 
       foreach($results as $row) {
-        $this->assertEquals($row->c1, 1, 'A feature with uniquename
+        $this->assertEquals(1, $row->c1, 'A feature with uniquename
           >FRAEX38873_v2_000000010 should have been added but was not found.');
       }
     }
@@ -624,7 +635,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $has_exception = true;
     }
 
-    $this->assertEquals($has_exception, false, "This should not fail and the
+    $this->assertFalse($has_exception, "This should not fail and the
     right arrow should be added.");
 
     /**
@@ -675,7 +686,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     ]);
     foreach ($results as $row) {
       // print_r($row);
-      $this->assertEquals($row->significance,2, 'No significance value of 2
+      $this->assertEquals(2, $row->significance, 'No significance value of 2
         could be found in the db. Import failed.');
     }
     unset($results);
@@ -685,7 +696,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':significance' => 2.5
     ]);
     foreach ($results as $row) {
-      $this->assertEquals($row->significance,2.5, 'No significance value of 2.5
+      $this->assertEquals(2.5, $row->significance, 'No significance value of 2.5
       could be found in the db. Import failed.');
     }
     unset($results);
@@ -696,7 +707,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     ]);
     foreach ($results as $row) {
       // print_r($row);
-      $this->assertEquals($row->significance,-2.5, 'No significance value of
+      $this->assertEquals(-2.5, $row->significance, 'No significance value of
       -2.5 could be found in the db. Import failed.');
     }
     unset($results);
@@ -750,7 +761,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, 'An invalid seqid in the
+    $this->assertTrue($has_exception, 'An invalid seqid in the
       gff_seqid_invalid_character should have caused an
       exception but did not.');
 
@@ -802,7 +813,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, 'An invalid strand in the
+    $this->assertTrue($has_exception, 'An invalid strand in the
       gff_strand_invalid.gff file should have caused an
       exception but did not.');
 
@@ -860,7 +871,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     );
 
     foreach ($results as $row) {
-      $this->assertEquals($row->strand, 1); // +
+      $this->assertEquals(1, $row->strand); // +
     }
 
     $results = $chado->query('SELECT * FROM {1:featureloc} fl
@@ -872,7 +883,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     );
 
     foreach ($results as $row) {
-      $this->assertEquals($row->strand,-1); // -
+      $this->assertEquals(-1, $row->strand); // -
     }
 
     $results = $chado->query('SELECT * FROM {1:featureloc} fl
@@ -884,7 +895,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     );
 
     foreach ($results as $row) {
-      $this->assertEquals($row->strand, 0); // ?
+      $this->assertEquals(0, $row->strand); // ?
     }
 
     $results = $chado->query('SELECT * FROM {1:featureloc} fl
@@ -896,7 +907,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     );
 
     foreach ($results as $row) {
-      $this->assertEquals($row->strand, 0); // .
+      $this->assertEquals(0, $row->strand); // .
     }
 
     /**
@@ -948,7 +959,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     ) as table1;",[]);
 
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
   /**
@@ -998,7 +1009,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     WHERE uniquename = 'FRAEX38873_v2_000000010,20';",[]);
 
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
     /**
@@ -1050,7 +1061,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':value' => 'T'
     ]);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
     $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop}
@@ -1058,7 +1069,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':value' => 'EST'
     ]);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
     /**
@@ -1111,7 +1122,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':value' => 'T,EST'
     ]);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
 
@@ -1166,7 +1177,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':value' => 'chr1_h1'
     ]);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
     // Get the type_id for chromosome
@@ -1184,7 +1195,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     ]);
 
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
     // Check to make sure landmark exists in featureloc table
@@ -1194,7 +1205,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       WHERE uniquename = :landmark_name",
       [':landmark_name' => 'chr1_h1']);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
     // Check to make sure landmark exists in featureloc table
@@ -1204,7 +1215,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       WHERE uniquename = :landmark_name",
       [':landmark_name' => 'chr2_h1']);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
     // Check to make sure landmark exists in featureloc table
@@ -1214,7 +1225,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       WHERE uniquename = :landmark_name",
       [':landmark_name' => 'chr3_h1']);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
     // Check to make sure landmark exists in featureloc table
@@ -1224,7 +1235,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       WHERE uniquename = :landmark_name",
       [':landmark_name' => 'chr4_h1']);
     foreach ($results as $row) {
-      $this->assertEquals($row->c1, 1);
+      $this->assertEquals(1, $row->c1);
     }
 
 
