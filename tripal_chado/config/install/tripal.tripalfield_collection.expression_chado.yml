@@ -113,6 +113,35 @@ fields:
               region: content
               weight: 25
 
+    -   name: biosample_relationship
+        content_type: biosample
+        label: Relationship
+        type: chado_relationship_type_default
+        description: "Samples related to this sample. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current sample is the subject; chose Reverse if the object is the current sample."
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                base_column: name
+                linker_table: biomaterial_relationship
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: "SBO"
+            termAccession: "0000374"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 49
+          form:
+            default:
+              region: content
+              weight: 49
+
     -   name: biosample_dbxref
         content_type: biosample
         label: Primary Database Reference

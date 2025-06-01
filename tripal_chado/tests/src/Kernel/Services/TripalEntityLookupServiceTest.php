@@ -143,6 +143,9 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
         NULL
       );
       $this->assertEquals($expected_entity_id, $entity_id, "We did not retrieve the expected entity_id for project $project_id");
+      // Check that we can get a bundle label from an entity ID
+      $bundle_label = $lookup_manager->getBundleLabel($entity_id);
+      $this->assertEquals('Project', $bundle_label, "We did not retrieve the expected bundle label for entity_id $entity_id");
     }
 
     for ($analysis_id=1; $analysis_id <= 3; $analysis_id++) {
@@ -154,6 +157,16 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
         NULL
       );
       $this->assertEquals($expected_entity_id, $entity_id, "We did not retrieve the expected entity_id for analysis $analysis_id");
+      // Check that we can get a bundle label from an entity ID
+      $bundle_label = $lookup_manager->getBundleLabel($entity_id);
+      $this->assertEquals('Analysis', $bundle_label, "We did not retrieve the expected bundle label for entity_id $entity_id");
+    }
+
+    // Check that we get an empty label from a non-existent entity ID
+    $tids = [-2, -1, 0, 1000];
+    foreach ($tids as $entity_id) {
+      $bundle_label = $lookup_manager->getBundleLabel($entity_id);
+      $this->assertEquals('', $bundle_label, "We retrieved a bundle label for non-existent entity_id $entity_id");
     }
 
     // An invalid record should return NULL. Mimics a record that has not been published.
@@ -260,5 +273,6 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
       ->accessCheck(TRUE);
     $ids = $query->execute();
     $this->assertEquals(1, count($ids), "Expected exactly one match from array_design manufacturer query");
+
   }
 }

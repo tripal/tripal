@@ -13,6 +13,30 @@ namespace Drupal\Tests\tripal_chado\Functional;
 class TaxonomyImporterTest extends ChadoTestBrowserBase {
 
   /**
+   * @var string $mock_error
+   *   The most recent error message from the mocked tripal logger
+   */
+  protected string $mock_error = '';
+
+  protected function setUp() :void {
+    parent::setUp();
+
+    // Grab the container.
+    $container = \Drupal::getContainer();
+
+    // Create a mocked logger so we can access error messages from the Tripal logger
+    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+      ->onlyMethods(['error'])
+      ->getMock();
+    $mock_logger->method('error')
+      ->willReturnCallback(function($message, $context, $options) {
+          $this->mock_error .= str_replace(array_keys($context), $context, $message);
+          return NULL;
+        });
+    $container->set('tripal.logger', $mock_logger);
+  }
+
+  /**
    * Confirm basic Taxonomy importer functionality.
    *
    * @group taxonomy
@@ -49,10 +73,14 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
     $file_details = [
     ];
 
+    $this->mock_error = '';
     $taxonomy_importer->createImportJob($run_args, $file_details);
     $taxonomy_importer->prepareFiles();
     $taxonomy_importer->run();
     $taxonomy_importer->postRun();
+    if ($this->mock_error) {
+      $this->markTestSkipped('Test skipped due to network error: ' . $this->mock_error);
+    }
 
     // Check if Arabidopsis thaliana retrieved by tax_id 3702 from NCBI and organism created
     $results = $chado->query("SELECT count(*) as c1 FROM {1:organism}
