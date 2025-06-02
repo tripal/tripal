@@ -370,10 +370,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param array $record_ids
    *   When specified, only return records where the primary key is present in this array.
    *   Used by publish to publish in batches.
-   * @param int $max_delta
-   *   Maximum number of linked records from a single table to return, zero for no limit.
+   * @param array $options
+   *   - max_delta = Maximum number of linked records from a single table to return, zero for no limit.
+   *   - inhibit = Publish no records if the number exceeds max_delta.
    */
-  public function findValues($values, array $main_property_names = [], array $record_ids = [], int $max_delta = 0) {
+  public function findValues($values, array $main_property_names = [], array $record_ids = [], array $options = []) {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Find');
@@ -412,7 +413,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           foreach ($tables as $table_alias) {
 
             // Now find any items for this linked table.
-            $num_items_found = $match->selectItems($base_table, $table_alias, $max_delta);
+            $num_items_found = $match->selectItems($base_table, $table_alias, $options);
             if ($num_items_found == 0) {
               continue;
             }

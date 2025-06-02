@@ -166,7 +166,14 @@ class ChadoPublish extends TripalBackendPublishBase {
    *
    * @var int $publish_global_max_delta
    */
-  protected $publish_global_max_delta;
+  protected int $publish_global_max_delta;
+
+  /**
+   * Maximum number of linked records from a single table to publish on a single entity
+   *
+   * @var bool $publish_global_max_delta_inhibit
+   */
+  protected bool $publish_global_max_delta_inhibit;
 
   /**
    * Populates the $this->field_info variable with field information
@@ -1280,6 +1287,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     if (is_null($this->publish_global_max_delta) or (trim($this->publish_global_max_delta) === '')) {
       $this->publish_global_max_delta = 100;
     }
+    $this->publish_global_max_delta_inhibit = boolval(\Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta_inhibit'));
 
     // Get the bundle object so we can get settings such as the title format.
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
@@ -1400,7 +1408,11 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
 
       $this->logger->notice($batch_prefix . 'Step 1 of 6: Find matching records');
-      $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch, $this->publish_global_max_delta);
+      $find_options = [
+        'max_delta' => $this->publish_global_max_delta,
+        'inhibit' => $this->publish_global_max_delta_inhibit,
+      ];
+      $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch, $find_options);
 
       $success = $this->validateMigrationData($matches, $this->lenient_migration);
       if (!$success) {

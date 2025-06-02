@@ -1917,15 +1917,16 @@ class ChadoRecords  {
    * @param string $table_alias
    *   The alias of the table.  For the base table, use the same table name as
    *   base tables don't have aliases.
-   * @param int $max_delta
-   *   Maximum number of linked records from a single table to return, zero for no limit.
+   * @param array $options
+   *   - max_delta = Maximum number of linked records from a single table to return, zero for no limit.
+   *   - inhibit = Publish no records if the number exceeds max_delta.
    *
    * @throws \Exception
    *
    * @return int
    *   Returns the number of items for this table that were found.
    */
-  public function selectItems(string $base_table, string $table_alias, int $max_delta = 0) : int {
+  public function selectItems(string $base_table, string $table_alias, array $options = []) : int {
 
     // Indicates the number of items that were found for this table.
     // We need to return the number found because even if no records are found
@@ -1995,22 +1996,31 @@ class ChadoRecords  {
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
 
       // Implement the max_delta limit if one was specified
-      if ($max_delta) {
-        $num_rows = $select->range(0, $max_delta + 1)->countQuery()->execute()->fetchField();
-        if ($num_rows > $max_delta) {
+      if ($options['max_delta'] ?? FALSE) {
+        $num_rows = $select->range(0, $options['max_delta'] + 1)->countQuery()->execute()->fetchField();
+        if ($num_rows > $options['max_delta']) {
           // Limit reached and some records not returned
           $first_key = array_key_first($record['conditions']);
           $first_condition_value = $record['conditions'][$first_key]['value'];
-          $this->logger->warning(t('The number of @chado_table records exceeds the configured limit'
-            . ' for @first_key=@first_condition_value, only @max_delta records will be returned',
-            [
-             '@chado_table' => $chado_table,
-             '@first_key' => $first_key,
-             '@first_condition_value' => $first_condition_value,
-             '@max_delta' => $max_delta
-            ]));
+          $warning_values = [
+            '@chado_table' => $chado_table,
+            '@first_key' => $first_key,
+            '@first_condition_value' => $first_condition_value,
+          ];
+          if ($options['inhibit'] ?? FALSE) {
+            $this->logger->warning(t('The number of @chado_table records exceeds the configured limit'
+              . ' for @first_key=@first_condition_value, no records will be returned',
+              $warning_values));
+            return 0;
+          }
+          else {
+            $warning_values['@max_delta'] = $options['max_delta'];
+            $this->logger->warning(t('The number of @chado_table records exceeds the configured limit'
+              . ' for @first_key=@first_condition_value, only @max_delta records will be returned',
+              $warning_values));
+            $select->range(0, $options['max_delta']);
+          }
         }
-        $select->range(0, $max_delta);
       }
 
       // Execute the query.

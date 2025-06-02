@@ -65,6 +65,8 @@ class TripalEntitySettingsForm extends FormBase {
     if (is_null($publish_global_max_delta) or (trim($publish_global_max_delta) === '')) {
       $publish_global_max_delta = 100;
     }
+    $publish_global_max_delta_inhibit = $form_state->getValue('publish_global_max_delta_inhibit',
+      $settings->get('tripal_entity_type.publish_global_max_delta_inhibit'));
 
     $form['tripal_entity_settings']['#markup'] = 'Settings form for Tripal Content entities.';
 
@@ -105,7 +107,14 @@ class TripalEntitySettingsForm extends FormBase {
       '#required' => FALSE,
     ];
 
-    $form['publish_global_max_delta'] = [
+    $form['publish'] = [
+      '#type' => 'details',
+      '#title' => t('Publishing Options'),
+      '#description' => t('Options that control how much tripal content is published'),
+      '#open' => TRUE,
+    ];
+
+    $form['publish']['publish_global_max_delta'] = [
       '#type' => 'number',
       '#min' => 0,
       '#step' => 1,
@@ -118,6 +127,15 @@ class TripalEntitySettingsForm extends FormBase {
                         . ' Enter <em>0</em> to indicate that there is no limit (not recommended).'),
 //@@@ @todo                        . " This value can be overridden by an individual widget's settings."),
       '#default_value' => $publish_global_max_delta,
+      '#required' => FALSE,
+    ];
+    $form['publish']['publish_global_max_delta_inhibit'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Inhibit publish when many records are present'),
+      '#description' => $this->t('When enabled, no linked records will be published on an entity'
+          . ' if the total number of records of one type exceeds the value set above.'
+          . ' If not enabled, then records will be published, but only up to this limit.'),
+      '#default_value' => $publish_global_max_delta_inhibit,
       '#required' => FALSE,
     ];
 
@@ -174,6 +192,7 @@ class TripalEntitySettingsForm extends FormBase {
 
     $widget_global_select_limit = trim($form_state->getValue('widget_global_select_limit'));
     $publish_global_max_delta = trim($form_state->getValue('publish_global_max_delta'));
+    $publish_global_max_delta_inhibit = $form_state->getValue('publish_global_max_delta_inhibit');
 
     // Update configuration
     \Drupal::configFactory()
@@ -182,6 +201,7 @@ class TripalEntitySettingsForm extends FormBase {
       ->set('tripal_entity_type.allowed_title_tags', $allowed_title_tags)
       ->set('tripal_entity_type.widget_global_select_limit', $widget_global_select_limit)
       ->set('tripal_entity_type.publish_global_max_delta', $publish_global_max_delta)
+      ->set('tripal_entity_type.publish_global_max_delta_inhibit', $publish_global_max_delta_inhibit)
       ->save();
 
     $this->messenger()->addStatus('Settings have been saved.');
