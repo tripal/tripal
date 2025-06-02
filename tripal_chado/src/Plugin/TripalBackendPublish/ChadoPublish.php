@@ -1283,10 +1283,11 @@ class ChadoPublish extends TripalBackendPublishBase {
       $this->logger->setJob($this->job);
     }
 
-    $this->publish_global_max_delta = \Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta');
-    if (is_null($this->publish_global_max_delta) or (trim($this->publish_global_max_delta) === '')) {
-      $this->publish_global_max_delta = 100;
+    $max_delta = \Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta');
+    if (is_null($max_delta) or (trim($max_delta) === '')) {
+      $max_delta = 100;
     }
+    $this->publish_global_max_delta = $max_delta;
     $this->publish_global_max_delta_inhibit = boolval(\Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta_inhibit'));
 
     // Get the bundle object so we can get settings such as the title format.
