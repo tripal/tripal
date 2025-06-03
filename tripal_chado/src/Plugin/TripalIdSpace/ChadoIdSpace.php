@@ -275,6 +275,11 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
       return NULL;
     }
 
+    $cache_id = 'chado_idspace_term_' . $accession;
+    if ($cache = \Drupal::cache()->get($cache_id)) {
+      return $cache->data;
+    }
+
     // Get the term record.
     $query = $this->connection->select('1:cvterm', 'CVT');
     $query->join('1:dbxref', 'DBX', '"CVT".dbxref_id = "DBX".dbxref_id');
@@ -420,6 +425,9 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
         $term->addParent($parent_term, $type_term);
       }
     }
+
+    // Cache the term for an hour.
+    \Drupal::cache()->set($cache_id, $term, \Drupal::time()->getRequestTime() + (3600));
 
     return $term;
   }
