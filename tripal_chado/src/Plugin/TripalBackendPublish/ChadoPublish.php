@@ -1409,8 +1409,11 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
 
       $this->logger->notice($batch_prefix . 'Step 1 of 6: Find matching records');
+      // We add one to max_delta to use the extra record as a flag that
+      // at least one record was not published. The formatters will not
+      // display this last extra record.
       $find_options = [
-        'max_delta' => $this->publish_global_max_delta,
+        'max_delta' => $this->publish_global_max_delta + 1,
         'inhibit' => $this->publish_global_max_delta_inhibit,
       ];
       $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch, $find_options);
