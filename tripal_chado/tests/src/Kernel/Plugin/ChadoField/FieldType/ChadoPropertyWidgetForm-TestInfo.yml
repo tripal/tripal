@@ -74,6 +74,26 @@ scenarios:
           value:
             format: basic_html
             value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
+        project_prop1:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 181
+          field_name: 'project_prop1'
+          value:
+            format: basic_html
+            value: ' '
+          rank: 0
+        project_prop2:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 181
+          field_name: 'project_prop2'
+          value:
+            format: basic_html
+            value: ' '
+          rank: 0
       expected_form_keys:
         project_prop1:
         - record_id:
@@ -124,6 +144,26 @@ scenarios:
           value:
             format: basic_html
             value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
+        project_prop1:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 181
+          field_name: 'project_prop1'
+          value:
+            format: basic_html
+            value: ' '
+          rank: 0
+        project_prop2:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 181
+          field_name: 'project_prop2'
+          value:
+            format: basic_html
+            value: ' '
+          rank: 0
       expected_form_keys:
         project_prop1:
         - record_id:
@@ -176,6 +216,26 @@ scenarios:
           value:
             format: basic_html
             value: "Some useless description."
+        project_prop1:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 181
+          field_name: 'project_prop1'
+          value:
+            format: basic_html
+            value: ' '
+          rank: 0
+        project_prop2:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          type_id: 181
+          field_name: 'project_prop2'
+          value:
+            format: basic_html
+            value: ' '
+          rank: 0
       expected_form_keys:
         project_prop1:
         - record_id:

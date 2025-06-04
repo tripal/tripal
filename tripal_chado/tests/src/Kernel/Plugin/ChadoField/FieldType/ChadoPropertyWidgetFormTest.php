@@ -33,7 +33,18 @@ class ChadoPropertyWidgetFormTest extends ChadoTestKernelBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'user', 'path', 'path_alias', 'field', 'datetime', 'tripal', 'tripal_chado'];
+  protected static $modules = [
+    'system',
+    'user',
+    'path',
+    'path_alias',
+    'field',
+    'filter',
+    'datetime',
+    'text',
+    'tripal',
+    'tripal_chado',
+  ];
 
   /**
    * The test chado connection. It is also set in the container.
