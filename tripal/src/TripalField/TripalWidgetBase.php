@@ -5,18 +5,6 @@ namespace Drupal\tripal\TripalField;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
-#use Drupal\Component\Utility\Html;
-#use Drupal\Core\Ajax\AjaxResponse;
-#use Drupal\Core\Ajax\FocusFirstCommand;
-#use Drupal\Core\Ajax\InsertCommand;
-
-#use Drupal\Component\Utility\NestedArray;
-#use Drupal\Component\Utility\SortArray;
-#use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-#use Drupal\Core\Render\Element;
-#use Symfony\Component\DependencyInjection\ContainerInterface;
-#use Symfony\Component\Validator\ConstraintViolationInterface;
-#use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 
 /**
