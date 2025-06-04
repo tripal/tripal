@@ -180,28 +180,38 @@ scenarios:
         project_prop1:
         - record_id:
             '#type': 'value'
+            '#value': 0
           prop_id:
             '#type': 'value'
+            '#value': 0
           linker_id:
             '#type': 'value'
+            '#value': 0
           type_id:
             '#type': 'value'
+            '#value': 3
           field_name:
             '#value': 'project_prop1'
           value:
             '#base_type': 'textarea'
             '#type': 'text_format'
+            '#default_value': ''
           rank:
             '#type': 'value'
+            '#value': 0
         project_prop2:
         - record_id:
             '#type': 'value'
+            '#value': 0
           prop_id:
             '#type': 'value'
+            '#value': 0
           linker_id:
             '#type': 'value'
+            '#value': 0
           type_id:
             '#type': 'value'
+            '#value': 4
           field_name:
             '#value': 'project_prop2'
           value:
@@ -209,6 +219,7 @@ scenarios:
             '#type': 'text_format'
           rank:
             '#type': 'value'
+            '#value': 0
       expected_field_values:
         project_name:
         - record_id: 1
@@ -268,28 +279,38 @@ scenarios:
         project_prop1:
         - record_id:
             '#type': 'value'
+            '#value': 0
           prop_id:
             '#type': 'value'
+            '#value': 0
           linker_id:
             '#type': 'value'
+            '#value': 0
           type_id:
             '#type': 'value'
+            '#value': 3
           field_name:
             '#value': 'project_prop1'
           value:
             '#base_type': 'textarea'
             '#type': 'text_format'
+            '#default_value': ''
           rank:
             '#type': 'value'
+            '#value': 0
         project_prop2:
         - record_id:
             '#type': 'value'
+            '#value': 0
           prop_id:
             '#type': 'value'
+            '#value': 0
           linker_id:
             '#type': 'value'
+            '#value': 0
           type_id:
             '#type': 'value'
+            '#value': 4
           field_name:
             '#value': 'project_prop2'
           value:
@@ -297,6 +318,7 @@ scenarios:
             '#type': 'text_format'
           rank:
             '#type': 'value'
+            '#value': 0
       expected_field_values:
         project_name:
         - record_id: 1
@@ -384,28 +406,38 @@ scenarios:
         project_prop1:
         - record_id:
             '#type': 'value'
+            '#value': 0
           prop_id:
             '#type': 'value'
+            '#value': 0
           linker_id:
             '#type': 'value'
+            '#value': 0
           type_id:
             '#type': 'value'
+            '#value': 3
           field_name:
             '#value': 'project_prop1'
           value:
             '#base_type': 'textarea'
             '#type': 'text_format'
+            '#default_value': ''
           rank:
             '#type': 'value'
+            '#value': 0
         project_prop2:
         - record_id:
             '#type': 'value'
+            '#value': 0
           prop_id:
             '#type': 'value'
+            '#value': 0
           linker_id:
             '#type': 'value'
+            '#value': 0
           type_id:
             '#type': 'value'
+            '#value': 4
           field_name:
             '#value': 'project_prop2'
           value:
@@ -413,6 +445,7 @@ scenarios:
             '#type': 'text_format'
           rank:
             '#type': 'value'
+            '#value': 0
       expected_field_values:
         project_name:
         - record_id: 1
@@ -498,35 +531,89 @@ scenarios:
         project_prop1:
         - record_id:
             '#type': 'value'
+            '#value': 1
           prop_id:
             '#type': 'value'
+            '#value': 1
           linker_id:
             '#type': 'value'
+            '#value': 1
           type_id:
             '#type': 'value'
+            '#value': 3
           field_name:
             '#value': 'project_prop1'
           value:
             '#base_type': 'textarea'
             '#type': 'text_format'
+            '#default_value': 'prop1 A'
           rank:
             '#type': 'value'
+            '#value': 0
+        - record_id:
+            '#type': 'value'
+            '#value': 1
+          prop_id:
+            '#type': 'value'
+            '#value': 2
+          linker_id:
+            '#type': 'value'
+            '#value': 1
+          type_id:
+            '#type': 'value'
+            '#value': 3
+          field_name:
+            '#value': 'project_prop1'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+            '#default_value': 'prop1 B'
+          rank:
+            '#type': 'value'
+            '#value': 1
         project_prop2:
         - record_id:
             '#type': 'value'
+            '#value': 1
           prop_id:
             '#type': 'value'
+            '#value': 3
           linker_id:
             '#type': 'value'
+            '#value': 1
           type_id:
             '#type': 'value'
+            '#value': 4
           field_name:
             '#value': 'project_prop2'
           value:
             '#base_type': 'textarea'
             '#type': 'text_format'
+            '#default_value': 'prop2 A'
           rank:
             '#type': 'value'
+            '#value': 0
+        - record_id:
+            '#type': 'value'
+            '#value': 1
+          prop_id:
+            '#type': 'value'
+            '#value': 4
+          linker_id:
+            '#type': 'value'
+            '#value': 1
+          type_id:
+            '#type': 'value'
+            '#value': 4
+          field_name:
+            '#value': 'project_prop2'
+          value:
+            '#base_type': 'textarea'
+            '#type': 'text_format'
+            '#default_value': 'prop2 B'
+          rank:
+            '#type': 'value'
+            '#value': 1
       expected_field_values:
         project_name:
         - record_id: 1
