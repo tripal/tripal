@@ -28,7 +28,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $settings = [
       'termIdSpace' => '',
       'termAccession' => '',
-      # 'max_delta' => 100,
       // A simple flag to indicate that we should enable debugging information
       // for this field type.
       // This will be used by ChadoStorage to tell the ChadoFieldDebugger service
