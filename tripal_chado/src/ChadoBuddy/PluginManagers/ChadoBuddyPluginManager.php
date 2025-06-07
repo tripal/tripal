@@ -12,7 +12,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 /**
  * ChadoBuddy plugin manager.
  */
-final class ChadoBuddyPluginManager extends DefaultPluginManager {
+class ChadoBuddyPluginManager extends DefaultPluginManager {
 
   /**
    * Provides the TripalDBX connection to chado that ChadoBuddies created by

@@ -9,7 +9,7 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-final class ChadoBuddy extends Plugin {
+class ChadoBuddy extends Plugin {
 
   /**
    * The plugin ID.
