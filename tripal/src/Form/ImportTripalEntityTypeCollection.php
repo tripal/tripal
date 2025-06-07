@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Provides a Tripal form.
  */
-final class ImportTripalEntityTypeCollection extends FormBase {
+class ImportTripalEntityTypeCollection extends FormBase {
 
   /**
    * {@inheritdoc}
