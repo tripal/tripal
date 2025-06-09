@@ -1944,6 +1944,9 @@ class ChadoRecords  {
     // Get the Chado table for this given table alias.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
+    // Cardinalities for linked tables are passed in here
+    $max_deltas = $options['max_deltas'] ?? [];
+
     // Iterate through each item of the table and perform a select.
     $items = $this->getTableItems($base_table, $table_alias);
     foreach ($items as $delta => $record) {
@@ -1969,12 +1972,16 @@ class ChadoRecords  {
       }
 
       // Add in any joins.
+      $right_cardinality = NULL;
       if (array_key_exists('joins', $record)) {
         $join_paths = array_keys($record['joins']);
         sort($join_paths);
         foreach ($join_paths as $join_path) {
           $join_info = $record['joins'][$join_path];
           $right_table = $join_info['on']['right_table'];
+          if (array_key_exists($right_table, $max_deltas)) {
+            $right_cardinality = $max_deltas[$right_table];
+          }
           $right_alias = $join_info['on']['right_alias'];
           $right_column = $join_info['on']['right_column'];
           $left_alias = $join_info['on']['left_alias'];
@@ -1997,7 +2004,10 @@ class ChadoRecords  {
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
 
       // Implement the max_delta limit if one was specified
-      $max_delta = $this->tableMaxDelta($base_table, $options['global_max_delta'] ?? NULL, $options['max_deltas'] ?? []);
+      $max_delta = $options['global_max_delta'] ?? 100;
+      if ($right_cardinality && $right_cardinality > 1) {
+        $max_delta = $right_cardinality;
+      }
       if ($max_delta) {
         $num_rows = $select->range(0, $max_delta + 1)->countQuery()->execute()->fetchField();
         if ($num_rows > $max_delta) {
@@ -2059,29 +2069,6 @@ class ChadoRecords  {
       }
     }
     return $items_found;
-  }
-
-  /**
-   * Looks up the max delta value to use for the specified chado table
-   *
-   * @param string $chado_table
-   *   The chado table name
-   * @param int|NULL $global_max_delta
-   *   The global max delta setting
-   * @param array $max_deltas
-   *   An associative array of overrides, key is chado table name.
-   * @return int
-   *   The value of max_delta to use for this table. 0 means no limit applied.
-   */
-  protected function tableMaxDelta(string $chado_table, ?int $global_max_delta, array $max_deltas): int {
-    $max_delta = 100;
-    if (!is_null($global_max_delta)) {
-      $max_delta = $global_max_delta;
-    }
-    if (array_key_exists($chado_table, $max_deltas)) {
-      $max_delta = $max_deltas[$chado_table];
-    }
-    return $max_delta;
   }
 
   /**
