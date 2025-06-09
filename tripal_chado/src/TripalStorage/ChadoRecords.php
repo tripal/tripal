@@ -2076,15 +2076,11 @@ class ChadoRecords  {
   protected function tableMaxDelta(string $base_table, ?int $global_max_delta, array $max_deltas): int {
     $max_delta = 100;
     if (!is_null($global_max_delta)) {
-print "CP92 global_max_delta is \"$global_max_delta\"\n"; //@@@
       $max_delta = $global_max_delta;
     }
-print "CP93 table max deltas: ";var_dump($max_deltas);//@@@
     if (array_key_exists($base_table, $max_deltas)) {
       $max_delta = $max_deltas[$base_table];
-print "CP94 table $base_table max delta set\n";//@@@
     }
-print "CP99 tableMaxDelta returning ";var_dump($max_delta);//@@@
     return $max_delta;
   }
 
