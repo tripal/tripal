@@ -34,7 +34,7 @@ class TripalPublishFormWithMockTest extends TripalTestKernelBase {
 
     $this->installConfig('system');
 
-    // Needed as the publish form lists tripal entitiy types.
+    // Needed as the publish form lists tripal entity types.
     $this->installEntitySchema('tripal_entity_type');
 
     // Setup for working with tripal jobs being submitted in test.

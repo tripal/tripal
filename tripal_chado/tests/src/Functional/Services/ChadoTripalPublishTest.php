@@ -110,6 +110,51 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
   }
 
   /**
+   * A helper function for adding a stock record to Chado.
+   *
+   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
+   *   A chado database object.
+   * @param array $details
+   *   The key/value pairs of entries for the stock. The keys correspond
+   *   to the columns of the stock table.
+   * @return int
+   *   The stock_id
+   */
+  public function addChadoStock($chado, $details) {
+    $insert = $chado->insert('1:stock');
+    $insert->fields([
+      'dbxref_id' => array_key_exists('dbxref_id', $details) ? $details['dbxref_id'] : NULL,
+      'organism_id' => array_key_exists('organism_id', $details) ? $details['organism_id'] : NULL,
+      'name' => array_key_exists('name', $details) ? $details['name'] : NULL,
+      'uniquename' => $details['uniquename'],
+      'description' => array_key_exists('description', $details) ? $details['description'] : NULL,
+      'type_id' => $details['type_id'],
+      'is_obsolete' => array_key_exists('is_obsolete', $details) ? $details['is_obsolete'] : 0,
+    ]);
+    return $insert->execute();
+  }
+
+  /**
+   * A helper function for adding a project_stock record to Chado.
+   *
+   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
+   *   A chado database object.
+   * @param array $details
+   *   The key/value pairs of entries for the project_stock. The keys correspond
+   *   to the columns of the project_stock table.
+   * @return int
+   *   The project_stock_id
+   */
+  public function addChadoProjectStock($chado, $details) {
+    $insert = $chado->insert('1:project_stock');
+    $insert->fields([
+      'project_id' => $details['project_id'],
+      'stock_id' => $details['stock_id'],
+    ]);
+    return $insert->execute();
+  }
+
+  /**
    * A helper function for adding an array design record to Chado.
    *
    * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
@@ -156,7 +201,6 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     ]);
     return $insert->execute();
   }
-
 
   /**
    * A helper function to test if the elements of a field item are present.
@@ -221,6 +265,56 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
           'The value for, "' . $column_name . '", is not correct what we expected.');
       }
     }
+  }
+
+  /**
+   * A helper function to add a stock field to the project content type.
+   * Here we use a finite cardinality of 15.
+   */
+  public function attachProjectStockField() {
+    /** @var \Drupal\tripal\Services\TripalFieldCollection $fields_service **/
+    $fields_service = \Drupal::service('tripal.tripalfield_collection');
+    $stock_field = [
+      'name' => 'project_stock',
+      'content_type' => 'project',
+      'label' => 'Germplasm',
+      'type' => 'chado_stock_type_default',
+      'description' => "Germplasm related to this project.",
+      'cardinality' => 15,
+      'required' => FALSE,
+      'storage_settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings'=> [
+          'base_table' => 'project',
+          'linker_table' => 'project_stock',
+          'linker_fkey_column' => 'stock_id',
+        ],
+      ],
+      'settings' => [
+        'termIdSpace' => 'NCIT',
+        'termAccession' => 'C70699',
+      ],
+      'display' => [
+        'view' => [
+          'default' => [
+            'region' => 'content',
+            'label' => 'above',
+            'weight' => 15
+          ],
+        ],
+        'form' => [
+          'default'=> [
+            'region'=> 'content',
+            'weight' => 15
+          ],
+        ],
+      ],
+    ];
+    $reason = '';
+    $is_valid = $fields_service->validate($stock_field, $reason);
+    $this->assertTrue($is_valid, $reason);
+    $is_added = $fields_service->addBundleField($stock_field);
+    $this->assertTrue($is_added, 'The stock field could not be added to project.');
   }
 
   /**
@@ -363,6 +457,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $fields_setup = \Drupal::service('tripal.tripalfield_collection');
     $content_type_setup->install($collection_ids);
     $fields_setup->install($collection_ids);
+    $this->attachProjectStockField();
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     // % Run the first test set with caching disabled. %
@@ -559,7 +654,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $person_term_id = $contact_db->getTerm('0000003')->getInternalId();
     $contact_id1 = $this->addChadoContact($chado, [
       'name' => 'John Doe',
-       'type_id' => $person_term_id,
+      'type_id' => $person_term_id,
       'description' => 'Bioinformaticist extrodinaire'
     ]);
     $contact_id2 = $this->addChadoContact($chado, [
@@ -735,7 +830,7 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     ]);
 
     // Now publish the organism content type again.
-    $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage', 'republish' => true]);
+    $entities = $chado_publish->publish(['bundle' => 'organism', 'datastore' => 'chado_storage', 'republish' => TRUE]);
     $entity_id = array_key_first($entities);
     // Because we added properties for the first organism we should get its
     // entity in those returned, but not the gorilla organism.
@@ -838,6 +933,64 @@ class ChadoTripalPublishTest extends ChadoTestBrowserBase {
     $this->checkFieldItem('array_design', 'array_design_num_array_columns', 0,
       ['record_id' => $array_design_id2],
       []);
+
+    // Test the max delta limit
+    // Generate a large number of contact and stock records in chado,
+    // and link every one to the first project
+    $new_contacts = [];
+    $new_stocks = [];
+    for ($i = 1; $i <= 120; $i++) {
+      $contact_id = $this->addChadoContact($chado, [
+        'name' => 'Additional Contact ' . $i,
+        'description' => 'Numerous contact ' . $i,
+      ]);
+      $new_contacts[$i] = $contact_id;
+      $stock_id = $this->addChadoStock($chado, [
+        'name' => 'Additional Stock ' . $i,
+        'uniquename' => 'stock_' . $i,
+        'type_id' => 1,
+        'description' => 'Numerous stock ' . $i,
+      ]);
+      $new_stocks[$i] = $stock_id;
+      $project_contact_id = $this->addChadoProjectContact($chado, [
+        'project_id' => $project_id1,
+        'contact_id' => $contact_id,
+      ]);
+      $project_stock_id = $this->addChadoProjectStock($chado, [
+        'project_id' => $project_id1,
+        'stock_id' => $stock_id,
+      ]);
+    }
+
+    // Note that the project_stock field has been added with cardinality 15.
+    // Publish with inhibit set. No new contacts should
+    // be published because the default global limit is exceeded.
+    \Drupal::configFactory()
+      ->getEditable('tripal.settings')
+      ->set('tripal_entity_type.publish_global_max_delta_inhibit', 1)
+      ->save();
+    $entities = $chado_publish->publish(['bundle' => 'project', 'datastore' => 'chado_storage', 'republish' => TRUE]);
+    // We should have published no contacts (2 were pre-existing)
+    $this->checkFieldItem('project', 'project_contact', 2, ['entity_id' => 6], []);
+    // We should have published no stocks
+    $this->checkFieldItem('project', 'project_stock', 0, ['entity_id' => 6], []);
+
+    // Reset the inhibit setting, and publish using the default max delta (i.e. 100).
+    // Tests where the global value has never been set.
+    $config_edit->set('tripal_entity_type.publish_global_max_delta_inhibit', 0)->save();
+    $entities = $chado_publish->publish(['bundle' => 'project', 'datastore' => 'chado_storage', 'republish' => TRUE]);
+    // We should have published max delta + 1 contacts (2 were pre-existing)
+    $this->checkFieldItem('project', 'project_contact', 101, ['entity_id' => 6], []);
+    // We should have published cardinality + 1 stocks since cardinality overrides max_delta
+    $this->checkFieldItem('project', 'project_stock', 16, ['entity_id' => 6], []);
+
+    // Test setting a global max delta limit (increase default by 5)
+    $config_edit->set('tripal_entity_type.publish_global_max_delta', 105)->save();
+    $entities = $chado_publish->publish(['bundle' => 'project', 'datastore' => 'chado_storage', 'republish' => TRUE]);
+    // We should have published max delta + 1 contacts (5 new, 101 were pre-existing)
+    $this->checkFieldItem('project', 'project_contact', 106, ['entity_id' => 6], []);
+    // We should not have published any more stocks
+    $this->checkFieldItem('project', 'project_stock', 16, ['entity_id' => 6], []);
   }
 
 }
