@@ -1726,7 +1726,7 @@ class ChadoRecords  {
       }
 
       // If limiting results to a set of primary keys, restrict the
-      // query by adding this as acondition.
+      // query by adding this as a condition.
       if ($record_ids) {
         $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
         $chado_table_pkey = $chado_table_def['primary key'];
@@ -1918,8 +1918,9 @@ class ChadoRecords  {
    *   The alias of the table.  For the base table, use the same table name as
    *   base tables don't have aliases.
    * @param array $options
-   *   - max_delta = Maximum number of linked records from a single table to return, zero for no limit.
+   *   - global_max_delta = Maximum number of linked records from a single table to return, zero for no limit.
    *   - inhibit = Publish no records if the number exceeds max_delta.
+   *   - max_deltas = associative array of an override of global_max_delta on a per-table basis, key is table name
    *
    * @throws \Exception
    *
@@ -1996,9 +1997,10 @@ class ChadoRecords  {
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
 
       // Implement the max_delta limit if one was specified
-      if ($options['max_delta'] ?? FALSE) {
-        $num_rows = $select->range(0, $options['max_delta'] + 1)->countQuery()->execute()->fetchField();
-        if ($num_rows > $options['max_delta']) {
+      $max_delta = $this->tableMaxDelta($base_table, $options['global_max_delta'] ?? NULL, $options['max_deltas'] ?? []);
+      if ($max_delta) {
+        $num_rows = $select->range(0, $max_delta + 1)->countQuery()->execute()->fetchField();
+        if ($num_rows > $max_delta) {
           // Limit reached and some records not returned
           $first_key = array_key_first($record['conditions']);
           $first_condition_value = $record['conditions'][$first_key]['value'];
@@ -2014,11 +2016,11 @@ class ChadoRecords  {
             return 0;
           }
           else {
-            $warning_values['@max_delta'] = $options['max_delta'];
+            $warning_values['@max_delta'] = $max_delta;
             $this->logger->warning(t('The number of @chado_table records exceeds the configured limit'
               . ' for @first_key=@first_condition_value, only @max_delta records will be returned',
               $warning_values));
-            $select->range(0, $options['max_delta']);
+            $select->range(0, $max_delta);
           }
         }
       }
@@ -2057,6 +2059,33 @@ class ChadoRecords  {
       }
     }
     return $items_found;
+  }
+
+  /**
+   * Looks up the max delta value to use for the specified base table
+   *
+   * @param string $base_table
+   *   The chado base table name
+   * @param int|NULL $global_max_delta
+   *   The global max delta setting
+   * @param array $max_deltas
+   *   An associative array of overrides, key is chado table name.
+   * @return int
+   *   The value of max_delta to use for this table. 0 means no limit applied.
+   */
+  protected function tableMaxDelta(string $base_table, ?int $global_max_delta, array $max_deltas): int {
+    $max_delta = 100;
+    if (!is_null($global_max_delta)) {
+print "CP92 global_max_delta is \"$global_max_delta\"\n"; //@@@
+      $max_delta = $global_max_delta;
+    }
+print "CP93 table max deltas: ";var_dump($max_deltas);//@@@
+    if (array_key_exists($base_table, $max_deltas)) {
+      $max_delta = $max_deltas[$base_table];
+print "CP94 table $base_table max delta set\n";//@@@
+    }
+print "CP99 tableMaxDelta returning ";var_dump($max_delta);//@@@
+    return $max_delta;
   }
 
   /**

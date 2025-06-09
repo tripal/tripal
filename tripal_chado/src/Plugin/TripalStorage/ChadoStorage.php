@@ -371,8 +371,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    *   When specified, only return records where the primary key is present in this array.
    *   Used by publish to publish in batches.
    * @param array $options
-   *   - max_delta = Maximum number of linked records from a single table to return, zero for no limit.
+   *   - global_max_delta = Maximum number of linked records from a single table to return, zero for no limit.
    *   - inhibit = Publish no records if the number exceeds max_delta.
+   *   - max_deltas = associative array of an override of global_max_delta on a per-table basis, key is table name
    */
   public function findValues($values, array $main_property_names = [], array $record_ids = [], array $options = []) {
 
@@ -1309,6 +1310,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'join_type' => $path_array['join']['type'],
       'join_path' => $path_array['join']['path'],
     ];
+print "CP201 add join elements ";var_dump($elements);
     $this->records->addJoin($elements);
     $path_array['join']['table_alias'] = $elements['right_alias'];
 
