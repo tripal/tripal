@@ -2062,10 +2062,10 @@ class ChadoRecords  {
   }
 
   /**
-   * Looks up the max delta value to use for the specified base table
+   * Looks up the max delta value to use for the specified chado table
    *
-   * @param string $base_table
-   *   The chado base table name
+   * @param string $chado_table
+   *   The chado table name
    * @param int|NULL $global_max_delta
    *   The global max delta setting
    * @param array $max_deltas
@@ -2073,13 +2073,13 @@ class ChadoRecords  {
    * @return int
    *   The value of max_delta to use for this table. 0 means no limit applied.
    */
-  protected function tableMaxDelta(string $base_table, ?int $global_max_delta, array $max_deltas): int {
+  protected function tableMaxDelta(string $chado_table, ?int $global_max_delta, array $max_deltas): int {
     $max_delta = 100;
     if (!is_null($global_max_delta)) {
       $max_delta = $global_max_delta;
     }
-    if (array_key_exists($base_table, $max_deltas)) {
-      $max_delta = $max_deltas[$base_table];
+    if (array_key_exists($chado_table, $max_deltas)) {
+      $max_delta = $max_deltas[$chado_table];
     }
     return $max_delta;
   }
