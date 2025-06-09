@@ -124,9 +124,9 @@ class TripalEntitySettingsForm extends FormBase {
                         . ' For example, there may be tens of thousands of genes linked to'
                         . ' a single genome annotation, which is too many to display on the'
                         . ' entity page.'
-                        . ' Enter <em>0</em> to indicate that there is no limit (not recommended).'),
-                        . " This value can be overridden for a specific field by setting the field's"
-                        . ' cardinality to a value greater than 1.'),
+                        . ' Enter <em>0</em> to indicate that there is no limit (not recommended).'
+                        . ' This value can be overridden for any specific field by setting the'
+                        . " field's cardinality to a value greater than 1."),
       '#default_value' => $publish_global_max_delta,
       '#required' => FALSE,
     ];
