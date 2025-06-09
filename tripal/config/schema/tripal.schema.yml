@@ -107,6 +107,10 @@ field.storage.tripal_entity.*:
         storage_plugin_settings:
           type: field.storage.tripal_entity.*.settings.storage_plugin_settings.*
           label: 'Tripal Storage-specific Settings'
+          mapping:
+            object_table:
+              type: string
+              label: "name of table joined through a linking table"
 
 
 ## Adds term ID Space and Accession keys
@@ -250,28 +254,6 @@ tripal.tripalfield_collection.*:
                  type: boolean
                  label: 'Required'
                  nullable: false
-               storage_settings:
-                 type: mapping
-                 label: 'Storage Settings'
-                 mapping:
-                   storage_plugin_id:
-                     type: string
-                     label: 'Storage Plugin ID'
-                     nullable: false
-                   storage_plugin_settings:
-                      type: mapping
-                      label: 'Storage Plugin Settings'
-                   termIdSpace:
-                     type: string
-                     label: "Term Id Space"
-                     nullable: false
-                   termAccession:
-                     type: string
-                     label: "Term Accession"
-                     nullable: false
-                   max_length:
-                     type: integer
-                     label: "The maximum size of the field vlaue."
                settings:
                  type: mapping
                  label: 'Settings'
@@ -292,6 +274,28 @@ tripal.tripalfield_collection.*:
                      type: string
                      label: "A fixed value for the field that cannot be changed."
                      nullable: true
+               storage_settings:
+                 type: mapping
+                 label: 'Storage Settings'
+                 mapping:
+                   storage_plugin_id:
+                     type: string
+                     label: 'Storage Plugin ID'
+                     nullable: false
+                   termIdSpace:
+                     type: string
+                     label: "Term Id Space"
+                     nullable: false
+                   termAccession:
+                     type: string
+                     label: "Term Accession"
+                     nullable: false
+                   max_length:
+                     type: integer
+                     label: "The maximum size of the field vlaue."
+                   storage_plugin_settings:
+                      type: mapping
+                      label: 'Storage Plugin Settings'
                display:
                  type: mapping
                  label: 'Display'
