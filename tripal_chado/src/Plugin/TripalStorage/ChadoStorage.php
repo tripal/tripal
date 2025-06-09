@@ -1310,7 +1310,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       'join_type' => $path_array['join']['type'],
       'join_path' => $path_array['join']['path'],
     ];
-print "CP201 add join elements ";var_dump($elements);
     $this->records->addJoin($elements);
     $path_array['join']['table_alias'] = $elements['right_alias'];
 
