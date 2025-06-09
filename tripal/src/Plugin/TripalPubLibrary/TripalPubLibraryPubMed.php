@@ -330,18 +330,12 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     }
 
     usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
-    $rfh = fopen($query_url, "r");
-    if (!$rfh) {
+    $query_xml = $this->fileretriever->retrieveFileContents($query_url);
+    if (is_null($query_xml)) {
       $this->logger->error("Could not perform Pubmed query. Cannot connect to Entrez.");
       return FALSE;
     }
 
-    // retrieve the XML results
-    $query_xml = '';
-    while (!feof($rfh)) {
-      $query_xml .= fread($rfh, 255);
-    }
-    fclose($rfh);
     $xml = new \XMLReader();
     $xml->xml($query_xml);
 
