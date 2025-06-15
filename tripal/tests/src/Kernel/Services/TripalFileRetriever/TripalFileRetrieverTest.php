@@ -129,7 +129,8 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
       'https://github.com/vmasiufekxlkajfd.txt',
       [],
       [
-        'error_message' => 'Invalid file',
+        // Expect "Invalid file", but in rare cases when host is down can get "Invalid hostname"
+        'error_message' => 'Invalid',
         'has_content' => FALSE,
         'skip' => FALSE,
         'download_status' => FALSE,
