@@ -29,7 +29,7 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
     $datastores = [];
     $unpublish_form_defaults = \Drupal::state()->get('tripal_unpublish_form_defaults', []);
 
-    // Get a list of TripalSTorage plugins
+    // Get a list of TripalStorage plugins
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
     $storage_manager = \Drupal::service('tripal.storage');
     $storage_defs = $storage_manager->getDefinitions();
