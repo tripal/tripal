@@ -4,10 +4,9 @@ namespace Drupal\tripal_chado\Plugin\DataType;
 
 use Drupal\Core\TypedData\TypedData;
 use Drupal\Core\TypedData\ComplexDataInterface;
-use Drupal\tripal_chado\TypedData\OrganismLinkerDataDefinition;
 
 /**
- * Plugin implementation of the ChadoLinker data type
+ * Plugin implementation of the ChadoLinker data type.
  *
  * @DataType(
  *   id = "chado_record",
@@ -29,14 +28,14 @@ class ChadoDataType extends TypedData implements \IteratorAggregate, ComplexData
    *
    * @var array
    */
-  protected $values = array();
+  protected $values = [];
 
   /**
    * The array of properties.
    *
    * @var \Drupal\Core\TypedData\TypedDataInterface[]
    */
-  protected $properties = array();
+  protected $properties = [];
 
   /**
    * {@inheritdoc}
@@ -48,14 +47,7 @@ class ChadoDataType extends TypedData implements \IteratorAggregate, ComplexData
   /**
    * {@inheritdoc}
    */
-  public function setValue($value, $notify = TRUE) {
-    parent::setValue($value, $notify);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getIterator() {
+  public function getIterator(): \Traversable {
     return new \ArrayIterator($this->list);
   }
 
@@ -92,42 +84,43 @@ class ChadoDataType extends TypedData implements \IteratorAggregate, ComplexData
    * {@inheritdoc}
    */
   public function getProperties($include_computed = FALSE) {
-    $properties = array();
+    $properties = [];
     foreach ($this->definition
-        ->getPropertyDefinitions() as $name => $definition) {
-          if ($include_computed || !$definition
-              ->isComputed()) {
-                $properties[$name] = $this
-                ->get($name);
-              }
-        }
-        return $properties;
+      ->getPropertyDefinitions() as $name => $definition) {
+      if ($include_computed || !$definition
+        ->isComputed()) {
+        $properties[$name] = $this
+          ->get($name);
+      }
+    }
+    return $properties;
   }
 
   /**
    * {@inheritdoc}
    */
   public function toArray() {
-    $values = array();
+    $values = [];
     foreach ($this
-        ->getProperties() as $name => $property) {
-          $values[$name] = $property
-          ->getValue();
-        }
-        return $values;
+      ->getProperties() as $name => $property) {
+      $values[$name] = $property
+        ->getValue();
+    }
+    return $values;
   }
+
   /**
    * {@inheritdoc}
    */
   public function isEmpty() {
     foreach ($this->properties as $property) {
       $definition = $property
-      ->getDataDefinition();
+        ->getDataDefinition();
       if (!$definition
-          ->isComputed() && $property
-          ->getValue() !== NULL) {
-            return FALSE;
-          }
+        ->isComputed() && $property
+        ->getValue() !== NULL) {
+        return FALSE;
+      }
     }
     if (isset($this->values)) {
       foreach ($this->values as $name => $value) {
@@ -140,19 +133,19 @@ class ChadoDataType extends TypedData implements \IteratorAggregate, ComplexData
   }
 
   /**
-   * {@inheritdoc}
+   * React to changes to a child property or item.
    *
-   * @param bool $notify
-   *   (optional) Whether to forward the notification to the parent. Defaults to
-   *   TRUE. By passing FALSE, overrides of this method can re-use the logic
-   *   of parent classes without triggering notification.
+   * Note that this is invoked after any changes have been applied.
+   *
+   * @param string $name
+   *   The name of the property or the delta of the list item which is changed.
    */
-  public function onChange($property_name, $notify = TRUE) {
+  public function onChange($name) {
 
     // Notify the parent of changes.
     if ($notify && isset($this->parent)) {
-      $this->parent
-      ->onChange($this->name);
+      $this->parent->onChange($this->name);
     }
   }
+
 }
