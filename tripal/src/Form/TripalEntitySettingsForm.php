@@ -137,9 +137,7 @@ $x = $settings->get('tripal_entity_type.publish_global_max_delta'); dpm($x, "CP7
     $form['publish']['publish_global_max_delta_inhibit'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Inhibit publish when many records are present'),
-      '#description' => $this->t('When enabled, no linked records will be published on an entity'
-          . ' if the total number of records of one type exceeds the value set above.'
-          . ' If not enabled, then records will be published, but only up to this limit.'),
+      '#description' => $this->t('This setting applies to each field individually on an entity. For a given field with more than the specified maximum number of records: if this setting is enabled then no records will be published for this field and if not, then only the specified maximum number of records will be published for this field.'),
       '#default_value' => $publish_global_max_delta_inhibit,
       '#required' => FALSE,
     ];
