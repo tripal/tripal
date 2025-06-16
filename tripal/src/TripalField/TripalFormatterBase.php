@@ -50,15 +50,20 @@ abstract class TripalFormatterBase extends FormatterBase {
   }
 
   /**
-   * Converts a list of multiple renderable items into a list.
+   * HELPER: Makes multiple renderable items into a list.
    *
-   * A single item is passed through unchanged.
+   * Note: If the number of items exceeds the max delta for this field,
+   * then a warning will be added right before the list.
    *
    * @param array $list
    *   A list of renderable items.
    *
    * @return array
-   *   A render array. Will be empty if there were no items.
+   *   A render array where (1) if no items then an empty element is
+   *   returned, (2) if there is one item it is passed through unchanged,
+   *   (3) if `$items <= $max_delta` then a list of items is returned,
+   *   (4) if `$items > $max_delta` then two elements are returned where
+   *   the first is a warning string and the second is a list of items.
    */
   public function createListMarkup(array $list): array {
     $elements = [];
