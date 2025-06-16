@@ -221,7 +221,7 @@ abstract class ChadoWidgetBase extends TripalWidgetBase {
    */
   public static function defaultSelectSettings(): array {
     return [
-    // Global setting applies when not set.
+      // tripal_entity_type.widget_global_select_limit applies when not set here.
       'widget_select_limit' => '',
       'match_operator' => 'CONTAINS',
       'match_limit' => 10,
