@@ -53,15 +53,18 @@ class TripalEntitySettingsForm extends FormBase {
     // Supplying zero or less means always use autocomplete.
     $widget_global_select_limit = $form_state->getValue('widget_global_select_limit',
       $settings->get('tripal_entity_type.widget_global_select_limit'));
-    // If nothing is set, create a default value that matches what the code defines as default
+    // If nothing is set, create a default value that matches what the code
+    // defines as default.
     if (is_null($widget_global_select_limit) or (trim($widget_global_select_limit) === '')) {
       $widget_global_select_limit = 50;
     }
 
-    // The maximum number of linked records of a given type to publish on a single entity
+    // The maximum number of linked records of a given type to publish on a
+    // single entity.
     $publish_global_max_delta = $form_state->getValue('publish_global_max_delta',
       $settings->get('tripal_entity_type.publish_global_max_delta'));
-    // If nothing is set, create a default value that matches what the code defines as default
+    // If nothing is set, create a default value that matches what the code
+    // defines as default.
     if (is_null($publish_global_max_delta) or (trim($publish_global_max_delta) === '')) {
       $publish_global_max_delta = 100;
     }
@@ -195,7 +198,7 @@ class TripalEntitySettingsForm extends FormBase {
     $publish_global_max_delta = trim($form_state->getValue('publish_global_max_delta'));
     $publish_global_max_delta_inhibit = $form_state->getValue('publish_global_max_delta_inhibit');
 
-    // Update configuration
+    // Update configuration.
     \Drupal::configFactory()
       ->getEditable('tripal.settings')
       ->set('tripal_entity_type.default_cache_backend_field_values', $drupal_entity_field_store)

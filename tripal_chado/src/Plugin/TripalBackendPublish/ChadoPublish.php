@@ -163,16 +163,16 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $republish = TRUE;
 
   /**
-   * Maximum number of linked records from a single table to publish on a single entity
+   * Maximum number of linked records from one table to publish on one entity.
    *
-   * @var int $publish_global_max_delta
+   * @var int
    */
   protected int $publish_global_max_delta;
 
   /**
-   * Maximum number of linked records from a single table to publish on a single entity
+   * Flag to inhibit publish if maximum number of linked records is exceeded.
    *
-   * @var bool $publish_global_max_delta_inhibit
+   * @var bool
    */
   protected bool $publish_global_max_delta_inhibit;
 
@@ -254,31 +254,33 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Retrieves the object_table storage plugin settings value for linking fields
+   * Retrieves the object_table storage plugin setting value for linking fields.
    *
    * @param string $field_name
-   *   The name of the field
+   *   The name of the field.
    * @param array $storage_plugin_settings
-   *   Storage settings for a field
+   *   Storage settings for a field.
+   *
    * @return string
-   *   The name of the linked object table, or empty string for non-linking fields.
+   *   The name of the linked object table, or an empty string for non-linking
+   *   fields.
    */
   protected function getObjectTable(string $field_name, array $storage_plugin_settings): string {
     $object_table = '';
     if (array_key_exists('object_table', $storage_plugin_settings)) {
       $object_table = $storage_plugin_settings['object_table'];
     }
-    // Only look up object table for linking fields
-    else if (array_key_exists('linker_table', $storage_plugin_settings)
+    // Only look up object table for linking fields.
+    elseif (array_key_exists('linker_table', $storage_plugin_settings)
         or array_key_exists('linker_table_and_column', $storage_plugin_settings)) {
       $linker_table = $storage_plugin_settings['linker_table'] ?? NULL;
       $linker_column = $storage_plugin_settings['linker_fkey_column'] ?? NULL;
       if (!$linker_table) {
-        //@todo Can I get this value from tripal_chado/src/TripalField/ChadoFieldItemBase.php:34 ?
-        $table_column_delimiter = " \u{2192} ";  # right arrow
-        list($linker_table, $linker_column) = explode($table_column_delimiter, $storage_plugin_settings['linker_table_and_column']);
+        // @todo How to get this value from tripal_chado/src/TripalField/ChadoFieldItemBase.php:34 ?
+        $table_column_delimiter = " \u{2192} ";  // right arrow
+        [$linker_table, $linker_column] = explode($table_column_delimiter, $storage_plugin_settings['linker_table_and_column']);
       }
-      // Look up the object table from the foreign key of the $linker_column
+      // Look up the object table from the foreign key of the $linker_column.
       $chado = \Drupal::service('tripal_chado.database');
       $linker_schema_def = $chado->schema()->getTableDef($linker_table, ['format' => 'Drupal']);
       $foreign_keys = $linker_schema_def['foreign keys'] ?? [];
@@ -287,7 +289,7 @@ class ChadoPublish extends TripalBackendPublishBase {
           $object_table = $table;
         }
       }
-      // Store permanently so that we don't need to repeat this slow lookup
+      // Store permanently so that we don't need to repeat this slow lookup.
       if ($object_table) {
         $config_name = 'field.storage.tripal_entity.' . $field_name;
         $config = \Drupal::configFactory()->getEditable($config_name);
@@ -310,14 +312,11 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Populates the $this->field_info variable with field information
-   *
-   * @param string $bundle
-   *   The id of the bundle or entity type.
+   * Populates the $this->field_info variable with field information.
    */
-  protected function setFieldInfo() {
+  protected function setFieldInfo(): void {
 
-    // Get the field definitions for the bundle type
+    // Get the field definitions for the bundle type.
     $field_defs = $this->entity_field_manager->getFieldDefinitions('tripal_entity', $this->bundle);
 
     // Iterate over the field definitions for the bundle and collect the
@@ -356,7 +355,7 @@ class ChadoPublish extends TripalBackendPublishBase {
           }
           $this->field_info[$field_name] = $field_info;
 
-          // Store the main properties for later
+          // Store the main properties for later.
           $this->main_property_names[$field_name] = $instance->mainPropertyName();
         }
       }
@@ -1400,12 +1399,14 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Generates the options array for chado storage findValues(),
-   * which specifies appropriate max_delta settings.
+   * Generates the options array for chado storage findValues().
+   *
+   * These options include appropriate max_delta specifications.
    * The cardinality value, if a positive integer greater than 1,
    * will override the global setting.
    *
    * @return array
+   *   The options to pass to findValues().
    */
   protected function getFindValuesOptions(): array {
     // We add one to max_delta to use the extra record as a flag that

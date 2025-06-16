@@ -11,8 +11,9 @@ use Drupal\Core\Field\FieldItemListInterface;
 abstract class TripalFormatterBase extends FormatterBase {
 
   /**
-   * @var int $max_delta
-   *   Maximum number of records that will be published. 0 means no limit.
+   * Maximum number of records that will be published, 0 means no limit.
+   *
+   * @var int
    */
   public int $max_delta = 100;
 
@@ -22,9 +23,10 @@ abstract class TripalFormatterBase extends FormatterBase {
    * Property keys are often controlled vocabulary IDs, which is the IdSpace
    * and accession separated by a colon. The colon is not supported by the
    * storage backend and must be converted to an underscore. This
-   * function performs that task
+   * function performs that task.
    *
    * @param string $key
+   *   A property key e.g. "operation:2945"
    *
    * @return string
    *   A santizied string.
@@ -36,11 +38,11 @@ abstract class TripalFormatterBase extends FormatterBase {
   /**
    * {@inheritdoc}
    *
-   * Initializes value of max_delta
+   * Initializes value of max_delta.
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $max_delta = \Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta');
-    // max_delta defaults to 100 if not defined
+    // max_delta defaults to 100 if not defined.
     if (is_null($max_delta) or (trim($max_delta) === '')) {
       $max_delta = 100;
     }
@@ -49,10 +51,12 @@ abstract class TripalFormatterBase extends FormatterBase {
 
   /**
    * Converts a list of multiple renderable items into a list.
+   *
    * A single item is passed through unchanged.
    *
    * @param array $list
-   *   A list of renderable items
+   *   A list of renderable items.
+   *
    * @return array
    *   A render array. Will be empty if there were no items.
    */
@@ -79,16 +83,17 @@ abstract class TripalFormatterBase extends FormatterBase {
   }
 
   /**
-   * Provides a visible warning message when max_delta has been exceeded
+   * Provides a visible warning message when max_delta has been exceeded.
    *
    * @param array &$elements
-   *   The render array elements
+   *   The render array elements.
    * @param array &$list
    *   The viewElements to be formatted. The list size may exceed max_delta
    *   by one, this is the indicator to display the message, and this last
    *   element will be removed.
-   * @param array|NULL $markup
-   *   Custom render array markup to override the default message
+   * @param array|null $markup
+   *   Custom render array markup to override the default message.
+   *
    * @return void
    *   &$elements is modified when appropriate
    */
@@ -98,9 +103,9 @@ abstract class TripalFormatterBase extends FormatterBase {
       if (!$markup) {
         $markup = [
           '#markup' => '<em>'
-                    . $this->t('Notice: Only the first @max_delta items are displayed here',
+          . $this->t('Notice: Only the first @max_delta items are displayed here',
                         ['@max_delta' => $this->max_delta])
-                    . '</em>',
+          . '</em>',
         ];
       }
       $elements[] = $markup;

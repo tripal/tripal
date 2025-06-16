@@ -366,14 +366,17 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @{inheritdoc}
    *
    * @param array $main_property_names
-   *   Associative array where key is field name, value is name of the main property.
+   *   Associative array where key is field name, value is name of the main
+   *   property.
    * @param array $record_ids
-   *   When specified, only return records where the primary key is present in this array.
-   *   Used by publish to publish in batches.
+   *   When specified, only return records where the primary key is present in
+   *   this array. Used by publish to publish in batches.
    * @param array $options
-   *   - global_max_delta = Maximum number of linked records from a single table to return, zero for no limit.
+   *   - global_max_delta = Maximum number of linked records from a single table
+   *     to return, zero for no limit.
    *   - inhibit = Publish no records if the number exceeds max_delta.
-   *   - max_deltas = associative array of an override of global_max_delta on a per-table basis, key is table name
+   *   - max_deltas = associative array of an override of global_max_delta on a
+   *     per-table basis, key is table name.
    */
   public function findValues($values, array $main_property_names = [], array $record_ids = [], array $options = []) {
 

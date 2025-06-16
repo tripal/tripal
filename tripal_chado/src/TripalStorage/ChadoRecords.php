@@ -1918,9 +1918,11 @@ class ChadoRecords  {
    *   The alias of the table.  For the base table, use the same table name as
    *   base tables don't have aliases.
    * @param array $options
-   *   - global_max_delta = Maximum number of linked records from a single table to return, zero for no limit.
+   *   - global_max_delta = Maximum number of linked records from a single table
+   *     to return, zero for no limit.
    *   - inhibit = Publish no records if the number exceeds max_delta.
-   *   - max_deltas = associative array of an override of global_max_delta on a per-table basis, key is table name
+   *   - max_deltas = associative array of an override of global_max_delta on a
+   *     per-table basis, key is table name.
    *
    * @throws \Exception
    *
@@ -1944,7 +1946,7 @@ class ChadoRecords  {
     // Get the Chado table for this given table alias.
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
-    // Cardinalities for linked tables are passed in here
+    // Cardinalities for linked tables are passed in here.
     $max_deltas = $options['max_deltas'] ?? [];
 
     // Iterate through each item of the table and perform a select.
@@ -1962,7 +1964,7 @@ class ChadoRecords  {
             ['@table' => $table_alias, '@record' => print_r($record, TRUE)]));
       }
 
-      // Start the select
+      // Start the select.
       $select = $this->connection->select('1:' . $chado_table, $table_alias);
 
       // Add the fields in the chado table.
@@ -2003,7 +2005,7 @@ class ChadoRecords  {
       $this->addConditions($select, $record, $table_alias, $column_alias);
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
 
-      // Implement the max_delta limit if one was specified
+      // Implement the max_delta limit if one was specified.
       $max_delta = $options['global_max_delta'] ?? 100;
       if ($right_cardinality && $right_cardinality > 1) {
         $max_delta = $right_cardinality;
@@ -2011,7 +2013,7 @@ class ChadoRecords  {
       if ($max_delta) {
         $num_rows = $select->range(0, $max_delta + 1)->countQuery()->execute()->fetchField();
         if ($num_rows > $max_delta) {
-          // Limit reached and some records not returned
+          // Limit reached and some records not returned.
           $first_key = array_key_first($record['conditions']);
           $first_condition_value = $record['conditions'][$first_key]['value'];
           $warning_values = [
@@ -2020,15 +2022,13 @@ class ChadoRecords  {
             '@first_condition_value' => $first_condition_value,
           ];
           if ($options['inhibit'] ?? FALSE) {
-            $this->logger->warning(t('The number of @chado_table records exceeds the configured limit'
-              . ' for @first_key=@first_condition_value, no records will be returned',
+            $this->logger->warning(t('The number of @chado_table records exceeds the configured limit for @first_key=@first_condition_value, no records will be returned',
               $warning_values));
             return 0;
           }
           else {
             $warning_values['@max_delta'] = $max_delta;
-            $this->logger->warning(t('The number of @chado_table records exceeds the configured limit'
-              . ' for @first_key=@first_condition_value, only @max_delta records will be returned',
+            $this->logger->warning(t('The number of @chado_table records exceeds the configured limit for @first_key=@first_condition_value, only @max_delta records will be returned',
               $warning_values));
             $select->range(0, $max_delta);
           }
