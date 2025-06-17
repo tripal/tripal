@@ -3,8 +3,6 @@
 namespace Drupal\Tests\tripal_biodb\Kernel\Task;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\tripal_biodb\Task\BioTaskBase;
-use Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxConnectionFake;
 
 /**
  * Tests for tasks.

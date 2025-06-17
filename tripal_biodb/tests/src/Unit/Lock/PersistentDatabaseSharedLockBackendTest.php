@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal_biodb\Unit\Lock;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\Core\Lock\DatabaseLockBackend;
 use Drupal\Core\Lock\PersistentDatabaseLockBackend;
 use Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend;
 
