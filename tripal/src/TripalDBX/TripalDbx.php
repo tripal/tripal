@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal\TripalDBX;
 
-use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
 /**

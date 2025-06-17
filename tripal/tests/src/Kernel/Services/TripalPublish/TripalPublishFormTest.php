@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\Core\Form\FormState;
 
 /**
  * Tests the publish form.

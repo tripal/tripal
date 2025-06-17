@@ -2,12 +2,9 @@
 
 namespace Drupal\Tests\tripal\Kernel\Entity;
 
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\field\Entity\FieldConfig;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
-use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Tests the TripalEntity Class.
