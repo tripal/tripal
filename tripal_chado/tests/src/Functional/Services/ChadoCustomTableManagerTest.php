@@ -2,14 +2,12 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
-use Drupal\Core\Database\Database;
-use Drupal\Core\Test\FunctionalTestSetupTrait;
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 use Drupal\tripal_chado\Services\ChadoCustomTableManager;
 
 /**
  * Tests the functions in the ChadoCustomTableManager services class.
- * 
+ *
  * @group Tripal
  * @group Tripal Chado
  */
@@ -17,7 +15,7 @@ class ChadoCustomTableManagerTest extends ChadoTestBrowserBase {
 
 /**
  *  Tests that we can create, list, and get custom table objects
- * 
+ *
  * @group chado
  */
   public function testCustomTableManager() {
@@ -39,7 +37,7 @@ class ChadoCustomTableManagerTest extends ChadoTestBrowserBase {
 
     // We created a table, let's load it by name.
     $test_table_by_name = $ct_service->loadByName('test_custom_table', $default_chado_schema);
-    
+
     $this->assertInstanceOf(ChadoCustomTable::class, $test_table_by_name, 'The test_custom_table could not be created');
 
     // Test loadById() with the id from the $test_table we just loaded. Make sure the returned tables are the same table object.

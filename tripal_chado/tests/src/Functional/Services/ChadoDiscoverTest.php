@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
-use Drupal\Core\Database\Database;
-use Drupal\Core\Test\FunctionalTestSetupTrait;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**

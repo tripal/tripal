@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal_chado\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 

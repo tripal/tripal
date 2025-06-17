@@ -7,7 +7,6 @@
  *
  * @ingroup tripal_chado
  */
-use Drupal\Core\Database\Database;
 
 /**
  * @defgroup tripal_chado_schema_api Chado Schema
