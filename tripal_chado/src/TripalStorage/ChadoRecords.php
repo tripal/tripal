@@ -1949,6 +1949,13 @@ class ChadoRecords  {
     // Cardinalities for linked tables are passed in here.
     $max_deltas = $options['max_deltas'] ?? [];
 
+    // This retrieves cardinality for single-hop
+    // fields, e.g. properties.
+    $field_cardinality = NULL;
+    if (array_key_exists($table_alias, $max_deltas)) {
+      $field_cardinality = $max_deltas[$table_alias];
+    }
+
     // Iterate through each item of the table and perform a select.
     $items = $this->getTableItems($base_table, $table_alias);
     foreach ($items as $delta => $record) {
@@ -1957,7 +1964,6 @@ class ChadoRecords  {
         throw new \Exception(t('Cannot select record in the Chado "@table" table due to missing conditions. Record: @record',
             ['@table' => $table_alias, '@record' => print_r($record, TRUE)]));
       }
-
       // Make sure conditions are valid.
       if (!$this->hasValidConditions($record)) {
         throw new \Exception(t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
@@ -1974,21 +1980,19 @@ class ChadoRecords  {
       }
 
       // Add in any joins.
-      $right_cardinality = NULL;
       if (array_key_exists('joins', $record)) {
         $join_paths = array_keys($record['joins']);
         sort($join_paths);
         foreach ($join_paths as $join_path) {
           $join_info = $record['joins'][$join_path];
           $right_table = $join_info['on']['right_table'];
-          if (array_key_exists($right_table, $max_deltas)) {
-            $right_cardinality = $max_deltas[$right_table];
-          }
           $right_alias = $join_info['on']['right_alias'];
           $right_column = $join_info['on']['right_column'];
           $left_alias = $join_info['on']['left_alias'];
           $left_column = $join_info['on']['left_column'];
-
+          if (array_key_exists($right_table, $max_deltas)) {
+            $field_cardinality = $max_deltas[$right_table];
+          }
           $select->leftJoin('1:' . $right_table, $right_alias,
             $left_alias . '.' .  $left_column . '=' .  $right_alias . '.' . $right_column);
 
@@ -2007,13 +2011,15 @@ class ChadoRecords  {
 
       // Implement the max_delta limit if one was specified.
       $max_delta = $options['global_max_delta'] ?? 100;
-      if ($right_cardinality && $right_cardinality > 1) {
-        $max_delta = $right_cardinality;
+      if ($field_cardinality && $field_cardinality > 1) {
+        $max_delta = $field_cardinality;
       }
+      // Here $max_delta is zero only if site admin set the global
+      // value to zero, which is not recommended.
       if ($max_delta) {
         $num_rows = $select->range(0, $max_delta + 1)->countQuery()->execute()->fetchField();
         if ($num_rows > $max_delta) {
-          // Limit reached and some records not returned.
+          // Max delta limit was reached and some records were not returned.
           $first_key = array_key_first($record['conditions']);
           $first_condition_value = $record['conditions'][$first_key]['value'];
           $warning_values = [
