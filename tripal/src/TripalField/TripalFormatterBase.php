@@ -46,6 +46,13 @@ abstract class TripalFormatterBase extends FormatterBase {
     if (is_null($max_delta) or (trim($max_delta) === '')) {
       $max_delta = 100;
     }
+
+    // Field cardinality will override the global max_delta setting.
+    $cardinality = $this->fieldDefinition->getFieldStorageDefinition()->getCardinality();
+    if ($cardinality > 1) {
+      $max_delta = $cardinality;
+    }
+
     $this->max_delta = $max_delta;
   }
 
