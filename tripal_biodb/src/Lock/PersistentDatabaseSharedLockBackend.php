@@ -2,6 +2,9 @@
 
 namespace Drupal\tripal_biodb\Lock;
 
+use Drupal\Core\State\StateInterface;
+use Drupal\Core\Lock\LockBackendInterface;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Lock\PersistentDatabaseLockBackend;
 
 /**
@@ -53,7 +56,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
   /**
    * Default timeout for both exclusive and shared locks.
    *
-   * 43200 seconds = 2 hours
+   * 43200 seconds = 2 hours.
    */
   const DEFAULT_LOCK_TIMEOUT = 43200.;
 
@@ -91,9 +94,9 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
    *   Drupal state service.
    */
   public function __construct(
-    \Drupal\Core\Database\Connection $database,
-    ?\Drupal\Core\Lock\LockBackendInterface $locker = NULL,
-    ?\Drupal\Core\State\StateInterface $state = NULL
+    Connection $database,
+    ?LockBackendInterface $locker = NULL,
+    ?StateInterface $state = NULL,
   ) {
     parent::__construct($database);
     $this->lockId = static::LOCK_ID;
@@ -116,7 +119,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
     $name,
     $timeout = self::DEFAULT_LOCK_TIMEOUT,
     string $owner = '',
-    ?int $pid = NULL
+    ?int $pid = NULL,
   ) {
     // Make sure it is not shared.
     $shared_locks = $this->state->get(static::STATE_KEY_SHARED, []);
@@ -163,9 +166,9 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
    *
    * Shared locks relies on a regular lock as defined in the
    * \Drupal\Core\Lock\PersistentDatabaseLockBackend class plus a list of lock
-   * share owners stored by the Drupal State API key static::STATE_KEY_SHARED. In order
-   * to avoid race conditions on the state key value modification, a lock
-   * backend provided to the constructor is used to manage modifications.
+   * share owners stored by the Drupal State API key static::STATE_KEY_SHARED.
+   * In order to avoid race conditions on the state key value modification, a
+   * lock backend provided to the constructor is used to manage modifications.
    *
    * @param string $name
    *   Shared lock name. Limit of name's length is 255 characters.
@@ -187,7 +190,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
     string $name,
     float $timeout = self::DEFAULT_LOCK_TIMEOUT,
     string $owner = '',
-    ?int $pid = NULL
+    ?int $pid = NULL,
   ) {
     // Acquire a state modification lock.
     if (!$this->modLocker->acquire(static::STATE_KEY_SHARED)) {
@@ -233,8 +236,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
         ->fields('s', ['expire'])
         ->execute()
         ->fetch()
-        ->expire
-      ;
+        ->expire;
       // Keep the largest one.
       if ($expire > $current_expire) {
         $success = (bool) $this->database->update(static::TABLE_NAME)
@@ -272,7 +274,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
 
     // Release the state modification lock.
     $this->modLocker->release(static::STATE_KEY_SHARED);
-    
+
     return $success ? $owner : FALSE;
   }
 
@@ -290,7 +292,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
     if (!empty($shared_locks[$name])) {
       return;
     }
-      
+
     // Lock status for modifications.
     if ($this->modLocker->acquire(static::STATE_KEY_EXCLUSIVE)) {
       // Get exclusive lock status.
@@ -345,7 +347,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
 
     // Try cleaning shared locks.
     $this->cleanUnusedSharedLocks();
-    
+
     if (!$available) {
       // Retry.
       $available = parent::lockMayBeAvailable($name);
@@ -407,7 +409,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
               // Share expired.
               $expired = TRUE;
             }
-            
+
             // Remove lock share.
             if ($expired) {
               unset($new_shared_locks[$name][$owner]);
@@ -479,15 +481,14 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
           ->condition('s.value', $this->getLockId())
           ->fields('s', ['name'])
           ->execute()
-          ->fetchCol()
-        ;
+          ->fetchCol();
         foreach ($names as $name) {
           if (empty($new_exclusive_locks[$name])) {
             $this->locks[$name] = TRUE;
             $this->release($name);
           }
         }
-        
+
         // Release state modification lock.
         $this->modLocker->release(static::STATE_KEY_EXCLUSIVE);
       }
@@ -560,8 +561,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
       ->fields('s', ['expire'])
       ->execute()
       ->fetch()
-      ->expire
-    ;
+      ->expire;
     return $current_expire ?? 0;
   }
 
