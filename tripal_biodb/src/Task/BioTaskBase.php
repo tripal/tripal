@@ -2,6 +2,11 @@
 
 namespace Drupal\tripal_biodb\Task;
 
+use Drupal\Core\State\StateInterface;
+use Drupal\tripal_biodb\Lock\SharedLockBackendInterface;
+use Psr\Log\LoggerInterface;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\tripal_biodb\Exception\LockException;
@@ -11,6 +16,8 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
  * Defines the base class for tasks on one or more biological schemas.
  */
 abstract class BioTaskBase implements BioTaskInterface {
+
+  use StringTranslationTrait;
 
   /**
    * Name of the task.
@@ -64,7 +71,7 @@ abstract class BioTaskBase implements BioTaskInterface {
    *
    * @var array
    */
-  protected $parameters = ['input_schemas' => [], 'output_schemas' => [], ];
+  protected $parameters = ['input_schemas' => [], 'output_schemas' => []];
 
   /**
    * Input schemas as an array of \Drupal\tripal\TripalDBX\TripalDbxConnection.
@@ -83,7 +90,7 @@ abstract class BioTaskBase implements BioTaskInterface {
   /**
    * Creates a BioTaskBase object.
    *
-   * @param ?\Drupal\Core\Database\Connection $connection
+   * @param ?\Drupal\Core\Database\Connection $database
    *   The main database connection.
    * @param ?\Psr\Log\LoggerInterface $logger
    *   The logger.
@@ -96,10 +103,10 @@ abstract class BioTaskBase implements BioTaskInterface {
    * @see https://www.drupal.org/docs/8/api/database-api/database-configuration
    */
   public function __construct(
-    ?\Drupal\Core\Database\Connection $database = NULL,
-    ?\Psr\Log\LoggerInterface $logger = NULL,
-    ?\Drupal\tripal_biodb\Lock\SharedLockBackendInterface $locker = NULL,
-    ?\Drupal\Core\State\StateInterface $state = NULL
+    ?Connection $database = NULL,
+    ?LoggerInterface $logger = NULL,
+    ?SharedLockBackendInterface $locker = NULL,
+    ?StateInterface $state = NULL,
   ) {
     // Database.
     if (!isset($database)) {
@@ -133,8 +140,7 @@ abstract class BioTaskBase implements BioTaskInterface {
     // Task parameters.
     $this->parameters =
       $parameters
-      + ['input_schemas' => [], 'output_schemas' => [], ]
-    ;
+      + ['input_schemas' => [], 'output_schemas' => []];
 
     // Initializes schema data.
     $this->inputSchemas = $this->prepareSchemas(
@@ -229,7 +235,7 @@ abstract class BioTaskBase implements BioTaskInterface {
    *   The lock name.
    */
   protected function getSchemaLockName(
-    \Drupal\tripal\TripalDBX\TripalDbxConnection $db
+    TripalDbxConnection $db,
   ) :string {
     return $db->getDatabaseName() . '.' . $db->getSchemaName();
   }
@@ -241,8 +247,7 @@ abstract class BioTaskBase implements BioTaskInterface {
     $raw_id =
       static::TASK_NAME
       . '-'
-      . $this->connection->getConnectionOptions()['database']
-    ;
+      . $this->connection->getConnectionOptions()['database'];
     if (!empty($this->inputSchemas)) {
       $raw_id .= '-' . count($this->inputSchemas) . 'i';
     }
@@ -254,8 +259,7 @@ abstract class BioTaskBase implements BioTaskInterface {
           '-'
           . $schema->getDatabaseName()
           . '.'
-          . $schema->getSchemaName()
-        ;
+          . $schema->getSchemaName();
       }
       else {
         $raw_id .= '-' . $schema->getSchemaName();
@@ -272,8 +276,7 @@ abstract class BioTaskBase implements BioTaskInterface {
           '-'
           . $schema->getDatabaseName()
           . '.'
-          . $schema->getSchemaName()
-        ;
+          . $schema->getSchemaName();
       }
       else {
         $raw_id .= '-' . $schema->getSchemaName();
@@ -384,8 +387,8 @@ abstract class BioTaskBase implements BioTaskInterface {
     $this->validateParameters();
 
     // Acquire locks.
-    $success = $this->acquireTaskLocks();
-    if (!$success) {
+    $task_success = $this->acquireTaskLocks();
+    if (!$task_success) {
       throw new LockException(
         "Unable to acquire all locks for task. See logs for details."
       );
@@ -426,16 +429,16 @@ abstract class BioTaskBase implements BioTaskInterface {
   public function getStatus() :string {
     $progress = $this->getProgress();
     if (0 == $progress) {
-      $status = t('Not started yet.');
+      $status = $this->t('Not started yet.');
     }
     elseif (1 <= $progress) {
-      $status = t('Done.');
+      $status = $this->t('Done.');
     }
     elseif (0 > $progress) {
-      $status = t('An error occurred.');
+      $status = $this->t('An error occurred.');
     }
     else {
-      $status = t('In progress');
+      $status = $this->t('In progress');
     }
     return $status;
   }
@@ -443,7 +446,7 @@ abstract class BioTaskBase implements BioTaskInterface {
   /**
    * {@inheritdoc}
    */
-  public function getLogger() :\Psr\Log\LoggerInterface {
+  public function getLogger() :LoggerInterface {
     return $this->logger;
   }
 
