@@ -36,24 +36,36 @@ abstract class TripalFormatterBase extends FormatterBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Retrieve the max delta value specific to this field.
    *
-   * Initializes value of max_delta.
+   * @return int
+   *   The max delta value specific to this field.
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  protected function getFieldMaxDelta(): int {
+    // Retrieve the global setting.
     $max_delta = \Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta');
+
     // max_delta defaults to 100 if not defined.
     if (is_null($max_delta) or (trim($max_delta) === '')) {
       $max_delta = 100;
     }
 
-    // Field cardinality will override the global max_delta setting.
+    // Finite field cardinality will override the global max_delta setting.
     $cardinality = $this->fieldDefinition->getFieldStorageDefinition()->getCardinality();
     if ($cardinality > 1) {
       $max_delta = $cardinality;
     }
 
-    $this->max_delta = $max_delta;
+    return $max_delta;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Initializes value of max_delta.
+   */
+  public function viewElements(FieldItemListInterface $items, $langcode) {
+    $this->max_delta = $this->getFieldMaxDelta();
   }
 
   /**
