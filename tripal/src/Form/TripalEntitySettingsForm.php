@@ -59,7 +59,6 @@ class TripalEntitySettingsForm extends FormBase {
       $widget_global_select_limit = 50;
     }
 
-$x = $settings->get('tripal_entity_type.publish_global_max_delta'); dpm($x, "CP7");//@@@
     // The maximum number of linked records of a given type to publish on a
     // single entity.
     $publish_global_max_delta = $form_state->getValue('publish_global_max_delta',
