@@ -84,11 +84,7 @@ class TripalEntitySettingsForm extends FormBase {
     $form['allowed_title_tags'] = [
       '#type' => 'textfield',
       '#title' => $this->t('HTML tags allowed in page titles'),
-      '#description' => $this->t('A list of HTML tags that can be used in page titles.'
-                        . ' Enter one or more tags separated by spaces, for example "em strong u".'
-                        . ' Leave blank to disable HTML tag rendering.'
-                        . ' Any tag not in this list will be filtered out if present in a page title.'
-                        . ' You may need to rebuild the cache for changes to take effect.'),
+      '#description' => $this->t('A list of HTML tags that can be used in page titles. Enter one or more tags separated by spaces, for example "em strong u". Leave blank to disable HTML tag rendering. Any tag not in this list will be filtered out if present in a page title. You may need to rebuild the cache for changes to take effect.'),
       '#default_value' => $allowed_title_tags,
       '#required' => FALSE,
     ];
@@ -98,14 +94,7 @@ class TripalEntitySettingsForm extends FormBase {
       '#min' => 0,
       '#step' => 1,
       '#title' => $this->t('Maximum records for a select'),
-      '#description' => $this->t('The value here controls whether a widget select element uses a'
-                        . ' dropdown select list, or an autocomplete.'
-                        . ' A dropdown can be difficult to use and is a performance problem'
-                        . ' if the number of records is large.'
-                        . ' When the number of records is larger than the value entered here,'
-                        . ' use an autocomplete if the field supports one.'
-                        . ' Enter <em>0</em> to indicate that an autocomplete should always be used.'
-                        . " This value can be overridden by an individual widget's settings."),
+      '#description' => $this->t("The value here controls whether a widget select element uses a dropdown select list, or an autocomplete. A dropdown can be difficult to use and is a performance problem if the number of records is large. When the number of records is larger than the value entered here, use an autocomplete if the field supports one. Enter <em>0</em> to indicate that an autocomplete should always be used. This value can be overridden by an individual widget's settings."),
       '#default_value' => $widget_global_select_limit,
       '#required' => FALSE,
     ];
@@ -122,14 +111,7 @@ class TripalEntitySettingsForm extends FormBase {
       '#min' => 0,
       '#step' => 1,
       '#title' => $this->t('Maximum number of linked records to publish'),
-      '#description' => $this->t('The value here controls how many linked records of a given type'
-                        . ' are published on a single entity.'
-                        . ' For example, there may be tens of thousands of genes linked to'
-                        . ' a single genome annotation, which is too many to display on the'
-                        . ' entity page.'
-                        . ' Enter <em>0</em> to indicate that there is no limit (not recommended).'
-                        . ' This value can be overridden for any specific field by setting the'
-                        . " field's cardinality to a value greater than 1."),
+      '#description' => $this->t("The value here controls how many linked records of a given type are published on a single entity. For example, there may be tens of thousands of genes linked to a single genome annotation, which is too many to display on the entity page. Enter <em>0</em> to indicate that there is no limit (not recommended) This value can be overridden for any specific field by setting the field's cardinality to a value greater than 1."),
       '#default_value' => $publish_global_max_delta,
       '#required' => FALSE,
     ];
