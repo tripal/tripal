@@ -254,10 +254,8 @@ class ChadoManageCommands extends DrushCommands {
       'migration_file' => $options['migration-file'],
       'lenient_migration' => $options['lenient-migration'],
     ];
-    // @todo validate the bundle
-    $bundle = $bundle;
-    $datastore = $options['datastore'];
 
+    $datastore = $options['datastore'];
     \Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::runTripalJob(
        $bundle, $datastore, $values);
   }
@@ -305,10 +303,8 @@ class ChadoManageCommands extends DrushCommands {
       'orphaned' => !$options['all'],
       'unpublish' => TRUE,
     ];
-    // @todo validate the bundle
-    $bundle = $bundle;
-    $datastore = $options['datastore'];
 
+    $datastore = $options['datastore'];
     \Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::runTripalJob(
       $bundle, $datastore, $values);
   }
