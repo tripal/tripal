@@ -1620,23 +1620,27 @@ class ChadoPublish extends TripalBackendPublishBase {
     $entity_ids = $this->getEntityIDs();
 
     // If in orphaned mode, generate a subset of which entity IDs to unpublish
+    $orphaned_text = '';
     if ($options['orphaned'] ?? TRUE) {
       $entity_ids = $this->findOrphanedEntities($entity_ids);
+      $orphaned_text = 'orphaned ';
     }
 
     // Let user know what and how much will be unpublished
     if (count($entity_ids) < 1) {
-      $this->logger->notice('There are no entities to be unpublished');
+      $this->logger->notice('There are no ' . $orphaned_text . 'entities to be unpublished');
     }
     else {
-      $message = 'Preparing to unpublish ' . number_format(count($entity_ids)) . ' "' . $this->bundle . '" records';
+      $message = 'Preparing to unpublish ' . number_format(count($entity_ids)) . ' "'
+          . $this->bundle . '" ' . $orphaned_text . 'records';
       $this->logger->notice($message);
 
       // Unpublish
       $count = $this->deleteEntities($entity_ids);
-      $this->logger->notice("Unpublished $count entities");
+      $this->logger->notice('Unpublished ' . number_format($count) . ' ' . $orphaned_text . 'entities');
       if ($count != count($entity_ids)) {
-        $this->logger->error("This is not the expected number of records to be unpublished, expected " . count($entity_ids));
+        $this->logger->error("This is not the expected number of ' . $orphaned_text
+            . 'records to be unpublished, expected " . count($entity_ids));
       }
     }
 
