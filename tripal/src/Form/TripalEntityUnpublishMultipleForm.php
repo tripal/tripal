@@ -4,9 +4,10 @@ namespace Drupal\tripal\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 
 /**
- * Class TripalEntityUnpublishMultipleForm.
+ * Provides a form for unpublishing Tripal content.
  *
  * @package Drupal\tripal\Form
  *
@@ -29,7 +30,7 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
     $datastores = [];
     $unpublish_form_defaults = \Drupal::state()->get('tripal_unpublish_form_defaults', []);
 
-    // Get a list of TripalStorage plugins
+    // Get a list of TripalStorage plugins.
     /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
     $storage_manager = \Drupal::service('tripal.storage');
     $storage_defs = $storage_manager->getDefinitions();
@@ -60,23 +61,24 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
 
     $form['orphaned'] = [
       '#type' => 'checkbox',
-      '#title' => t('Only unpublish orphaned content'),
-      '#description' => t('Sometimes published content can become orphaned. This can occur if records are removed
-         directly from the underlying data store, yet Tripal is not aware of it. When this is selected,
-         only this orphaned content is unpublished, so that stored data and displayed data are synchronized.'),
+      '#title' => $this->t('Only unpublish orphaned content'),
+      '#description' => $this->t('Sometimes published content can become orphaned.
+         This can occur if records are removed directly from the underlying data store,
+         yet Tripal is not aware of it. When this is selected, only this orphaned content
+         is unpublished, so that stored data and displayed data are synchronized.'),
       '#default_value' => $unpublish_form_defaults['orphaned'] ?? 1,
     ];
 
     $form['datastore'] = [
       '#title' => 'Storage Backend',
-      '#description' => 'Please select the data storage backend that should be used for unpublishing content.',
+      '#description' => $this->t('Please select the data storage backend that should be used for unpublishing content.'),
       '#type' => 'select',
       '#options' => $datastores,
       '#sort_options' => TRUE,
       '#required' => TRUE,
       '#ajax' => [
         'callback' => '::storageAjaxCallback',
-        'wrapper' => 'storage-options'
+        'wrapper' => 'storage-options',
       ],
     ];
 
@@ -89,7 +91,7 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
 
     $form['storage-options'] = [
       '#type' => 'details',
-      '#description' => 'Please select a storage backend for additional options.',
+      '#description' => $this->t('Please select a storage backend for additional options.'),
       '#title' => 'Storage Options',
       '#prefix' => '<div id="storage-options">',
       '#suffix' => '</div>',
@@ -98,20 +100,20 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
 
     // If the user has selected the data storage backend then add any
     // form options to it that the storage backend needs.
-    if ($datastore = $form_state->getValue('datastore') AND $storage_manager->datastoreExists($datastore)) {
+    if ($datastore = $form_state->getValue('datastore') and $storage_manager->datastoreExists($datastore)) {
       $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
       $datastore_form = $storage->publishForm($form, $form_state);
       if (!empty($datastore_form)) {
         $form['storage-options'] = array_merge_recursive($form['storage-options'], $datastore_form);
       }
       else {
-        $form['storage-options']['#description'] = t('The storage backend did not provide any additional options.');
+        $form['storage-options']['#description'] = $this->t('The storage backend did not provide any additional options.');
       }
     }
 
     $form['bundle'] = [
       '#title' => 'Content Type',
-      '#description' => 'Please select a content type to unpublish.',
+      '#description' => $this->t('Please select a content type to unpublish.'),
       '#type' => 'select',
       '#options' => $bundles,
       '#sort_options' => TRUE,
@@ -133,11 +135,14 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
    * AJAX callback for storage backend updates.
    *
    * @param array $form
-   *   The form array
-   * @param FormStateInterface $form_state
+   *   The form array.
+   * @param Drupal\Core\Form\FormStateInterface $form_state
    *   The form state object.
+   *
+   * @return array
+   *   Associative array of storage options.
    */
-  public function storageAjaxCallback(array &$form, FormStateInterface $form_state) {
+  public function storageAjaxCallback(array &$form, FormStateInterface $form_state): array {
     return $form['storage-options'];
   }
 
@@ -145,7 +150,6 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
-    $bundle = $form_state->getValue('bundle');
     $datastore = $form_state->getValue('datastore');
 
     // Run the form validate for the storage backend.
@@ -153,12 +157,13 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
     $storage_manager = \Drupal::service('tripal.storage');
 
     if ($storage_manager->datastoreExists($datastore) !== TRUE) {
-      $form_state->setErrorByName('datastore',t('The chosen datastore is not registered properly with TripalStorage.'));
+      $form_state->setErrorByName('datastore', $this->t('The chosen datastore is not registered properly with TripalStorage.'));
     }
-    // Only try to call the datastore custom validation if the datastore actually exists.
+    // Only try to call the datastore custom validation if the
+    // datastore actually exists.
     else {
       $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
-      // Validation here is the same as for publishing
+      // Validation here is the same as for publishing.
       $storage->publishFormValidate($form, $form_state);
     }
   }
@@ -176,7 +181,8 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
       'orphaned' => $orphaned,
     ];
 
-    // Store the current form settings as the default for the next time unpublish is run
+    // Store the current form settings as the default for the next
+    // time unpublish is run.
     \Drupal::state()->set('tripal_unpublish_form_defaults', $options);
 
     // Run the form submit for the storage backend.
@@ -188,11 +194,11 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
     // Add the unpublish job.
     $current_user = \Drupal::currentUser();
     $job_args = [$bundle, $datastore, $options];
-    $job_name = 'Unpublish ' . ($orphaned?'orphaned':'all') . ' pages of type: ' . $bundle;
+    $job_name = 'Unpublish ' . ($orphaned ? 'orphaned' : 'all') . ' pages of type: ' . $bundle;
     \Drupal::service('tripal.job')->create([
       'job_name' => $job_name,
       'modulename' => 'tripal',
-      'callback' => [\Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager::class, 'runTripalJob'],
+      'callback' => [TripalBackendPublishManager::class, 'runTripalJob'],
       'arguments' => $job_args,
       'uid' => $current_user->id(),
     ]);
