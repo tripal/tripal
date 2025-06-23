@@ -553,11 +553,12 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Filters the passed list of entities to only include those without
-   * an underlying chado record.
+   * Filter entities for only those that are orphaned.
+   *
+   * Orphaned entities are those without an underlying chado record.
    *
    * @return array
-   *   A list of orphaned numeric entity IDs
+   *   A list of orphaned numeric entity IDs.
    */
   protected function findOrphanedEntities(array $entity_ids): array {
     $orphaned_entity_ids = [];
@@ -568,11 +569,11 @@ class ChadoPublish extends TripalBackendPublishBase {
     $table_def = $schema->getTableDef($this->base_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
 
-    // Returns array with key chado record id and value entity id
+    // Returns array with key chado record id and value entity id.
     $published_entity_ids = $lookup_manager->getPublishedEntityIds($this->bundle);
 
     // In batches of 1000, find published entities from chado records
-    // that are no longer present in chado
+    // that are no longer present in chado.
     $batches = $this->divideIntoBatches($published_entity_ids);
     foreach ($batches as $batch) {
       $query = $chado->select('1:' . $this->base_table, 'B');
@@ -891,10 +892,10 @@ class ChadoPublish extends TripalBackendPublishBase {
    * Performs bulk deletion of existing entities from the tripal_entity table.
    *
    * @param array $entity_ids
-   *   A list of entities to delete
+   *   A list of entities to delete.
    *
    * @return int
-   *   The number of entities deleted
+   *   The number of entities deleted.
    */
   protected function deleteEntities(array $entity_ids): int {
     $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
