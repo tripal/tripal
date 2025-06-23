@@ -83,8 +83,8 @@ class TripalEntitySettingsForm extends FormBase {
 
     $form['allowed_title_tags'] = [
       '#type' => 'textfield',
-      '#title' => t('HTML tags allowed in page titles'),
-      '#description' => t('A list of HTML tags that can be used in page titles.'
+      '#title' => $this->t('HTML tags allowed in page titles'),
+      '#description' => $this->t('A list of HTML tags that can be used in page titles.'
                         . ' Enter one or more tags separated by spaces, for example "em strong u".'
                         . ' Leave blank to disable HTML tag rendering.'
                         . ' Any tag not in this list will be filtered out if present in a page title.'
@@ -97,8 +97,8 @@ class TripalEntitySettingsForm extends FormBase {
       '#type' => 'number',
       '#min' => 0,
       '#step' => 1,
-      '#title' => t('Maximum records for a select'),
-      '#description' => t('The value here controls whether a widget select element uses a'
+      '#title' => $this->t('Maximum records for a select'),
+      '#description' => $this->t('The value here controls whether a widget select element uses a'
                         . ' dropdown select list, or an autocomplete.'
                         . ' A dropdown can be difficult to use and is a performance problem'
                         . ' if the number of records is large.'
@@ -112,8 +112,8 @@ class TripalEntitySettingsForm extends FormBase {
 
     $form['publish'] = [
       '#type' => 'details',
-      '#title' => t('Publishing Options'),
-      '#description' => t('Options that control how much tripal content is published'),
+      '#title' => $this->t('Publishing Options'),
+      '#description' => $this->t('Options that control how much tripal content is published'),
       '#open' => TRUE,
     ];
 
@@ -121,8 +121,8 @@ class TripalEntitySettingsForm extends FormBase {
       '#type' => 'number',
       '#min' => 0,
       '#step' => 1,
-      '#title' => t('Maximum number of linked records to publish'),
-      '#description' => t('The value here controls how many linked records of a given type'
+      '#title' => $this->t('Maximum number of linked records to publish'),
+      '#description' => $this->t('The value here controls how many linked records of a given type'
                         . ' are published on a single entity.'
                         . ' For example, there may be tens of thousands of genes linked to'
                         . ' a single genome annotation, which is too many to display on the'
@@ -143,7 +143,7 @@ class TripalEntitySettingsForm extends FormBase {
 
     $form['submit'] = [
       '#type' => 'submit',
-      '#value' => t('Save'),
+      '#value' => $this->t('Save'),
     ];
 
     return $form;
@@ -175,7 +175,8 @@ class TripalEntitySettingsForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $allowed_title_tags = $form_state->getValue('allowed_title_tags');
     $drupal_entity_field_store = $form_state->getValue('default_cache_backend_field_values');
-    // Trim, convert to lower case, and collapse multiple spaces for consistency.
+    // Trim, convert to lower case, and collapse multiple spaces
+    // for consistency.
     $allowed_title_tags = strtolower(trim($allowed_title_tags));
     $allowed_title_tags = preg_replace('/ +/', ' ', $allowed_title_tags);
 
