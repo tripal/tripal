@@ -1,0 +1,400 @@
+system-under-test:
+  chado_version: 1.3.3.013
+  bundle:
+    label: Project
+    termIdSpace: NCIT
+    termAccession: C47885
+    id: test_project
+    settings:
+      chado_base_table: project
+  fields:
+  - name: project_name
+    type: chado_string_type_default
+    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault
+    widget: chado_string_type_widget
+    formatter: chado_string_type_formatter
+    termIdSpace: schema
+    termAccession: name
+    cardinality: 1
+    settings:
+      storage_plugin_id: chado_storage
+      storage_plugin_settings:
+          base_table: project
+          base_column: name
+      max_length: 255
+  - name: project_description
+    type: chado_text_type_default
+    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault
+    widget: chado_text_type_widget
+    formatter: chado_text_type_formatter
+    termIdSpace: schema
+    termAccession: description
+    cardinality: 1
+    settings:
+      storage_plugin_id: chado_storage
+      storage_plugin_settings:
+          base_table: project
+          base_column: description
+  - name: project_type
+    type: chado_additional_type_type_default
+    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAdditionalTypeTypeDefault
+    widget: chado_additional_type_widget_default
+    formatter: chado_additional_type_formatter_default
+    termIdSpace: schema
+    termAccession: additionalType
+    cardinality: 1
+    settings:
+      storage_plugin_id: chado_storage
+      storage_plugin_settings:
+          base_table: project
+          type_table: project
+          type_column: type_id
+  - name: project_prop1
+    type: chado_property_type_default
+    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault
+    widget: chado_property_widget_default
+    formatter: chado_property_formatter_default
+    termIdSpace: rdfs
+    termAccession: 'comment'
+    cardinality: -1
+    settings:
+      storage_plugin_id: chado_storage
+      storage_plugin_settings:
+          base_table: project
+          prop_table: projectprop
+  - name: project_prop2
+    type: chado_property_type_default
+    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault
+    widget: chado_property_widget_default
+    formatter: chado_property_formatter_default
+    termIdSpace: NCIT
+    termAccession: C25341
+    cardinality: -1
+    settings:
+      storage_plugin_id: chado_storage
+      storage_plugin_settings:
+          base_table: project
+          prop_table: projectprop
+scenarios:
+  - label: "Base Fields Only"
+    description: "Create a page without setting any properties."
+    create:
+      user_input:
+        project_name:
+        - record_id: 0
+          value: "Simple Project"
+        project_description:
+        - record_id: 0
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
+        project_type:
+        - record_id: 0
+          type_id: 165
+          term_name: ''
+          id_space: ''
+          accession: ''
+        project_prop1:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: ''
+          rank: 0
+          type_id: 0
+        project_prop2:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: ''
+          rank: 0
+          type_id: 0
+      expected:
+        project_name:
+        - record_id: 1
+          value: "Simple Project"
+        project_description:
+        - record_id: 1
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
+        project_type:
+        - record_id: 1
+          type_id: 165
+          term_name: Project
+          id_space: NCIT
+          accession: C47885
+    edit:
+      user_input:
+        project_name:
+        - record_id: 1
+          value: "Simple Project Still"
+        project_description:
+          record_id: 1
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
+      expected:
+        project_name:
+        - record_id: 1
+          value: "Simple Project Still"
+        project_description:
+        - record_id: 1
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
+        project_type:
+        - record_id: 1
+          type_id: 165
+          term_name: Project
+          id_space: NCIT
+          accession: C47885
+  - label: "Properties Added on Edit"
+    description: "Create a page without setting any properties and then when we update it we will set 2 properties for each property field."
+    create:
+      user_input:
+        project_name:
+        - record_id: 0
+          value: "Project 2"
+        project_description:
+        - record_id: 0
+          value: "Some useless description."
+        project_type:
+        - record_id: 0
+          type_id: 165
+          term_name: ''
+          id_space: ''
+          accession: ''
+        project_prop1:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: ''
+          rank: 0
+          type_id: 0
+        project_prop2:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: ''
+          rank: 0
+          type_id: 0
+      expected:
+        project_name:
+        - record_id: 1
+          value: "Project 2"
+        project_description:
+        - record_id: 1
+          value: "Some useless description."
+        project_type:
+        - record_id: 1
+          type_id: 165
+          term_name: Project
+          id_space: NCIT
+          accession: C47885
+    edit:
+      user_input:
+        project_prop1:
+        - record_id: 1
+          prop_id: 0
+          linker_id: 1
+          value: 'I like dogs.'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 0
+          linker_id: 1
+          value: 'Stars are hot.'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 0
+          linker_id: 1
+          value: 'Saskatoon, Saskatchewan'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 0
+          linker_id: 1
+          value: 'Pullman, Washington'
+          rank: 1
+          type_id: 159
+      expected:
+        project_name:
+        - record_id: 1
+          value: "Project 2"
+        project_description:
+        - record_id: 1
+          value: "Some useless description."
+        project_type:
+        - record_id: 1
+          type_id: 165
+          term_name: Project
+          id_space: NCIT
+          accession: C47885
+        project_prop1:
+        - record_id: 1
+          prop_id: 1
+          linker_id: 1
+          value: 'I like dogs.'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 2
+          linker_id: 1
+          value: 'Stars are hot.'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 3
+          linker_id: 1
+          value: 'Saskatoon, Saskatchewan'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 4
+          linker_id: 1
+          value: 'Pullman, Washington'
+          rank: 1
+          type_id: 159
+  - label: "Property Reorder"
+    description: "Create a page with 2 properties for each property field then change the order of the first field properties on update."
+    create:
+      user_input:
+        project_name:
+        - record_id: 0
+          value: "Project 3"
+        project_description:
+        - record_id: 0
+          value: "Some useless description."
+        project_type:
+        - record_id: 0
+          type_id: 165
+          term_name: ''
+          id_space: ''
+          accession: ''
+        project_prop1:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: 'prop1 A'
+          rank: 0
+          type_id: 181
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: 'prop1 B'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: 'prop2 A'
+          rank: 0
+          type_id: 159
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: 'prop2 B'
+          rank: 1
+          type_id: 159
+      expected:
+        project_name:
+        - record_id: 1
+          value: "Project 3"
+        project_description:
+        - record_id: 1
+          value: "Some useless description."
+        project_type:
+        - record_id: 1
+          type_id: 165
+          term_name: Project
+          id_space: NCIT
+          accession: C47885
+        project_prop1:
+        - record_id: 1
+          prop_id: 1
+          linker_id: 1
+          value: 'prop1 A'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 2
+          linker_id: 1
+          value: 'prop1 B'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 3
+          linker_id: 1
+          value: 'prop2 A'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 4
+          linker_id: 1
+          value: 'prop2 B'
+          rank: 1
+          type_id: 159
+    edit:
+      user_input:
+        project_prop1:
+        - record_id: 1
+          prop_id: 2
+          linker_id: 1
+          value: 'prop1 B'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 1
+          linker_id: 1
+          value: 'prop1 A'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 3
+          linker_id: 1
+          value: 'prop2 A'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 4
+          linker_id: 1
+          value: 'prop2 B'
+          rank: 1
+          type_id: 159
+      expected:
+        project_name:
+        - record_id: 1
+          value: "Project 3"
+        project_description:
+        - record_id: 1
+          value: "Some useless description."
+        project_type:
+        - record_id: 1
+          type_id: 165
+          term_name: Project
+          id_space: NCIT
+          accession: C47885
+        project_prop1:
+        - record_id: 1
+          prop_id: 5
+          linker_id: 1
+          value: 'prop1 B'
+          rank: 0
+          type_id: 181
+        - record_id: 1
+          prop_id: 6
+          linker_id: 1
+          value: 'prop1 A'
+          rank: 1
+          type_id: 181
+        project_prop2:
+        - record_id: 1
+          prop_id: 7
+          linker_id: 1
+          value: 'prop2 A'
+          rank: 0
+          type_id: 159
+        - record_id: 1
+          prop_id: 8
+          linker_id: 1
+          value: 'prop2 B'
+          rank: 1
+          type_id: 159
