@@ -263,28 +263,36 @@ class ChadoManageCommands extends DrushCommands {
   }
 
   /**
-   * Unpublish previously published Tripal Content. Chado records are not modified.
+   * Unpublish previously published Tripal Content.
+   *
+   * Chado records are not modified in any way by unpublish.
+   *
+   * @param string $bundle
+   *   The id of the TripalContentType you would like to unpublish content for.
+   * @param array $options
+   *   Publish options, defaults are provided in the function declaration.
    *
    * @command tripal-chado:unpublish
    * @aliases trp-chado-unpublish
    * @options schema-name
    *   The name of the chado schema to use.
-   * @param string $bundle
-   *   The id of the TripalContentType you would like to unpublish content for.
-   * @param array $options
-   *   Unpublish options. Defaults are
-   *   'orphaned' => TRUE
+   * @options all
+   *   Unpublish all records of the specified content type. Without this
+   *   option, only orphaned records are unpublished.
+   *
    * @usage drush trp-chado-unpublish contact
    *   Submits a standard chado publish job to unpublish only orphaned records
-   *   in the contact content type
-   * @usage drush trp-chado-unpublish organism --orphaned=FALSE --schema-name=prod
+   *   in the contact content type.
+   * @usage drush trp-chado-unpublish organism --all --schema-name=prod
    *   Submits a chado publish job for the organism content type which
-   *   unpublishes all records based on the prod.organism table.
+   *   unpublishes ALL records based on the prod.organism table.
    */
-  public function unpublish(string $bundle, array $options = [
+  public function unpublish(
+    string $bundle,
+    array $options = [
       'schema-name' => '',
       'datastore' => 'chado_storage',
-      'orphaned' => TRUE,
+      'all' => FALSE,
     ]) {
 
     // If schema not supplied then grab default chado schema.
@@ -294,7 +302,7 @@ class ChadoManageCommands extends DrushCommands {
       $options['schema-name'] = $default_chado_schema;
     }
     $values = [
-      'orphaned' => $options['orphaned'],
+      'orphaned' => !$options['all'],
       'unpublish' => TRUE,
     ];
     // @todo validate the bundle
@@ -334,7 +342,6 @@ class ChadoManageCommands extends DrushCommands {
     }
   }
 
-
   /**
    * Sets a specified Chado schema to be the default in Tripal. Only one
    * schema may be set to default at a time.
@@ -359,7 +366,7 @@ class ChadoManageCommands extends DrushCommands {
         ->getEditable('tripal_chado.settings')
       ;
       $success = $config->set('default_schema', $options['schema-name'])->save();
-  
+
       if ($success) {
         $this->output()->writeln('Successfully set the schema "' . $options['schema-name'] . '" to be default.');
       }
@@ -373,4 +380,5 @@ class ChadoManageCommands extends DrushCommands {
       ));
     }
   }
+
 }
