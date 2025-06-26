@@ -1,8 +1,8 @@
 <?php
+
 namespace Drupal\tripal_layout\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\tripal_layout\Entity\TripalLayoutConfigEntityTrait;
 
 /**
  * Defines the Default Layout entity controlling the form layout.
@@ -46,7 +46,7 @@ class TripalLayoutDefaultForm extends ConfigEntityBase {
   protected string $id;
 
   /**
-   * A label to provide to the admin identifying this collection of form layouts.
+   * A label to identifying this collection of form layouts.
    *
    * @var string
    */
@@ -71,6 +71,7 @@ class TripalLayoutDefaultForm extends ConfigEntityBase {
    * Retrieves the description of this form layout collection.
    *
    * @return string
+   *   The description of the layout collection.
    */
   public function description() {
     return $this->description;
@@ -85,4 +86,5 @@ class TripalLayoutDefaultForm extends ConfigEntityBase {
   public function getLayouts() {
     return $this->layouts;
   }
+
 }
