@@ -2,6 +2,11 @@
 
 namespace Drupal\Tests\tripal_layout\Traits;
 
+use Symfony\Component\Yaml\Yaml;
+
+/**
+ * Tests creating a configuration entity from a YAML specification.
+ */
 trait TripalLayoutTestTrait {
 
   /**
@@ -21,7 +26,7 @@ trait TripalLayoutTestTrait {
   ];
 
   /**
-   * Undocumented function
+   * Tests creating a configuration entity from a YAML specification.
    *
    * @param string $config_entity_type
    *   The type of layout entity to create.
@@ -29,14 +34,16 @@ trait TripalLayoutTestTrait {
    * @param string $yaml_file
    *   The full path to a YAML file providing the definition for this type of
    *   layout config entity. The YAML must be valid.
-   * @return void
+   *
+   * @return object
+   *   The created configuration entity.
    */
   public function createLayoutEntityFromConfig(string $config_entity_type, string $yaml_file) {
 
     /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_storage **/
     $config_storage = \Drupal::entityTypeManager()->getStorage($config_entity_type);
     // -- Get the TEST YAML file.
-    $yaml = \Symfony\Component\Yaml\Yaml::parseFile($yaml_file);
+    $yaml = Yaml::parseFile($yaml_file);
     $this->assertIsArray($yaml, "Unable to pull down the test YAML file ($yaml_file).");
     // -- Create a config entity of the specified type from the YAML.
     $config_entity = $config_storage->createFromStorageRecord($yaml);
@@ -50,4 +57,5 @@ trait TripalLayoutTestTrait {
 
     return $config_entity;
   }
+
 }
