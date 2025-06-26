@@ -1,8 +1,8 @@
 <?php
+
 namespace Drupal\tripal_layout\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\tripal_layout\Entity\TripalLayoutConfigEntityTrait;
 
 /**
  * Defines the Default Layout entity controlling the page display/layout.
@@ -46,7 +46,7 @@ class TripalLayoutDefaultView extends ConfigEntityBase implements TripalLayoutDe
   protected $id;
 
   /**
-   * A label to provide to the admin identifying this collection of display layouts.
+   * A label identifying this collection of display layouts.
    *
    * @var string
    */
@@ -71,6 +71,7 @@ class TripalLayoutDefaultView extends ConfigEntityBase implements TripalLayoutDe
    * Retrieves the description of this display layout collection.
    *
    * @return string
+   *   The display layout collection description.
    */
   public function description() {
     return $this->description;
