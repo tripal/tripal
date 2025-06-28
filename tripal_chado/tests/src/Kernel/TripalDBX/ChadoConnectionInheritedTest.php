@@ -3,9 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
-use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * Tests for ChadoConnection.

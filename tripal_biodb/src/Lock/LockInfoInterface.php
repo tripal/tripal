@@ -2,8 +2,6 @@
 
 namespace Drupal\tripal_biodb\Lock;
 
-use Drupal\Core\Lock\LockBackendInterface;
-
 /**
  * Lock information interface.
  *

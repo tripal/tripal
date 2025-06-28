@@ -3,7 +3,6 @@
 namespace Drupal\tripal\Form;
 
 use Drupal\Core\Entity\ContentEntityDeleteForm;
-use Drupal\Core\Form\FormStateInterface;
 
 
 /**

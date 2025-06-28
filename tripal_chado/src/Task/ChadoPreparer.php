@@ -2,12 +2,9 @@
 
 namespace Drupal\tripal_chado\Task;
 
-use Drupal\Core\Config\Entity\ConfigEntityStorage;
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\LockException;
 use Drupal\tripal_biodb\Exception\ParameterException;
-use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
