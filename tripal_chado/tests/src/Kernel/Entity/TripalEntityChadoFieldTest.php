@@ -2,12 +2,9 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Entity;
 
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\field\Entity\FieldConfig;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
-use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Tests the TripalEntity Class with Chado Fields attached.

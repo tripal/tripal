@@ -9,8 +9,6 @@ use Drupal\Core\Url;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\tripal\Services\TripalJob;
-use Drupal\Entity\User;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Controller routines for the Tripal Module

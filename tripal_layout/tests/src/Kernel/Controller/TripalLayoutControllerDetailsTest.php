@@ -4,8 +4,6 @@ namespace Drupal\Tests\tripal_layout\Kernel\Controller;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
-use Drupal\tripal_layout\Entity\TripalLayoutDefaultView;
-use Drupal\tripal_layout\Entity\TripalLayoutDefaultForm;
 
 /**
  * Tests applying Details field groups to both form and view displays.

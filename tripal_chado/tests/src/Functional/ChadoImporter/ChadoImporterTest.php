@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal_chado\Functional\ChadoImporter;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
-use Drupal\Core\Url;
 
 /**
  * Tests the base functionality for chado-focused importers.

@@ -1,11 +1,6 @@
 <?php
 namespace Drupal\tripal\Services;
 
-use \Drupal\tripal\Entity\TripalEntity;
-use \Drupal\tripal\Entity\TripalEntityType;
-use \Drupal\tripal\TripalStorage\StoragePropertyValue;
-
-
 /**
  * The TripalTokenParser class replaces tokens in strings with a
  * corresponding value. Tokens are marked by square brackets, and

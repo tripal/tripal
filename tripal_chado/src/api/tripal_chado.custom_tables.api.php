@@ -4,7 +4,6 @@
  * Provides an API to manage custom tables in Chado.
  */
 
-use Drupal\tripal_chado\api\ChadoSchemaExtended;
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 
 /**

@@ -7,7 +7,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\tripal\Services\TripalFieldCollection;
 
 /**
  * Plugin implementation of default Tripal organism field type.

@@ -6,9 +6,6 @@ use Drupal\tripal_chado\Task\ChadoTaskBase;
 use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\LockException;
 use Drupal\tripal_biodb\Exception\ParameterException;
-use Drupal\tripal_chado\Services\ChadoCustomTable;
-use Drupal\tripal_chado\Services\ChadoMviews;
-use Drupal\tripal_chado\Services\ChadoMview;
 
 /**
  * Chado remover.

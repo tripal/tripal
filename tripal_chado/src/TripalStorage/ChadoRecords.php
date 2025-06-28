@@ -6,9 +6,6 @@ use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 use Symfony\Component\Validator\ConstraintViolation;
-use Symfony\Component\Validator\Constraints\Isbn;
-use Drupal\Core\Ajax\BeforeCommand;
-use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 
 /**
  * A helper class for use by the ChadoStorage Plugin.

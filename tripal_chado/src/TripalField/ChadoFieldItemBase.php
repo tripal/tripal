@@ -4,7 +4,6 @@ namespace Drupal\tripal_chado\TripalField;
 
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\SubformStateInterface;
