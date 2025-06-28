@@ -3,7 +3,6 @@
 namespace Drupal\tripal\TripalPubParser\Interfaces;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Defines an interface for tripal importer plugins.

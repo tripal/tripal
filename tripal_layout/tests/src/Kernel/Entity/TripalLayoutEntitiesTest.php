@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal_layout\Kernel\Entity;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
 
 /**

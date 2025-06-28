@@ -4,7 +4,6 @@ namespace Drupal\tripal\Element;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\FormElement;
-use Drupal\Core\Render\Element;
 
 /**
  * Provides an HTML5 file upload form element.

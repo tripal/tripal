@@ -2,7 +2,6 @@
 
 namespace Drupal\tripal_biodb\Task;
 
-use Drupal\tripal_biodb\Lock\SharedLockBackendInterface;
 use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\tripal_biodb\Exception\LockException;

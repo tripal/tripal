@@ -4,7 +4,6 @@ namespace Drupal\tripal_layout\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityDisplayBase;
 use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\Core\Entity\Entity\EntityFormDisplay;
 
 class TripalEntityUILayoutController extends ControllerBase {
 

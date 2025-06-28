@@ -3,8 +3,6 @@ namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoTestTrait;
-use Drupal\tripal\TripalDBX\TripalDbx;
-use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * This is a base class for Chado tests that need a full Drupal install.

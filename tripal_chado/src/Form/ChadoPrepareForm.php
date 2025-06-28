@@ -4,8 +4,6 @@ namespace Drupal\tripal_chado\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
-use Drupal\tripal\TripalDBX;
 
 class ChadoPrepareForm extends FormBase {
 

@@ -3,12 +3,6 @@
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\InvokeCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
-use Drupal\Core\Link;
-use Drupal\Core\Url;
 
 /**
  * Taxonomy Importer implementation of the TripalImporterBase.
