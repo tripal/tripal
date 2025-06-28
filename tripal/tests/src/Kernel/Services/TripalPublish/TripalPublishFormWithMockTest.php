@@ -2,8 +2,12 @@
 
 namespace Drupal\Tests\tripal\Kernel;
 
-use \Drupal\Tests\user\Traits\UserCreationTrait;
-use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use Drupal\Core\Form\FormState;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager;
+use Drupal\tripal\TripalStorage\TripalStorageBase;
+use Drupal\Tests\user\Traits\UserCreationTrait;
 
 /**
  * Tests the publish form with a mock datastore.
