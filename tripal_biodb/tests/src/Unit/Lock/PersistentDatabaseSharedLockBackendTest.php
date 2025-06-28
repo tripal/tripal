@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_biodb\Unit\Lock;
 
+use Drupal\Core\Lock\DatabaseLockBackend;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Core\Lock\PersistentDatabaseLockBackend;
 use Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend;
@@ -54,10 +55,10 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
   protected $state;
 
   /**
-   * A variable set by our custom error handler when an E_USER_WARNING is thrown.
+   * A variable set by our custom error handler when E_USER_WARNING is thrown.
    *
    * If it's TRUE it means a warning was thrown.
-   * Remember to reset this variable back to false after a warning is asserted.
+   * Remember to reset this variable back to FALSE after a warning is asserted.
    *
    * @var bool
    */
@@ -77,7 +78,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->internalLocker = new \Drupal\Core\Lock\DatabaseLockBackend(
+    $this->internalLocker = new DatabaseLockBackend(
       $this->container->get('database')
     );
     $this->state = $this->container->get('state');
@@ -102,6 +103,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
    * Tears down the test environment.
    *
    * @return void
+   *   No return value.
    */
   protected function tearDown(): void {
     // Restore the original error handler now that we are done our tests.
@@ -143,7 +145,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
       $this->warning_message,
       "We did not get the warning we expected."
     );
-    // Reset warning handler
+    // Reset warning handler.
     $this->warning_thrown = FALSE;
     $this->warning_message = '';
 
@@ -301,8 +303,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests acquire will continue even if it could not use state API to store
-   * infos.
+   * Tests acquire will continue even if it could not use state API for storage.
    *
    * @covers ::acquire
    */
@@ -331,10 +332,9 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
       $this->warning_message,
       "We did not get the warning we expected."
     );
-    // Reset warning handler
+    // Reset warning handler.
     $this->warning_thrown = FALSE;
     $this->warning_message = '';
-
 
     // Make sure state lock was not released.
     $this->assertFalse($other_locker->lockMayBeAvailable(PersistentDatabaseSharedLockBackend::STATE_KEY_EXCLUSIVE), 'States still locked.');
@@ -374,7 +374,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
       $this->warning_message,
       "We did not get the warning we expected."
     );
-    // Reset warning handler
+    // Reset warning handler.
     $this->warning_thrown = FALSE;
     $this->warning_message = '';
 
@@ -553,8 +553,7 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
     $this->sharedLocker->release($lock_name);
     $is_free =
       $this->sharedLocker->lockMayBeAvailable($lock_name)
-      || $other_locker->lockMayBeAvailable($lock_name)
-    ;
+      || $other_locker->lockMayBeAvailable($lock_name);
     $this->assertFalse($is_free, 'Other lock not released.');
 
     $other_locker->release($lock_name);
@@ -724,4 +723,5 @@ class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
     // Release shared lock.
     $this->sharedLocker->releaseShared($lock_name, $owner);
   }
+
 }

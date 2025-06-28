@@ -49,7 +49,7 @@ interface SharedLockBackendInterface extends LockBackendInterface, LockInfoInter
     $name,
     $timeout = 30.0,
     string $owner = '',
-    ?int $pid = NULL
+    ?int $pid = NULL,
   );
 
   /**
@@ -74,7 +74,7 @@ interface SharedLockBackendInterface extends LockBackendInterface, LockInfoInter
     string $name,
     float $timeout = 30.0,
     string $owner = '',
-    ?int $pid = NULL
+    ?int $pid = NULL,
   );
 
   /**
@@ -131,4 +131,5 @@ interface SharedLockBackendInterface extends LockBackendInterface, LockInfoInter
    *   The system process identifier using this lock or 0 if not available.
    */
   public function getOwnerPid(string $name, ?string $owner = NULL) :int;
+
 }
