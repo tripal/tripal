@@ -4,7 +4,6 @@ namespace Drupal\tripal\Services;
 
 use Drupal\Core\Url;
 use Drupal\Core\Link;
-use Exception;
 
 
 class TripalJob {

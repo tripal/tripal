@@ -2,8 +2,6 @@
 
 namespace Drupal\tripal_layout\Entity;
 
-use Drupal\Core\Config\Entity\ConfigEntityBase;
-
 /**
  * Provides common functionality for the TripalLayoutDefaultView and
  * TripalLayoutDefaultForm config entities.

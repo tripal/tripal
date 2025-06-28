@@ -3,7 +3,6 @@
 namespace Drupal\tripal\Plugin\TripalPubLibrary;
 
 use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 

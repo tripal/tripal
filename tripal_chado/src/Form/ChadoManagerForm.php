@@ -6,9 +6,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
-use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\tripal_chado\Task\ChadoInstaller;
 
 /**
  * Class ChadoManagerForm.

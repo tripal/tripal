@@ -2,8 +2,6 @@
 
 namespace Drupal\tripal_chado\Services;
 
-use Drupal\Core\Database\Database;
-use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 

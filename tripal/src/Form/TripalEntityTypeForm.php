@@ -4,8 +4,6 @@ namespace Drupal\tripal\Form;
 
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Url;
 
 /**
  * Class TripalEntityTypeForm.

@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal_chado\Task\ChadoRenamer;
 
 
 /**

@@ -3,9 +3,6 @@
 namespace Drupal\tripal\TripalField;
 
 use Drupal\Core\Field\WidgetBase;
-use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Form\FormStateInterface;
-
 
 
 /**

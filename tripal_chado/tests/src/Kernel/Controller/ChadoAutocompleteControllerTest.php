@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal_chado\Kernel;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal_chado\Database\ChadoConnection;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 use Drupal\tripal_chado\Controller\ChadoProjectAutocompleteController;

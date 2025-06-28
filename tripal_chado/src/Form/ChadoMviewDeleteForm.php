@@ -5,9 +5,6 @@ namespace Drupal\tripal_chado\Form;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
-use Drupal\Core\Link;
-use Drupal\tripal_chado\Services\ChadoMview;
 
 class ChadoMviewDeleteForm extends FormBase {
 

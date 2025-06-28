@@ -3,10 +3,7 @@
 namespace Drupal\tripal\TripalStorage\Interfaces;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Symfony\Component\HttpKernel\DependencyInjection\AddAnnotatedClassesToCachePass;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element\Button;
 
 
 /**

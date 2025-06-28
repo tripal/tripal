@@ -2,14 +2,9 @@
 
 namespace Drupal\Tests\tripal\Kernel\TripalField;
 
-use Drupal\tripal\Plugin\Field\FieldType\TripalStringTypeItem;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
-use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\tripal\Entity\TripalEntity;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\Core\Form\FormState;
 
 /**
  * Tests the TripalFieldItemBase class indirectly.

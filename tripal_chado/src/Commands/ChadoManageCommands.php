@@ -2,7 +2,6 @@
 namespace Drupal\tripal_chado\Commands;
 
 use Drush\Commands\DrushCommands;
-use Drupal\tripal\TripalDBX\TripalDbx;
 
 /**
  * Drush commands

@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal\Functional\Entity;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
-use Drupal\Core\Url;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 

@@ -1,20 +1,6 @@
 <?php
 namespace Drupal\Tests\tripal_chado\Functional;
 
-use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
-
-// FROM OLD CODE:
-use Drupal\Core\Url;
-use Drupal\Tests\BrowserTestBase;
-use Drupal\Core\Database\Database;
-use Drupal\tripal_chado\api\ChadoSchema;
-use FASTAImporter;
-
 /**
  * Tests for the FASTAImporter class
  *
