@@ -31,6 +31,12 @@ class TripalLayoutEntityListTest extends TripalTestKernelBase {
     $this->installEntitySchema('tripal_layout_default_view');
   }
 
+  /**
+   * Provides scenarios for testing configuration entities.
+   *
+   * @return array
+   *   The provided scenarios.
+   */
   public static function provideConfigEntities() {
     $scenarios = [];
 
@@ -50,12 +56,15 @@ class TripalLayoutEntityListTest extends TripalTestKernelBase {
   }
 
   /**
-   * Tests the listbuilder for the TripalLayoutDefaultView and
+   * Tests the listbuilder.
+   *
+   * The listbuilder is tested for the TripalLayoutDefaultView and
    * TripalLayoutDefaultForm entities.
    *
    * @dataProvider provideConfigEntities
    *
    * @return void
+   *   No return value.
    */
   public function testListBuilder(string $listbuilder_class, string $config_entity_type, string $yaml_file) {
 
@@ -85,4 +94,5 @@ class TripalLayoutEntityListTest extends TripalTestKernelBase {
     $this->assertCount(1, $page_render['table']['#rows'], "There was not the expected number of rows in the listbuilder table.");
     $this->assertArrayHasKey($config_entity_id, $page_render['table']['#rows'], "The listbuilder rows should be keyed by the config entity ids but our test entity is not there.");
   }
+
 }
