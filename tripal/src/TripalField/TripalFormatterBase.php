@@ -18,13 +18,6 @@ abstract class TripalFormatterBase extends FormatterBase {
   public int $max_delta = 100;
 
   /**
-   * The field's cardinality.
-   *
-   * @var int
-   */
-  public int $cardinality;
-
-  /**
    * Santizies a property key.
    *
    * Property keys are often controlled vocabulary IDs, which is the IdSpace
@@ -43,39 +36,19 @@ abstract class TripalFormatterBase extends FormatterBase {
   }
 
   /**
-   * Retrieve the max delta value specific to this field.
-   *
-   * @param int $cardinality
-   *   The field's cardinality.
-   *
-   * @return int
-   *   The max delta value specific to this field.
-   */
-  protected function getFieldMaxDelta(int $cardinality): int {
-    // Retrieve the global setting.
-    $max_delta = \Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta');
-
-    // max_delta defaults to 100 if not defined.
-    if (is_null($max_delta) or (trim($max_delta) === '')) {
-      $max_delta = 100;
-    }
-
-    // Finite field cardinality will override the global max_delta setting.
-    if ($cardinality > 1) {
-      $max_delta = $cardinality;
-    }
-
-    return $max_delta;
-  }
-
-  /**
    * {@inheritdoc}
    *
-   * Initializes value of max_delta specific to this field.
+   * Retrieves and stores the value of max_delta specific to this field.
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $this->cardinality = $this->fieldDefinition->getFieldStorageDefinition()->getCardinality();
-    $this->max_delta = $this->getFieldMaxDelta($this->cardinality);
+    // Obtain the field type object from the first item.
+    /** @var ?Drupal\tripal_chado\Plugin\Field\FieldType\ChadoXxxxxTypeDefault */
+    $first_item = $items->first();
+
+    // Store max_delta in a class variable to be used by addMaxDeltaWarning().
+    if (is_object($first_item)) {
+      $this->max_delta = $first_item->getFieldMaxDelta();
+    }
   }
 
   /**
@@ -132,6 +105,8 @@ abstract class TripalFormatterBase extends FormatterBase {
    *   &$elements is modified when appropriate
    */
   public function addMaxDeltaWarning(array &$elements, array &$list, ?array $markup = NULL): void {
+    $cardinality = $this->fieldDefinition->getFieldStorageDefinition()->getCardinality();
+
     // For unlimited cardinality fields, an extra record is published as a
     // flag to indicate that there are more records that were not published.
     if (count($list) > $this->max_delta) {
@@ -150,7 +125,7 @@ abstract class TripalFormatterBase extends FormatterBase {
     // may have been published, however Drupal will not pass it through,
     // so we will not be able to know if it exists or not. Here we
     // display a different message when the cardinality limit is reached.
-    elseif ($this->cardinality > 1 && count($list) == $this->max_delta) {
+    elseif (count($list) == $this->max_delta && $cardinality > 1) {
       if (!$markup) {
         $markup = [
           '#markup' => '<em>'
