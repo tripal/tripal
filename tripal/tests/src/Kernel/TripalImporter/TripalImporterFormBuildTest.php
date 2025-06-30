@@ -202,9 +202,9 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     // Do not publish checkboxes.
     $this->assertArrayHasKey('do_not_publish', $form,
       "The form should include a do not pubish form element.");
-    $this->assertArrayHasKey('project', $form['do_not_publish'],
+    $this->assertArrayHasKey('do_not_publish_project', $form['do_not_publish'],
       "The form should include a do not publish project form element.");
-    $this->assertArrayHasKey('contact', $form['do_not_publish'],
+    $this->assertArrayHasKey('do_not_publish_contact', $form['do_not_publish'],
       "The form should include a do not publish contact form element.");
 
     // We should also have our importer specific form elements added to the form!
