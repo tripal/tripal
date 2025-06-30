@@ -1915,11 +1915,9 @@ class ChadoRecords  {
    *   The alias of the table.  For the base table, use the same table name as
    *   base tables don't have aliases.
    * @param array $options
-   *   - global_max_delta = Maximum number of linked records from a single table
-   *     to return, zero for no limit.
+   *   - max_deltas = associative array of max_delta values on a
+   *     per-table basis, key is table name or table alias.
    *   - inhibit = Publish no records if the number exceeds max_delta.
-   *   - max_deltas = associative array of an override of global_max_delta on a
-   *     per-table basis, key is table name.
    *
    * @throws \Exception
    *
@@ -1948,9 +1946,9 @@ class ChadoRecords  {
 
     // This retrieves cardinality for single-hop
     // fields, e.g. properties.
-    $field_cardinality = NULL;
+    $max_delta = NULL;
     if (array_key_exists($table_alias, $max_deltas)) {
-      $field_cardinality = $max_deltas[$table_alias];
+      $max_delta = $max_deltas[$table_alias];
     }
 
     // Iterate through each item of the table and perform a select.
@@ -1988,7 +1986,7 @@ class ChadoRecords  {
           $left_alias = $join_info['on']['left_alias'];
           $left_column = $join_info['on']['left_column'];
           if (array_key_exists($right_table, $max_deltas)) {
-            $field_cardinality = $max_deltas[$right_table];
+            $max_delta = $max_deltas[$right_table];
           }
           $select->leftJoin('1:' . $right_table, $right_alias,
             $left_alias . '.' .  $left_column . '=' .  $right_alias . '.' . $right_column);
@@ -2007,11 +2005,7 @@ class ChadoRecords  {
       $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
 
       // Implement the max_delta limit if one was specified.
-      $max_delta = $options['global_max_delta'] ?? 100;
-      if ($field_cardinality && $field_cardinality > 1) {
-        $max_delta = $field_cardinality;
-      }
-      // Here $max_delta is zero only if site admin set the global
+      // Here max_delta can be zero only if site admin set the global
       // value to zero, which is not recommended.
       if ($max_delta) {
         $num_rows = $select->range(0, $max_delta + 1)->countQuery()->execute()->fetchField();

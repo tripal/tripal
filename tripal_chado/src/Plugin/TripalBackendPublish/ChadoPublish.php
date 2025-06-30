@@ -163,13 +163,6 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $republish = TRUE;
 
   /**
-   * Maximum number of linked records from one table to publish on one entity.
-   *
-   * @var int
-   */
-  protected int $publish_global_max_delta;
-
-  /**
    * Flag to inhibit publish if maximum number of linked records is exceeded.
    *
    * @var bool
@@ -1354,11 +1347,6 @@ class ChadoPublish extends TripalBackendPublishBase {
       $this->logger->setJob($this->job);
     }
 
-    $max_delta = \Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta');
-    if (is_null($max_delta) or (trim($max_delta) === '')) {
-      $max_delta = 100;
-    }
-    $this->publish_global_max_delta = $max_delta;
     $this->publish_global_max_delta_inhibit = boolval(\Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta_inhibit'));
 
     // Get the bundle object so we can get settings such as the title format.
@@ -1436,9 +1424,8 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
     }
     return [
-      'global_max_delta' => $this->publish_global_max_delta + 1,
-      'inhibit' => $this->publish_global_max_delta_inhibit,
       'max_deltas' => $max_deltas,
+      'inhibit' => $this->publish_global_max_delta_inhibit,
     ];
   }
 
