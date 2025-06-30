@@ -24,6 +24,7 @@ use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
  *    file_local = FALSE,
  *    file_remote = FALSE,
  *    file_required = FALSE,
+ *    publish = "organism",
  *  )
  */
 class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPluginInterface {
@@ -722,13 +723,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     ];
     $dbxref_record = $this->dbxref_buddy->upsertDbxref($values, []);
     $this->dbxref_buddy->associateDbxref('organism', $organism_id, $dbxref_record, $options);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
-
   }
 
   /**

@@ -5,13 +5,17 @@
  */
 namespace Drupal\tripal\Form;
 
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Provides a test form object.
+ * Provides the base form specification for tripal importers.
  */
 class TripalImporterForm implements FormInterface {
+
+  use StringTranslationTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -116,6 +120,25 @@ class TripalImporterForm implements FormInterface {
       $analysis_form = $importer->addAnalysis($form, $form_state);
       if (is_array($analysis_form)) {
         $form = array_merge($form, $analysis_form);
+      }
+    }
+
+    // Adds a checkbox to indicate whether or not to publish the imported
+    // content. The default will be to publish, so this is an opt-out.
+    // The importer annotation specifies a bundle or a list of bundles to
+    // publish, e.g. both Gene and mRNA for GFF importer.
+    if ($importer_def['publish'] ?? FALSE) {
+      $bundles = (array) $importer_def['publish'];
+      $form['do_not_publish'] = [
+        '#type' => 'fieldset',
+        '#title' => $this->t('Specify publishing behavior after importing'),
+      ];
+      foreach ($bundles as $bundle) {
+        $form['do_not_publish']['do_not_publish_' . $bundle] = [
+          '#type' => 'checkbox',
+          '#title' => $this->t('Check to skip publish for imported %bundle records', ['%bundle' => $bundle]),
+          '#default_value' => 0,
+        ];
       }
     }
 

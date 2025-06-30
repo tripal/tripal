@@ -26,6 +26,7 @@ use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
  *    file_remote = True,
  *    file_local = True,
  *    file_required = True,
+ *    publish = {"gene", "mrna"},
  *  )
  */
 class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginInterface {
@@ -3323,13 +3324,6 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         $args = [];
       }
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
-
   }
 
   /**

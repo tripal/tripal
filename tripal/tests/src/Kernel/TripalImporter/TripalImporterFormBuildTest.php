@@ -54,6 +54,7 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
       'file_remote' => FALSE,
       'file_required' => FALSE,
       'cardinality' => 1,
+      'publish' => ['project', 'contact'],
     ],
   ];
 
@@ -198,6 +199,13 @@ class TripalImporterFormBuildTest extends TripalTestKernelBase {
     // a submit button.
     $this->assertArrayHasKey('button', $form,
       "The form should have a submit button since we indicated a specific importer.");
+    // Do not publish checkboxes.
+    $this->assertArrayHasKey('do_not_publish', $form,
+      "The form should include a do not pubish form element.");
+    $this->assertArrayHasKey('project', $form['do_not_publish'],
+      "The form should include a do not publish project form element.");
+    $this->assertArrayHasKey('contact', $form['do_not_publish'],
+      "The form should include a do not publish contact form element.");
 
     // We should also have our importer specific form elements added to the form!
     $this->assertArrayHasKey('gemstone_composition', $form,
