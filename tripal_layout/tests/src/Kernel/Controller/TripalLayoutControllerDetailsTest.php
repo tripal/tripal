@@ -31,7 +31,11 @@ class TripalLayoutControllerDetailsTest extends TripalTestKernelBase {
     $this->installEntitySchema('tripal_layout_default_view');
   }
 
+  /**
+   * Tests applying Details field groups to both form and view displays.
+   */
   public function testApplyDetailsFieldGroup() {
     $this->markTestIncomplete('Just starting this');
   }
+
 }
