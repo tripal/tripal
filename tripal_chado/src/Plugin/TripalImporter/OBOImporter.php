@@ -880,6 +880,8 @@ class OBOImporter extends ChadoImporterBase {
    */
   public function postRun() {
 
+    parent::postRun();
+
     // Update the cv_root_mview materialized view.
     $this->logger->notice("Updating the cv_root_mview materialized view...");
     $mviews = \Drupal::service('tripal_chado.materialized_views');
