@@ -580,6 +580,16 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   }
 
   /**
+   * Performs tasks after the importer has completed.
+   *
+   * @return void
+   *   No return value.
+   */
+  public function postRun() {
+
+  }
+
+    /**
    * Updates the percent interval when the job progress is updated.
    *
    * Updating the job progress incurrs a database write which takes time
