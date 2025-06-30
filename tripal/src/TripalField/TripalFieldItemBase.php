@@ -745,14 +745,16 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    *   The max delta value specific to this field.
    */
   public function getFieldMaxDelta(): int {
-    $cardinality = $this->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
-    // Retrieve the global setting.
+    // Retrieve the global max_delta setting.
     $max_delta = \Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta');
 
-    // max_delta defaults to 100 if not defined.
+    // The max_delta global setting defaults to 100 if not defined.
     if (is_null($max_delta) or (trim($max_delta) === '')) {
       $max_delta = 100;
     }
+
+    // Retrieve the cardinality for this field.
+    $cardinality = $this->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
 
     // Finite field cardinality will override the global max_delta setting.
     if ($cardinality > 1) {

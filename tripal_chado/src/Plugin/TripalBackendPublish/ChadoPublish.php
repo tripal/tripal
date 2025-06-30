@@ -335,18 +335,17 @@ class ChadoPublish extends TripalBackendPublishBase {
           ];
           $instance = $this->field_type_manager->createInstance($field_definition->getType(), $configuration);
           $prop_types = $instance->tripalTypes($field_definition);
-          $field_class = get_class($instance);
-          $cardinality = $storage_definition->getCardinality();
           $storage_settings = $storage_definition->getSettings();
           $object_table = $this->getObjectTable($field_name, $storage_settings['storage_plugin_settings']);
           $this->storage->addTypes($field_name, $prop_types);
           $this->storage->addFieldDefinition($field_name, $field_definition);
           $field_info = [
             'definition' => $field_definition,
-            'class' => $field_class,
+            'class' => get_class($instance),
             'prop_types' => [],
             'instance' => $instance,
-            'cardinality' => $cardinality,
+            'cardinality' => $storage_definition->getCardinality(),
+            'field_max_delta' => $instance->getFieldMaxDelta(),
             'object_table' => $object_table,
           ];
 
@@ -1425,16 +1424,14 @@ class ChadoPublish extends TripalBackendPublishBase {
     // display this last extra record.
     $max_deltas = [];
     foreach ($this->field_info as $field_name => $field_info) {
-      // Only add for finite cardinalities greater than one
-      if ($field_info['cardinality'] > 1) {
-        if (array_key_exists('object_table', $field_info)) {
-          $max_deltas[$field_info['object_table']] = $field_info['cardinality'] + 1;
-        }
-        if (array_key_exists('table_alias_mapping', $field_info)) {
-          // Although this is a loop, only one element will be present
-          foreach ($field_info['table_alias_mapping'] as $alias => $table) {
-            $max_deltas[$alias] = $field_info['cardinality'] + 1;
-          }
+      $field_max_delta = $field_info['field_max_delta'];
+      if (array_key_exists('object_table', $field_info)) {
+        $max_deltas[$field_info['object_table']] = $field_max_delta + 1;
+      }
+      if (array_key_exists('table_alias_mapping', $field_info)) {
+        // Although this is a loop, only one element will be present.
+        foreach ($field_info['table_alias_mapping'] as $alias => $table) {
+          $max_deltas[$alias] = $field_max_delta + 1;
         }
       }
     }
