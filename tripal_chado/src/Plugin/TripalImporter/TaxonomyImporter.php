@@ -8,6 +8,7 @@ use Drupal\Core\Url;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 
 /**
@@ -79,6 +80,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $plugin_id,
       $plugin_definition,
       $container->get('tripal_chado.database'),
+      $container->get('tripal.backend_publish'),
       $container->get('tripal_chado.chado_buddy')
     );
   }
@@ -87,8 +89,9 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition,
-                              ChadoConnection $connection, ChadoBuddyPluginManager $buddy_manager) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
+                              ChadoConnection $connection, TripalBackendPublishManager $publish_manager,
+                              ChadoBuddyPluginManager $buddy_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $connection, $publish_manager);
     $this->buddy_manager = $buddy_manager;
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     $this->property_buddy = $this->buddy_manager->createInstance('chado_property_buddy', []);
