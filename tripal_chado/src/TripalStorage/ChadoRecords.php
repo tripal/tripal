@@ -2025,13 +2025,13 @@ class ChadoRecords  {
             '@first_condition_value' => $first_condition_value,
           ];
           if ($options['inhibit'] ?? FALSE) {
-            $this->logger->warning(t('The number of @chado_table records exceeds the configured limit for @first_key=@first_condition_value, no records will be returned',
+            $this->logger->warning(t('The number of @chado_table records exceeds the configured limit for @first_key=@first_condition_value, no records will be published',
               $warning_values));
             return 0;
           }
           else {
             $warning_values['@max_delta'] = $max_delta;
-            $this->logger->warning(t('The number of @chado_table records exceeds the configured limit for @first_key=@first_condition_value, only @max_delta records will be returned',
+            $this->logger->warning(t('The number of @chado_table records exceeds the configured limit for @first_key=@first_condition_value, only @max_delta records will be published',
               $warning_values));
             $select->range(0, $max_delta);
           }
