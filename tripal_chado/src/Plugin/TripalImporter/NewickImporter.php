@@ -20,6 +20,7 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
  *    file_upload = True,
  *    file_remote = False,
  *    file_required = False,
+ *    publish = "phylotree",
  *  )
  */
 class NewickImporter extends ChadoImporterBase {
