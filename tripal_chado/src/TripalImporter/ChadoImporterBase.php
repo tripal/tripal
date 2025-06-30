@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\TripalImporter;
 
 use Drupal\tripal\TripalImporter\TripalImporterBase;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -35,6 +36,13 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
   protected $connection;
 
   /**
+   * An instance of the Tripal publish service
+   *
+   * @var Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
+   */
+  protected $publish_manager = NULL;
+
+  /**
    * The type_id for the bundle(s)
    * @var array $bundle_type_id
    *   Key is DB:accession, value is cvterm_id
@@ -60,12 +68,13 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('tripal_chado.database')
+      $container->get('tripal_chado.database'),
+      $container->get('tripal.backend_publish')
     );
   }
 
   /**
-   * Implements __contruct().
+   * Implements __construct().
    *
    * Since we have implemented the ContainerFactoryPluginInterface, the constructor
    * will be passed additional parameters added by the create() function. This allows
@@ -76,11 +85,13 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
    * @param string $plugin_id
    * @param mixed $plugin_definition
    * @param Drupal\tripal_chado\Database\ChadoConnection $connection
+   * @param Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager $publish_manager
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $connection) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $connection, TripalBackendPublishManager $publish_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->connection = $connection;
+    $this->publish_manager = $publish_manager;
   }
 
   /**
@@ -244,4 +255,48 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
 
     return $element;
   }
+
+  /**
+   * Performs tasks after the importer has completed.
+   *
+   * Publish task:
+   * Bundles that are candidates for publishing are specified in
+   * the importer annotation. They then show up in the importer
+   * form with a standard prefix.
+   *
+   * @return void
+   *   No return value.
+   */
+  public function postRun() {
+    parent::PostRun();
+
+    $arguments = $this->getArguments();
+    $run_args = $arguments['run_args'];
+    $bundles_to_publish = [];
+
+    // Find if there are any bundles to be published.
+    foreach ($run_args as $key => $value) {
+      if (preg_match('/^do_not_publish_(.+)$/', $key, $matches)) {
+        $bundle = $matches[1];
+        if (!$value) {
+          // If opt-out is not TRUE, then publish this bundle.
+          $bundles_to_publish[] = $bundle;
+        }
+      }
+    }
+
+    // If there are bundles to publish, then publish them.
+    if ($bundles_to_publish) {
+      $instance = $this->publish_manager->createInstance('chado_storage', []);
+      foreach ($bundles_to_publish as $bundle) {
+        $publish_options = [
+          'bundle' => $bundle,
+          'datastore' => 'chado_storage',
+          'schema_name' => $run_args['schema_name'],
+        ];
+        $instance->publish($publish_options);
+      }
+    }
+  }
+
 }
