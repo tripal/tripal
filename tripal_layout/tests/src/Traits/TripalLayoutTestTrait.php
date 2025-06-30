@@ -26,7 +26,7 @@ trait TripalLayoutTestTrait {
   ];
 
   /**
-   * Tests creating a configuration entity from a YAML specification.
+   * Creates a layout entity from a YAML spec. to be used in testing.
    *
    * @param string $config_entity_type
    *   The type of layout entity to create.

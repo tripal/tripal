@@ -46,7 +46,7 @@ class TripalLayoutDefaultForm extends ConfigEntityBase {
   protected string $id;
 
   /**
-   * A label to identifying this collection of form layouts.
+   * A label to identify this collection of form layouts.
    *
    * @var string
    */
