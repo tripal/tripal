@@ -661,7 +661,7 @@ class TripalEntityUILayoutController extends ControllerBase {
    * @param array $component_names
    *   A list of component names whose label we want to hide.
    * @param \Drupal\Core\Entity\EntityDisplayBase $display
-   *   Thne display the components belong to.
+   *   The display the components belong to.
    *
    * @return void
    *   No return value.
