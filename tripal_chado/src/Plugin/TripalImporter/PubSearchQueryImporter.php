@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  *    file_remote = False,
  *    file_local = False,
  *    file_required = False,
+ *    publish = "pub",
  *    hidden = True,
  *  )
  */
@@ -1028,12 +1029,6 @@ class PubSearchQueryImporter extends ChadoImporterBase {
       }
     }
     return;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postRun() {
   }
 
 }

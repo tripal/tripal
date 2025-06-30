@@ -672,13 +672,6 @@ class TreeGenerator extends ChadoImporterBase {
   /**
    * {@inheritdoc}
    */
-  public function postRun() {
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function formSubmit($form, &$form_state) {
 
   }
