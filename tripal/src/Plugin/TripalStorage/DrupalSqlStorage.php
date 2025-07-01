@@ -4,10 +4,6 @@ namespace Drupal\tripal\Plugin\TripalStorage;
 
 use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Validator\ConstraintViolation;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\tripal\Services\TripalLogger;
 
 /**
  * Chado implementation of the TripalStorageInterface.

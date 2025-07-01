@@ -3,9 +3,6 @@
 namespace Drupal\Tests\tripal\Functional;
 
 use Drupal\Tests\BrowserTestBase;
-use Drupal\file\Entity\File;
-use Drupal\user\Entity\Role;
-use Drupal\Core\Url;
 
 /**
  * Tests the basic functions of the TripalTerm Entity Type.

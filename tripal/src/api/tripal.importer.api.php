@@ -1,8 +1,6 @@
 <?php
 
 use Drupal\tripal\Services\TripalJob;
-use Drupal\tripal\TripalImporter\TripalImporterBase;
-use Drupal\tripal\Services\TripalLogger;
 
 /**
  * @file

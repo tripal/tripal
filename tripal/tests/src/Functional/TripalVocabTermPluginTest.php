@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal\Functional;
 
 use Drupal\Tests\BrowserTestBase;
-use Drupal\Core\Database\Database;
 
 // Needed for TripalTerm related tests.
 use Drupal\tripal\TripalVocabTerms\TripalTerm;

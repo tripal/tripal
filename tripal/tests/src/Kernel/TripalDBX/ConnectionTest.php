@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\tripal\TripalDBX\TripalDbxConnection;
 
 /**
  * Tests for Tripal DBX connection on a real database.

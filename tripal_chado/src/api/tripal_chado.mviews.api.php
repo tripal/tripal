@@ -7,7 +7,6 @@
 
 use Drupal\tripal_chado\Database\ChadoConnection;
 use \Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
-use \Drupal\tripal_chado\ChaodCustomTables\ChadoMview;
 
 /**
  * @defgroup tripal_mviews_api Chado Materalized Views

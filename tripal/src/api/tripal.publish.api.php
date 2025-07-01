@@ -1,7 +1,7 @@
 <?php
 
-use \Drupal\tripal\Services\TripalPublish;
 use \Drupal\tripal\Services\TripalJob;
+
 /**
  * @file
  * Provides an application programming interface (API) to manage

@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
-use Drupal\tripal_chado\Task\ChadoRemover;
 
 
 /**

@@ -1,7 +1,5 @@
 <?php
 
-use Drupal\tripal\Services\TripalJob;
-
 /**
  * Submit Load Chado Schema Form.
  *

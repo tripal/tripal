@@ -3,9 +3,6 @@
 namespace Drupal\Tests\tripal\Kernel\TripalStorage;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
-use Drupal\tripal\TripalStorage\TripalStorageBase;
-use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 use Drupal\tripal\Plugin\TripalStorage\DrupalSqlStorage;
 
 /**

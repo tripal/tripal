@@ -3,7 +3,6 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use Drupal\tripal_chado\Plugin\TripalBackendPublish\ChadoPublish;
 
 /**
  * Tests the publish service for chado-based content types.

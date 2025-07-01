@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\tripal_layout\Kernel\Entity;
 
+use Symfony\Component\Yaml\Yaml;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
 
 /**
@@ -21,7 +21,6 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
    */
   protected static $modules = ['system', 'field', 'user', 'tripal', 'tripal_layout'];
 
-
   /**
    * {@inheritdoc}
    */
@@ -35,7 +34,9 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
   }
 
   /**
-   * Provides senarios to test the the TripalLayoutDefaultView and
+   * Provides senarios for layout display.
+   *
+   * This provides scenarios to test the TripalLayoutDefaultView and
    * TripalLayoutDefaultForm entities.
    *
    * @return array
@@ -47,11 +48,11 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
     $entity_defns = [
       'view' => [
         'class' => '\Drupal\tripal_layout\Entity\TripalLayoutDefaultView',
-        'id' => 'tripal_layout_default_view'
+        'id' => 'tripal_layout_default_view',
       ],
       'form' => [
         'class' => '\Drupal\tripal_layout\Entity\TripalLayoutDefaultForm',
-        'id' => 'tripal_layout_default_form'
+        'id' => 'tripal_layout_default_form',
       ],
     ];
 
@@ -94,8 +95,6 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
   /**
    * Tests getters for a test TripalLayoutEntity.
    *
-   * @dataProvider provideLayoutDisplayEntitySenarios
-   *
    * @param string $display_context
    *   The type of display entity we are testing. One of 'view' or 'form'.
    * @param array $entity_defn
@@ -103,19 +102,20 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
    *   Expected keys include: class, id, yaml_file.
    * @param array $bundle_defn
    *   Details about the TripalEntityType whose display we want to test.
-   *   Expected keys include: id
+   *   Expected keys include: id.
    * @param array $expectations
    *   An array of expectations for this test. Keys include:
    *    - num_layouts: the number of layouts in the file.
    *    - layouts: an list of the tripal_entity_type the layouts are for.
+   *
    * @return void
+   *   No return value.
+   *
+   * @dataProvider provideLayoutDisplayEntitySenarios
    */
   public function testTripalLayoutEntityGetters(string $display_context, array $entity_defn, array $bundle_defn, array $expectations) {
 
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $config_storage **/
-    $config_storage = \Drupal::entityTypeManager()->getStorage($entity_defn['id']);
-
-    // Create entity from valid YAML
+    // Create entity from valid YAML.
     $config_entity = $this->createLayoutEntityFromConfig(
       $entity_defn['id'],
       $entity_defn['yaml_file']
@@ -123,7 +123,7 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
 
     // Also get the TEST YAML file for validation.
     $yaml_file = $entity_defn['yaml_file'];
-    $yaml = \Symfony\Component\Yaml\Yaml::parseFile($yaml_file);
+    $yaml = Yaml::parseFile($yaml_file);
     $this->assertIsArray($yaml, "Unable to pull down the test YAML file ($yaml_file).");
 
     $ret_id = $config_entity->id();
@@ -149,7 +149,8 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
       $ret_has_layout = $config_entity->hasLayout($expected_bundle);
       $this->assertTrue($ret_has_layout, "This config entity doesn't have the expected $expected_bundle bundle layout according to hasLayout().");
 
-      // Checks that we can get the layout once the bundle layout cache HAS BEEN built.
+      // Checks that we can get the layout once the bundle layout cache HAS BEEN
+      // built.
       $ret_bundle_layout = $config_entity->getLayout($expected_bundle);
       $this->assertNotNull($ret_bundle_layout, "The config entity was unable to retrieve the expected $expected_bundle bundle layout.");
       $this->assertIsArray($ret_bundle_layout, "The retrieved bundle layout for $expected_bundle did not match the expected format when layouts cached.");
@@ -175,4 +176,5 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
     $ret_bundle_layout = $config_entity->getLayout($nonexistant_bundle);
     $this->assertNull($ret_bundle_layout, "The config entity should not be able to retrieve the layout for a bundle that doesn't exist.");
   }
+
 }

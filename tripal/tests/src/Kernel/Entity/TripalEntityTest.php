@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\tripal\Kernel\Entity;
 
-use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\Entity\TripalEntityType;

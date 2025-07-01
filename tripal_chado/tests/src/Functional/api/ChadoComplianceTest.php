@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\api;
 
-use Drupal\Core\Database\Database;
-use Drupal\tripal_chado\api\ChadoSchema;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 
 /**

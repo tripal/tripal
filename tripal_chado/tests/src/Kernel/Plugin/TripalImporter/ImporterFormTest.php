@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 
-use Drupal\Core\Url;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 
 /**

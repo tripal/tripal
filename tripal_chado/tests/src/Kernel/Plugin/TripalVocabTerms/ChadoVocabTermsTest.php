@@ -1,7 +1,6 @@
 <?php
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalVocabTerms;
 
-use Drupal\Core\Test\FunctionalTestSetupTrait;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;

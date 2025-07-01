@@ -1,7 +1,6 @@
 <?php
 namespace Drupal\tripal\Services;
 
-use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
 use Drupal\field\Entity\FieldConfig;
