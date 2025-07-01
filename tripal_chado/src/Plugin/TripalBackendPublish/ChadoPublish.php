@@ -345,7 +345,6 @@ class ChadoPublish extends TripalBackendPublishBase {
             'prop_types' => [],
             'instance' => $instance,
             'cardinality' => $storage_definition->getCardinality(),
-            'field_max_delta' => $instance->getFieldMaxDelta(),
             'object_table' => $object_table,
           ];
 
@@ -1422,23 +1421,23 @@ class ChadoPublish extends TripalBackendPublishBase {
     // We add one to max_delta to use the extra record as a flag that
     // at least one record was not published. The formatters will not
     // display this last extra record.
-    $max_deltas = [];
+    $cardinalities = [];
     foreach ($this->field_info as $field_name => $field_info) {
-      $field_max_delta = $field_info['field_max_delta'];
+      $cardinality = $field_info['cardinality'];
       if (array_key_exists('object_table', $field_info)) {
-        $max_deltas[$field_info['object_table']] = $field_max_delta + 1;
+        $cardinalities[$field_info['object_table']] = $cardinality + 1;
       }
       if (array_key_exists('table_alias_mapping', $field_info)) {
         // Although this is a loop, only one element will be present.
         foreach ($field_info['table_alias_mapping'] as $alias => $table) {
-          $max_deltas[$alias] = $field_max_delta + 1;
+          $cardinalities[$alias] = $cardinality + 1;
         }
       }
     }
     return [
       'global_max_delta' => $this->publish_global_max_delta + 1,
+      'cardinalities' => $cardinalities,
       'inhibit' => $this->publish_global_max_delta_inhibit,
-      'max_deltas' => $max_deltas,
     ];
   }
 

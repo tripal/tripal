@@ -1917,9 +1917,9 @@ class ChadoRecords  {
    * @param array $options
    *   - global_max_delta = Maximum number of linked records from a single table
    *     to return, zero for no limit.
+   *   - cardinalities = associative array of cardinalities on a per-table
+   *     basis, key is table name. If present, these override global_max_delta.
    *   - inhibit = Publish no records if the number exceeds max_delta.
-   *   - max_deltas = associative array of an override of global_max_delta on a
-   *     per-table basis, key is table name.
    *
    * @throws \Exception
    *
@@ -1944,13 +1944,14 @@ class ChadoRecords  {
     $chado_table = $this->getTableFromAlias($base_table, $table_alias);
 
     // Cardinalities for linked tables are passed in here.
-    $max_deltas = $options['max_deltas'] ?? [];
+    // Cardinality overrides the global max_delta value.
+    $cardinalities = $options['cardinalities'] ?? [];
 
     // This retrieves cardinality for single-hop
     // fields, e.g. properties.
     $field_cardinality = NULL;
-    if (array_key_exists($table_alias, $max_deltas)) {
-      $field_cardinality = $max_deltas[$table_alias];
+    if (array_key_exists($table_alias, $cardinalities) && $cardinalities[$table_alias] > 0) {
+      $field_cardinality = $cardinalities[$table_alias];
     }
 
     // Iterate through each item of the table and perform a select.
@@ -1987,8 +1988,8 @@ class ChadoRecords  {
           $right_column = $join_info['on']['right_column'];
           $left_alias = $join_info['on']['left_alias'];
           $left_column = $join_info['on']['left_column'];
-          if (array_key_exists($right_table, $max_deltas)) {
-            $field_cardinality = $max_deltas[$right_table];
+          if (array_key_exists($right_table, $cardinalities) && $cardinalities[$right_table] > 0) {
+            $field_cardinality = $cardinalities[$right_table];
           }
           $select->leftJoin('1:' . $right_table, $right_alias,
             $left_alias . '.' .  $left_column . '=' .  $right_alias . '.' . $right_column);
