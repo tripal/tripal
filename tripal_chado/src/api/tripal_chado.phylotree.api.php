@@ -1156,17 +1156,17 @@ function chado_phylogeny_get_fixed_terms(object $chado): array {
     ->cvterm_id;
   $values['bundle_term'] = $bundle_term;
 
-  $property_term = $chado->select('1:cvterm', 't')
+  // This term did not exist until PR#2223, so make sure it exists.
+  $property_object = $chado->select('1:cvterm', 't')
     ->fields('t')
     ->condition('cv_id', $edam_id)
     ->condition('name', 'Phylogenetic tree type')
     ->execute()
-    ->fetchObject()
-    ->cvterm_id;
-  if (is_null($property_term)) {
+    ->fetchObject();
+  if (!is_object($property_term)) {
     throw new \Exception('Missing required CV term. Please run update 10415 with "drush updatedb"');
   }
-  $values['property_term'] = $property_term;
+  $values['property_term'] = $property_object->cvterm_id;
 
   return $values;
 }
