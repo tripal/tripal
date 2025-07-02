@@ -982,6 +982,7 @@ function tripal_chado_update_10414() {
 function tripal_chado_update_10415() {
   try {
     $messenger = \Drupal::messenger();
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Adds a new CV term for Tripal 3 compatibility with phylotrees.
     $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
@@ -995,6 +996,47 @@ function tripal_chado_update_10415() {
     ];
     $chado_cvterm_record = $cvterm_buddy->upsertCvterm($term_values, []);
     $messenger->addMessage('Added "EDAM:Phylogenetic tree type" term');
+
+    // Updates terms for existing phylotrees, moving them to properties.
+    $chado_buddy_records = $cvterm_buddy->getCvterm([
+      'cv.name' => 'EDAM',
+      'cvterm.name' => 'Phylogenetic tree',
+    ]);
+    $bundle_id = $chado_buddy_records[0]->getValue('cvterm.cvterm_id');
+    $chado_buddy_records = $cvterm_buddy->getCvterm([
+      'cv.name' => 'EDAM',
+      'cvterm.name' => 'Phylogenetic tree type',
+    ]);
+    $property_id = $chado_buddy_records[0]->getValue('cvterm.cvterm_id');
+    $query = $chado->select('1:phylotree', 't');
+    $query->condition('type_id', $bundle_id, '!=');
+    $query->fields('t', ['phylotree_id', 'type_id']);
+    $needs_fixing = $query->execute()->fetchAssoc();
+    $n_updated = 0;
+    foreach ($needs_fixing as $phylotree) {
+      $chado_buddy_records = $cvterm_buddy->getCvterm([
+        'cvterm.cvterm_id' => $phylotree['type_id'],
+      ]);
+      $term_name = $cvterm_buddy_records[0]->getValue('cvterm.name');
+      // Insert the existing term as a property.
+      $insert_fields = [
+        'phylotree_id' => $phylotree['phylotree_id'],
+        'type_id' => $property_id,
+        'value' => $term_name,
+      ];
+      $chado->insert('1:phylotreeprop')
+        ->fields($insert_fields)
+        ->execute();
+      // Change the term of the phylotree record.
+      $chado->update('1:phylotree')
+        ->condition('phylotree_id', $phylotree['phylotree_id'], '=')
+        ->fields(['type_id' => $bundle_id])
+        ->execute();
+      $n_updated++;
+    }
+    if ($n_updated) {
+      $messenger->addMessage('Updated @n_updated phylotrees to use standard CV term', ['@n_updated' => $n_updated]);
+    }
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not update chado fields: ' . $e->getMessage());
