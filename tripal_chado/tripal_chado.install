@@ -977,14 +977,13 @@ function tripal_chado_update_10414() {
 }
 
 /**
- * Adds a cv term needed for Tripal 3 compatibility with phylotrees.
- * PR 22.. @@@TBD
+ * Updates phylogenetic trees for Tripal 3 compatibility. PR 2223.
  */
 function tripal_chado_update_10415() {
   try {
     $messenger = \Drupal::messenger();
 
-    // Adds a new CV term
+    // Adds a new CV term for Tripal 3 compatibility with phylotrees.
     $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
     $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
     $term_values = [
@@ -995,6 +994,7 @@ function tripal_chado_update_10415() {
       'cvterm.definition' => 'A label (text token) describing the type of a phylogenetic tree. [http://edamontology.org]',
     ];
     $chado_cvterm_record = $cvterm_buddy->upsertCvterm($term_values, []);
+    $messenger->addMessage('Added "EDAM:Phylogenetic tree type" term');
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not update chado fields: ' . $e->getMessage());
