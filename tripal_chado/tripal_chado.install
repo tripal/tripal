@@ -990,7 +990,7 @@ function tripal_chado_update_10415() {
     $term_values = [
       'db.name' => 'data',
       'cv.name' => 'EDAM',
-      'dbxref.accession' => '1068',
+      'dbxref.accession' => '1122',
       'cvterm.name' => 'Phylogenetic tree type',
       'cvterm.definition' => 'A label (text token) describing the type of a phylogenetic tree. [http://edamontology.org]',
     ];
