@@ -10,7 +10,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *
  *  @TripalIdSpace(
  *    id = "tripal_default_id_space",
- *    label = @Translation("Deafult Tripal IdSpace"),
+ *    label = @Translation("Default Tripal IdSpace"),
  *  )
  */
 class TripalDefaultIdSpace extends TripalIdSpaceBase {

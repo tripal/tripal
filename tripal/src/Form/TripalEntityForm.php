@@ -165,7 +165,7 @@ class TripalEntityForm extends ContentEntityForm {
       '#weight' => 90,
       '#optional' => TRUE,
       '#description' => '<p>All Tripal Content will be given a canonical URL of the form "bio_data/[entity_id]" and additionally, they will all be given a URL alias. The URL alias is user facing and will be shown in the address bar when viewing content.</p>
-      <p>By default the URL alias will be assigned when a page after a page is created based on a pattern configured by administrators for this content type. If you would like to change it for this specific page, you can do so using the URL Alias field below.</p>
+      <p>By default the URL alias will be assigned after a page is created based on a pattern configured by administrators for this content type. If you would like to change it for this specific page, you can do so using the URL Alias field below.</p>
       <p>There should only be a single URL alias but if you would like the page to be accessed from multiple URLs, you can add URL redirects.</p>'
     ];
     $form['path']['#group'] = 'url_paths';
