@@ -958,7 +958,7 @@ fields:
         content_type: phylotree
         label: Phylogenetic Tree Type
         type: chado_property_type_default
-        description: The type of phylogenetic tree, generally a term from the sequence ontology.
+        description: The type of phylogenetic tree, usually a term from the sequence ontology.
         cardinality: 1
         required: false
         storage_settings:
@@ -979,6 +979,9 @@ fields:
             default:
               region: content
               weight: 21
+              settings:
+                filter_format: plain_text
+                num_rows: 1
 
     -   name: phylotree_analysis
         content_type: phylotree
