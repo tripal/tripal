@@ -1037,8 +1037,12 @@ function tripal_chado_update_10415() {
     if ($n_updated) {
       $messenger->addMessage("Updated $n_updated phylotrees to use the standard CV term for this bundle");
     }
+
+    // Add a field to access the 'Phylogenetic tree type' property.
+    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml', ['phylotree_tree_type']);
+    $messenger->addMessage('Added "Phylogenetic Tree Type" field');
   }
   catch (\Exception $e) {
-    throw new UpdateException('Could not update chado fields: ' . $e->getMessage());
+    throw new UpdateException('Could not update phylotree: ' . $e->getMessage());
   }
 }
