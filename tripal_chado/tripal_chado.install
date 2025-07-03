@@ -1011,31 +1011,31 @@ function tripal_chado_update_10415() {
     $query = $chado->select('1:phylotree', 't');
     $query->condition('type_id', $bundle_id, '!=');
     $query->fields('t', ['phylotree_id', 'type_id']);
-    $needs_fixing = $query->execute()->fetchAssoc();
+    $needs_fixing = $query->execute();
     $n_updated = 0;
     foreach ($needs_fixing as $phylotree) {
       $chado_buddy_records = $cvterm_buddy->getCvterm([
-        'cvterm.cvterm_id' => $phylotree['type_id'],
+        'cvterm.cvterm_id' => $phylotree->type_id,
       ]);
-      $term_name = $cvterm_buddy_records[0]->getValue('cvterm.name');
-      // Insert the existing term as a property.
+      $term_name = $chado_buddy_records[0]->getValue('cvterm.name');
+      // Insert the existing term name as a property.
       $insert_fields = [
-        'phylotree_id' => $phylotree['phylotree_id'],
+        'phylotree_id' => $phylotree->phylotree_id,
         'type_id' => $property_id,
         'value' => $term_name,
       ];
       $chado->insert('1:phylotreeprop')
         ->fields($insert_fields)
         ->execute();
-      // Change the term of the phylotree record.
+      // Change the term of the phylotree record to the bundle term.
       $chado->update('1:phylotree')
-        ->condition('phylotree_id', $phylotree['phylotree_id'], '=')
+        ->condition('phylotree_id', $phylotree->phylotree_id, '=')
         ->fields(['type_id' => $bundle_id])
         ->execute();
       $n_updated++;
     }
     if ($n_updated) {
-      $messenger->addMessage('Updated @n_updated phylotrees to use standard CV term', ['@n_updated' => $n_updated]);
+      $messenger->addMessage("Updated $n_updated phylotrees to use the standard CV term for this bundle");
     }
   }
   catch (\Exception $e) {
