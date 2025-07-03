@@ -1163,7 +1163,7 @@ function chado_phylogeny_get_fixed_terms(object $chado): array {
     ->condition('name', 'Phylogenetic tree type')
     ->execute()
     ->fetchObject();
-  if (!is_object($property_term)) {
+  if (!is_object($property_object)) {
     throw new \Exception('Missing required CV term. Please run update 10415 with "drush updatedb"');
   }
   $values['property_term'] = $property_object->cvterm_id;
