@@ -4,8 +4,6 @@ namespace Drupal\Tests\tripal_layout\Kernel\Controller;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
-use Drupal\tripal_layout\Entity\TripalLayoutDefaultView;
-use Drupal\tripal_layout\Entity\TripalLayoutDefaultForm;
 
 /**
  * Tests applying Details field groups to both form and view displays.
@@ -33,7 +31,11 @@ class TripalLayoutControllerDetailsTest extends TripalTestKernelBase {
     $this->installEntitySchema('tripal_layout_default_view');
   }
 
+  /**
+   * Tests applying Details field groups to both form and view displays.
+   */
   public function testApplyDetailsFieldGroup() {
     $this->markTestIncomplete('Just starting this');
   }
+
 }

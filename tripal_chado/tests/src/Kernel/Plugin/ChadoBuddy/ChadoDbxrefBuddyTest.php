@@ -5,7 +5,6 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy\ChadoTestBuddyBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
-use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * Tests the Chado Dbxref Buddy.

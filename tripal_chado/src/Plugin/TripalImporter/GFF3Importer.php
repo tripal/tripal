@@ -3,11 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\InvokeCommand;
-use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\tripal_chado\Database\ChadoConnection;

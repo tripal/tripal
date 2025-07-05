@@ -5,7 +5,6 @@ namespace Drupal\tripal\TripalVocabTerms\PluginManagers;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use \RuntimeException;
 
 /**
  * Provides a tripal collection plugin manager.

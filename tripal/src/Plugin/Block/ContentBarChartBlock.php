@@ -4,7 +4,6 @@ namespace Drupal\tripal\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Block\BlockPluginInterface;
-use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Provides a 'Content Type Bar Chart' Block.

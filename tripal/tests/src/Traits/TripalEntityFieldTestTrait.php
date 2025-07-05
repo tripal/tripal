@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\Tests\tripal\Traits;
 
 use Drupal\Tests\user\Traits\UserCreationTrait;
@@ -6,9 +7,9 @@ use Drupal\Core\Datetime\Entity\DateFormat;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Field\FieldItemList;
+use Drupal\Core\Form\FormState;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
-use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\tripal_chado\Plugin\TripalStorage\ChadoStorage;
@@ -24,35 +25,35 @@ trait TripalEntityFieldTestTrait {
   /**
    * An array of FieldStorageConfig objects keyed by the field name.
    *
-   * @var FieldStorageConfig[]
+   * @var \Drupal\field\Entity\FieldStorageConfig[]
    */
   protected array $fieldStorage = [];
 
   /**
    * An array of FieldConfig objects keyed by the field name.
    *
-   * @var FieldConfig[]
+   * @var \Drupal\field\Entity\FieldConfig[]
    */
   protected array $fieldConfig = [];
 
   /**
    * An array of TripalEntityType objects keyed by the bundle name.
    *
-   * @var TripalEntityType[]
+   * @var \Drupal\tripal\Entity\TripalEntityType[]
    */
   protected array $tripalEntityType = [];
 
   /**
    * An array of display objects keyed by Tripal Content Type bundle name.
    *
-   * @var EntityViewDisplay[]
+   * @var \Drupal\Core\Entity\Entity\EntityViewDisplay[]
    */
   protected array $entityViewDisplay = [];
 
   /**
    * An array of display objects keyed by Tripal Content Type bundle name.
    *
-   * @var EntityFormDisplay[]
+   * @var \Drupal\Core\Entity\Entity\EntityFormDisplay[]
    */
   protected array $entityFormDisplay = [];
 
@@ -64,8 +65,7 @@ trait TripalEntityFieldTestTrait {
   protected ChadoStorage $chadoStorage;
 
   /**
-   * An array of propertyType objects initialized based on the $fields
-   * properties array.
+   * PropertyType objects initialized based on the $fields properties array.
    *
    * @var array
    *   This is an array of property types 3 levels deep:
@@ -76,8 +76,7 @@ trait TripalEntityFieldTestTrait {
   protected array $propertyTypes = [];
 
   /**
-   * An array of propertyValue objects initialized based on the $fields
-   * properties array.
+   * PropertyValue objects initialized based on the $fields properties array.
    *
    * @var array
    */
@@ -85,14 +84,15 @@ trait TripalEntityFieldTestTrait {
 
   /**
    * An array for testing ChadoStorage::*Values methods for the current fields.
+   *
    * This is an associative array 5-levels deep.
    *    The 1st level is the field name (e.g. ChadoOrganismDefault).
    *    The 2nd level is the delta value (e.g. 0).
    *    The 3rd level is a field key name (i.e. record_id + value).
    *    The 4th level must contain the following three keys/value pairs
-   *      - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
-   *      - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
-   *      - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *      - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object.
+   *      - "type": a \Drupal\tripal\TripalStorage\StoragePropertyType object.
+   *      - "definition": a \Drupal\Field\Entity\FieldConfig object.
    *
    * @var array
    */
@@ -117,8 +117,8 @@ trait TripalEntityFieldTestTrait {
    *   A nested array of expected values following the format:
    *    - field name (i.e. project_name):
    *      - delta (e.g. 0):
-   *        - property key => expected value
-   * @param TripalEntity $entity
+   *        - property key => expected value.
+   * @param \Drupal\tripal\Entity\TripalEntity $entity
    *   An entity whose field values we want to check against those expected.
    * @param string $message_prefix
    *   A short string that all assert messages will be prefixed with.
@@ -151,7 +151,7 @@ trait TripalEntityFieldTestTrait {
         $field_item = $field_item_list->get($expected_delta);
         $this->assertInstanceOf(TripalFieldItemInterface::class, $field_item, $message_prefix . "$expected_field_name [$expected_delta] could not be retrieved.");
 
-        // Check that there is a record in the Drupal field table for this delta.
+        // Check record is in the Drupal field table for this delta.
         $this->assertArrayHasKey($expected_delta, $drupal_field_records, $message_prefix . "$expected_field_name [$expected_delta] should have a record in the Drupal field table '$drupal_field_table'.");
         $drupal_field_record = $drupal_field_records[$expected_delta];
 
@@ -173,11 +173,11 @@ trait TripalEntityFieldTestTrait {
       // This ensures there were not more then expected. It's checked after the
       // property values/delta are checked to ensure we get more tailored
       // feedback if there are less than expected.
-      $this->assertCount(sizeof($expected_field_delta), $field_item_list, $message_prefix . ": field '$expected_field_name' did not have the expected number of values.");
+      $this->assertCount(count($expected_field_delta), $field_item_list, $message_prefix . ": field '$expected_field_name' did not have the expected number of values.");
 
-      // Check that there are the right number of records in the Drupal field table.
+      // Check the right number of records are in the Drupal field table.
       $this->assertCount(
-        sizeof($expected_field_delta),
+        count($expected_field_delta),
         $drupal_field_records,
         $message_prefix . ": field '$expected_field_name' did not have the expected number of records in the drupal field table ($drupal_field_table)."
       );
@@ -185,8 +185,7 @@ trait TripalEntityFieldTestTrait {
   }
 
   /**
-   * Called in the test setUp() for kernel tests to ensure all the needed
-   * resources are available.
+   * Called in kernel test setUp() to ensure needed resources are available.
    *
    * @param array $system_under_test
    *   An array defining the environment to setup with the following keys:
@@ -223,7 +222,8 @@ trait TripalEntityFieldTestTrait {
         ->save();
     }
 
-    // Update entity settings to match tripal/config/install/tripal.settings.yml
+    // Update entity settings to match module defaults.
+    // @see tripal/config/install/tripal.settings.yml.
     $allowed_title_tags = 'em i strong u';
     \Drupal::configFactory()
       ->getEditable('tripal.settings')
@@ -238,7 +238,6 @@ trait TripalEntityFieldTestTrait {
 
     return [];
   }
-
 
   /**
    * Setup the test environment according to the details provided.
@@ -287,17 +286,23 @@ trait TripalEntityFieldTestTrait {
    * @param string $entity_type
    *   The machine name of the entity to add the field to (e.g., organism)
    * @param array $values
-   *   These values are passed directly to the create() method. Suggested values are:
+   *   These values are passed directly to the create() method.
+   *   Suggested values are:
    *    - field_name (string)
    *    - field_type (string)
    *    - termIdSpace (string)
    *    - termAccession (string)
-   * @return FieldStorageConfig
+   * @param array $options
+   *   Options to customize how the field type is created. Supported key are:
+   *    - idspace_plugin_id: the TripalIdSpace plugin to use.
+   *    - vocab_plugin_id: the TripalVocab plugin to use.
+   *
+   * @return \Drupal\field\Entity\FieldStorageConfig
    *   The field storage object that was just created.
    */
-  public function createFieldType(string $entity_type, array $values = []) {
+  public function createFieldType(string $entity_type, array $values = [], array $options = []): FieldStorageConfig {
 
-    // Defaults
+    // Defaults.
     $random = $this->getRandomGenerator();
     $values['field_name'] = $values['field_name'] ?? $random->word(6) . '_' . $random->word(15);
     $values['field_type'] = $values['field_type'] ?? 'tripal_string_type';
@@ -313,8 +318,14 @@ trait TripalEntityFieldTestTrait {
     if (!array_key_exists('settings', $values)) {
       $values['settings'] = [];
     }
-    // @todo allow this to be set via variables.
-    $term = $this->createTripalTerm($term_values, 'tripal_default_id_space', 'tripal_default_vocabulary');
+    if (!array_key_exists('idspace_plugin_id', $options)) {
+      $options['idspace_plugin_id'] = 'tripal_default_id_space';
+    }
+    if (!array_key_exists('vocab_plugin_id', $options)) {
+      $options['vocab_plugin_id'] = 'tripal_default_vocabulary';
+    }
+
+    $term = $this->createTripalTerm($term_values, $options['idspace_plugin_id'], $options['vocab_plugin_id']);
 
     // Now for the field storage.
     $fieldStorage = FieldStorageConfig::create([
@@ -340,7 +351,8 @@ trait TripalEntityFieldTestTrait {
    * @param string $entity_type
    *   The machine name of the entity to add the field to (e.g., organism)
    * @param array $values
-   *   These values are passed directly to the create() method. Suggested values are:
+   *   These values are passed directly to the create() method.
+   *   Suggested values are:
    *    - field_name (string)
    *    - field_type (string)
    *    - term_id_space (string)
@@ -349,13 +361,17 @@ trait TripalEntityFieldTestTrait {
    *    - formatter_id (string)
    *    - widget_id (string)
    *    - fieldStorage (FieldStorageConfig)
-   * @return FieldConfig
+   * @param array $options
+   *   Options to customize how the field type is created. Supported key are:
+   *    - idspace_plugin_id: the TripalIdSpace plugin to use.
+   *    - vocab_plugin_id: the TripalVocab plugin to use.
+   *
+   * @return \Drupal\field\Entity\FieldConfig
    *   The field object that was just created.
    */
-  public function createFieldInstance(string $entity_type, array $values = []) {
+  public function createFieldInstance(string $entity_type, array $values = [], array $options = []): FieldConfig {
 
-    // Defaults
-    $random = $this->getRandomGenerator();
+    // Defaults.
     $values['formatter_id'] = $values['formatter_id'] ?? 'default_tripal_string_type_formatter';
     $values['widget_id'] = $values['widget_id'] ?? 'default_tripal_string_type_widget';
     $values['field_type'] = $values['field_type'] ?? 'tripal_string_type';
@@ -400,7 +416,8 @@ trait TripalEntityFieldTestTrait {
     ];
     if (array_key_exists($values['bundle_name'], $this->entityFormDisplay)) {
       $display = $this->entityFormDisplay[$values['bundle_name']];
-    } else {
+    }
+    else {
       $display = EntityFormDisplay::create([
         'targetEntityType' => $fieldConfig->getTargetEntityTypeId(),
         'bundle' => $values['bundle_name'],
@@ -420,7 +437,8 @@ trait TripalEntityFieldTestTrait {
     ];
     if (array_key_exists($values['bundle_name'], $this->entityViewDisplay)) {
       $display = $this->entityViewDisplay[$values['bundle_name']];
-    } else {
+    }
+    else {
       $display = EntityViewDisplay::create([
         'targetEntityType' => $fieldConfig->getTargetEntityTypeId(),
         'bundle' => $values['bundle_name'],
@@ -438,7 +456,7 @@ trait TripalEntityFieldTestTrait {
   }
 
   /**
-   * Allows you to set the 'fields' by specifying the top level key of a YAML file.
+   * Sets the 'fields' by specifying the top level key of a YAML file.
    *
    * @param string $yaml_file
    *   The full path to a yaml file which follows the format descripbed above.
@@ -448,7 +466,7 @@ trait TripalEntityFieldTestTrait {
    *   be setup and the second describes the scenarios to test. For a
    *   description of the structure of these arrays, see the YAML file directly.
    */
-  public function getTestInfoFromYaml($yaml_file) {
+  public function getTestInfoFromYaml(string $yaml_file): array {
 
     if (!file_exists($yaml_file)) {
       throw new \Exception("Cannot open YAML file $yaml_file.");
@@ -473,4 +491,195 @@ trait TripalEntityFieldTestTrait {
 
     return [$yaml_data['system-under-test'], $yaml_data['scenarios']];
   }
+
+  /**
+   * Sets up the TripalEntity Form to create an entity.
+   *
+   * This is typically used when testing fields.
+   *
+   * When a Drupal form is built it goes through two main stages:
+   * 1. The retrieve and preparation stage: the form is built using the form's
+   * build function and all the alter form hooks are called. The output of this
+   * stage is a Form API array, an array with all the elements the form should
+   * have, but not the final render array.
+   * 2. Recursive building stage: a recursive process traversing the $form array
+   * calling auxiliary functions like #process and #after_build callbacks. The
+   * goal is to obtain a Drupal render array with the final shape of the form,
+   * with all the required elements.
+   *
+   * This method ensures both are done in order to accurately reflect the
+   * final form.
+   *
+   * @param string $bundle_name
+   *   The id of the Tripal Entity Type this form is for.
+   *
+   * @return array
+   *   The parts of an entity form; specifically,
+   *   - ContentEntityFormInterface $form_object: an object that can be used
+   *     with the form state to validate and submit the TripalEntity form.
+   *   - array $form: the complete form including all attached field widget
+   *     form elements.
+   *   - FormState $form_state: the state of this form including relationships
+   *     to both the form object and form array.
+   *
+   * @see Drupal\Core\Form\FormBuilder
+   */
+  public function setupTripalEntityAddForm(string $bundle_name): array {
+    $entity_type_manager = $this->container->get('entity_type.manager');
+    $form_builder = \Drupal::formBuilder();
+
+    // Step 0: Prepare Form object and form state.
+    // -- Get the form object from the entity type manager.
+    $form_object = $entity_type_manager->getFormObject('tripal_entity', 'add');
+    // -- Create an empty entity object for the form.
+    // This is not saved yet but is needed as an empty husk for the form
+    // to determine the fields, widgets, etc to build the form array.
+    $entity = TripalEntity::create([
+      'type' => $this->bundle_name,
+    ]);
+    $form_object->setEntity($entity);
+    // -- Now get the form id (needs the entity first).
+    $form_id = $form_object->getFormId();
+
+    // -- Create the Form State and set it up to be used by an entity form.
+    $form_state = new FormState();
+    $form_state->setFormObject($form_object);
+
+    // -- Set the base user input for the form.
+    $input = [
+      'uid' => 1,
+    ];
+    $form_state->setUserInput($input);
+
+    // Step 1: Form Retrieve + Preparation Phase.
+    $form = $form_builder->retrieveForm($form_id, $form_state);
+    $form_builder->prepareForm($form_id, $form, $form_state);
+    // -- The form state likes to have the full array.
+    $form_state->setCompleteForm($form);
+
+    // Step 2: Recursive Form Building stage.
+    // This triggers the #after_build and $process callbacks of our widgets.
+    $form_builder->processForm($form_id, $form, $form_state);
+
+    return [$form_object, $form, $form_state];
+  }
+
+  /**
+   * Sets up the TripalEntity Form to EDIT an existing entity.
+   *
+   * This is typically used when testing fields.
+   *
+   * When a Drupal form is built it goes through two main stages:
+   * 1. The retrieve and preparation stage: the form is built using the form's
+   * build function and all the alter form hooks are called. The output of this
+   * stage is a Form API array, an array with all the elements the form should
+   * have, but not the final render array.
+   * 2. Recursive building stage: a recursive process traversing the $form array
+   * calling auxiliary functions like #process and #after_build callbacks. The
+   * goal is to obtain a Drupal render array with the final shape of the form,
+   * with all the required elements.
+   *
+   * This method ensures both are done in order to accurately reflect the
+   * final form.
+   *
+   * @param string $bundle_name
+   *   The id of the Tripal Entity Type this form is for.
+   * @param int|TripalEntity $entity
+   *   The specific TripalEntity to be edited by this form.
+   *   Note: you can pass in the ID or the loaded entity object.
+   *
+   * @return array
+   *   The parts of an entity form; specifically,
+   *   - ContentEntityFormInterface $form_object: an object that can be used
+   *     with the form state to validate and submit the TripalEntity form.
+   *   - array $form: the complete form including all attached field widget
+   *     form elements.
+   *   - FormState $form_state: the state of this form including relationships
+   *     to both the form object and form array.
+   *
+   * @see Drupal\Core\Form\FormBuilder
+   */
+  public function setupTripalEntityEditForm(string $bundle_name, int|TripalEntity $entity): array {
+    $entity_type_manager = $this->container->get('entity_type.manager');
+    $form_builder = \Drupal::formBuilder();
+
+    // Step 0: Prepare Form object and form state.
+    // -- Get the form object from the entity type manager.
+    $form_object = $entity_type_manager->getFormObject('tripal_entity', 'edit');
+    // -- Load the existing entity for the form.
+    // This will allow the defaults to be populated properly.
+    if (is_int($entity)) {
+      $entity = $entity_type_manager->getStorage('tripal_entity')->load($entity);
+    }
+    $form_object->setEntity($entity);
+    // -- Now get the form id (needs the entity first).
+    $form_id = $form_object->getFormId();
+
+    // -- Create the Form State and set it up to be used by an entity form.
+    $form_state = new FormState();
+    $form_state->setFormObject($form_object);
+
+    // -- Set the base user input for the form.
+    $input = [
+      'uid' => 1,
+    ];
+    $form_state->setUserInput($input);
+
+    // Step 1: Form Retrieve + Preparation Phase.
+    $form = $form_builder->retrieveForm($form_id, $form_state);
+    $form_builder->prepareForm($form_id, $form, $form_state);
+    // -- The form state likes to have the full array.
+    $form_state->setCompleteForm($form);
+
+    // Step 2: Recursive Form Building stage.
+    // This triggers the #after_build and $process callbacks of our widgets.
+    $form_builder->processForm($form_id, $form, $form_state);
+
+    return [$form_object, $form, $form_state];
+  }
+
+  /**
+   * Populate form state for TripalEntity form with the values passed in.
+   *
+   * @param Drupal\Core\Entity\ContentEntityFormInterface $form_object
+   *   The form object like that returned by setupTripalEntityAddForm().
+   *   This is needed in addition to the form state since it contains a
+   *   form display that needs to be set with the form state.
+   * @param Drupal\Core\Form\FormState $form_state
+   *   The current state of the form. This is where we will set the values
+   *   passed in.
+   * @param array $values
+   *   An array of the values to set. This should be keyed by each field name
+   *   and then it's values should map directly to the form elements in that
+   *   fields widget.
+   */
+  public function populateTripalEntityFormState(&$form_object, &$form_state, $values) {
+
+    // Retrieve the Tripal Entity Type id
+    // for use when generating the form display.
+    $bundle_name = $form_object->getEntity()->getType();
+
+    // Get the form display object
+    // or load one if it hasn't been set in the form object yet.
+    $form_display = $form_object->getFormDisplay($form_state);
+    if (!$form_display) {
+      $form_display = $entity_type_manager->getStorage('entity_form_display')->load('tripal_entity.' . $bundle_name . '.default');
+    }
+
+    // Set the user to the one created in the test unless overriden in values.
+    if (!array_key_exists('uid', $values)) {
+      $values['uid'] = [['target_id' => 1]];
+    }
+
+    // Now, populate the form state with the user input.
+    $form_state->setUserInput($values);
+    foreach ($values as $key => $value) {
+      $form_state->setValue($key, $value);
+    }
+
+    // Populate the form display based on the form state.
+    $form_object->setFormDisplay($form_display, $form_state);
+
+  }
+
 }

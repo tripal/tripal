@@ -5,11 +5,6 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
-
-use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
-
 /**
  * Tests that ChadoStorage can handle fields for linker tables as we expect.
  * The array of fields/properties used for these tests are designed

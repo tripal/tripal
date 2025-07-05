@@ -5,7 +5,6 @@ namespace Drupal\tripal\ListBuilders;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Link;
-use Drupal\Core\Url;
 
 /**
  * Provides a listing of Tripal Content type entities.

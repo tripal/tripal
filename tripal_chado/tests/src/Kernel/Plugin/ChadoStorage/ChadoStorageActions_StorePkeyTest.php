@@ -5,11 +5,6 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
-use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
-
 /**
  * Tests that specific ChadoStorage actions perform as expected.
  *

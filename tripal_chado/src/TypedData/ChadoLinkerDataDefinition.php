@@ -2,7 +2,6 @@
 namespace Drupal\tripal_chado\TypedData;
 
 use Drupal\Core\TypedData\DataDefinition;
-use Drupal\Core\TypedData;
 
 /**
  * @{inheritdoc}

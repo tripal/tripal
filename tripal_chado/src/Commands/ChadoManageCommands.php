@@ -2,7 +2,6 @@
 namespace Drupal\tripal_chado\Commands;
 
 use Drush\Commands\DrushCommands;
-use Drupal\tripal\TripalDBX\TripalDbx;
 
 /**
  * Drush commands
@@ -316,7 +315,7 @@ class ChadoManageCommands extends DrushCommands {
         ->getEditable('tripal_chado.settings')
       ;
       $success = $config->set('default_schema', $options['schema-name'])->save();
-  
+
       if ($success) {
         $this->output()->writeln('Successfully set the schema "' . $options['schema-name'] . '" to be default.');
       }
