@@ -637,8 +637,8 @@ class ChadoSchema {
       tripal_report_error(
         'ChadoSchema',
         TRIPAL_WARNING,
-        'Unable to check the type of !table!column since it doesn\'t appear to exist in your site database.',
-        ['!column' => $column, '!table' => $table]
+        'Unable to check the type of @table.@column since it doesn\'t appear to exist in your site database.',
+        ['@column' => $column, '@table' => $table]
       );
       return FALSE;
     }
@@ -654,8 +654,8 @@ class ChadoSchema {
         tripal_report_error(
           'ChadoSchema',
           TRIPAL_WARNING,
-          'Unable to check the type of !table!column due to being unable to find the schema definition.',
-          ['!column' => $column, '!table' => $table]
+          'Unable to check the type of @table.@column due to being unable to find the schema definition.',
+          ['@column' => $column, '@table' => $table]
         );
         return FALSE;
       }
