@@ -175,6 +175,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
           'species' => 'databasica ' . $key,
             'comment' => "Entry $key: we are adding a comment to ensure that we do have working fields that are not required.",
           ])->execute();
+      $this->addFixedValue($this->connection, 'organism', $key);
       $test_title_format = '=T=' . $template;
       $test_url_format = '/U/' . $template;
       $organism_bundle = \Drupal\tripal\Entity\TripalEntityType::load('organism');
