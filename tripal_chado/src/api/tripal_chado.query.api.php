@@ -498,8 +498,8 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
   $table_desc = chado_get_schema($table, $chado_schema_name);
   if (!$table_desc) {
     tripal_report_error('tripal_chado', TRIPAL_WARNING,
-      'chado_insert_record; There is no table description for !table_name',
-      ['!table_name' => $table], ['print' => $print_errors]
+      'chado_insert_record; There is no table description for @table_name',
+      ['@table_name' => $table], ['print' => $print_errors]
     );
     return;
   }
@@ -531,16 +531,16 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
 
       if (sizeof($results) > 1) {
         tripal_report_error('tripal_chado', TRIPAL_ERROR,
-          'chado_insert_record: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
+          'chado_insert_record: Too many records match the criteria supplied for @foreign_key foreign key constraint (@criteria)',
+          ['@foreign_key' => $field, '@criteria' => print_r($value, TRUE)],
           ['print' => $print_errors]
         );
         return FALSE;
       }
       elseif (sizeof($results) < 1) {
         tripal_report_error('tripal_chado', TRIPAL_DEBUG,
-          'chado_insert_record: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
+          'chado_insert_record: no record matches criteria supplied for @foreign_key foreign key constraint (@criteria)',
+          ['@foreign_key' => $field, '@criteria' => print_r($value, TRUE)],
           ['print' => $print_errors]
         );
         return FALSE;
@@ -582,8 +582,8 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
           $table, $ukselect_cols, $ukselect_vals, [], $chado_schema_name);
         if ($select_record) {
           tripal_report_error('tripal_chado', TRIPAL_ERROR,
-            "chado_insert_record; Cannot insert duplicate record into $table table: !values",
-            ['!values' => print_r($values, TRUE)], ['print' => $print_errors]
+            "chado_insert_record; Cannot insert duplicate record into $table table: @values",
+            ['@values' => print_r($values, TRUE)], ['print' => $print_errors]
           );
           return FALSE;
         }
@@ -605,8 +605,8 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
         );
         if ($select_record) {
           tripal_report_error('tripal_chado', TRIPAL_ERROR,
-            'chado_insert_record; Cannot insert duplicate primary key into !table table: !values',
-            ['!table' => $table, '!values' => print_r($values, TRUE)],
+            'chado_insert_record; Cannot insert duplicate primary key into @table table: @values',
+            ['@table' => $table, '@values' => print_r($values, TRUE)],
             ['print' => $print_errors]
           );
           return FALSE;
@@ -858,16 +858,16 @@ function chado_update_record($table, $match, $values, $options = NULL, $chado_sc
         $table_desc, $field, $value, [], $chado_schema_name);
       if (sizeof($results) > 1) {
         tripal_report_error('tripal_chado', TRIPAL_ERROR,
-          'chado_update_record: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
+          'chado_update_record: When trying to find record to update, too many records match the criteria supplied for @foreign_key foreign key constraint (@criteria)',
+          ['@foreign_key' => $field, '@criteria' => print_r($value, TRUE)],
           ['print' => $print_errors]
         );
         return FALSE;
       }
       elseif (sizeof($results) < 1) {
         tripal_report_error('tripal_chado', TRIPAL_DEBUG,
-          'chado_update_record: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
+          'chado_update_record: When trying to find record to update, no record matches criteria supplied for @foreign_key foreign key constraint (@criteria)',
+          ['@foreign_key' => $field, '@criteria' => print_r($value, TRUE)],
           ['print' => $print_errors]
         );
         return FALSE;
@@ -890,16 +890,16 @@ function chado_update_record($table, $match, $values, $options = NULL, $chado_sc
         $table_desc, $field, $value, $foreign_options, $chado_schema_name);
       if (sizeof($results) > 1) {
         tripal_report_error('tripal_chado', TRIPAL_ERROR,
-          'chado_update_record: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
+          'chado_update_record: When trying to find update values, too many records match the criteria supplied for @foreign_key foreign key constraint (@criteria)',
+          ['@foreign_key' => $field, '@criteria' => print_r($value, TRUE)],
           ['print' => $print_errors]
         );
         return FALSE;
       }
       elseif (sizeof($results) < 1) {
         tripal_report_error('tripal_chado', TRIPAL_DEBUG,
-          'chado_update_record: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
+          'chado_update_record: When trying to find update values, no record matches criteria supplied for @foreign_key foreign key constraint (@criteria)',
+          ['@foreign_key' => $field, '@criteria' => print_r($value, TRUE)],
           ['print' => $print_errors]
         );
         return FALSE;
@@ -1062,8 +1062,8 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
   $fields = $table_desc['fields'];
   if (empty($table_desc)) {
     tripal_report_error('tripal_chado', TRIPAL_WARNING,
-      'chado_delete_record; There is no table description for !table_name',
-      ['!table_name' => $table], ['print' => $print_errors]
+      'chado_delete_record; There is no table description for @table_name',
+      ['@table_name' => $table], ['print' => $print_errors]
     );
   }
 
@@ -1080,12 +1080,12 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
           $table_desc, $field, $value, [], $chado_schema_name);
         if (sizeof($results) > 1) {
           tripal_report_error('tripal_chado', TRIPAL_ERROR,
-            'chado_delete_record: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
-            ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)]);
+            'chado_delete_record: When trying to find record to delete, too many records match the criteria supplied for @foreign_key foreign key constraint (@criteria)',
+            ['@foreign_key' => $field, '@criteria' => print_r($value, TRUE)]);
           return FALSE;
         }
         elseif (sizeof($results) < 1) {
-          //tripal_report_error('tripal_chado', TRIPAL_ERROR, 'chado_delete_record: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)));
+          //tripal_report_error('tripal_chado', TRIPAL_ERROR, 'chado_delete_record: When trying to find record to delete, no record matches criteria supplied for @foreign_key foreign key constraint (@criteria)', array('@foreign_key' => $field, '@criteria' => print_r($value,TRUE)));
         }
         else {
           $delete_matches[$field] = $results[0];
@@ -1331,8 +1331,8 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
   $table_desc = chado_get_schema($table, $chado_schema_name);
   if (!is_array($table_desc)) {
     tripal_report_error('tripal_chado', TRIPAL_WARNING,
-      'chado_insert_record; There is no table description for !table_name',
-      ['!table_name' => $table], ['print' => $print_errors]
+      'chado_insert_record; There is no table description for @table_name',
+      ['@table_name' => $table], ['print' => $print_errors]
     );
     return FALSE;
   }
