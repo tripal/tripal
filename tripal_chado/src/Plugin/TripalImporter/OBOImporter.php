@@ -1441,8 +1441,8 @@ class OBOImporter extends ChadoImporterBase {
       // Before we try to look for the replacement term, let's try to find it.
       // in our list of cached terms.
       if (array_key_exists($replaced_by, $this->termStanzaCache['ids'])) {
-        $this->logger->notice(t("Found term @term replaced by @replaced in the term cache.",
-          ['@term' => $id, '@replaced' => $replaced_by]));
+        $this->logger->notice(t("Found term, @replaced in the term cache.",
+          ['@replaced' => $replaced_by]));
         return $this->termStanzaCache['ids'][$id];
       }
 
@@ -1450,8 +1450,8 @@ class OBOImporter extends ChadoImporterBase {
       $rpair = explode(":", $replaced_by, 2);
       $found = $this->lookupTerm($rpair[0], $rpair[1]);
       if ($found) {
-        $this->logger->notice(t("Found term @term replaced by @replaced in the local data store.",
-          ['@term' => $id, '@replaced' => $replaced_by]));
+        $this->logger->notice(t("Found term, @replaced in the local data store.",
+          ['@replaced' => $replaced_by]));
         return $found;
       }
 
