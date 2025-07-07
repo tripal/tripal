@@ -295,7 +295,8 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
         }
       }
 
-      // If there are bundles to publish, then publish them.
+      // If there are bundles to publish, then publish any newly
+      // imported records.
       if ($bundles_to_publish) {
         $instance = $this->publish_manager->createInstance('chado_storage', []);
         foreach ($bundles_to_publish as $bundle) {
@@ -303,6 +304,7 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
             'bundle' => $bundle,
             'datastore' => 'chado_storage',
             'schema_name' => $run_args['schema_name'],
+            'republish' => FALSE,
           ];
           $instance->publish($publish_options);
         }
