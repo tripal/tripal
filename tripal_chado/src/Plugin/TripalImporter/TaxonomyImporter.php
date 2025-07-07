@@ -664,7 +664,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   private function parseLineageEx ($lineageexobj) : string {
     $lineageex = '';
     $lineage_parts = [];
-    if (property_exists($lineageexobj, 'Taxon')) {
+    if (is_object($lineageexobj) && property_exists($lineageexobj, 'Taxon')) {
       foreach ($lineageexobj->Taxon as $lineage_element) {
         $lineage_parts[] = $lineage_element->Rank
                          . ':' . $lineage_element->TaxId
