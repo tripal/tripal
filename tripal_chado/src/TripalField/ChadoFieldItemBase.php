@@ -723,9 +723,9 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
-   * Indicates if the field is compabible with the content type.
+   * Indicates if the field is compatible with the content type.
    *
-   * This function should be implemented by all Chado-base fields and
+   * This function should be implemented by all Chado-based fields and
    * indicate if the field is compatible with the specified content
    * type. By default, it returns TRUE.
    *
