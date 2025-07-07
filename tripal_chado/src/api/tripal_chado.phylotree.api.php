@@ -408,9 +408,17 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
 
   $fixed_terms = chado_phylogeny_get_fixed_terms($chado);
   // The term for the phylotree bundle CV EDAM:Phylogenetic tree = dbxref data:0872
-  $bundle_term = $fixed_terms['bundle_term'];
+  $phylotree_bundle_term = $fixed_terms['phylotree_bundle_term'];
+  // The term for the speciestree bundle CV EDAM:Species tree = dbxref data:3272
+  $species_bundle_term = $fixed_terms['species_bundle_term'];
   // The term for the property type CV EDAM:Phylogenetic tree type = dbxref data:1122
   $property_term = $fixed_terms['property_term'];
+
+  // We support only these two bundle types
+  $bundle_term = $phylotree_bundle_term;
+  if ($options['leaf_type'] == 'taxonomy') {
+    $bundle_term = $species_bundle_term;
+  }
 
   // If we're here then all is good, so add the phylotree record.
   $values = [
@@ -881,7 +889,8 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
               }
             }
             else {
-              // This is a taxonomy tree. Try to match leaf nodes with organisms.
+              // This is a taxonomy (species) tree. Try to match leaf nodes
+              // with organisms.
               $organism_name = $tree['name'];
               $re = isset($options['name_re']) ? $options['name_re'] : NULL;
               if (($re) and (preg_match("/$re/", $organism_name, $matches))) {
@@ -1147,14 +1156,23 @@ function chado_phylogeny_get_fixed_terms(object $chado): array {
     ->fetchObject()
     ->cv_id;
 
-  $bundle_term = $chado->select('1:cvterm', 't')
+  $phylotree_bundle_term = $chado->select('1:cvterm', 't')
     ->fields('t')
     ->condition('cv_id', $edam_id)
     ->condition('name', 'Phylogenetic tree')
     ->execute()
     ->fetchObject()
     ->cvterm_id;
-  $values['bundle_term'] = $bundle_term;
+  $values['phylotree_bundle_term'] = $phylotree_bundle_term;
+
+  $species_bundle_term = $chado->select('1:cvterm', 't')
+    ->fields('t')
+    ->condition('cv_id', $edam_id)
+    ->condition('name', 'Species tree')
+    ->execute()
+    ->fetchObject()
+    ->cvterm_id;
+  $values['species_bundle_term'] = $species_bundle_term;
 
   // This term did not exist until PR#2223, so make sure it exists.
   $property_object = $chado->select('1:cvterm', 't')
