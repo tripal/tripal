@@ -21,13 +21,6 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
 
   protected $connection;
 
-  /*
-   * The Tripal publish service.
-   *
-   * @var Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
-   */
-  protected $publish_manager;
-
   /**
    * Annotations associated with the mock_plugin.
    * @var Array
@@ -63,9 +56,6 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     // Open connection to Chado
     $this->connection = $this->getTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
-    // Create a publish manager service.
-    $this->publish_manager = \Drupal::service('tripal.backend_publish');
-
     // Ensure we install the schema/modules we need.
     $this->prepareEnvironment(['TripalImporter']);
 
@@ -78,7 +68,7 @@ class ChadoImporterTransactionTest extends ChadoTestKernelBase {
     $plugin_id = 'fakeImporterName';
     $this->importer = $this->getMockForAbstractClass(
       '\Drupal\tripal_chado\TripalImporter\ChadoImporterBase',
-      [$configuration, $plugin_id, $plugin_defn, $this->connection, $this->publish_manager]
+      [$configuration, $plugin_id, $plugin_defn, $this->connection]
     );
     $import_id = $this->importer->createImportJob(['schema_name' => $this->connection->getSchemaName()]);
     $this->assertIsNumeric($import_id, "We were unable to create a tripal import record during setup.");

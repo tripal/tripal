@@ -92,6 +92,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
                               ChadoConnection $connection, TripalBackendPublishManager $publish_manager,
                               ChadoBuddyPluginManager $buddy_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $connection, $publish_manager);
+    $this->setPublishManager($publish_manager);
     $this->buddy_manager = $buddy_manager;
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
     $this->property_buddy = $this->buddy_manager->createInstance('chado_property_buddy', []);

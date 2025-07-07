@@ -68,8 +68,7 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('tripal_chado.database'),
-      $container->get('tripal.backend_publish')
+      $container->get('tripal_chado.database')
     );
   }
 
@@ -85,13 +84,11 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
    * @param string $plugin_id
    * @param mixed $plugin_definition
    * @param Drupal\tripal_chado\Database\ChadoConnection $connection
-   * @param Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager $publish_manager
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $connection, TripalBackendPublishManager $publish_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ChadoConnection $connection) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->connection = $connection;
-    $this->publish_manager = $publish_manager;
   }
 
   /**
@@ -124,6 +121,16 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
     $chado->useTripalDbxSchemaFor(self::class);
 
     return $chado;
+  }
+
+  /**
+   * Sets a publish service for a child importer class wanting to publish.
+   *
+   * @var Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager $publish_manager
+   *   An instance of the publish manager service.
+   */
+  public function setPublishManager(TripalBackendPublishManager $publish_manager) {
+    $this->publish_manager = $publish_manager;
   }
 
   /**
@@ -270,31 +277,35 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
   public function postRun() {
     parent::PostRun();
 
-    $arguments = $this->getArguments();
-    $run_args = $arguments['run_args'];
-    $bundles_to_publish = [];
+    // Only publish if a publish manager has been set by a child class.
+    if ($this->publish_manager) {
 
-    // Find if there are any bundles to be published.
-    foreach ($run_args as $key => $value) {
-      if (preg_match('/^do_not_publish_(.+)$/', $key, $matches)) {
-        $bundle = $matches[1];
-        if (!$value) {
-          // If opt-out is not TRUE, then publish this bundle.
-          $bundles_to_publish[] = $bundle;
+      $arguments = $this->getArguments();
+      $run_args = $arguments['run_args'];
+      $bundles_to_publish = [];
+
+      // Find if there are any bundles to be published.
+      foreach ($run_args as $key => $value) {
+        if (preg_match('/^do_not_publish_(.+)$/', $key, $matches)) {
+          $bundle = $matches[1];
+          if (!$value) {
+            // If opt-out is not TRUE, then publish this bundle.
+            $bundles_to_publish[] = $bundle;
+          }
         }
       }
-    }
 
-    // If there are bundles to publish, then publish them.
-    if ($bundles_to_publish) {
-      $instance = $this->publish_manager->createInstance('chado_storage', []);
-      foreach ($bundles_to_publish as $bundle) {
-        $publish_options = [
-          'bundle' => $bundle,
-          'datastore' => 'chado_storage',
-          'schema_name' => $run_args['schema_name'],
-        ];
-        $instance->publish($publish_options);
+      // If there are bundles to publish, then publish them.
+      if ($bundles_to_publish) {
+        $instance = $this->publish_manager->createInstance('chado_storage', []);
+        foreach ($bundles_to_publish as $bundle) {
+          $publish_options = [
+            'bundle' => $bundle,
+            'datastore' => 'chado_storage',
+            'schema_name' => $run_args['schema_name'],
+          ];
+          $instance->publish($publish_options);
+        }
       }
     }
   }
