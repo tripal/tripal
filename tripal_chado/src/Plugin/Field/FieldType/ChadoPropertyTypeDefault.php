@@ -317,6 +317,7 @@ class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
           ],
           'form' => [
             'default' => [
+              'type' => 'chado_property_string_widget_default',
               'region' => 'content',
               'weight' => 10
             ],
