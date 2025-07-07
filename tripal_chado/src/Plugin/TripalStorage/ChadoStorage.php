@@ -488,13 +488,17 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
           $action = $prop_storage_settings['action'];
+          $base_table = $storage_plugin_settings['base_table'];
+          $current_record_id = $records->getRecordID($base_table);
 
           // Get the values of properties that can be stored.
           if ($action == 'replace') {
             $replace[] = [$field_name, $delta, $key, $info];
           }
           else if ($action == 'function') {
-            // Create a context array to pass information to the callback function.
+            // Get the function name and namespace.
+            // Create a context array to pass information to the callback
+            // function.
             $context = [
               'field_name' => $field_name,
               'delta' => $delta,
@@ -502,6 +506,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
               'info' => $info,
               'prop_type' => $prop_type,
               'field_settings' => $field_settings,
+              // Pass the current record id to allow extracting info needed for
+              // the service.
+              'current_record_id' => $current_record_id,
             ];
             $function[] = $context;
           }
@@ -515,7 +522,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $path_array = $this->parsePath($field_name, $base_table, $path, $table_alias_mapping, $as);
 
             // Get the value column information for this property.
-            $base_table = $storage_plugin_settings['base_table'];
             $value_col_info = $this->getPathValueColumn($path_array);
             $table_alias  = $value_col_info['table_alias'];
             $column_alias  = $value_col_info['column_alias'];
@@ -599,8 +605,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         $this->logger->error('Callback function for field @field does not exist: @namespace::@function.',
           ['@field' => $field_name, '@namespace' => $namespace, '@function' => $callback_function]
         );
+        \Drupal::messenger()->addError(sprintf('Callback function for field %s %s %s does not exist:',
+    $field_name, $namespace, $callback_function)
+    );
       }
-
+      // If the value is a string, trim it.
       if ($value !== NULL && is_string($value)) {
         $values[$field_name][$delta][$key]['value']->setValue(trim($value));
       }
