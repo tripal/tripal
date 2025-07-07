@@ -261,7 +261,7 @@ class ChadoMview extends ChadoCustomTable {
    * from Chado. After this function is executed this object is no longer
    * usable.
    *
-   * Note: if the materialized view exists in multiple Chado instnaces then it
+   * Note: if the materialized view exists in multiple Chado instances then it
    * will only be removed from the default instance and will not be removed
    * in any other instance. Be sure to call the setSchemaName() on the
    * ChadoConnection object to ensure the view is deleted in the
