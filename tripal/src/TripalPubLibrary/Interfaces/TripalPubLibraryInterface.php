@@ -80,7 +80,7 @@ interface TripalPubLibraryInterface extends PluginInspectionInterface {
    * prepared.
    *
    * @param array $query
-   *   The criteria used by the parser to retreive and parse results.
+   *   The criteria used by the parser to retrieve and parse results.
    *
    * @param int $limit
    *   The number of publication records to return.

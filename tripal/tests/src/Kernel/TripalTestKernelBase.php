@@ -26,7 +26,7 @@ abstract class TripalTestKernelBase extends KernelTestBase {
   }
 
   /**
-   * Prepare kernel environments to suppor specific functionality.
+   * Prepare kernel environments to support specific functionality.
    *
    * This method is focused on making it easier to write kernel test for Tripal
    * functionality. Simply pass in the parts of Tripal core you need in your

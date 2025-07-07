@@ -19,7 +19,7 @@ class ImporterFormTest extends ChadoTestKernelBase {
   protected $connection;
 
   /**
-   * This specifies which inporter forms to test, and special settings to confirm.
+   * This specifies which importer forms to test, and special settings to confirm.
    */
   protected $forms_to_test = [
     ['plugin_id' => 'chado_fasta_loader',

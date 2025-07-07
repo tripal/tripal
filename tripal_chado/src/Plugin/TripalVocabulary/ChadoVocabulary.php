@@ -67,7 +67,7 @@ class ChadoVocabulary extends TripalVocabularyBase implements ContainerFactoryPl
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
    * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the contructor.
+   * this method is used to determine the parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    * @param array $configuration
