@@ -678,7 +678,7 @@ class OBOImporter extends ChadoImporterBase {
   }
 
   /**
-   * Retreives a dbxref record using the db_id and accession.
+   * Retrieves a dbxref record using the db_id and accession.
    *
    * @param int $db_id
    *   The ID of the database record for the term.
@@ -698,7 +698,7 @@ class OBOImporter extends ChadoImporterBase {
   }
 
   /**
-   * Retreives a dbxref record using the dbxref_id.
+   * Retrieves a dbxref record using the dbxref_id.
    *
    * @param int $dbxref_id
    *   The ID of the dbxref record.

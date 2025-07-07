@@ -55,7 +55,7 @@ interface TripalPubParserInterface extends PluginInspectionInterface {
    * Performs the import.
    *
    * @param array $criteria
-   *   The criteria used by the parser to retreive and parse results.
+   *   The criteria used by the parser to retrieve and parse results.
    *
    * @return array
    *   The uniform publication information array.
