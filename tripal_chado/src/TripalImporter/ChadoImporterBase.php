@@ -126,7 +126,7 @@ abstract class ChadoImporterBase extends TripalImporterBase implements Container
   /**
    * Sets a publish service for a child importer class wanting to publish.
    *
-   * @var Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager $publish_manager
+   * @param Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager $publish_manager
    *   An instance of the publish manager service.
    */
   public function setPublishManager(TripalBackendPublishManager $publish_manager) {
