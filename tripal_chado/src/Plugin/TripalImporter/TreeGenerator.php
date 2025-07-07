@@ -56,9 +56,10 @@ class TreeGenerator extends ChadoImporterBase {
       '#type' => 'fieldset',
       '#title' => 'INSTRUCTIONS',
       '#description' => t('This form is used to generate a phylogenetic
-        tree for organisms at exist on this site. The organisms need to
+        tree for organisms that exist on this site. The organisms need to
         have been previously prepared using the Taxonomy Importer in order
         to have the lineage properties in place.'),
+      '#weight' => -90,
     ];
 
     $site_name = \Drupal::config('system.site')->get('name');

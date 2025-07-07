@@ -111,6 +111,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       '#title' => 'INSTRUCTIONS',
       '#description' => t('This form is used to import species from the NCBI
         Taxonomy database into this site.'),
+      '#weight' => -90,
     ];
 
     $form['ncbi_api_key'] = [
