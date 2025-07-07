@@ -9,7 +9,7 @@ use Drupal\Core\Config\FileStorage;
  * Loads a Tripal managed Configuration Entity.
  *
  * This function is useful if the configuration entity has been deleted and
- * needs to be reloaded. By deafult, the configurtion entities are populated
+ * needs to be reloaded. By default, the configurtion entities are populated
  * using the YAML files in the <module>/config/install folder. If they
  * get deleted and need to be restored, this function will do that.
  *

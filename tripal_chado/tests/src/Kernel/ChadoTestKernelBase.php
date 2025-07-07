@@ -92,7 +92,7 @@ abstract class ChadoTestKernelBase extends TripalTestKernelBase {
   }
 
   /**
-   * Prepare kernel environments to suppor specific functionality.
+   * Prepare kernel environments to support specific functionality.
    *
    * This method is foccused on making it easier to write kernel test for Tripal
    * functionality. Simply pass in the parts of Tripal core you need in your

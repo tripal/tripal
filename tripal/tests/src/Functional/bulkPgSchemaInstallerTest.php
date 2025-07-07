@@ -18,7 +18,7 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
   protected static $modules = ['tripal'];
 
 	/**
-	 * Tests the contructor of bulkPgSchemaInstaller.
+	 * Tests the constructor of bulkPgSchemaInstaller.
    *
 	 * @group pgsql
 	 * @group services

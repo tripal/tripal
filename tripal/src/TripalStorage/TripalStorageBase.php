@@ -19,7 +19,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   protected $logger;
 
   /**
-   * An associative array that contains all of the field defitions that
+   * An associative array that contains all of the field definitions that
    * have been added to this object. It is indexed by fieldName
    * and the value is the field configuration object.
    * This can be an instance of:
@@ -65,7 +65,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
    * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the contructor.
+   * this method is used to determine the parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    * @param array $configuration
@@ -84,7 +84,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   }
 
   /**
-   * Implements __contruct().
+   * Implements __construct().
    *
    * Since we have implemented the ContainerFactoryPluginInterface, the constructor
    * will be passed additional parameters added by the create() function. This allows
@@ -353,7 +353,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
 
   /**
    * {@inheritDoc}
-   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::publishFrom()
+   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::publishForm()
    */
   public function publishForm($form, FormStateInterface &$form_state) {
     return [];
