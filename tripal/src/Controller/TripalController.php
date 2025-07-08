@@ -90,7 +90,7 @@ class TripalController extends ControllerBase{
   }
 
   /**
-   * Provides contents for the File Usgae page.
+   * Provides contents for the File Usage page.
    */
   public function tripalFilesUsage() {
 

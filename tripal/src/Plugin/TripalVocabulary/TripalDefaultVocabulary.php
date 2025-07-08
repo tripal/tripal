@@ -9,7 +9,7 @@ use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
  *
  *  @TripalVocabulary(
  *    id = "tripal_default_vocabulary",
- *    label = @Translation("Deafult Tripal Vocabulary Plugin"),
+ *    label = @Translation("Default Tripal Vocabulary Plugin"),
  *  )
  */
 class TripalDefaultVocabulary extends TripalVocabularyBase {
@@ -191,11 +191,11 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
 
     // Make sure the label is not too long.
     if (empty($label)) {
-      $this->messageLogger->error('TripalDeafultVocabulary: You must provide a label when calling setLabel().');
+      $this->messageLogger->error('TripalDefaultVocabulary: You must provide a label when calling setLabel().');
       return False;
     }
     if (strlen($label) > 255) {
-      $this->messageLogger->error('TripalDeafultVocabulary: The label for the vocabulary must not be longer than @size characters. ' +
+      $this->messageLogger->error('TripalDefaultVocabulary: The label for the vocabulary must not be longer than @size characters. ' +
           'The value provided was: @value',
           ['@size' => 255, '@value' => $label]);
       return False;

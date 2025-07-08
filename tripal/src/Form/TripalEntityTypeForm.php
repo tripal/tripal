@@ -323,7 +323,7 @@ class TripalEntityTypeForm extends EntityForm {
     else {
       $valid = FALSE;
       $form_state->setErrorByName('term',
-          'Please select a term from the autocomplete drop-down. It must have the ID space and accession in parenthesis.');
+          'Please select a term from the autocomplete drop-down. It must have the ID space and accession in parentheses.');
     }
 
     return $valid;

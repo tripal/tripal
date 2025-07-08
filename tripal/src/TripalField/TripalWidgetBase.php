@@ -22,7 +22,7 @@ abstract class TripalWidgetBase extends WidgetBase {
    * @param string $key
    *
    * @return string
-   *   A santizied string.
+   *   A sanitizied string.
    */
   public function sanitizeKey($key) {
     return preg_replace('/[^\w]/', '_', $key);
