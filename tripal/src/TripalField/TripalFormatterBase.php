@@ -29,7 +29,7 @@ abstract class TripalFormatterBase extends FormatterBase {
    *   A property key e.g. "operation:2945".
    *
    * @return string
-   *   A santizied string.
+   *   A sanitizied string.
    */
   public function sanitizeKey($key) {
     return preg_replace('/[^\w]/', '_', $key);

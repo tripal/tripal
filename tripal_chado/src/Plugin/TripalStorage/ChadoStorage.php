@@ -1367,7 +1367,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    *
    * {@inheritDoc}
-   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::publishFrom()
+   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::publishForm()
    */
   public function publishForm($form, FormStateInterface &$form_state) {
 

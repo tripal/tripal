@@ -28,7 +28,7 @@
  *   $table_desc = chado_get_schema($table)
  *
  * where the variable $table contains the name of the table you want to
- * retireve.  The chado_get_schema function determines the appropriate version
+ * retrieve.  The chado_get_schema function determines the appropriate version
  *   of Chado and uses the Drupal hook infrastructure to call the appropriate
  *   hook function to retrieve the table schema.
  * @}

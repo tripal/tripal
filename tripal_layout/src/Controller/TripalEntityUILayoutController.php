@@ -725,7 +725,7 @@ class TripalEntityUILayoutController extends ControllerBase {
   }
 
   /**
-   * Retreives the layout configuration for the given bundle.
+   * Retrieves the layout configuration for the given bundle.
    *
    * @param string $bundle
    *   The TripalEntityType to return the display for.
