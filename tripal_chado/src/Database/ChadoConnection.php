@@ -26,7 +26,7 @@ use Drupal\tripal_chado\Database\ChadoSchema;
  * @endcode
  *
  * where the variable $table_name contains the name of the table you want to
- * retireve.  The getTableDef method determines the appropriate version of
+ * retrieve.  The getTableDef method determines the appropriate version of
  * Chado but it can be forced through the $parameters array.
  * See \Drupal\tripal_chado\Database\ChadoSchema::getTableDef for details.
  *
