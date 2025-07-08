@@ -502,6 +502,8 @@ function reloadContentTypeCollection(string $contentTypeCollection): void {
   // Any new bundles or fields will be created.
   $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
   $content_type_service->install([$contentTypeCollection . '_chado']);
+  $field_type_service = \Drupal::service('tripal.tripalfield_collection');
+  $field_type_service->install([$contentTypeCollection . '_chado']);
 }
 
 /**
