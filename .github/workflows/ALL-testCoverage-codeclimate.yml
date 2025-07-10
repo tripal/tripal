@@ -43,3 +43,4 @@ jobs:
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
           files: clover.xml
+          strip-prefix: /var/www/drupal/web/modules/contrib/tripal
