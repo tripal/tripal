@@ -13,76 +13,53 @@
 # Or for a full reference, visit https://qlty.sh/d/qlty-toml
 config_version = "0"
 
+[[source]]
+name = "default"
+default = true
+
 exclude_patterns = [
   "*_min.*",
   "*-min.*",
   "*.min.*",
-  "**/.yarn/**",
-  "**/*.d.ts",
-  "**/assets/**",
-  "**/bower_components/**",
-  "**/build/**",
-  "**/cache/**",
   "**/config/**",
-  "**/db/**",
-  "**/deps/**",
-  "**/dist/**",
-  "**/extern/**",
-  "**/external/**",
-  "**/generated/**",
-  "**/Godeps/**",
-  "**/gradlew/**",
-  "**/mvnw/**",
-  "**/node_modules/**",
-  "**/protos/**",
-  "**/seed/**",
-  "**/target/**",
-  "**/templates/**",
-  "**/testdata/**",
-  "**/vendor/**", "**/config/", "**/css/", "**/images/", "**/tests/", "**/docs/", "**/*.yml", "**/*.yaml", "**/*.md", "**/*.xml", "**/*.txt", "composer.json", "composer.lock", ".gitignore", "Dockerfile", ".github/", "tripaldocker/",
+  "**/vendor/**",
+  "**/css/",
+  "**/images/",
+  "**/tests/",
+  "**/docs/",
+  "tripaldocker/",
 ]
 
 test_patterns = [
-  "**/test/**",
-  "**/spec/**",
-  "**/*.test.*",
-  "**/*.spec.*",
-  "**/*_test.*",
-  "**/*_spec.*",
-  "**/test_*.*",
-  "**/spec_*.*",
+  "**/tests/**",
+  "**/*Test.php*",
 ]
 
 [smells]
 mode = "comment"
 
 [smells.boolean_logic]
-threshold = 4
-enabled = true
-
-[smells.file_complexity]
-threshold = 55
-enabled = false
-
-[smells.return_statements]
-threshold = 6
+threshold = 5
 enabled = true
 
 [smells.nested_control_flow]
-threshold = 6
+threshold = 7
 enabled = true
 
 [smells.function_parameters]
+enabled = false
+
+[smells.return_statements]
 threshold = 8
+enabled = true
+
+[smells.file_complexity]
 enabled = false
 
 [smells.function_complexity]
-threshold = 27
+threshold = 30
 enabled = true
 
 [smells.duplication]
-enabled = false
-
-[[source]]
-name = "default"
-default = true
+threshold = 100
+nodes_threshold = 300
