@@ -27,6 +27,16 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
    */
   protected array $webquery = [];
 
+  /**
+   * Options for file retrieval from NCBI
+   *
+   * @var array
+   */
+  protected array $retrieval_options = [
+    'rate_limit' => 0.334,
+    'retry_delay' => 1.0,
+  ];
+
   public function formSubmit(array $form, \Drupal\Core\Form\FormStateInterface &$form_state): void {
     // DUMMY function from inheritance so it had to be kept.
     // The form_submit function which is called by TripalPubLibrary
@@ -322,14 +332,12 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       "&usehistory=y" .
       "&term=" . urlencode($search_str);
 
-    $sleep_time = 333334;
     if ($api_key) {
+      $this->retrieval_options['rate_limit'] = 0.1;
       $query_url .= "&api_key=" . $api_key;
-      $sleep_time = 100000;
     }
 
-    usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
-    $query_xml = $this->fileretriever->retrieveFileContents($query_url);
+    $query_xml = $this->fileretriever->retrieveFileContents($query_url, $this->retrieval_options);
     if (is_null($query_xml)) {
       $this->logger->error("Could not perform Pubmed query. Cannot connect to Entrez.");
       return FALSE;
@@ -405,10 +413,9 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       "&query_key=" . $this->webquery['QueryKey'] .
       "&WebEnv=" . $this->webquery['WebEnv'];
 
-    $sleep_time = 333334;
     if ($api_key) {
+      $this->retrieval_options['rate_limit'] = 0.1;
       $fetch_url .= "&api_key=" . $api_key;
-      $sleep_time = 100000;
     }
 
     foreach ($args as $key => $value) {
@@ -423,9 +430,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         $fetch_url .= "&$key=$value";
       }
     }
-    usleep($sleep_time);  // 1/3 or 1/10 of a second delay, NCBI limits requests to 3 / second without API key
 
-    $results = $this->fileretriever->retrieveFileContents($fetch_url);
+    $results = $this->fileretriever->retrieveFileContents($fetch_url, $this->retrieval_options);
 
     return $results;
   }
