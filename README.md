@@ -33,11 +33,11 @@ The following table proves the compatibility for the current development version
 
 ### Code Coverage
 
-This project uses Code Climate to determine the quality of our codebase and the coverage of our test suite. Compatibility above is based on passing of this test suite.
+This project uses QLTY Cloud to determine the quality of our codebase and the coverage of our test suite. Compatibility above is based on passing of this test suite.
 
-[![Test Coverage](https://api.codeclimate.com/v1/badges/994fcd39a0eef9cff742/test_coverage)](https://codeclimate.com/github/tripal/tripal/test_coverage)
+[![Code Coverage](https://qlty.sh/gh/tripal/projects/tripal/coverage.svg)](https://qlty.sh/gh/tripal/projects/tripal)
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/994fcd39a0eef9cff742/maintainability)](https://codeclimate.com/github/tripal/tripal/maintainability)
+[![Maintainability](https://qlty.sh/gh/tripal/projects/tripal/maintainability.svg)](https://qlty.sh/gh/tripal/projects/tripal)
 
 ### Compatibility of past Tripal versions
 
