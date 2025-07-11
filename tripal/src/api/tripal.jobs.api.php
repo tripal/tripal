@@ -3,7 +3,6 @@
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\tripal\Services\TripalJob;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 
 /**
