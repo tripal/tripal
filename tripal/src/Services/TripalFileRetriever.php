@@ -27,6 +27,13 @@ class TripalFileRetriever {
   protected $logger;
 
   /**
+   * The time of the end of the previous request, if any.
+   *
+   * @var float
+   */
+  protected $last_request_time = NULL;
+
+  /**
    * Constructor
    */
   public function __construct(\GuzzleHttp\ClientInterface $httpClient, TripalLogger $logger) {
@@ -45,16 +52,19 @@ class TripalFileRetriever {
   }
 
   /**
-   * Download the contents of a remote or local file from a specified URL,
-   * and returns it in a string variable.
+   * Download the contents of a remote or local file from a specified URL
+   *
+   * The contents of the file is returned in a string variable.
    *
    * @param string $url
    *   The address of the file to download
    * @param array $options
    *   Valid keys:
-   *     retries - int: how many times to retry a download, default = 3
-   *     delay - int: number of seconds between retries, default = 1
-   *     client_options - array: any options to pass to the http client
+   *     retries - int: how many times to retry a download, default = 3.
+   *     rate_limit - float: number of seconds between successive download requests.
+   *     retry_delay - float: number of seconds between retries, default = 1.
+   *     client_options - array: any options to pass to the http client.
+   *
    * @return string
    *   The data obtained from the specified url, or NULL if it could not be downloaded
    */
@@ -66,6 +76,7 @@ class TripalFileRetriever {
     $parsed_url = parse_url($url);
     if ($parsed_url['host'] ?? NULL) {
       while (is_null($contents) && ($retries > 0)) {
+        $this->doRateLimit($options['rate_limit'] ?? 0.0);
         try {
           $response = $this->httpClient->get($url, $options['client_options'] ?? []);
           $contents = (string) $response->getBody();
@@ -73,9 +84,10 @@ class TripalFileRetriever {
         catch (\Exception $e) {
           $this->handleURLExceptions($retries, $e, $url);
         }
+        $this->last_request_time = microtime(TRUE);
         $retries--;
         if (is_null($contents) && ($retries > 0)) {
-          sleep($options['delay'] ?? 1);
+          $this->doSleep($options['retry_delay'] ?? 1.0);
         }
       }
     }
@@ -103,8 +115,9 @@ class TripalFileRetriever {
   }
 
   /**
-   * Download the contents of a remote or local file from a specified URL,
-   * and saves it to a file in the local filesystem.
+   * Download the contents of a remote or local file from a specified URL.
+   *
+   * The downloaded file is saved to a file in the local filesystem.
    *
    * @param string $url
    *   The address of the file to download
@@ -112,9 +125,11 @@ class TripalFileRetriever {
    *   The path to a local file where data is saed
    * @param array $options
    *   Valid keys:
-   *     retries - int: how many times to retry a download, default = 3
-   *     delay - int: number of seconds between retries, default = 1
-   *     client_options - array: any options to pass to the http client
+   *     retries - int: how many times to retry a download, default = 3.
+   *     rate_limit - float: number of seconds between successive download requests.
+   *     retry_delay - float: number of seconds between retries, default = 1.
+   *     client_options - array: any options to pass to the http client.
+   *
    * @return bool
    *   Returns TRUE if successful, FALSE if error.
    */
@@ -130,6 +145,7 @@ class TripalFileRetriever {
       $options['client_options']['stream'] = FALSE;
 
       while (!$status && ($retries > 0)) {
+        $this->doRateLimit($options['rate_limit'] ?? 0.0);
         try {
           /** @var GuzzleHttp\Psr7\Response **/
           $response = $this->httpClient->get($url, $options['client_options']);
@@ -140,7 +156,7 @@ class TripalFileRetriever {
         }
         $retries--;
         if (!$status && ($retries > 0)) {
-          sleep($options['delay'] ?? 1);
+          $this->doSleep($options['retry_delay'] ?? 1.0);
         }
       }
     }
@@ -203,4 +219,38 @@ class TripalFileRetriever {
       $retries = 0;
     }
   }
+
+  /**
+   * Implements a rate limit between successive download requests.
+   *
+   * @param float $rate_limit
+   *   A number of seconds to wait between successive download requests.
+   *   If zero, do not wait.
+   */
+  protected function doRateLimit(float $rate_limit) {
+    if (isset($rate_limit) && $rate_limit > 0) {
+      if ($this->last_request_time) {
+        $delay = $rate_limit - (microtime(TRUE) - $this->last_request_time);
+        $this->doSleep($delay);
+      }
+    }
+  }
+
+  /**
+   * Sleep for the number of seconds specified by a float.
+   *
+   * Since usleep() may not support > 1 second, this uses time_nanosleep().
+   *
+   * @param float $sleep_time
+   *   A positive real number specifying some amount of time to sleep.
+   */
+  protected function doSleep(float $sleep_time) {
+    // Negative values are interpreted as no sleep time.
+    if ($sleep_time > 0) {
+      $seconds = intval($sleep_time);
+      $nanoseconds = ($sleep_time - $seconds) * 1_000_000_000;
+      time_nanosleep($seconds, $nanoseconds);
+    }
+  }
+
 }

@@ -56,6 +56,16 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   protected object $property_buddy;
 
   /**
+   * Options for file retrieval from NCBI
+   *
+   * @var array
+   */
+  protected array $retrieval_options = [
+    'rate_limit' => 0.334,
+    'retry_delay' => 1.0,
+  ];
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * We are injecting an additional dependency here, the
@@ -280,9 +290,8 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     $total = count($this->all_orgs);
     $omitted_organisms = [];
     $api_key = \Drupal::state()->get('tripal_ncbi_api_key', NULL);
-    $sleep_time = 333334;
     if (!empty($api_key)) {
-      $sleep_time = 100000;
+      $this->retrieval_options['rate_limit'] = 0.1;
     }
 
     foreach ($this->all_orgs as $organism) {
@@ -307,7 +316,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         if (!empty($api_key)) {
           $search_url .= "&api_key=" . $api_key;
         }
-        $xml_text = $this->fileretriever->retrieveFileContents($search_url);
+        $xml_text = $this->fileretriever->retrieveFileContents($search_url, $this->retrieval_options);
         if (is_null($xml_text)) {
           $this->logger->warning("Could not look up @sci_name",
             ['@sci_name' => $sci_name_escaped]
@@ -519,14 +528,13 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       "&id=$taxid";
 
     $api_key = \Drupal::state()->get('tripal_ncbi_api_key', NULL);
-    $sleep_time = 333334;
     if (!empty($api_key)) {
-      $sleep_time = 100000;
+      $this->retrieval_options['rate_limit'] = 0.1;
       $fetch_url .= "&api_key=" . $api_key;
     }
 
     // Query NCBI
-    $xml_text = $this->fileretriever->retrieveFileContents($fetch_url);
+    $xml_text = $this->fileretriever->retrieveFileContents($fetch_url, $this->retrieval_options);
     if (!is_null($xml_text)) {
       $xml = new \SimpleXMLElement($xml_text);
       $taxon = $xml->Taxon;
