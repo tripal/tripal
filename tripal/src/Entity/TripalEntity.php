@@ -337,8 +337,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           'alias' => $new_alias,
         ]);
         if (!is_object($new_alias_object)) {
-          throw new \Exception(t("We were unable to create the alias: ':new_alias'",
-            [':new_alias' => $new_alias]));
+          throw new \Exception("We were unable to create the alias: '" . $new_alias . "'");
         }
         $new_alias_object->save();
         // and update the internal path field.
@@ -351,9 +350,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     elseif ($existing_alias and ($existing_alias['alias'] != $new_alias)) {
       $existing_alias_object = \Drupal::entityTypeManager()->getStorage('path_alias')->load($existing_alias['id']);
       if (!is_object($existing_alias_object)) {
-        throw new \Exception(t("Unable to load the existing alias ':existing_alias' in order to update it.",
-          [':existing_alias' => $existing_alias['alias']]));
-      }
+        throw new \Exception("Unable to load the existing alias '" . $existing_alias['alias']
+            . "' in order to update it.");
 
       // As long as there were no duplicates, we can update the existing one.
       if (empty($duplicates)) {
