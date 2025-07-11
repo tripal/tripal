@@ -1,9 +1,12 @@
 name: 'Push Recent Commits to Drupal.org'
+
 on:
   workflow_dispatch:
   push:
     branches:
       - '4.x'
+
+permissions: read-all
 
 jobs:
   push_to_drupal:

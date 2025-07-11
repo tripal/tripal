@@ -1,4 +1,5 @@
 name: 'Build and Publish TripalDocker'
+
 on:
   push:
     branches:
@@ -12,6 +13,9 @@ on:
   schedule:
     # Run at 4am every night.
     - cron: '0 4 * * *'
+
+permissions: read-all
+
 jobs:
   push_to_registry:
     runs-on: 'ubuntu-latest'

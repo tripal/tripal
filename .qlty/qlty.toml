@@ -71,6 +71,13 @@ enabled = true
 [[plugin]]
 name = "actionlint"
 
+[[plugin]]
+name = "checkov"
+
 [[exclude]]
 plugins = ["yamllint"]
 file_patterns = ["tripal_chado/chado_schema/**", ".github/workflows/**"]
+
+[[exclude]]
+plugins = ["checkov"]
+file_patterns = ["tripaldocker/legacy/**"]

@@ -1,6 +1,8 @@
 name: 'Assert Branch Naming Convention'
 on: 'pull_request'
 
+permissions: read-all
+
 jobs:
   branch-naming-rules:
     runs-on: 'ubuntu-latest'

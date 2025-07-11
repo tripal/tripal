@@ -10,6 +10,9 @@ on:
   schedule:
     # Run at 6am every night.
     - cron: '0 6 * * *'
+
+permissions: read-all
+
 jobs:
   running-tests:
     name: 'Drupal 10.3: PHP 8.1'
