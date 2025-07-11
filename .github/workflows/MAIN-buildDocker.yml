@@ -95,8 +95,7 @@ jobs:
       ## Build Images tagged drupal{VER} focused on php 8.3 + postgresql 17
       - uses: 'mr-smithers-excellent/docker-build-push@v6'
         name: 'Build & push Docker image Drupal focused Docker images.'
-        if: |
-          ${{ matrix.php-version == '8.3' && matrix.pgsql-version == '17' }}
+        if: ${{ matrix.php-version == '8.3' && matrix.pgsql-version == '17' }}
         with:
           image: 'tripalproject/tripaldocker'
           tags: 'drupal${{ matrix.drupal-version }}'
@@ -108,8 +107,7 @@ jobs:
       ## Build the image tagged as latest which is the highest version combo that we feel is well supported.
       - uses: 'mr-smithers-excellent/docker-build-push@v6'
         name: 'Build latest using 11.1.x-dev, PHP 8.3, PgSQL 17'
-        if: |
-          ${{ matrix.drupal-version == '11.1.x-dev' && matrix.php-version == '8.3' && matrix.pgsql-version == '17' }}
+        if: ${{ matrix.drupal-version == '11.1.x-dev' && matrix.php-version == '8.3' && matrix.pgsql-version == '17' }}
         with:
           image: 'tripalproject/tripaldocker'
           tags: 'latest'

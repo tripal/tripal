@@ -68,6 +68,9 @@ nodes_threshold = 300
 name = "yamllint"
 enabled = true
 
+[[plugin]]
+name = "actionlint"
+
 [[exclude]]
 plugins = ["yamllint"]
-file_patterns = ["tripal_chado/chado_schema/**"]
+file_patterns = ["tripal_chado/chado_schema/**", ".github/workflows/**"]
