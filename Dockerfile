@@ -60,5 +60,6 @@ RUN service apache2 start \
   vendor/bin/drush trp-import-types --collection_id=general_chado --username=drupaladmin; \
   fi \
   && curl https://qlty.sh | sh \
+  && qlty install \
   && service apache2 stop \
   && service postgresql stop
