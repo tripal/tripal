@@ -63,3 +63,7 @@ enabled = true
 [smells.duplication]
 threshold = 100
 nodes_threshold = 300
+
+[[plugin]]
+name = "yamllint"
+enabled = true
