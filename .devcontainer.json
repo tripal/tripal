@@ -26,8 +26,7 @@
         "ms-azuretools.vscode-docker",
         "github.vscode-github-actions",
         "GitHub.vscode-pull-request-github",
-        "valeryanm.vscode-phpsab",
-        "kuscamara.yamllint-fix"
+        "valeryanm.vscode-phpsab"
       ],
       "settings": {
         // This turns off basic PHP suggestions provided by Visual Studio Code (in lieu of Intelephense's).
@@ -89,8 +88,6 @@
           "**/bower_components/**": true,
           "**/dist/**": true
         },
-        /* YAML Linting */
-        "yamlLintFix.configFile": "/var/www/drupal/web/modules/contrib/tripal/.qlty/configs/.yamllint.yaml",
         /* PHP Linting */
         "php.validate.enable": true,
         "php.validate.executablePath": "/usr/local/bin/php",

@@ -22,7 +22,7 @@ COPY tripaldocker/init_scripts/motd /etc/motd
 
 ## Install some basic support programs and update apt-get.
 RUN chmod -R +x /app && apt-get update 1> ~/aptget.update.log \
-  && apt-get install git unzip zip wget gnupg2 supervisor vim yamllint --yes -qq 1> ~/aptget.extras.log
+  && apt-get install git unzip zip wget gnupg2 supervisor vim --yes -qq 1> ~/aptget.extras.log
 
 ########## POSTGRESQL #########################################################
 
@@ -228,9 +228,6 @@ RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
   && mv /app/tripaldocker/default_files/xdebug/xdebug_toggle.sh /usr/bin/xdebug_toggle.sh \
   && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal/web/sites/default/settings.php \
   && rm -rf /app
-
-## Install all the code validating tools used by VSCode and QLTY Cloud.
-
 
 ## Make global commands. Symlink for drupal9 is for backward compatibility.
 RUN ln -s /var/www/drupal/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
