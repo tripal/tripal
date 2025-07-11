@@ -289,7 +289,6 @@ class TripalJob {
       $user = \Drupal\user\Entity\User::load($details['uid']);
       $special_chars = ["'", " "];
       $special_chars_replace = ["\'", "\ "];
-
       $username = str_replace($special_chars, $special_chars_replace, $user->getAccountName());
       if ($user->hasPermission('administer tripal')) {
         $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
