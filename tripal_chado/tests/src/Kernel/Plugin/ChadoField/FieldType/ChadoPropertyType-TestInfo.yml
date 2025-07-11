@@ -1,5 +1,5 @@
 system-under-test:
-  chado_version: 1.3.3.013
+  chado_version: '1.3.3.013'
   bundle:
     label: 'Project'
     termIdSpace: 'NCIT'

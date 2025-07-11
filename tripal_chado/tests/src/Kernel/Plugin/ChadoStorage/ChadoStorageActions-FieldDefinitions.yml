@@ -26,11 +26,11 @@ testReadValueAction:
       record_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
         action: 'store_id'
-        path: project.project_id
+        path: 'project.project_id'
       name_read:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'
         action: 'read_value'
-        path: project.name
+        path: 'project.name'
   # A field which focuses on storing the same fields as the read field above.
   # This is added to ensure there is no conflict between having two fields
   # accessing the same column with different action types.
@@ -117,7 +117,7 @@ testReadValueActionJoinDouble:
         path: 'arraydesign.arraydesign_id'
       type_id:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType'
-        action: read_value
+        action: 'read_value'
         path: 'arraydesign.platformtype_id'
       accession_read:
         propertyType class: 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType'

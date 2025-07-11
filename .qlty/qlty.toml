@@ -27,7 +27,7 @@ exclude_patterns = [
   "**/images/",
   "**/tests/",
   "**/docs/",
-  "tripaldocker/",
+  "**/tripaldocker/",
 ]
 
 test_patterns = [
@@ -67,3 +67,7 @@ nodes_threshold = 300
 [[plugin]]
 name = "yamllint"
 enabled = true
+
+[[exclude]]
+plugins = ["yamllint"]
+file_patterns = ["tripal_chado/chado_schema/**"]

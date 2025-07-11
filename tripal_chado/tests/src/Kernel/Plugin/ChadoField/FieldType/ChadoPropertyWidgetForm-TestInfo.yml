@@ -1,5 +1,5 @@
 system-under-test:
-  chado_version: 1.3.3.013
+  chado_version: '1.3.3.013'
   bundle:
     label: 'Project'
     termIdSpace: 'NCIT'
@@ -72,7 +72,7 @@ scenarios:
         project_description:
         - record_id: 0
           value:
-            format: basic_html
+            format: 'basic_html'
             value: |
               This is a very simple project. We haven't even added any metadata to expand it's purpose.
         project_prop1:
@@ -92,7 +92,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop2'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: ' '
           rank: 0
       expected_form_keys:
@@ -154,7 +154,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop1'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: ' '
           rank: 0
         project_prop2:
