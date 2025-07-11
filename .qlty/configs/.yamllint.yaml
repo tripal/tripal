@@ -4,5 +4,8 @@ rules:
     quote-type: single
     required: true
   key-duplicates: {}
+  trailing-spaces: {}
+  colons: enable
+  hyphens: enable
   octal-values:
     forbid-implicit-octal: true
