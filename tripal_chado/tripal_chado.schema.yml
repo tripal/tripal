@@ -1,17 +1,17 @@
 field.widget.settings.chado_organism_default_widget:
-  type: mapping
+  type: 'mapping'
   label: 'Organism: Select List widget settings'
   mapping:
     placeholder:
-      type: textfield
+      type: 'textfield'
       label: 'Placeholder'
 field.widget.settings.NCIT__metadata_default_widget:
-  type: mapping
+  type: 'mapping'
   label: 'NCIT__metadata_default_widget widget settings'
   mapping:
     size:
-      type: integer
+      type: 'integer'
       label: 'Size'
     placeholder:
-      type: textfield
+      type: 'textfield'
       label: 'Placeholder'

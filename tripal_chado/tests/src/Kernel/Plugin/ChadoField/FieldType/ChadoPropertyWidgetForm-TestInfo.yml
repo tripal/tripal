@@ -1,79 +1,80 @@
 system-under-test:
   chado_version: 1.3.3.013
   bundle:
-    label: Project
-    termIdSpace: NCIT
-    termAccession: C47885
-    id: test_project
+    label: 'Project'
+    termIdSpace: 'NCIT'
+    termAccession: 'C47885'
+    id: 'test_project'
     settings:
-      chado_base_table: project
+      chado_base_table: 'project'
   fields:
-  - name: project_name
-    type: chado_string_type_default
-    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault
-    widget: chado_string_type_widget
-    formatter: chado_string_type_formatter
-    termIdSpace: schema
-    termAccession: name
+  - name: 'project_name'
+    type: 'chado_string_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+    widget: 'chado_string_type_widget'
+    formatter: 'chado_string_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'name'
     cardinality: 1
     settings:
-      storage_plugin_id: chado_storage
+      storage_plugin_id: 'chado_storage'
       storage_plugin_settings:
-          base_table: project
-          base_column: name
+          base_table: 'project'
+          base_column: 'name'
       max_length: 255
-  - name: project_description
-    type: chado_text_type_default
-    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault
-    widget: chado_text_type_widget
-    formatter: chado_text_type_formatter
-    termIdSpace: schema
-    termAccession: description
+  - name: 'project_description'
+    type: 'chado_text_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoTextTypeDefault'
+    widget: 'chado_text_type_widget'
+    formatter: 'chado_text_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'description'
     cardinality: 1
     settings:
-      storage_plugin_id: chado_storage
+      storage_plugin_id: 'chado_storage'
       storage_plugin_settings:
-          base_table: project
-          base_column: description
-  - name: project_prop1
-    type: chado_property_type_default
-    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault
-    widget: chado_property_widget_default
-    formatter: chado_property_formatter_default
-    termIdSpace: rdfs
+          base_table: 'project'
+          base_column: 'description'
+  - name: 'project_prop1'
+    type: 'chado_property_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault'
+    widget: 'chado_property_widget_default'
+    formatter: 'chado_property_formatter_default'
+    termIdSpace: 'rdfs'
     termAccession: 'comment'
     cardinality: -1
     settings:
-      storage_plugin_id: chado_storage
+      storage_plugin_id: 'chado_storage'
       storage_plugin_settings:
-          base_table: project
-          prop_table: projectprop
-  - name: project_prop2
-    type: chado_property_type_default
-    type_class: Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault
-    widget: chado_property_widget_default
-    formatter: chado_property_formatter_default
-    termIdSpace: NCIT
-    termAccession: C25341
+          base_table: 'project'
+          prop_table: 'projectprop'
+  - name: 'project_prop2'
+    type: 'chado_property_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPropertyTypeDefault'
+    widget: 'chado_property_widget_default'
+    formatter: 'chado_property_formatter_default'
+    termIdSpace: 'NCIT'
+    termAccession: 'C25341'
     cardinality: -1
     settings:
-      storage_plugin_id: chado_storage
+      storage_plugin_id: 'chado_storage'
       storage_plugin_settings:
-          base_table: project
-          prop_table: projectprop
+          base_table: 'project'
+          prop_table: 'projectprop'
 scenarios:
-  - label: "Base Fields Only"
-    description: "Create a page without setting any properties."
+  - label: 'Base Fields Only'
+    description: 'Create a page without setting any properties.'
     create:
       user_input:
         project_name:
         - record_id: 0
-          value: "Simple Project"
+          value: 'Simple Project'
         project_description:
         - record_id: 0
           value:
             format: basic_html
-            value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
+            value: |
+              This is a very simple project. We haven't even added any metadata to expand it's purpose.
         project_prop1:
         - record_id: 0
           prop_id: 0
@@ -81,7 +82,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop1'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: ' '
           rank: 0
         project_prop2:
@@ -130,20 +131,22 @@ scenarios:
       expected_field_values:
         project_name:
         - record_id: 1
-          value: "Simple Project"
+          value: 'Simple Project'
         project_description:
         - record_id: 1
-          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
+          value: |
+            This is a very simple project. We haven't even added any metadata to expand it's purpose.
     edit:
       user_input:
         project_name:
         - record_id: 1
-          value: "Simple Project Still"
+          value: 'Simple Project Still'
         project_description:
         - record_id: 1
           value:
-            format: basic_html
-            value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
+            format: 'basic_html'
+            value: |
+              This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page.
         project_prop1:
         - record_id: 0
           prop_id: 0
@@ -161,7 +164,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop2'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: ' '
           rank: 0
       expected_form_keys:
@@ -200,22 +203,23 @@ scenarios:
       expected_field_values:
         project_name:
         - record_id: 1
-          value: "Simple Project Still"
+          value: 'Simple Project Still'
         project_description:
         - record_id: 1
-          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
-  - label: "Properties Added on Edit"
-    description: "Create a page without setting any properties and then when we update it we will set 2 properties for each property field."
+          value: |
+            This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page.
+  - label: 'Properties Added on Edit'
+    description: 'Create a page without setting any properties and then when we update it we will set 2 properties for each property field.'
     create:
       user_input:
         project_name:
         - record_id: 0
-          value: "Project 2"
+          value: 'Project 2'
         project_description:
         - record_id: 0
           value:
-            format: basic_html
-            value: "Some useless description."
+            format: 'basic_html'
+            value: 'Some useless description.'
         project_prop1:
         - record_id: 0
           prop_id: 0
@@ -223,7 +227,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop1'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: ' '
           rank: 0
         project_prop2:
@@ -233,7 +237,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop2'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: ' '
           rank: 0
       expected_form_keys:
@@ -283,20 +287,20 @@ scenarios:
       expected_field_values:
         project_name:
         - record_id: 1
-          value: "Project 2"
+          value: 'Project 2'
         project_description:
         - record_id: 1
-          value: "Some useless description."
+          value: 'Some useless description.'
     edit:
       user_input:
         project_name:
         - record_id: 0
-          value: "Project 2"
+          value: 'Project 2'
         project_description:
         - record_id: 0
           value:
-            format: basic_html
-            value: "Some useless description."
+            format: 'basic_html'
+            value: 'Some useless description.'
         project_prop1:
         - record_id: 1
           prop_id: 0
@@ -304,7 +308,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop1'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'I like dogs.'
           rank: 0
         - record_id: 1
@@ -313,7 +317,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop1'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'Stars are hot.'
           rank: 1
         project_prop2:
@@ -323,7 +327,7 @@ scenarios:
           type_id: 159
           field_name: 'project_prop2'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'Saskatoon, Saskatchewan'
           rank: 0
         - record_id: 1
@@ -332,7 +336,7 @@ scenarios:
           type_id: 159
           field_name: 'project_prop2'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'Pullman, Washington'
           rank: 1
       expected_form_keys:
@@ -382,10 +386,10 @@ scenarios:
       expected_field_values:
         project_name:
         - record_id: 1
-          value: "Project 2"
+          value: 'Project 2'
         project_description:
         - record_id: 1
-          value: "Some useless description."
+          value: 'Some useless description.'
         project_prop1:
         - record_id: 1
           prop_id: 1
@@ -412,18 +416,18 @@ scenarios:
           value: 'Pullman, Washington'
           rank: 1
           type_id: 159
-  - label: "Property Reorder"
-    description: "Create a page with 2 properties for each property field then change the order of the first field properties on update."
+  - label: 'Property Reorder'
+    description: 'Create a page with 2 properties for each property field then change the order of the first field properties on update.'
     create:
       user_input:
         project_name:
         - record_id: 0
-          value: "Project 3"
+          value: 'Project 3'
         project_description:
         - record_id: 0
           value:
-            format: basic_html
-            value: "Some useless description."
+            format: 'basic_html'
+            value: 'Some useless description.'
         project_prop1:
         - record_id: 0
           prop_id: 0
@@ -431,7 +435,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop1'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'prop1 A'
           rank: 0
         - record_id: 0
@@ -440,7 +444,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop1'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'prop1 B'
           rank: 1
         project_prop2:
@@ -450,7 +454,7 @@ scenarios:
           type_id: 159
           field_name: 'project_prop2'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'prop2 A'
           rank: 0
         - record_id: 0
@@ -459,7 +463,7 @@ scenarios:
           type_id: 159
           field_name: 'project_prop2'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'prop2 B'
           rank: 1
       expected_form_keys:
@@ -509,10 +513,10 @@ scenarios:
       expected_field_values:
         project_name:
         - record_id: 1
-          value: "Project 3"
+          value: 'Project 3'
         project_description:
         - record_id: 1
-          value: "Some useless description."
+          value: 'Some useless description.'
         project_prop1:
         - record_id: 1
           prop_id: 1
@@ -543,12 +547,12 @@ scenarios:
       user_input:
         project_name:
         - record_id: 0
-          value: "Project 3"
+          value: 'Project 3'
         project_description:
         - record_id: 0
           value:
-            format: basic_html
-            value: "Some useless description."
+            format: 'basic_html'
+            value: 'Some useless description.'
         project_prop1:
         - record_id: 1
           prop_id: 2
@@ -556,7 +560,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop1'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'prop1 B'
           rank: 0
         - record_id: 1
@@ -565,7 +569,7 @@ scenarios:
           type_id: 181
           field_name: 'project_prop1'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'prop1 A'
           rank: 1
         project_prop2:
@@ -575,7 +579,7 @@ scenarios:
           type_id: 159
           field_name: 'project_prop2'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'prop2 A'
           rank: 0
         - record_id: 1
@@ -584,7 +588,7 @@ scenarios:
           type_id: 159
           field_name: 'project_prop2'
           value:
-            format: basic_html
+            format: 'basic_html'
             value: 'prop2 B'
           rank: 1
       expected_form_keys:
@@ -677,10 +681,10 @@ scenarios:
       expected_field_values:
         project_name:
         - record_id: 1
-          value: "Project 3"
+          value: 'Project 3'
         project_description:
         - record_id: 1
-          value: "Some useless description."
+          value: 'Some useless description.'
         project_prop1:
         - record_id: 1
           prop_id: 5
