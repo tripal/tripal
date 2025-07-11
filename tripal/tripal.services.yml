@@ -1,64 +1,70 @@
 services:
   tripal.own_content_access_checker:
-    class: Drupal\tripal\Access\TripalAccessOwnContentCheck
+    class: 'Drupal\tripal\Access\TripalAccessOwnContentCheck'
     arguments: ['@current_user']
     tags:
-      - { name: access_check, applies_to: _tripal_own_content_access_check }
+      - { name: 'access_check', applies_to: '_tripal_own_content_access_check' }
   tripal.bulkPgSchemaInstaller:
-    class: Drupal\tripal\Services\bulkPgSchemaInstaller
+    class: 'Drupal\tripal\Services\bulkPgSchemaInstaller'
   tripal.job:
-    class: Drupal\tripal\Services\TripalJob
+    class: 'Drupal\tripal\Services\TripalJob'
   tripal.fileretriever:
-    class: Drupal\tripal\Services\TripalFileRetriever
-    arguments: ['@http_client',
-                '@tripal.logger']
+    class: 'Drupal\tripal\Services\TripalFileRetriever'
+    arguments: ['@http_client', '@tripal.logger']
   tripal.logger:
-    class: Drupal\tripal\Services\TripalLogger
+    class: 'Drupal\tripal\Services\TripalLogger'
   tripal.token_parser:
-    class: Drupal\tripal\Services\TripalTokenParser
+    class: 'Drupal\tripal\Services\TripalTokenParser'
   tripal.dbx:
-    class: Drupal\tripal\TripalDBX\TripalDbx
+    class: 'Drupal\tripal\TripalDBX\TripalDbx'
   tripal.storage:
-    class: Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager
-    parent: default_plugin_manager
+    class: 'Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager'
+    parent: 'default_plugin_manager'
   tripal.collection_plugin_manager.idspace:
-    class: Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager
-    parent: default_plugin_manager
+    class: 'Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager'
+    parent: 'default_plugin_manager'
   tripal.collection_plugin_manager.vocabulary:
-    class: Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager
-    parent: default_plugin_manager
+    class: 'Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager'
+    parent: 'default_plugin_manager'
   tripal.importer:
-    class: Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager
-    parent: default_plugin_manager
+    class: 'Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager'
+    parent: 'default_plugin_manager'
   tripal.pub_library:
-    class: Drupal\tripal\TripalPubLibrary\PluginManagers\TripalPubLibraryManager
-    arguments: ['@database']
-    parent: default_plugin_manager
+    class: 'Drupal\tripal\TripalPubLibrary\PluginManagers\TripalPubLibraryManager'
+    arguments:
+      - '@database'
+    parent: 'default_plugin_manager'
   tripal.pub_parser:
-    class: Drupal\tripal\TripalPubParser\PluginManagers\TripalPubParserManager
-    parent: default_plugin_manager
+    class: 'Drupal\tripal\TripalPubParser\PluginManagers\TripalPubParserManager'
+    parent: 'default_plugin_manager'
   tripal.citation:
-    class: Drupal\tripal\Services\TripalCitationManager
-    arguments: ['@tripal.token_parser']
+    class: 'Drupal\tripal\Services\TripalCitationManager'
+    arguments:
+     - '@tripal.token_parser'
   tripal.tripalfield_collection:
-    class: Drupal\tripal\Services\TripalFieldCollection
-    arguments: ['@tripal.collection_plugin_manager.idspace',
-                '@tripal.collection_plugin_manager.vocabulary',
-                '@tripal.logger']
+    class: 'Drupal\tripal\Services\TripalFieldCollection'
+    arguments:
+     - '@tripal.collection_plugin_manager.idspace'
+     - '@tripal.collection_plugin_manager.vocabulary'
+     - '@tripal.logger'
   tripal.tripalentitytype_collection:
-    class: Drupal\tripal\Services\TripalEntityTypeCollection
-    arguments: ['@tripal.collection_plugin_manager.idspace',
-                '@tripal.collection_plugin_manager.vocabulary',
-                '@tripal.logger']
+    class: 'Drupal\tripal\Services\TripalEntityTypeCollection'
+    arguments:
+     - '@tripal.collection_plugin_manager.idspace'
+     - '@tripal.collection_plugin_manager.vocabulary'
+     - '@tripal.logger'
   tripal.publish:
-    class: Drupal\tripal\Services\TripalPublish
+    class: 'Drupal\tripal\Services\TripalPublish'
   tripal.backend_publish:
-    class: Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
-    parent: default_plugin_manager
-    arguments: ['@tripal.logger']
+    class: 'Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager'
+    parent: 'default_plugin_manager'
+    arguments:
+     - '@tripal.logger'
   tripal.tripal_entity.lookup:
-    class: Drupal\tripal\Services\TripalEntityLookup
+    class: 'Drupal\tripal\Services\TripalEntityLookup'
 
   tripal.sync_tripal_field_storage:
-    class: Drupal\tripal\Services\SyncTripalFieldStorage
-    arguments: ['@entity_type.manager', '@database']
+    class: 'Drupal\tripal\Services\SyncTripalFieldStorage'
+    arguments:
+     - '@entity_type.manager'
+     - '@database'
