@@ -1,5 +1,5 @@
 tripal-layout:
-  version: 1.x
+  version: '1.x'
   css:
     component:
       css/tripal_layout.default_view.css: {}
