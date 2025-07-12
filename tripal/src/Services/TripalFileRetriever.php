@@ -228,7 +228,7 @@ class TripalFileRetriever {
    *   If zero, do not wait.
    */
   protected function doRateLimit(float $rate_limit) {
-    if (isset($rate_limit) && $rate_limit > 0) {
+    if (isset($rate_limit) && $rate_limit > 0.0) {
       if ($this->last_request_time) {
         $delay = $rate_limit - (microtime(TRUE) - $this->last_request_time);
         $this->doSleep($delay);
@@ -248,7 +248,7 @@ class TripalFileRetriever {
     // Negative values are interpreted as no sleep time.
     if ($sleep_time > 0) {
       $seconds = intval($sleep_time);
-      $nanoseconds = ($sleep_time - $seconds) * 1_000_000_000;
+      $nanoseconds = intval(($sleep_time - $seconds) * 1_000_000_000);
       time_nanosleep($seconds, $nanoseconds);
     }
   }
