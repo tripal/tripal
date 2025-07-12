@@ -1053,7 +1053,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $matches = [];
     preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?\-\|]*/', $ret['landmark'], $matches);
     if ($matches[0] != $ret['landmark']) {
-      throw new \Exception('Landmark/seqid ' . ret['landmark']
+      throw new \Exception('Landmark/seqid ' . $ret['landmark']
           . ' contains invalid characters. Only characters included in this regular expression are allowed [a-zA-Z0-9.:^*$@!+_?-|]');
     }
 
