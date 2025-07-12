@@ -154,6 +154,7 @@ class TripalFileRetriever {
         catch (\Exception $e) {
           $this->handleURLExceptions($retries, $e, $url);
         }
+        $this->last_request_time = microtime(TRUE);
         $retries--;
         if (!$status && ($retries > 0)) {
           $this->doSleep($options['retry_delay'] ?? 1.0);
