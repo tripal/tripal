@@ -27,7 +27,7 @@ exclude_patterns = [
   "**/images/",
   "**/tests/",
   "**/docs/",
-  "tripaldocker/",
+  "**/tripaldocker/",
 ]
 
 test_patterns = [
@@ -63,3 +63,26 @@ enabled = true
 [smells.duplication]
 threshold = 100
 nodes_threshold = 300
+
+[[plugin]]
+name = "yamllint"
+enabled = true
+
+[[plugin]]
+name = "actionlint"
+
+[[plugin]]
+name = "checkov"
+
+[[exclude]]
+plugins = ["yamllint"]
+file_patterns = ["tripal_chado/chado_schema/**", ".github/workflows/**"]
+
+[[exclude]]
+plugins = ["checkov"]
+file_patterns = ["tripaldocker/legacy/**"]
+
+[[triage]]
+match.plugins = ["checkov"]
+match.levels = ["low","medium"]
+set.ignored = true
