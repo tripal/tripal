@@ -571,7 +571,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         if (!$organism) {
           $organism = $this->addOrganism($sci_name, $rank);
           if (!$organism) {
-            throw new \Exception(t('Cannot add organism: @sci_name', ['@sci_name' => $sci_name]));
+            throw new \Exception('Cannot add organism: ' . $sci_name);
           }
         }
       }
