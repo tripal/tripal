@@ -12,7 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
 abstract class TripalWidgetBase extends WidgetBase {
 
   /**
-   * Santizies a property key.
+   * Sanitizes a property key.
    *
    * Property keys are often controlled vocabulary IDs, which is the IdSpace
    * and accession separated by a colon. The colon is not supported by the
