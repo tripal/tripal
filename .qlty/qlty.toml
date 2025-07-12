@@ -81,3 +81,8 @@ file_patterns = ["tripal_chado/chado_schema/**", ".github/workflows/**"]
 [[exclude]]
 plugins = ["checkov"]
 file_patterns = ["tripaldocker/legacy/**"]
+
+[[triage]]
+match.plugins = ["checkov"]
+match.levels = ["low","medium"]
+set.ignored = true
