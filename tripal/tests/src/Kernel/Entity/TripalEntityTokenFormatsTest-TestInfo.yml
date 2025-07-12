@@ -88,8 +88,7 @@ scenarios:
         postSave:
         - code: 'URL-ALIAS-SAVE'
           exception: TRUE
-          exception_message: |
-            We were unable to set the alias '/test/test_gemstone/Ocean-Jasper/2' because it already refers to the following: /bio_data/1
+          exception_message: "We were unable to set the alias '/test/test_gemstone/Ocean-Jasper/2' because it already refers to the following: /bio_data/1"
       expected_values:
         common_name:
         - value: 'Ocean Jasper'
@@ -182,8 +181,7 @@ scenarios:
         postSave:
         - code: 'URL-ALIAS-SAVE'
           exception: TRUE
-          exception_message: |
-            We were unable to set the alias '/test/Ocean-Jasper/SET' because it already refers to the following: /bio_data/1
+          exception_message: "We were unable to set the alias '/test/Ocean-Jasper/SET' because it already refers to the following: /bio_data/1"
       expected_values:
         common_name:
         - value: 'Ocean Jasper'
@@ -232,8 +230,7 @@ scenarios:
         postSave:
         - code: 'URL-ALIAS-SAVE'
           exception: TRUE
-          exception_message: |
-            We were unable to set the alias '/test/Ocean-Jasper/SET' because it already refers to the following: /bio_data/1
+          exception_message: "We were unable to set the alias '/test/Ocean-Jasper/SET' because it already refers to the following: /bio_data/1"
       expected_values:
         common_name:
         - value: 'Ocean Jasper'

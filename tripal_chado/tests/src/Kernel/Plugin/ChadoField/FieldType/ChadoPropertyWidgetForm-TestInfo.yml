@@ -134,8 +134,7 @@ scenarios:
           value: 'Simple Project'
         project_description:
         - record_id: 1
-          value: |
-            This is a very simple project. We haven't even added any metadata to expand it's purpose.
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
     edit:
       user_input:
         project_name:
@@ -145,8 +144,7 @@ scenarios:
         - record_id: 1
           value:
             format: 'basic_html'
-            value: |
-              This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page.
+            value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
         project_prop1:
         - record_id: 0
           prop_id: 0
@@ -206,8 +204,7 @@ scenarios:
           value: 'Simple Project Still'
         project_description:
         - record_id: 1
-          value: |
-            This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page.
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
   - label: 'Properties Added on Edit'
     description: 'Create a page without setting any properties and then when we update it we will set 2 properties for each property field.'
     create:

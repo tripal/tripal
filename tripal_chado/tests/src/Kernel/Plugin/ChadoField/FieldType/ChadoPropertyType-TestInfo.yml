@@ -85,8 +85,7 @@ scenarios:
           value: 'Simple Project'
         project_description:
         - record_id: 0
-          value: |
-            This is a very simple project. We haven't even added any metadata to expand it's purpose.
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
         project_type:
         - record_id: 0
           type_id: 165
@@ -113,8 +112,7 @@ scenarios:
           value: 'Simple Project'
         project_description:
         - record_id: 1
-          value: |
-            This is a very simple project. We haven't even added any metadata to expand it's purpose.
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose."
         project_type:
         - record_id: 1
           type_id: 165
@@ -128,16 +126,14 @@ scenarios:
           value: 'Simple Project Still'
         project_description:
           record_id: 1
-          value: |
-            This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page.
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
       expected:
         project_name:
         - record_id: 1
           value: 'Simple Project Still'
         project_description:
         - record_id: 1
-          value: |
-            This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page.
+          value: "This is a very simple project. We haven't even added any metadata to expand it's purpose. Although we did add a bit to this useless description upon editing that page."
         project_type:
         - record_id: 1
           type_id: 165
