@@ -1280,7 +1280,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // Get the storage plugin used to publish.
     $this->storage = $this->storage_manager->getInstance(['plugin_id' => $this->datastore]);
     if (!$this->storage) {
-      throw new \TripalPublishException('Could not find an instance of the TripalStorage backend: ' . $this->datastore);
+      throw new \TripalPublishException('Could not find an instance of the TripalStorage backend: "' . $this->datastore . '".');
     }
     // @todo somehow set the chado schema using the value in $this->schema_name
     return TRUE;
