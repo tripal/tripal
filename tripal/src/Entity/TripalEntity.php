@@ -352,6 +352,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       if (!is_object($existing_alias_object)) {
         throw new \Exception("Unable to load the existing alias '" . $existing_alias['alias']
             . "' in order to update it.");
+      }
 
       // As long as there were no duplicates, we can update the existing one.
       if (empty($duplicates)) {
