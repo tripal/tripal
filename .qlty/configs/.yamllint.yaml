@@ -2,6 +2,7 @@ rules:
   document-start: 'disable'
   quoted-strings:
     quote-type: 'single'
+    allow-quoted-quotes: true
     required: true
   key-duplicates: {}
   trailing-spaces: {}
