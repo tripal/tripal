@@ -10,11 +10,11 @@ Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) - 
 
 The following table proves the compatibility for the current development version of Tripal.
 
-| Drupal      | 10.4.x              | 10.5.x              | 11.0.x              | 11.1.x              | 11.2.x              |
-|-------------|---------------------|---------------------|---------------------|---------------------|---------------------|
-| **PHP 8.1** | ![Grid81-104-Badge] | ![Grid81-105-Badge] |                     |                     |                     |
-| **PHP 8.2** | ![Grid82-104-Badge] | ![Grid82-105-Badge] |                     |                     |                     |
-| **PHP 8.3** | ![Grid83-104-Badge] | ![Grid83-105-Badge] | ![Grid83-110-Badge] | ![Grid83-111-Badge] | ![Grid83-112-Badge] |
+| Drupal      | 10.4.x              | 10.5.x              | 11.1.x              | 11.2.x              |
+|-------------|---------------------|---------------------|---------------------|---------------------|
+| **PHP 8.1** | ![Grid81-104-Badge] | ![Grid81-105-Badge] |                     |                     |
+| **PHP 8.2** | ![Grid82-104-Badge] | ![Grid82-105-Badge] |                     |                     |
+| **PHP 8.3** | ![Grid83-104-Badge] | ![Grid83-105-Badge] | ![Grid83-111-Badge] | ![Grid83-112-Badge] |
 
 [Grid81-104-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_4x.yml/badge.svg
 [Grid81-105-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_5x.yml/badge.svg
@@ -25,7 +25,6 @@ The following table proves the compatibility for the current development version
 [Grid83-104-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_4x.yml/badge.svg
 [Grid83-105-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D10_5x.yml/badge.svg
 
-[Grid83-110-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_0x.yml/badge.svg
 [Grid83-111-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_1x.yml/badge.svg
 [Grid83-112-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_2x.yml/badge.svg
 
