@@ -22,7 +22,6 @@ jobs:
           - '13'
           - '17'
         drupal-version:
-          - '10.3.x-dev'
           - '10.4.x-dev'
           - '10.5.x-dev'
           - '11.0.x-dev'
