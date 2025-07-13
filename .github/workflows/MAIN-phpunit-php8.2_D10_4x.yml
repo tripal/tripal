@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - '4.x'
-      - 'tv4g0-issue2238-drupal-11.2'
+      - 'tv4g0-2208-codeclimateToQltyCloud'
   # Allows us to schedule when this workflow is run.
   # This ensures we pick up any new changes in Drupal.
   schedule:
