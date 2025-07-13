@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - '4.x'
-      - 'tv4g0-2208-codeclimateToQltyCloud'
+      - 'tv4g0-issue2238-drupal-11.2'
   # Allows us to manually trigger this workflow.
   # This is great if there is a change made to Tripal core that we want to test our modules on ASAP.
   workflow_dispatch:
