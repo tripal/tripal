@@ -4,17 +4,17 @@
 
 ## Compatibility
 
-![Target Drupal Version 11.1.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-11.1.x-informational)
+![Target Drupal Version 11.2.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-11.2.x-informational)
 
 Tested on ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success) - ![PostgreSQL 17](https://img.shields.io/badge/PostreSQL-17-success)
 
 The following table proves the compatibility for the current development version of Tripal.
 
-| Drupal      | 10.3.x              | 10.4.x              | 10.5.x              | 11.0.x              | 11.1.x              |
-|-------------|---------------------|---------------------|---------------------|---------------------|---------------------|
-| **PHP 8.1** | ![Grid81-103-Badge] | ![Grid81-104-Badge] | ![Grid81-105-Badge] |                     |                     |
-| **PHP 8.2** | ![Grid82-103-Badge] | ![Grid82-104-Badge] | ![Grid82-105-Badge] |                     |                     |
-| **PHP 8.3** | ![Grid83-103-Badge] | ![Grid83-104-Badge] | ![Grid83-105-Badge] | ![Grid83-110-Badge] | ![Grid83-111-Badge] |
+| Drupal      | 10.3.x              | 10.4.x              | 10.5.x              | 11.0.x              | 11.1.x              | 11.2.x              |
+|-------------|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|
+| **PHP 8.1** | ![Grid81-103-Badge] | ![Grid81-104-Badge] | ![Grid81-105-Badge] |                     |                     |                     |
+| **PHP 8.2** | ![Grid82-103-Badge] | ![Grid82-104-Badge] | ![Grid82-105-Badge] |                     |                     |                     |
+| **PHP 8.3** | ![Grid83-103-Badge] | ![Grid83-104-Badge] | ![Grid83-105-Badge] | ![Grid83-110-Badge] | ![Grid83-111-Badge] | ![Grid83-112-Badge] |
 
 [Grid81-103-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_3x.yml/badge.svg
 [Grid81-104-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_4x.yml/badge.svg
@@ -30,6 +30,7 @@ The following table proves the compatibility for the current development version
 
 [Grid83-110-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_0x.yml/badge.svg
 [Grid83-111-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_1x.yml/badge.svg
+[Grid83-112-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.3_D11_2x.yml/badge.svg
 
 ### Code Coverage
 

@@ -39,6 +39,7 @@ jobs:
           - '10.5.x-dev'
           - '11.0.x-dev'
           - '11.1.x-dev'
+          - '11.2.x-dev'
           - '11.x-dev'
         exclude:
           - php-version: '8.1'
@@ -49,6 +50,10 @@ jobs:
             drupal-version: '11.1.x-dev'
           - php-version: '8.2'
             drupal-version: '11.1.x-dev'
+          - php-version: '8.1'
+            drupal-version: '11.2.x-dev'
+          - php-version: '8.2'
+            drupal-version: '11.2.x-dev'
           - php-version: '8.1'
             drupal-version: '11.x-dev'
           - php-version: '8.2'
@@ -111,8 +116,8 @@ jobs:
           labels: 'tripal.branch=4.x,drupal.version.label=${{ matrix.drupal-version }},php.version.label=${{ matrix.php-version }}, postgresql.version.label=${{ matrix.pgsql-version }}'
       ## Build the image tagged as latest which is the highest version combo that we feel is well supported.
       - uses: 'mr-smithers-excellent/docker-build-push@v6'
-        name: 'Build latest using 11.1.x-dev, PHP 8.3, PgSQL 17'
-        if: ${{ matrix.drupal-version == '11.1.x-dev' && matrix.php-version == '8.3' && matrix.pgsql-version == '17' }}
+        name: 'Build latest using 11.2.x-dev, PHP 8.3, PgSQL 17'
+        if: ${{ matrix.drupal-version == '11.2.x-dev' && matrix.php-version == '8.3' && matrix.pgsql-version == '17' }}
         with:
           image: 'tripalproject/tripaldocker'
           tags: 'latest'
