@@ -1,0 +1,195 @@
+/* phylotree d3js graphs */
+
+(function ($, drupalSettings) {
+
+  "use strict";
+
+  // Will be dynamically sized.
+  var height = 0;
+  var tooltip;
+  var treeJSON;
+  var treeData;
+  var treeOptions;
+
+  // Store our function as a property of Drupal.behaviors.
+  Drupal.behaviors.TripalPhylotree = {
+    attach: function (context, settings) {
+
+      // Retrieve the data for this tree.
+//      var data_url = Drupal.settings.tripal_chado.phylotree_url;
+//console.log(data_url); //@@@
+//      $.getJSON(data_url, function(treeData) {
+        treeJSON = drupalSettings.treeData;
+        treeData = JSON.parse(treeJSON);
+console.log("CP01"); //@@@
+console.log(treeData); //@@@
+        treeOptions = drupalSettings.treeOptions;
+//console.log("CP02"); //@@@
+//console.log(treeOptions); //@@@
+//console.log("CP03"); //@@@
+//console.log(drupalSettings); //@@@
+        phylogeny_display_data(treeData);
+        $('.phylogram-ajax-loader').hide();
+//      });
+    }
+  }
+
+  // Callback function to determine node size.
+  var phylogeny_node_size = function(d) {
+    var size;
+    if (d.cvterm_name == "phylo_root") {
+      size = treeOptions['root_node_size'];
+    }
+    if (d.cvterm_name == "phylo_interior") {
+      size = treeOptions['interior_node_size'];
+    }
+    if (d.cvterm_name == "phylo_leaf") {
+      size = treeOptions['leaf_node_size'];
+    }
+    return size;
+  }
+
+  // Callback function to determine the node color.
+  var phylogeny_organism_color = function(d) {
+    var organism_color = treeOptions['org_colors'];
+console.log("CP05"); //@@@
+console.log(organism_color); //@@@
+    var color = null;
+
+    if (d.fo_genus) {
+      color = organism_color[d.fo_organism_id];
+    }
+    if (color) {
+      return color;
+    }
+    else {
+      return 'grey';
+    }
+  };
+
+  // Callback for mouseover event on graph node d.
+  var phylogeny_node_mouse_over = function(d) {
+    var el = $(this);
+    el.attr('cursor', 'pointer');
+    var circle = el.find('circle');
+    // highlight in yellow no matter if leaf or interior node
+    circle.attr('fill', 'yellow');
+    if(!d.children) {
+      // only leaf nodes have descriptive text
+      var txt = el.find('text');
+      txt.attr('font-weight', 'bold');
+    }
+    else {
+      // interior node, only show tooltip if there is text associated
+      if (d.name) {
+        var mx = d3.event.layerX;
+        var my = d3.event.layerY;
+        tooltip
+          .style("opacity", 0.9)
+          .style("left",(mx + 20) + "px")
+          .style("top", (my - 10) + "px")
+          .html(d.name);
+      }
+    }
+  };
+
+  // Callback for mouseout event on graph node d.
+  var phylogeny_node_mouse_out = function(d) {
+    var el = $(this);
+    el.attr('cursor', 'default');
+    var circle = el.find('circle');
+    if(!d.children) {
+      // restore the color based on organism id for leaf nodes
+      circle.attr('fill', phylogeny_organism_color(d));
+      var txt = el.find('text');
+      txt.attr('font-weight', 'normal');
+    }
+    else {
+      // restore interior nodes to white, remove tooltip
+      circle.attr('fill', 'white');
+      tooltip
+        .style("opacity", 0.0)
+        .style("top", 0 + "px")
+        .style("left", 0 + "px")
+        .html('');
+    }
+  };
+
+  // Callback for mousedown/click event on graph node d.
+  var phylogeny_node_mouse_down = function(d) {
+    var el = $(this);
+    var title = (! d.children ) ? d.name : 'interior node ' + d.phylonode_id;
+
+    if(d.children) {
+      // interior node
+      if(d.phylonode_id) {
+      }
+      else {
+        // this shouldn't happen but ok
+      }
+    }
+    else {
+      // leaf node
+      if(d.feature_eid) {
+        window.location.href = baseurl + '/bio_data/' + d.feature_eid;
+        return;
+      }
+      // If this node is not associated with a feature but it has an
+      // organism node then this is a taxonomic node and we want to
+      // link it to the organism page.
+      if (!d.feature_id && d.organism_nid) {
+        window.location.replace(baseurl + '/node/' + d.organism_nid);
+      }
+      if (!d.feature_id && d.organism_eid) {
+        window.location.replace(baseurl + '/bio_data/' + d.organism_eid);
+      }
+    }
+  };
+
+  // Creates the tree using the d3.phylogram.js library.
+  function phylogeny_display_data(treeData) {
+    var height = phylogeny_graph_height(treeData);
+console.log("CP06 height"); //@@@
+console.log(height); //@@@
+    d3.phylogram.build('#phylogram', treeData, {
+      'width' : treeOptions['phylogram_width'],
+      'height' : height,
+      'fill' : phylogeny_organism_color,
+      'size' : phylogeny_node_size,
+      'nodeMouseOver' : phylogeny_node_mouse_over,
+      'nodeMouseOut' : phylogeny_node_mouse_out,
+      'nodeMouseDown' : phylogeny_node_mouse_down,
+      'skipTicks' : treeOptions['skipTicks'],
+      'phylogram_scale' : treeOptions['phylogram_scale']
+    });
+console.log("CP07 build completed"); //@@@
+
+    // Create a tooltip, used for mousover on interior notes
+    tooltip = d3.select('#phylogram')
+      .append('div')
+      .style('opacity', 0)
+      .attr('class', 'tooltip')
+      .style('border-style', 'solid')
+      .style('border-color', '#B4B4B4')
+      .style('background-color', '#E4E4E4')
+      .style('border-width', '1px')
+      .style('border-radius', '5px')
+      .style('padding', '5px')
+  }
+
+  /* graphHeight() generate graph height based on leaf nodes */
+  function phylogeny_graph_height(data) {
+    function count_leaf_nodes(node) {
+      if(! node.children) {
+        return 1;
+      }
+      var ct = 0;
+      node.children.forEach( function(child) {
+        ct+= count_leaf_nodes(child);
+      });
+      return ct;
+    }
+    var leafNodeCt = count_leaf_nodes(data);
+    return 22 * leafNodeCt;
+  }
+})(jQuery, drupalSettings);

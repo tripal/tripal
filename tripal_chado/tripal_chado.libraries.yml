@@ -5,6 +5,16 @@ tripal_chado.chado_table:
   js:
     js/chado_table.js: {}
 
+tripal_chado.phylotree:
+  css:
+    component:
+      css/tripal_phylogeny.css: {}
+  js:
+    # https://d3js.org/d3.v3.min.js
+    js/d3.v3.min.js: {}
+    js/d3.phylogram.js: {}
+    js/tripal_phylogeny.js: {}
+
 tripal_chado.field.ChadoDbxrefWidgetDefault:
   css:
     component:
