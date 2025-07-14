@@ -14,6 +14,9 @@ services:
     arguments: ['@database', '@tripal_chado.database']
   tripal_chado.terms_init:
     class: Drupal\tripal_chado\Services\ChadoTermsInit
+  tripal_chado.phylotree:
+    class: Drupal\tripal_chado\Services\Phylotree
+    arguments: ['@tripal_chado.database']
   tripal_chado.cloner:
     class: Drupal\tripal_chado\Task\ChadoCloner
   tripal_chado.installer:
