@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
@@ -29,14 +30,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  * )
  */
 class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultSettings() {
-    $settings = parent::defaultSettings();
-    return $settings;
-  }
 
   /**
    * {@inheritdoc}
@@ -70,7 +63,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
 
     // All of the settings used for formatting the phylotree.
     $treeOptions = [
-      'phylogram_width' => $tripal_chado_settings->get('tripal_phylogeny_default_phylogram_width') ?? 350,
+      'phylogram_width' => $this->getSetting('phylogram_width'),
       'root_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_root_node_size') ?? 3,
       'interior_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_interior_node_size') ?? 1,
       'leaf_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_leaf_node_size') ?? 6,
@@ -80,6 +73,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       'org_colors' => $colors,
     ];
 
+dpm($treeOptions, "CP1 treeOptions");//@@@
     // Will only be one item because cardinality = 1.
     foreach ($items as $delta => $item) {
       $values = [
@@ -98,6 +92,50 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     }
 
     return $elements;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultSettings() {
+    $settings = parent::defaultSettings();
+    $settings['phylogram_width'] = 600;
+    $settings['phylogram_scale'] = 'linear';
+    $settings['phylogram_root_node_size'] = 3;
+    $settings['phylogram_interior_node_size'] = 4;
+    $settings['phylogram_leaf_node_size'] = 6;
+    $settings['phylogram_colors'] = [];
+    return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $form = parent::settingsForm($form, $form_state);
+dpm($this->getSettings(), "CP2 settings");//@@@
+
+    $form['phylogram_width'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Tree Width'),
+      '#description' => $this->t('Please specify the width in pixels for the phylogram.'),
+      '#default_value' => $this->getSetting('phylogram_width'),
+      '#min' => 64,
+      '#max' => 4096,
+      '#required' => FALSE,
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $summary = parent::settingsSummary();
+    $summary[] = $this->t('Width: @phylogram_width',
+                          ['@phylogram_width' => $this->getSetting('phylogram_width') ?? 600]);
+    return $summary;
   }
 
 }
