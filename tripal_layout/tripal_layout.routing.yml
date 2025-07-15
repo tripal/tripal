@@ -7,7 +7,7 @@ tripal_layout.content_type_field_layout:
   options:
     parameters:
       tripal_entity_type:
-        type: entity:tripal_entity_type
+        type: 'entity:tripal_entity_type'
   requirements:
     _permission: 'administer tripal'
 
@@ -19,7 +19,7 @@ tripal_layout.content_type_field_layout_reset:
   options:
     parameters:
       tripal_entity_type:
-        type: entity:tripal_entity_type
+        type: 'entity:tripal_entity_type'
   requirements:
     _permission: 'administer tripal'
 
@@ -32,7 +32,7 @@ tripal_layout.content_type_form_layout:
   options:
     parameters:
       tripal_entity_type:
-        type: entity:tripal_entity_type
+        type: 'entity:tripal_entity_type'
   requirements:
     _permission: 'administer tripal'
 
@@ -44,7 +44,7 @@ tripal_layout.content_type_form_layout_reset:
   options:
     parameters:
       tripal_entity_type:
-        type: entity:tripal_entity_type
+        type: 'entity:tripal_entity_type'
   requirements:
     _permission: 'administer tripal'
 

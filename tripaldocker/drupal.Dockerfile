@@ -17,6 +17,8 @@ LABEL tripal.stability="development"
 LABEL os.version="bookworm"
 LABEL postgresql.version="${postgresqlversion}"
 
+HEALTHCHECK --interval=2m --timeout=30s --start-period=2m --retries=3 CMD [ "pg_isready", "-U", "postgres" ]
+
 COPY . /app
 COPY tripaldocker/init_scripts/motd /etc/motd
 

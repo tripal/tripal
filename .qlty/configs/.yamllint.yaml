@@ -1,8 +1,12 @@
 rules:
-  document-start: disable
+  document-start: 'disable'
   quoted-strings:
-    required: only-when-needed
-    extra-allowed: ["{|}"]
+    quote-type: 'single'
+    allow-quoted-quotes: true
+    required: true
   key-duplicates: {}
+  trailing-spaces: {}
+  colons: 'enable'
+  hyphens: 'enable'
   octal-values:
     forbid-implicit-octal: true
