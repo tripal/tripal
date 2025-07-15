@@ -420,6 +420,37 @@ field.formatter.settings.*:
       type: string
       label: 'Hide value'
       nullable: true
+    phylogram_width:
+      type: integer
+      label: 'Width of a phylogenetic tree'
+      nullable: true
+    phylogram_scale:
+      type: string
+      label: 'Scaling transformation for the X-axis of a phylogenetic tree'
+      nullable: true
+    phylogram_root_node_size:
+      type: integer
+      label: 'Diameter of the root node of a phylogenetic tree'
+      nullable: true
+    phylogram_interior_node_size:
+      type: integer
+      label: 'Diameter of the interior nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_leaf_node_size:
+      type: integer
+      label: 'Diameter of the terminal nodes of a phylogenetic tree'
+      nullable: true
+    phylogram_colors:
+      type: mapping
+      label: 'Color mapping to apply to nodes in a phylogenetic tree'
+      nullable: true
+      mapping:
+        label:
+          type: label
+          label: 'Name of the node'
+        value:
+          type: string
+          label: 'Color specification'
     thousand_separator:
       type: string
       label: 'Thousand marker'
