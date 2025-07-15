@@ -754,16 +754,16 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
     if (!empty($tree['name']) and $tree['name'] != '') {
       $values['label'] = $tree['name'];
     }
+    // Set a default distance if one was not specified.
+    $values['distance'] = 0.01;
     if (!empty($tree['length']) and $tree['length'] != '') {
       $values['distance'] = $tree['length'];
     }
     // Set the type of node.
-    // echo "DEBUG Check is_root\n";
     if (isset($tree['is_root']) && $tree['is_root'] == true) {
       $values['type_id'] = $vocab['root']->cvterm_id;
     }
     else {
-      // echo "DEBUG Check is_internal\n";
       if (isset($tree['is_internal']) && $tree['is_internal'] == true) {
         $values['type_id'] = $vocab['internal']->cvterm_id;
         $values['parent_phylonode_id'] = $parent['phylonode_id'];
