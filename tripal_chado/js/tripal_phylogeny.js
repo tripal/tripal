@@ -7,30 +7,20 @@
   // Will be dynamically sized.
   var height = 0;
   var tooltip;
-  var treeJSON;
-  var treeData;
   var treeOptions;
+  var treeData;
 
   // Store our function as a property of Drupal.behaviors.
   Drupal.behaviors.TripalPhylotree = {
     attach: function (context, settings) {
-
-      // Retrieve the data for this tree.
-//      var data_url = Drupal.settings.tripal_chado.phylotree_url;
-//console.log(data_url); //@@@
-//      $.getJSON(data_url, function(treeData) {
-        treeJSON = drupalSettings.treeData;
-        treeData = JSON.parse(treeJSON);
-console.log("CP01"); //@@@
-console.log(treeData); //@@@
+      var element = document ? 'html' : context;
+      once('bind-phyotreevis-once', element).forEach(function initOnce(doc) {
         treeOptions = drupalSettings.treeOptions;
-//console.log("CP02"); //@@@
-//console.log(treeOptions); //@@@
-//console.log("CP03"); //@@@
-//console.log(drupalSettings); //@@@
+        // Acquire the data used for the tree.
+        treeData = JSON.parse(drupalSettings.treeJSON);
+        // Display the tree.
         phylogeny_display_data(treeData);
-        $('.phylogram-ajax-loader').hide();
-//      });
+      });
     }
   }
 
@@ -52,8 +42,6 @@ console.log(treeData); //@@@
   // Callback function to determine the node color.
   var phylogeny_organism_color = function(d) {
     var organism_color = treeOptions['org_colors'];
-console.log("CP05"); //@@@
-console.log(organism_color); //@@@
     var color = null;
 
     if (d.fo_genus) {
@@ -149,9 +137,7 @@ console.log(organism_color); //@@@
   // Creates the tree using the d3.phylogram.js library.
   function phylogeny_display_data(treeData) {
     var height = phylogeny_graph_height(treeData);
-console.log("CP06 height"); //@@@
-console.log(height); //@@@
-    d3.phylogram.build('#phylogram', treeData, {
+    d3.phylogram.build('#chado-phylogram', treeData, {
       'width' : treeOptions['phylogram_width'],
       'height' : height,
       'fill' : phylogeny_organism_color,
@@ -162,10 +148,9 @@ console.log(height); //@@@
       'skipTicks' : treeOptions['skipTicks'],
       'phylogram_scale' : treeOptions['phylogram_scale']
     });
-console.log("CP07 build completed"); //@@@
 
     // Create a tooltip, used for mousover on interior notes
-    tooltip = d3.select('#phylogram')
+    tooltip = d3.select('#chado-phylogram')
       .append('div')
       .style('opacity', 0)
       .attr('class', 'tooltip')

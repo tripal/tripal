@@ -35,7 +35,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-dpm($settings, "CPF1 defaultSettings");//@@@
     return $settings;
   }
 
@@ -49,7 +48,6 @@ dpm($settings, "CPF1 defaultSettings");//@@@
     // tripal_chado/tripal_chado.libraries.yml.
     $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.phylotree';
 
-#dpm(count($items), "CPF2 count items");//@@@
     // Placeholder image prior to ajax load of phylogram.
     $ajax_image_path = base_path() . \Drupal::service('extension.list.module')->getPath('tripal') . '/images/ajax-loader.gif';
 
@@ -83,30 +81,23 @@ dpm($settings, "CPF1 defaultSettings");//@@@
       'phylogram_scale' => $tripal_chado_settings->get('tripal_phylogeny_default_phylogram_scale') ?? 1,
       'org_colors' => $colors,
     ];
-dpm($treeOptions, "CPF4 treeOptions");
 
     // Will only be one item because cardinality = 1.
     foreach ($items as $delta => $item) {
-#dpm($delta, "CPF6 delta");//@@@
       $values = [
         'record_id' => $item->get('record_id')->getString(),
         'tree_json' => $item->get('tree_json')->getString(),
       ];
 
-      // Placeholder for the phylogram to be loaded by ajax.
+      // Placeholder for the phylogram image.
       $elements[$delta]['phylogram'] = [
-        '#type' => 'markup',
-        '#markup' => '<div id="phylogram"><img src="' . $ajax_image_path . '" class="phylogram-ajax-loader"/></div>',
+        '#markup' => '<div id="chado-phylogram"></div>',
       ];
 
-      // Add the variables for js.
-      $elements['#attached']['drupalSettings']['treeData'] = $values['tree_json'];
+      // Add the variables used by the javascript.
+      $elements['#attached']['drupalSettings']['treeJSON'] = $values['tree_json'];
       $elements['#attached']['drupalSettings']['treeOptions'] = $treeOptions;
-$elements[99] = [
-  '#markup' => '<li>CPF4 viewElements() was called, json="'.$values['tree_json'].'"</li>',
-];
     }
-
 
     return $elements;
   }
