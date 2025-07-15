@@ -161,9 +161,9 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   // $user_dir = tripal_get_user_files_dir($uid); //old
   $user_dir = \Drupal::service('file_system')->realpath(tripal_get_user_files_dir($uid));
   if (!tripal_is_user_files_dir_writeable($uid)) {
-    $message = "The user's data directory is not writeable: !user_dir";
+    $message = "The user's data directory is not writeable: @user_dir";
     \Drupal::logger('tripal')->error($message, [
-      '!user_dir' => $user_dir,
+      '@user_dir' => $user_dir,
     ]);
     $result = [
       'status' => 'failed',

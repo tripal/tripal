@@ -62,8 +62,6 @@ tripal_chado.chado_custom_tables:
   requirements:
     _permission: 'manage chado custom tables'
 
-
-
 tripal_chado.chado_mviews_form:
   path: 'admin/tripal/storage/chado/mview'
   defaults:
@@ -137,72 +135,71 @@ entity.chado_term_mapping.delete_form:
   requirements:
     _permission: 'administer tripal'
 
-
 tripal_chado.cvterm_autocomplete:
   path: 'chado/cvterm/autocomplete/{count}/{cv_id}'
   defaults:
     _controller: '\Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController::handleAutocomplete'
     _title: 'Chado Vocabulary Term Autocomplete'
-    _format: json
+    _format: 'json'
   requirements:
     _permission: 'access content'
   options:
     parameters:
       count:
-        type: integer
+        type: 'integer'
       cv_id:
-        type: integer
+        type: 'integer'
 
 tripal_chado.dbxref_autocomplete:
   path: 'chado/dbxref/autocomplete/{count}/{db_id}'
   defaults:
     _controller: '\Drupal\tripal_chado\Controller\ChadoDbxrefAutocompleteController::handleAutocomplete'
     _title: 'Chado Database Accession Autocomplete'
-    _format: json
+    _format: 'json'
   requirements:
     _permission: 'access content'
   options:
     parameters:
       count:
-        type: integer
+        type: 'integer'
       db_id:
-        type: integer
+        type: 'integer'
 
 tripal_chado.organism_autocomplete:
   path: 'chado/organism/autocomplete/{match_limit}'
   defaults:
     _controller: '\Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController::handleAutocomplete'
     _title: 'Chado Organism Autocomplete'
-    _format: json
+    _format: 'json'
   requirements:
     _permission: 'access content'
   options:
     parameters:
       match_limit:
-        type: integer
+        type: 'integer'
 
 tripal_chado.generic_autocomplete:
   path: 'chado/generic/autocomplete/{base_table}/{column_name}/{type_column}/{property_table}/{match_limit}/{type_id}'
   defaults:
     _controller: '\Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController::handleGenericAutocomplete'
     _title: 'Chado Generic Autocomplete'
-    _format: json
+    _format: 'json'
   requirements:
     _permission: 'access content'
   options:
     parameters:
       base_table:
-        type: string
+        type: 'string'
       column_name:
-        type: string
+        type: 'string'
       type_column:
-        type: string
+        type: 'string'
       property_table:
-        type: string
+        type: 'string'
       match_limit:
-        type: integer
+        type: 'integer'
       type_id:
-        type: integer
+        type: 'integer'
 
 # Publication Loaders.
 tripal.data_loaders.publication_loaders:
@@ -212,7 +209,6 @@ tripal.data_loaders.publication_loaders:
     _title: 'Publication Loaders'
   requirements:
     _permission: 'administer tripal'
-
 
 # @TODO - This has not yet been implemented
 #tripal.data_loaders.publication_loaders.import_publication_file:

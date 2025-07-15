@@ -1,7 +1,7 @@
-name: Discussion / Question
-description: Discuss a topic / Ask for help.
+name: 'Discussion / Question'
+description: 'Discuss a topic / Ask for help.'
 body:
-  - type: markdown
+  - type: 'markdown'
     attributes:
       value: |
         # Instructions
@@ -12,9 +12,9 @@ body:
           - Ask for input on site/module design questions
           - State your intent to develop a specific extension module
           - Really any type of discussion or question -we want to hear from you!
-  - type: textarea
-    id: discussion_question
+  - type: 'textarea'
+    id: 'discussion_question'
     attributes:
-      label: Discussion or Question
+      label: 'Discussion or Question'
     validations:
         required: true

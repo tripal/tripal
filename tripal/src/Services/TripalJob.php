@@ -286,6 +286,9 @@ class TripalJob {
       // If this is the Tripal admin user then give a bit more information
       // about how to run the job.
       $user = \Drupal\user\Entity\User::load($details['uid']);
+      $special_chars = ["'", " "];
+      $special_chars_replace = ["\'", "\ "];
+      $username = str_replace($special_chars, $special_chars_replace, $user->getAccountName());
       if ($user->hasPermission('administer tripal')) {
         $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
         $this->messenger->addStatus(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
@@ -295,7 +298,7 @@ class TripalJob {
             [
               '%job_id' => $job_id,
               '%base_path' => DRUPAL_ROOT,
-              '%uname' => $user->getAccountName()
+              '%uname' => $username
             ]));
       }
 
