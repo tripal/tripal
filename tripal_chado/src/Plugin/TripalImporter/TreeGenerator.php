@@ -683,7 +683,6 @@ class TreeGenerator extends ChadoImporterBase {
         $lineage_elements = array_slice($lineage_elements, $index, NULL, FALSE);
       }
     }
-print "CP71 lineage_elements=";var_dump($lineage_elements);//@@@
     return $lineage_elements;
   }
 
