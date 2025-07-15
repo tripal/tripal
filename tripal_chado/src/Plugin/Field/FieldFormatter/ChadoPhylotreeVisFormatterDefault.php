@@ -113,7 +113,6 @@ dpm($treeOptions, "CP1 treeOptions");//@@@
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $form = parent::settingsForm($form, $form_state);
-dpm($this->getSettings(), "CP2 settings");//@@@
 
     $form['phylogram_width'] = [
       '#type' => 'number',
@@ -122,6 +121,41 @@ dpm($this->getSettings(), "CP2 settings");//@@@
       '#default_value' => $this->getSetting('phylogram_width'),
       '#min' => 64,
       '#max' => 4096,
+      '#required' => FALSE,
+    ];
+    $form['phylogram_scale'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Phylogram Scale'),
+      '#description' => $this->t('Please specify the scale to use.'),
+      '#options' => ['linear' => 'Linear', 'logarithmic' => 'Logarithmic'],
+      '#default_value' => $this->getSetting('phylogram_scale'),
+      '#required' => TRUE,
+    ];
+    $form['phylogram_root_node_size'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Root Node Size'),
+      '#description' => $this->t('Please specify a size for the root node. If set to zero, the node will not appear.'),
+      '#default_value' => $this->getSetting('phylogram_root_node_size'),
+      '#min' => 0,
+      '#max' => 127,
+      '#required' => FALSE,
+    ];
+    $form['phylogram_interior_node_size'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Interior Node Size'),
+      '#description' => $this->t('Please specify a size for interior nodes. If set to zero, the node will not appear.'),
+      '#default_value' => $this->getSetting('phylogram_interior_node_size'),
+      '#min' => 0,
+      '#max' => 127,
+      '#required' => FALSE,
+    ];
+    $form['phylogram_leaf_node_size'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Leaf Node Size'),
+      '#description' => $this->t('Please specify a size for the terminal nodes. If set to zero, the node will not appear.'),
+      '#default_value' => $this->getSetting('phylogram_leaf_node_size'),
+      '#min' => 0,
+      '#max' => 127,
       '#required' => FALSE,
     ];
 
@@ -135,6 +169,14 @@ dpm($this->getSettings(), "CP2 settings");//@@@
     $summary = parent::settingsSummary();
     $summary[] = $this->t('Width: @phylogram_width',
                           ['@phylogram_width' => $this->getSetting('phylogram_width') ?? 600]);
+    $summary[] = $this->t('Scale: @phylogram_scale',
+                          ['@phylogram_scale' => $this->getSetting('phylogram_scale') ?? 'Linear']);
+    $summary[] = $this->t('Root node: @phylogram_root_node_size',
+                          ['@phylogram_root_node_size' => $this->getSetting('phylogram_root_node_size') ?? 3]);
+    $summary[] = $this->t('Int. node: @phylogram_interior_node_size',
+                          ['@phylogram_interior_node_size' => $this->getSetting('phylogram_interior_node_size') ?? 4]);
+    $summary[] = $this->t('Leaf node: @phylogram_leaf_node_size',
+                          ['@phylogram_leaf_node_size' => $this->getSetting('phylogram_leaf_node_size') ?? 6]);
     return $summary;
   }
 
