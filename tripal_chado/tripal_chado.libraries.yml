@@ -34,9 +34,9 @@ tripal_chado.field.ChadoSequenceFormatterDefault:
       src/Plugin/Field/FieldFormatter/ChadoSequenceFormatterDefault.css: {}
 
 tripal_chado-field-ui:
-  version: 1.x
+  version: '1.x'
   css:
     theme:
       css/tripal_chado.field_ui.css: {}
   dependencies:
-    - field_ui/drupal.field_ui.manage_fields
+    - 'field_ui/drupal.field_ui.manage_fields'
