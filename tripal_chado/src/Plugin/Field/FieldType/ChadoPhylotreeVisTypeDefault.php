@@ -32,6 +32,11 @@ use Drupal\tripal_chado\Services\ChadoPhylotree;
  */
 class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
 
+  /**
+   * The machine name of this field.
+   *
+   * @var string
+   */
   public static $id = "chado_phylotree_vis_type_default";
 
   /**
@@ -49,7 +54,7 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultFieldSettings() {
     $field_settings = parent::defaultFieldSettings();
-    // CV Term is 'EDAM:Phylogenetic tree rendering'
+    // CV Term is 'EDAM:Phylogenetic tree rendering'.
     $field_settings['termIdSpace'] = 'operation';
     $field_settings['termAccession'] = '0567';
     return $field_settings;
@@ -80,7 +85,8 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'tree_json', $tree_vis_term, [
       'action' => 'function',
       'drupal_store' => TRUE,
-      'namespace' => __CLASS__,  // 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPhylotreeVisTypeDefault',
+      // __CLASS__ resolves to 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoPhylotreeVisTypeDefault'
+      'namespace' => __CLASS__,
       'function' => 'getTreeJson',
     ]);
 
@@ -90,9 +96,10 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
    */
-  public function isCompatible(TripalEntityType $entity_type) : bool {
+  public function isCompatible(TripalEntityType $entity_type): bool {
     $compatible = FALSE;
 
     // Get the base table for the content type.
@@ -105,20 +112,26 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
   }
 
   /**
+   * Retrieves all phylonodes for one phylotree and converts to json format.
+   *
    * @param array $context
    *   Values that a callback function might need in order
    *   to calculate the field's final value.
    *
+   * @return string
+   *   A tree representation in json format.
    */
   public static function getTreeJson(array $context): string {
+
+    // This will hold each of the tripalTypes values.
     $field_name = $context['field_name'];
     $delta = $context['delta'];
-    // This will hold each of the tripalTypes values.
     $values = $context['values'][$field_name][$delta];
+
     // This retrieves the phylotree_id value.
     $record_id = $values['record_id']['value']->getValue();
-dpm("CPT5 getTreeJson() callback: field_name=$field_name delta=$delta phylotree_id=$record_id");//@@@
 
+    // This will retrieve the phylonodes and convert to json format.
     $chado = \Drupal::service('tripal_chado.database');
     $phylotree = new ChadoPhylotree($chado);
     $json = $phylotree->getTreeJson($record_id);

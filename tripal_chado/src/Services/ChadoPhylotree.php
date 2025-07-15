@@ -49,7 +49,7 @@ class ChadoPhylotree {
    *   No return value.
    */
   public function create(int $phylotree_id, ?string $chado_schema = NULL): void {
-    return;
+
   }
 
   /**
@@ -133,121 +133,7 @@ class ChadoPhylotree {
     $query->addField('fo', 'species', 'fo_species');
     $results = $query->execute();
     return $results;
-#      SELECT
-#        n.phylonode_id, n.parent_phylonode_id, n.label AS name, n.distance AS length,
-#        f.feature_id, f.name AS feature_name,
-#        cvt.name AS cvterm_name,
-#        o.organism_id, o.common_name, o.abbreviation, o.genus, o.species,
-#        fs.stock_id AS stock_id,
-#        fo.organism_id AS fo_organism_id, fo.common_name AS fo_common_name,
-#        fo.abbreviation AS fo_abbreviation, fo.genus as fo_genus, fo.species AS fo_species
-#      FROM {phylonode} n
-#        LEFT OUTER JOIN {cvterm} cvt              ON n.type_id = cvt.cvterm_id
-#        LEFT OUTER JOIN {feature} f               ON n.feature_id = f.feature_id
-#        LEFT OUTER JOIN {organism} fo             ON f.organism_id = fo.organism_id
-#        LEFT OUTER JOIN {phylonode_organism} po   ON po.phylonode_id = n.phylonode_id
-#        LEFT OUTER JOIN {organism} o              ON PO.organism_id = o.organism_id
-#        LEFT OUTER JOIN {feature_stock} fs        ON fs.feature_id = f.feature_id
-#      WHERE n.phylotree_id = :phylotree_id
   }
-
-
-
-
-
-  /**
-   * Prepares a phylogenetic tree for viewing.
-   *
-   * @param array $phylotree
-   *   Associative array of a single phylotree table record.
-   */
-  protected function tripalPhylogenyPrepareTreeViewer(array $phylotree) {
-
-    // The phylotree argument is required.
-    if (!$phylotree) {
-      throw new \Exception('tripalPhylogenyPrepareTreeViewer: must provide a $phylotree argument.');
-    }
-
-    $tripal_chado_settings = \Drupal::config('tripal_chado.settings');
-
-    // Don't prepare for viewing more than once.
-    if ($phylotree['prepared_to_view'] ?? FALSE) {
-      return;
-    }
-
-#  $module_path = drupal_get_path('module', 'tripal_chado');
-
-#  drupal_add_js('https://d3js.org/d3.v3.min.js', 'external');
-
-#  drupal_add_js("$module_path/theme/js/d3.phylogram.js");
-#  drupal_add_js("$module_path/theme/js/tripal_phylogeny.js");
-#  drupal_add_css("$module_path/theme/css/tripal_phylogeny.css");
-
-#  drupal_add_library('system', 'ui.dialog');
-
-    // Don't show tick marks for taxonomy trees.
-    $skip_ticks = 0;
-    if (($phylotree['type_id'] ?? 0) == $this->cv_terms['Species tree']) {
-      $skip_ticks = 1;
-    }
-
-    // Get the node colors as set by the administrator.
-    $color_defaults = $tripal_chado_settings->get('tripal_phylogeny_org_colors', [
-      '1' => [
-        'organism' => '',
-        'color' => '',
-      ],
-    ]);
-
-    $org_colors = [];
-    foreach ($color_defaults as $i => $details) {
-      if ($details['organism']) {
-        // Strip the [id:xxx] from the name
-        $organism_id = preg_replace('/^.+\[id: (\d+)\].*$/', '\1', $details['organism']);
-        $org_colors[$organism_id] = $details['color'];
-      }
-    }
-
-    $attached_variables = [
-      'tripal_chado' => [
-        'phylotree_url' => url('phylotree/' . $phylotree->phylotree_id),
-        'phylotree_theme_url' => url($module_path . '/theme'),
-        'tree_options' => [
-          'phylogram_width' => $tripal_chado_settings->get('tripal_phylogeny_default_phylogram_width', 350),
-          'root_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_root_node_size', 3),
-          'interior_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_interior_node_size', 1),
-          'leaf_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_leaf_node_size', 6),
-          'skipTicks' => $skip_ticks,
-          'phylogram_scale' => $tripal_chado_settings->get('tripal_phylogeny_default_phylogram_scale', 1),
-        ],
-        'org_colors' => $org_colors,
-      ],
-    ];
-
-  if (!property_exists($phylotree, 'has_nodes')) {
-    // If the nodes haven't loaded then set a value so the template can
-    // choose not to show the phylogram.
-    $values = ['phylotree_id' => $phylotree->phylotree_id];
-    $options = ['limit' => 1, 'offset' => 0, 'has_record' => 1];
-    $phylotree->has_nodes = chado_select_record('phylonode', ['phylonode_id'], $values, $options);
-  }
-  if (!property_exists($phylotree, 'has_features')) {
-    // If the nodes haven't loaded then set a value so the template can
-    // choose not to show the circular dendrogram. The chado_select_record()
-    // API call can't do this query so we have to do it manually.
-    $sql = "
-      SELECT count(*) as num_features
-      FROM {phylonode}
-      WHERE NOT feature_id IS NULL and phylotree_id = :phylotree_id
-      LIMIT 1 OFFSET 0
-    ";
-    $phylotree->has_features = chado_query($sql, [':phylotree_id' => $phylotree->phylotree_id])->fetchField();
-  }
-
-  #$phylotree->prepared_to_view = TRUE;
-
-  return $attached_variables;
-}
 
   /**
    * Get a json representation of all the nodes in a phylotree.
@@ -258,23 +144,18 @@ class ChadoPhylotree {
    * @return string
    *   The phylotree in json format.
    */
-  function getTreeJson(int $phylotree_id): string {
+  public function getTreeJson(int $phylotree_id): string {
     $json = '';
-ob_start(); var_dump($phylotree_id); $astring = ob_get_clean(); file_put_contents( "/dev/shm/log", "CPN1 phylotree_id=\"$astring\"\n", FILE_APPEND ); //@@@
 
     $phylotree = $this->loadPhylotreeById($phylotree_id);
     if (!$phylotree) {
       return $json;
     }
-ob_start(); var_dump($phylotree); $astring = ob_get_clean(); file_put_contents( "/dev/shm/log", "CPN2 phylotree=\"$astring\"\n", FILE_APPEND ); //@@@
 
     $nodes = $this->loadPhylonodesById($phylotree_id);
     if (!$nodes) {
       return $json;
     }
-file_put_contents( "/dev/shm/log", "CPN3 we have nodes\n", FILE_APPEND ); //@@@
-
- # $phylotree = chado_generate_var('phylotree', ['phylotree_id' => $phylotree_id]);@@@
 
     // Fetch all the phylonodes into an associative array indexed by
     // phylonode_id. Convert from database query record to array,
@@ -284,7 +165,6 @@ file_put_contents( "/dev/shm/log", "CPN3 we have nodes\n", FILE_APPEND ); //@@@
 
     while ($r = $nodes->fetchObject()) {
       $phylonode_id = (int) $r->phylonode_id;
-ob_start(); var_dump($phylonode_id); $astring = ob_get_clean(); file_put_contents( "/dev/shm/log", "CPN4 phylonode_id=\"$astring\"\n", FILE_APPEND ); //@@@
 
       // Expect all nodes to have these properties.
       $node = [
@@ -306,7 +186,7 @@ ob_start(); var_dump($phylonode_id); $astring = ob_get_clean(); file_put_content
 
       // If this node is associated with a feature, then add in the details.
       if ($r->feature_id) {
-        $node['feature_id'] = (int)$r->feature_id;
+        $node['feature_id'] = (int) $r->feature_id;
         $node['feature_name'] = $r->feature_name;
         // If not linked directly to a feature, leaf nodes can also be linked to
         // stock entities through an intermediate feature.
@@ -316,31 +196,28 @@ ob_start(); var_dump($phylonode_id); $astring = ob_get_clean(); file_put_content
         else {
           $entity_id = chado_get_record_entity_by_table('feature', $r->feature_id);
         }
-        $node['feature_eid'] = (int)$entity_id;
+        $node['feature_eid'] = (int) $entity_id;
       }
 
       // Add in the organism fields when they are available via the
       // phylonode_organism table.
       if ($r->organism_id) {
-        $node['organism_id'] = (int)$r->organism_id;
+        $node['organism_id'] = (int) $r->organism_id;
         $node['common_name'] = $r->common_name;
         $node['abbreviation'] = $r->abbreviation;
         $node['genus'] = $r->genus;
         $node['species'] = $r->species;
-        if (module_exists('tripal_phylogeny')) {
-          $node['organism_nid'] = (int)$r->organism_nid;
-        } else {
-          $entity_id = chado_get_record_entity_by_table('organism', $r->organism_id);
-          $node['organism_eid'] = (int)$entity_id;
-        }
+        // @todo fix
+        // if (module_exists('tripal_phylogeny')) {
+        //   $node['organism_nid'] = (int)$r->organism_nid;
+        // } else {
+        //   $entity_id = chado_get_record_entity_by_table('organism', $r->organism_id);
+        //   $node['organism_eid'] = (int)$entity_id;
+        // }
         // If the node does not have a name but is linked to an organism
         // then set the name to be that of the genus and species.
         if (!$r->name) {
-          if (function_exists('chado_get_organism_scientific_name')) {
-            $node['name'] = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $r->organism_id], []));
-          } else {
-            $node['name'] = $r->genus . ' ' . $r->species;
-          }
+          $node['name'] = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $r->organism_id], []));
         }
       }
 
@@ -360,35 +237,25 @@ ob_start(); var_dump($phylonode_id); $astring = ob_get_clean(); file_put_content
         }
       }
 
-ob_start(); var_dump($node); $astring = ob_get_clean(); file_put_contents( "/dev/shm/log", "CPN7 node=\"$astring\"\n", FILE_APPEND ); //@@@
       // Add this node to the list, organized by ID.
       $phylonodes[$phylonode_id] = $node;
     }
 
-file_put_contents( "/dev/shm/log", "CPN8a\n", FILE_APPEND ); //@@@
     // Populate the children[] arrays for each node.
     foreach ($phylonodes as $key => &$node) {
       if ($node['parent_phylonode_id'] !== 0) {
         $parent_ref = &$phylonodes[$node['parent_phylonode_id']];
         // Append node reference to children.
         $parent_ref['children'][] = &$node;
-file_put_contents( "/dev/shm/log", "CPN8b set parent\n", FILE_APPEND ); //@@@
       }
       else {
         $root_phylonode_ref = &$node;
-file_put_contents( "/dev/shm/log", "CPN8c set root\n", FILE_APPEND ); //@@@
       }
     }
-file_put_contents( "/dev/shm/log", "CPN8z\n", FILE_APPEND ); //@@@
 
     // Convert datastructure to json.
-#    // @todo inject this service
-#    $json = \Drupal::service('serializer')->serialize($root_phylonode_ref, 'json');
     $json = json_encode($root_phylonode_ref);
-ob_start(); var_dump($json); $astring = ob_get_clean(); file_put_contents( "/dev/shm/log", "CPN9 json=\"$astring\"\n", FILE_APPEND ); //@@@
 
-    // dump datastructure as json to browser. drupal sets the mime-type correctly.
-#  drupal_json_output($root_phylonode_ref);
     return $json;
   }
 
@@ -597,8 +464,7 @@ function tripal_phylogeny_default_plots_form($form, &$form_state) {
  *
  * @ingroup tripal_phylogeny
  */
-function tripal_phylogeny_default_plots_form_validate($form, &$form_state)
-{
+function tripal_phylogeny_default_plots_form_validate($form, &$form_state) {
 
 }
 
@@ -607,8 +473,7 @@ function tripal_phylogeny_default_plots_form_validate($form, &$form_state)
  * @param unknown $form
  * @param unknown $form_state
  */
-function tripal_phylogeny_default_plots_form_submit($form, &$form_state)
-{
+function tripal_phylogeny_default_plots_form_submit($form, &$form_state) {
   // Rebuild this form after submission so that any changes are reflected in
   // the flat tables.
   $form_state['rebuild'] = TRUE;
@@ -644,8 +509,7 @@ function tripal_phylogeny_default_plots_form_submit($form, &$form_state)
  *
  * @param unknown $variables
  */
-function theme_tripal_phylogeny_admin_org_color_tables($variables)
-{
+function theme_tripal_phylogeny_admin_org_color_tables($variables) {
   $fields = $variables['element'];
   $num_orgs = $fields['num_orgs']['#value'];
   $headers = ['Organism', 'Color', ''];
@@ -678,9 +542,7 @@ function theme_tripal_phylogeny_admin_org_color_tables($variables)
  * @param $form
  * @param $form_state
  */
-function tripal_phylogeny_default_plots_form_ajax_callback($form, $form_state)
-{
-
+function tripal_phylogeny_default_plots_form_ajax_callback($form, $form_state) {
   return $form['node_settings']['org_table'];
 }
 

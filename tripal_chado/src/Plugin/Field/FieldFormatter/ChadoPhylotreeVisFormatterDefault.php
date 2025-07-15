@@ -48,9 +48,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     // tripal_chado/tripal_chado.libraries.yml.
     $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.phylotree';
 
-    // Placeholder image prior to ajax load of phylogram.
-    $ajax_image_path = base_path() . \Drupal::service('extension.list.module')->getPath('tripal') . '/images/ajax-loader.gif';
-
     // Collect the tree display settings to pass to the javascript.
     $tripal_chado_settings = \Drupal::config('tripal_chado.settings');
 
@@ -63,9 +60,9 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
         ],
       ];
     $colors = [];
-    foreach ($color_defaults as $i => $details) {
+    foreach ($color_defaults as $details) {
       if ($details['organism']) {
-        // Strip the [id:xxx] from the name
+        // Strip the [id:xxx] from the name.
         $organism_id = preg_replace('/^.+\[id: (\d+)\].*$/', '\1', $details['organism']);
         $colors[$organism_id] = $details['color'];
       }
@@ -77,7 +74,8 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       'root_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_root_node_size') ?? 3,
       'interior_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_interior_node_size') ?? 1,
       'leaf_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_leaf_node_size') ?? 6,
-      'skipTicks' => 0, //@@@todo
+      // @todo get the setting for skipTicks.
+      'skipTicks' => 0,
       'phylogram_scale' => $tripal_chado_settings->get('tripal_phylogeny_default_phylogram_scale') ?? 1,
       'org_colors' => $colors,
     ];
