@@ -6,6 +6,7 @@ on:
     branches:
       - '4.x'
       - 'tv4g0-2208-codeclimateToQltyCloud'
+      - 'tv4g9-issue2170-wrong-config-drupal-10.x-dockers'
   # Allows us to schedule when this workflow is run.
   # This ensures we pick up any new changes in Drupal.
   schedule:
@@ -30,3 +31,4 @@ jobs:
           pgsql-version: '17'
           drupal-version: '10.5.x-dev'
           build-image: true
+          phpunit-command-options: '-c /var/www/drupal/web/modules/contrib/tripal/phpunit.9.6.xml'
