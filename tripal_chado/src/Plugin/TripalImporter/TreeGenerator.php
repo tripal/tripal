@@ -56,7 +56,7 @@ class TreeGenerator extends ChadoImporterBase {
       '#type' => 'fieldset',
       '#title' => 'INSTRUCTIONS',
       '#description' => t('This form is used to generate a phylogenetic
-        tree for organisms at exist on this site. The organisms need to
+        tree for organisms that exist on this site. The organisms need to
         have been previously prepared using the Taxonomy Importer in order
         to have the lineage properties in place.'),
     ];
@@ -349,6 +349,32 @@ class TreeGenerator extends ChadoImporterBase {
   }
 
   /**
+   * Splits apart lineage ex terms when present.
+   *
+   * @param string $name
+   *   A lineage element, either a name or level:ncbitaxid:name.
+   *   Examples: "genus:4038:Daucus" or "section:1873447:Daucus sect. Daucus".
+   *
+   * @return array
+   *   Associative array with the various parts.
+   */
+  protected function splitLineageEx(string $name): array {
+    $result = [
+      'rank' => NULL,
+      'ncbi_taxid' => NULL,
+      'name' => $name,
+    ];
+    $parts = explode(':', $name, 3);
+    if (count($parts) == 3) {
+      $result['rank'] = $parts[0];
+      $result['ncbi_taxid'] = $parts[1];
+      $result['name'] = $parts[2];
+    }
+    return $result;
+
+  }
+
+  /**
    * Called by rebuildTree(), adds lineage nodes for one organism.
    *
    **/
@@ -387,22 +413,16 @@ class TreeGenerator extends ChadoImporterBase {
     foreach ($lineage_elements as $element) {
 
       // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
-      $subelements = explode(':', $element, 3);
-      $node_rank = NULL;
-      $node_name = $subelements[0];
-      if (count($subelements) == 3) {
-        $node_rank = $subelements[0];
-        $node_name = $subelements[2];
-      }
+      $subelements = $this->splitLineageEx($element);
 
       // Stores the retrieved node in $lineage_nodes and returns properties
-      $phylonodeprop = $this->queryPhylonode($this->phylotree->phylotree_id, $node_name, $lineage_good, $lineage_nodes);
+      $phylonodeprop = $this->queryPhylonode($this->phylotree->phylotree_id, $subelements['name'], $lineage_good, $lineage_nodes);
       if (!$lineage_good) {
         continue;
       }
 
       $node = [
-        'name' => $node_name,
+        'name' => $subelements['name'],
         'depth' => $i,
         'is_root' => 0,
         'is_leaf' => 0,
@@ -542,15 +562,10 @@ class TreeGenerator extends ChadoImporterBase {
       $i = 1;
       foreach ($lineage_elements as $element) {
         // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
-        $subelements = explode(':', $element, 3);
-        $node_rank = NULL;
-        $node_name = $subelements[0];
-        if (count($subelements) == 3) {
-          $node_rank = $subelements[0];
-          $node_name = $subelements[2];
-        }
+        $subelements = $this->splitLineageEx($element);
+
         $node = [
-          'name' => $node_name,
+          'name' => $subelements['name'],
           'depth' => $i,
           'is_root' => 0,
           'is_leaf' => 0,
@@ -561,9 +576,9 @@ class TreeGenerator extends ChadoImporterBase {
           'branch_set' => [],
           'parent' => $parent['name']
         ];
-        if ($node_rank) {
+        if ($subelements['rank']) {
           $node['properties'] = [
-            $this->rank_cvterm_id => $node_rank,
+            $this->rank_cvterm_id => $subelements['rank'],
           ];
         }
         $parent = $node;
@@ -623,15 +638,17 @@ class TreeGenerator extends ChadoImporterBase {
             return;
           }
           // Otherwise, set the branch to be the current branch and continue.
-          if (isset($branch_set[$j]['name']) and isset($lineage_elements[$i - 1])
-              and ($branch_set[$j]['name'] == $lineage_elements[$i - 1])) {
-            $branch_set = &$branch_set[$j]['branch_set'];
-            break;
+          if (isset($branch_set[$j]['name']) and isset($lineage_elements[$i - 1])) {
+            $subelements = $this->splitLineageEx($lineage_elements[$i - 1]);
+            if ($branch_set[$j]['name'] == $subelements['name']) {
+              $branch_set = &$branch_set[$j]['branch_set'];
+              break;
+            }
           }
         }
       }
     }
-    // Add the node to the last branch set.  This should be where this node goes.
+    // Add the node to the last branch set. This should be where this node goes.
     $branch_set[] = $node;
   }
 
@@ -666,6 +683,7 @@ class TreeGenerator extends ChadoImporterBase {
         $lineage_elements = array_slice($lineage_elements, $index, NULL, FALSE);
       }
     }
+print "CP71 lineage_elements=";var_dump($lineage_elements);//@@@
     return $lineage_elements;
   }
 

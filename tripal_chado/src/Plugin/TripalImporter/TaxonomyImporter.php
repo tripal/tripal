@@ -307,6 +307,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         if (!empty($api_key)) {
           $search_url .= "&api_key=" . $api_key;
         }
+        usleep($sleep_time);
         $xml_text = $this->fileretriever->retrieveFileContents($search_url);
         if (is_null($xml_text)) {
           $this->logger->warning("Could not look up @sci_name",
@@ -526,6 +527,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     }
 
     // Query NCBI
+    usleep($sleep_time);
     $xml_text = $this->fileretriever->retrieveFileContents($fetch_url);
     if (!is_null($xml_text)) {
       $xml = new \SimpleXMLElement($xml_text);
