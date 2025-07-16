@@ -22,7 +22,7 @@ class ChadoRecords  {
   protected array $records = [];
 
   /**
-   * Holds the violations during validatin.
+   * Holds the violations during validation.
    *
    * @var array
    */
@@ -96,7 +96,7 @@ class ChadoRecords  {
   }
 
   /**
-   * Initalies the records
+   * Initalizes the records.
    *
    * @param array $elements
    *   An array of items used to initalize the internal records array.
@@ -975,7 +975,7 @@ class ChadoRecords  {
 
 
   /**
-   * Retreives the Chado column for a given base table and table alis.
+   * Retrieves the Chado column for a given base table and table alis.
    *
    * @param string $base_table
    *   The name of the Chado table used as a base table.
@@ -1010,7 +1010,7 @@ class ChadoRecords  {
   }
 
   /**
-   * Retreives all of the column aliases for a given chado column.
+   * Retrieves all of the column aliases for a given chado column.
    *
    * @param string $base_table
    *   The name of the Chado table used as a base table.
@@ -1162,7 +1162,7 @@ class ChadoRecords  {
    *
    * @param ChadoRecords $records
    *
-   *   The ChadoRecords object shose records should be copied.
+   *   The ChadoRecords object whose records should be copied.
    */
   public function copyRecords(ChadoRecords $records) {
     $this->records = $records->getRecordsArray();
@@ -1172,7 +1172,7 @@ class ChadoRecords  {
    *  Provides a series of validation checks on the ChadoRecord records.
    *
    *  If any of the records do not pass a validation check then these are
-   *  returned as an array of violoations.
+   *  returned as an array of violations.
    *
    *  @return  array of ConstraintViolation
    */
@@ -1723,7 +1723,7 @@ class ChadoRecords  {
       }
 
       // If limiting results to a set of primary keys, restrict the
-      // query by adding this as acondition.
+      // query by adding this as a condition.
       if ($record_ids) {
         $chado_table_def = $this->connection->schema()->getTableDef($chado_table, ['format' => 'drupal']);
         $chado_table_pkey = $chado_table_def['primary key'];

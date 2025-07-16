@@ -166,7 +166,7 @@ class ChadoStorageDeleteValuesTest extends ChadoTestKernelBase {
     $result = $query->execute()->fetchObject();
     $this->assertFalse($result, 'Did not delete the feature_contact record');
 
-    // Make srue the contact record is still present.
+    // Make sure the contact record is still present.
     $query = $this->chado_connection->select('1:contact','c');
     $query->fields('c');
     $query->condition('contact_id', $contact_id);

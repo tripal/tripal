@@ -59,7 +59,7 @@ interface BioTaskInterface {
    *   exclusive use) during the task. If a schema comes from a different
    *   database than the default one (ie. the one used by Drupal), the schema
    *   name must be prefixed by the database key name (and not the "target", as
-   *   describbed in \Drupal\Core\Database\Database::getConnection()) followed
+   *   described in \Drupal\Core\Database\Database::getConnection()) followed
    *   by a dot.
    *
    * @throws \Drupal\tripal_biodb\Exception\ParameterException

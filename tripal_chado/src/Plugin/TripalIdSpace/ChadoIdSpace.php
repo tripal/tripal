@@ -68,7 +68,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
    * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
-   * this method is used to determine the parameters to pass to the contructor.
+   * this method is used to determine the parameters to pass to the constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    * @param array $configuration
@@ -617,7 +617,7 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   }
 
   /**
-   * Retreives a record from the Cahdo dbxref table using the term ID.
+   * Retrieves a record from the Cahdo dbxref table using the term ID.
    *
    * @param string $term_id
    *   The term ID (e.g. GO:0044708).

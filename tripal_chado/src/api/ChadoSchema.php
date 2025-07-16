@@ -19,7 +19,7 @@ use Drupal\Core\Database\Database;
  * @endcode
  *
  * where the variable $table contains the name of the table you want to
- * retireve.  The getTableSchema method determines the appropriate version of
+ * retrieve.  The getTableSchema method determines the appropriate version of
  * Chado and uses the Drupal hook infrastructure to call the appropriate
  * hook function to retrieve the table schema.
  *
@@ -637,8 +637,8 @@ class ChadoSchema {
       tripal_report_error(
         'ChadoSchema',
         TRIPAL_WARNING,
-        'Unable to check the type of !table!column since it doesn\'t appear to exist in your site database.',
-        ['!column' => $column, '!table' => $table]
+        'Unable to check the type of @table.@column since it doesn\'t appear to exist in your site database.',
+        ['@column' => $column, '@table' => $table]
       );
       return FALSE;
     }
@@ -654,8 +654,8 @@ class ChadoSchema {
         tripal_report_error(
           'ChadoSchema',
           TRIPAL_WARNING,
-          'Unable to check the type of !table!column due to being unable to find the schema definition.',
-          ['!column' => $column, '!table' => $table]
+          'Unable to check the type of @table.@column due to being unable to find the schema definition.',
+          ['@column' => $column, '@table' => $table]
         );
         return FALSE;
       }
