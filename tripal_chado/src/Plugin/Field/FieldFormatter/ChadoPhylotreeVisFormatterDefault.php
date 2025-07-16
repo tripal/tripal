@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
+use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
 
 /**
  * Plugin implementation of default Tripal Phylotree Visualization formatter.
@@ -36,10 +37,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
-
-    // Attaches the css and js for visualization as defined in
-    // tripal_chado/tripal_chado.libraries.yml.
-    $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.phylotree';
 
     // Collect the tree display settings to pass to the javascript.
     $tripal_chado_settings = \Drupal::config('tripal_chado.settings');
@@ -73,7 +70,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       'org_colors' => $colors,
     ];
 
-dpm($treeOptions, "CP1 treeOptions");//@@@
     // Will only be one item because cardinality = 1.
     foreach ($items as $delta => $item) {
       $values = [
@@ -114,6 +110,11 @@ dpm($treeOptions, "CP1 treeOptions");//@@@
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $form = parent::settingsForm($form, $form_state);
 
+    // Attaches the css for the settings form as defined in
+    // tripal_chado/tripal_chado.libraries.yml.
+    $form['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoPhylotreeVisFormatterSettings';
+
+    // Form elements for each of the settings.
     $form['phylogram_width'] = [
       '#type' => 'number',
       '#title' => $this->t('Tree Width'),
@@ -159,7 +160,62 @@ dpm($treeOptions, "CP1 treeOptions");//@@@
       '#required' => FALSE,
     ];
 
+    $colors = $this->getSetting('phylogram_colors') ?? [];
+    $colors = $this->removeEmptyColors($colors);
+    $form['phylogram_colors_info']['desc'] = [
+      '#type' => 'item',
+      '#title' => t('Node Colors by Organism'),
+      '#markup' => t('If the trees are associated with features (e.g. proteins)
+        then the nodes can be color-coded by their organism.  This helps the user
+        visualize which nodes belong to each organism.  Please enter the
+        name of the organism and it\'s corresponding color in HEX code (e.g. #FF0000 == red).
+        Organisms that are not given a color will be gray.'),
+    ];
+    $form['phylogram_colors'] = [
+      '#element_validate' => [[$this, 'settingsFormValidateColors']],
+    ];
+    // Iterate through the number of organism colors and add a field for each one.
+    for ($i = 0; $i < count($colors) + 1; $i++) {
+      // Wrapper so both fields can be styled onto one the same line.
+#      $form['phylogram_colors'][$i]['#prefix'] = '<div class="chado-phylotreevis-settings-field-wrapper form-item">';
+      $form['phylogram_colors'][$i]['organism'] = [
+        '#prefix' => '<div class="chado-phylotreevis-settings-field-wrapper form-item">',
+        '#type' => 'textfield',
+        '#default_value' => $colors[$i]['organism'] ?? '',
+        '#autocomplete_route_name' => 'tripal_chado.organism_autocomplete',
+        '#autocomplete_route_parameters' => ['match_limit' => 10],
+        '#size' => 20,
+      ];
+      $form['phylogram_colors'][$i]['color'] = [
+        '#type' => 'textfield',
+        '#description' => t('Please provide a color in Hex format (e.g. #FF0000).'),
+        '#default_value' => $colors[$i]['color'] ?? '',
+        '#size' => 10,
+        '#suffix' => '</div>',
+      ];
+#      $form['phylogram_colors'][$i]['#suffix'] = '</div>';
+    }
+
     return $form;
+  }
+
+  /**
+   * Removes empty or incomplete color array elements.
+   *
+   * @param array $colors
+   *   Array of associative arrays with 'organism' and 'color' keys.
+   *
+   * @return array
+   *   The updated array with empty elements removed.
+   */
+  protected function removeEmptyColors(array $colors): array {
+    $updated_colors = [];
+    foreach ($colors as $config) {
+      if ($config['organism'] && $config['color']) {
+        $updated_colors[] = $config;
+      }
+    }
+    return $updated_colors;
   }
 
   /**
@@ -177,7 +233,51 @@ dpm($treeOptions, "CP1 treeOptions");//@@@
                           ['@phylogram_interior_node_size' => $this->getSetting('phylogram_interior_node_size') ?? 4]);
     $summary[] = $this->t('Leaf node: @phylogram_leaf_node_size',
                           ['@phylogram_leaf_node_size' => $this->getSetting('phylogram_leaf_node_size') ?? 6]);
+    $n_colors = count($this->getSetting('phylogram_colors') ?? []);
+    if ($n_colors) {
+      $summary[] = $this->t('Colors: @n_colors',
+                          ['@n_colors' => $n_colors]);
+    }
     return $summary;
+  }
+
+  /**
+   * Form element validation handler for organism colors.
+   *
+   * @param array $form
+   *   The form where the settings form is being included in.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) form.
+   */
+  public function settingsFormValidateColors(array $form, FormStateInterface $form_state) {
+    // ID for this field is "chado_phylotree_vis_formatter_default".
+    $plugin_definition = $this->getPluginDefinition();
+    $id = $plugin_definition['id'];
+
+    // This is used for setting validation errors on specific fields.
+    $field_parents = implode('][', $form['#parents']);
+
+    // This form state can contain settings for all of the fields for the
+    // current content type, but we only want to validate our own field.
+    $field_values = $form_state->getValue('fields');
+    foreach ($field_values as $field => $field_settings) {
+      if (($field_settings['type'] == $id) and (array_key_exists('settings_edit_form', $field_settings))) {
+        $phylogram_colors = $field_settings['settings_edit_form']['settings']['phylogram_colors'] ?? [];
+        foreach ($phylogram_colors as $delta => $config) {
+          // Ignore blank entries.
+          if ($config['organism'] || $config['color']) {
+            if (!preg_match('/\(\d+\)/', $config['organism'])) {
+              $form_state->setErrorByName($field_parents . "][$delta][organism",
+                  $this->t('Organism must include numeric record ID inside parentheses, please let the autocomplete add this value'));
+            }
+            if (!preg_match('/^#[0-9A-F]{6}/', $config['color'])) {
+              $form_state->setErrorByName($field_parents . "][$delta][color",
+                  $this->t('Color must be of the format #000000'));
+            }
+          }
+        }
+      }
+    }
   }
 
 }
