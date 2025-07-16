@@ -28,6 +28,11 @@ tripal_chado.field.ChadoRelationshipWidgetDefault:
     component:
       src/Plugin/Field/FieldWidget/ChadoRelationshipWidgetDefault.css: {}
 
+tripal_chado.field.ChadoPhylotreeVisFormatterSettings:
+  css:
+    component:
+      src/Plugin/Field/FieldFormatter/ChadoPhylotreeVisFormatterSettings.css: {}
+
 tripal_chado.field.ChadoSequenceFormatterDefault:
   css:
     component:
