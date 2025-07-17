@@ -15,8 +15,8 @@ tripal_chado.phylotree:
     js/d3.phylogram.js: {}
     js/tripal_phylogeny.js: {}
   dependencies:
-    - core/drupal
-    - core/once
+    - 'core/drupal'
+    - 'core/once'
 
 tripal_chado.field.ChadoDbxrefWidgetDefault:
   css:
