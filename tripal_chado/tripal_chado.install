@@ -463,6 +463,50 @@ function tripal_chado_field_reload(array $upgradable_types, array $upgradable_pr
 }
 
 /**
+ * Reloads content type collections from their YAML files.
+ *
+ * @param array $collection_names
+ *   The names of the collections to reload, valid values are
+ *   ['expression', 'general', 'genetic', 'genomic', 'germplasm'].
+ *
+ * @return void
+ *   No return value.
+ */
+function updateContentTypeCollections(array $collection_names): void {
+  /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+  $active_storage = \Drupal::service('config.storage');
+  $config_dir = __DIR__ . '/config/install';
+  $source = new FileStorage($config_dir);
+  foreach ($collection_names as $collection) {
+    $entitytype_collection_id = 'tripal.tripalentitytype_collection.' . $collection . '_chado';
+    $field_collection_id = 'tripal.tripalfield_collection.' . $collection . '_chado';
+    $active_storage->write($entitytype_collection_id, $source->read($entitytype_collection_id));
+    $active_storage->write($field_collection_id, $source->read($field_collection_id));
+  }
+}
+
+/**
+ * Reinstalls a specified content type collection.
+ *
+ * @param string $contentTypeCollection
+ *   The name of the content type collection, e.g. "general".
+ *
+ * @return void
+ *   No return value.
+ */
+function reloadContentTypeCollection(string $contentTypeCollection): void {
+  // Reload the content type collection yaml into Drupal storage.
+  updateContentTypeCollections([$contentTypeCollection]);
+
+  // Reinstall the specified content type collection.
+  // Any new bundles or fields will be created.
+  $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
+  $content_type_service->install([$contentTypeCollection . '_chado']);
+  $field_type_service = \Drupal::service('tripal.tripalfield_collection');
+  $field_type_service->install([$contentTypeCollection . '_chado']);
+}
+
+/**
  * Reads a YAML file and adds the specified fields.
  *
  * @param string $yaml_path
@@ -949,14 +993,7 @@ function tripal_chado_update_10414() {
     // Update collection configurations so that any content type
     // collections not yet imported will include the new relationship fields
     $collections = ['expression', 'general', 'genetic', 'genomic', 'germplasm'];
-    /** @var \Drupal\Core\Config\StorageInterface $active_storage */
-    $active_storage = \Drupal::service('config.storage');
-    $config_dir = __DIR__ . '/config/install';
-    foreach ($collections as $collection) {
-      $name = 'tripal.tripalfield_collection.' . $collection . '_chado';
-      $source = new FileStorage($config_dir);
-      $active_storage->write($name, $source->read($name));
-    }
+    updateContentTypeCollections($collections);
 
     // For any collections already imported, add all of the new relationship fields.
     addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.expression_chado.yml',
@@ -973,5 +1010,91 @@ function tripal_chado_update_10414() {
   }
   catch (\Exception $e) {
     throw new UpdateException('Could not perform update: ' . $e->getMessage());
+  }
+}
+
+/**
+ * Updates to phylogenetic trees. PR 2223.
+ */
+function tripal_chado_update_10415() {
+  try {
+    $messenger = \Drupal::messenger();
+    $chado = \Drupal::service('tripal_chado.database');
+    $genomic_fields_yaml = __DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml';
+
+    // Adds a new CV term for storing the type of phylotree.
+    $buddy_service = \Drupal::service('tripal_chado.chado_buddy');
+    $cvterm_buddy = $buddy_service->createInstance('chado_cvterm_buddy', []);
+    $term_values = [
+      'db.name' => 'data',
+      'cv.name' => 'EDAM',
+      'dbxref.accession' => '1122',
+      'cvterm.name' => 'Phylogenetic tree type',
+      'cvterm.definition' => 'A label (text token) describing the type of a phylogenetic tree. [http://edamontology.org]',
+    ];
+    $chado_cvterm_record = $cvterm_buddy->upsertCvterm($term_values, []);
+    $messenger->addMessage('Added "EDAM:Phylogenetic tree type" term');
+
+    // Updates nonstandard terms for existing phylotrees, moving them
+    // to properties. First get the two standard terms.
+    $chado_buddy_records = $cvterm_buddy->getCvterm([
+      'cv.name' => 'EDAM',
+      'cvterm.name' => 'Phylogenetic tree',
+    ]);
+    $phylotree_bundle_id = $chado_buddy_records[0]->getValue('cvterm.cvterm_id');
+    $chado_buddy_records = $cvterm_buddy->getCvterm([
+      'cv.name' => 'EDAM',
+      'cvterm.name' => 'Species tree',
+    ]);
+    // Get the term for the property.
+    $speciestree_bundle_id = $chado_buddy_records[0]->getValue('cvterm.cvterm_id');
+    $chado_buddy_records = $cvterm_buddy->getCvterm([
+      'cv.name' => 'EDAM',
+      'cvterm.name' => 'Phylogenetic tree type',
+    ]);
+    $property_id = $chado_buddy_records[0]->getValue('cvterm.cvterm_id');
+    $query = $chado->select('1:phylotree', 't');
+    $query->condition('type_id', [$phylotree_bundle_id, $speciestree_bundle_id], 'NOT IN');
+    $query->fields('t', ['phylotree_id', 'type_id']);
+    $needs_fixing = $query->execute();
+    $n_updated = 0;
+    foreach ($needs_fixing as $phylotree) {
+      // Look up the cvterm name of the tree type.
+      $chado_buddy_records = $cvterm_buddy->getCvterm([
+        'cvterm.cvterm_id' => $phylotree->type_id,
+      ]);
+      $term_name = $chado_buddy_records[0]->getValue('cvterm.name');
+      // Insert the existing term name as a property.
+      $insert_fields = [
+        'phylotree_id' => $phylotree->phylotree_id,
+        'type_id' => $property_id,
+        'value' => $term_name,
+      ];
+      $chado->insert('1:phylotreeprop')
+        ->fields($insert_fields)
+        ->execute();
+      // Change the term of the phylotree record to the bundle term.
+      $chado->update('1:phylotree')
+        ->condition('phylotree_id', $phylotree->phylotree_id, '=')
+        ->fields(['type_id' => $phylotree_bundle_id])
+        ->execute();
+      $n_updated++;
+    }
+    if ($n_updated) {
+      $messenger->addMessage("Updated $n_updated phylotrees to use the standard CV term for this bundle");
+    }
+
+    // Add a field to access the 'Phylogenetic tree type' property. Only
+    // adds this field if the genomic content type collection has been loaded.
+    addFieldFromYaml($genomic_fields_yaml, ['phylotree_tree_type']);
+    $messenger->addMessage('Added "Phylogenetic Tree Type" field');
+
+    // There is a new bundle for species tree in the general collection.
+    reloadContentTypeCollection('general');
+    $messenger->addMessage('Added a "Species Tree" content type');
+
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not update phylotree: ' . $e->getMessage());
   }
 }
