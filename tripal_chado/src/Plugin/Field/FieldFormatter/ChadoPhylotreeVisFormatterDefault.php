@@ -46,24 +46,17 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     $tripal_chado_settings = \Drupal::config('tripal_chado.settings');
 
     // Get the node colors as set by the administrator.
-    $color_defaults = $this->getSetting('phylogram_colors');
-#$tripal_chado_settings->get('tripal_phylogeny_org_colors') ??
-#      [
-#        '1' => [
-#          'organism' => '',
-#          'color' => '',
-#        ],
-#      ];
+    $color_settings = $this->getSetting('phylogram_colors');
     $colors = [];
-    foreach ($color_defaults as $details) {
-      if ($details['organism']) {
-        // Strip the [id:xxx] from the name.
-        $organism_id = preg_replace('/^.+\[id: (\d+)\].*$/', '\1', $details['organism']);
+    foreach ($color_settings as $details) {
+      if ($details['organism'] && $details['color']) {
+        // Extract the organism_id from the name.
+        $organism_id = preg_replace('/^.+\((\d+)\)$/', '\1', $details['organism']);
         $colors[$organism_id] = $details['color'];
       }
     }
 
-    // All of the settings used for formatting the phylotree.
+    // Contains all of the settings used for formatting the phylotree.
     $treeOptions = [
       'phylogram_width' => $this->getSetting('phylogram_width'),
       'phylogram_scale' => $this->getSetting('phylogram_scale'),
