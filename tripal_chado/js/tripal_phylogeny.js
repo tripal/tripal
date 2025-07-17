@@ -44,8 +44,11 @@
     var organism_color = treeOptions['org_colors'];
     var color = null;
 
-    if (d.fo_genus) {
+    if (d.fo_organism_id) {
       color = organism_color[d.fo_organism_id];
+    }
+    if (d.organism_id) {
+      color = organism_color[d.organism_id];
     }
     if (color) {
       return color;

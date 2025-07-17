@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Services;
 
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal\Services\TripalEntityLookup;
 
 /**
  * Handle visualization of a phylogenetic tree.
@@ -17,6 +18,13 @@ class ChadoPhylotree {
   protected ChadoConnection $chado_connection;
 
   /**
+   * Tripal entity lookup service.
+   *
+   * @var Drupal\tripal\Services\TripalEntityLookup
+   */
+  protected TripalEntityLookup $entity_lookup_manager;
+
+  /**
    * Stores the bundle terms for phylotree content types.
    *
    * @var array
@@ -29,13 +37,14 @@ class ChadoPhylotree {
    * @param Drupal\tripal_chado\Database\ChadoConnection $chado_connection
    *   The chado connection used to query chado.
    */
-  public function __construct(ChadoConnection $chado_connection) {
+  public function __construct(ChadoConnection $chado_connection, TripalEntityLookup $entity_lookup_manager) {
     $this->chado_connection = $chado_connection;
+    $this->entity_lookup_manager = $entity_lookup_manager;
     $this->initializeCvTerms();
   }
 
   /**
-   * Creates a new ChadoPhylotree visualization.
+   * Creates json for ChadoPhylotree visualization.
    *
    * This will generate a phylotree in json format for tree visualization.
    *
@@ -191,10 +200,10 @@ class ChadoPhylotree {
         // If not linked directly to a feature, leaf nodes can also be linked to
         // stock entities through an intermediate feature.
         if ($r->stock_id) {
-          $entity_id = chado_get_record_entity_by_table('stock', $r->stock_id);
+          $entity_id = $this->entity_lookup_manager->getEntityId($r->stock_id, NULL, NULL, 'stock');
         }
         else {
-          $entity_id = chado_get_record_entity_by_table('feature', $r->feature_id);
+          $entity_id = $this->entity_lookup_manager->getEntityId($r->feature_id, NULL, NULL, 'feature');
         }
         $node['feature_eid'] = (int) $entity_id;
       }
@@ -205,15 +214,8 @@ class ChadoPhylotree {
         $node['organism_id'] = (int) $r->organism_id;
         $node['common_name'] = $r->common_name;
         $node['abbreviation'] = $r->abbreviation;
-        $node['genus'] = $r->genus;
-        $node['species'] = $r->species;
-        // @todo fix
-        // if (module_exists('tripal_phylogeny')) {
-        //   $node['organism_nid'] = (int)$r->organism_nid;
-        // } else {
-        //   $entity_id = chado_get_record_entity_by_table('organism', $r->organism_id);
-        //   $node['organism_eid'] = (int)$entity_id;
-        // }
+        $node['organism_eid'] = $this->entity_lookup_manager->getEntityId($r->organism_id, 'OBI', '0100026', 'organism');
+
         // If the node does not have a name but is linked to an organism
         // then set the name to be that of the genus and species.
         if (!$r->name) {
@@ -229,12 +231,7 @@ class ChadoPhylotree {
         $node['fo_abbreviation'] = $r->fo_abbreviation;
         $node['fo_genus'] = $r->fo_genus;
         $node['fo_species'] = $r->fo_species;
-        if (module_exists('tripal_phylogeny')) {
-          $node['fo_organism_nid'] = (int)$r->fo_organism_nid;
-        } else {
-          $entity_id = chado_get_record_entity_by_table('organism', $r->fo_organism_id);
-          $node['fo_organism_eid'] = (int)$entity_id;
-        }
+        $node['fo_organism_eid'] = $this->entity_lookup_manager->getEntityId($r->fo_organism_id, 'OBI', '0100026', 'organism');
       }
 
       // Add this node to the list, organized by ID.
@@ -294,217 +291,6 @@ function tripal_phylogeny_admin_phylotrees_listing() {
   return $output;
 }
 
-
-/**
- *
- * @param unknown $form
- * @param unknown $form_state
- */
-function tripal_phylogeny_default_plots_form($form, &$form_state) {
-  $form = [];
-  $tripal_chado_settings = \Drupal::config('tripal_chado.settings');
-
-  $form['plot_settings'] = [
-    '#type' => 'fieldset',
-    '#title' => t('Plot Settings'),
-    '#description' => t('You can customize settings for each plot'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-  ];
-
-  $form['plot_settings']['phylogram_width'] = [
-    '#type' => 'textfield',
-    '#title' => 'Tree Width',
-    '#description' => 'Please specify the width in pixels for the phylogram',
-    '#default_value' => $tripal_chado_settings->get('tripal_phylogeny_default_phylogram_width', 350),
-    '#element_validate' => [
-      'element_validate_integer_positive',
-    ],
-    '#size' => 5,
-  ];
-
-  $form['plot_settings']['phylogram_scale'] = [
-    '#type' => 'select',
-    '#title' => t('Phylogram Scale'),
-    '#description' => 'Please specify the scale to use.',
-    '#default_value' => $tripal_chado_settings->get('tripal_phylogeny_default_phylogram_scale', 1),
-    '#options' => array(
-      1 => t('Linear'),
-      2 => t('Logarithmic'),
-    ),
-    '#size' => 2,
-  ];
-
-
-  $form['node_settings'] = [
-    '#type' => 'fieldset',
-    '#title' => t('Node Settings'),
-    '#description' => t('You can customize settings for the nodes on the trees.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-  ];
-  $form['node_settings']['root_node_size'] = [
-    '#type' => 'textfield',
-    '#title' => 'Root Node Size',
-    '#description' => 'Please specify a size for the root node size. If set to zero, the node will not appear.',
-    '#default_value' => $tripal_chado_settings->get('tripal_phylogeny_default_root_node_size', 3),
-    '#element_validate' => [
-      'element_validate_integer',
-    ],
-    '#size' => 3,
-  ];
-  $form['node_settings']['interior_node_size'] = [
-    '#type' => 'textfield',
-    '#title' => 'Interor Node Size',
-    '#description' => 'Please specify a size for the interior node size. If set to zero, the node will not appear.',
-    '#default_value' => $tripal_chado_settings->get('tripal_phylogeny_default_interior_node_size', 0),
-    '#element_validate' => [
-      'element_validate_integer',
-    ],
-    '#size' => 3,
-  ];
-  $form['node_settings']['leaf_node_size'] = [
-    '#type' => 'textfield',
-    '#title' => 'Leaf Node Size',
-    '#description' => 'Please specify a size for the leaf node size. If set to zero, the node will not appear.',
-    '#default_value' => $tripal_chado_settings->get('tripal_phylogeny_default_leaf_node_size', 6),
-    '#element_validate' => [
-      'element_validate_integer',
-    ],
-    '#size' => 3,
-  ];
-
-  // Get the number of organism colors that already exist. If the site admin
-  // has set colors then those settings will be in a Drupal variable which we
-  // will retrieve.  Otherwise the num_orgs defaults to 1 and a single
-  // set of fields is provided.
-  $num_orgs = $tripal_chado_settings->get("tripal_phylogeny_num_orgs", 1);
-  if (array_key_exists('values', $form_state) and array_key_exists('num_orgs', $form_state['values'])) {
-    $num_orgs = $form_state['values']['num_orgs'];
-  }
-  // The default values for each organism color are provided in a d
-  // Drupal variable that gets set when the form is set.
-  $color_defaults = $tripal_chado_settings->get("tripal_phylogeny_org_colors", [
-    '1' => [
-      'organism' => '',
-      'color' => '',
-    ],
-  ]);
-
-  $form['node_settings']['desc'] = [
-    '#type' => 'item',
-    '#title' => t('Node Colors by Organism'),
-    '#markup' => t('If the trees are associated with features (e.g. proteins)
-      then the nodes can be color-coded by their organism.  This helps the user
-      visualize which nodes belong to each organism.  Please enter the
-      name of the organism and it\'s corresponding color in HEX code (e.g. #FF0000 == red).
-      Organisms that are not given a color will be gray.'),
-  ];
-  $form['node_settings']['org_table']['num_orgs'] = [
-    '#type' => 'value',
-    '#value' => $num_orgs,
-  ];
-
-  // Iterate through the number of organism colors and add a field for each one.
-  for ($i = 0; $i < $num_orgs; $i++) {
-    $form['node_settings']['org_table']['organism_' . $i] = [
-      '#type' => 'textfield',
-      '#default_value' => array_key_exists($i, $color_defaults) ? $color_defaults[$i]['organism'] : '',
-      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/organism",
-      '#description' => t('Please enter the name of the organism.'),
-      '#size' => 30,
-    ];
-    $form['node_settings']['org_table']['color_' . $i] = [
-      '#type' => 'textfield',
-      '#description' => t('Please provide a color in Hex format (e.g. #FF0000).'),
-      '#default_value' => array_key_exists($i, $color_defaults) ? $color_defaults[$i]['color'] : '',
-      '#suffix' => "<div id=\"color-box-$i\" style=\"width: 30px;\"></div>",
-      '#size' => 10,
-    ];
-  }
-  $form['node_settings']['org_table']['add'] = [
-    '#type' => 'submit',
-    '#name' => 'add',
-    '#value' => 'Add',
-    '#ajax' => [
-      'callback' => "tripal_phylogeny_default_plots_form_ajax_callback",
-      'wrapper' => 'tripal_phylogeny_default_plots_form',
-      'effect' => 'fade',
-      'method' => 'replace',
-    ],
-  ];
-  $form['node_settings']['org_table']['remove'] = [
-    '#type' => 'submit',
-    '#name' => 'remove',
-    '#value' => 'Remove',
-    '#ajax' => [
-      'callback' => "tripal_phylogeny_default_plots_form_ajax_callback",
-      'wrapper' => 'tripal_phylogeny_default_plots_form',
-      'effect' => 'fade',
-      'method' => 'replace',
-    ],
-  ];
-  $form['node_settings']['org_table']['#theme'] = 'tripal_phylogeny_admin_org_color_tables';
-  $form['node_settings']['org_table']['#prefix'] = '<div id="tripal_phylogeny_default_plots_form">';
-  $form['node_settings']['org_table']['#suffix'] = '</div>';
-
-  $form['submit'] = [
-    '#type' => 'submit',
-    '#name' => 'submit',
-    '#value' => 'Save Configuration',
-  ];
-
-  $form['#submit'][] = 'tripal_phylogeny_default_plots_form_submit';
-
-  return $form;
-}
-
-/**
- * Validate the phylotree settings forms
- *
- * @ingroup tripal_phylogeny
- */
-function tripal_phylogeny_default_plots_form_validate($form, &$form_state) {
-
-}
-
-/**
- *
- * @param unknown $form
- * @param unknown $form_state
- */
-function tripal_phylogeny_default_plots_form_submit($form, &$form_state) {
-  // Rebuild this form after submission so that any changes are reflected in
-  // the flat tables.
-  $form_state['rebuild'] = TRUE;
-
-  if ($form_state['clicked_button']['#name'] == 'submit') {
-    variable_set('tripal_phylogeny_default_phylogram_width', $form_state['values']['phylogram_width']);
-
-    variable_set('tripal_phylogeny_default_root_node_size', $form_state['values']['root_node_size']);
-    variable_set('tripal_phylogeny_default_interior_node_size', $form_state['values']['interior_node_size']);
-    variable_set('tripal_phylogeny_default_leaf_node_size', $form_state['values']['leaf_node_size']);
-    variable_set('tripal_phylogeny_default_phylogram_scale', $form_state['values']['phylogram_scale']);
-
-    $num_orgs = $form_state['values']['num_orgs'];
-    variable_set("tripal_phylogeny_num_orgs", $num_orgs);
-    $colors = [];
-    for ($i = 0; $i < $num_orgs; $i++) {
-      $colors[$i] = [
-        'organism' => $form_state['values']['organism_' . $i],
-        'color' => $form_state['values']['color_' . $i],
-      ];
-    }
-    variable_set("tripal_phylogeny_org_colors", $colors);
-  }
-  if ($form_state['clicked_button']['#name'] == 'add') {
-    $form_state['values']['num_orgs']++;
-  }
-  if ($form_state['clicked_button']['#name'] == 'remove') {
-    $form_state['values']['num_orgs']--;
-  }
-}
-
 /**
  *
  * @param unknown $variables
@@ -535,15 +321,5 @@ function theme_tripal_phylogeny_admin_org_color_tables($variables) {
   return theme('table', $table_vars);
 }
 
-
-/**
- * Ajax callback function for the gensas_job_view_panel_form.
- *
- * @param $form
- * @param $form_state
- */
-function tripal_phylogeny_default_plots_form_ajax_callback($form, $form_state) {
-  return $form['node_settings']['org_table'];
-}
 
 }
