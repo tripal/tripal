@@ -116,7 +116,7 @@ vocabularies:
                 description: "A phylogenetic tree that is an estimate of the character's phylogeny."
             -   id: 'operation:0567'
                 name: 'Phylogenetic tree visualisation'
-                description: "A phylogenetic tree that is an estimate of the character's phylogeny."
+                description: 'Render or visualise a phylogenetic tree.'
             -   id: 'operation:0564'
                 name: 'Sequence visualisation'
                 description: 'Visualise, format or render a molecular sequence or sequences such as a sequence alignment, possibly with sequence features or properties shown.'
