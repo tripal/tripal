@@ -46,13 +46,14 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     $tripal_chado_settings = \Drupal::config('tripal_chado.settings');
 
     // Get the node colors as set by the administrator.
-    $color_defaults = $tripal_chado_settings->get('tripal_phylogeny_org_colors') ??
-      [
-        '1' => [
-          'organism' => '',
-          'color' => '',
-        ],
-      ];
+    $color_defaults = $this->getSetting('phylogram_colors');
+#$tripal_chado_settings->get('tripal_phylogeny_org_colors') ??
+#      [
+#        '1' => [
+#          'organism' => '',
+#          'color' => '',
+#        ],
+#      ];
     $colors = [];
     foreach ($color_defaults as $details) {
       if ($details['organism']) {
@@ -65,16 +66,14 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     // All of the settings used for formatting the phylotree.
     $treeOptions = [
       'phylogram_width' => $this->getSetting('phylogram_width'),
-      'root_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_root_node_size') ?? 3,
-      'interior_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_interior_node_size') ?? 1,
-      'leaf_node_size' => $tripal_chado_settings->get('tripal_phylogeny_default_leaf_node_size') ?? 6,
-      // @todo get the setting for skipTicks.
-      'skipTicks' => 0,
-      'phylogram_scale' => $tripal_chado_settings->get('tripal_phylogeny_default_phylogram_scale') ?? 1,
+      'phylogram_scale' => $this->getSetting('phylogram_scale'),
+      'skipTicks' => $this->getSetting('phylogram_skip_ticks'),
+      'root_node_size' => $this->getSetting('phylogram_root_node_size'),
+      'interior_node_size' => $this->getSetting('phylogram_interior_node_size'),
+      'leaf_node_size' => $this->getSetting('phylogram_leaf_node_size'),
       'org_colors' => $colors,
     ];
 
-dpm($treeOptions, 'CP41 treeOptions');//@@@
     // Will only be one item because cardinality = 1.
     foreach ($items as $delta => $item) {
       $values = [
@@ -87,7 +86,6 @@ dpm($treeOptions, 'CP41 treeOptions');//@@@
         '#markup' => '<div id="chado-phylogram"></div>',
       ];
 
-dpm($values['tree_json'], "CP42 tree_json");//@@@
       // Add the variables used by the javascript.
       $elements['#attached']['drupalSettings']['treeJSON'] = $values['tree_json'];
       $elements['#attached']['drupalSettings']['treeOptions'] = $treeOptions;
@@ -102,7 +100,8 @@ dpm($values['tree_json'], "CP42 tree_json");//@@@
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
     $settings['phylogram_width'] = 600;
-    $settings['phylogram_scale'] = 'linear';
+    $settings['phylogram_scale'] = 1;
+    $settings['phylogram_skip_ticks'] = 0;
     $settings['phylogram_root_node_size'] = 3;
     $settings['phylogram_interior_node_size'] = 4;
     $settings['phylogram_leaf_node_size'] = 6;
@@ -134,9 +133,14 @@ dpm($values['tree_json'], "CP42 tree_json");//@@@
       '#type' => 'select',
       '#title' => $this->t('Phylogram Scale'),
       '#description' => $this->t('Please specify the scale to use.'),
-      '#options' => ['linear' => 'Linear', 'logarithmic' => 'Logarithmic'],
+      '#options' => ['1' => 'Linear', '2' => 'Logarithmic'],
       '#default_value' => $this->getSetting('phylogram_scale'),
-      '#required' => TRUE,
+    ];
+    $form['phylogram_skip_ticks'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Turn Off Tick Marks'),
+      '#description' => $this->t('Check to prevent display of tick marks.'),
+      '#default_value' => $this->getSetting('phylogram_skip_ticks'),
     ];
     $form['phylogram_root_node_size'] = [
       '#type' => 'number',
@@ -182,8 +186,7 @@ dpm($values['tree_json'], "CP42 tree_json");//@@@
     ];
     // Iterate through the number of organism colors and add a field for each one.
     for ($i = 0; $i < count($colors) + 1; $i++) {
-      // Wrapper so both fields can be styled onto one the same line.
-#      $form['phylogram_colors'][$i]['#prefix'] = '<div class="chado-phylotreevis-settings-field-wrapper form-item">';
+      // Wrapper is used so both fields can be styled onto one the same line.
       $form['phylogram_colors'][$i]['organism'] = [
         '#prefix' => '<div class="chado-phylotreevis-settings-field-wrapper form-item">',
         '#type' => 'textfield',
@@ -199,7 +202,6 @@ dpm($values['tree_json'], "CP42 tree_json");//@@@
         '#size' => 10,
         '#suffix' => '</div>',
       ];
-#      $form['phylogram_colors'][$i]['#suffix'] = '</div>';
     }
 
     return $form;
@@ -228,17 +230,21 @@ dpm($values['tree_json'], "CP42 tree_json");//@@@
    * {@inheritdoc}
    */
   public function settingsSummary() {
+    $scales = [1 => 'Linear', 2 => 'Log'];
     $summary = parent::settingsSummary();
     $summary[] = $this->t('Width: @phylogram_width',
-                          ['@phylogram_width' => $this->getSetting('phylogram_width') ?? 600]);
+                          ['@phylogram_width' => $this->getSetting('phylogram_width') ?? '']);
     $summary[] = $this->t('Scale: @phylogram_scale',
-                          ['@phylogram_scale' => $this->getSetting('phylogram_scale') ?? 'Linear']);
+                          ['@phylogram_scale' => $scales[$this->getSetting('phylogram_scale') ?? 1]]);
+    if ($this->getSetting('phylogram_skip_ticks') ?? 0) {
+      $summary[] = $this->t('Tick marks off');
+    }
     $summary[] = $this->t('Root node: @phylogram_root_node_size',
-                          ['@phylogram_root_node_size' => $this->getSetting('phylogram_root_node_size') ?? 3]);
+                          ['@phylogram_root_node_size' => $this->getSetting('phylogram_root_node_size') ?? '']);
     $summary[] = $this->t('Int. node: @phylogram_interior_node_size',
-                          ['@phylogram_interior_node_size' => $this->getSetting('phylogram_interior_node_size') ?? 4]);
+                          ['@phylogram_interior_node_size' => $this->getSetting('phylogram_interior_node_size') ?? '']);
     $summary[] = $this->t('Leaf node: @phylogram_leaf_node_size',
-                          ['@phylogram_leaf_node_size' => $this->getSetting('phylogram_leaf_node_size') ?? 6]);
+                          ['@phylogram_leaf_node_size' => $this->getSetting('phylogram_leaf_node_size') ?? '']);
     $n_colors = count($this->getSetting('phylogram_colors') ?? []);
     if ($n_colors) {
       $summary[] = $this->t('Colors: @n_colors',
