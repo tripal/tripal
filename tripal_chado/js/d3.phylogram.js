@@ -189,17 +189,15 @@ if (!d3) {
     });
     var yscale;
     switch (parseInt(options.phylogram_scale)) {
-      case 1:
+      case 2:
+        yscale = d3.scale.log()
+          .domain([0.001, d3.max(rootDists)])
+          .range([0, w]);
+        break;
+      default: // 1 or anything else for linear.
         yscale = d3.scale.linear()
           .domain([0, d3.max(rootDists)])
           .range([0, w]);
-        break;
-      case 2:
-        yscale = d3.scale.log()
-          .domain([0.01, d3.max(rootDists)])
-          .range([0, w]);
-        break;
-      default: // shouldn't happen
         break;
     }
     visitPreOrder(nodes[0], function (node) {
