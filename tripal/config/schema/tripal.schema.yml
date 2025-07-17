@@ -428,6 +428,10 @@ field.formatter.settings.*:
       type: string
       label: 'Scaling transformation for the X-axis of a phylogenetic tree'
       nullable: true
+    phylogram_skip_ticks:
+      type: integer
+      label: 'Tick marks are not displayed if truthy'
+      nullable: true
     phylogram_root_node_size:
       type: integer
       label: 'Diameter of the root node of a phylogenetic tree'
