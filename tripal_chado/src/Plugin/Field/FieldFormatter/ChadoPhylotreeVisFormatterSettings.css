@@ -1,0 +1,12 @@
+
+.chado-phylotreevis-settings-field-wrapper {
+  display: flex !important;
+}
+.chado-phylotreevis-settings-field-wrapper .form-item {
+  margin: 0 0.5rem;
+  flex: 1 1 0;
+}
+.chado-phylotreevis-settings-field-wrapper .form-item select {
+  width: 100%;
+  min-width: max-content;
+}

@@ -280,7 +280,7 @@ if (!d3) {
         .attr('font-size', '9px')
         .attr('fill', 'grey')
         .text(function (d) {
-          return Math.round(d * 100) / 100;
+          return Math.round(d * 1000) / 1000;
         });
     }
 

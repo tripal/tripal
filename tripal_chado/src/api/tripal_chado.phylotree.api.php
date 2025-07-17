@@ -755,7 +755,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
       $values['label'] = $tree['name'];
     }
     // Set a default distance if one was not specified.
-    $values['distance'] = 0.01;
+    $values['distance'] = 0.001;
     if (!empty($tree['length']) and $tree['length'] != '') {
       $values['distance'] = $tree['length'];
     }
