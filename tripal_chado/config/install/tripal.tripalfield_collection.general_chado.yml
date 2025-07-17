@@ -268,137 +268,137 @@ fields:
 ## Optional columns: name (varchar 255), type_id (cvterm FK), analysis_id (analysis FK), comment (text)
 ## Related: phylotreeprop, phylotree_pub, phylonode
 
-    -   name: speciestree_name
-        content_type: speciestree
-        label: Name
-        type: chado_string_type_default
-        description: The name of the item.
+    -   name: 'speciestree_name'
+        content_type: 'speciestree'
+        label: 'Name'
+        type: 'chado_string_type_default'
+        description: 'The name of the phylogenetic tree'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: phylotree
-                base_column: name
+                base_table: 'phylotree'
+                base_column: 'name'
             max_length: 255
         settings:
-            termIdSpace: schema
-            termAccession: name
+            termIdSpace: 'schema'
+            termAccession: 'name'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 10
           form:
             default:
-              region: content
+              region: 'content'
               weight: 10
 
-    -   name: speciestree_type
-        content_type: speciestree
-        label: Type
-        type: chado_additional_type_type_default
-        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+    -   name: 'speciestree_type'
+        content_type: 'speciestree'
+        label: 'Type of phylogenetic tree'
+        type: 'chado_additional_type_type_default'
+        description: 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: phylotree
-                type_table: phylotree
-                type_column: type_id
+                base_table: 'phylotree'
+                type_table: 'phylotree'
+                type_column: 'type_id'
         settings:
-            termIdSpace: data
+            termIdSpace: 'data'
             termAccession: '3272'
-            fixed_value: data:3272
+            fixed_value: 'data:3272'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 20
           form:
             default:
-              region: content
+              region: 'content'
               weight: 20
 
-    -   name: speciestree_analysis
-        content_type: speciestree
-        label: Analysis
-        type: chado_analysis_type_default
-        description: The analysis from which the tree was generated.
+    -   name: 'speciestree_analysis'
+        content_type: 'speciestree'
+        label: 'Analysis'
+        type: 'chado_analysis_type_default'
+        description: 'The analysis from which the tree was generated.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: phylotree
-                base_column: analysis_id
+                base_table: 'phylotree'
+                base_column: 'analysis_id'
         settings:
-            termIdSpace: operation
+            termIdSpace: 'operation'
             termAccession: '2945'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 25
           form:
             default:
-              region: content
+              region: 'content'
               weight: 25
 
-    -   name: speciestree_comment
-        content_type: speciestree
-        label: Notes
-        type: chado_text_type_default
-        description: Comments, typically from users.
+    -   name: 'speciestree_comment'
+        content_type: 'speciestree'
+        label: 'Notes'
+        type: 'chado_text_type_default'
+        description: 'Comments about this phylogenetic tree.'
         cardinality: 1
         required: false
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: phylotree
-                base_column: comment
+                base_table: 'phylotree'
+                base_column: 'comment'
         settings:
-            termIdSpace: schema
-            termAccession: comment
+            termIdSpace: 'schema'
+            termAccession: 'comment'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 30
           form:
             default:
-              region: content
+              region: 'content'
               weight: 30
 
-    -   name: speciestree_dbxref
-        content_type: speciestree
-        label: Primary Database Reference
-        type: chado_dbxref_type_default
-        description: The ID where this record may be available in an external online database.
+    -   name: 'speciestree_dbxref'
+        content_type: 'speciestree'
+        label: 'Primary Database Reference'
+        type: 'chado_dbxref_type_default'
+        description: 'The ID where this record may be available in an external online database.'
         cardinality: 1
         required: true
         storage_settings:
-            storage_plugin_id: chado_storage
+            storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
-                base_table: phylotree
-                base_column: dbxref_id
+                base_table: 'phylotree'
+                base_column: 'dbxref_id'
         settings:
-            termIdSpace: SBO
-            termAccession: "0000554"
+            termIdSpace: 'SBO'
+            termAccession: '0000554'
         display:
           view:
             default:
-              region: content
-              label: above
+              region: 'content'
+              label: 'above'
               weight: 68
           form:
             default:
-              region: content
+              region: 'content'
               weight: 68
 
 ## Analysis ##
