@@ -245,7 +245,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
                           ['@phylogram_interior_node_size' => $this->getSetting('phylogram_interior_node_size') ?? '']);
     $summary[] = $this->t('Leaf node: @phylogram_leaf_node_size',
                           ['@phylogram_leaf_node_size' => $this->getSetting('phylogram_leaf_node_size') ?? '']);
-    $n_colors = count($this->getSetting('phylogram_colors') ?? []);
+    $n_colors = count($this->removeEmptyColors($this->getSetting('phylogram_colors') ?? []));
     if ($n_colors) {
       $summary[] = $this->t('Colors: @n_colors',
                           ['@n_colors' => $n_colors]);
