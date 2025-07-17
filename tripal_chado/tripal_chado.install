@@ -1098,3 +1098,19 @@ function tripal_chado_update_10415() {
     throw new UpdateException('Could not update phylotree: ' . $e->getMessage());
   }
 }
+
+/**
+ * Add a phylogenetic tree visualization field. PR 2244.
+ */
+function tripal_chado_update_10416() {
+  try {
+    $general_fields_yaml = __DIR__ . '/config/install/tripal.tripalfield_collection.general_chado.yml';
+    $genomic_fields_yaml = __DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml';
+
+    addFieldFromYaml($general_fields_yaml, ['speciestree_phylotreevis']);
+    addFieldFromYaml($genomic_fields_yaml, ['phylotree_phylotreevis']);
+  }
+  catch (\Exception $e) {
+    throw new UpdateException('Could not update phylotree: ' . $e->getMessage());
+  }
+}
