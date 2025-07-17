@@ -169,9 +169,9 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#type' => 'item',
       '#title' => t('Node Colors by Organism'),
       '#markup' => t('If the trees are associated with features (e.g. proteins)
-        then the nodes can be color-coded by their organism.  This helps the user
-        visualize which nodes belong to each organism.  Please enter the
-        name of the organism and it\'s corresponding color in HEX code (e.g. #FF0000 == red).
+        then the nodes can be color-coded by their organism. This helps the user
+        visualize which nodes belong to each organism. Please enter the
+        name of the organism and its corresponding color in HEX code (e.g. #FF0000 == red).
         Organisms that are not given a color will be gray.'),
     ];
     $form['phylogram_colors'] = [
