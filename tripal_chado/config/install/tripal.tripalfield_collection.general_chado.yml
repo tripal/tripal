@@ -401,6 +401,32 @@ fields:
               region: 'content'
               weight: 68
 
+    -   name: 'speciestree_phylotreevis'
+        content_type: 'speciestree'
+        label: 'Phylogenetic Tree Visualization'
+        type: 'chado_phylotree_vis_type_default'
+        description: 'Visualization of a phylogenetic tree.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'phylotree'
+                base_column: 'phylotree_id'
+        settings:
+            termIdSpace: 'operation'
+            termAccession: '0567'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 95
+          form:
+            default:
+              region: 'content'
+              weight: 95
+
 ## Analysis ##
 ## Chado Table: analysis
 ## Required Columns: program (varchar 255), programversion(varchar 255), timeexecuted (timestamp)

@@ -1061,6 +1061,32 @@ fields:
               region: 'content'
               weight: 68
 
+    -   name: 'phylotree_phylotreevis'
+        content_type: 'phylotree'
+        label: 'Phylogenetic Tree Visualization'
+        type: 'chado_phylotree_vis_type_default'
+        description: 'Visualization of a phylogenetic tree.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'phylotree'
+                base_column: 'phylotree_id'
+        settings:
+            termIdSpace: 'operation'
+            termAccession: '0567'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 95
+          form:
+            default:
+              region: 'content'
+              weight: 95
+
 ## Physical Map ##
 
     -   name: physical_map_name
