@@ -118,8 +118,8 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#title' => $this->t('Tree Width'),
       '#description' => $this->t('Please specify the width in pixels for the phylogram.'),
       '#default_value' => $this->getSetting('phylogram_width'),
-      '#min' => 64,
-      '#max' => 4096,
+      '#min' => 200,
+      '#max' => 4000,
       '#required' => FALSE,
     ];
     $form['phylogram_scale'] = [
@@ -141,7 +141,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#description' => $this->t('Please specify a size for the root node. If set to zero, the node will not appear.'),
       '#default_value' => $this->getSetting('phylogram_root_node_size'),
       '#min' => 0,
-      '#max' => 127,
+      '#max' => 30,
       '#required' => FALSE,
     ];
     $form['phylogram_interior_node_size'] = [
@@ -150,7 +150,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#description' => $this->t('Please specify a size for interior nodes. If set to zero, the node will not appear.'),
       '#default_value' => $this->getSetting('phylogram_interior_node_size'),
       '#min' => 0,
-      '#max' => 127,
+      '#max' => 30,
       '#required' => FALSE,
     ];
     $form['phylogram_leaf_node_size'] = [
@@ -159,7 +159,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#description' => $this->t('Please specify a size for the terminal nodes. If set to zero, the node will not appear.'),
       '#default_value' => $this->getSetting('phylogram_leaf_node_size'),
       '#min' => 0,
-      '#max' => 127,
+      '#max' => 30,
       '#required' => FALSE,
     ];
 
@@ -190,7 +190,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       ];
       $form['phylogram_colors'][$i]['color'] = [
         '#type' => 'textfield',
-        '#description' => t('Please provide a color in Hex format (e.g. #FF0000).'),
+        '#description' => t('Please provide a color in Hex format (e.g. #FF0000) or a valid color name (e.g. Crimson or DarkGreen).'),
         '#default_value' => $colors[$i]['color'] ?? '',
         '#size' => 10,
         '#suffix' => '</div>',
@@ -275,9 +275,12 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
               $form_state->setErrorByName($field_parents . "][$delta][organism",
                   $this->t('Organism must include numeric record ID inside parentheses, please let the autocomplete add this value'));
             }
-            if (!preg_match('/^#[0-9A-F]{6}/', $config['color'])) {
-              $form_state->setErrorByName($field_parents . "][$delta][color",
-                  $this->t('Color must be of the format #000000'));
+            if (preg_match('/^#/', $config['color'])) {
+              if (!(preg_match('/^#[0-9A-Fa-f]{3}$/', $config['color'])
+                  || preg_match('/^#[0-9A-Fa-f]{6}$/', $config['color']))) {
+                $form_state->setErrorByName($field_parents . "][$delta][color",
+                    $this->t('Hex color codes must be of the format #000000 or #000'));
+              }
             }
           }
         }
