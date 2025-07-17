@@ -38,6 +38,10 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
 
+    // Attaches the css and js for visualization as defined in
+    // tripal_chado/tripal_chado.libraries.yml.
+    $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.phylotree';
+
     // Collect the tree display settings to pass to the javascript.
     $tripal_chado_settings = \Drupal::config('tripal_chado.settings');
 
@@ -70,6 +74,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       'org_colors' => $colors,
     ];
 
+dpm($treeOptions, 'CP41 treeOptions');//@@@
     // Will only be one item because cardinality = 1.
     foreach ($items as $delta => $item) {
       $values = [
@@ -82,6 +87,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
         '#markup' => '<div id="chado-phylogram"></div>',
       ];
 
+dpm($values['tree_json'], "CP42 tree_json");//@@@
       // Add the variables used by the javascript.
       $elements['#attached']['drupalSettings']['treeJSON'] = $values['tree_json'];
       $elements['#attached']['drupalSettings']['treeOptions'] = $treeOptions;
