@@ -165,7 +165,8 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
 
     // This will retrieve the phylonodes and convert to json format.
     $chado = \Drupal::service('tripal_chado.database');
-    $phylotree = new ChadoPhylotree($chado);
+    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
+    $phylotree = new ChadoPhylotree($chado, $lookup_manager);
     $json = $phylotree->getTreeJson($record_id);
     return $json;
   }
