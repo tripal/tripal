@@ -49,36 +49,40 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
 
     // Create three projects in chado.
     for ($i=1; $i <= 3; $i++) {
-      $this->connection->insert('1:project')
+      $project_id = $this->connection->insert('1:project')
         ->fields([
           'name' => 'Project No. ' . $i,
         ])->execute();
+      $this->addFixedValue($this->connection, 'project', $project_id);
     }
 
     // Create three analyses in chado.
     for ($i=1; $i <= 3; $i++) {
-      $this->connection->insert('1:analysis')
+      $analysis_id = $this->connection->insert('1:analysis')
         ->fields([
           'name' => 'Analysis No. ' . $i,
           'program' => 'PHP',
           'programversion' => 'Version ' . $i,
         ])->execute();
+      $this->addFixedValue($this->connection, 'analysis', $analysis_id);
     }
 
     // Create one contact in chado, in addition to the null contact.
-    $this->connection->insert('1:contact')
+    $contact_id = $this->connection->insert('1:contact')
       ->fields([
         'name' => 'Contact No. 2',
       ])->execute();
+    $this->addFixedValue($this->connection, 'contact', $contact_id);
 
     // Create one arraydesign in chado, to test the mismatched
     // foreign key names manufacturer_id -> contact_id
-    $this->connection->insert('1:arraydesign')
+    $arraydesign_id = $this->connection->insert('1:arraydesign')
       ->fields([
         'name' => 'ArrayDesign No. 1',
         'platformtype_id' => 1,  // not used, whatever the very first cvterm is
         'manufacturer_id' => 2,  // 1 is the null contact, defined by chado
       ])->execute();
+    $this->addFixedValue($this->connection, 'arraydesign', $arraydesign_id);
 
     // Create the terms for the field property storage types.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
@@ -143,6 +147,7 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
       $bundle_label = $lookup_manager->getBundleLabel($entity_id);
       $this->assertEquals('Project', $bundle_label, "We did not retrieve the expected bundle label for entity_id $entity_id");
     }
+
     for ($analysis_id=1; $analysis_id <= 3; $analysis_id++) {
       $expected_entity_id = $analysis_id + 3;
       $entity_id = $lookup_manager->getEntityId(
@@ -217,14 +222,14 @@ class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
     // primary key, e.g. arraydesign table column manufacturer_id is
     // a foreign key to the contact table column contact_id.
 
-    // Publish the null contact entity and confirm that it has been created. Issue #1809
+    // Publish the contact entity and confirm that it has been created
+    // The existing null contact defined by chado will not be published because it has no type - Issues #1809, #2097
     $publish_options = ['bundle' => 'contact', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];
     $published_entities = $this->chado_publish->publish($publish_options);
 
     $confirmed_entities = \Drupal::entityTypeManager()->getStorage('tripal_entity')->loadByProperties(['type' => 'contact']);
-    // Expect 2 here instead of 1 because the null contact will also be published - Issue #1809
-    $this->assertCount(2, $confirmed_entities,
-      "We expected there to be two contacts created, including the null contact.");
+    $this->assertCount(1, $confirmed_entities,
+      "We expected there to be one contact created, the null contact should not be published.");
 
     // Publish the arraydesign entity and confirm that it has been created.
     $publish_options = ['bundle' => 'array_design', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName];

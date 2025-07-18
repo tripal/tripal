@@ -10,7 +10,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  * specific chado schema against the expected terms in the Tripal Content Terms
  * YAML.
  *
- * DO NOT ADD ADDITION DRUSH COMMANDS TO THIS CLASS.
+ * DO NOT ADD ADDITIONAL DRUSH COMMANDS TO THIS CLASS.
  */
 class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
@@ -71,6 +71,7 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
 
     $this->chadoCheckTerms_findProblems($problems, $solutions, $summary_rows, $options);
     $this->chadoCheckTerms_findCVProblems($problems, $solutions, $summary_rows, $options);
+    $this->chadoCheckTerms_findBundleProblems($problems, $solutions, $summary_rows, $options);
     $this->chadoCheckTerms_reportProblems($problems, $solutions, $summary_rows, $options);
   }
 
@@ -236,6 +237,123 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   }
 
   /**
+   * Checks for chado records lacking a type definition.
+   *
+   * @param array $problems
+   *   Array containing details for either errors or warnings
+   * @param array $solutions
+   *   Array containing possible solutions for either errors or warnings
+   * @param array $summary_rows
+   *   Infomation for the output table
+   * @param array $options
+   *   Options from drush command line
+   **/
+  protected function chadoCheckTerms_findBundleProblems(&$problems, &$solutions, &$summary_rows, $options) {
+
+    // Defines which core tripal tables we want to check, and the term to use.
+    // For protocol, sep:00101 is already used, so the term is different than the bundle term
+    $migrated_tables = [
+      'analysis' => 'operation:2945',
+      'arraydesign' => 'EFO:0000269',
+      'assay' => 'OBI:0000070',
+      'biomaterial' => 'sep:00195',
+      'contact' => 'NCIT:C47954',
+      'organism' => 'OBI:0100026',
+      'project' => 'NCIT:C47885',
+      'pub' => 'TPUB:0000002',
+      'study' => 'SIO:001066',
+    ];
+
+    foreach ($migrated_tables as $table => $expected_bundle_term) {
+
+      // Lookup the term to use for records not already having a bundle term
+      $expected_term_parts = explode(':', $expected_bundle_term);
+      $expected_bundle_term_id = $this->getCVTermId($expected_term_parts[0], $expected_term_parts[1]);
+
+      // Get a list of all bundles using this table, e.g. for the analysis
+      // table we might have ['genome_annotation', 'genome_assembly', 'analysis']
+      $existing_info = [];
+      $bundles = \Drupal::entityTypeManager()
+        ->getStorage('tripal_entity_type')
+        ->getQuery()
+        ->condition('third_party_settings.tripal.chado_base_table', $table)
+        ->execute();
+      $bundle_ids = array_keys($bundles);
+      if (!$bundle_ids) {
+        continue;
+      }
+
+      // For each of these bundles, get its defining DB and
+      // accession, and then from that get its cvterm_id
+      $cvterm_id_list = [];
+      foreach ($bundle_ids as $bundle_id) {
+        $bundle = \Drupal::entityTypeManager()
+          ->getStorage('tripal_entity_type')
+          ->loadByProperties(['id' => $bundle_id]);
+        $termIdSpace = $bundle[$bundle_id]->getTermIdSpace();
+        $termAccession = $bundle[$bundle_id]->getTermAccession();
+        $cvterm_id = $this->getCVTermId($termIdSpace, $termAccession);
+        $cvterm_id_list[] = $cvterm_id;
+      }
+
+      // Get a count of records without a bundle term
+      $pkey = $table . '_id';
+      $prop_table = $table . 'prop';
+
+      // Subquery gets the list of records that already have a bundle term defined
+      $subquery = $this->chado->select('1:' . $table, 'BT');
+      $subquery->leftJoin('1:' . $prop_table, 'P', '"BT".' . $pkey . '=' . '"P".' . $pkey);
+      $subquery->condition('"P".type_id', $cvterm_id_list, 'IN');
+      $subquery->fields('BT', [$pkey]);
+
+      // Query gets the list of records without a bundle term
+      $query = $this->chado->select('1:' . $table, 'BT');
+      $query->leftJoin('1:' . $prop_table, 'P', '"BT".' . $pkey . '=' . '"P".' . $pkey);
+      $query->condition('"BT".' . $pkey, $subquery, 'NOT IN');
+      $query->addField('BT', $pkey, 'pkey_id');
+      $query->distinct();
+      $count = $query->countQuery()->execute()->fetchField();
+
+      // If the count is nonzero, add to the list of problems
+      if ($count) {
+        $problems['error']['bundle_term'][$table][] = [
+          'table' => $table,
+          'count' => $count,
+          'term-name' => $expected_bundle_term,
+          'term-id' => $expected_bundle_term_id,
+        ];
+        $solutions['error']['bundle_term'][$table] = [
+          'pkey' => $pkey,
+          'prop_table' => $prop_table,
+          'expected_bundle_term_id' => $expected_bundle_term_id,
+          'cvterm_id_list' => $cvterm_id_list,
+        ];
+      }
+    }
+  }
+
+  /**
+   * Lookup the cvterm_id for a dbxref
+   *
+   * @param string $termIdSpace
+   *   DB name
+   * @param string $termAccession
+   *   Dbxref accession
+   * @return int|bool
+   *   Corresponding cvterm_id value, or FALSE if no match
+   */
+  protected function getCVTermId(string $termIdSpace, string $termAccession): int|bool {
+    $query = $this->chado->select('1:cvterm', 'T');
+    $query->fields('T', ['cvterm_id']);
+    $query->leftJoin('1:dbxref', 'X', '"T".dbxref_id = "X".dbxref_id');
+    $query->leftJoin('1:db', 'DB', '"X".db_id = "DB".db_id');
+    $query->condition('"X".accession', $termAccession, '=');
+    $query->condition('"DB".name', $termIdSpace, '=');
+    $results = $query->execute()->fetchField();
+    return $results;
+  }
+
+  /**
    * Reports to user the status of chado as determined by chadoCheckTerms_findProblems.
    *
    * @param array $problems
@@ -306,6 +424,16 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
         $this->chadoCheckTerms_reportProblem_terms(
           $problems['error']['term'],
           $solutions['error']['term'],
+          $options
+        );
+      }
+
+      // bundle term
+      if (array_key_exists('bundle_term', $problems['error'])) {
+        $solutions['error']['bundle_term'] = (array_key_exists('bundle_term', $solutions['error'])) ? $solutions['error']['bundle_term'] : [];
+        $this->chadoCheckTerms_reportProblem_bundle_terms(
+          $problems['error']['bundle_term'],
+          $solutions['error']['bundle_term'],
           $options
         );
       }
@@ -938,6 +1066,45 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   }
 
   /**
+   * Adds bundle term properties for records missing one.
+   *
+   * @param array $solutions
+   *   An associative array with the key being the chado table name,
+   *   and the value being an array with this information:
+   *     - 'pkey' = the name of the primary key column
+   *     - 'prop_table' = the name of the property table
+   *     - 'expected_bundle_term_id' = the term ID to use when one is missing
+   *     - 'cvterm_id_list' = all possible bundle term IDs for this table
+   * @return void
+   */
+  protected function addMissingBundleTerms(array $solutions) {
+    foreach ($solutions as $table => $context) {
+
+      // Subquery gets the list of records that already have a bundle term defined
+      $subquery2 = $this->chado->select('1:' . $table, 'BT');
+      $subquery2->leftJoin('1:' . $context['prop_table'], 'P', '"BT".' . $context['pkey'] . '=' . '"P".' . $context['pkey']);
+      $subquery2->condition('"P".type_id', $context['cvterm_id_list'], 'IN');
+      $subquery2->fields('BT', [$context['pkey']]);
+
+      // Next subquery gets the list of records without a bundle term
+      $subquery1 = $this->chado->select('1:' . $table, 'BT');
+      $subquery1->leftJoin('1:' . $context['prop_table'], 'P', '"BT".' . $context['pkey'] . '=' . '"P".' . $context['pkey']);
+      $subquery1->condition('"BT".' . $context['pkey'], $subquery2, 'NOT IN');
+      $subquery1->addField('BT', $context['pkey']);
+      $subquery1->distinct();
+      // Add static values needed for the insert
+      $subquery1->addExpression($context['expected_bundle_term_id'], 'type_id');
+      $subquery1->addExpression("'" . $table . "'", 'value');
+      $subquery1->addExpression(0, 'rank');
+
+      // Perform the insert
+      $query = $this->chado->insert('1:' . $context['prop_table']);
+      $query->from($subquery1);
+      $query->execute();
+    }
+  }
+
+  /**
    * Reports errors and potential solutions for the "yamlDuplication" error type.
    *
    * Trigger Example: the term local:lineage is defined twice in
@@ -1142,6 +1309,63 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
     }
     $table->addRows($rows);
     $table->render();
+  }
+
+  /**
+   * Reports errors and potential solutions for the "bundle_term" error type.
+   *
+   * Trigger Examples:
+   *   A migrated Tripal 3 site with generic analysis or project records
+   *
+   * @param array $problems
+   *   An array describing instances with this type of error with the following format:
+   *     - [YAML Term ID]: an array of reports where each report has the
+   *       following structure:
+   *         - term-name:
+   *         - term-id:
+   *         - count:
+   * @param array $solutions
+   *   An associative array with key being the chado table name, value being
+   *   the cvterm_id of the term to assign.
+   *
+   * @return void
+   *   This function interacts through command-line input/output directly and
+   *   as such, does not need to return anything to the parent Drush command.
+   */
+  protected function chadoCheckTerms_reportProblem_bundle_terms($problems, $solutions, $options) {
+
+    $this->io()->section('Missing Bundle Term Issues.');
+    $num_detected = count($problems);
+    $this->output()->writeln("We have detected $num_detected chado table(s) having one or more records without a bundle term property. Specifically:");
+
+    $table = new Table($this->output());
+    $table->setHeaders(['CHADO TABLE', 'NUMBER OF RECORDS', 'MISSING TERM']);
+
+    $rows = [];
+    foreach ($problems as $chado_table_name => $problem) {
+      foreach ($problem as $prob_deets) {
+        $rows[] = [
+          $chado_table_name,
+          $prob_deets['count'],
+          $prob_deets['term-name'] . ' (' . $prob_deets['term-id'] . ')',
+        ];
+      }
+    }
+    $table->addRows($rows);
+    $table->render();
+
+    $offer_fix = !$options['no-fix'];
+    $fix = $this->askOrRespectOptions(
+      'Would you like us to add the missing bundle terms to these records?',
+      $options,
+      'auto-fix',
+      $offer_fix,
+      FALSE
+    );
+    if ($fix) {
+      $this->addMissingBundleTerms($solutions);
+      $this->io()->success('Records with missing bundle terms have been updated.');
+    }
   }
 
   /**

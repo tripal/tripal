@@ -51,9 +51,19 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   protected object $dbxref_buddy;
 
   /**
+   * Provide the cvterm buddy instance
+   */
+  protected object $cvterm_buddy;
+
+  /**
    * Provide the property buddy instance
    */
   protected object $property_buddy;
+
+  /**
+   * Cache of cvterm_id values for infraspecific ranks
+   */
+  protected array $infraspecific_types = [];
 
   /**
    * Implements ContainerFactoryPluginInterface->create().
@@ -90,6 +100,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     parent::__construct($configuration, $plugin_id, $plugin_definition, $connection);
     $this->buddy_manager = $buddy_manager;
     $this->dbxref_buddy = $this->buddy_manager->createInstance('chado_dbxref_buddy', []);
+    $this->cvterm_buddy = $this->buddy_manager->createInstance('chado_cvterm_buddy', []);
     $this->property_buddy = $this->buddy_manager->createInstance('chado_property_buddy', []);
   }
 
@@ -97,7 +108,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
@@ -436,10 +446,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       $full_infra = $matches[3];
 
       // Get the CV term for the rank.
-      $type = chado_get_cvterm([
-        'name' => preg_replace('/ /', '_', $rank),
-        'cv_id' => ['name' => 'taxonomic_rank'],
-      ], [], $this->chado_schema_main);
+      $cvterm_id = $this->getInfraspecificTypeId($rank);
 
       // Remove the rank from the infraspecific name.
       $abbrev = chado_abbreviate_infraspecific_rank($rank);
@@ -450,13 +457,13 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         'genus' => $genus,
         'species' => $species,
         'abbreviation' => $genus[0] . '. ' . $species . ' ' . $full_infra,
-        'type_id' => $type->cvterm_id,
+        'type_id' => $cvterm_id,
         'infraspecific_name' => $infra,
       ];
       $organism_id = $chado->insert('1:organism')
         ->fields($values)
         ->execute();
-      $organism = $chado->select('1:organism', 'o')
+      $organism = $this->chado->select('1:organism', 'o')
         ->fields('o')
         ->condition('organism_id', $organism_id)
         ->execute()
@@ -492,11 +499,40 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
       }
     }
     if ($organism) {
+      // Adds the property defining the bundle type
+      $this->addBundleTypeProperty('organism_id', $organism->organism_id, 'organismprop', 'OBI', '0100026', 'organism');
       $organism->is_new = TRUE;
       $this->all_orgs[] = $organism;
     }
 
     return $organism;
+  }
+
+  /**
+   * Gets the cvterm_id for the supplied taxonomic rank
+   *
+   * @param string $infraspecific_type
+   *   The rank, e.g. 'subspecies', 'varietas', etc.
+   * @return int
+   *   The corresponding cvterm_id value, or zero if it does not exist
+   */
+  protected function getInfraspecificTypeId(string $infraspecific_type): int {
+    $infraspecific_type = preg_replace('/ /', '_', $infraspecific_type);
+    $cvterm_id = 0;
+    if (array_key_exists($infraspecific_type, $this->infraspecific_types)) {
+      $cvterm_id = $this->infraspecific_types[$infraspecific_type];
+    }
+    else {
+      $cvterm_records = $this->cvterm_buddy->getCvterm([
+        'cv.name' => 'taxonomic_rank',
+        'cvterm.name' => $infraspecific_type,
+      ]);
+      if ($cvterm_records) {
+        $cvterm_id = $cvterm_records[0]->getValue('cvterm.cvterm_id');
+      }
+      $this->infraspecific_types[$infraspecific_type] = $cvterm_id;
+    }
+    return $cvterm_id;
   }
 
   /**
@@ -530,6 +566,14 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     if (!is_null($xml_text)) {
       $xml = new \SimpleXMLElement($xml_text);
       $taxon = $xml->Taxon;
+
+      // This will happen for undefined taxid values
+      if (!$taxon) {
+        $this->logger->warning('NCBI does not have a record for taxon ID @taxid',
+          ['@taxid' => $taxid]
+        );
+        return FALSE;
+      }
 
       // Get the genus and species from the xml.
       $parent = (string) $taxon->ParentTaxId;

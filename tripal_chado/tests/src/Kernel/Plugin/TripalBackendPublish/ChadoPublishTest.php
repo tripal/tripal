@@ -50,30 +50,33 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     // Note: We added HTML to the genus (not approved tag) to confirm that
     // unallowed tags are being filtered and allowed ones are being kept.
     for ($i=1; $i <= 3; $i++) {
-      $this->connection->insert('1:organism')
+      $organism_id = $this->connection->insert('1:organism')
         ->fields([
           'genus' => '<p>Tripalus</p>',
           'species' => 'databasica ' . $i,
           'comment' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
         ])->execute();
+      $this->addFixedValue($this->connection, 'organism', $organism_id);
     }
 
     // Create three projects in chado to be published.
     for ($i=1; $i <= 3; $i++) {
-      $this->connection->insert('1:project')
+      $project_id = $this->connection->insert('1:project')
         ->fields([
           'name' => 'Project No. ' . $i,
           'description' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
         ])->execute();
+      $this->addFixedValue($this->connection, 'project', $project_id);
     }
 
     // Create three contacts in chado to be published.
     for ($i=1; $i <= 3; $i++) {
-      $this->connection->insert('1:contact')
+      $contact_id = $this->connection->insert('1:contact')
         ->fields([
           'name' => 'Contact No. ' . $i,
           'description' => "Entry $i: we are adding a comment to ensure that we do have working fields that are not required.",
         ])->execute();
+      $this->addFixedValue($this->connection, 'contact', $contact_id);
     }
 
     // Create the terms for the field property storage types.
@@ -172,6 +175,7 @@ class ChadoPublishTest extends ChadoTestKernelBase {
           'species' => 'databasica ' . $key,
             'comment' => "Entry $key: we are adding a comment to ensure that we do have working fields that are not required.",
           ])->execute();
+      $this->addFixedValue($this->connection, 'organism', $key);
       $test_title_format = '=T=' . $template;
       $test_url_format = '/U/' . $template;
       $organism_bundle = \Drupal\tripal\Entity\TripalEntityType::load('organism');

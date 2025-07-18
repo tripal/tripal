@@ -262,6 +262,34 @@ fields:
               region: content
               weight: 68
 
+    -   name: organism_bundle_type
+        content_type: organism
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                type_table: organismprop
+                type_column: type_id
+        settings:
+            termIdSpace: "OBI"
+            termAccession: "0100026"
+            fixed_value: "OBI:0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
+
 ## Analysis ##
 ## Chado Table: analysis
 ## Required Columns: program (varchar 255), programversion(varchar 255), timeexecuted (timestamp)
@@ -597,6 +625,34 @@ fields:
               region: content
               weight: 68
 
+    -   name: analysis_bundle_type
+        content_type: analysis
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                type_table: analysisprop
+                type_column: type_id
+        settings:
+            termIdSpace: "operation"
+            termAccession: "2945"
+            fixed_value: "operation:2945"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
+
 ## Project ##
 ## Chado Table: project
 ## Required Columns: name (varchar 255)
@@ -794,6 +850,34 @@ fields:
               region: content
               weight: 68
 
+    -   name: project_bundle_type
+        content_type: project
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                type_table: projectprop
+                type_column: type_id
+        settings:
+            termIdSpace: "NCIT"
+            termAccession: "C47885"
+            fixed_value: "NCIT:C47885"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
+
 ## Study ##
 ## Chado Table: study
 ## Required Columns: name (varchar 255), contact_id (contact FK)
@@ -932,6 +1016,33 @@ fields:
             default:
               region: content
               weight: 68
+    -   name: study_bundle_type
+        content_type: study
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                type_table: studyprop
+                type_column: type_id
+        settings:
+            termIdSpace: "SIO"
+            termAccession: "001066"
+            fixed_value: "SIO:001066"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
 
 ## Contact ##
 ## Chado Table: contact
@@ -1077,6 +1188,34 @@ fields:
             default:
               region: content
               weight: 60
+
+    -   name: contact_bundle_type
+        content_type: contact
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                type_table: contactprop
+                type_column: type_id
+        settings:
+            termIdSpace: "NCIT"
+            termAccession: "C47954"
+            fixed_value: "NCIT:C47954"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
 
 ## Protocol ##
 ## Chado Table: protocol
@@ -2137,3 +2276,31 @@ fields:
             default:
               region: content
               weight: 90
+
+    -   name: pub_bundle_type
+        content_type: pub
+        label: Type
+        type: chado_additional_type_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: pub
+                type_table: pubprop
+                type_column: type_id
+        settings:
+            termIdSpace: "TPUB"
+            termAccession: "0000002"
+            fixed_value: "TPUB:0000002"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 98
+          form:
+            default:
+              region: content
+              weight: 98
