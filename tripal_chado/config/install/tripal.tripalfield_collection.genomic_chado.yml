@@ -1064,7 +1064,7 @@ fields:
     -   name: 'phylotree_phylotreevis'
         content_type: 'phylotree'
         label: 'Phylogenetic Tree Visualization'
-        type: 'chado_phylotree_vis_type_default'
+        type: 'chado_phylotreevis_type_default'
         description: 'Visualization of a phylogenetic tree.'
         cardinality: 1
         required: false

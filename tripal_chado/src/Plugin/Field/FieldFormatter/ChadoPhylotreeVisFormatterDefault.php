@@ -11,22 +11,22 @@ use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
  * Plugin implementation of default Tripal Phylotree Visualization formatter.
  */
 #[FieldFormatter(
-  id: 'chado_phylotree_vis_formatter_default',
+  id: 'chado_phylotreevis_formatter_default',
   label: new TranslatableMarkup('Chado Phylogenetic Tree Visualization formatter'),
   description: new TranslatableMarkup('Formats and visually displays a chado phylogenetic tree'),
   field_types: [
-    'chado_phylotree_vis_type_default',
+    'chado_phylotreevis_type_default',
   ],
 )]
 /**
  * Plugin implementation of default Tripal Phylotree Visualization formatter.
  *
  * @FieldFormatter(
- *   id = "chado_phylotree_vis_formatter_default",
+ *   id = "chado_phylotreevis_formatter_default",
  *   label = @Translation("Chado Phylogenetic Tree Visualization formatter"),
  *   description = @Translation("Formats and visually displays a chado phylogenetic tree"),
  *   field_types = {
- *     "chado_phylotree_vis_type_default"
+ *     "chado_phylotreevis_type_default"
  *   },
  * )
  */
@@ -255,7 +255,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
    *   The form state of the (entire) form.
    */
   public function settingsFormValidateColors(array $form, FormStateInterface $form_state) {
-    // ID for this field is "chado_phylotree_vis_formatter_default".
+    // ID for this field is "chado_phylotreevis_formatter_default".
     $plugin_definition = $this->getPluginDefinition();
     $id = $plugin_definition['id'];
 
