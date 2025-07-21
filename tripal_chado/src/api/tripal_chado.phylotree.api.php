@@ -407,14 +407,17 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
   }
 
   $fixed_terms = chado_phylogeny_get_fixed_terms($chado);
-  // The term for the phylotree bundle CV EDAM:Phylogenetic tree = dbxref data:0872
+  // The term for the phylotree bundle.
+  // Vocab: EDAM, Term: Phylogenetic tree (data:0872).
   $phylotree_bundle_term = $fixed_terms['phylotree_bundle_term'];
-  // The term for the speciestree bundle CV EDAM:Species tree = dbxref data:3272
+  // The term for the speciestree bundle.
+  // Vocab: EDAM, Term: Species tree (data:3272).
   $species_bundle_term = $fixed_terms['species_bundle_term'];
-  // The term for the property type CV EDAM:Phylogenetic tree type = dbxref data:1122
+  // The term for the property type indicating the type of tree.
+  // Vocab: EDAM, Term: Phylogenetic tree type (data:1122).
   $property_term = $fixed_terms['property_term'];
 
-  // We support only these two bundle types
+  // We support only these two bundle types.
   $bundle_term = $phylotree_bundle_term;
   if ($options['leaf_type'] == 'taxonomy') {
     $bundle_term = $species_bundle_term;
