@@ -1151,7 +1151,7 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
 function chado_phylogeny_get_fixed_terms(object $chado): array {
   $values = [];
 
-  // Find the cv_id for EDAM
+  // Find the cv_id for the EDAM vocabulary.
   $edam_id = $chado->select('1:cv', 'cv')
     ->fields('cv')
     ->condition('name', 'EDAM')
