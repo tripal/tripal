@@ -228,7 +228,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
     }
 
     // Tests downloadFile(), and additionally the rate-limiting parameter.
-    // The test above will have set the internal last_request_time.
+    // Calling retrieveFileContents() above set the internal last_request_time.
     $this->mock_error = '';
     $start = microtime(TRUE);
     $status = $retrieval_service->downloadFile($url, $this->tempfile, $retrieval_options);

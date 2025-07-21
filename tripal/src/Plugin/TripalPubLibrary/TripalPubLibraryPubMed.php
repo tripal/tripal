@@ -28,9 +28,15 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
   protected array $webquery = [];
 
   /**
-   * Options for file retrieval from NCBI
+   * Options for file retrieval from NCBI.
+   *
+   * NOTE: NCBI accepts 3 requests/second by default but will allow 
+   * 10 requests/second if an API key is provided. This is defined
+   * via the rate_limit key.
    *
    * @var array
+   *   Options to be passed to the file retrieval service.
+   *   @see Drupal\tripal\Services\TripalFileRetriever::retrieveFileContents()
    */
   protected array $retrieval_options = [
     'rate_limit' => 0.334,
@@ -333,6 +339,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       "&term=" . urlencode($search_str);
 
     if ($api_key) {
+      // NCBI accepts 10 requests/second when an API key is provided.
+      // The default rate limit is set when this property is defined.
       $this->retrieval_options['rate_limit'] = 0.1;
       $query_url .= "&api_key=" . $api_key;
     }
@@ -414,6 +422,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       "&WebEnv=" . $this->webquery['WebEnv'];
 
     if ($api_key) {
+      // NCBI accepts 10 requests/second when an API key is provided.
+      // The default rate limit is set when this property is defined.
       $this->retrieval_options['rate_limit'] = 0.1;
       $fetch_url .= "&api_key=" . $api_key;
     }

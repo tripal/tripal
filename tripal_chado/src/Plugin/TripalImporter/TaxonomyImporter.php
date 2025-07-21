@@ -56,9 +56,15 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   protected object $property_buddy;
 
   /**
-   * Options for file retrieval from NCBI
+   * Options for file retrieval from NCBI.
+   *  
+   * NOTE: NCBI accepts 3 requests/second by default but will allow 
+   * 10 requests/second if an API key is provided. This is defined  
+   * via the rate_limit key.
    *
    * @var array
+   *   Options to be passed to the file retrieval service.
+   *   @see Drupal\tripal\Services\TripalFileRetriever::retrieveFileContents()
    */
   protected array $retrieval_options = [
     'rate_limit' => 0.334,
