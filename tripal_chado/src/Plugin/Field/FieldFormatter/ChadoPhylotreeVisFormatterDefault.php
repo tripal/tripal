@@ -5,7 +5,6 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
-use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
 
 /**
  * Plugin implementation of default Tripal Phylotree Visualization formatter.
@@ -41,9 +40,6 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     // Attaches the css and js for visualization as defined in
     // tripal_chado/tripal_chado.libraries.yml.
     $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.phylotree';
-
-    // Collect the tree display settings to pass to the javascript.
-    $tripal_chado_settings = \Drupal::config('tripal_chado.settings');
 
     // Get the node colors as set by the administrator.
     $color_settings = $this->getSetting('phylogram_colors');
@@ -171,8 +167,9 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       '#markup' => t('If the trees are associated with features (e.g. proteins)
         then the nodes can be color-coded by their organism. This helps the user
         visualize which nodes belong to each organism. Please enter the
-        name of the organism and its corresponding color in HEX code (e.g. #FF0000 == red).
-        Organisms that are not given a color will be gray.'),
+        name of the organism and its corresponding color in Hex format
+        (e.g. #FF0000 or #F00) or a valid color name (e.g. Crimson or
+        DarkGreen). Organisms that are not given a color will be gray.'),
     ];
     $form['phylogram_colors'] = [
       '#element_validate' => [[$this, 'settingsFormValidateColors']],
@@ -183,6 +180,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       $form['phylogram_colors'][$i]['organism'] = [
         '#prefix' => '<div class="chado-phylotreevis-settings-field-wrapper form-item">',
         '#type' => 'textfield',
+        '#description' => t('Organism'),
         '#default_value' => $colors[$i]['organism'] ?? '',
         '#autocomplete_route_name' => 'tripal_chado.organism_autocomplete',
         '#autocomplete_route_parameters' => ['match_limit' => 10],
@@ -190,7 +188,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
       ];
       $form['phylogram_colors'][$i]['color'] = [
         '#type' => 'textfield',
-        '#description' => t('Please provide a color in Hex format (e.g. #FF0000) or a valid color name (e.g. Crimson or DarkGreen).'),
+        '#description' => t('Color'),
         '#default_value' => $colors[$i]['color'] ?? '',
         '#size' => 10,
         '#suffix' => '</div>',
@@ -265,7 +263,7 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
     // This form state can contain settings for all of the fields for the
     // current content type, but we only want to validate our own field.
     $field_values = $form_state->getValue('fields');
-    foreach ($field_values as $field => $field_settings) {
+    foreach ($field_values as $field_settings) {
       if (($field_settings['type'] == $id) and (array_key_exists('settings_edit_form', $field_settings))) {
         $phylogram_colors = $field_settings['settings_edit_form']['settings']['phylogram_colors'] ?? [];
         foreach ($phylogram_colors as $delta => $config) {
@@ -275,6 +273,8 @@ class ChadoPhylotreeVisFormatterDefault extends ChadoFormatterBase {
               $form_state->setErrorByName($field_parents . "][$delta][organism",
                   $this->t('Organism must include numeric record ID inside parentheses, please let the autocomplete add this value'));
             }
+            // Only hex color codes are validated, others are assumed to be
+            // color names, e.g. Blue.
             if (preg_match('/^#/', $config['color'])) {
               if (!(preg_match('/^#[0-9A-Fa-f]{3}$/', $config['color'])
                   || preg_match('/^#[0-9A-Fa-f]{6}$/', $config['color']))) {
