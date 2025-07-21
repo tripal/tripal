@@ -65,7 +65,6 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
    */
   public static function tripalTypes($field_definition) {
 
-    // Create a variable for easy access to settings.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'] ?? 'phylotree';
     $base_pkey_col = $storage_settings['base_column'] ?? 'phylotree_id';

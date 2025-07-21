@@ -156,11 +156,13 @@ class ChadoPhylotree {
   public function getTreeJson(int $phylotree_id): string {
     $json = '';
 
+    /** @var array */
     $phylotree = $this->loadPhylotreeById($phylotree_id);
     if (!$phylotree) {
       return $json;
     }
 
+    /** @var Drupal\Core\Database\StatementWrapperIterator */
     $nodes = $this->loadPhylonodesById($phylotree_id);
     if (!$nodes) {
       return $json;
@@ -239,6 +241,7 @@ class ChadoPhylotree {
     }
 
     // Populate the children[] arrays for each node.
+    $root_phylonode_ref = NULL;
     foreach ($phylonodes as $key => &$node) {
       if ($node['parent_phylonode_id'] !== 0) {
         $parent_ref = &$phylonodes[$node['parent_phylonode_id']];
@@ -251,7 +254,9 @@ class ChadoPhylotree {
     }
 
     // Convert datastructure to json.
-    $json = json_encode($root_phylonode_ref);
+    if ($root_phylonode_ref) {
+      $json = json_encode($root_phylonode_ref);
+    }
 
     return $json;
   }
