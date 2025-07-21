@@ -6,7 +6,14 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal\Services\TripalEntityLookup;
 
 /**
- * Handle visualization of a phylogenetic tree.
+ * Methods used for processing phylogenetic trees.
+ *
+ * The loadPhylotreeById() method loads a phylotree record from its
+ * primary key phylotree_id and returns an associative array.
+ *
+ * The getTreeJson() method is used to generate a json representation
+ * of the phylonodes in a tree, which is then used to prepare a
+ * visualization of the tree.
  */
 class ChadoPhylotree {
 
@@ -36,29 +43,13 @@ class ChadoPhylotree {
    *
    * @param Drupal\tripal_chado\Database\ChadoConnection $chado_connection
    *   The chado connection used to query chado.
+   * @param Drupal\tripal\Services\TripalEntityLookup $entity_lookup_manager
+   *   The tripal entity lookup service.
    */
   public function __construct(ChadoConnection $chado_connection, TripalEntityLookup $entity_lookup_manager) {
     $this->chado_connection = $chado_connection;
     $this->entity_lookup_manager = $entity_lookup_manager;
     $this->initializeCvTerms();
-  }
-
-  /**
-   * Creates json for ChadoPhylotree visualization.
-   *
-   * This will generate a phylotree in json format for tree visualization.
-   *
-   * @param int $phylotree_id
-   *   The pkey value from the chado.phylotree table.
-   * @param string|null $chado_schema
-   *   Optional. The chado schema where the phylotree table is located.
-   *   If no schema is specified then the default schema is used.
-   *
-   * @return void
-   *   No return value.
-   */
-  public function create(int $phylotree_id, ?string $chado_schema = NULL): void {
-
   }
 
   /**
@@ -113,7 +104,7 @@ class ChadoPhylotree {
    *   Returns FALSE if the passed phylotree_id does not
    *   exist or has no nodes.
    */
-  public function loadPhylonodesById(int $phylotree_id) {
+  protected function loadPhylonodesById(int $phylotree_id) {
     $query = $this->chado_connection->select('1:phylonode', 'n');
     $query->condition('n.phylotree_id', $phylotree_id, '=');
     $query->leftJoin('1:cvterm', 'cvt', 'n.type_id = cvt.cvterm_id');
@@ -145,13 +136,15 @@ class ChadoPhylotree {
   }
 
   /**
-   * Get a json representation of all the nodes in a phylotree.
+   * Generates a json representation of all the nodes in a phylotree.
    *
    * @param int $phylotree_id
    *   The ID of the phylotree table record.
    *
    * @return string
-   *   The phylotree in json format.
+   *   The phylotree encoded in json format.
+   *   Returns an empty string if the specified tree does not
+   *   exist, or if it has no phylonodes attached.
    */
   public function getTreeJson(int $phylotree_id): string {
     $json = '';
@@ -260,71 +253,5 @@ class ChadoPhylotree {
 
     return $json;
   }
-
-
-/**
- * @file
- * This file contains the functions used for administration of the module
- *
- */
-
-function tripal_phylogeny_admin_phylotrees_listing() {
-  $output = '';
-
-  // set the breadcrumb
-  $breadcrumb = [];
-  $breadcrumb[] = l('Home', '<front>');
-  $breadcrumb[] = l('Administration', 'admin');
-  $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Data Storage', 'admin/tripal/storage');
-  $breadcrumb[] = l('Chado', 'admin/tripal/storage/chado');
-  drupal_set_breadcrumb($breadcrumb);
-
-  // Add the view
-  $view = views_embed_view('tripal_phylogeny_admin_phylotree', 'default');
-  if (isset($view)) {
-    $output .= $view;
-  } else {
-    $output .= '<p>The Phylotree module uses primarily views to provide an '
-      . 'administrative interface. Currently one or more views needed for this '
-      . 'administrative interface are disabled. <strong>Click each of the following links to '
-      . 'enable the pertinent views</strong>:</p>';
-    $output .= '<ul>';
-    $output .= '<li>' . l('Phylotree View', 'admin/tripal/extension/tripal_phylogeny/views/phylotree/enable') . '</li>';
-    $output .= '</ul>';
-  }
-  return $output;
-}
-
-/**
- *
- * @param unknown $variables
- */
-function theme_tripal_phylogeny_admin_org_color_tables($variables) {
-  $fields = $variables['element'];
-  $num_orgs = $fields['num_orgs']['#value'];
-  $headers = ['Organism', 'Color', ''];
-  $rows = [];
-  for ($i = 0; $i < $num_orgs; $i++) {
-    $add_button = ($i == $num_orgs - 1) ? drupal_render($fields['add']) : '';
-    $del_button = ($i == $num_orgs - 1 and $i != 0) ? drupal_render($fields['remove']) : '';
-    $rows[] = [
-      drupal_render($fields['organism_' . $i]),
-      drupal_render($fields['color_' . $i]),
-      $add_button . $del_button,
-    ];
-  }
-  $table_vars = [
-    'header' => $headers,
-    'rows' => $rows,
-    'attributes' => [],
-    'sticky' => FALSE,
-    'colgroups' => [],
-    'empty' => '',
-  ];
-  $form['orgs']['num_orgs'] = $fields['num_orgs'];
-  return theme('table', $table_vars);
-}
-
 
 }
