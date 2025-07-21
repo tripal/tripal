@@ -472,7 +472,7 @@ function tripal_chado_field_reload(array $upgradable_types, array $upgradable_pr
  * @return void
  *   No return value.
  */
-function updateContentTypeCollections(array $collection_names): void {
+function update_content_type_collections(array $collection_names): void {
   /** @var \Drupal\Core\Config\StorageInterface $active_storage */
   $active_storage = \Drupal::service('config.storage');
   $config_dir = __DIR__ . '/config/install';
@@ -494,9 +494,9 @@ function updateContentTypeCollections(array $collection_names): void {
  * @return void
  *   No return value.
  */
-function reloadContentTypeCollection(string $contentTypeCollection): void {
+function reload_content_type_collection(string $contentTypeCollection): void {
   // Reload the content type collection yaml into Drupal storage.
-  updateContentTypeCollections([$contentTypeCollection]);
+  update_content_type_collections([$contentTypeCollection]);
 
   // Reinstall the specified content type collection.
   // Any new bundles or fields will be created.
@@ -514,7 +514,7 @@ function reloadContentTypeCollection(string $contentTypeCollection): void {
  * @param array $field_names
  *   One or more fields to add.
  */
-function addFieldFromYaml(string $yaml_path, array $field_names) {
+function add_field_from_yaml(string $yaml_path, array $field_names) {
   /** @var \Drupal\tripal\Services\TripalFieldCollection $fields_service **/
   $fields_service = \Drupal::service('tripal.tripalfield_collection');
   /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
@@ -707,8 +707,8 @@ function tripal_chado_update_10407() {
     $entityTypeManager = \Drupal::entityTypeManager();
 
     // Add missing additional type fields in yaml for the two featuremap bundles
-    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genetic_chado.yml', ['genetic_map_type']);
-    addFieldFromYaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml', ['physical_map_type']);
+    add_field_from_yaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genetic_chado.yml', ['genetic_map_type']);
+    add_field_from_yaml(__DIR__ . '/config/install/tripal.tripalfield_collection.genomic_chado.yml', ['physical_map_type']);
 
     // Add third party settings for bundle type using fixed_value term
     $entity_type_id = 'tripal_entity';
@@ -993,18 +993,18 @@ function tripal_chado_update_10414() {
     // Update collection configurations so that any content type
     // collections not yet imported will include the new relationship fields
     $collections = ['expression', 'general', 'genetic', 'genomic', 'germplasm'];
-    updateContentTypeCollections($collections);
+    update_content_type_collections($collections);
 
     // For any collections already imported, add all of the new relationship fields.
-    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.expression_chado.yml',
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.expression_chado.yml',
       ['biosample_relationship']);
-    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.general_chado.yml',
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.general_chado.yml',
       ['analysis_relationship', 'contact_relationship', 'project_relationship', 'pub_relationship']);
-    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.genetic_chado.yml',
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.genetic_chado.yml',
       ['genetic_marker_relationship', 'phenotypic_marker_relationship', 'qtl_relationship', 'sequence_variant_relationship']);
-    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.genomic_chado.yml',
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.genomic_chado.yml',
       ['gene_relationship', 'genome_annotation_relationship', 'genome_assembly_relationship', 'genome_project_relationship', 'mrna_relationship']);
-    addFieldFromYaml($config_dir . '/tripal.tripalfield_collection.germplasm_chado.yml',
+    add_field_from_yaml($config_dir . '/tripal.tripalfield_collection.germplasm_chado.yml',
       ['breeding_cross_relationship', 'germplasm_relationship', 'germplasm_variety_relationship', 'ril_relationship']);
 
   }
@@ -1032,7 +1032,7 @@ function tripal_chado_update_10415() {
       'cvterm.name' => 'Phylogenetic tree type',
       'cvterm.definition' => 'A label (text token) describing the type of a phylogenetic tree. [http://edamontology.org]',
     ];
-    $chado_cvterm_record = $cvterm_buddy->upsertCvterm($term_values, []);
+    $cvterm_buddy->upsertCvterm($term_values, []);
     $messenger->addMessage('Added "EDAM:Phylogenetic tree type" term');
 
     // Updates nonstandard terms for existing phylotrees, moving them
@@ -1086,11 +1086,11 @@ function tripal_chado_update_10415() {
 
     // Add a field to access the 'Phylogenetic tree type' property. Only
     // adds this field if the genomic content type collection has been loaded.
-    addFieldFromYaml($genomic_fields_yaml, ['phylotree_tree_type']);
+    add_field_from_yaml($genomic_fields_yaml, ['phylotree_tree_type']);
     $messenger->addMessage('Added "Phylogenetic Tree Type" field');
 
     // There is a new bundle for species tree in the general collection.
-    reloadContentTypeCollection('general');
+    reload_content_type_collection('general');
     $messenger->addMessage('Added a "Species Tree" content type');
 
   }
