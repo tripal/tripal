@@ -255,6 +255,47 @@ class ChadoPhylotreeTypeCRUDTest extends ChadoTestKernelBase {
     $type_root = 109;
     $type_internal = 110;
     $type_leaf = 108;
+    $type_gene = 185;
+    $type_accession = 3;
+
+    // To test the code involved in linking features and organisms
+    // to nodes, create some organisms and features.
+    $organism_1_id = $this->chado_connection->insert('1:organism')
+      ->fields([
+        'genus' => 'Tripalus',
+        'species' => 'databasica',
+        'common_name' => 'Common tripal',
+      ])->execute();
+    $organism_2_id = $this->chado_connection->insert('1:organism')
+      ->fields([
+        'genus' => 'Tripalus',
+        'species' => 'bogusii',
+        'common_name' => 'Common false tripal',
+      ])->execute();
+    $organism_3_id = $this->chado_connection->insert('1:organism')
+      ->fields([
+        'genus' => 'Tripalus',
+        'species' => 'fakus',
+        'common_name' => 'Rare false tripal',
+      ])->execute();
+    $feature_1_id = $this->chado_connection->insert('1:feature')
+      ->fields([
+        'organism_id' => $organism_1_id,
+        'uniquename' => 'feature 1',
+        'type_id' => $type_gene,
+      ])->execute();
+    $feature_3_id = $this->chado_connection->insert('1:feature')
+      ->fields([
+        'organism_id' => $organism_3_id,
+        'uniquename' => 'feature 3',
+        'type_id' => $type_gene,
+      ])->execute();
+    $stock_3_id = $this->chado_connection->insert('1:stock')
+      ->fields([
+        'organism_id' => $organism_3_id,
+        'uniquename' => 'stock 3',
+        'type_id' => $type_accession,
+      ])->execute();
 
     $root_node_id = $this->chado_connection->insert('1:phylonode')
       ->fields([
@@ -276,15 +317,55 @@ class ChadoPhylotreeTypeCRUDTest extends ChadoTestKernelBase {
         'label' => 'Internal Node',
         'distance' => 0.001,
       ])->execute();
-    $leaf_node_id = $this->chado_connection->insert('1:phylonode')
+    $leaf_node_1_id = $this->chado_connection->insert('1:phylonode')
       ->fields([
         'phylotree_id' => $phylotree_id,
         'parent_phylonode_id' => $internal_node_id,
         'left_idx' => 3,
         'right_idx' => 4,
         'type_id' => $type_leaf,
-        'label' => 'Leaf Node',
+        'label' => 'Leaf Node Tripalus databasica',
         'distance' => 0.002,
+        'feature_id' => $feature_1_id,
+      ])->execute();
+    $leaf_node_2_id = $this->chado_connection->insert('1:phylonode')
+      ->fields([
+        'phylotree_id' => $phylotree_id,
+        'parent_phylonode_id' => $internal_node_id,
+        'left_idx' => 4,
+        'right_idx' => 5,
+        'type_id' => $type_leaf,
+        'label' => 'Leaf Node Tripalus bogusii',
+        'distance' => 0.002,
+      ])->execute();
+    $leaf_node_3_id = $this->chado_connection->insert('1:phylonode')
+      ->fields([
+        'phylotree_id' => $phylotree_id,
+        'parent_phylonode_id' => $internal_node_id,
+        'left_idx' => 5,
+        'right_idx' => 6,
+        'type_id' => $type_leaf,
+        'label' => 'Leaf Node Tripalus fakus',
+        'distance' => 0.002,
+        'feature_id' => $feature_3_id,
+      ])->execute();
+    // The first leaf node had organism linked via feature.
+    // Link the second leaf node to the second organism through
+    // the linker table.
+    $this->chado_connection->insert('1:phylonode_organism')
+      ->fields([
+        'organism_id' => $organism_2_id,
+        'phylonode_id' => $leaf_node_2_id,
+      ])->execute();
+    // The third leaf node has a linked feature and thus organism,
+    // but extend one level and link a stock. This won't affect
+    // the linked organism, only the linked entity, but in this
+    // test environment there are no entities to link.
+    $this->chado_connection->insert('1:stock_feature')
+      ->fields([
+        'feature_id' => $feature_3_id,
+        'stock_id' => $stock_3_id,
+        'type_id' => $type_accession,
       ])->execute();
   }
 
