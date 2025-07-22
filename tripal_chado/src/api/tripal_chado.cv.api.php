@@ -618,8 +618,8 @@ function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
     $dbxref = $result[0];
     if (!$dbxref) {
       tripal_report_error('tripal_cv', TRIPAL_ERROR,
-        'Unable to access the dbxref record for the :term cvterm. Term Record: !record',
-        [':term' => $name, '!record' => print_r($cvterm, TRUE)]
+        'Unable to access the dbxref record for the :term cvterm. Term Record: @record',
+        [':term' => $name, '@record' => print_r($cvterm, TRUE)]
       );
       return FALSE;
     }

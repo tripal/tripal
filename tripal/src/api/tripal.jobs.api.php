@@ -228,6 +228,9 @@ function tripal_rerun_job($job_id, $goto_jobs_page = NULL) {
   $current_user = \Drupal::currentUser();
   $user_id = $current_user->id();
   $user = \Drupal\user\Entity\User::load($current_user->id());
+  $special_chars = ["'", " "];
+  $special_chars_replace = ["\'", "\ "];
+  $username = str_replace($special_chars, $special_chars_replace, $user->getAccountName());
   $messenger = \Drupal::messenger();
 
   $job = new TripalJob();
@@ -262,7 +265,7 @@ function tripal_rerun_job($job_id, $goto_jobs_page = NULL) {
           [
             '%job_id' => $job->getJobID(),
             '%base_path' => DRUPAL_ROOT,
-            '%uname' => $user->getAccountName()
+            '%uname' => $username
           ]));
     }
   }
