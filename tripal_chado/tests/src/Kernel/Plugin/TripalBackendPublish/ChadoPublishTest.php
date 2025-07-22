@@ -2,9 +2,12 @@
 
 namespace Drupal\Tests\tripal\Kernel;
 
+use PHPUnit\Framework\Attributes\Group;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 
+#[Group('TripalBackendPublish')]
+#[Group('ChadoPublish')]
 /**
  * Tests the publish service for chado-based content types.
  *
@@ -311,18 +314,26 @@ class ChadoPublishTest extends ChadoTestKernelBase {
       ->set('tripal_entity_type.publish_global_max_delta', 100)
       ->set('tripal_entity_type.publish_global_max_delta_inhibit', 0)
       ->save();
-    $this->mock_warning = '';
-    $field_storage = FieldStorageConfig::loadByName('tripal_entity', 'analysis_pub');
-    $this->assertIsObject($field_storage, 'Failed to retrieve field storage object');
-    $field_storage->setCardinality(130);
-    $field_storage->save();
-    $published_entities = $this->chado_publish->publish($publish_options);
-    $this->assertCount(1, $published_entities,
-      'We did not republish the analysis.');
-    $this->assertStringContainsString('only 131 records will be published', $this->mock_warning,
-      'We did not see the expected warning message from publish');
-    $this->assertEquals(131, $this->countFieldTable($field_table),
-      'The drupal field table does not contain the expected number of publications for the analysis');
+    // This loop will test cardinality values near the actual number of existing
+    // published records (111). A cardinality less than this will not publish
+    // anything, but existing records will not be removed.
+    $test_n = [100, 110, 111, 112, 130];
+    foreach ($test_n as $i) {
+      $this->mock_warning = '';
+      $field_storage = FieldStorageConfig::loadByName('tripal_entity', 'analysis_pub');
+      $this->assertIsObject($field_storage, 'Failed to retrieve field storage object');
+      $field_storage->setCardinality($i);
+      $field_storage->save();
+      $published_entities = $this->chado_publish->publish($publish_options);
+      $this->assertStringContainsString('only ' . ($i + 1) . ' records will be published', $this->mock_warning,
+        'We did not see the expected warning message from publish');
+      $expected = $i + 1;
+      if ($expected < 111) {
+        $expected = 111;
+      }
+      $this->assertEquals($expected, $this->countFieldTable($field_table),
+        'The drupal field table does not contain the expected number of publications for the analysis');
+    }
   }
 
   /**
