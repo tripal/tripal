@@ -1320,8 +1320,8 @@ class OBOImporter extends ChadoImporterBase {
     else {
       $ontology_results =  $this->oboEbiLookup($id, 'query');
       if ($ontology_results === FALSE OR !is_array($ontology_results)) {
-        throw new \Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !id',
-          ['!id' => $ontologyID]));
+        throw new \Exception(t('Did not get a response from EBI OLS trying to lookup ontology: @id',
+          ['@id' => $ontologyID]));
       }
       // If results were received but the number of results is 0, do a query-non-local lookup.
       if ($ontology_results['response']['numFound'] == 0) {
@@ -1442,7 +1442,7 @@ class OBOImporter extends ChadoImporterBase {
       // in our list of cached terms.
       if (array_key_exists($replaced_by, $this->termStanzaCache['ids'])) {
         $this->logger->notice(t("Found term, @replaced in the term cache.",
-          ['@term' => $id, '!replaced' => $replaced_by]));
+          ['@replaced' => $replaced_by]));
         return $this->termStanzaCache['ids'][$id];
       }
 
@@ -1451,7 +1451,7 @@ class OBOImporter extends ChadoImporterBase {
       $found = $this->lookupTerm($rpair[0], $rpair[1]);
       if ($found) {
         $this->logger->notice(t("Found term, @replaced in the local data store.",
-          ['@term' => $id, '@replaced' => $replaced_by]));
+          ['@replaced' => $replaced_by]));
         return $found;
       }
 

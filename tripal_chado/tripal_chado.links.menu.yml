@@ -1,50 +1,50 @@
 
 # Admin Tripal storage menu.
 tripal_chado.storage:
-  route_name: tripal_chado.storage
+  route_name: 'tripal_chado.storage'
   title: 'Chado'
   description: 'Integrates Chado with Tripal and includes tools to load data, and extend the chado schema through custom tables & materialized views.'
-  parent: tripal.storage
+  parent: 'tripal.storage'
   weight: 30
 
 tripal_chado.chado_install_form:
-  route_name: tripal_chado.chado_install_form
+  route_name: 'tripal_chado.chado_install_form'
   title: 'Install Chado'
   description: 'Installs the Chado database tables, views, etc., inside the current Drupal database.'
-  parent: tripal_chado.storage
+  parent: 'tripal_chado.storage'
   weight: 20
 
 tripal_chado.chado_custom_tables:
-  route_name: tripal_chado.chado_custom_tables
+  route_name: 'tripal_chado.chado_custom_tables'
   title: 'Chado Custom Tables'
   description: 'Manage Chado Custom Tables'
-  parent: tripal_chado.storage
+  parent: 'tripal_chado.storage'
   weight: 30
 
 tripal_chado.chado_mviews:
-  route_name: tripal_chado.chado_mviews
+  route_name: 'tripal_chado.chado_mviews'
   title: 'Chado Materialized Views'
   description: 'Manage Chado Materialized Views'
-  parent: tripal_chado.storage
+  parent: 'tripal_chado.storage'
   weight: 40
 
 tripal_chado.chado_manager_form:
-  route_name: tripal_chado.chado_manager_form
+  route_name: 'tripal_chado.chado_manager_form'
   title: 'Manage Chado Schemas'
   description: 'Manages Chado schemas (clone, upgrade, rename, remove, apply migrations) and their integration with Tripal.'
-  parent: tripal_chado.storage
+  parent: 'tripal_chado.storage'
   weight: 50
 
 entity.chado_term_mapping.collection:
   title: 'Chado Term Mapping'
-  parent: tripal_chado.storage
+  parent: 'tripal_chado.storage'
   description: 'Configure how terms are mapped to columns in Chado'
-  route_name: entity.chado_term_mapping.collection
+  route_name: 'entity.chado_term_mapping.collection'
   weight: 50
 
 tripal_chado.chado_prepare_form:
-  route_name: tripal_chado.chado_prepare_form
+  route_name: 'tripal_chado.chado_prepare_form'
   title: 'Prepare Chado'
   description: 'Prepares Drupal to use Chado.'
-  parent: tripal_chado.storage
+  parent: 'tripal_chado.storage'
   weight: 60
