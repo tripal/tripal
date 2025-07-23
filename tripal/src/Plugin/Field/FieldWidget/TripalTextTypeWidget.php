@@ -2,10 +2,20 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\TripalField\TripalWidgetBase;
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\TripalWidgetBase;
 
+#[FieldWidget(
+  id: 'default_tripal_text_type_widget',
+  label: new TranslatableMarkup('Tripal Text Widget'),
+  description: new TranslatableMarkup('The default text type widget.'),
+  field_types: [
+    'tripal_text_type',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal text type widget.
  *
