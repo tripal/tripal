@@ -20,7 +20,7 @@ use Drupal\tripal\Services\TripalFieldCollection;
   label: new TranslatableMarkup('Chado Type Reference'),
   description: new TranslatableMarkup('A Chado type reference'),
   default_widget: 'chado_additional_type_widget_default',
- *   default_formatter = 'chado_additional_type_formatter_default'
+  default_formatter: 'chado_additional_type_formatter_default',
 )]
 /**
  * Plugin implementation of Tripal additional type field type.
@@ -31,7 +31,7 @@ use Drupal\tripal\Services\TripalFieldCollection;
  *   label = @Translation("Chado Type Reference"),
  *   description = @Translation("A Chado type reference"),
  *   default_widget = "chado_additional_type_widget_default",
- *   default_formatter = "chado_additional_type_formatter_default"
+ *   default_formatter = "chado_additional_type_formatter_default",
  * )
  */
 class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
