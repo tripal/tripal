@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
@@ -12,6 +14,14 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\tripal\Services\TripalFieldCollection;
 
+#[FieldType(
+  id: 'chado_additional_type_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Type Reference'),
+  description: new TranslatableMarkup('A Chado type reference'),
+  default_widget: 'chado_additional_type_widget_default',
+ *   default_formatter = 'chado_additional_type_formatter_default'
+)]
 /**
  * Plugin implementation of Tripal additional type field type.
  *

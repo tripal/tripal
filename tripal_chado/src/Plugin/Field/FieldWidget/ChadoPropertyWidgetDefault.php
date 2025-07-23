@@ -2,11 +2,21 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\Core\Render\Element;
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+#[FieldWidget(
+  id: 'chado_property_widget_default',
+  label: new TranslatableMarkup('Chado Property: Long Text'),
+  description: new TranslatableMarkup('Provides a long text widget for Chado Properties using a formatted textarea.'),
+  field_types: [
+    'chado_property_type_default',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal linker property widget.
  *

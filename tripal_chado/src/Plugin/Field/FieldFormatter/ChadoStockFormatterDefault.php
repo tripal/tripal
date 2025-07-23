@@ -2,9 +2,35 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+#[FieldFormatter(
+  id: 'chado_stock_formatter_default',
+  label: new TranslatableMarkup('Chado stock formatter'),
+  description: new TranslatableMarkup('A chado stock formatter'),
+  field_types: [
+    'chado_stock_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[uniquename]',
+    '[description]',
+    '[type]',
+    '[is_obsolete]',
+    '[database_name]',
+    '[database_accession]',
+    '[genus]',
+    '[species]',
+    '[infratype]',
+    '[infratype_abbrev]',
+    '[infraname]',
+    '[abbreviation]',
+    '[common_name]',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal stock formatter.
  *

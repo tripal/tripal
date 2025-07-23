@@ -2,11 +2,21 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+#[FieldType(
+  id: 'chado_unit_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Unit'),
+  description: new TranslatableMarkup('Provide unit of measurement of content, for example, Genetic Map.'),
+  default_widget: 'chado_unit_widget_default',
+  default_formatter: 'chado_unit_formatter_default',
+)]
 /**
  * Plugin implementation of Default Tripal field for unit of measurement.
  *
@@ -16,7 +26,7 @@ use Drupal\tripal\Entity\TripalEntityType;
  *   label = @Translation("Chado Unit"),
  *   description = @Translation("Provide unit of measurement of content, for example, Genetic Map."),
  *   default_widget = "chado_unit_widget_default",
- *   default_formatter = "chado_unit_formatter_default"
+ *   default_formatter = "chado_unit_formatter_default",
  * )
  */
 

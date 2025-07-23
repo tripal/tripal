@@ -2,9 +2,30 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+#[FieldFormatter(
+  id: 'chado_assay_formatter_default',
+  label: new TranslatableMarkup('Chado assay formatter'),
+  description: new TranslatableMarkup('A chado assay formatter'),
+  field_types: [
+    'chado_assay_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[description]',
+    '[arraydesign]',
+    '[arrayidentifier]',
+    '[arraybatchidentifier]',
+    '[protocol]',
+    '[operator]',
+    '[database_name]',
+    '[database_accession]',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal assay formatter.
  *

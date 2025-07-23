@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
@@ -9,6 +11,14 @@ use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\core\Form\FormStateInterface;
 
+#[FieldType(
+  id: 'chado_synonym_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Synonym'),
+  description: new TranslatableMarkup('A chado syonym'),
+  default_widget: 'chado_synonym_widget_default',
+  default_formatter: 'chado_synonym_formatter_default',
+)]
 /**
  * Plugin implementation of Tripal string field type.
  *
@@ -18,7 +28,7 @@ use Drupal\core\Form\FormStateInterface;
  *   label = @Translation("Chado Synonym"),
  *   description = @Translation("A chado syonym"),
  *   default_widget = "chado_synonym_widget_default",
- *   default_formatter = "chado_synonym_formatter_default"
+ *   default_formatter = "chado_synonym_formatter_default",
  * )
  */
 class ChadoSynonymTypeDefault extends ChadoFieldItemBase {

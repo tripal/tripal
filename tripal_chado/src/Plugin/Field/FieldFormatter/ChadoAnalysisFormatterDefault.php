@@ -2,9 +2,29 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+#[FieldFormatter(
+  id: 'chado_analysis_formatter_default',
+  label: new TranslatableMarkup('Chado analysis formatter'),
+  description: new TranslatableMarkup('A chado analysis formatter'),
+  field_types: [
+    'chado_analysis_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[description]',
+    '[program]',
+    '[programversion]',
+    '[algorithm]',
+    '[sourcename]',
+    '[sourceversion]',
+    '[sourceuri]',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal analysis formatter.
  *

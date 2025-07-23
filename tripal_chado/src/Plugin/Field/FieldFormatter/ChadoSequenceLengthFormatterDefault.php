@@ -2,10 +2,20 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
+#[FieldFormatter(
+  id: 'chado_sequence_length_formatter_default',
+  label: new TranslatableMarkup('Chado Sequence Length Formatter'),
+  description: new TranslatableMarkup('A chado sequence length formatter'),
+  field_types: [
+    'chado_sequence_length_type_default',
+  ],
+)]
 /**
- * Plugin implementation of Default Tripal field formatter for sequence data 
+ * Plugin implementation of Default Tripal field formatter for sequence data
  *
  * @FieldFormatter(
  *   id = "chado_sequence_length_formatter_default",

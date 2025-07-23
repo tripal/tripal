@@ -2,9 +2,34 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+#[FieldFormatter(
+  id: 'chado_pub_formatter_default',
+  label: new TranslatableMarkup('Chado pub formatter'),
+  description: new TranslatableMarkup('A chado pub formatter'),
+  field_types: [
+    'chado_pub_type_default',
+  ],
+  valid_tokens: [
+    '[title]',
+    '[volumetitle]',
+    '[volume]',
+    '[series_name]',
+    '[issue]',
+    '[pyear]',
+    '[pages]',
+    '[miniref]',
+    '[uniquename]',
+    '[type]',
+    '[is_obsolete]',
+    '[publisher]',
+    '[pubplace]',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal pub formatter.
  *

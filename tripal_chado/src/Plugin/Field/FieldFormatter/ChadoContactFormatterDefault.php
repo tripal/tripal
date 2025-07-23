@@ -2,9 +2,25 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+#[FieldFormatter(
+  id: 'chado_contact_formatter_default',
+  label: new TranslatableMarkup('Chado contact formatter'),
+  description: new TranslatableMarkup('A chado contact formatter'),
+  field_types: [
+    'chado_contact_type_default',
+    'chado_contact_by_role_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[description]',
+    '[type]',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal contact formatter.
  *

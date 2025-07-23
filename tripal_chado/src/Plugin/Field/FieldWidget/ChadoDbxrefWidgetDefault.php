@@ -2,13 +2,23 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 use Drupal\tripal_chado\Controller\ChadoDbxrefAutocompleteController;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 
+#[FieldWidget(
+  id: 'chado_dbxref_widget_default',
+  label: new TranslatableMarkup('Chado Dbxref Widget'),
+  description: new TranslatableMarkup('The default dbxref widget.'),
+  field_types: [
+    'chado_dbxref_type_default',
+  ],
+)]
 /**
  * Plugin implementation of default Chado dbxref widget.
  *

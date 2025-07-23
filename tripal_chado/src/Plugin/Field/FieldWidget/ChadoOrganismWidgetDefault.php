@@ -2,11 +2,21 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
 
+#[FieldWidget(
+  id: 'chado_organism_widget_default',
+  label: new TranslatableMarkup('Chado Organism Widget'),
+  description: new TranslatableMarkup('The default organism widget.'),
+  field_types: [
+    'chado_organism_type_default',
+  ],
+)]
 /**
  * Plugin implementation of default Chado organism widget.
  *

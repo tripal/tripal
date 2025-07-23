@@ -2,10 +2,20 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+#[FieldWidget(
+  id: 'chado_project_widget_default',
+  label: new TranslatableMarkup('Chado Project Widget'),
+  description: new TranslatableMarkup('The default project widget.'),
+  field_types: [
+    'chado_project_type_default',
+  ],
+)]
 /**
  * Plugin implementation of default Chado project widget.
  *

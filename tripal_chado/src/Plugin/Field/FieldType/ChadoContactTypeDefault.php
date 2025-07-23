@@ -2,11 +2,21 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+#[FieldType(
+  id: 'chado_contact_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Contacts: All'),
+  description: new TranslatableMarkup('Supports linking contacts to the current content type without restricting to a specific type of link (i.e role the contact plays).'),
+  default_widget: 'chado_contact_widget_default',
+  default_formatter: 'chado_contact_formatter_default',
+)]
 /**
  * Plugin implementation of default Tripal contact field type.
  *

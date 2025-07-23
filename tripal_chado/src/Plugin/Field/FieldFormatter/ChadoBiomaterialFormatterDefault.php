@@ -2,9 +2,33 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+#[FieldFormatter(
+  id: 'chado_biomaterial_formatter_default',
+  label: new TranslatableMarkup('Chado biomaterial formatter'),
+  description: new TranslatableMarkup('A chado biomaterial formatter'),
+  field_types: [
+    'chado_biomaterial_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[description]',
+    '[biosourceprovider]',
+    '[database_name]',
+    '[database_accession]',
+    '[genus]',
+    '[species]',
+    '[infratype]',
+    '[infratype_abbrev]',
+    '[infraname]',
+    '[abbreviation]',
+    '[common_name]',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal biomaterial formatter.
  *

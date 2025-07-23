@@ -2,9 +2,24 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+#[FieldFormatter(
+  id: 'chado_featuremap_formatter_default',
+  label: new TranslatableMarkup('Chado featuremap formatter'),
+  description: new TranslatableMarkup('A chado featuremap formatter'),
+  field_types: [
+    'chado_featuremap_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[description]',
+    '[units]',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal featuremap formatter.
  *

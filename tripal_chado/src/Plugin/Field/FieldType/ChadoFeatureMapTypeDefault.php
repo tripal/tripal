@@ -2,12 +2,22 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+#[FieldType(
+  id: 'chado_featuremap_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado FeatureMap'),
+  description: new TranslatableMarkup('Add a Chado featuremap to the content type.'),
+  default_widget: 'chado_featuremap_widget_default',
+  default_formatter: 'chado_featuremap_formatter_default',
+)]
 /**
  * Plugin implementation of default Tripal featuremap field type.
  *

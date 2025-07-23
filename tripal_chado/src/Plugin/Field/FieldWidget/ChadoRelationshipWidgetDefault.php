@@ -2,13 +2,22 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 
-
+#[FieldWidget(
+  id: 'chado_relationship_widget_default',
+  label: new TranslatableMarkup('Chado Relationship Widget'),
+  description: new TranslatableMarkup('The default relationship widget.'),
+  field_types: [
+    'chado_relationship_type_default',
+  ],
+)]
 /**
  * Plugin implementation of default Chado relationship widget.
  *

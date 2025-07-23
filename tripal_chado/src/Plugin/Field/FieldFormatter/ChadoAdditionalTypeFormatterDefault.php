@@ -2,9 +2,19 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+#[FieldFormatter(
+  id: 'chado_additional_type_formatter_default',
+  label: new TranslatableMarkup('Chado Type Reference Formatter'),
+  description: new TranslatableMarkup('A Chado type reference formatter'),
+  field_types: [
+    'chado_additional_type_type_default',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal additional type formatter.
  *

@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
@@ -9,6 +11,14 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+#[FieldType(
+  id: 'chado_pub_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Publication'),
+  description: new TranslatableMarkup('Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.'),
+  default_widget: 'chado_pub_widget_default',
+  default_formatter: 'chado_pub_formatter_default',
+)]
 /**
  * Plugin implementation of default Tripal publication field type.
  *

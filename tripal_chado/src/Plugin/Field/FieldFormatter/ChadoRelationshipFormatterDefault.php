@@ -2,9 +2,28 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+#[FieldFormatter(
+  id: 'chado_relationship_formatter_default',
+  label: new TranslatableMarkup('Chado Relationship Formatter'),
+  description: new TranslatableMarkup('A chado relationship formatter'),
+  field_types: [
+    'chado_relationship_type_default',
+  ],
+  valid_tokens: [
+    '[accession]',
+    '[version]',
+    '[description]',
+    '[db_name]',
+    '[db_description]',
+    '[db_urlprefix]',
+    '[db_url]',
+  ],
+)]
 /**
  * Plugin implementation of default Tripal Relationship formatter.
  *
