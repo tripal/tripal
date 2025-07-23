@@ -5,7 +5,14 @@ namespace Drupal\tripal\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Block\Attribute\Block;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
+#[Block(
+  id: 'powered_by_tripal',
+  admin_label: new TranslatableMarkup('Powered by Tripal'),
+  category: new TranslatableMarkup('Tripal'),
+)]
 /**
  * Provides a 'Powered by Tripal' Block.
  *

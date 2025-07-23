@@ -8,7 +8,14 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\Pager\Pager;
+use Drupal\Core\Block\Attribute\Block;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
+#[Block(
+  id: 'notifications',
+  admin_label: new TranslatableMarkup('Tripal Administrative Notifications'),
+  category: new TranslatableMarkup('Tripal'),
+)]
 /**
  * Provides a 'Dashboard Notifications' Block.
  *

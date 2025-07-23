@@ -4,7 +4,14 @@ namespace Drupal\tripal\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Block\BlockPluginInterface;
+use Drupal\Core\Block\Attribute\Block;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
+#[Block(
+  id: 'content_type_bar_chart',
+  admin_label: new TranslatableMarkup('Content Type Bar Chart'),
+  category: new TranslatableMarkup('Tripal'),
+)]
 /**
  * Provides a 'Content Type Bar Chart' Block.
  *
