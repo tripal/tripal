@@ -981,7 +981,6 @@ fields:
               weight: 21
               settings:
                 filter_format: 'plain_text'
-                num_rows: 1
 
     -   name: 'phylotree_analysis'
         content_type: 'phylotree'
