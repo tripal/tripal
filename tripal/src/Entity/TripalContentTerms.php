@@ -3,8 +3,48 @@
 namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalContentTermsInterface;
+use Drupal\tripal\Controller\TripalContentTermsListBuilder;
+use Drupal\tripal\Form\TripalContentTermsForm;
+use Drupal\tripal\Form\TripalContentTermsDeleteForm;
 
+#[ConfigEntityType(
+  id: 'tripal_content_terms',
+  label: new TranslatableMarkup('Tripal Content Terms'),
+  label_collection: new TranslatableMarkup('Tripal Content Terms'),
+  label_singular: new TranslatableMarkup('Tripal Content Term'),
+  label_plural: new TranslatableMarkup('Tripal Content Terms'),
+  label_count: [
+    'singular' => '@count Tripal content term',
+    'plural' => '@count Tripal content terms',
+  ],
+  handlers: [
+    'list_builder' => TripalContentTermsListBuilder::class,
+    'form' => [
+      'add' => TripalContentTermsForm::class,
+      'edit' => TripalContentTermsForm::class,
+      'delete' => TripalContentTermsDeleteForm::class,
+    ],
+  ],
+  config_prefix: 'tripal_content_terms',
+  admin_permission: 'administer tripal',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'label',
+  ],
+  links: [
+    'add-form' => '/admin/tripal/config/terms/add',
+    'edit-form' => '/admin/tripal/config/terms/{tripal_content_terms}',
+    'delete-form' => '/admin/tripal/config/terms/{tripal_content_terms}/delete',
+  ],
+  config_export: [
+    'id',
+    'label',
+    'vocabularies',
+  ],
+)]
 /**
  * Defines the TripalContentTerms entity.
  *

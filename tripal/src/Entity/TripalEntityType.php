@@ -3,8 +3,63 @@
 namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\Entity\EntityViewBuilder;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\tripal\ListBuilders\TripalEntityTypeListBuilder;
+use Drupal\tripal\Form\TripalEntityTypeForm;
+use Drupal\tripal\Form\TripalEntityTypeDeleteForm;
+use Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider;
 
+#[ConfigEntityType(
+  id: 'tripal_entity_type',
+  label: new TranslatableMarkup('Tripal Content Type'),
+  label_collection: new TranslatableMarkup('Tripal Content Types'),
+  label_singular: new TranslatableMarkup('Tripal Content Type'),
+  label_plural: new TranslatableMarkup('Tripal Content Types'),
+  label_count: [
+    'singular' => '@count Tripal Content Type',
+    'plural' => '@count Tripal Content Types',
+  ],
+  handlers: [
+    'list_builder' => TripalEntityTypeListBuilder::class,
+    'view_builder' => EntityViewBuilder::class,
+    'form' => [
+      'add' => TripalEntityTypeForm::class,
+      'edit' => TripalEntityTypeForm::class,
+      'delete' => TripalEntityTypeDeleteForm::class,
+    ],
+    'route_provider' => [
+      'html' => TripalEntityTypeHtmlRouteProvider::class,
+    ],
+  ],
+  config_prefix: 'content_type',
+  admin_permission: 'manage tripal content types',
+  bundle_of: 'tripal_entity',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'label',
+  ],
+  links: [
+    'add-form' => '/admin/structure/bio_data/add',
+    'edit-form' => '/admin/structure/bio_data/manage/{tripal_entity_type}',
+    'delete-form' => '/admin/structure/bio_data/manage/{tripal_entity_type}/delete',
+    'collection' => '/admin/structure/bio_data',
+  ],
+  config_export: [
+    'id',
+    'label',
+    'termIdSpace',
+    'termAccession',
+    'help_text',
+    'category',
+    'title_format',
+    'url_format',
+    'hide_empty_field',
+    'ajax_field',
+  ],
+)]
 /**
  * Defines the Tripal Content type entity.
  *
