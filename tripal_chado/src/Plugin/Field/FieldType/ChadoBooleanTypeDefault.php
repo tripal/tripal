@@ -2,12 +2,22 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 
-
+#[FieldType(
+  id: 'chado_boolean_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Boolean Field Type'),
+  description: new TranslatableMarkup('A boolean field.'),
+  default_widget: 'chado_boolean_type_widget',
+  default_formatter: 'chado_boolean_type_formatter',
+  cardinality: 1,
+)]
 /**
  * Plugin implementation of the 'boolean' field type for Chado.
  *

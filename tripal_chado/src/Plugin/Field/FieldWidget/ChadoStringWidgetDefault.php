@@ -2,10 +2,20 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\Plugin\Field\FieldWidget\TripalStringTypeWidget;
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\Plugin\Field\FieldWidget\TripalStringTypeWidget;
 
+#[FieldWidget(
+  id: 'chado_string_type_widget',
+  label: new TranslatableMarkup('Chado String Widget'),
+  description: new TranslatableMarkup('The default string type widget.'),
+  field_types: [
+    'chado_string_type_default',
+  ],
+)]
 /**
  * Plugin implementation of default Chado string type widget.
  *
