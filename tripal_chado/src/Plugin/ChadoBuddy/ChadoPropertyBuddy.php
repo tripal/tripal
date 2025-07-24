@@ -2,13 +2,21 @@
 
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Component\Plugin\Attribute\Plugin;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal_chado\Attribute\ChadoBuddy;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
+#[ChadoBuddy(
+  id: 'chado_property_buddy',
+  label: new TranslatableMarkup('Chado Property Buddy'),
+  description: new TranslatableMarkup('Provides helper methods for managing property tables.'),
+)]
 /**
  * @ChadoBuddy(
  *   id = "chado_property_buddy",

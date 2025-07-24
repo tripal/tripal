@@ -3,7 +3,10 @@
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Component\Annotation\Plugin;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal_chado\Attribute\ChadoBuddy;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
@@ -11,6 +14,11 @@ use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
+#[ChadoBuddy(
+  id: 'chado_cvterm_buddy',
+  label: new TranslatableMarkup('Chado Controlled Vocabulary Term Buddy'),
+  description: new TranslatableMarkup('Provides helper methods for managing chado cvs and cvterms.'),
+)]
 /**
  * Plugin implementation of the chado_buddy.
  *

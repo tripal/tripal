@@ -2,10 +2,18 @@
 
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Component\Plugin\Attribute\Plugin;
+use Drupal\tripal_chado\Attribute\ChadoBuddy;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
+#[ChadoBuddy(
+  id: 'chado_dbxref_buddy',
+  label: new TranslatableMarkup('Chado Database Reference Buddy'),
+  description: new TranslatableMarkup('Provides helper methods for managing chado dbs and dbxrefs.'),
+)]
 /**
  * @ChadoBuddy(
  *   id = "chado_dbxref_buddy",
