@@ -2,8 +2,28 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
+#[TripalImporter(
+  id: 'chado_newick_tree_loader',
+  label: new TranslatableMarkup('Newick Tree Loader'),
+  description: new TranslatableMarkup('Import Newick Tree into Chado'),
+  file_types: [
+    'tree',
+    'txt',
+    'newick',
+  ],
+  upload_description: new TranslatableMarkup('Please provide the Newick formatted tree file (one tree per file only).'),
+  upload_title: new TranslatableMarkup('Newick Tree File'),
+  use_analysis: true,
+  require_analysis: true,
+  button_text: new TranslatableMarkup('Import Newick Tree file'),
+  file_upload: true,
+  file_remote: false,
+  file_required: false,
+)]
 /**
  * Taxonomy Importer implementation of the TripalImporterBase.
  *
