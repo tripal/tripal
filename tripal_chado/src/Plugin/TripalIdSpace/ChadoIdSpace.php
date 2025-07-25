@@ -15,14 +15,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   id: 'chado_id_space',
   label: new TranslatableMarkup('Vocabulary IDSpace in Chado'),
 )]
-/**
- * Chado Implementation of TripalIdSpaceBase
- *
- *  @TripalIdSpace(
- *    id = "chado_id_space",
- *    label = @Translation("Vocabulary IDSpace in Chado"),
- *  )
- */
 class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginInterface {
 
   /**

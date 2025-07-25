@@ -11,14 +11,6 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
   id: 'tripal_default_id_space',
   label: new TranslatableMarkup('Default Tripal IdSpace'),
 )]
-/**
- * Default Implementation of TripalIdSpaceBase
- *
- *  @TripalIdSpace(
- *    id = "tripal_default_id_space",
- *    label = @Translation("Default Tripal IdSpace"),
- *  )
- */
 class TripalDefaultIdSpace extends TripalIdSpaceBase {
   /**
    * A simple boolean to prevent queries if the ID space isn't valid.

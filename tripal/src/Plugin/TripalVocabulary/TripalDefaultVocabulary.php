@@ -10,14 +10,6 @@ use Drupal\tripal\TripalVocabTerms\Attribute\TripalVocabulary;
   id: 'tripal_default_vocabulary',
   label: new TranslatableMarkup('Default Tripal Vocabulary Plugin'),
 )]
-/**
- * Default implementation of the TripalVocabularyBase.
- *
- *  @TripalVocabulary(
- *    id = "tripal_default_vocabulary",
- *    label = @Translation("Default Tripal Vocabulary Plugin"),
- *  )
- */
 class TripalDefaultVocabulary extends TripalVocabularyBase {
   /**
    * An instance of the TripalLogger.
