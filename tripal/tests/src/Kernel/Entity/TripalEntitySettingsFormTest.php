@@ -12,8 +12,6 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group TripalEntity
  */
 class TripalEntitySettingsFormTest extends TripalTestKernelBase {
-//@needed?
-  //protected $defaultTheme = 'stark';
 
   /**
    * {@inheritdoc}
