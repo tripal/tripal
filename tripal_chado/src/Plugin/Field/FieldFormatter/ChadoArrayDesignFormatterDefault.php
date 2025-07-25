@@ -7,6 +7,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * Plugin implementation of default Tripal array_design formatter.
+ */
 #[TripalFieldFormatter(
   id: 'chado_array_design_formatter_default',
   label: new TranslatableMarkup('Chado array_design formatter'),
@@ -35,38 +38,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[n_sub_rows]',
   ],
 )]
-/**
- * Plugin implementation of default Tripal array_design formatter.
- *
- * @FieldFormatter(
- *   id = "chado_array_design_formatter_default",
- *   label = @Translation("Chado array_design formatter"),
- *   description = @Translation("A chado array_design formatter"),
- *   field_types = {
- *     "chado_array_design_type_default"
- *   },
- *   valid_tokens = {
- *     "[name]",
- *     "[description]",
- *     "[version]",
- *     "[manufacturer]",
- *     "[platform]",
- *     "[substrate]",
- *     "[protocol]",
- *     "[db]",
- *     "[accession]",
- *     "[array_dimensions]",
- *     "[element_dimensions]",
- *     "[n_elements]",
- *     "[n_array_columns]",
- *     "[n_array_rows]",
- *     "[n_grid_columns]",
- *     "[n_grid_rows]",
- *     "[n_sub_columns]",
- *     "[n_sub_rows]",
- *   },
- * )
- */
 class ChadoArrayDesignFormatterDefault extends ChadoFormatterBase {
 
   /**

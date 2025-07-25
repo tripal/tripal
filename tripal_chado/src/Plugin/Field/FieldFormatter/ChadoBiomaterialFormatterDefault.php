@@ -7,6 +7,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * Plugin implementation of default Tripal biomaterial formatter.
+ */
 #[TripalFieldFormatter(
   id: 'chado_biomaterial_formatter_default',
   label: new TranslatableMarkup('Chado biomaterial formatter'),
@@ -29,32 +32,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[common_name]',
   ],
 )]
-/**
- * Plugin implementation of default Tripal biomaterial formatter.
- *
- * @FieldFormatter(
- *   id = "chado_biomaterial_formatter_default",
- *   label = @Translation("Chado biomaterial formatter"),
- *   description = @Translation("A chado biomaterial formatter"),
- *   field_types = {
- *     "chado_biomaterial_type_default"
- *   },
- *   valid_tokens = {
- *     "[name]",
- *     "[description]",
- *     "[biosourceprovider]",
- *     "[database_name]",
- *     "[database_accession]",
- *     "[genus]",
- *     "[species]",
- *     "[infratype]",
- *     "[infratype_abbrev]",
- *     "[infraname]",
- *     "[abbreviation]",
- *     "[common_name]",
- *   },
- * )
- */
 class ChadoBiomaterialFormatterDefault extends ChadoFormatterBase {
 
   /**

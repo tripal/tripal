@@ -7,6 +7,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * Plugin implementation of default Tripal contact formatter.
+ */
 #[TripalFieldFormatter(
   id: 'chado_contact_formatter_default',
   label: new TranslatableMarkup('Chado contact formatter'),
@@ -21,24 +24,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[type]',
   ],
 )]
-/**
- * Plugin implementation of default Tripal contact formatter.
- *
- * @FieldFormatter(
- *   id = "chado_contact_formatter_default",
- *   label = @Translation("Chado contact formatter"),
- *   description = @Translation("A chado contact formatter"),
- *   field_types = {
- *     "chado_contact_type_default",
- *     "chado_contact_by_role_type_default"
- *   },
- *   valid_tokens = {
- *     "[name]",
- *     "[description]",
- *     "[type]",
- *   },
- * )
- */
 class ChadoContactFormatterDefault extends ChadoFormatterBase {
 
   /**

@@ -10,6 +10,9 @@ use Drupal\Component\Utility\UrlHelper;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * Plugin implementation of default Tripal dbxref formatter.
+ */
 #[TripalFieldFormatter(
   id: 'chado_dbxref_formatter_default',
   label: new TranslatableMarkup('Chado dbxref formatter'),
@@ -27,27 +30,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[db_url]',
   ],
 )]
-/**
- * Plugin implementation of default Tripal dbxref formatter.
- *
- * @FieldFormatter(
- *   id = "chado_dbxref_formatter_default",
- *   label = @Translation("Chado dbxref formatter"),
- *   description = @Translation("A chado dbxref formatter"),
- *   field_types = {
- *     "chado_dbxref_type_default"
- *   },
- *   valid_tokens = {
- *     "[accession]",
- *     "[version]",
- *     "[description]",
- *     "[db_name]",
- *     "[db_description]",
- *     "[db_urlprefix]",
- *     "[db_url]",
- *   },
- * )
- */
 class ChadoDbxrefFormatterDefault extends ChadoFormatterBase {
 
   /**
