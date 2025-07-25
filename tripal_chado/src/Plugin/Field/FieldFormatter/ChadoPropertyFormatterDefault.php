@@ -59,7 +59,7 @@ class ChadoPropertyFormatterDefault extends ChadoFormatterBase {
       ];
     }
 
-    // If multiple items, convert to a list.
+    // Will convert $list to a markup list if there is more than one item.
     $elements = $this->createListMarkup($list);
     return $elements;
   }

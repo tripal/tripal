@@ -72,7 +72,7 @@ class ChadoProtocolFormatterDefault extends ChadoFormatterBase {
       $list[$delta] = $renderable_item;
     }
 
-    // If multiple items, convert to a list.
+    // Will convert $list to a markup list if there is more than one item.
     $elements = $this->createListMarkup($list);
     return $elements;
   }
