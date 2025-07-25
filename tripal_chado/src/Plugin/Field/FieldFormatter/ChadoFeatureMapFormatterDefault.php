@@ -7,6 +7,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * Plugin implementation of default Tripal featuremap formatter.
+ */
 #[TripalFieldFormatter(
   id: 'chado_featuremap_formatter_default',
   label: new TranslatableMarkup('Chado featuremap formatter'),
@@ -20,23 +23,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[units]',
   ],
 )]
-/**
- * Plugin implementation of default Tripal featuremap formatter.
- *
- * @FieldFormatter(
- *   id = "chado_featuremap_formatter_default",
- *   label = @Translation("Chado featuremap formatter"),
- *   description = @Translation("A chado featuremap formatter"),
- *   field_types = {
- *     "chado_featuremap_type_default"
- *   },
- *   valid_tokens = {
- *     "[name]",
- *     "[description]",
- *     "[units]",
- *   },
- * )
- */
 class ChadoFeatureMapFormatterDefault extends ChadoFormatterBase {
 
   /**
