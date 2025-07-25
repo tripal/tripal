@@ -7,9 +7,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
-/**
- * Plugin implementation of default Tripal project formatter.
- */
 #[TripalFieldFormatter(
   id: 'chado_project_formatter_default',
   label: new TranslatableMarkup('Chado project formatter'),
@@ -22,6 +19,22 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[description]',
   ],
 )]
+/**
+ * Plugin implementation of default Tripal project formatter.
+ *
+ * @FieldFormatter(
+ *   id = "chado_project_formatter_default",
+ *   label = @Translation("Chado project formatter"),
+ *   description = @Translation("A chado project formatter"),
+ *   field_types = {
+ *     "chado_project_type_default"
+ *   },
+ *   valid_tokens = {
+ *     "[name]",
+ *     "[description]",
+ *   },
+ * )
+ */
 class ChadoProjectFormatterDefault extends ChadoFormatterBase {
 
   /**

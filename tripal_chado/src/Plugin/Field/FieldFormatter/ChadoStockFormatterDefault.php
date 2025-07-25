@@ -7,9 +7,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
-/**
- * Plugin implementation of default Tripal stock formatter.
- */
 #[TripalFieldFormatter(
   id: 'chado_stock_formatter_default',
   label: new TranslatableMarkup('Chado stock formatter'),
@@ -34,6 +31,34 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[common_name]',
   ],
 )]
+/**
+ * Plugin implementation of default Tripal stock formatter.
+ *
+ * @FieldFormatter(
+ *   id = "chado_stock_formatter_default",
+ *   label = @Translation("Chado stock formatter"),
+ *   description = @Translation("A chado stock formatter"),
+ *   field_types = {
+ *     "chado_stock_type_default"
+ *   },
+ *   valid_tokens = {
+ *     "[name]",
+ *     "[uniquename]",
+ *     "[description]",
+ *     "[type]",
+ *     "[is_obsolete]",
+ *     "[database_name]",
+ *     "[database_accession]",
+ *     "[genus]",
+ *     "[species]",
+ *     "[infratype]",
+ *     "[infratype_abbrev]",
+ *     "[infraname]",
+ *     "[abbreviation]",
+ *     "[common_name]",
+ *   },
+ * )
+ */
 class ChadoStockFormatterDefault extends ChadoFormatterBase {
 
   /**

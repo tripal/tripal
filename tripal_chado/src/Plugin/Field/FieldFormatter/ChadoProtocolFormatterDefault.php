@@ -7,9 +7,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
-/**
- * Plugin implementation of default Tripal protocol formatter.
- */
 #[TripalFieldFormatter(
   id: 'chado_protocol_formatter_default',
   label: new TranslatableMarkup('Chado protocol formatter'),
@@ -28,6 +25,28 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     '[database_accession]',
   ],
 )]
+/**
+ * Plugin implementation of default Tripal protocol formatter.
+ *
+ * @FieldFormatter(
+ *   id = "chado_protocol_formatter_default",
+ *   label = @Translation("Chado protocol formatter"),
+ *   description = @Translation("A chado protocol formatter"),
+ *   field_types = {
+ *     "chado_protocol_type_default"
+ *   },
+ *   valid_tokens = {
+ *     "[name]",
+ *     "[description]",
+ *     "[hardware]",
+ *     "[software]",
+ *     "[type]",
+ *     "[pub_title]",
+ *     "[database_name]",
+ *     "[database_accession]",
+ *   },
+ * )
+ */
 class ChadoProtocolFormatterDefault extends ChadoFormatterBase {
 
   /**
