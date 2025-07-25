@@ -9,16 +9,10 @@ use Drupal\Component\Plugin\Attribute\Plugin;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
- * Defines a FieldFormatter attribute for plugin discovery.
+ * Defines a TripalFieldFormatter attribute for plugin discovery.
  *
- * Formatters handle the display of field values. They are typically
- * instantiated and invoked by an EntityDisplay object.
- *
- * Additional attribute keys for formatters can be defined in
- * hook_field_formatter_info_alter().
- *
- * @see \Drupal\Core\Field\FormatterPluginManager
- * @see \Drupal\Core\Field\FormatterInterface
+ * This extends the Drupal core FieldFormatter attribute by adding
+ * support for a "valid_tokens" setting.
  *
  * @ingroup field_formatter
  */
@@ -26,7 +20,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 class TripalFieldFormatter extends FieldFormatter {
 
   /**
-   * Constructs a FieldFormatter attribute.
+   * Constructs a TripalFieldFormatter attribute.
    *
    * @param string $id
    *   The plugin ID.
@@ -42,6 +36,9 @@ class TripalFieldFormatter extends FieldFormatter {
    *   formatter for a given field instance.
    * @param class-string|null $deriver
    *   (optional) The deriver class.
+   * @param array|null $valid_tokens
+   *   (optional) A list of one or more tokens in square brackets that are
+   *   valid for this formatter, e.g. ['[name]', '[title]'].
    */
   public function __construct(
     public readonly string $id,
@@ -50,10 +47,7 @@ class TripalFieldFormatter extends FieldFormatter {
     public readonly array $field_types = [],
     public readonly ?int $weight = NULL,
     public readonly ?string $deriver = NULL,
-    public readonly array $valid_tokens = [],
-  ) {
-dpm("CP201 construct called");//@@@
-    parent::__construct($id, $label, $description, $field_types, $weight, $deriver);
-  }
+    public readonly ?array $valid_tokens = [],
+  ) {}
 
 }
