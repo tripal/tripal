@@ -45,6 +45,7 @@ RUN service apache2 start \
 
 RUN service apache2 start \
   && service postgresql start \
+  && drush cache:rebuild \
   && if [ "$installchado" = "TRUE" ] && [ "$migratechado" = "TRUE" ]; then \
     vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
     && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
