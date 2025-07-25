@@ -30,6 +30,8 @@ function tripal_chado_install($is_syncing) {
   $test_schema_base_names['chado'] = '_test_chado';
   $config->set('test_schema_base_names', $test_schema_base_names)->save();
 
+  // Reloads views if drupal version is < 11.2.
+  tripal_chado_rebuild_views();
 }
 
 /**
