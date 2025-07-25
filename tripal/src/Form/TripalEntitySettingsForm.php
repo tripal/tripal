@@ -167,8 +167,7 @@ class TripalEntitySettingsForm extends FormBase {
     $publish_global_max_delta_inhibit = $form_state->getValue('publish_global_max_delta_inhibit');
 
     // Update configuration.
-    \Drupal::configFactory()
-      ->getEditable('tripal.settings')
+    $this->configFactory->getEditable('tripal.settings')
       ->set('tripal_entity_type.default_cache_backend_field_values', $drupal_entity_field_store)
       ->set('tripal_entity_type.allowed_title_tags', $allowed_title_tags)
       ->set('tripal_entity_type.widget_global_select_limit', $widget_global_select_limit)
