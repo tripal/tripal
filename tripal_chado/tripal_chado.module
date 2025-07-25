@@ -19,6 +19,7 @@ require_once 'src/api/tripal_chado.cv.api.php';
 require_once 'src/api/tripal_chado.property.api.php';
 require_once 'src/api/tripal_chado.phylotree.api.php';
 require_once 'src/api/tripal_chado.phylotree_newick.api.php';
+require_once __DIR__ . '/../tripal/src/api/tripal.backwards_compatibility.api.php';
 require_once 'src/legacyFunctions.php';
 
 require_once 'src/api/tripal_chado.viewsdata.inc';
@@ -214,6 +215,7 @@ function tripal_chado_rebuild_views() {
   $view = $storage->load('chado_custom_tables');
   if (!$view) {
     $config = $fileStorage->read('config/install/views.view.chado_custom_tables');
+    $config = bc_11_2_view($config);
     $view = $storage->create($config);
     $view->save();
   }
@@ -222,6 +224,7 @@ function tripal_chado_rebuild_views() {
   $view = $storage->load('chado_mviews');
   if (!$view) {
     $config = $fileStorage->read('config/install/views.view.chado_mviews');
+    $config = bc_11_2_view($config);
     $view = $storage->create($config);
     $view->save();
   }
@@ -271,12 +274,14 @@ function tripal_chado_rebuild() {
   // Reload the custom tables view.
   $view = $storage->load('chado_custom_tables');
   $view->delete();
+  $custom_tables_config = bc_11_2_view($custom_tables_config);
   $view = $storage->create($custom_tables_config);
   $view->save();
 
   // Reload the materialized view view.
   $view = $storage->load('chado_mviews');
   $view->delete();
+  $mviews_config = bc_11_2_view($mviews_config);
   $view = $storage->create($mviews_config);
   $view->save();
 
