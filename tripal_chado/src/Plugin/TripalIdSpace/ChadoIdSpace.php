@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalIdSpace;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalVocabTerms\Attribute\TripalIdSpace;
 use Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\tripal\Services\TripalLogger;
@@ -9,6 +11,10 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+#[TripalIdSpace(
+  id: 'chado_id_space',
+  label: new TranslatableMarkup('Vocabulary IDSpace in Chado'),
+)]
 /**
  * Chado Implementation of TripalIdSpaceBase
  *

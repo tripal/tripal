@@ -2,9 +2,15 @@
 
 namespace Drupal\tripal\Plugin\TripalIdSpace;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalVocabTerms\Attribute\TripalIdSpace;
 use Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
+#[TripalIdSpace(
+  id: 'tripal_default_id_space',
+  label: new TranslatableMarkup('Default Tripal IdSpace'),
+)]
 /**
  * Default Implementation of TripalIdSpaceBase
  *

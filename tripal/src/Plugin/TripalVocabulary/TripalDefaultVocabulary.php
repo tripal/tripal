@@ -2,8 +2,14 @@
 
 namespace Drupal\tripal\Plugin\TripalVocabulary;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
+use Drupal\tripal\TripalVocabTerms\Attribute\TripalVocabulary;
 
+#[TripalVocabulary(
+  id: 'tripal_default_vocabulary',
+  label: new TranslatableMarkup('Default Tripal Vocabulary Plugin'),
+)]
 /**
  * Default implementation of the TripalVocabularyBase.
  *
