@@ -12,7 +12,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class TripalVocabulart extends Plugin {
+class TripalVocabulary extends Plugin {
 
   /**
    * Constructs a Chado Buddy attribute.
