@@ -355,8 +355,13 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
       $this->logger->error("Could not perform Pubmed query. Cannot connect to Entrez.");
       return FALSE;
     }
-
-    $xml = new \XMLReader();
+    try {
+      $xml = new \XMLReader();
+    }
+    catch (\Exception $e) {
+      $this->logger->error("Could not perform Pubmed query. Invalid XML returned, NCBI may be in maintenance mode.");
+      return FALSE;
+    }
     $xml->xml($query_xml);
 
     // iterate though the child nodes of the <eSearchResult> tag and get the count, history and query_id
@@ -448,6 +453,8 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
     $results = $this->fileretriever->retrieveFileContents($fetch_url, $this->retrieval_options);
 
+    // If NCBI is down for maintenance a HTML page may be embedded in the results.
+    print "\nCP5:";var_dump($results);
     return $results;
   }
 
