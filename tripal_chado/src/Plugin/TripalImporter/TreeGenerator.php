@@ -179,7 +179,10 @@ class TreeGenerator extends ChadoImporterBase {
     }
 
     // This importer generates only species (taxonomy) trees.
-    // This uses the CV term EDAM:Species tree = data:3272.
+    // These trees will be stored with the 'Species Tree' type.
+    // Vocab: EDAM, Term: Species tree (data:3272).
+    // Let's set the leaf type to taxonomy so that the API knows these
+    // are species trees.
     $options['leaf_type'] = 'taxonomy';
 
     // Now import the tree.

@@ -1053,6 +1053,9 @@ function tripal_chado_update_10415() {
       'cvterm.name' => 'Phylogenetic tree type',
     ]);
     $property_id = $chado_buddy_records[0]->getValue('cvterm.cvterm_id');
+
+    // Get a list of the phylotree records that do not have either 
+    // 'Phylogenetic tree' or 'Species tree' as the type.
     $query = $chado->select('1:phylotree', 't');
     $query->condition('type_id', [$phylotree_bundle_id, $speciestree_bundle_id], 'NOT IN');
     $query->fields('t', ['phylotree_id', 'type_id']);

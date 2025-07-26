@@ -153,20 +153,11 @@ class NewickImporterTest extends ChadoTestBrowserBase
     }
     $this->assertGreaterThan(0, $count, "Should have created at least one phylotree but did not.");
 
-
     // We need to get the type for 'Phylogenetic tree type', this is used
     // as the type_id to store the property of the name of the type of tree
     // (leaf_type for the importer), which for this tree is 'polypeptide'.
-    $results = $chado->query('SELECT * FROM {1:cvterm} T'
-        . ' LEFT JOIN {1:cv} CV ON T.cv_id = CV.cv_id'
-        . ' WHERE T.name = :name AND CV.name = :cvname', [
-      ':name' => 'Phylogenetic tree type',
-      ':cvname' => 'EDAM',
-    ]);
-    $bundle_id = NULL;
-    foreach ($results as $row) {
-      $bundle_id = $row->cvterm_id;
-    }
+    // Vocab: EDAM, Term: Phylogenetic tree type (data:1122).
+    $bundle_id = $this->getCvtermID('data','1122');
 
     // Check for phylotree based on name and property with the type.
     $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylotree} T'
