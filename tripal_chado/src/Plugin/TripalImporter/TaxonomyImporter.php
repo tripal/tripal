@@ -323,11 +323,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
           $search_url .= "&api_key=" . $api_key;
         }
         $xml_text = $this->fileretriever->retrieveFileContents($search_url, $this->retrieval_options);
-        // Detects if NCBI is down for maintenance. When this happens they embed
-        // an HTML page inside the returned xml.
-        if ($xml_text && preg_match('/content="text\/html/', $xml_text)) {
-          $xml_text = NULL;
-        }
         if (is_null($xml_text)) {
           $this->logger->warning("Could not look up @sci_name",
             ['@sci_name' => $sci_name_escaped]
@@ -338,7 +333,16 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         // Parse the XML to get the taxonomy ID
         $result = FALSE;
         $taxid = NULL;
-        $xml = new \SimpleXMLElement($xml_text);
+        try {
+          $xml = new \SimpleXMLElement($xml_text);
+        }
+        catch (\Exception $e) {
+          // The xml may be invalid if NCBI is in maintenace mode.
+          $xml = NULL;
+          $this->logger->error("Invalid XML returned for @sci_name, NCBI may be down.",
+            ['@sci_name' => $sci_name_escaped]
+          );
+        }
         if ($xml) {
           // On rare occasions there is no full match, but NCBI returns
           // a partial match which yields an incorrect taxid, so compare
@@ -547,7 +551,17 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
     // Query NCBI
     $xml_text = $this->fileretriever->retrieveFileContents($fetch_url, $this->retrieval_options);
     if (!is_null($xml_text)) {
-      $xml = new \SimpleXMLElement($xml_text);
+      try {
+        $xml = new \SimpleXMLElement($xml_text);
+      }
+      catch (\Exception $e) {
+        // The xml may be invalid if NCBI is in maintenace mode.
+        $xml = NULL;
+        $this->logger->error("Invalid XML returned for taxid @taxid, NCBI may be down.",
+          ['@taxid' => $taxid]
+        );
+        return FALSE;
+      }
       $taxon = $xml->Taxon;
 
       // Get the genus and species from the xml.
