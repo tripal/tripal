@@ -33,9 +33,6 @@ function tripal_install() {
       'description' => t('The Data Search menu contains links to search tools for finding biological data.'),
     ])->save();
   }
-
-  // Reloads views if drupal version is < 11.2.
-  tripal_rebuild_views();
 }
 
 /**
