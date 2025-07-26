@@ -329,20 +329,17 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
           );
           continue;
         }
+        else if (!$this->xmlIsValid($xml_text)) {
+          $this->logger->error("Invalid XML returned for @sci_name, NCBI may be in maintenance mode.",
+            ['@sci_name' => $sci_name_escaped]
+          );
+          continue;
+        }
 
         // Parse the XML to get the taxonomy ID
         $result = FALSE;
         $taxid = NULL;
-        try {
-          $xml = new \SimpleXMLElement($xml_text);
-        }
-        catch (\Exception $e) {
-          // The xml may be invalid if NCBI is in maintenace mode.
-          $xml = NULL;
-          $this->logger->error("Invalid XML returned for @sci_name, NCBI may be down.",
-            ['@sci_name' => $sci_name_escaped]
-          );
-        }
+        $xml = new \SimpleXMLElement($xml_text);
         if ($xml) {
           // On rare occasions there is no full match, but NCBI returns
           // a partial match which yields an incorrect taxid, so compare
@@ -550,18 +547,20 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
 
     // Query NCBI
     $xml_text = $this->fileretriever->retrieveFileContents($fetch_url, $this->retrieval_options);
-    if (!is_null($xml_text)) {
-      try {
-        $xml = new \SimpleXMLElement($xml_text);
-      }
-      catch (\Exception $e) {
-        // The xml may be invalid if NCBI is in maintenace mode.
-        $xml = NULL;
-        $this->logger->error("Invalid XML returned for taxid @taxid, NCBI may be down.",
-          ['@taxid' => $taxid]
-        );
-        return FALSE;
-      }
+    if (is_null($xml_text)) {
+      $this->logger->error("Error contacting NCBI to look up taxid @taxid",
+        ['@taxid' => $taxid]
+      );
+      return FALSE;
+    }
+    else if (!$this->xmlIsValid($xml_text)) {
+      $this->logger->error("Invalid XML returned for taxid @taxid, NCBI may be in maintenance mode.",
+        ['@taxid' => $taxid]
+      );
+      return FALSE;
+    }
+    else {
+      $xml = new \SimpleXMLElement($xml_text);
       $taxon = $xml->Taxon;
 
       // Get the genus and species from the xml.
@@ -671,12 +670,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         }
       }
     }
-    else {
-      $this->logger->warning("Error contacting NCBI to look up taxid @taxid",
-        ['@taxid' => $taxid]
-      );
-      return FALSE;
-    }
   }
 
   /**
@@ -770,7 +763,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   public function formSubmit($form, &$form_state) {
 
   }
-
 
   /**
    * Ajax callback for the TaxonomyImporter::form() function.

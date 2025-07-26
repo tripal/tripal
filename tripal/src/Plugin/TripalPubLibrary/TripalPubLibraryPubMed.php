@@ -294,6 +294,10 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         $this->logger->error('Skipping publication @acc due to download error.',
           ['@acc' => $pmid]);
       }
+      else if (!$this->xmlIsValid($xml_text)) {
+        $this->logger->error('Skipping publication @acc due to download error, NCBI may be in maintenance mode.',
+          ['@acc' => $pmid]);
+      }
       else {
         $pub = $this->parse_xml($pub_xml);
         $pubs[] = $pub;
@@ -346,22 +350,16 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     }
 
     $query_xml = $this->fileretriever->retrieveFileContents($query_url, $this->retrieval_options);
-    // Detects if NCBI is down for maintenance. When this happens they embed
-    // an HTML page inside the returned xml.
-    if ($query_xml && preg_match('/content="text\/html/', $query_xml)) {
-      $query_xml = NULL;
-    }
     if (is_null($query_xml)) {
       $this->logger->error("Could not perform Pubmed query. Cannot connect to Entrez.");
       return FALSE;
     }
-    try {
-      $xml = new \XMLReader();
-    }
-    catch (\Exception $e) {
-      $this->logger->error("Could not perform Pubmed query. Invalid XML returned, NCBI may be in maintenance mode.");
+    else if (!$this->xmlIsValid($query_xml)) {
+      $this->logger->error("Invalid XML returned, NCBI may be in maintenance mode.");
       return FALSE;
     }
+
+    $xml = new \XMLReader();
     $xml->xml($query_xml);
 
     // iterate though the child nodes of the <eSearchResult> tag and get the count, history and query_id

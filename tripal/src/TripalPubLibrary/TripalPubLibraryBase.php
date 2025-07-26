@@ -97,4 +97,30 @@ abstract class TripalPubLibraryBase extends PluginBase implements TripalPubLibra
     $this->fileretriever = $fileretriever;
   }
 
+  /**
+   * Validates whether XML is valid or not.
+   *
+   * @param string $xml
+   *   The XML to be checked.
+   *
+   * @return bool
+   *   Return TRUE if valid, FALSE if not valid.
+   */
+  protected function xmlIsValid(string $xml): bool {
+    $valid = TRUE;
+
+    libxml_use_internal_errors(TRUE);
+    $doc = simplexml_load_string($xml);
+    if ($doc === FALSE) {
+      $valid = FALSE;
+    }
+    else {
+      $errors = libxml_get_errors();
+      if (!empty($errors)) {
+        $valid = FALSE;
+      }
+    }
+    return $valid;
+  }
+
 }
