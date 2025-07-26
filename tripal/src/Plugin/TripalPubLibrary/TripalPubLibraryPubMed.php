@@ -346,6 +346,11 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     }
 
     $query_xml = $this->fileretriever->retrieveFileContents($query_url, $this->retrieval_options);
+    // Detects if NCBI is down for maintenance. When this happens they embed
+    // an HTML page inside the returned xml.
+    if ($query_xml && preg_match('/content="text\/html/', $query_xml)) {
+      $query_xml = NULL;
+    }
     if (is_null($query_xml)) {
       $this->logger->error("Could not perform Pubmed query. Cannot connect to Entrez.");
       return FALSE;
