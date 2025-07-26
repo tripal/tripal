@@ -323,6 +323,11 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
           $search_url .= "&api_key=" . $api_key;
         }
         $xml_text = $this->fileretriever->retrieveFileContents($search_url, $this->retrieval_options);
+        // Detects if NCBI is down for maintenance. When this happens they embed
+        // an HTML page inside the returned xml.
+        if ($xml_text && preg_match('/content="text\/html/', $xml_text)) {
+          $xml_text = NULL;
+        }
         if (is_null($xml_text)) {
           $this->logger->warning("Could not look up @sci_name",
             ['@sci_name' => $sci_name_escaped]
