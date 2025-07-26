@@ -25,7 +25,6 @@ require_once 'src/api/tripal.files.api.php';
 require_once 'src/api/tripal.notice.api.php';
 require_once 'src/api/tripal.upload.api.php';
 require_once 'src/api/tripal.jobs.api.php';
-require_once 'src/api/tripal.backwards_compatibility.api.php';
 require_once 'src/api/tripal.deprecated.api.php';
 require_once 'src/api/tripal.importer.api.php';
 require_once 'src/api/tripal.viewsdata.inc';
@@ -584,7 +583,6 @@ function tripal_rebuild() {
   $storage = \Drupal::entityTypeManager()->getStorage('view');
   $view = $storage->load('tripal_jobs');
   if (!$view) {
-    $config = bc_11_2_view($config);
     $view = $storage->create($config);
     $view->save();
   }
@@ -597,7 +595,6 @@ function tripal_rebuild() {
   $storage = \Drupal::entityTypeManager()->getStorage('view');
   $view = $storage->load('manage_pub_search_queries');
   if (!$view) {
-    $config = bc_11_2_view($config);
     $view = $storage->create($config);
     $view->save();
   }
