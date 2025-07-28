@@ -39,9 +39,9 @@ class TripalContentTest extends TripalTestBrowserBase {
     $term_accession = $random->sentences(3,TRUE);
     $term = $this->createMock('\Drupal\tripal\TripalVocabTerms\TripalTerm');
     $term->expects($this->any())
-      ->method('getIdSpace')->will($this->returnValue($term_idspace));
+      ->method('getIdSpace')->willReturn($term_idspace);
     $term->expects($this->any())
-      ->method('getAccession')->will($this->returnValue($term_accession));
+      ->method('getAccession')->willReturn($term_accession);
     $values['term'] = $term;
 
     // Actually creating the type.
