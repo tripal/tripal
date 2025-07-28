@@ -3,7 +3,35 @@
 namespace Drupal\tripal_layout\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
+#[ConfigEntityType(
+  id: 'tripal_layout_default_view',
+  label: new TranslatableMarkup('Tripal Default Display Layout'),
+  handlers: [
+    'list_builder' => 'Drupal\tripal_layout\ListBuilders\TripalLayoutDefaultViewListBuilder',
+    'form' => [
+      'delete' => 'Drupal\tripal_layout\Form\TripalLayoutDefaultViewDeleteForm',
+    ]
+  ],
+  config_prefix: 'tripal_layout_default_view',
+  admin_permission: 'administer tripal',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'label',
+  ],
+  config_export: [
+    'id',
+    'label',
+    'description',
+    'layouts'
+  ],
+  links: [
+    'delete-form' => '/admin/tripal/config/tripal-layout-default-view/{tripal_layout_default_view}/delete',
+    'layouts' => '/admin/tripal/config/tripal-layout-default-view'
+  ],
+)]
 /**
  * Defines the Default Layout entity controlling the page display/layout.
  *
