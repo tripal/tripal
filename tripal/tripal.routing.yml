@@ -128,17 +128,17 @@ tripal.dashboard_admin_notification_field:
 
 ##
 # Tripal Content
-## 
+##
 
 # Override the default entity listing page for a more informative page.
 entity.tripal_entity.add_page:
-  path: bio_data/add
+  path: 'bio_data/add'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalEntityUIController::tripalContentAddPage'
     _title: 'Add Tripal Content'
     _description: 'Add biological data provided by Tripal.'
   options:
-    _admin_route: 'TRUE'
+    _admin_route: true
   requirements:
     _permission: 'administer tripal content'
 
@@ -150,7 +150,7 @@ tripal.content_bio_data_publish_form:
     _title: 'Publish Tripal Content'
     _description: 'Publish content from Chado or other datastores to Tripal.'
   options:
-    _admin_route: 'TRUE'
+    _admin_route: true
   requirements:
     _permission: 'publish tripal content+administer tripal content'
 
@@ -183,7 +183,7 @@ tripal.content_type_field_check:
   options:
     parameters:
       tripal_entity_type:
-        type: entity:tripal_entity_type
+        type: 'entity:tripal_entity_type'
   requirements:
     _permission: 'administer tripal'
 
@@ -196,10 +196,10 @@ entity.tripal_entity.unpublish_form:
   options:
     parameters:
       tripal_entity:
-        type: entity:tripal_entity
+        type: 'entity:tripal_entity'
   requirements:
     _permission: 'administer tripal content'
-    
+
 ##
 # Controlled Vocabularies.
 ##
@@ -233,7 +233,7 @@ tripal.cvterm_autocomplete:
   defaults:
     _controller: '\Drupal\tripal\Controller\CVTermAutocompleteController::handleAutocomplete'
     _title: 'Vocabulary Term Autocomplete'
-    _format: json
+    _format: 'json'
   requirements:
     _permission: 'access content'
 
@@ -275,13 +275,13 @@ tripal.pubsearchqueryname_autocomplete:
   defaults:
     _controller: 'Drupal\tripal\Controller\PubSearchQueryNameAutocompleteController::handleAutocomplete'
     _title: 'Chado Vocabulary Term Autocomplete'
-    _format: json
+    _format: 'json'
   requirements:
     _permission: 'access content'
   options:
     parameters:
       string:
-        type: string
+        type: 'string'
 
 # AJAX callbacks to upload files.
 tripal.upload:
@@ -321,10 +321,10 @@ tripal.data_collections_delete:
   options:
     parameters:
       user:
-        type: entity:user
+        type: 'entity:user'
   requirements:
     _permission: 'manage tripal data collections'
-    _tripal_own_content_access_check: 'TRUE'
+    _tripal_own_content_access_check: true
 
 # View User Data Collection.
 tripal.data_collections_view:
@@ -335,10 +335,10 @@ tripal.data_collections_view:
   options:
     parameters:
       user:
-        type: entity:user
+        type: 'entity:user'
   requirements:
     _permission: 'manage tripal data collections'
-    _tripal_own_content_access_check: 'TRUE'
+    _tripal_own_content_access_check: true
 
 # Generate User Data Collection.
 tripal.data_collections_generate:
@@ -349,10 +349,10 @@ tripal.data_collections_generate:
   options:
     parameters:
       user:
-        type: entity:user
+        type: 'entity:user'
   requirements:
     _permission: 'manage tripal data collections'
-    _tripal_own_content_access_check: 'TRUE'
+    _tripal_own_content_access_check: true
 
 ##
 # Administer User File Management.
@@ -444,10 +444,10 @@ tripal.user_files:
   options:
     parameters:
       user:
-        type: entity:user
+        type: 'entity:user'
   requirements:
     _permission: 'manage tripal files'
-    _tripal_own_content_access_check: 'TRUE'
+    _tripal_own_content_access_check: true
 
 # File Details.
 tripal.user_files_details:
@@ -458,12 +458,12 @@ tripal.user_files_details:
   options:
     parameters:
       user:
-        type: entity:user
+        type: 'entity:user'
       file:
-        type: entity:file
+        type: 'entity:file'
   requirements:
     _permission: 'manage tripal files'
-    _tripal_own_content_access_check: 'TRUE'
+    _tripal_own_content_access_check: true
 
 # Renew file.
 tripal.user_files_renew:
@@ -474,12 +474,12 @@ tripal.user_files_renew:
   options:
     parameters:
       user:
-        type: entity:user
+        type: 'entity:user'
       file:
-        type: entity:file
+        type: 'entity:file'
   requirements:
     _permission: 'manage tripal files'
-    _tripal_own_content_access_check: 'TRUE'
+    _tripal_own_content_access_check: true
 
 # Download File.
 tripal.user_files_download:
@@ -490,12 +490,12 @@ tripal.user_files_download:
   options:
     parameters:
       user:
-        type: entity:user
+        type: 'entity:user'
       file:
-        type: entity:file
+        type: 'entity:file'
   requirements:
     _permission: 'manage tripal files'
-    _tripal_own_content_access_check: 'TRUE'
+    _tripal_own_content_access_check: true
 
 # Delete File.
 tripal.user_files_delete:
@@ -506,12 +506,12 @@ tripal.user_files_delete:
   options:
     parameters:
       user:
-        type: entity:user
+        type: 'entity:user'
       file:
-        type: entity:file
+        type: 'entity:file'
   requirements:
     _permission: 'manage tripal files'
-    _tripal_own_content_access_check: 'TRUE'
+    _tripal_own_content_access_check: true
 
 ##
 # Tripal Term Storage Configurations.
