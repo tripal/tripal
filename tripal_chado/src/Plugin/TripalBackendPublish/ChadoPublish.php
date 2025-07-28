@@ -3,10 +3,17 @@
 namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
 use Drupal\Component\Utility\Xss;
+use Drupal\tripal\TripalBackendPublish\Attribute\TripalBackendPublish;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 
+#[TripalBackendPublish(
+  id: 'chado_storage',
+  label: new TranslatableMarkup('Chado Publish'),
+  description: new TranslatableMarkup('Creates Tripal content based on records in a chado database.'),
+)]
 /**
  * Chado-specific TripalEntity publish.
  *
