@@ -2,10 +2,22 @@
 
 namespace Drupal\tripal\Plugin\TripalPubLibrary;
 
-use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
 use Drupal\Core\Link;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
+use Drupal\tripal\TripalPubLibrary\Attribute\TripalPubLibrary;
+use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
 
+/**
+ * PubMed publication parser.
+ *
+ * n.b. last part of id must match the record in the chado.db table name column.
+ */
+#[TripalPubLibrary(
+  id: 'tripal_pub_library_PMID',
+  label: new TranslatableMarkup('NIH PubMed database'),
+  description: new TranslatableMarkup('NIH PubMed database'),
+)]
 /**
  * PubMed publication parser
  *
