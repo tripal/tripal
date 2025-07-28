@@ -29,24 +29,6 @@ function tripal_chado_install($is_syncing) {
   $test_schema_base_names = $config->get('test_schema_base_names') ?? [];
   $test_schema_base_names['chado'] = '_test_chado';
   $config->set('test_schema_base_names', $test_schema_base_names)->save();
-
-  // A new views 'class' setting was introduced in Drupal 11.2, but it has
-  // not been added to our yaml views configurations to maintain backward
-  // compatibility. Only add it for Drupal >= 11.2.
-  if (floatval(\Drupal::VERSION) >= 11.2) {
-    $views = [
-      'views.view.chado_custom_tables',
-      'views.view.chado_mviews',
-    ];
-    foreach ($views as $view) {
-      $view_config = \Drupal::configFactory()->getEditable($view);
-      $options = $view_config->get('display.default.display_options.style.options');
-      if (!array_key_exists('class', $options)) {
-        $view_config->set('display.default.display_options.style.options.class', '');
-        $view_config->save();
-      }
-    }
-  }
 }
 
 /**

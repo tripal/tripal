@@ -23,24 +23,6 @@ function tripal_install() {
   $reserved_schema_patterns[$drupal_schema] = 'Drupal installation';
   $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
 
-  // A new views 'class' setting was introduced in Drupal 11.2, but it has
-  // not been added to our yaml views configurations to maintain backward
-  // compatibility. Only add it for Drupal >= 11.2.
-  if (floatval(\Drupal::VERSION) >= 11.2) {
-    $views = [
-      'views.view.tripal_jobs',
-      'views.view.manage_pub_search_queries',
-    ];
-    foreach ($views as $view) {
-      $view_config = \Drupal::configFactory()->getEditable($view);
-      $options = $view_config->get('display.default.display_options.style.options');
-      if (!array_key_exists('class', $options)) {
-        $view_config->set('display.default.display_options.style.options.class', '');
-        $view_config->save();
-      }
-    }
-  }
-
   // Add the Data Search Menu for Tripal specific searches.
   $storage = Drupal::entityTypeManager()->getStorage('menu');
   $menu = $storage->load('data_search');
