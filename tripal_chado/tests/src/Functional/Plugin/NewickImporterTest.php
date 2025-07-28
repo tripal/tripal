@@ -153,21 +153,21 @@ class NewickImporterTest extends ChadoTestBrowserBase
     }
     $this->assertGreaterThan(0, $count, "Should have created at least one phylotree but did not.");
 
+    // We need to get the type for 'Phylogenetic tree type', this is used
+    // as the type_id to store the property of the name of the type of tree
+    // (leaf_type for the importer), which for this tree is 'polypeptide'.
+    // Vocab: EDAM, Term: Phylogenetic tree type (data:1122).
+    $bundle_id = $this->getCvtermID('data','1122');
 
-    // We need to get the type id - polypeptide
-    $results = $chado->query('SELECT * FROM {1:cvterm} WHERE name = :name', [
-      'name' => 'polypeptide'
-    ]);
-    $type_id = NULL;
-    foreach ($results as $row) {
-      $type_id = $row->cvterm_id;
-    }
-
-
-    // Check for phylotree based on name and also type_id which should be there as well
-    $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylotree} WHERE name = :name and type_id = :type_id', [
+    // Check for phylotree based on name and property with the type.
+    $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylotree} T'
+        . ' LEFT JOIN {1:phylotreeprop} P ON T.phylotree_id = P.phylotree_id'
+        . ' WHERE T.name = :name'
+        . ' AND P.type_id = :bundle_id'
+        . ' AND P.value = :value', [
       ':name' => 'Tree 2',
-      ':type_id' => $type_id
+      ':bundle_id' => $bundle_id,
+      ':value' => 'polypeptide',
     ]);
     $count = 0;
     foreach ($results as $row) {

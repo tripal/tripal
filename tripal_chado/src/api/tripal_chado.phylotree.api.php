@@ -406,13 +406,30 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
     return FALSE;
   }
 
+  $fixed_terms = chado_phylogeny_get_fixed_terms($chado);
+  // The term for the phylotree bundle.
+  // Vocab: EDAM, Term: Phylogenetic tree (data:0872).
+  $phylotree_bundle_term = $fixed_terms['phylotree_bundle_term'];
+  // The term for the speciestree bundle.
+  // Vocab: EDAM, Term: Species tree (data:3272).
+  $species_bundle_term = $fixed_terms['species_bundle_term'];
+  // The term for the property type indicating the type of tree.
+  // Vocab: EDAM, Term: Phylogenetic tree type (data:1122).
+  $property_term = $fixed_terms['property_term'];
+
+  // We support only these two bundle types.
+  $bundle_term = $phylotree_bundle_term;
+  if ($options['leaf_type'] == 'taxonomy') {
+    $bundle_term = $species_bundle_term;
+  }
+
   // If we're here then all is good, so add the phylotree record.
   $values = [
     'analysis_id' => $options['analysis_id'],
     'name' => $options['name'],
     'dbxref_id' => $options['dbxref_id'],
     'comment' => $options['description'],
-    'type_id' => $options['type_id'],
+    'type_id' => $bundle_term,
   ];
 
   $phylotree = $chado->insert('1:phylotree')
@@ -435,6 +452,23 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
     'Insert phylotree: Created phylotree with phylotree_id: %phylotree_id',
     ['%phylotree_id' => $phylotree_id]);
   $options['phylotree_id'] = $phylotree_id;
+
+  // Store the tree type as a property. Tripal 3 property value for
+  // a 'taxonomy' tree was stored as 'Species tree'. Otherwise it
+  // is the name of the SO cvterm.
+  $property_value = $options['leaf_type'];
+  if ($property_value == 'taxonomy') {
+    $property_value = 'Species tree';
+  }
+  $prop_values = [
+    'phylotree_id' => $phylotree_id,
+    'type_id' => $property_term,
+    'value' => $property_value,
+    'rank' => 0,
+  ];
+  $property = $chado->insert('1:phylotreeprop')
+    ->fields($prop_values)
+    ->execute();
 
   // If the tree_file is numeric then it is a Drupal managed file and
   // we want to make the file permanent and associated with the tree.
@@ -858,7 +892,8 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
               }
             }
             else {
-              // This is a taxonomy tree. Try to match leaf nodes with organisms.
+              // This is a taxonomy (species) tree. Try to match leaf nodes
+              // with organisms.
               $organism_name = $tree['name'];
               $re = isset($options['name_re']) ? $options['name_re'] : NULL;
               if (($re) and (preg_match("/$re/", $organism_name, $matches))) {
@@ -1102,4 +1137,57 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     $transaction_chado->rollback();
     watchdog_exception($options['message_type'], $e);
   }
+}
+
+/**
+ * Gets fixed terms for phylogenetic trees.
+ *
+ * @param object $chado
+ *   Chado database connection.
+ *
+ * @return array
+ *   Associative array of cvterm_id values of these terms.
+ */
+function chado_phylogeny_get_fixed_terms(object $chado): array {
+  $values = [];
+
+  // Find the cv_id for the EDAM vocabulary.
+  $edam_id = $chado->select('1:cv', 'cv')
+    ->fields('cv')
+    ->condition('name', 'EDAM')
+    ->execute()
+    ->fetchObject()
+    ->cv_id;
+
+  $phylotree_bundle_term = $chado->select('1:cvterm', 't')
+    ->fields('t')
+    ->condition('cv_id', $edam_id)
+    ->condition('name', 'Phylogenetic tree')
+    ->execute()
+    ->fetchObject()
+    ->cvterm_id;
+  $values['phylotree_bundle_term'] = $phylotree_bundle_term;
+
+  $species_bundle_term = $chado->select('1:cvterm', 't')
+    ->fields('t')
+    ->condition('cv_id', $edam_id)
+    ->condition('name', 'Species tree')
+    ->execute()
+    ->fetchObject()
+    ->cvterm_id;
+  $values['species_bundle_term'] = $species_bundle_term;
+
+  // This term did not exist until PR#2223, so make sure it exists.
+  $property_object = $chado->select('1:cvterm', 't')
+    ->fields('t')
+    ->condition('cv_id', $edam_id)
+    ->condition('name', 'Phylogenetic tree type')
+    ->execute()
+    ->fetchObject();
+  if (!is_object($property_object)) {
+    throw new \Exception('Missing required CV term. Please run update 10415 with "drush updatedb"');
+  }
+  $values['property_term'] = $property_object->cvterm_id;
+
+  return $values;
 }
