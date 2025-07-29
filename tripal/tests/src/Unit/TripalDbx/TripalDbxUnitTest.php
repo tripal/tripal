@@ -112,7 +112,7 @@ class TripalDbxUnitTest extends UnitTestCase {
    * the returned values of the second one should remaine the same and be
    * faster.
    *
-   * @cover ::getDrupalSchemaName
+   * @covers ::getDrupalSchemaName
    */
   public function testGetDrupalSchemaNameOtherAndCache() {
 
@@ -146,7 +146,7 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Tests getDrupalSchemaName() method on a default schema name.
    *
-   * @cover ::getDrupalSchemaName
+   * @covers ::getDrupalSchemaName
    */
   public function testGetDrupalSchemaNameDefault() {
 
@@ -170,7 +170,7 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Tests getDrupalSchemaName() method with a failure to get Drupal schema.
    *
-   * @cover ::getDrupalSchemaName
+   * @covers ::getDrupalSchemaName
    */
   public function testGetDrupalSchemaNameFailure() {
 
@@ -365,7 +365,7 @@ class TripalDbxUnitTest extends UnitTestCase {
    *
    * @dataProvider schemaNamesProvider
    *
-   * @cover ::isInvalidSchemaName
+   * @covers ::isInvalidSchemaName
    */
   #[DataProvider('schemaNamesProvider')]
   public function testIsInvalidSchemaName(
@@ -403,9 +403,9 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Tests schema pattern reservation system.
    *
-   * @cover ::reserveSchemaPattern
-   * @cover ::getReservedSchemaPattern
-   * @cover ::freeSchemaPattern
+   * @covers ::reserveSchemaPattern
+   * @covers ::getReservedSchemaPattern
+   * @covers ::freeSchemaPattern
    */
   public function testReservedSchemaPattern() {
     $tripaldbx = new TripalDbx();
@@ -502,7 +502,7 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Tests schemaExists() method with invalid names.
    *
-   * @cover ::schemaExists
+   * @covers ::schemaExists
    */
   public function testSchemaExistsInvalid() {
     $tripaldbx = new TripalDbx();
@@ -513,7 +513,7 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Tests schemaExists() method.
    *
-   * @cover ::schemaExists
+   * @covers ::schemaExists
    */
   public function testSchemaExistsValid() {
 
@@ -539,7 +539,7 @@ class TripalDbxUnitTest extends UnitTestCase {
   /**
    * Tests schemaExists() method.
    *
-   * @cover ::parseTableDdl
+   * @covers ::parseTableDdl
    */
   public function testParseTableDdl() {
     // Use regular service.

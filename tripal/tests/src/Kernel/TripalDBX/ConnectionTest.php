@@ -103,7 +103,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Builds an initialized TripalDbxConnection mock.
    *
-   * @cover ::__construct
+   * @covers ::__construct
    */
   protected function getConnectionMock(
     $schema_name = '',
@@ -140,10 +140,10 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: check constructor calls.
    *
-   * @cover ::__construct
-   * @cover ::getDatabaseName
-   * @cover ::getDatabaseKey
-   * @cover ::getMessageLogger
+   * @covers ::__construct
+   * @covers ::getDatabaseName
+   * @covers ::getDatabaseKey
+   * @covers ::getMessageLogger
    */
   public function testConnectionConstructorAllDefault() {
     // Create a mock for the abstract class.
@@ -188,7 +188,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: test schema, default key.
    *
-   * @cover ::__construct
+   * @covers ::__construct
    */
   public function testConnectionConstructorTestSchemaDefaultKey() {
     $dbmock = $this->getConnectionMock('test');
@@ -199,8 +199,8 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: no schema, default database.
    *
-   * @cover ::__construct
-   * @cover ::getDatabaseName
+   * @covers ::__construct
+   * @covers ::getDatabaseName
    */
   public function testConnectionConstructorNoSchemaDefaultDb() {
     $db = \Drupal::database();
@@ -213,8 +213,8 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: test schema, default database.
    *
-   * @cover ::__construct
-   * @cover ::getDatabaseName
+   * @covers ::__construct
+   * @covers ::getDatabaseName
    */
   public function testConnectionConstructorTestSchemaDefaultDb() {
     $db = \Drupal::database();
@@ -227,8 +227,8 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: special character schema, default key.
    *
-   * @cover ::__construct
-   * @cover ::getDatabaseName
+   * @covers ::__construct
+   * @covers ::getDatabaseName
    */
   public function testConnectionConstructorSpecialSchemaDefaultKey() {
     $dbmock = $this->getConnectionMock('voilà');
@@ -240,7 +240,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: public schema, default key.
    *
-   * @cover ::__construct
+   * @covers ::__construct
    */
   public function testConnectionConstructorPublicSchemaDefaultKey() {
     // Now schema can use reserved schema name as long as they are valid.
@@ -264,7 +264,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: reserved schema, default key.
    *
-   * @cover ::__construct
+   * @covers ::__construct
    */
   public function testConnectionConstructorReservedSchemaDefaultKey() {
     // Now schema can use reserved schema name as long as they are valid.
@@ -289,7 +289,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: invalid schema, default key.
    *
-   * @cover ::__construct
+   * @covers ::__construct
    */
   public function testConnectionConstructorInvalidSchemaDefaultKey() {
     $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
@@ -300,7 +300,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: test schema, invalid database.
    *
-   * @cover ::__construct
+   * @covers ::__construct
    */
   public function testConnectionConstructorTestSchemaInvalidDatabase() {
     $mocked_mysqldb = $this->getMockBuilder(\Drupal\mysql\Driver\Database\mysql\Connection::class)
@@ -315,7 +315,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: test schema, invalid key.
    *
-   * @cover ::__construct
+   * @covers ::__construct
    */
   public function testConnectionConstructorTestSchemaInvalidKey() {
     $this->expectException(\Drupal\Core\Database\ConnectionNotDefinedException::class);
@@ -325,8 +325,8 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: test schema, secondary database key.
    *
-   * @cover ::__construct
-   * @cover ::getDatabaseKey
+   * @covers ::__construct
+   * @covers ::getDatabaseKey
    */
   public function testConnectionConstructorTestSchemaSecondaryKey() {
     // Create a secondary connection on-the-fly that clones the default one.
@@ -340,7 +340,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests constructor: test search_path isolation.
    *
-   * @cover ::__construct
+   * @covers ::__construct
    */
   public function testConnectionConstructorSearchPath() {
     $db = \Drupal::database();
@@ -360,7 +360,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::schema  when no schema was set.
    *
-   * @cover ::schema
+   * @covers ::schema
    */
   public function testSchemaNoSchema() {
     $dbmock = $this->getConnectionMock('');
@@ -372,8 +372,8 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests schema name changes with TripalDbxSchema object.
    *
-   * @cover ::schema
-   * @cover ::setSchemaName
+   * @covers ::schema
+   * @covers ::setSchemaName
    */
   public function testSchemaChange() {
     $schema_name = 'first';
@@ -401,14 +401,14 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests schema name changes impacts on other members and methods.
    *
-   * @cover ::schema
-   * @cover ::setSchemaName
-   * @cover ::getVersion
-   * @cover ::findVersion
-   * @cover ::getQuotedSchemaName
-   * @cover ::addExtraSchema
-   * @cover ::getExtraSchemas
-   * @cover ::prefixTables
+   * @covers ::schema
+   * @covers ::setSchemaName
+   * @covers ::getVersion
+   * @covers ::findVersion
+   * @covers ::getQuotedSchemaName
+   * @covers ::addExtraSchema
+   * @covers ::getExtraSchemas
+   * @covers ::prefixTables
    */
   public function testSchemaNameChangeImpacts() {
     $drupal_prefix = $this->get_drupal_prefix();
@@ -474,7 +474,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::addExtraSchema with no Tripal DBX schema.
    *
-   * @cover ::addExtraSchema
+   * @covers ::addExtraSchema
    */
   public function testAddExtraSchemaNoSchema() {
     $drupal_prefix = $this->get_drupal_prefix();
@@ -488,7 +488,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::setExtraSchema with index 0.
    *
-   * @cover ::setExtraSchema
+   * @covers ::setExtraSchema
    */
   public function testSetExtraSchemaZero() {
     $drupal_prefix = $this->get_drupal_prefix();
@@ -502,7 +502,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::setExtraSchema with index 1.
    *
-   * @cover ::setExtraSchema
+   * @covers ::setExtraSchema
    */
   public function testSetExtraSchemaOne() {
     $drupal_prefix = $this->get_drupal_prefix();
@@ -516,7 +516,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::prefixTables with no Tripal DBX schema.
    *
-   * @cover ::prefixTables
+   * @covers ::prefixTables
    */
   public function testPrefixNoSchema() {
     $drupal_prefix = $this->get_drupal_prefix();
@@ -545,7 +545,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::prefixTables with a Tripal DBX schema but no extra.
    *
-   * @cover ::prefixTables
+   * @covers ::prefixTables
    */
   public function testPrefixNoExtraSchema() {
     $drupal_prefix = $this->get_drupal_prefix();
@@ -599,9 +599,9 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests scenario with a Tripal DBX schema and 2 extra.
    *
-   * @cover ::prefixTables
-   * @cover ::addExtraSchema
-   * @cover ::setExtraSchema
+   * @covers ::prefixTables
+   * @covers ::addExtraSchema
+   * @covers ::setExtraSchema
    */
   public function testConnectionScenario1() {
     $drupal_prefix = $this->get_drupal_prefix();
@@ -681,9 +681,9 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests scenario with a Tripal DBX schema and 2 extra.
    *
-   * @cover ::addExtraSchema
-   * @cover ::setExtraSchema
-   * @cover ::clearExtraSchemas
+   * @covers ::addExtraSchema
+   * @covers ::setExtraSchema
+   * @covers ::clearExtraSchemas
    */
   public function testConnectionScenario2() {
     $drupal_prefix = $this->get_drupal_prefix();
@@ -740,9 +740,9 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests scenario for prefixTables with extra schema modified.
    *
-   * @cover ::prefixTables
-   * @cover ::addExtraSchema
-   * @cover ::setExtraSchema
+   * @covers ::prefixTables
+   * @covers ::addExtraSchema
+   * @covers ::setExtraSchema
    */
   public function testConnectionScenario3() {
     $drupal_prefix = $this->get_drupal_prefix();
@@ -820,7 +820,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::tablePrefix.
    *
-   * @cover ::tablePrefix
+   * @covers ::tablePrefix
    */
   public function testTablePrefix() {
     $test_schema_base_names = \Drupal::config('tripal.settings')
@@ -836,7 +836,7 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::__toString.
    *
-   * @cover ::__toString
+   * @covers ::__toString
    */
   public function testToString() {
     $test_schema_base_names = \Drupal::config('tripal.settings')
@@ -857,8 +857,8 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::executeSqlQueries.
    *
-   * @cover ::executeSqlQueries
-   * @cover ::query
+   * @covers ::executeSqlQueries
+   * @covers ::query
    */
   public function testExecuteSqlQueries() {
     // Get a test schema.
@@ -904,8 +904,8 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::executeSqlQueries with force search_path.
    *
-   * @cover ::executeSqlQueries
-   * @cover ::query
+   * @covers ::executeSqlQueries
+   * @covers ::query
    */
   public function testExecuteSqlQueriesForceSearchPath() {
     // Get a test schema.
@@ -964,8 +964,8 @@ class ConnectionTest extends TripalTestKernelBase {
   /**
    * Tests ::executeSqlQueries with force search_path.
    *
-   * @cover ::executeSqlQueries
-   * @cover ::query
+   * @covers ::executeSqlQueries
+   * @covers ::query
    */
   public function testExecuteSqlFile() {
     // Get a test schema.

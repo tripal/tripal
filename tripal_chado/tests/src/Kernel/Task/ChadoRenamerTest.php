@@ -27,8 +27,8 @@ class ChadoRenamerTest extends ChadoTestKernelBase {
   /**
    * Tests task.
    *
-   * @cover ::setParameters
-   * @cover ::performTask
+   * @covers ::setParameters
+   * @covers ::performTask
    */
   public function testPerformTaskRenamer() {
     // Create a temporary schema.

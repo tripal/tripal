@@ -199,7 +199,7 @@ class SchemaTest extends TripalTestKernelBase {
   /**
    * Tests constructor.
    *
-   * @cover ::__construct
+   * @covers ::__construct
    */
   public function testTripalDbxSchemaConstructor() {
     $scmock = $this->getTripalDbxSchemaMock('test');
@@ -209,7 +209,7 @@ class SchemaTest extends TripalTestKernelBase {
   /**
    * Tests getPrefixInfo.
    *
-   * @cover ::getPrefixInfo
+   * @covers ::getPrefixInfo
    */
   public function testTripalDbxSchemaPrefixInfo() {
     $this->allowTestSchemas();
@@ -235,30 +235,30 @@ class SchemaTest extends TripalTestKernelBase {
   /**
    * Test a scenario.
    *
-   * @cover ::getSchemaName
-   * @cover ::schemaExists
-   * @cover ::createSchema
-   * @cover ::getSchemaSize
-   * @cover ::findTables
-   * @cover ::tableExists
-   * @cover ::fieldExists
-   * @cover ::indexExists
-   * @cover ::constraintExists
-   * @cover ::primaryKeyExists
-   * @cover ::foreignKeyConstraintExists
-   * @cover ::sequenceExists
-   * @cover ::functionExists
-   * @cover ::createTable
-   * @cover ::renameTable
-   * @cover ::changeField
-   * @cover ::addIndex
-   * @cover ::dropTable
-   * @cover ::getTables
-   * @cover ::getTableDef
-   * @cover ::getTableDdl
-   * @cover ::renameSchema
-   * @cover ::cloneSchema
-   * @cover ::dropSchema
+   * @covers ::getSchemaName
+   * @covers ::schemaExists
+   * @covers ::createSchema
+   * @covers ::getSchemaSize
+   * @covers ::findTables
+   * @covers ::tableExists
+   * @covers ::fieldExists
+   * @covers ::indexExists
+   * @covers ::constraintExists
+   * @covers ::primaryKeyExists
+   * @covers ::foreignKeyConstraintExists
+   * @covers ::sequenceExists
+   * @covers ::functionExists
+   * @covers ::createTable
+   * @covers ::renameTable
+   * @covers ::changeField
+   * @covers ::addIndex
+   * @covers ::dropTable
+   * @covers ::getTables
+   * @covers ::getTableDef
+   * @covers ::getTableDdl
+   * @covers ::renameSchema
+   * @covers ::cloneSchema
+   * @covers ::dropSchema
    */
   public function testTripalDbxSchemaScenario1() {
     $db = \Drupal::database();

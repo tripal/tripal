@@ -27,8 +27,8 @@ class ChadoClonerTest extends ChadoTestKernelBase {
   /**
    * Tests task.
    *
-   * @cover ::setParameters
-   * @cover ::performTask
+   * @covers ::setParameters
+   * @covers ::performTask
    */
   public function testPerformTaskCloner() {
     // Create a temporary schema.

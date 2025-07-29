@@ -89,10 +89,10 @@ class BioTaskBaseTest extends TripalTestKernelBase {
   /**
    * Tests constructor: check constructor calls.
    *
-   * @cover ::__construct
-   * @cover ::initId
-   * @cover ::getId
-   * @cover ::getLogger
+   * @covers ::__construct
+   * @covers ::initId
+   * @covers ::getId
+   * @covers ::getLogger
    */
   public function testBioTaskBaseConstructor() {
 
@@ -140,8 +140,8 @@ class BioTaskBaseTest extends TripalTestKernelBase {
   /**
    * Tests setting + preparing input/output schema.
    *
-   * @cover ::setParameters
-   * @cover ::prepareSchemas
+   * @covers ::setParameters
+   * @covers ::prepareSchemas
    */
   public function testBioTaskBaseParameters() {
 

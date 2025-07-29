@@ -42,12 +42,12 @@ class ChadoOrganismAPITest extends ChadoTestKernelBase {
 
   /**
    * Tests the following organism API functions:
-   * @cover ::chado_get_organism
-   * @cover ::chado_get_organism_scientific_name
-   * @cover ::chado_get_organism_id_from_scientific_name
-   * @cover ::chado_get_organism_select_options
-   * @cover ::chado_abbreviate_infraspecific_rank
-   * @cover ::chado_unabbreviate_infraspecific_rank
+   * @covers ::chado_get_organism
+   * @covers ::chado_get_organism_scientific_name
+   * @covers ::chado_get_organism_id_from_scientific_name
+   * @covers ::chado_get_organism_select_options
+   * @covers ::chado_abbreviate_infraspecific_rank
+   * @covers ::chado_unabbreviate_infraspecific_rank
    * to-do: The following API functions do not have tests yet:
    *        chado_get_organism_image_url
    *        chado_autocomplete_organism

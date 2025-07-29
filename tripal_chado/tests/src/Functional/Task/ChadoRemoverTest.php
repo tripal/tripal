@@ -27,8 +27,8 @@ class ChadoRemoverTest extends ChadoTestBrowserBase {
   /**
    * Tests task.
    *
-   * @cover ::setParameters
-   * @cover ::performTask
+   * @covers ::setParameters
+   * @covers ::performTask
    */
   public function testPerformTaskRemover() {
     // Create a temporary schema.

@@ -163,7 +163,7 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
   /**
    * Tests getDrupalSchemaName() method.
    *
-   * @cover ::getDrupalSchemaName
+   * @covers ::getDrupalSchemaName
    */
   public function testGetDrupalSchemaNameReal() {
     // Get Drupal schema.
@@ -175,7 +175,7 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
   /**
    * Tests isInvalidSchemaName() method.
    *
-   * @cover ::isInvalidSchemaName
+   * @covers ::isInvalidSchemaName
    */
   public function testIsInvalidSchemaNameReal() {
     // Get Drupal schema.
@@ -191,7 +191,7 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
   /**
    * Tests schemaExists() method.
    *
-   * @cover ::schemaExists
+   * @covers ::schemaExists
    */
   public function testSchemaExistsReal() {
 
@@ -206,13 +206,13 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
   /**
    * Tests schemaExists() method.
    *
-   * @cover ::schemaExists
-   * @cover ::createSchema
-   * @cover ::renameSchema
-   * @cover ::cloneSchema
-   * @cover ::dropSchema
-   * @cover ::getDatabaseSize
-   * @cover ::getSchemaSize
+   * @covers ::schemaExists
+   * @covers ::createSchema
+   * @covers ::renameSchema
+   * @covers ::cloneSchema
+   * @covers ::dropSchema
+   * @covers ::getDatabaseSize
+   * @covers ::getSchemaSize
    */
   public function testSchemaManagementScenario1() {
 

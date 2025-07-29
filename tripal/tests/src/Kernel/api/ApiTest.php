@@ -36,7 +36,7 @@ class apiTest extends TripalTestKernelBase {
   /**
    * Tests the API function tripal_version().
    *
-   * @cover ::tripal_version
+   * @covers ::tripal_version
    */
   public function testTripalVersion() {
     // Get the version of the Tripal module as stored in tripal.info.yml

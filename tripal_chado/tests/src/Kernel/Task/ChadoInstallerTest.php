@@ -28,8 +28,8 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
   /**
    * Tests task.
    *
-   * @cover ::setParameters
-   * @cover ::performTask
+   * @covers ::setParameters
+   * @covers ::performTask
    */
   public function testPerformTaskInstaller() {
     // Get a temporary schema name.
@@ -114,7 +114,7 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
    *
    * @dataProvider provideInvalidParameters
    *
-   * @cover ::setParameters
+   * @covers ::setParameters
    */
   #[DataProvider('provideInvalidParameters')]
   public function testPerformTaskInstallerParameters($test_name, $paramset, $expected_message) {

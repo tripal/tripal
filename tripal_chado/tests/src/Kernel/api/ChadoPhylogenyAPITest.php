@@ -42,8 +42,8 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
   /**
    * Tests the following phylotree API functions:
-   * @cover ::chado_phylogeny_lookup_organism_by_name
-   * @cover ::chado_phylogeny_get_node_types_vocab
+   * @covers ::chado_phylogeny_lookup_organism_by_name
+   * @covers ::chado_phylogeny_get_node_types_vocab
    * not yet implemented because newick importer not completed
    *   ::chado_phylogeny_import_tree_file
    *   ::chado_validate_phylotree
