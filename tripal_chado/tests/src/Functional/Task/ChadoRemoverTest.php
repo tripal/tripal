@@ -3,6 +3,8 @@
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -15,6 +17,11 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  * @group Tripal Chado Task
  * @group Tripal Chado Remover
  */
+#[CoversDefaultClass('\Drupal\tripal_chado\Task\ChadoRemover')]
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Chado Task')]
+#[Group('Tripal Chado Remover')]
 class ChadoRemoverTest extends ChadoTestBrowserBase {
 
   /**

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for ChadoConnection.
@@ -12,6 +13,10 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group ChadoDBX
  * @group ChadoSchema
  */
+#[Group('Tripal Chado')]
+#[Group('TripalDBX')]
+#[Group('ChadoDBX')]
+#[Group('ChadoSchema')]
 class ChadoSchemaTest extends ChadoTestKernelBase {
 
   /**

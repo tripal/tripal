@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests that ChadoStorage can handle property fields as we expect.
@@ -32,6 +33,10 @@ use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('ChadoStorage')]
+#[Group('ChadoStorage Fields')]
 class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\Services\TripalFileRetriever;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -11,6 +12,8 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal
  * @group Tripal FileRetriever
  */
+#[Group('Tripal')]
+#[Group('Tripal FileRetriever')]
 class TripalFileRetrieverTest extends TripalTestKernelBase {
 
   /**

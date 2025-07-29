@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for ChadoConnection.
@@ -14,6 +15,10 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  * @group ChadoDBX
  * @group ChadoConnection
  */
+#[Group('Tripal Chado')]
+#[Group('TripalDBX')]
+#[Group('ChadoDBX')]
+#[Group('ChadoConnection')]
 class ChadoConnectionTest extends ChadoTestKernelBase {
 
   /**

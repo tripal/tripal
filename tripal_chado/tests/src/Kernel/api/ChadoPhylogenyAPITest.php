@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Api;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -14,6 +15,10 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group Tripal API
  * @group Tripal Phylotree
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal API')]
+#[Group('Tripal Phylotree')]
 class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
   /**
@@ -51,6 +56,8 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
    * @group tripal-chado
    * @group chado-organism
    */
+  #[Group('tripal-chado')]
+  #[Group('chado-organism')]
   public function testChadoPhylotreeAPIFunctions() {
 
     // Create a new test schema for us to use, and retrieve its name.

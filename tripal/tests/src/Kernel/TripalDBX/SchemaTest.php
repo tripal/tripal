@@ -3,6 +3,8 @@
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for Tripal DBX schema on a real database.
@@ -15,6 +17,10 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group TripalDBX
  * @group TripalDbxSchema
  */
+#[CoversDefaultClass('\Drupal\tripal\TripalDBX\TripalDbxSchema')]
+#[Group('Tripal')]
+#[Group('TripalDBX')]
+#[Group('TripalDbxSchema')]
 class SchemaTest extends TripalTestKernelBase {
 
   /**

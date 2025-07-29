@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the ChadoPropertyTypeDefault Field Type.
@@ -15,6 +16,8 @@ use Drupal\tripal\Entity\TripalEntity;
  * @group TripalField
  * @group ChadoField
  */
+#[Group('TripalField')]
+#[Group('ChadoField')]
 class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;

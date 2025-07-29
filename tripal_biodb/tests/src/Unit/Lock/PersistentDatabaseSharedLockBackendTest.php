@@ -6,6 +6,8 @@ use Drupal\Core\Lock\DatabaseLockBackend;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Core\Lock\PersistentDatabaseLockBackend;
 use Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend;
+use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for PersistentDatabaseSharedLockBackend.
@@ -31,6 +33,10 @@ use Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend;
  * @group Tripal BioDb
  * @group Tripal BioDb Lock
  */
+#[CoversDefaultClass('\Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend')]
+#[Group('Tripal')]
+#[Group('Tripal BioDb')]
+#[Group('Tripal BioDb Lock')]
 class PersistentDatabaseSharedLockBackendTest extends TripalTestKernelBase {
 
   /**

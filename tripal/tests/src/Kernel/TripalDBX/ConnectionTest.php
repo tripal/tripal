@@ -3,6 +3,8 @@
 namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for Tripal DBX connection on a real database.
@@ -13,6 +15,10 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group TripalDBX
  * @group TripalDbxConnection
  */
+#[CoversDefaultClass('\Drupal\tripal\TripalDBX\TripalDbxConnection')]
+#[Group('Tripal')]
+#[Group('TripalDBX')]
+#[Group('TripalDbxConnection')]
 class ConnectionTest extends TripalTestKernelBase {
 
   /**

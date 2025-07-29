@@ -6,6 +6,8 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Prophecy\Argument;
+use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for Tripal Dbx service.
@@ -16,6 +18,10 @@ use Prophecy\Argument;
  * @group Tripal DBX
  * @group Tripal DBX Service
  */
+#[CoversDefaultClass('\Drupal\tripal\TripalDBX\TripalDbx')]
+#[Group('Tripal')]
+#[Group('Tripal DBX')]
+#[Group('Tripal DBX Service')]
 class TripalDbxUnitTest extends UnitTestCase {
 
   /**

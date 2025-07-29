@@ -6,6 +6,8 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal_biodb\Task\BioTaskBase;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Prophecy\Prophecy\ObjectProphecy;
+use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for tasks.
@@ -16,6 +18,10 @@ use Prophecy\Prophecy\ObjectProphecy;
  * @group Tripal BioDb
  * @group Tripal BioDb Task
  */
+#[CoversDefaultClass('\Drupal\tripal_biodb\Task\BioTaskBase')]
+#[Group('Tripal')]
+#[Group('Tripal BioDb')]
+#[Group('Tripal BioDb Task')]
 class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**

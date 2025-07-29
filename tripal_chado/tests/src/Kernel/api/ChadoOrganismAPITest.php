@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Api;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -14,6 +15,10 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group Tripal API
  * @group Tripal Organism
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal API')]
+#[Group('Tripal Organism')]
 class ChadoOrganismAPITest extends ChadoTestKernelBase {
 
   /**
@@ -50,6 +55,8 @@ class ChadoOrganismAPITest extends ChadoTestKernelBase {
    * @group tripal-chado
    * @group chado-organism
    */
+  #[Group('tripal-chado')]
+  #[Group('chado-organism')]
   public function testChadoOrganismAPIFunctions() {
 
     putenv('TRIPAL_SUPPRESS_ERRORS=TRUE');

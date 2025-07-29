@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\Api\TripalApi;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for procedural API functions.
@@ -10,6 +11,8 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal
  * @group Tripal Api
  */
+#[Group('Tripal')]
+#[Group('Tripal Api')]
 class apiTest extends TripalTestKernelBase {
 
   /**

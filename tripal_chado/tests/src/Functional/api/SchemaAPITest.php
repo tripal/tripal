@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Functional\api;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.schema.api.php functions.
@@ -12,6 +13,10 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  * @group Tripal Database
  * @group Tripal API
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Database')]
+#[Group('Tripal API')]
 class SchemaAPITest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
@@ -40,6 +45,8 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group tripal-chado
    * @group chado-schema
    */
+  #[Group('tripal-chado')]
+  #[Group('chado-schema')]
   public function testChadoTableColumnExists() {
     $connection = \Drupal\Core\Database\Database::getConnection();
 
@@ -163,6 +170,8 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group tripal-chado
    * @group chado-schema
    */
+  #[Group('tripal-chado')]
+  #[Group('chado-schema')]
   public function testChadoSchemaMetdata() {
     $connection = \Drupal\Core\Database\Database::getConnection();
 
@@ -196,6 +205,9 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group chado
    * @group chado-schema
    */
+  #[Group('api')]
+  #[Group('chado')]
+  #[Group('chado-schema')]
   public function testInitClass() {
 
     // Test with no parameters.
@@ -214,6 +226,9 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group chado
    * @group chado-schema
    */
+  #[Group('api')]
+  #[Group('chado')]
+  #[Group('chado-schema')]
   public function testGetVersion() {
 
     // Generate a fake version.
@@ -239,6 +254,9 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group chado
    * @group chado-schema
    */
+  #[Group('api')]
+  #[Group('chado')]
+  #[Group('chado-schema')]
   public function testGetSchemaName() {
 
     // Generate a fake version.
@@ -262,6 +280,9 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group chado
    * @group chado-schema
    */
+  #[Group('api')]
+  #[Group('chado')]
+  #[Group('chado-schema')]
   public function testGetSchemaDetails() {
 
     $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(1.3, $this->testSchemaName);
@@ -296,6 +317,9 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group chado
    * @group chado-schema
    */
+  #[Group('api')]
+  #[Group('chado')]
+  #[Group('chado-schema')]
   public function testGetTableNames($version, $known_tables) {
 
     // Check: Known tables for a given version are returned.
@@ -320,6 +344,9 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group chado
    * @group chado-schema
    */
+  #[Group('api')]
+  #[Group('chado')]
+  #[Group('chado-schema')]
   public function testGetTableSchema() {
 
     // Check all Chado 1.3 tables.
@@ -426,6 +453,9 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group chado
    * @group chado-schema
    */
+  #[Group('api')]
+  #[Group('chado')]
+  #[Group('chado-schema')]
   public function testGetBaseTables($version, $known_tables) {
 
     // Check: Known base tables for a given version are returned.

@@ -4,6 +4,8 @@ namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalDBX\TripalDbx;
+use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for Tripal DBX tool on a real database.
@@ -14,6 +16,10 @@ use Drupal\tripal\TripalDBX\TripalDbx;
  * @group TripalDBX
  * @group TripalDbxService
  */
+#[CoversDefaultClass('\Drupal\tripal\TripalDBX\TripalDbx')]
+#[Group('Tripal')]
+#[Group('TripalDBX')]
+#[Group('TripalDbxService')]
 class TripalDbxFunctionalTest extends TripalTestKernelBase {
 
   /**

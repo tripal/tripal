@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional\Plugin\Fields\CreateEditFieldForm
 
 use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the configuration for where a basic chado field is added to an existing
@@ -13,6 +14,7 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  *
  * @group ChadoField
  */
+#[Group('ChadoField')]
 class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   use FieldUiTestTrait;
 

@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Entity;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalEntity Class with Chado Fields attached.
@@ -13,6 +14,9 @@ use Drupal\tripal\Entity\TripalEntity;
  * @group ChadoFields
  * @group TripalTokenParser
  */
+#[Group('TripalEntity')]
+#[Group('ChadoFields')]
+#[Group('TripalTokenParser')]
 class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
 
   use TripalEntityFieldTestTrait;

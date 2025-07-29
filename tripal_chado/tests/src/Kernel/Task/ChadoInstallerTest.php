@@ -3,6 +3,8 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -15,6 +17,11 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group Tripal Chado Task
  * @group Tripal Chado Installer
  */
+#[CoversDefaultClass('\Drupal\tripal_chado\Task\ChadoInstaller')]
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Chado Task')]
+#[Group('Tripal Chado Installer')]
 class ChadoInstallerTest extends ChadoTestKernelBase {
 
   /**

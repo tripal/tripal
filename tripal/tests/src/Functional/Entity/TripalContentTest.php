@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Functional\Entity;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the basic functions of Tripal Content.
@@ -10,6 +11,8 @@ use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
  * @group Tripal
  * @group Tripal Content
  */
+#[Group('Tripal')]
+#[Group('Tripal Content')]
 class TripalContentTest extends TripalTestBrowserBase {
 
   protected static $modules = ['user', 'path', 'tripal'];
