@@ -14,8 +14,6 @@ use Drupal\Core\Render\Markup;
  * Field handler to present a link to edit a chado custom table.
  *
  * @ingroup views_field_handlers
- *
- * @ViewsField("chado_mviews_edit_link")
  */
 class ChadoMviewsEditLink extends FieldPluginBase {
 

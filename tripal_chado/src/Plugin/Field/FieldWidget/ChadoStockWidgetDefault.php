@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+/**
+ * Plugin implementation of default Chado stock widget.
+ */
 #[FieldWidget(
   id: 'chado_stock_widget_default',
   label: new TranslatableMarkup('Chado Stock Widget'),
@@ -16,18 +19,6 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
     'chado_stock_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado stock widget.
- *
- * @FieldWidget(
- *   id = "chado_stock_widget_default",
- *   label = @Translation("Chado Stock Widget"),
- *   description = @Translation("The default stock widget."),
- *   field_types = {
- *     "chado_stock_type_default"
- *   }
- * )
- */
 class ChadoStockWidgetDefault extends ChadoWidgetBase {
 
   /**

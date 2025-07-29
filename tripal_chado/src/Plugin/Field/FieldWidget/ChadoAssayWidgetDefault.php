@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+/**
+ * Plugin implementation of default Chado assay widget.
+ */
 #[FieldWidget(
   id: 'chado_assay_widget_default',
   label: new TranslatableMarkup('Chado Assay Widget'),
@@ -16,18 +19,6 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
     'chado_assay_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado assay widget.
- *
- * @FieldWidget(
- *   id = "chado_assay_widget_default",
- *   label = @Translation("Chado Assay Widget"),
- *   description = @Translation("The default assay widget."),
- *   field_types = {
- *     "chado_assay_type_default"
- *   }
- * )
- */
 class ChadoAssayWidgetDefault extends ChadoWidgetBase {
 
   /**

@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+/**
+ * Plugin implementation of default Chado biomaterial widget.
+ */
 #[FieldWidget(
   id: 'chado_biomaterial_widget_default',
   label: new TranslatableMarkup('Chado Biomaterial Widget'),
@@ -16,18 +19,6 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
     'chado_biomaterial_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado biomaterial widget.
- *
- * @FieldWidget(
- *   id = "chado_biomaterial_widget_default",
- *   label = @Translation("Chado Biomaterial Widget"),
- *   description = @Translation("The default biomaterial widget."),
- *   field_types = {
- *     "chado_biomaterial_type_default"
- *   }
- * )
- */
 class ChadoBiomaterialWidgetDefault extends ChadoWidgetBase {
 
   /**

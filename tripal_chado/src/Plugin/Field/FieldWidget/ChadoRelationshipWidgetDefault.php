@@ -10,6 +10,9 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 
+/**
+ * Plugin implementation of default Chado relationship widget.
+ */
 #[FieldWidget(
   id: 'chado_relationship_widget_default',
   label: new TranslatableMarkup('Chado Relationship Widget'),
@@ -18,18 +21,6 @@ use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
     'chado_relationship_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado relationship widget.
- *
- * @FieldWidget(
- *   id = "chado_relationship_widget_default",
- *   label = @Translation("Chado Relationship Widget"),
- *   description = @Translation("The default relationship widget."),
- *   field_types = {
- *     "chado_relationship_type_default"
- *   }
- * )
- */
 class ChadoRelationshipWidgetDefault extends ChadoWidgetBase {
 
   /**

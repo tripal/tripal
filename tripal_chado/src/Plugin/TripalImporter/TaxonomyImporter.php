@@ -12,6 +12,9 @@ use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
+/**
+ * Taxonomy Importer implementation of the TripalImporterBase.
+ */
 #[TripalImporter(
   id: 'chado_taxonomy_loader',
   label: new TranslatableMarkup('NCBI Taxonomy Loader'),
@@ -24,22 +27,6 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_local: false,
   file_required: false,
 )]
-/**
- * Taxonomy Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_taxonomy_loader",
- *    label = @Translation("NCBI Taxonomy Loader"),
- *    description = @Translation("Import organisms by NCBI Taxonomy ID into Chado"),
- *    use_analysis = False,
- *    require_analysis = False,
- *    button_text = @Translation("Import Organisms"),
- *    file_upload = FALSE,
- *    file_local = FALSE,
- *    file_remote = FALSE,
- *    file_required = FALSE,
- *  )
- */
 class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
   /**

@@ -11,6 +11,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal stock field type.
+ */
 #[FieldType(
   id: 'chado_stock_type_default',
   category: 'tripal_chado',
@@ -19,18 +22,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_stock_widget_default',
   default_formatter: 'chado_stock_formatter_default',
 )]
-/**
- * Plugin implementation of default Tripal stock field type.
- *
- * @FieldType(
- *   id = "chado_stock_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Stock"),
- *   description = @Translation("Add a Chado stock to the content type."),
- *   default_widget = "chado_stock_widget_default",
- *   default_formatter = "chado_stock_formatter_default",
- * )
- */
 class ChadoStockTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_stock_type_default';

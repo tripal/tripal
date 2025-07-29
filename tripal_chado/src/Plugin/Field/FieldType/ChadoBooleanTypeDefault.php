@@ -9,6 +9,9 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 
+/**
+ * Plugin implementation of the 'boolean' field type for Chado.
+ */
 #[FieldType(
   id: 'chado_boolean_type_default',
   category: 'tripal_chado',
@@ -18,19 +21,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
   default_formatter: 'chado_boolean_type_formatter',
   cardinality: 1,
 )]
-/**
- * Plugin implementation of the 'boolean' field type for Chado.
- *
- * @FieldType(
- *   id = "chado_boolean_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Boolean Field Type"),
- *   description = @Translation("A boolean field."),
- *   default_widget = "chado_boolean_type_widget",
- *   default_formatter = "chado_boolean_type_formatter",
- *   cardinality = 1
- * )
- */
 class ChadoBooleanTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_boolean_type_default";

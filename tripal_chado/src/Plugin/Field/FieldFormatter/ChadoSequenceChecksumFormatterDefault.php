@@ -8,6 +8,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Plugin implementation of Default Tripal field formatter for sequence data.
+ */
 #[FieldFormatter(
   id: 'chado_sequence_checksum_formatter_default',
   label: new TranslatableMarkup('Chado Sequence checksum Formatter'),
@@ -16,18 +19,6 @@ use Drupal\Core\Form\FormStateInterface;
     'chado_sequence_checksum_type_default',
   ],
 )]
-/**
- * Plugin implementation of Default Tripal field formatter for sequence data
- *
- * @FieldFormatter(
- *   id = "chado_sequence_checksum_formatter_default",
- *   label = @Translation("Chado Sequence checksum Formatter"),
- *   description = @Translation("A chado sequence checksum formatter"),
- *   field_types = {
- *     "chado_sequence_checksum_type_default"
- *   }
- * )
- */
 class ChadoSequenceChecksumFormatterDefault extends ChadoFormatterBase {
 
   /**

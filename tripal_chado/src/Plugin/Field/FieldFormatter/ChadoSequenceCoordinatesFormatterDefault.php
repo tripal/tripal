@@ -7,6 +7,9 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * Plugin implementation of default Tripal string type formatter.
+ */
 #[FieldFormatter(
   id: 'chado_sequence_coordinates_formatter_default',
   label: new TranslatableMarkup('Chado sequence coordinates default formatter'),
@@ -15,18 +18,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     'chado_sequence_coordinates_default',
   ],
 )]
-/**
- * Plugin implementation of default Tripal string type formatter.
- *
- * @FieldFormatter(
- *   id = "chado_sequence_coordinates_formatter_default",
- *   label = @Translation("Chado sequence coordinates default formatter"),
- *   description = @Translation("The default sequence coordinates formatter allows curators to view sequence coordinates (min, max, strand and phase) of the feature."),
- *   field_types = {
- *     "chado_sequence_coordinates_default"
- *   }
- * )
- */
 class ChadoSequenceCoordinatesFormatterDefault extends ChadoFormatterBase
 {
   /**

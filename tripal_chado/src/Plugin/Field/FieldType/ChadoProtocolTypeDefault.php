@@ -10,6 +10,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal protocol field type.
+ */
 #[FieldType(
   id: 'chado_protocol_type_default',
   category: 'tripal_chado',
@@ -18,18 +21,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_protocol_widget_default',
   default_formatter: 'chado_protocol_formatter_default',
 )]
-/**
- * Plugin implementation of default Tripal protocol field type.
- *
- * @FieldType(
- *   id = "chado_protocol_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Protocol"),
- *   description = @Translation("Add a Chado protocol to the content type."),
- *   default_widget = "chado_protocol_widget_default",
- *   default_formatter = "chado_protocol_formatter_default",
- * )
- */
 class ChadoProtocolTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_protocol_type_default';

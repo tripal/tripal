@@ -11,6 +11,9 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
+/**
+ * Chado Pub Search Query Importer implementation of the TripalImporterBase.
+ */
 #[TripalImporter(
   id: 'pub_search_query_loader',
   label: new TranslatableMarkup('Publication Loader'),
@@ -24,23 +27,6 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_required: false,
   hidden: true,
 )]
-/**
- * Chado Pub Search Query Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "pub_search_query_loader",
- *    label = @Translation("Publication Loader"),
- *    description = @Translation("Import Publications into Chado using a Publication Search Query"),
- *    use_analysis = False,
- *    require_analysis = False,
- *    button_text = @Translation("Import Publications"),
- *    file_upload = False,
- *    file_remote = False,
- *    file_local = False,
- *    file_required = False,
- *    hidden = True,
- *  )
- */
 class PubSearchQueryImporter extends ChadoImporterBase {
 
   /**

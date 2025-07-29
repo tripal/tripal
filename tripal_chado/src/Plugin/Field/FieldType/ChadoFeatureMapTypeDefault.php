@@ -10,6 +10,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal featuremap field type.
+ */
 #[FieldType(
   id: 'chado_featuremap_type_default',
   category: 'tripal_chado',
@@ -18,18 +21,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_featuremap_widget_default',
   default_formatter: 'chado_featuremap_formatter_default',
 )]
-/**
- * Plugin implementation of default Tripal featuremap field type.
- *
- * @FieldType(
- *   id = "chado_featuremap_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado FeatureMap"),
- *   description = @Translation("Add a Chado featuremap to the content type."),
- *   default_widget = "chado_featuremap_widget_default",
- *   default_formatter = "chado_featuremap_formatter_default",
- * )
- */
 class ChadoFeatureMapTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_featuremap_type_default';

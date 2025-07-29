@@ -10,6 +10,9 @@ use Drupal\Core\Url;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * Plugin implementation of default Tripal linker property formatter.
+ */
 #[FieldFormatter(
   id: 'chado_property_formatter_default',
   label: new TranslatableMarkup('Chado Property'),
@@ -18,18 +21,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     'chado_property_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Tripal linker property formatter.
- *
- * @FieldFormatter(
- *   id = "chado_property_formatter_default",
- *   label = @Translation("Chado Property"),
- *   description = @Translation("Add a property or attribute to the content type."),
- *   field_types = {
- *     "chado_property_type_default"
- *   }
- * )
- */
 class ChadoPropertyFormatterDefault extends ChadoFormatterBase {
 
   /**

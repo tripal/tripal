@@ -9,6 +9,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of Default Tripal field for data source.
+ */
 #[FieldType(
   id: 'chado_source_data_type_default',
   category: 'tripal_chado',
@@ -18,19 +21,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_formatter: 'chado_source_data_formatter_default',
   cardinality: 1,
 )]
-/**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_source_data_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Data Source"),
- *   description = @Translation("The source and version of data used for this analysis"),
- *   default_widget = "chado_source_data_widget_default",
- *   default_formatter = "chado_source_data_formatter_default",
- *   cardinality = 1,
- * )
- */
 class ChadoSourceDataTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_source_data_type_default";

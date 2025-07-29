@@ -9,6 +9,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal study field type.
+ */
 #[FieldType(
   id: 'chado_study_type_default',
   category: 'tripal_chado',
@@ -17,18 +20,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_study_widget_default',
   default_formatter: 'chado_study_formatter_default',
 )]
-/**
- * Plugin implementation of default Tripal study field type.
- *
- * @FieldType(
- *   id = "chado_study_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Study"),
- *   description = @Translation("Add a Chado study to the content type."),
- *   default_widget = "chado_study_widget_default",
- *   default_formatter = "chado_study_formatter_default",
- * )
- */
 class ChadoStudyTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_study_type_default';

@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+/**
+ * Plugin implementation of default Chado contact widget.
+ */
 #[FieldWidget(
   id: 'chado_contact_widget_default',
   label: new TranslatableMarkup('Chado Contact Widget'),
@@ -17,19 +20,6 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
     'chado_contact_by_role_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado contact widget.
- *
- * @FieldWidget(
- *   id = "chado_contact_widget_default",
- *   label = @Translation("Chado Contact Widget"),
- *   description = @Translation("The default contact widget."),
- *   field_types = {
- *     "chado_contact_type_default",
- *     "chado_contact_by_role_type_default"
- *   }
- * )
- */
 class ChadoContactWidgetDefault extends ChadoWidgetBase {
 
   /**

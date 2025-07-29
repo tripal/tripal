@@ -8,6 +8,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 
+/**
+ * Plugin implementation of the 'boolean' field type.
+ */
 #[FieldType(
   id: 'tripal_boolean_type',
   category: 'tripal',
@@ -16,18 +19,6 @@ use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
   default_widget: 'default_tripal_boolean_type_widget',
   default_formatter: 'default_tripal_boolean_type_formatter',
 )]
-/**
- * Plugin implementation of the 'boolean' field type.
- *
- * @FieldType(
- *   id = "tripal_boolean_type",
- *   category = "tripal",
- *   label = @Translation("Tripal Boolean Field Type"),
- *   description = @Translation("A boolean field."),
- *   default_widget = "default_tripal_boolean_type_widget",
- *   default_formatter = "default_tripal_boolean_type_formatter"
- * )
- */
 class TripalBooleanTypeItem extends TripalFieldItemBase {
 
   public static $id = "tripal_boolean_type";

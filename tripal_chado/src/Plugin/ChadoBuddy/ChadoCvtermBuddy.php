@@ -14,20 +14,14 @@ use Drupal\tripal_chado\ChadoBuddy\Interfaces\ChadoBuddyInterface;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
+/**
+ * Plugin implementation of the chado cvterm buddy.
+ */
 #[ChadoBuddy(
   id: 'chado_cvterm_buddy',
   label: new TranslatableMarkup('Chado Controlled Vocabulary Term Buddy'),
   description: new TranslatableMarkup('Provides helper methods for managing chado cvs and cvterms.'),
 )]
-/**
- * Plugin implementation of the chado_buddy.
- *
- * @ChadoBuddy(
- *   id = "chado_cvterm_buddy",
- *   label = @Translation("Chado Controlled Vocabulary Term Buddy"),
- *   description = @Translation("Provides helper methods for managing chado cvs and cvterms.")
- * )
- */
 class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
   /**

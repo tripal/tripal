@@ -7,6 +7,10 @@ use Drupal\tripal\TripalVocabTerms\Attribute\TripalIdSpace;
 use Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
+
+/**
+ * Default Implementation of TripalIdSpaceBase.
+ */
 #[TripalIdSpace(
   id: 'tripal_default_id_space',
   label: new TranslatableMarkup('Default Tripal IdSpace'),

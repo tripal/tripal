@@ -11,6 +11,9 @@ use Drupal\tripal_chado\Controller\ChadoDbxrefAutocompleteController;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 
+/**
+ * Plugin implementation of default Chado dbxref widget.
+ */
 #[FieldWidget(
   id: 'chado_dbxref_widget_default',
   label: new TranslatableMarkup('Chado Dbxref Widget'),
@@ -19,18 +22,6 @@ use Drupal\Core\Ajax\ReplaceCommand;
     'chado_dbxref_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado dbxref widget.
- *
- * @FieldWidget(
- *   id = "chado_dbxref_widget_default",
- *   label = @Translation("Chado Dbxref Widget"),
- *   description = @Translation("The default dbxref widget."),
- *   field_types = {
- *     "chado_dbxref_type_default"
- *   }
- * )
- */
 class ChadoDbxrefWidgetDefault extends ChadoWidgetBase {
 
   /**

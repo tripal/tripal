@@ -9,6 +9,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal contact by role field type.
+ */
 #[FieldType(
   id: 'chado_contact_by_role_type_default',
   category: 'tripal_chado',
@@ -17,18 +20,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_contact_widget_default',
   default_formatter: 'chado_contact_formatter_default',
 )]
-/**
- * Plugin implementation of default Tripal contact field type.
- *
- * @FieldType(
- *   id = "chado_contact_by_role_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Contacts: Specific Role"),
- *   description = @Translation("Supports linking contacts fullfilling a specific role to the current content type."),
- *   default_widget = "chado_contact_widget_default",
- *   default_formatter = "chado_contact_formatter_default",
- * )
- */
 class ChadoContactByRoleTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_contact_by_role_type_default';

@@ -9,6 +9,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 
+/**
+ * Plugin implementation of Tripal string field type.
+ */
 #[FieldType(
   id: 'tripal_string_type',
   category: 'tripal',
@@ -17,18 +20,6 @@ use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
   default_widget: 'default_tripal_string_type_widget',
   default_formatter: 'default_tripal_string_type_formatter',
 )]
-/**
- * Plugin implementation of Tripal string field type.
- *
- * @FieldType(
- *   id = "tripal_string_type",
- *   category = "tripal",
- *   label = @Translation("Tripal String Field Type"),
- *   description = @Translation("A text field with a maximum length."),
- *   default_widget = "default_tripal_string_type_widget",
- *   default_formatter = "default_tripal_string_type_formatter"
- * )
- */
 class TripalStringTypeItem extends TripalFieldItemBase {
 
   public static $id = "tripal_string_type";

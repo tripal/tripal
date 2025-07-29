@@ -10,6 +10,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal relationship field type.
+ */
 #[FieldType(
   id: 'chado_relationship_type_default',
   category: 'tripal_chado',
@@ -19,19 +22,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_formatter: 'chado_relationship_formatter_default',
   cardinality: -1,
 )]
-/**
- * Plugin implementation of default Tripal relationship field type.
- *
- * @FieldType(
- *   id = "chado_relationship_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Relationship"),
- *   description = @Translation("Add a relationship to the content type."),
- *   default_widget = "chado_relationship_widget_default",
- *   default_formatter = "chado_relationship_formatter_default",
- *   cardinality = -1,
- * )
- */
 class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_relationship_type_default';

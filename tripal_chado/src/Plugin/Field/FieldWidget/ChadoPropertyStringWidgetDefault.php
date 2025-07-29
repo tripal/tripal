@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+/**
+ * Plugin implementation of default Tripal linker property widget.
+ */
 #[FieldWidget(
   id: 'chado_property_string_widget_default',
   label: new TranslatableMarkup('Chado Property: Short Text'),
@@ -16,18 +19,6 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
     'chado_property_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Tripal linker property widget.
- *
- * @FieldWidget(
- *   id = "chado_property_string_widget_default",
- *   label = @Translation("Chado Property: Short Text"),
- *   description = @Translation("Provides a simple string widget for Chado Properties using a textfield."),
- *   field_types = {
- *     "chado_property_type_default"
- *   }
- * )
- */
 class ChadoPropertyStringWidgetDefault extends ChadoWidgetBase {
 
 

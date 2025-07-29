@@ -6,6 +6,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
+/**
+ * Tree Generator implementation of the TripalImporterBase.
+ */
 #[TripalImporter(
   id: 'chado_tree_generator',
   label: new TranslatableMarkup('Taxonomy Tree Generator'),
@@ -18,22 +21,6 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_local: false,
   file_required: false,
 )]
-/**
- * Tree Generator implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_tree_generator",
- *    label = @Translation("Taxonomy Tree Generator"),
- *    description = @Translation("Generate a taxonomy tree from organisms stored in Chado"),
- *    use_analysis = False,
- *    require_analysis = False,
- *    button_text = @Translation("Generate Taxonomy Tree"),
- *    file_upload = FALSE,
- *    file_local = FALSE,
- *    file_remote = FALSE,
- *    file_required = FALSE,
- *  )
- */
 class TreeGenerator extends ChadoImporterBase {
 
   /**

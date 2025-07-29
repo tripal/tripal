@@ -7,6 +7,9 @@ use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalStringTypeFormatter;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 
+/**
+ * Plugin implementation of default Chado string type formatter.
+ */
 #[FieldFormatter(
   id: 'chado_string_type_formatter',
   label: new TranslatableMarkup('Chado String Type Formatter'),
@@ -15,18 +18,6 @@ use Drupal\Core\Field\FieldItemListInterface;
     'chado_string_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado string type formatter.
- *
- * @FieldFormatter(
- *   id = "chado_string_type_formatter",
- *   label = @Translation("Chado String Type Formatter"),
- *   description = @Translation("The Chado string type formatter."),
- *   field_types = {
- *     "chado_string_type_default"
- *   }
- * )
- */
 class ChadoStringFormatterDefault extends DefaultTripalStringTypeFormatter {
 
   /**

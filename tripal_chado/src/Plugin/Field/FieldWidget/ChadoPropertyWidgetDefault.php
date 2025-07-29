@@ -9,6 +9,9 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+/**
+ * Plugin implementation of default Tripal linker property widget.
+ */
 #[FieldWidget(
   id: 'chado_property_widget_default',
   label: new TranslatableMarkup('Chado Property: Long Text'),
@@ -17,18 +20,6 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
     'chado_property_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Tripal linker property widget.
- *
- * @FieldWidget(
- *   id = "chado_property_widget_default",
- *   label = @Translation("Chado Property: Long Text"),
- *   description = @Translation("Provides a long text widget for Chado Properties using a formatted textarea."),
- *   field_types = {
- *     "chado_property_type_default"
- *   }
- * )
- */
 class ChadoPropertyWidgetDefault extends ChadoWidgetBase {
 
   /**
