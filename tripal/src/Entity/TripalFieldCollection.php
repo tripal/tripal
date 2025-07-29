@@ -9,6 +9,12 @@ use Drupal\tripal\Form\TripalFieldCollectionForm;
 use Drupal\tripal\Form\TripalFieldCollectionDeleteForm;
 use Drupal\tripal\ListBuilders\TripalFieldCollectionListBuilder;
 
+/**
+ * Provides a UI for YML-based TripalField creation.
+ *
+ * Each instance of this entity is a single configuration for Tripal Field Collection
+ * in your site.
+ */
 #[ConfigEntityType(
   id: 'tripalfield_collection',
   label: new TranslatableMarkup('Tripal Field Collection'),
@@ -39,9 +45,7 @@ use Drupal\tripal\ListBuilders\TripalFieldCollectionListBuilder;
   ],
 )]
 /**
- * Provides a UI for YML-based TripalField creation.
- * Each instance of this entity is a single configuration for Tripal Field Collection
- * in your site.
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * @ConfigEntityType(
  *   id = "tripalfield_collection",

@@ -6,6 +6,9 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
+/**
+ * Defines the Default Layout entity controlling the page display/layout.
+ */
 #[ConfigEntityType(
   id: 'tripal_layout_default_view',
   label: new TranslatableMarkup('Tripal Default Display Layout'),
@@ -33,7 +36,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
   ],
 )]
 /**
- * Defines the Default Layout entity controlling the page display/layout.
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * @ConfigEntityType(
  *   id = "tripal_layout_default_view",

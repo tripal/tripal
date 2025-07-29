@@ -10,6 +10,9 @@ use Drupal\tripal\Controller\TripalContentTermsListBuilder;
 use Drupal\tripal\Form\TripalContentTermsForm;
 use Drupal\tripal\Form\TripalContentTermsDeleteForm;
 
+/**
+ * Defines the TripalContentTerms entity.
+ */
 #[ConfigEntityType(
   id: 'tripal_content_terms',
   label: new TranslatableMarkup('Tripal Content Terms'),
@@ -46,7 +49,7 @@ use Drupal\tripal\Form\TripalContentTermsDeleteForm;
   ],
 )]
 /**
- * Defines the TripalContentTerms entity.
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * @ConfigEntityType(
  *   id = "tripal_content_terms",

@@ -8,6 +8,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\Form\TripalEntityTypeCollectionDeleteForm;
 use Drupal\tripal\ListBuilders\TripalEntityTypeCollectionListBuilder;
 
+/**
+ * Provides a UI for YML-based TripalEntityType creation.
+ */
 #[ConfigEntityType(
   id: 'tripalentitytype_collection',
   label: new TranslatableMarkup('Tripal Content Type Collection'),
@@ -42,7 +45,7 @@ use Drupal\tripal\ListBuilders\TripalEntityTypeCollectionListBuilder;
   ],
 )]
 /**
- * Provides a UI for YML-based TripalEntityType creation.
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * Each instance of this entity is a single configuration for tripal content
  * types in your site.

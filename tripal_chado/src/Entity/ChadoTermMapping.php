@@ -11,6 +11,9 @@ use Drupal\tripal_chado\Form\ChadoTermMappingForm;
 use Drupal\tripal_chado\Form\ChadoTermMappingDeleteForm;
 use Drupal\tripal_chado\ListBuilders\ChadoTermMappingListBuilder;
 
+/**
+ * Defines the Chado Term Mapping Configuration entity.
+ */
 #[ConfigEntityType(
   id: 'chado_term_mapping',
   label: new TranslatableMarkup('Chado Term Mapping'),
@@ -41,7 +44,7 @@ use Drupal\tripal_chado\ListBuilders\ChadoTermMappingListBuilder;
   ],
 )]
 /**
- * Defines the Chado Term Mapping Configuration entity.
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * @ConfigEntityType(
  *   id = "chado_term_mapping",

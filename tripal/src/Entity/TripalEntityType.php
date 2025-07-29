@@ -12,6 +12,9 @@ use Drupal\tripal\Form\TripalEntityTypeForm;
 use Drupal\tripal\Form\TripalEntityTypeDeleteForm;
 use Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider;
 
+/**
+ * Defines the Tripal Content type entity.
+ */
 #[ConfigEntityType(
   id: 'tripal_entity_type',
   label: new TranslatableMarkup('Tripal Content Type'),
@@ -61,7 +64,7 @@ use Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider;
   ],
 )]
 /**
- * Defines the Tripal Content type entity.
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * @ConfigEntityType(
  *   id = "tripal_entity_type",

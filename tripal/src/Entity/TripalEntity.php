@@ -21,6 +21,11 @@ use Drupal\tripal\Routing\TripalEntityHtmlRouteProvider;
 use Drupal\tripal\ListBuilders\TripalEntityListBuilder;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 
+/**
+ * Defines the Tripal Content entity.
+ *
+ * @ingroup tripal
+ */
 #[ContentEntityType(
   id: 'tripal_entity',
   label: new TranslatableMarkup('Tripal Content'),
@@ -61,9 +66,7 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
   field_ui_base_route: 'entity.tripal_entity_type.edit_form',
 )]
 /**
- * Defines the Tripal Content entity.
- *
- * @ingroup tripal
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
  *
  * @ContentEntityType(
  *   id = "tripal_entity",
