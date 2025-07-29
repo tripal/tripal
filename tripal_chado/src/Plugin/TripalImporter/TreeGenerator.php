@@ -178,7 +178,11 @@ class TreeGenerator extends ChadoImporterBase {
       $options['message_opts']['job'] = $this->job;
     }
 
-    // This importer imports only species (taxonomy) trees.
+    // This importer generates only species (taxonomy) trees.
+    // These trees will be stored with the 'Species Tree' type.
+    // Vocab: EDAM, Term: Species tree (data:3272).
+    // Let's set the leaf type to taxonomy so that the API knows these
+    // are species trees.
     $options['leaf_type'] = 'taxonomy';
 
     // Now import the tree.
@@ -384,6 +388,7 @@ class TreeGenerator extends ChadoImporterBase {
     $parent = $tree;
     $i = 1;
     $lineage_good = TRUE;
+    $lineage_nodes = [];
     foreach ($lineage_elements as $element) {
 
       // If we have lineageex available from NCBI, it will include rank terms (order, family, etc.)
