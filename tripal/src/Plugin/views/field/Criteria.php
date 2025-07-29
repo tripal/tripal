@@ -12,8 +12,6 @@ use Drupal\Core\Form\FormStateInterface;
  * Views field plugin to display 'criteria'.
  *
  * @ingroup views_field_handlers
- *
- * @ViewsField("criteria")
  */
 class Criteria extends FieldPluginBase {
 

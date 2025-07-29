@@ -7,6 +7,9 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * Plugin implementation of default Tripal additional type formatter.
+ */
 #[FieldFormatter(
   id: 'chado_additional_type_formatter_default',
   label: new TranslatableMarkup('Chado Type Reference Formatter'),
@@ -15,18 +18,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     'chado_additional_type_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Tripal additional type formatter.
- *
- * @FieldFormatter(
- *   id = "chado_additional_type_formatter_default",
- *   label = @Translation("Chado Type Reference Formatter"),
- *   description = @Translation("A Chado type reference formatter"),
- *   field_types = {
- *     "chado_additional_type_type_default"
- *   }
- * )
- */
 class ChadoAdditionalTypeFormatterDefault extends ChadoFormatterBase {
 
   /**

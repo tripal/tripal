@@ -11,6 +11,9 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Chado Implementation of TripalIdSpaceBase.
+ */
 #[TripalIdSpace(
   id: 'chado_id_space',
   label: new TranslatableMarkup('Vocabulary IDSpace in Chado'),

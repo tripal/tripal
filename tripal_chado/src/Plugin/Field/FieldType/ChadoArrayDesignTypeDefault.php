@@ -10,6 +10,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal Array Design field type.
+ */
 #[FieldType(
   id: 'chado_array_design_type_default',
   category: 'tripal_chado',
@@ -18,18 +21,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_array_design_widget_default',
   default_formatter: 'chado_array_design_formatter_default',
 )]
-/**
- * Plugin implementation of default Tripal Array Design field type.
- *
- * @FieldType(
- *   id = "chado_array_design_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Array Design"),
- *   description = @Translation("Add a Chado Array Design to the content type."),
- *   default_widget = "chado_array_design_widget_default",
- *   default_formatter = "chado_array_design_formatter_default",
- * )
- */
 class ChadoArrayDesignTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_array_design_type_default';

@@ -9,18 +9,14 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
+/**
+ * Plugin implementation of the chado dbxref buddy.
+ */
 #[ChadoBuddy(
   id: 'chado_dbxref_buddy',
   label: new TranslatableMarkup('Chado Database Reference Buddy'),
   description: new TranslatableMarkup('Provides helper methods for managing chado dbs and dbxrefs.'),
 )]
-/**
- * @ChadoBuddy(
- *   id = "chado_dbxref_buddy",
- *   label = @Translation("Chado Database Reference Buddy"),
- *   description = @Translation("Provides helper methods for managing chado dbs and dbxrefs.")
- * )
- */
 class ChadoDbxrefBuddy extends ChadoBuddyPluginBase {
 
   /**

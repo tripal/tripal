@@ -7,20 +7,14 @@ use Drupal\tripal\TripalStorage\Attribute\TripalStorage;
 use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 
+/**
+ * Chado implementation of the TripalStorageInterface.
+ */
 #[TripalStorage(
   id: 'drupal_sql_storage',
   label: new TranslatableMarkup('Drupal SQL Storage'),
   description: new TranslatableMarkup('This storage backend is used for fields which would like to use the default Drupal SQL-based field storage with a Tripal-based Field.'),
 )]
-/**
- * Chado implementation of the TripalStorageInterface.
- *
- * @TripalStorage(
- *   id = "drupal_sql_storage",
- *   label = @Translation("Drupal SQL Storage"),
- *   description = @Translation("This storage backend is used for fields which would like to use the default Drupal SQL-based field storage with a Tripal-based Field."),
- * )
- */
 class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**

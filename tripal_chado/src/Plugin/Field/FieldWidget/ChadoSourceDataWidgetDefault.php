@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+/**
+ * Plugin implementation of default Chado Data Source widget.
+ */
 #[FieldWidget(
   id: 'chado_source_data_widget_default',
   label: new TranslatableMarkup('Chado Data Source Widget Default'),
@@ -16,18 +19,6 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
     'chado_source_data_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado Data Source widget.
- *
- * @FieldWidget(
- *   id = "chado_source_data_widget_default",
- *   label = @Translation("Chado Data Source Widget Default"),
- *   description = @Translation("The default source data widget which allows curators to manually enter analysis source data information on the content edit page."),
- *   field_types = {
- *     "chado_source_data_type_default"
- *   }
- * )
- */
 class ChadoSourceDataWidgetDefault extends ChadoWidgetBase {
 
   /**

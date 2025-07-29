@@ -18,16 +18,6 @@ use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
   label: new TranslatableMarkup('NIH PubMed database'),
   description: new TranslatableMarkup('NIH PubMed database'),
 )]
-/**
- * PubMed publication parser
- *
- *  @TripalPubLibrary(
- *    id = "tripal_pub_library_PMID",
- *    label = @Translation("NIH PubMed database"),
- *    description = @Translation("Retrieves and parses publication data from the NIH PubMed database"),
- *  )
- *  n.b. last part of id must match the record in the chado.db table name column
- */
 class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
   /**

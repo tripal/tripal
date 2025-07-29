@@ -9,20 +9,14 @@ use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 
+/**
+ * Chado-specific TripalEntity publish.
+ */
 #[TripalBackendPublish(
   id: 'chado_storage',
   label: new TranslatableMarkup('Chado Publish'),
   description: new TranslatableMarkup('Creates Tripal content based on records in a chado database.'),
 )]
-/**
- * Chado-specific TripalEntity publish.
- *
- *  @TripalBackendPublish(
- *    id = "chado_storage",
- *    label = @Translation("Chado Publish"),
- *    description = @Translation("Creates Tripal content based on records in a chado database."),
- *  )
- */
 class ChadoPublish extends TripalBackendPublishBase {
 
   /**

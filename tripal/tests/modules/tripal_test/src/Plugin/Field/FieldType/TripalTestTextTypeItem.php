@@ -8,6 +8,9 @@ use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 
+/**
+ * Plugin implementation of the 'text' field type.
+ */
 #[FieldType(
   id: 'tripal_test_text_type',
   category: 'tripal',
@@ -16,19 +19,6 @@ use Drupal\tripal\TripalStorage\TextStoragePropertyType;
   default_widget: 'default_tripal_text_type_widget',
   default_formatter: 'default_tripal_text_type_formatter',
 )]
-/**
- * Plugin implementation of the 'boolean' field type.
- *
- * @FieldType(
- *   id = "tripal_test_text_type",
- *   category = "tripal",
- *   label = @Translation("Tripal Test Type"),
- *   label = @Translation("Tripal Test Text Field Type"),
- *   description = @Translation("A test text field with no length limit."),
- *   default_widget = "default_tripal_text_type_widget",
- *   default_formatter = "default_tripal_text_type_formatter"
- * )
- */
 class TripalTestTextTypeItem extends TripalFieldItemBase {
 
   public static $id = "tripal_test_text_type";

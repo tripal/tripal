@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\Plugin\Field\FieldWidget\TripalTextTypeWidget;
 
+/**
+ * Plugin implementation of default Chado text type widget.
+ */
 #[FieldWidget(
   id: 'chado_text_type_widget',
   label: new TranslatableMarkup('Chado Text Widget'),
@@ -16,18 +19,6 @@ use Drupal\tripal\Plugin\Field\FieldWidget\TripalTextTypeWidget;
     'chado_text_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado text type widget.
- *
- * @FieldWidget(
- *   id = "chado_text_type_widget",
- *   label = @Translation("Chado Text Widget"),
- *   description = @Translation("The default text type widget."),
- *   field_types = {
- *     "chado_text_type_default"
- *   }
- * )
- */
 class ChadoTextWidgetDefault extends TripalTextTypeWidget {
 
   /**

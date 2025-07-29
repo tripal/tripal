@@ -9,6 +9,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * Plugin implementation of default Tripal string type formatter.
+ */
 #[FieldFormatter(
   id: 'chado_source_data_formatter_default',
   label: new TranslatableMarkup('Chado Source Data Formatter'),
@@ -17,18 +20,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
     'chado_source_data_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Tripal string type formatter.
- *
- * @FieldFormatter(
- *   id = "chado_source_data_formatter_default",
- *   label = @Translation("Chado Source Data Formatter"),
- *   description = @Translation("The default source data widget which allows curators to manually enter analysis source data information on the content edit page."),
- *   field_types = {
- *     "chado_source_data_type_default"
- *   }
- * )
- */
 class ChadoSourceDataFormatterDefault extends ChadoFormatterBase {
 
   /**

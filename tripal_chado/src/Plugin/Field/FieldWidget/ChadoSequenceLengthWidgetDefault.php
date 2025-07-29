@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
+/**
+ * Plugin implementation of default Chado Sequence Length widget.
+ */
 #[FieldWidget(
   id: 'chado_sequence_length_widget_default',
   label: new TranslatableMarkup('Chado Sequence Length Widget'),
@@ -16,18 +19,6 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
     'chado_sequence_length_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado Sequence Length widget.
- *
- * @FieldWidget(
- *   id = "chado_sequence_length_widget_default",
- *   label = @Translation("Chado Sequence Length Widget"),
- *   description = @Translation("The default chado sequence length widget."),
- *   field_types = {
- *     "chado_sequence_length_type_default"
- *   }
- * )
- */
 class ChadoSequenceLengthWidgetDefault extends ChadoWidgetBase {
 
   /**

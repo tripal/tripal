@@ -10,6 +10,9 @@ use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
+/**
+ * Chado implementation of the TripalVocabularyBase.
+ */
 #[TripalVocabulary(
   id: 'chado_vocabulary',
   label: new TranslatableMarkup('Vocabulary in Chado'),

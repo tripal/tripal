@@ -8,6 +8,9 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of Default Tripal field for sequence length.
+ */
 #[FieldType(
   id: 'chado_sequence_length_type_default',
   category: 'tripal_chado',
@@ -16,20 +19,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_sequence_length_widget_default',
   default_formatter: 'chado_sequence_length_formatter_default',
 )]
-/**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_sequence_length_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Feature Sequence Length"),
- *   description = @Translation("A chado feature sequence length"),
- *   default_widget = "chado_sequence_length_widget_default",
- *   default_formatter = "chado_sequence_length_formatter_default",
- * )
- */
-
-
 class ChadoSequenceLengthTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_sequence_length_type_default";

@@ -11,6 +11,9 @@ use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 
+/**
+ * Plugin implementation of Tripal linker property field type.
+ */
 #[FieldType(
   id: 'chado_property_type_default',
   category: 'tripal_chado',
@@ -19,18 +22,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
   default_widget: 'chado_property_widget_default',
   default_formatter: 'chado_property_formatter_default',
 )]
-/**
- * Plugin implementation of Tripal linker property field type.
- *
- * @FieldType(
- *   id = "chado_property_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Property"),
- *   description = @Translation("Add a property or attribute to the content type."),
- *   default_widget = "chado_property_widget_default",
- *   default_formatter = "chado_property_formatter_default",
- * )
- */
 class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_property_type_default";

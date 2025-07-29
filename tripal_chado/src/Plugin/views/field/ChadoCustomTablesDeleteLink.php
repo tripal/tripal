@@ -14,8 +14,6 @@ use Drupal\Core\Render\Markup;
  * Field handler to present a link to delete a chado custom table.
  *
  * @ingroup views_field_handlers
- *
- * @ViewsField("chado_custom_tables_delete_link")
  */
 class ChadoCustomTablesDeleteLink extends FieldPluginBase {
 

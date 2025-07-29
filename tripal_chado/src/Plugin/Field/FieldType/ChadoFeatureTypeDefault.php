@@ -11,6 +11,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal feature field type.
+ */
 #[FieldType(
   id: 'chado_feature_type_default',
   category: 'tripal_chado',
@@ -19,18 +22,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_feature_widget_default',
   default_formatter: 'chado_feature_formatter_default',
 )]
-/**
- * Plugin implementation of default Tripal feature field type.
- *
- * @FieldType(
- *   id = "chado_feature_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Feature"),
- *   description = @Translation("Add a Chado feature to the content type."),
- *   default_widget = "chado_feature_widget_default",
- *   default_formatter = "chado_feature_formatter_default",
- * )
- */
 class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_feature_type_default';

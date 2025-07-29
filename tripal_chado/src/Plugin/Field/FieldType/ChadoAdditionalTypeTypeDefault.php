@@ -14,6 +14,9 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\tripal\Services\TripalFieldCollection;
 
+/**
+ * Plugin implementation of Tripal additional type field type.
+ */
 #[FieldType(
   id: 'chado_additional_type_type_default',
   category: 'tripal_chado',
@@ -22,18 +25,6 @@ use Drupal\tripal\Services\TripalFieldCollection;
   default_widget: 'chado_additional_type_widget_default',
   default_formatter: 'chado_additional_type_formatter_default',
 )]
-/**
- * Plugin implementation of Tripal additional type field type.
- *
- * @FieldType(
- *   id = "chado_additional_type_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Type Reference"),
- *   description = @Translation("A Chado type reference"),
- *   default_widget = "chado_additional_type_widget_default",
- *   default_formatter = "chado_additional_type_formatter_default",
- * )
- */
 class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_additional_type_type_default';

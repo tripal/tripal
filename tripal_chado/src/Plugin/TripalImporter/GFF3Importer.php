@@ -11,6 +11,9 @@ use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 
+/**
+ * GFF3 Importer implementation of the TripalImporterBase.
+ */
 #[TripalImporter(
   id: 'chado_gff3_loader',
   label: new TranslatableMarkup('Chado GFF3 File Loader'),
@@ -30,25 +33,6 @@ use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
   file_local: true,
   file_required: true,
 )]
-/**
- * GFF3 Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_gff3_loader",
- *    label = @Translation("Chado GFF3 File Loader"),
- *    description = @Translation("Import a GFF3 file into Chado"),
- *    file_types = {"gff","gff3", "txt"},
- *    upload_description = @Translation("Please provide a plain text, tab-delimited file following the <a target='_blank' href='https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md'>GFF3 Specification</a>. It is expected that all landmark features are associated with the same organism and that the type (column 3) are sequence ontology terms."),
- *    upload_title = @Translation("GFF3 File"),
- *    use_analysis = True,
- *    require_analysis = True,
- *    button_text = @Translation("Import GFF3 file"),
- *    file_upload = True,
- *    file_remote = True,
- *    file_local = True,
- *    file_required = True,
- *  )
- */
 class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
   /**

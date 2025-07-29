@@ -11,6 +11,9 @@ use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
+/**
+ * OBO Importer implementation of the TripalImporterBase.
+ */
 #[TripalImporter(
   id: 'chado_obo_loader',
   label: new TranslatableMarkup('OBO Vocabulary Loader'),
@@ -28,25 +31,6 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_local: false,
   file_required: false,
 )]
-/**
- * OBO Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_obo_loader",
- *    label = @Translation("OBO Vocabulary Loader"),
- *    description = @Translation("Import vocabularies and terms in OBO format."),
- *    file_types = {"obo"},
- *    upload_description = @Translation("Please provide the details for importing a new OBO file. The file must have a .obo extension."),
- *    upload_title = @Translation("New OBO File"),
- *    use_analysis = FALSE,
- *    require_analysis = FALSE,
- *    button_text = @Translation("Import OBO File"),
- *    file_upload = FALSE,
- *    file_local = FALSE,
- *    file_remote = FALSE,
- *    file_required = FALSE,
- *  )
- */
 class OBOImporter extends ChadoImporterBase {
 
   /**

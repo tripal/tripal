@@ -11,20 +11,14 @@ use Drupal\Core\Pager\Pager;
 use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
+/**
+ * Provides a 'Dashboard Notifications' Block.
+ */
 #[Block(
   id: 'notifications',
   admin_label: new TranslatableMarkup('Tripal Administrative Notifications'),
   category: new TranslatableMarkup('Tripal'),
 )]
-/**
- * Provides a 'Dashboard Notifications' Block.
- *
- * @Block(
- *   id = "notifications",
- *   admin_label = @Translation("Tripal Administrative Notifications"),
- *   category = @Translation("Tripal"),
- * )
- */
 class NotificationsBlock extends BlockBase implements BlockPluginInterface {
 
   /**

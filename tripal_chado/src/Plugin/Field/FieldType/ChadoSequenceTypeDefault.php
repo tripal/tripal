@@ -10,6 +10,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of Default Tripal field for sequence data.
+ */
 #[FieldType(
   id: 'chado_sequence_type_default',
   category: 'tripal_chado',
@@ -19,19 +22,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_formatter: 'chado_sequence_formatter_default',
   cardinality: 1,
 )]
-/**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_sequence_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Sequence Residues"),
- *   description = @Translation("Manages sequence residues for content types storing data in the chado feature table."),
- *   default_widget = "chado_sequence_widget_default",
- *   default_formatter = "chado_sequence_formatter_default",
- *   cardinality = 1,
- * )
- */
 class ChadoSequenceTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_sequence_type_default";

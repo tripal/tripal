@@ -8,6 +8,9 @@ use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 
+/**
+ * Plugin implementation of the 'integer' field type for Chado.
+ */
 #[FieldType(
   id: 'chado_integer_type_default',
   category: 'tripal_chado',
@@ -17,19 +20,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
   default_formatter: 'chado_integer_type_formatter',
   cardinality: 1,
 )]
-/**
- * Plugin implementation of the 'integer' field type for Chado.
- *
- * @FieldType(
- *   id = "chado_integer_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Integer Field Type"),
- *   description = @Translation("An integer field."),
- *   default_widget = "chado_integer_type_widget",
- *   default_formatter = "chado_integer_type_formatter",
- *   cardinality = 1
- * )
- */
 class ChadoIntegerTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_integer_type_default";

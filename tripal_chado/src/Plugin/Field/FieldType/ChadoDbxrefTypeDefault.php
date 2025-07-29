@@ -10,6 +10,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal dbxref field type.
+ */
 #[FieldType(
   id: 'chado_dbxref_type_default',
   category: 'tripal_chado',
@@ -18,18 +21,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_dbxref_widget_default',
   default_formatter: 'chado_dbxref_formatter_default',
 )]
-/**
- * Plugin implementation of default Tripal dbxref field type.
- *
- * @FieldType(
- *   id = "chado_dbxref_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Database Cross Reference"),
- *   description = @Translation("Add a Chado dbxref to the content type."),
- *   default_widget = "chado_dbxref_widget_default",
- *   default_formatter = "chado_dbxref_formatter_default",
- * )
- */
 class ChadoDbxrefTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_dbxref_type_default';

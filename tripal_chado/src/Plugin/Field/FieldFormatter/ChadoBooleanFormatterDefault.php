@@ -7,6 +7,9 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalBooleanTypeFormatter;
 
+/**
+ * Plugin implementation of default Chado boolean type formatter.
+ */
 #[FieldFormatter(
   id: 'chado_boolean_type_formatter',
   label: new TranslatableMarkup('Chado Boolean Type Formatter'),
@@ -15,18 +18,6 @@ use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalBooleanTypeFormatter;
     'chado_boolean_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado boolean type formatter.
- *
- * @FieldFormatter(
- *   id = "chado_boolean_type_formatter",
- *   label = @Translation("Chado Boolean Type Formatter"),
- *   description = @Translation("The Chado boolean type formatter."),
- *   field_types = {
- *     "chado_boolean_type_default"
- *   }
- * )
- */
 class ChadoBooleanFormatterDefault extends DefaultTripalBooleanTypeFormatter {
 
   /**

@@ -8,6 +8,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 
+/**
+ * Plugin implementation of the 'integer' field type.
+ */
 #[FieldType(
   id: 'tripal_integer_type',
   category: 'tripal',
@@ -16,18 +19,6 @@ use Drupal\tripal\TripalStorage\IntStoragePropertyType;
   default_widget: 'default_tripal_integer_type_widget',
   default_formatter: 'default_tripal_integer_type_formatter',
 )]
-/**
- * Plugin implementation of the 'integer' field type.
- *
- * @FieldType(
- *   id = "tripal_integer_type",
- *   category = "tripal",
- *   label = @Translation("Tripal Integer Field Type"),
- *   description = @Translation("An integer field."),
- *   default_widget = "default_tripal_integer_type_widget",
- *   default_formatter = "default_tripal_integer_type_formatter"
- * )
- */
 class TripalIntegerTypeItem extends TripalFieldItemBase {
 
   public static $id = "tripal_integer_type";

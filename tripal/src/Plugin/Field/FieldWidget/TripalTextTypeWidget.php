@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\TripalWidgetBase;
 
+/**
+ * Plugin implementation of default Tripal text type widget.
+ */
 #[FieldWidget(
   id: 'default_tripal_text_type_widget',
   label: new TranslatableMarkup('Tripal Text Widget'),
@@ -16,18 +19,6 @@ use Drupal\tripal\TripalField\TripalWidgetBase;
     'tripal_text_type',
   ],
 )]
-/**
- * Plugin implementation of default Tripal text type widget.
- *
- * @FieldWidget(
- *   id = "default_tripal_text_type_widget",
- *   label = @Translation("Tripal Text Widget"),
- *   description = @Translation("The default text type widget."),
- *   field_types = {
- *     "tripal_text_type"
- *   }
- * )
- */
 class TripalTextTypeWidget extends TripalWidgetBase {
 
 

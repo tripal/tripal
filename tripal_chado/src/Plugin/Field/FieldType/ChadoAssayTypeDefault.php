@@ -10,6 +10,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal assay field type.
+ */
 #[FieldType(
   id: 'chado_assay_type_default',
   category: 'tripal_chado',
@@ -18,18 +21,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_assay_widget_default',
   default_formatter: 'chado_assay_formatter_default',
 )]
-/**
- * Plugin implementation of default Tripal assay field type.
- *
- * @FieldType(
- *   id = "chado_assay_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Assay"),
- *   description = @Translation("Add a Chado assay to the content type."),
- *   default_widget = "chado_assay_widget_default",
- *   default_formatter = "chado_assay_formatter_default",
- * )
- */
 class ChadoAssayTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_assay_type_default';

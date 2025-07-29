@@ -12,18 +12,14 @@ use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
+/**
+ * Plugin implementation of the chado property buddy.
+ */
 #[ChadoBuddy(
   id: 'chado_property_buddy',
   label: new TranslatableMarkup('Chado Property Buddy'),
   description: new TranslatableMarkup('Provides helper methods for managing property tables.'),
 )]
-/**
- * @ChadoBuddy(
- *   id = "chado_property_buddy",
- *   label = @Translation("Chado Property Buddy"),
- *   description = @Translation("Provides helper methods for managing property tables.")
- * )
- */
 class ChadoPropertyBuddy extends ChadoBuddyPluginBase {
 
   /**

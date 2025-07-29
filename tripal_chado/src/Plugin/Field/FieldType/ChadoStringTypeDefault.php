@@ -11,6 +11,9 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
+/**
+ * Plugin implementation of string field type for Chado.
+ */
 #[FieldType(
   id: 'chado_string_type_default',
   category: 'tripal_chado',
@@ -20,19 +23,6 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
   default_formatter: 'chado_string_type_formatter',
   cardinality: 1,
 )]
-/**
- * Plugin implementation of string field type for Chado.
- *
- * @FieldType(
- *   id = "chado_string_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado String Field Type"),
- *   description = @Translation("A text field with a maximum length."),
- *   default_widget = "chado_string_type_widget",
- *   default_formatter = "chado_string_type_formatter",
- *   cardinality = 1
- * )
- */
 class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_string_type_default";

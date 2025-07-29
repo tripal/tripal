@@ -9,6 +9,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
 
+/**
+ * Plugin implementation of default Chado organism widget.
+ */
 #[FieldWidget(
   id: 'chado_organism_widget_default',
   label: new TranslatableMarkup('Chado Organism Widget'),
@@ -17,18 +20,6 @@ use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
     'chado_organism_type_default',
   ],
 )]
-/**
- * Plugin implementation of default Chado organism widget.
- *
- * @FieldWidget(
- *   id = "chado_organism_widget_default",
- *   label = @Translation("Chado Organism Widget"),
- *   description = @Translation("The default organism widget."),
- *   field_types = {
- *     "chado_organism_type_default"
- *   }
- * )
- */
 class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
 
   /**

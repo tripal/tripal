@@ -11,8 +11,6 @@ use Drupal\views\ResultRow;
  * Views field plugin to display 'do_contact'.
  *
  * @ingroup views_field_handlers
- *
- * @ViewsField("do_contact")
  */
 class DoContact extends FieldPluginBase {
 

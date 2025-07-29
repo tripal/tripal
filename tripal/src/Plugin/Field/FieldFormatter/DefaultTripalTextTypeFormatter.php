@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\TripalFormatterBase;
 
+/**
+ * Plugin implementation of default Tripal text type formatter.
+ */
 #[FieldFormatter(
   id: 'default_tripal_text_type_formatter',
   label: new TranslatableMarkup('Default Text Type Formatter'),
@@ -16,18 +19,6 @@ use Drupal\tripal\TripalField\TripalFormatterBase;
     'tripal_text_type',
   ],
 )]
-/**
- * Plugin implementation of default Tripal text type formatter.
- *
- * @FieldFormatter(
- *   id = "default_tripal_text_type_formatter",
- *   label = @Translation("Default Text Type Formatter"),
- *   description = @Translation("The default text type formatter."),
- *   field_types = {
- *     "tripal_text_type"
- *   }
- * )
- */
 class DefaultTripalTextTypeFormatter extends TripalFormatterBase {
 
   /**

@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\TripalWidgetBase;
 
+/**
+ * Plugin implementation of default Tripal boolean type widget.
+ */
 #[FieldWidget(
   id: 'default_tripal_boolean_type_widget',
   label: new TranslatableMarkup('Tripal Boolean Widget'),
@@ -16,18 +19,6 @@ use Drupal\tripal\TripalField\TripalWidgetBase;
     'tripal_boolean_type',
   ],
 )]
-/**
- * Plugin implementation of default Tripal boolean type widget.
- *
- * @FieldWidget(
- *   id = "default_tripal_boolean_type_widget",
- *   label = @Translation("Tripal Boolean Widget"),
- *   description = @Translation("The default boolean type widget."),
- *   field_types = {
- *     "tripal_boolean_type"
- *   }
- * )
- */
 class TripalBooleanTypeWidget extends TripalWidgetBase {
 
 

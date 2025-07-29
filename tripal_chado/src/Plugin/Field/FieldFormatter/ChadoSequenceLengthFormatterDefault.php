@@ -6,6 +6,9 @@ use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
+/**
+ * Plugin implementation of Default Tripal field formatter for sequence length.
+ */
 #[FieldFormatter(
   id: 'chado_sequence_length_formatter_default',
   label: new TranslatableMarkup('Chado Sequence Length Formatter'),
@@ -14,18 +17,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
     'chado_sequence_length_type_default',
   ],
 )]
-/**
- * Plugin implementation of Default Tripal field formatter for sequence data
- *
- * @FieldFormatter(
- *   id = "chado_sequence_length_formatter_default",
- *   label = @Translation("Chado Sequence Length Formatter"),
- *   description = @Translation("A chado sequence length formatter"),
- *   field_types = {
- *     "chado_sequence_length_type_default"
- *   }
- * )
- */
 class ChadoSequenceLengthFormatterDefault extends ChadoIntegerFormatterDefault {
 
   /**

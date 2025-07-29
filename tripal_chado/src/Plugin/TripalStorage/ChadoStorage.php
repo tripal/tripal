@@ -14,20 +14,14 @@ use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal_chado\TripalStorage\ChadoRecords;
 
+/**
+ * Chado implementation of the TripalStorageInterface.
+ */
 #[TripalStorage(
   id: 'chado_storage',
   label: new TranslatableMarkup('Chado Storage'),
   description: new TranslatableMarkup('Interfaces with GMOD Chado for field values.'),
 )]
-/**
- * Chado implementation of the TripalStorageInterface.
- *
- * @TripalStorage(
- *   id = "chado_storage",
- *   label = @Translation("Chado Storage"),
- *   description = @Translation("Interfaces with GMOD Chado for field values."),
- * )
- */
 class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**

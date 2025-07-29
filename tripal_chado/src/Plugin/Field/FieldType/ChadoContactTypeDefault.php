@@ -9,6 +9,9 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Plugin implementation of default Tripal contact field type.
+ */
 #[FieldType(
   id: 'chado_contact_type_default',
   category: 'tripal_chado',
@@ -17,18 +20,6 @@ use Drupal\tripal\Entity\TripalEntityType;
   default_widget: 'chado_contact_widget_default',
   default_formatter: 'chado_contact_formatter_default',
 )]
-/**
- * Plugin implementation of default Tripal contact field type.
- *
- * @FieldType(
- *   id = "chado_contact_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Contacts: All"),
- *   description = @Translation("Supports linking contacts to the current content type without restricting to a specific type of link (i.e role the contact plays)."),
- *   default_widget = "chado_contact_widget_default",
- *   default_formatter = "chado_contact_formatter_default",
- * )
- */
 class ChadoContactTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_contact_type_default';
