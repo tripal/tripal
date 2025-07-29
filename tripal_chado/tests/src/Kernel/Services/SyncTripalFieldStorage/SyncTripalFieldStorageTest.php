@@ -6,6 +6,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\pgsql\Driver\Database\pgsql\Connection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the SyncTripalFieldStorage service.
@@ -151,6 +152,7 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
    *    - differences: the keys are field names with differences and the value
    *      for each is a list of property names with differences for that field.
    */
+  #[DataProvider('provideChadoVersionsToTest')]
   public function testDetectDifferences(string $chado_verison_under_test, array $bundles_to_create, string|null $bundle_under_test, array $expectations) {
 
     // Create an instance of the specified bundle(s) with all associated fields.
@@ -230,6 +232,7 @@ class SyncTripalFieldStorageTest extends ChadoTestKernelBase {
    *    - differences: the keys are field names with differences and the value
    *      for each is a list of property names with differences for that field.
    */
+  #[DataProvider('provideChadoVersionsToTest')]
   public function testResolveDifferences(string $chado_verison_under_test, array $bundles_to_create, string|null $bundle_under_test, array $expectations) {
 
     // Create an instance of the specified bundle(s) with all associated fields.

@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal\Kernel\Services\TripalFileRetriever;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 
 /**
@@ -183,6 +184,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
    *
    * @dataProvider provideFiles2Retrieve
    */
+  #[DataProvider('provideFiles2Retrieve')]
   public function testTripalFileRetriever(string $url, array $options, array $expectations) {
     // Get the service to be tested
     $retrieval_service = \Drupal::service('tripal.fileretriever');

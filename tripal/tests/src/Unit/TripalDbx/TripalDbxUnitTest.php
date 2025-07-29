@@ -8,6 +8,7 @@ use Drupal\tripal\TripalDBX\TripalDbx;
 use Prophecy\Argument;
 use PHPUnit\Framework\Attributes\CoversDefaultClass;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests for Tripal Dbx service.
@@ -366,6 +367,7 @@ class TripalDbxUnitTest extends UnitTestCase {
    *
    * @cover ::isInvalidSchemaName
    */
+  #[DataProvider('schemaNamesProvider')]
   public function testIsInvalidSchemaName(
     $schema_name,
     $expected,

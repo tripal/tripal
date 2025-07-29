@@ -6,6 +6,7 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the TripalFieldItemBase class indirectly.
@@ -108,6 +109,7 @@ class TripalFieldTypeCRUDTest extends TripalTestKernelBase {
    *
    * @dataProvider provideFieldsToTest
    */
+  #[DataProvider('provideFieldsToTest')]
   public function testCreateEntityWithField($field_type, $field_widget, $field_formatter, $expectations) {
 
     // Setup the field to be tested based on the data provider values.

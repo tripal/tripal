@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Task;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use PHPUnit\Framework\Attributes\CoversDefaultClass;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 
 /**
@@ -115,6 +116,7 @@ class ChadoInstallerTest extends ChadoTestKernelBase {
    *
    * @cover ::setParameters
    */
+  #[DataProvider('provideInvalidParameters')]
   public function testPerformTaskInstallerParameters($test_name, $paramset, $expected_message) {
 
     $this->tripal_dbx->createSchema('testchadoschemaexists');

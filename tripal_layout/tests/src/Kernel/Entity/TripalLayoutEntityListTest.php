@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_layout\Kernel\Entity;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the TripalLayoutDefaultView and TripalLayoutDefaultForm entities.
@@ -69,6 +70,7 @@ class TripalLayoutEntityListTest extends TripalTestKernelBase {
    * @return void
    *   No return value.
    */
+  #[DataProvider('provideConfigEntities')]
   public function testListBuilder(string $listbuilder_class, string $config_entity_type, string $yaml_file) {
 
     // Create layout entity to be used in testing.

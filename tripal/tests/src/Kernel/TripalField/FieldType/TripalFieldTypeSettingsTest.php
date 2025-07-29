@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal\Kernel\TripalField;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the TripalFieldItemBase class indirectly.
@@ -98,6 +99,7 @@ class TripalFieldTypeSettingsTest extends TripalTestKernelBase {
    *
    * @dataProvider provideFieldsToTest
    */
+  #[DataProvider('provideFieldsToTest')]
   public function testStorageSettingsFormBuild($field_info, $expectations) {
 
     // Setup the field to be tested based on the data provider values.

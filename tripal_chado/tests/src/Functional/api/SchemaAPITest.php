@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional\api;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.schema.api.php functions.
@@ -317,6 +318,7 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group chado
    * @group chado-schema
    */
+  #[DataProvider('knownTableProvider')]
   #[Group('api')]
   #[Group('chado')]
   #[Group('chado-schema')]
@@ -453,6 +455,7 @@ class SchemaAPITest extends ChadoTestBrowserBase {
    * @group chado
    * @group chado-schema
    */
+  #[DataProvider('knownBaseTableProvider')]
   #[Group('api')]
   #[Group('chado')]
   #[Group('chado-schema')]

@@ -6,6 +6,7 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests for ChadoConnection.
@@ -128,6 +129,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * @param int $init_level
    *   The init level to create the test database with.
    */
+  #[DataProvider('provideChadoSchemaVersionsAcrossInitLevels')]
   public function testGetAvailableInstances(string $version, int $init_level) {
 
     // Get Chado in place.
@@ -231,6 +233,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * @param int $init_level
    *   The init level to create the test database with.
    */
+  #[DataProvider('provideChadoSchemaVersionsAcrossInitLevels')]
   public function testDefaultTablePrefixing(string $version, int $init_level) {
     $this->createTestSchema($init_level, $version);
 
@@ -338,6 +341,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * @param string $version
    *   The version of chado to test against.
    */
+  #[DataProvider('provideChadoSchemaVersions')]
   public function testChadoQueryBuilding(string $version) {
     $chado = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
 
@@ -404,6 +408,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * @param int $init_level
    *   The init level to create the test database with.
    */
+  #[DataProvider('provideChadoSchemaVersionsAcrossInitLevels')]
   public function testFindVersion(string $version, int $init_level) {
     $expected_version = $version;
 

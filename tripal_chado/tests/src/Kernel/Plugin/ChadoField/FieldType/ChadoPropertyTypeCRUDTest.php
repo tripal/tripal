@@ -6,6 +6,7 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests the ChadoPropertyTypeDefault Field Type.
@@ -217,6 +218,7 @@ class ChadoPropertyTypeCRUDTest extends ChadoTestKernelBase {
    *
    * @dataProvider provideScenarios
    */
+  #[DataProvider('provideScenarios')]
   public function testChadoPropertyTypeEntityCrud(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
 

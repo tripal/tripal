@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Tests that ChadoStorage can handle property fields as we expect.
@@ -108,6 +109,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
    *   - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
    *   - [NOT IMPLEMENTED] Ensure property field picks up records in Chado not added through field.
    */
+  #[DataProvider('provideSinglePropFieldNames')]
   public function testCRUDForSinglePropField($prop_field_name) {
 
     $rdfs_comment_cvtermID = $this->getCvtermID('rdfs', 'comment');
@@ -355,6 +357,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
    * Focus on ensuring that the values from one field are in different chado records
    * than those from the other field.
    */
+  #[DataProvider('provideMultiplePropFields')]
   public function testCRUDForMultiplePropFields($prop_field_settings) {
 
     $prop_fields = array_keys($prop_field_settings);
