@@ -21,11 +21,6 @@ use Drupal\tripal\Routing\TripalEntityHtmlRouteProvider;
 use Drupal\tripal\ListBuilders\TripalEntityListBuilder;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 
-/**
- * Defines the Tripal Content entity.
- *
- * @ingroup tripal
- */
 #[ContentEntityType(
   id: 'tripal_entity',
   label: new TranslatableMarkup('Tripal Content'),
@@ -65,6 +60,53 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
   bundle_entity_type: 'tripal_entity_type',
   field_ui_base_route: 'entity.tripal_entity_type.edit_form',
 )]
+/**
+ * Defines the Tripal Content entity.
+ *
+ * @ingroup tripal
+ *
+ * @ContentEntityType(
+ *   id = "tripal_entity",
+ *   label = @Translation("Tripal Content"),
+ *   bundle_label = @Translation("Tripal Content type"),
+ *   handlers = {
+ *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
+ *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
+ *     "list_builder" = "Drupal\tripal\ListBuilders\TripalEntityListBuilder",
+ *     "views_data" = "Drupal\tripal\Entity\TripalEntityViewsData",
+ *
+ *     "form" = {
+ *       "default" = "Drupal\tripal\Form\TripalEntityForm",
+ *       "add" = "Drupal\tripal\Form\TripalEntityForm",
+ *       "edit" = "Drupal\tripal\Form\TripalEntityForm",
+ *       "delete" = "Drupal\tripal\Form\TripalEntityDeleteForm",
+ *       "unpublish" = "Drupal\tripal\Form\TripalEntityUnpublishForm",
+ *     },
+ *     "access" = "Drupal\tripal\Access\TripalEntityAccessControlHandler",
+ *     "route_provider" = {
+ *       "html" = "Drupal\tripal\Routing\TripalEntityHtmlRouteProvider",
+ *     },
+ *   },
+ *   base_table = "tripal_entity",
+ *   entity_keys = {
+ *     "id" = "id",
+ *     "bundle" = "type",
+ *     "uid" = "user_id",
+ *     "status" = "status",
+ *   },
+ *   links = {
+ *     "canonical" = "/bio_data/{tripal_entity}",
+ *     "add-page" = "/bio_data/add",
+ *     "add-form" = "/bio_data/add/{tripal_entity_type}",
+ *     "edit-form" = "/bio_data/{tripal_entity}/edit",
+ *     "delete-form" = "/bio_data/{tripal_entity}/delete",
+ *     "unpublish-form" = "/bio_data/{tripal_entity}/unpublish",
+ *     "collection" = "/admin/content/bio_data",
+ *   },
+ *   bundle_entity_type = "tripal_entity_type",
+ *   field_ui_base_route = "entity.tripal_entity_type.edit_form"
+ * )
+ */
 class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
   use EntityChangedTrait;

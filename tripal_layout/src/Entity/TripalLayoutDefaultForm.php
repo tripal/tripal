@@ -6,9 +6,6 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
-/**
- * Defines the Default Layout entity controlling the form layout.
- */
 #[ConfigEntityType(
   id: 'tripal_layout_default_form',
   label: new TranslatableMarkup('Tripal Default Form Layout'),
@@ -35,6 +32,36 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
     'layouts' => '/admin/tripal/config/tripal-layout-default-form',
   ],
 )]
+/**
+ * Defines the Default Layout entity controlling the form layout.
+ *
+ * @ConfigEntityType(
+ *   id = "tripal_layout_default_form",
+ *   label = @Translation("Tripal Default Form Layout"),
+ *   handlers = {
+ *     "list_builder" = "Drupal\tripal_layout\ListBuilders\TripalLayoutDefaultFormListBuilder",
+ *     "form" = {
+ *       "delete" = "Drupal\tripal_layout\Form\TripalLayoutDefaultFormDeleteForm",
+ *     }
+ *   },
+ *   config_prefix = "tripal_layout_default_form",
+ *   admin_permission = "administer tripal",
+ *   entity_keys = {
+ *     "id" = "id",
+ *     "label" = "label",
+ *   },
+ *   config_export = {
+ *     "id",
+ *     "label",
+ *     "description",
+ *     "layouts"
+ *   },
+ *   links = {
+ *     "delete-form" = "/admin/tripal/config/tripal-layout-default-form/{tripal_layout_default_form}/delete",
+ *     "layouts" = "/admin/tripal/config/tripal-layout-default-form"
+ *   }
+ * )
+ */
 class TripalLayoutDefaultForm extends ConfigEntityBase {
 
   use TripalLayoutConfigEntityTrait;

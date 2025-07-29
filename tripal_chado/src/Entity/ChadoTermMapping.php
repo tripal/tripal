@@ -11,9 +11,6 @@ use Drupal\tripal_chado\Form\ChadoTermMappingForm;
 use Drupal\tripal_chado\Form\ChadoTermMappingDeleteForm;
 use Drupal\tripal_chado\ListBuilders\ChadoTermMappingListBuilder;
 
-/**
- * Defines the Chado Term Mapping Configuration entity.
- */
 #[ConfigEntityType(
   id: 'chado_term_mapping',
   label: new TranslatableMarkup('Chado Term Mapping'),
@@ -43,6 +40,38 @@ use Drupal\tripal_chado\ListBuilders\ChadoTermMappingListBuilder;
     'tables',
   ],
 )]
+/**
+ * Defines the Chado Term Mapping Configuration entity.
+ *
+ * @ConfigEntityType(
+ *   id = "chado_term_mapping",
+ *   label = @Translation("Chado Term Mapping"),
+ *   handlers = {
+ *     "list_builder" = "Drupal\tripal_chado\ListBuilders\ChadoTermMappingListBuilder",
+ *     "form" = {
+ *       "add" = "Drupal\tripal_chado\Form\ChadoTermMappingForm",
+ *       "edit" = "Drupal\tripal_chado\Form\ChadoTermMappingForm",
+ *       "delete" = "Drupal\tripal_chado\Form\ChadoTermMappingDeleteForm",
+ *     }
+ *   },
+ *   config_prefix = "chado_term_mapping",
+ *   admin_permission = "administer tripal",
+ *   entity_keys = {
+ *     "id" = "id",
+ *     "label" = "label",
+ *   },
+ *   config_export = {
+ *     "id",
+ *     "label",
+ *     "description",
+ *     "tables"
+ *   },
+ *   links = {
+ *     "edit-form" = "/admin/tripal/storage/chado/terms/{chado_term_mapping}",
+ *     "delete-form" = "/admin/tripal/storage/chado/terms/{chado_term_mapping}/delete",
+ *   }
+ * )
+ */
 class ChadoTermMapping extends ConfigEntityBase implements ChadoTermMappingInterface {
 
   /**

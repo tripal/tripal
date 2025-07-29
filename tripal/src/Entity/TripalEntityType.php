@@ -12,9 +12,6 @@ use Drupal\tripal\Form\TripalEntityTypeForm;
 use Drupal\tripal\Form\TripalEntityTypeDeleteForm;
 use Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider;
 
-/**
- * Defines the Tripal Content type entity.
- */
 #[ConfigEntityType(
   id: 'tripal_entity_type',
   label: new TranslatableMarkup('Tripal Content Type'),
@@ -63,6 +60,59 @@ use Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider;
     'ajax_field',
   ],
 )]
+/**
+ * Defines the Tripal Content type entity.
+ *
+ * @ConfigEntityType(
+ *   id = "tripal_entity_type",
+ *   label = @Translation("Tripal Content Type"),
+ *   label_collection = @Translation("Tripal Content Types"),
+ *   label_singular = @Translation("Tripal content type"),
+ *   label_plural = @Translation("Tripal content types"),
+ *   label_count = @PluralTranslation(
+ *     singular = "@count Tripal content type",
+ *     plural = "@count Tripal content types",
+ *   ),
+ *   handlers = {
+ *     "list_builder" = "Drupal\tripal\ListBuilders\TripalEntityTypeListBuilder",
+ *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
+ *     "form" = {
+ *       "add" = "Drupal\tripal\Form\TripalEntityTypeForm",
+ *       "edit" = "Drupal\tripal\Form\TripalEntityTypeForm",
+ *       "delete" = "Drupal\tripal\Form\TripalEntityTypeDeleteForm"
+ *     },
+ *     "route_provider" = {
+ *       "html" = "Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider",
+ *     },
+ *   },
+ *   config_prefix = "content_type",
+ *   admin_permission = "manage tripal content types",
+ *   bundle_of = "tripal_entity",
+ *   entity_keys = {
+ *     "id" = "id",
+ *     "label" = "label",
+ *   },
+ *   links = {
+ *     "canonical" = "/admin/structure/bio_data/{tripal_entity_type}",
+ *     "add-form" = "/admin/structure/bio_data/add",
+ *     "edit-form" = "/admin/structure/bio_data/manage/{tripal_entity_type}",
+ *     "delete-form" = "/admin/structure/bio_data/manage/{tripal_entity_type}/delete",
+ *     "collection" = "/admin/structure/bio_data"
+ *   },
+ *   config_export = {
+ *     "id",
+ *     "label",
+ *     "termIdSpace",
+ *     "termAccession",
+ *     "help_text",
+ *     "category",
+ *     "title_format",
+ *     "url_format",
+ *     "hide_empty_field",
+ *     "ajax_field"
+ *   }
+ * )
+ */
 class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTypeInterface {
 
   /**
