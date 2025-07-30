@@ -22,7 +22,7 @@ use PHPUnit\Framework\Attributes\Group;
  * @covers ::setParameters
  * @covers ::performTask
  */
-#[CoversClass('ChadoRemover')]
+#[CoversClass(ChadoRemover::class)]
 #[Group('Tripal')]
 #[Group('Tripal Chado')]
 #[Group('Tripal Chado Task')]

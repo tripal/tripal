@@ -23,7 +23,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * @covers ::setParameters
  * @covers ::performTask
  */
-#[CoversClass('ChadoInstaller')]
+#[CoversClass(ChadoInstaller::class)]
 #[Group('Tripal')]
 #[Group('Tripal Chado')]
 #[Group('Tripal Chado Task')]
