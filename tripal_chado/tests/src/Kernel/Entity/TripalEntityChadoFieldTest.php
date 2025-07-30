@@ -5,8 +5,8 @@ namespace Drupal\Tests\tripal_chado\Kernel\Entity;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalEntity Class with Chado Fields attached.

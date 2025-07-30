@@ -5,8 +5,8 @@ namespace Drupal\Tests\tripal\Kernel;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\pgsql\Driver\Database\pgsql\Connection;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the SyncTripalFieldStorage service.

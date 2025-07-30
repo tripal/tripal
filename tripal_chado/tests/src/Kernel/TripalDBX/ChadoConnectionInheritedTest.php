@@ -4,8 +4,8 @@ namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for ChadoConnection.

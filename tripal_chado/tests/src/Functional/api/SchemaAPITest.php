@@ -3,8 +3,8 @@
 namespace Drupal\Tests\tripal_chado\Functional\api;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.schema.api.php functions.

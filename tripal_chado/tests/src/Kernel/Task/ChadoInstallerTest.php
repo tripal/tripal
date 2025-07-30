@@ -4,10 +4,10 @@ namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoInstaller;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**

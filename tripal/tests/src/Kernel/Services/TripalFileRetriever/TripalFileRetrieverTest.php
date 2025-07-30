@@ -3,8 +3,8 @@
 namespace Drupal\Tests\tripal\Kernel\Services\TripalFileRetriever;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**

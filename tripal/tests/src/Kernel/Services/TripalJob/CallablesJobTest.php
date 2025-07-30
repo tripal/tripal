@@ -5,8 +5,8 @@ namespace Drupal\Tests\tripal\Kernel\Services\TripalJob;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal\Kernel\Services\TripalJob\FakeClasses\callableClassForTripalJobs;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Focused on testing callables as the callback.

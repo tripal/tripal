@@ -4,8 +4,8 @@ namespace Drupal\Tests\tripal\Kernel\TripalField;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalFieldItemBase class indirectly.

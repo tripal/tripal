@@ -4,8 +4,8 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests that specific ChadoStorage actions perform as expected.

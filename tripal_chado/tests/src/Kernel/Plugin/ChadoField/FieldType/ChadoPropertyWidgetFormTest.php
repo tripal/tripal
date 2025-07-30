@@ -4,8 +4,8 @@ namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the ChadoPropertyTypeDefault Field Type.
