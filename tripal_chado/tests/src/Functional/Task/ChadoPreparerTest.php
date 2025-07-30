@@ -3,7 +3,8 @@
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
-use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use Drupal\tripal_chado\Task\ChadoPreparer;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -16,7 +17,7 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado Task
  * @group Tripal Chado Preparer
  */
-#[CoversDefaultClass('\Drupal\tripal_chado\Task\ChadoPreparer')]
+#[CoversClass(ChadoPreparer::class)]
 #[Group('Tripal')]
 #[Group('Tripal Chado')]
 #[Group('Tripal Chado Task')]

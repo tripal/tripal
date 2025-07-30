@@ -6,7 +6,8 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal_biodb\Task\BioTaskBase;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Prophecy\Prophecy\ObjectProphecy;
-use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -17,11 +18,24 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group Tripal BioDb
  * @group Tripal BioDb Task
+ *
+ * @covers ::__construct
+ * @covers ::initId
+ * @covers ::getId
+ * @covers ::getLogger
+ * @covers ::setParameters
+ * @covers ::prepareSchemas
  */
-#[CoversDefaultClass('\Drupal\tripal_biodb\Task\BioTaskBase')]
+#[CoversClass(BioTaskBase::class)]
 #[Group('Tripal')]
 #[Group('Tripal BioDb')]
 #[Group('Tripal BioDb Task')]
+#[CoversMethod(BioTaskBase::class, '__construct')]
+#[CoversMethod(BioTaskBase::class, 'initId')]
+#[CoversMethod(BioTaskBase::class, 'getId')]
+#[CoversMethod(BioTaskBase::class, 'getLogger')]
+#[CoversMethod(BioTaskBase::class, 'setParameters')]
+#[CoversMethod(BioTaskBase::class, 'prepareSchemas')]
 class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**
@@ -88,11 +102,6 @@ class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**
    * Tests constructor: check constructor calls.
-   *
-   * @covers ::__construct
-   * @covers ::initId
-   * @covers ::getId
-   * @covers ::getLogger
    */
   public function testBioTaskBaseConstructor() {
 
@@ -139,9 +148,6 @@ class BioTaskBaseTest extends TripalTestKernelBase {
 
   /**
    * Tests setting + preparing input/output schema.
-   *
-   * @covers ::setParameters
-   * @covers ::prepareSchemas
    */
   public function testBioTaskBaseParameters() {
 

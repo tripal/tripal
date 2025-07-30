@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Api;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\Group;
 
 
@@ -14,11 +15,27 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Tripal API
  * @group Tripal Organism
+ *
+ * @covers ::chado_get_organism
+ * @covers ::chado_get_organism_scientific_name
+ * @covers ::chado_get_organism_id_from_scientific_name
+ * @covers ::chado_get_organism_select_options
+ * @covers ::chado_abbreviate_infraspecific_rank
+ * @covers ::chado_unabbreviate_infraspecific_rank
+ * to-do: The following API functions do not have tests yet:
+ *        chado_get_organism_image_url
+ *        chado_autocomplete_organism
  */
 #[Group('Tripal')]
 #[Group('Tripal Chado')]
 #[Group('Tripal API')]
 #[Group('Tripal Organism')]
+#[CoversFunction('chado_get_organism')]
+#[CoversFunction('chado_get_organism_scientific_name')]
+#[CoversFunction('chado_get_organism_id_from_scientific_name')]
+#[CoversFunction('chado_get_organism_select_options')]
+#[CoversFunction('chado_abbreviate_infraspecific_rank')]
+#[CoversFunction('chado_unabbreviate_infraspecific_rank')]
 class ChadoOrganismAPITest extends ChadoTestKernelBase {
 
   /**
@@ -42,15 +59,6 @@ class ChadoOrganismAPITest extends ChadoTestKernelBase {
 
   /**
    * Tests the following organism API functions:
-   * @covers ::chado_get_organism
-   * @covers ::chado_get_organism_scientific_name
-   * @covers ::chado_get_organism_id_from_scientific_name
-   * @covers ::chado_get_organism_select_options
-   * @covers ::chado_abbreviate_infraspecific_rank
-   * @covers ::chado_unabbreviate_infraspecific_rank
-   * to-do: The following API functions do not have tests yet:
-   *        chado_get_organism_image_url
-   *        chado_autocomplete_organism
    *
    * @group tripal-chado
    * @group chado-organism

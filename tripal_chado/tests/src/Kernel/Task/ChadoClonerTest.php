@@ -3,7 +3,9 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use Drupal\tripal_chado\Task\ChadoCloner;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
 
 
@@ -16,19 +18,21 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal Chado
  * @group Tripal Chado Task
  * @group Tripal Chado Cloner
+ *
+ * @covers ::setParameters
+ * @covers ::performTask
  */
-#[CoversDefaultClass('\Drupal\tripal_chado\Task\ChadoCloner')]
+#[CoversClass('ChadoCloner')]
 #[Group('Tripal')]
 #[Group('Tripal Chado')]
 #[Group('Tripal Chado Task')]
 #[Group('Tripal Chado Cloner')]
+#[CoversMethod(ChadoCloner::class, 'setParameters')]
+#[CoversMethod(ChadoCloner::class, 'performTask')]
 class ChadoClonerTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
-   *
-   * @covers ::setParameters
-   * @covers ::performTask
    */
   public function testPerformTaskCloner() {
     // Create a temporary schema.

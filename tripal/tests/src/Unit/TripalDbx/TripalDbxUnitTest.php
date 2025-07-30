@@ -6,9 +6,10 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Prophecy\Argument;
-use PHPUnit\Framework\Attributes\CoversDefaultClass;
-use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for Tripal Dbx service.
@@ -18,11 +19,26 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * @group Tripal
  * @group Tripal DBX
  * @group Tripal DBX Service
+ *
+ * @covers ::getDrupalSchemaName
+ * @covers ::isInvalidSchemaName
+ * @covers ::reserveSchemaPattern
+ * @covers ::getReservedSchemaPattern
+ * @covers ::freeSchemaPattern
+ * @covers ::schemaExists
+ * @covers ::parseTableDdl
  */
-#[CoversDefaultClass('\Drupal\tripal\TripalDBX\TripalDbx')]
+#[CoversClass(TripalDbx::class)]
 #[Group('Tripal')]
 #[Group('Tripal DBX')]
 #[Group('Tripal DBX Service')]
+#[CoversMethod(TripalDbx::class, 'getDrupalSchemaName')]
+#[CoversMethod(TripalDbx::class, 'isInvalidSchemaName')]
+#[CoversMethod(TripalDbx::class, 'reserveSchemaPattern')]
+#[CoversMethod(TripalDbx::class, 'getReservedSchemaPattern')]
+#[CoversMethod(TripalDbx::class, 'freeSchemaPattern')]
+#[CoversMethod(TripalDbx::class, 'schemaExists')]
+#[CoversMethod(TripalDbx::class, 'parseTableDdl')]
 class TripalDbxUnitTest extends UnitTestCase {
 
   /**
@@ -111,8 +127,6 @@ class TripalDbxUnitTest extends UnitTestCase {
    * one will cache the result from Connection::getConnectionOptions so
    * the returned values of the second one should remaine the same and be
    * faster.
-   *
-   * @covers ::getDrupalSchemaName
    */
   public function testGetDrupalSchemaNameOtherAndCache() {
 
@@ -145,8 +159,6 @@ class TripalDbxUnitTest extends UnitTestCase {
 
   /**
    * Tests getDrupalSchemaName() method on a default schema name.
-   *
-   * @covers ::getDrupalSchemaName
    */
   public function testGetDrupalSchemaNameDefault() {
 
@@ -169,8 +181,6 @@ class TripalDbxUnitTest extends UnitTestCase {
 
   /**
    * Tests getDrupalSchemaName() method with a failure to get Drupal schema.
-   *
-   * @covers ::getDrupalSchemaName
    */
   public function testGetDrupalSchemaNameFailure() {
 
@@ -364,8 +374,6 @@ class TripalDbxUnitTest extends UnitTestCase {
    * Tests isInvalidSchemaName() method.
    *
    * @dataProvider schemaNamesProvider
-   *
-   * @covers ::isInvalidSchemaName
    */
   #[DataProvider('schemaNamesProvider')]
   public function testIsInvalidSchemaName(
@@ -402,10 +410,6 @@ class TripalDbxUnitTest extends UnitTestCase {
 
   /**
    * Tests schema pattern reservation system.
-   *
-   * @covers ::reserveSchemaPattern
-   * @covers ::getReservedSchemaPattern
-   * @covers ::freeSchemaPattern
    */
   public function testReservedSchemaPattern() {
     $tripaldbx = new TripalDbx();
@@ -501,8 +505,6 @@ class TripalDbxUnitTest extends UnitTestCase {
 
   /**
    * Tests schemaExists() method with invalid names.
-   *
-   * @covers ::schemaExists
    */
   public function testSchemaExistsInvalid() {
     $tripaldbx = new TripalDbx();
@@ -512,8 +514,6 @@ class TripalDbxUnitTest extends UnitTestCase {
 
   /**
    * Tests schemaExists() method.
-   *
-   * @covers ::schemaExists
    */
   public function testSchemaExistsValid() {
 
@@ -538,8 +538,6 @@ class TripalDbxUnitTest extends UnitTestCase {
 
   /**
    * Tests schemaExists() method.
-   *
-   * @covers ::parseTableDdl
    */
   public function testParseTableDdl() {
     // Use regular service.

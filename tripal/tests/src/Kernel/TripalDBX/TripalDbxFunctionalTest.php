@@ -4,7 +4,8 @@ namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\TripalDBX\TripalDbx;
-use PHPUnit\Framework\Attributes\CoversDefaultClass;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -15,11 +16,30 @@ use PHPUnit\Framework\Attributes\Group;
  * @group Tripal
  * @group TripalDBX
  * @group TripalDbxService
+ *
+ * @covers ::getDrupalSchemaName
+ * @covers ::isInvalidSchemaName
+ * @covers ::schemaExists
+ * @covers ::createSchema
+ * @covers ::renameSchema
+ * @covers ::cloneSchema
+ * @covers ::dropSchema
+ * @covers ::getDatabaseSize
+ * @covers ::getSchemaSize
  */
-#[CoversDefaultClass('\Drupal\tripal\TripalDBX\TripalDbx')]
+#[CoversClass(TripalDbx::class)]
 #[Group('Tripal')]
 #[Group('TripalDBX')]
 #[Group('TripalDbxService')]
+#[CoversMethod(TripalDbx::class, 'getDrupalSchemaName')]
+#[CoversMethod(TripalDbx::class, 'isInvalidSchemaName')]
+#[CoversMethod(TripalDbx::class, 'schemaExists')]
+#[CoversMethod(TripalDbx::class, 'createSchema')]
+#[CoversMethod(TripalDbx::class, 'renameSchema')]
+#[CoversMethod(TripalDbx::class, 'cloneSchema')]
+#[CoversMethod(TripalDbx::class, 'dropSchema')]
+#[CoversMethod(TripalDbx::class, 'getDatabaseSize')]
+#[CoversMethod(TripalDbx::class, 'getSchemaSize')]
 class TripalDbxFunctionalTest extends TripalTestKernelBase {
 
   /**
@@ -162,8 +182,6 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
 
   /**
    * Tests getDrupalSchemaName() method.
-   *
-   * @covers ::getDrupalSchemaName
    */
   public function testGetDrupalSchemaNameReal() {
     // Get Drupal schema.
@@ -174,8 +192,6 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
 
   /**
    * Tests isInvalidSchemaName() method.
-   *
-   * @covers ::isInvalidSchemaName
    */
   public function testIsInvalidSchemaNameReal() {
     // Get Drupal schema.
@@ -190,8 +206,6 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
 
   /**
    * Tests schemaExists() method.
-   *
-   * @covers ::schemaExists
    */
   public function testSchemaExistsReal() {
 
@@ -205,14 +219,6 @@ class TripalDbxFunctionalTest extends TripalTestKernelBase {
 
   /**
    * Tests schemaExists() method.
-   *
-   * @covers ::schemaExists
-   * @covers ::createSchema
-   * @covers ::renameSchema
-   * @covers ::cloneSchema
-   * @covers ::dropSchema
-   * @covers ::getDatabaseSize
-   * @covers ::getSchemaSize
    */
   public function testSchemaManagementScenario1() {
 

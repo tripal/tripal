@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\Api\TripalApi;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\Group;
 
 /**
@@ -10,9 +11,12 @@ use PHPUnit\Framework\Attributes\Group;
  *
  * @group Tripal
  * @group Tripal Api
+ *
+ * @covers ::tripal_version
  */
 #[Group('Tripal')]
 #[Group('Tripal Api')]
+#[CoversFunction('tripal_version')]
 class apiTest extends TripalTestKernelBase {
 
   /**
@@ -35,8 +39,6 @@ class apiTest extends TripalTestKernelBase {
 
   /**
    * Tests the API function tripal_version().
-   *
-   * @covers ::tripal_version
    */
   public function testTripalVersion() {
     // Get the version of the Tripal module as stored in tripal.info.yml
