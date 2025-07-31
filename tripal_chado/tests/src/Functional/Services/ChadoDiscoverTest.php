@@ -278,9 +278,12 @@ class ChadoDiscoverTest extends ChadoTestBrowserBase {
     $this->assertArrayHasKey('gene_seqlen', $discovered_fields['new'], 'The sequence length field was not discovered for gene');
     $this->assertArrayHasKey('gene_md5checksum', $discovered_fields['new'], 'The MD5 checksum field was not discovered for gene');
 
-    // Test discovery of a function-based field. This has different
-    // processing in its discover function because table is the same
-    // as base_table.
+    // Test discovery of a function-based field. It should only be discovered
+    // on one of the phylotree content types.
+    $discovered_fields = $fields_service->discover($content_types['gene']);
+    $this->assertArrayNotHasKey('gene_phylotreevis', $discovered_fields['new'], 'The phylotreevis field was incorrectly discovered for gene');
+    $discovered_fields = $fields_service->discover($content_types['stock']);
+    $this->assertArrayNotHasKey('stock_phylotreevis', $discovered_fields['new'], 'The phylotreevis field was incorrectly discovered for stock');
     $discovered_fields = $fields_service->discover($content_types['speciestree']);
     $this->assertArrayHasKey('speciestree_phylotreevis', $discovered_fields['new'], 'The phylotreevis field was not discovered for speciestree');
   }

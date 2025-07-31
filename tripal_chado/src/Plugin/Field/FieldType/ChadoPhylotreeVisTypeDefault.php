@@ -121,24 +121,16 @@ class ChadoPhylotreeVisTypeDefault extends ChadoFieldItemBase {
     $options += [
       'id' => self::$id,
       'name' => self::generateFieldName($bundle, 'phylotreevis'),
-      'table' => 'phylotree',
       'base_table' => 'phylotree',
       'base_column' => 'phylotree_id',
       'label' => 'Phylogenetic Tree Visualization',
       'termIdSpace' => 'operation',
       'termAccession' => '0567',
       'description' => 'Render or visualise a phylogenetic tree.',
-      /** @var \Drupal\tripal_chado\Database\ChadoConnection $chado **/
-      'chado' => \Drupal::service('tripal_chado.database'),
     ];
 
-    // Since this is a "function" field where table is the same as base_table,
-    // we need to call discoverBase directly.
-    $field_list = self::discoverBase($bundle, $field_id, $field_types, $field_instances, $options);
-
-    // Adds collection plugin IDs
-    $field_list = self::discoverPostprocess($field_list);
-
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
     return $field_list;
   }
 
