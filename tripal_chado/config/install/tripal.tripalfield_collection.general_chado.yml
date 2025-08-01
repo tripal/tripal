@@ -1911,7 +1911,7 @@ fields:
         label: Publication Type
         type: chado_property_type_default
         description:
-        cardinality: 1
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
