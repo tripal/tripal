@@ -1,0 +1,261 @@
+<?php
+
+namespace Drupal\tripal_file\Plugin\Field\FieldType;
+
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal\Entity\TripalEntityType;
+
+#[FieldType(
+  id: 'tripal_license_type_default',
+  category: 'tripal_file',
+  label: new TranslatableMarkup('License'),
+  description: new TranslatableMarkup('A license document that applies to this content, typically indicated by URL.'),
+  default_widget: 'tripal_file_widget_default',
+  default_formatter: 'tripal_file_formatter_default',
+)]
+class TripalLicenseTypeDefault extends ChadoFieldItemBase {
+
+  public static $id = 'tripal_license_type_default';
+  protected static $object_table = 'license';
+  protected static $object_id = 'license_id';
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainPropertyName() {
+    // Overrides the default of 'value'
+    return 'value';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultStorageSettings() {
+    $storage_settings = parent::defaultStorageSettings();
+    $storage_settings['storage_plugin_settings']['linking_method'] = '';
+    $storage_settings['storage_plugin_settings']['linker_table'] = '';
+    $storage_settings['storage_plugin_settings']['linker_fkey_column'] = '';
+    $storage_settings['storage_plugin_settings']['object_table'] = self::$object_table;
+    return $storage_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultFieldSettings() {
+    $field_settings = parent::defaultFieldSettings();
+    // CV Term is 'license'
+    $field_settings['termIdSpace'] = 'schema';
+    $field_settings['termAccession'] = 'license';
+    return $field_settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function tripalTypes($field_definition) {
+
+    // Create a variable for easy access to settings.
+    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
+    $base_table = $storage_settings['base_table'];
+
+    // If we don't have a base table then we're not ready to specify the
+    // properties for this field.
+    if (!$base_table) {
+      return;
+    }
+
+    // Get the various tables and columns needed for this field.
+    // We will get the property terms by using the Chado table columns they map to.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $entity_type_id = $field_definition->getTargetEntityTypeId();
+
+    // Base table
+    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = $base_schema_def['primary key'];
+
+    // Object table
+    $object_table = self::$object_table;
+    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_pkey_col = $object_schema_def['primary key'];
+
+    // Columns specific to the object table
+    $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
+    $name_len = $object_schema_def['fields']['name']['size'];
+    $summary_term = self::getColumnTermId($object_table, 'summary', 'schema:description');
+    $uri_term = self::getColumnTermId($object_table, 'uri', 'schema:url');
+
+    // Linker table, when used, requires specifying the linker table and column.
+    [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
+
+    $extra_linker_columns = [];
+    if ($linker_table != $base_table) {
+      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
+      $linker_pkey_col = $linker_schema_def['primary key'];
+      // the following should be the same as $base_pkey_col @todo make sure it is
+      $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
+      $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
+      $linker_fkey_term = self::getColumnTermId($linker_table, $linker_fkey_column, self::$record_id_term);
+
+      // Some but not all linker tables contain rank, type_id, and maybe other columns.
+      // These are conditionally added only if they exist in the linker
+      // table, and if a term is defined for them.
+      foreach (array_keys($linker_schema_def['fields']) as $column) {
+        if (($column != $linker_pkey_col) and ($column != $linker_left_col) and ($column != $linker_fkey_column)) {
+          $term = self::getColumnTermId($linker_table, $column, 'NCIT:C25712');
+          if ($term) {
+            $extra_linker_columns[$column] = $term;
+          }
+        }
+      }
+    }
+    else {
+      $linker_fkey_term = self::getColumnTermId($base_table, $linker_fkey_column, self::$record_id_term);
+    }
+
+    $properties = [];
+
+    // Define the base table record id.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', self::$record_id_term, [
+      'action' => 'store_id',
+      'drupal_store' => TRUE,
+      'path' => $base_table . '.' . $base_pkey_col,
+    ]);
+
+    // This property will store the Drupal entity ID of the linked chado
+    // record, if one exists.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'entity_id', self::$drupal_entity_term, [
+      'action' => 'function',
+      'drupal_store' => TRUE,
+      'namespace' => self::$chadostorage_namespace,
+      'function' => self::$drupal_entity_callback,
+      'ftable' => self::$object_table,
+      'fkey' => $linker_fkey_column,
+    ]);
+
+    // Base table links directly
+    if ($base_table == $linker_table) {
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
+        'action' => 'store',
+        'drupal_store' => TRUE,
+        'path' => $base_table . '.' . $linker_fkey_column,
+        'delete_if_empty' => TRUE,
+        'empty_value' => 0,
+      ]);
+    }
+    // An intermediate linker table is used
+    else {
+      // Define the linker table that links the base table to the object table.
+      // E.g.:  project_license.project_license_id
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', self::$record_id_term, [
+        'action' => 'store_pkey',
+        'drupal_store' => TRUE,
+        'path' => $linker_table . '.' . $linker_pkey_col,
+      ]);
+
+      // Define the link between the base table and the linker table.
+      // E.g.:  project.project_id>project_license.project_id
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link', $linker_left_term, [
+        'action' => 'store_link',
+        'drupal_store' => TRUE,
+        'path' => $base_table . '.' . $base_pkey_col . '>' . $linker_table . '.' . $linker_left_col,
+      ]);
+
+      // Define the link between the linker table and the object table.
+      // E.g.:  project_license.license_id
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $linker_fkey_column, $linker_fkey_term, [
+        'action' => 'store',
+        'drupal_store' => TRUE,
+        'path' => $linker_table . '.' . $linker_fkey_column,
+        'delete_if_empty' => TRUE,
+        'empty_value' => 0,
+      ]);
+
+      // Other columns in the linker table. Set in the widget, but currently not implemented in the formatter.
+      // Typically these are type_id and rank, but are not present in all linker tables,
+      // so they are added only if present in the linker table.
+      foreach ($extra_linker_columns as $column => $term) {
+        $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_' . $column, $term, [
+          'action' => 'store',
+          'drupal_store' => FALSE,
+          'path' => $linker_table . '.' . $column,
+          'as' => 'linker_' . $column,
+        ]);
+      }
+    }
+
+    // The object table, the destination table of the linker table.
+    // The license name.
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'license_name', $name_term, $name_len, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';name',
+      'as' => 'license_name',
+    ]);
+
+    // The license summary.
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'license_summary', $summary_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col . ';summary',
+      'as' => 'license_summary',
+    ]);
+
+    // The license uri.
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'license_uri', $uri_term, [
+      'action' => 'read_value',
+      'drupal_store' => FALSE,
+      'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
+        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
+      'as' => 'license_type',
+    ]);
+
+    return $properties;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\TripalField\ChadoFieldItemBase::isCompatible()
+   */
+  public function isCompatible(TripalEntityType $entity_type) : bool {
+    $compatible = TRUE;
+
+    // Get the base table for the content type.
+    $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
+    $linker_tables = $this->getLinkerTables(self::$object_table, $base_table);
+    if (count($linker_tables) < 1) {
+      $compatible = FALSE;
+    }
+    return $compatible;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
+   */
+  public static function discover(TripalEntityType $bundle, string $field_id, array $field_types,
+      array $field_instances, array $options = []): array {
+
+    // Specific settings for this field
+    $options += [
+      'id' => self::$id,
+      'table' => self::$object_table,
+      'label' => 'license',
+      'termIdSpace' => 'schema',
+      'termAccession' => 'license',
+      'summary' => 'A license document that applies to this content, typically indicated by URL.',
+    ];
+
+    // Call the parent discover() with this field's specific options
+    $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+
+    return $field_list;
+  }
+
+}
