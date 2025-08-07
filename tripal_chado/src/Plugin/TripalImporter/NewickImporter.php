@@ -105,7 +105,7 @@ class NewickImporter extends ChadoImporterBase {
       '#type' => 'textfield',
       '#description' => t("Choose the tree type. The type is
         a valid Sequence Ontology (SO) term. For example, trees derived
-        from protein sequences should use the SO term 'polypeptide'.
+        from protein sequences should use the SO term 'polypeptide (SO:0000104)'.
         Alternatively, a phylotree can be used for representing a taxonomic
         tree. In this case, the word 'taxonomy' should be used."),
       '#required' => TRUE,
