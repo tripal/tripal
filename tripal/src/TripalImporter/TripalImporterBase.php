@@ -622,13 +622,14 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *
    * @return bool
    *   Return TRUE if valid, FALSE if not valid.
-   * 
+   *
    * @see Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase::xmlIsValid().
    */
   protected function xmlIsValid(string $xml): bool {
     $valid = TRUE;
 
-    // Enable user handling of errors so that exceptions are not.
+    // Enable user handling of errors so that exceptions are not
+    // thrown when invalid XML is read.
     libxml_use_internal_errors(TRUE);
     // Attempt to load the XML.
     $doc = simplexml_load_string($xml);
