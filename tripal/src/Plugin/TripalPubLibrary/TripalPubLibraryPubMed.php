@@ -451,8 +451,6 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
     $results = $this->fileretriever->retrieveFileContents($fetch_url, $this->retrieval_options);
 
-    // If NCBI is down for maintenance a HTML page may be embedded in the results.
-    print "\nCP5:";var_dump($results);
     return $results;
   }
 
