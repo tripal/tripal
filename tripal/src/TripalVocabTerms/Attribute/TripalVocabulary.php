@@ -8,8 +8,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 /**
  * Defines a tripal vocabulartitem attribute object.
  *
- * Plugin Namespace: Drupal\tripal\TripalVocabTerms
- *
+ * Plugin Namespace: Drupal\tripal\TripalVocabTerms.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class TripalVocabulary extends Plugin {
