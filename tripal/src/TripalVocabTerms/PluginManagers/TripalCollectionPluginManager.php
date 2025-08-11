@@ -32,16 +32,16 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
       $subdir
       ,\Traversable $namespaces
       ,ModuleHandlerInterface $module_handler
-      ,$pluginInterface
-      ,$pluginDefinitionAttribute
+      ,$plugin_interface
+      ,$plugin_definition_attribute_name
       ,$table
   ) {
     parent::__construct(
         $subdir
         ,$namespaces
         ,$module_handler
-        ,$pluginInterface
-        ,$pluginDefinitionAttribute
+        ,$plugin_interface
+        ,$plugin_definition_attribute_name
     );
     $this->table = $table;
   }
