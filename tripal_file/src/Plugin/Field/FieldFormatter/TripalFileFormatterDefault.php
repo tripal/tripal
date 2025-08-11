@@ -5,6 +5,7 @@ namespace Drupal\tripal_file\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 #[TripalFieldFormatter(
@@ -13,7 +14,6 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
   description: new TranslatableMarkup('A tripal file formatter'),
   field_types: [
     'tripal_file_type_default',
-    'tripal_file_by_role_type_default',
   ],
   valid_tokens: [
     '[name]',

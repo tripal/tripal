@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal_file\Plugin\Field\FieldWidget;
 
-use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -14,7 +14,6 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
   description: new TranslatableMarkup('The default file widget.'),
   field_types: [
     'tripal_file_type_default',
-    'tripal_file_by_role_type_default',
   ],
 )]
 class TripalFileWidgetDefault extends ChadoWidgetBase {

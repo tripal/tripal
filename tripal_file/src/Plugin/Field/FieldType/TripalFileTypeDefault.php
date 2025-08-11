@@ -77,13 +77,11 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
-    $object_pkey_col = $object_schema_def['primary key'];
+    $object_pkey_col = self::getPrimaryKey($schema, $object_table);
 
     // Columns specific to the object table
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');

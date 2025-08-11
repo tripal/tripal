@@ -15,11 +15,12 @@ use Drupal\tripal\Entity\TripalEntityType;
   category: 'tripal_file',
   label: new TranslatableMarkup('License'),
   description: new TranslatableMarkup('A license document that applies to this content, typically indicated by URL.'),
-  default_widget: 'tripal_file_widget_default',
-  default_formatter: 'tripal_file_formatter_default',
+  default_widget: 'tripal_license_widget_default',
+  default_formatter: 'tripal_license_formatter_default',
 )]
 class TripalLicenseTypeDefault extends ChadoFieldItemBase {
 
+//@todo is this still needed? can this be found from attributes?
   public static $id = 'tripal_license_type_default';
   protected static $object_table = 'license';
   protected static $object_id = 'license_id';
@@ -77,17 +78,16 @@ class TripalLicenseTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
 
     // Object table
     $object_table = self::$object_table;
-    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
-    $object_pkey_col = $object_schema_def['primary key'];
+    $object_pkey_col = self::getPrimaryKey($schema, $object_table);
 
     // Columns specific to the object table
+    $object_schema_def = self::getChadoTableDef($schema, $object_table);
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
-    $name_len = $object_schema_def['fields']['name']['size'];
+    $name_len = $object_schema_def['fields']['name']['length'];
     $summary_term = self::getColumnTermId($object_table, 'summary', 'schema:description');
     $uri_term = self::getColumnTermId($object_table, 'uri', 'schema:url');
 
