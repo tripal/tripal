@@ -294,7 +294,7 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         $this->logger->error('Skipping publication @acc due to download error.',
           ['@acc' => $pmid]);
       }
-      else if (!$this->xmlIsValid($xml_text)) {
+      else if (!$this->xmlIsValid($pub_xml)) {
         $this->logger->error('Skipping publication @acc due to download error, NCBI may be in maintenance mode.',
           ['@acc' => $pmid]);
       }
