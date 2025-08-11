@@ -3,32 +3,33 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal organism formatter.
- *
- * @FieldFormatter(
- *   id = "chado_organism_formatter_default",
- *   label = @Translation("Chado organism formatter"),
- *   description = @Translation("A chado organism formatter"),
- *   field_types = {
- *     "chado_organism_type_default"
- *   },
- *   valid_tokens = {
- *     "[genus]",
- *     "[genus_abbrev]",
- *     "[species]",
- *     "[infratype]",
- *     "[infratype_abbrev]",
- *     "[infraname]",
- *     "[scientific_name]",
- *     "[abbreviation]",
- *     "[common_name]",
- *     "[comment]",
- *   },
- * )
  */
+#[TripalFieldFormatter(
+  id: 'chado_organism_formatter_default',
+  label: new TranslatableMarkup('Chado organism formatter'),
+  description: new TranslatableMarkup('A chado organism formatter'),
+  field_types: [
+    'chado_organism_type_default',
+  ],
+  valid_tokens: [
+    '[genus]',
+    '[genus_abbrev]',
+    '[species]',
+    '[infratype]',
+    '[infratype_abbrev]',
+    '[infraname]',
+    '[scientific_name]',
+    '[abbreviation]',
+    '[common_name]',
+    '[comment]',
+  ],
+)]
 class ChadoOrganismFormatterDefault extends ChadoFormatterBase {
 
   /**

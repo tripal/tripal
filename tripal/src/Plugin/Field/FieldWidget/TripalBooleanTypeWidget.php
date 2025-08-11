@@ -2,22 +2,23 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\TripalField\TripalWidgetBase;
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\TripalWidgetBase;
 
 /**
  * Plugin implementation of default Tripal boolean type widget.
- *
- * @FieldWidget(
- *   id = "default_tripal_boolean_type_widget",
- *   label = @Translation("Tripal Boolean Widget"),
- *   description = @Translation("The default boolean type widget."),
- *   field_types = {
- *     "tripal_boolean_type"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'default_tripal_boolean_type_widget',
+  label: new TranslatableMarkup('Tripal Boolean Widget'),
+  description: new TranslatableMarkup('The default boolean type widget.'),
+  field_types: [
+    'tripal_boolean_type',
+  ],
+)]
 class TripalBooleanTypeWidget extends TripalWidgetBase {
 
 

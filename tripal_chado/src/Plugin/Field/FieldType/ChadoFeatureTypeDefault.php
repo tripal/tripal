@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
@@ -11,16 +13,15 @@ use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal feature field type.
- *
- * @FieldType(
- *   id = "chado_feature_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Feature"),
- *   description = @Translation("Add a Chado feature to the content type."),
- *   default_widget = "chado_feature_widget_default",
- *   default_formatter = "chado_feature_formatter_default",
- * )
  */
+#[FieldType(
+  id: 'chado_feature_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Feature'),
+  description: new TranslatableMarkup('Add a Chado feature to the content type.'),
+  default_widget: 'chado_feature_widget_default',
+  default_formatter: 'chado_feature_formatter_default',
+)]
 class ChadoFeatureTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_feature_type_default';

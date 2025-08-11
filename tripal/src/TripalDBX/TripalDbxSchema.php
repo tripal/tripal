@@ -985,7 +985,7 @@ EOD;
       );
       $table_raw_definition = '';
       if ($result) {
-        $table_raw_definition = $result->fetch(\PDO::FETCH_OBJ)->definition;
+        $table_raw_definition = $result->fetchObject()->definition;
       }
       $db_ddls[$cache_key] = $table_raw_definition;
     }

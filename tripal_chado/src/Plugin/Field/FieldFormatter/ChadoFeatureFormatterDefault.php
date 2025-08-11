@@ -3,38 +3,39 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal feature formatter.
- *
- * @FieldFormatter(
- *   id = "chado_feature_formatter_default",
- *   label = @Translation("Chado feature formatter"),
- *   description = @Translation("A chado feature formatter"),
- *   field_types = {
- *     "chado_feature_type_default"
- *   },
- *   valid_tokens = {
- *     "[name]",
- *     "[uniquename]",
- *     "[type]",
- *     "[seqlen]",
- *     "[md5checksum]",
- *     "[is_analysis]",
- *     "[is_obsolete]",
- *     "[database_name]",
- *     "[database_accession]",
- *     "[genus]",
- *     "[species]",
- *     "[infratype]",
- *     "[infratype_abbrev]",
- *     "[infraname]",
- *     "[abbreviation]",
- *     "[common_name]",
- *   },
- * )
  */
+#[TripalFieldFormatter(
+  id: 'chado_feature_formatter_default',
+  label: new TranslatableMarkup('Chado feature formatter'),
+  description: new TranslatableMarkup('A chado feature formatter'),
+  field_types: [
+    'chado_feature_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[uniquename]',
+    '[type]',
+    '[seqlen]',
+    '[md5checksum]',
+    '[is_analysis]',
+    '[is_obsolete]',
+    '[database_name]',
+    '[database_accession]',
+    '[genus]',
+    '[species]',
+    '[infratype]',
+    '[infratype_abbrev]',
+    '[infraname]',
+    '[abbreviation]',
+    '[common_name]',
+  ],
+)]
 class ChadoFeatureFormatterDefault extends ChadoFormatterBase {
 
   /**

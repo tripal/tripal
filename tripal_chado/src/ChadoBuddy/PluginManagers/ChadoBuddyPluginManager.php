@@ -26,7 +26,14 @@ class ChadoBuddyPluginManager extends DefaultPluginManager {
    * Constructs the object.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, ChadoConnection $connection) {
-    parent::__construct('Plugin/ChadoBuddy', $namespaces, $module_handler, ChadoBuddyInterface::class, ChadoBuddy::class);
+    parent::__construct(
+      'Plugin/ChadoBuddy',
+      $namespaces,
+      $module_handler,
+      ChadoBuddyInterface::class,
+      'Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy',
+      ChadoBuddy::class
+    );
     $this->alterInfo('chado_buddy_info');
     $this->setCacheBackend($cache_backend, 'chado_buddy_plugins');
     $this->connection = $connection;

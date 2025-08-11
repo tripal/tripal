@@ -9,8 +9,8 @@ use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\SubformStateInterface;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal\Services\TripalFieldCollection;
+use Drupal\tripal_chado\Database\ChadoSchema;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-
 
 /**
  * Defines the Tripal field item base class.
@@ -441,6 +441,51 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $form_state->setErrorByName('settings][storage_plugin_settings][linker_table_and_column',
           'The selected linking method is not valid.');
     }
+  }
+
+  /**
+   * Retrieves a Chado schema table definition.
+   *
+   * To also support custom chado tables, the definition is loaded from
+   * the database if necessary. Note that this may return a different
+   * definition array, specifically the value may be an array instead of
+   * a string, for example for 'primary key'.
+   *
+   * @param Drupal\tripal_chado\Database\ChadoSchema $schema
+   *   The chado schema definition.
+   * @param string $table_name
+   *   The chado table to look up the table definition for.
+   *
+   * @return array
+   *   The table definition.
+   */
+  protected static function getChadoTableDef(ChadoSchema $schema, string $table_name): array {
+    $schema_def = $schema->getTableDef($table_name, ['format' => 'Drupal']);
+    // For custom chado tables, need to check the database.
+    if (!$schema_def) {
+      $schema_def = $schema->getTableDef($table_name, ['format' => 'Drupal', 'source' => 'database']);
+    }
+    return $schema_def;
+  }
+
+  /**
+   * Retrieves the name of the primary key for a Chado table.
+   *
+   * @param Drupal\tripal_chado\Database\ChadoSchema $schema
+   *   The chado schema definition.
+   * @param string $table_name
+   *   The chado table to look up the primary key for.
+   *
+   * @return string
+   *   The table primary key name.
+   */
+  protected static function getPrimaryKey(ChadoSchema $schema, string $table_name): ?string {
+    $schema_def = self::getChadoTableDef($schema, $table_name);
+    $primary_key = $schema_def['primary key'];
+    if (is_array($primary_key)) {
+      $primary_key = $primary_key[array_key_first($primary_key)];
+    }
+    return $primary_key;
   }
 
   /**
@@ -1159,7 +1204,10 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   protected static function getColumnTermId(string $table, string $column, string $default_term): string {
     $id = $default_term;
     if (is_null(self::$mapping)) {
+      /** @var Drupal\Core\Config\Entity\ConfigEntityStorage **/
       $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+dpm(get_class($storage), "CP45 storage class table $table column $column default_term $default_term");//@@@
+      /** @var Drupal\tripal_chado\Entity\ChadoTermMapping **/
       self::$mapping = $storage->load('core_mapping');
     }
     if (self::$mapping) {

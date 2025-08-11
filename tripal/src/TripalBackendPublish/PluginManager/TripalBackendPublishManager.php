@@ -66,6 +66,7 @@ class TripalBackendPublishManager extends DefaultPluginManager {
       $namespaces,
       $module_handler,
       'Drupal\tripal\TripalBackendPublish\Interfaces\TripalBackendPublishInterface',
+      'Drupal\tripal\TripalBackendPublish\Attribute\TripalBackendPublish',
       'Drupal\tripal\TripalBackendPublish\Annotation\TripalBackendPublish'
     );
     $this->alterInfo("tripal_backend_publish_info");

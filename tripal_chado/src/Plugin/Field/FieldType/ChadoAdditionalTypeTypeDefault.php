@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
@@ -14,16 +16,15 @@ use Drupal\tripal\Services\TripalFieldCollection;
 
 /**
  * Plugin implementation of Tripal additional type field type.
- *
- * @FieldType(
- *   id = "chado_additional_type_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Type Reference"),
- *   description = @Translation("A Chado type reference"),
- *   default_widget = "chado_additional_type_widget_default",
- *   default_formatter = "chado_additional_type_formatter_default"
- * )
  */
+#[FieldType(
+  id: 'chado_additional_type_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Type Reference'),
+  description: new TranslatableMarkup('A Chado type reference'),
+  default_widget: 'chado_additional_type_widget_default',
+  default_formatter: 'chado_additional_type_formatter_default',
+)]
 class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_additional_type_type_default';
@@ -89,8 +90,7 @@ class ChadoAdditionalTypeTypeDefault extends ChadoFieldItemBase {
     // base table will be different.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_table_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
 
     // Create variables to store the terms for the properties. We can use terms
     // from Chado tables if appropriate.

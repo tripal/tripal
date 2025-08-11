@@ -2,27 +2,27 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\core\Form\FormStateInterface;
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
-
 /**
  * Plugin implementation of string field type for Chado.
- *
- * @FieldType(
- *   id = "chado_string_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado String Field Type"),
- *   description = @Translation("A text field with a maximum length."),
- *   default_widget = "chado_string_type_widget",
- *   default_formatter = "chado_string_type_formatter",
- *   cardinality = 1
- * )
  */
+#[FieldType(
+  id: 'chado_string_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado String Field Type'),
+  description: new TranslatableMarkup('A text field with a maximum length.'),
+  default_widget: 'chado_string_type_widget',
+  default_formatter: 'chado_string_type_formatter',
+  cardinality: 1,
+)]
 class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_string_type_default";
@@ -101,9 +101,8 @@ class ChadoStringTypeDefault extends ChadoFieldItemBase {
     $max_length = $field_definition->getSetting('max_length');
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
     $base_column = $settings['base_column'];
-    $base_pkey_col = $base_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.
     $value_term = self::getColumnTermId($base_table, $base_column, 'NCIT:C25712');
