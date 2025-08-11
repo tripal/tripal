@@ -7,12 +7,12 @@ use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\Core\Form\FormStateInterface;
 
-#[ViewsField('criteria')]
 /**
  * Views field plugin to display 'criteria'.
  *
  * @ingroup views_field_handlers
  */
+#[ViewsField('criteria')]
 class Criteria extends FieldPluginBase {
 
   /**
