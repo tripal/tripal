@@ -1,0 +1,32 @@
+id: 'tripal_file_mapping'
+label: 'Tripal File Term Mapping'
+description: 'Mapping of terms to Tripal File table columns.'
+dependencies:
+    module:
+        - tripal_file
+    enforced:
+        module:
+            - tripal_file
+tables:
+    -   name: 'file'
+        columns:
+            -   name:  'name'
+                term_id: 'schema:name'
+                term_name: 'name'
+            -   name: 'description'
+                term_id: 'schema:description'
+                term_name: 'description'
+            -   name: 'type_id'
+                term_id: 'schema:additionalType'
+                term_name: 'additionalType'
+    -   name: 'license'
+        columns:
+            -   name: 'name'
+                term_id: 'schema:name'
+                term_name: 'name'
+            -   name: 'summary'
+                term_id: 'schema:description'
+                term_name: 'description'
+            -   name: 'uri'
+                term_id: 'schema:url'
+                term_name: 'url'

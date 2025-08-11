@@ -1,0 +1,900 @@
+-
+    table: file
+    fields:
+        file_id:
+            size: big
+            type: serial
+            'not null': true
+        name:
+            type: text
+            'not null': true
+        type_id:
+            type: int
+            'not null': true
+        description:
+            type: text
+    'primary key':
+        - file_id
+    'unique keys':
+        file_c1:
+            - name
+    indexes:
+        file_idx1:
+            - name
+        file_idx2:
+            - type_id
+    'foreign keys':
+        cvterm:
+            table: cvterm
+            columns:
+                type_id: cvterm_id
+-
+    table: license
+    fields:
+        license_id:
+            type: serial
+            'not null': true
+        name:
+            type: varchar
+            length: 1024
+            'not null': true
+        summary:
+            type: text
+        uri:
+            type: text
+    'primary key':
+        - license_id
+    'unique keys':
+        license_c1:
+            - name
+        license_c2:
+            - uri
+    indexes:
+        license_idx1:
+            - name
+-
+    table: file_contact
+    fields:
+        file_contact_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            type: int
+            'not null': true
+        contact_id:
+            type: int
+    'primary key':
+        - file_contact_id
+    'unique keys':
+        file_contact_c1:
+            - file_id
+            - contact_id
+    indexes:
+        file_contact_idx1:
+            - file_id
+        file_contact_idx2:
+            - contact_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        contact:
+            table: contact
+            columns:
+                contact_id: contact_id
+-
+    table: fileloc
+    fields:
+        fileloc_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            type: int
+            'not null': true
+        uri:
+            type: text
+            'not null': true
+            description: null
+        rank:
+            type: int
+            'not null': true
+            default: 0
+        md5checksum:
+            size: normal
+            type: char
+            length: '32'
+            'not null': false
+        size:
+            type: varchar
+            length: 1024
+            'not null': false
+        filename:
+            type: text
+            'not null': false
+            description: null
+    'primary key':
+        - fileloc_id
+    'unique keys':
+        fileloc_c1:
+            - file_id
+            - uri
+    indexes:
+        fileloc_idx1:
+            - file_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+-
+    table: fileprop
+    fields:
+        fileprop_id:
+            type: serial
+            'not null': true
+        file_id:
+            type: int
+            'not null': true
+        type_id:
+            type: int
+            'not null': true
+        value:
+            type: text
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - fileprop_id
+    'unique keys':
+        fileprop_c1:
+            - file_id
+            - type_id
+            - rank
+    indexes:
+        fileprop_idx1:
+            - file_id
+        fileprop_idx2:
+            - type_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        cvterm:
+            table: cvterm
+            columns:
+                type_id: cvterm_id
+-
+    table: file_relationship
+    fields:
+        file_relationship_id:
+            type: serial
+            'not null': true
+        subject_id:
+            type: int
+            'not null': true
+        object_id:
+            type: int
+            'not null': true
+        type_id:
+            type: int
+            'not null': true
+    'primary key':
+        - file_relationship_id
+    'unique keys':
+        file_relationship_c1:
+            - subject_id
+            - object_id
+            - type_id
+    indexes:
+        file_relationship_idx1:
+            - subject_id
+        file_relationship_idx2:
+            - object_id
+        file_relationship_idx3:
+            - type_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                subject_id: file_id
+                object_id: file_id
+        cvterm:
+            table: cvterm
+            columns:
+                type_id: cvterm_id
+-
+    table: file_license
+    fields:
+        file_license_id:
+            type: serial
+            'not null': true
+        file_id:
+            type: int
+            'not null': true
+        license_id:
+            type: int
+            'not null': true
+    'primary key':
+        - file_license_id
+    'unique keys':
+        file_license_c1:
+            - file_id
+            - license_id
+    indexes:
+        file_license_idx1:
+            - file_id
+        file_license_idx2:
+            - license_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        license:
+            table: license
+            columns:
+                license_id: license_id
+-
+    table: file_pub
+    fields:
+        file_pub_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        pub_id:
+            size: big
+            type: int
+            'not null': true
+    'primary key':
+        - file_pub_id
+    'unique keys':
+        file_pub_c1:
+            - file_id
+            - pub_id
+    indexes:
+        file_pub_idx1:
+            - file_id
+        file_pub_idx2:
+            - pub_id
+    'foreign keys':
+        pub:
+            table: pub
+            columns:
+                pub_id: pub_id
+        file:
+            table: file
+            columns:
+                file_id: file_id
+-
+    table: analysis_file
+    fields:
+        analysis_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        analysis_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - analysis_file_id
+    'unique keys':
+        analysis_file_c1:
+            - file_id
+            - analysis_id
+    indexes:
+        analysis_file_idx1:
+            - file_id
+        analysis_file_idx2:
+            - analysis_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        analysis:
+            table: analysis
+            columns:
+                analysis_id: analysis_id
+-
+    table: assay_file
+    fields:
+        assay_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        assay_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - assay_file_id
+    'unique keys':
+        assay_file_c1:
+            - file_id
+            - assay_id
+    indexes:
+        assay_file_idx1:
+            - file_id
+        assay_file_idx2:
+            - assay_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        assay:
+            table: assay
+            columns:
+                assay_id: assay_id
+-
+    table: biomaterial_file
+    fields:
+        biomaterial_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        biomaterial_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - biomaterial_file_id
+    'unique keys':
+        biomaterial_file_c1:
+            - file_id
+            - biomaterial_id
+    indexes:
+        biomaterial_file_idx1:
+            - file_id
+        biomaterial_file_idx2:
+            - biomaterial_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        biomaterial:
+            table: biomaterial
+            columns:
+                biomaterial_id: biomaterial_id
+-
+    table: cv_file
+    fields:
+        cv_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        cv_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - cv_file_id
+    'unique keys':
+        cv_file_c1:
+            - file_id
+            - cv_id
+    indexes:
+        cv_file_idx1:
+            - file_id
+        cv_file_idx2:
+            - cv_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        cv:
+            table: cv
+            columns:
+                cv_id: cv_id
+-
+    table: eimage_file
+    fields:
+        eimage_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        eimage_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - eimage_file_id
+    'unique keys':
+        eimage_file_c1:
+            - file_id
+            - eimage_id
+    indexes:
+        eimage_file_idx1:
+            - file_id
+        eimage_file_idx2:
+            - eimage_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        eimage:
+            table: eimage
+            columns:
+                eimage_id: eimage_id
+-
+    table: feature_file
+    fields:
+        feature_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        feature_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - feature_file_id
+    'unique keys':
+        feature_file_c1:
+            - file_id
+            - feature_id
+    indexes:
+        feature_file_idx1:
+            - file_id
+        feature_file_idx2:
+            - feature_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        feature:
+            table: feature
+            columns:
+                feature_id: feature_id
+-
+    table: featuremap_file
+    fields:
+        featuremap_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        featuremap_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - featuremap_file_id
+    'unique keys':
+        featuremap_file_c1:
+            - file_id
+            - featuremap_id
+    indexes:
+        featuremap_file_idx1:
+            - file_id
+        featuremap_file_idx2:
+            - featuremap_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        featuremap:
+            table: featuremap
+            columns:
+                featuremap_id: featuremap_id
+-
+    table: library_file
+    fields:
+        library_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        library_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - library_file_id
+    'unique keys':
+        library_file_c1:
+            - file_id
+            - library_id
+    indexes:
+        library_file_idx1:
+            - file_id
+        library_file_idx2:
+            - library_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        library:
+            table: library
+            columns:
+                library_id: library_id
+-
+    table: nd_protocol_file
+    fields:
+        nd_protocol_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        nd_protocol_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - nd_protocol_file_id
+    'unique keys':
+        nd_protocol_file_c1:
+            - file_id
+            - nd_protocol_id
+    indexes:
+        nd_protocol_file_idx1:
+            - file_id
+        nd_protocol_file_idx2:
+            - nd_protocol_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        nd_protocol:
+            table: nd_protocol
+            columns:
+                nd_protocol_id: nd_protocol_id
+-
+    table: organism_file
+    fields:
+        organism_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        organism_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - organism_file_id
+    'unique keys':
+        organism_file_c1:
+            - file_id
+            - organism_id
+    indexes:
+        organism_file_idx1:
+            - file_id
+        organism_file_idx2:
+            - organism_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        organism:
+            table: organism
+            columns:
+                organism_id: organism_id
+-
+    table: phylotree_file
+    fields:
+        phylotree_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        phylotree_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - phylotree_file_id
+    'unique keys':
+        phylotree_file_c1:
+            - file_id
+            - phylotree_id
+    indexes:
+        phylotree_file_idx1:
+            - file_id
+        phylotree_file_idx2:
+            - phylotree_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        phylotree:
+            table: phylotree
+            columns:
+                phylotree_id: phylotree_id
+-
+    table: project_file
+    fields:
+        project_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        project_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - project_file_id
+    'unique keys':
+        project_file_c1:
+            - file_id
+            - project_id
+    indexes:
+        project_file_idx1:
+            - file_id
+        project_file_idx2:
+            - project_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        project:
+            table: project
+            columns:
+                project_id: project_id
+-
+    table: pub_file
+    fields:
+        pub_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        pub_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - pub_file_id
+    'unique keys':
+        pub_file_c1:
+            - file_id
+            - pub_id
+    indexes:
+        pub_file_idx1:
+            - file_id
+        pub_file_idx2:
+            - pub_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        pub:
+            table: pub
+            columns:
+                pub_id: pub_id
+-
+    table: stock_file
+    fields:
+        stock_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        stock_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - stock_file_id
+    'unique keys':
+        stock_file_c1:
+            - file_id
+            - stock_id
+    indexes:
+        stock_file_idx1:
+            - file_id
+        stock_file_idx2:
+            - stock_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        stock:
+            table: stock
+            columns:
+                stock_id: stock_id
+-
+    table: stockcollection_file
+    fields:
+        stockcollection_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        stockcollection_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - stockcollection_file_id
+    'unique keys':
+        stockcollection_file_c1:
+            - file_id
+            - stockcollection_id
+    indexes:
+        stockcollection_file_idx1:
+            - file_id
+        stockcollection_file_idx2:
+            - stockcollection_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        stockcollection:
+            table: stockcollection
+            columns:
+                stockcollection_id: stockcollection_id
+-
+    table: study_file
+    fields:
+        study_file_id:
+            size: big
+            type: serial
+            'not null': true
+        file_id:
+            size: big
+            type: int
+            'not null': true
+        study_id:
+            size: big
+            type: int
+            'not null': true
+        rank:
+            type: int
+            'not null': true
+            default: 0
+    'primary key':
+        - study_file_id
+    'unique keys':
+        study_file_c1:
+            - file_id
+            - study_id
+    indexes:
+        study_file_idx1:
+            - file_id
+        study_file_idx2:
+            - study_id
+    'foreign keys':
+        file:
+            table: file
+            columns:
+                file_id: file_id
+        study:
+            table: study
+            columns:
+                study_id: study_id
