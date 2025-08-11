@@ -3,7 +3,6 @@
 namespace Drupal\tripal\TripalVocabTerms\PluginManagers;
 
 use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
@@ -32,7 +31,6 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
   public function __construct(
       $subdir
       ,\Traversable $namespaces
-      ,CacheBackendInterface $cache_backend
       ,ModuleHandlerInterface $module_handler
       ,$pluginInterface
       ,$pluginDefinitionAttribute
