@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
@@ -9,18 +11,17 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_sequence_coordinates_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Sequence Coordinates"),
- *   description = @Translation("Locations on reference sequences where the feature is located"),
- *   default_widget = "chado_sequence_coordinates_widget_default",
- *   default_formatter = "chado_sequence_coordinates_formatter_default",
- *   cardinality = 1,
- * )
+ * Plugin implementation of Default Tripal field for sequence coordinates.
  */
+#[FieldType(
+  id: 'chado_sequence_coordinates_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Sequence Coordinates'),
+  description: new TranslatableMarkup('Locations on reference sequences where the feature is located'),
+  default_widget: 'chado_sequence_coordinates_widget_default',
+  default_formatter: 'chado_sequence_coordinates_formatter_default',
+  cardinality: 1,
+)]
 class ChadoSequenceCoordinatesDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_sequence_coordinates_default";

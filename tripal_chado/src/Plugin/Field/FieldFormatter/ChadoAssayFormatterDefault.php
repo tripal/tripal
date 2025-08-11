@@ -3,31 +3,32 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal assay formatter.
- *
- * @FieldFormatter(
- *   id = "chado_assay_formatter_default",
- *   label = @Translation("Chado assay formatter"),
- *   description = @Translation("A chado assay formatter"),
- *   field_types = {
- *     "chado_assay_type_default"
- *   },
- *   valid_tokens = {
- *     "[name]",
- *     "[description]",
- *     "[arraydesign]",
- *     "[arrayidentifier]",
- *     "[arraybatchidentifier]",
- *     "[protocol]",
- *     "[operator]",
- *     "[database_name]",
- *     "[database_accession]",
- *   },
- * )
  */
+#[TripalFieldFormatter(
+  id: 'chado_assay_formatter_default',
+  label: new TranslatableMarkup('Chado assay formatter'),
+  description: new TranslatableMarkup('A chado assay formatter'),
+  field_types: [
+    'chado_assay_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[description]',
+    '[arraydesign]',
+    '[arrayidentifier]',
+    '[arraybatchidentifier]',
+    '[protocol]',
+    '[operator]',
+    '[database_name]',
+    '[database_accession]',
+  ],
+)]
 class ChadoAssayFormatterDefault extends ChadoFormatterBase {
 
   /**

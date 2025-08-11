@@ -4,16 +4,16 @@ namespace Drupal\tripal_chado\Plugin\views\field;
 
 use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\Core\Render\Markup;
 
+#[ViewsField('chado_mviews_delete_link')]
 /**
  * Field handler to present a link to delete a chado custom table.
  *
  * @ingroup views_field_handlers
- *
- * @ViewsField("chado_mviews_delete_link")
  */
 class ChadoMViewsDeleteLink extends FieldPluginBase {
 

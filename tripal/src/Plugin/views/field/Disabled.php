@@ -2,15 +2,15 @@
 
 namespace Drupal\tripal\Plugin\views\field;
 
+use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 
+#[ViewsField('disabled')]
 /**
  * Views field plugin to display 'do_contact'.
  *
  * @ingroup views_field_handlers
- *
- * @ViewsField("disabled")
  */
 class Disabled extends FieldPluginBase {
 

@@ -130,7 +130,11 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition
+    );
 
     // Intialize the private member variables.
     $this->plugin_id = $plugin_id;
