@@ -8,8 +8,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 /**
  * Defines a Tripal Importer attribute object.
  *
- * Plugin Namespace: Drupal\tripal\TripalImporter
- *
+ * Plugin Namespace: Drupal\tripal\TripalImporter.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class TripalImporter extends Plugin {
@@ -47,13 +46,11 @@ class TripalImporter extends Plugin {
    *   Indicates whether the base importer should add a submit button or not.
    *   This should only be used in situations were you need multiple buttons
    *   or control over the submit process (e.g. multi-page forms).
-   * @param bool|null $submit_enabled
-   *   Indicated whether the base importer added submit button should be disabled
-   *   when the form is first loaded (i.e when the user clicks the link for the
-   *   importer). The form can then be programatically enabled via AJAX once
-   *   certain criteria is set by setting the form state storage.
-   *   Example of programatically enabling the button via the form state
-   *   on an importer where this annotation is set to TRUE.
+   * @param bool|null $submit_disabled
+   *   Used to disabled the base importer added submit button when the form
+   *   is first loaded (i.e when the user clicks the link for the importer). 
+   *   The form can then be programatically enabled via AJAX by setting the 
+   *   form state storage as shown in the following example.
    *   @code
    *     $storage = $form_state->getStorage();
    *     $storage['disable_TripalImporter_submit'] = FALSE;

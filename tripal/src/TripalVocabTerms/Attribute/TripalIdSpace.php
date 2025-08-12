@@ -8,8 +8,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 /**
  * Defines a tripal id space item attribute object.
  *
- * Plugin Namespace: Drupal\tripal\TripalVocabTerms
- *
+ * Plugin Namespace: Drupal\tripal\TripalVocabTerms.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class TripalIdSpace extends Plugin {
