@@ -36,6 +36,7 @@ class TripalPubLibraryManager extends DefaultPluginManager {
         ,$namespaces
         ,$module_handler
         ,'Drupal\tripal\TripalPubLibrary\Interfaces\TripalPubLibraryInterface'
+        ,'Drupal\tripal\TripalPubLibrary\Attribute\TripalPubLibrary'
         ,'Drupal\tripal\TripalPubLibrary\Annotation\TripalPubLibrary'
     );
     $this->alterInfo("tripal_pub_library_info");

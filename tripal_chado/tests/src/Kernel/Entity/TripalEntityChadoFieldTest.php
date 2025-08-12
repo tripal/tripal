@@ -5,6 +5,8 @@ namespace Drupal\Tests\tripal_chado\Kernel\Entity;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalEntity Class with Chado Fields attached.
@@ -13,6 +15,9 @@ use Drupal\tripal\Entity\TripalEntity;
  * @group ChadoFields
  * @group TripalTokenParser
  */
+#[Group('TripalEntity')]
+#[Group('ChadoFields')]
+#[Group('TripalTokenParser')]
 class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
 
   use TripalEntityFieldTestTrait;
@@ -150,6 +155,7 @@ class TripalEntityChadoFieldTest extends ChadoTestKernelBase {
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
    */
+  #[DataProvider('provideScenarios')]
   public function testTripalChadoEntitySaveUrlAlias(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->scenarios[$current_scenario_key];
     $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");

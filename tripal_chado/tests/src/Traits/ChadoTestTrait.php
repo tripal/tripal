@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Traits;
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Symfony\Component\Yaml\Yaml;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * This is a PHP Trait for Chado tests.
@@ -14,6 +15,8 @@ use Symfony\Component\Yaml\Yaml;
  * @group Tripal
  * @group Tripal Chado
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
 
 trait ChadoTestTrait  {
 

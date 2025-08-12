@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal\Functional;
 use Drupal\Tests\tripal\Traits\TripalTestTrait;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\file\Entity\File;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the basic functions of the TripalTerm Entity Type.
@@ -13,6 +14,9 @@ use Drupal\file\Entity\File;
  * @group Tripal Term
  * @group Tripal Entities
  */
+#[Group('Tripal')]
+#[Group('Tripal Term')]
+#[Group('Tripal Entities')]
 class TripalRoutePermissionsTest extends BrowserTestBase {
 
   use TripalTestTrait;
@@ -27,6 +31,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    *
    * @group Tripal Permissions
    */
+  #[Group('Tripal Permissions')]
   public function testTripalAdminPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -110,6 +115,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Jobs
    */
+  #[Group('Tripal Permissions')]
+  #[Group('Tripal Jobs')]
   public function testTripalJobPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -177,6 +184,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Dashboard
    */
+  #[Group('Tripal Permissions')]
+  #[Group('Tripal Dashboard')]
   public function testTripalDashboardPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -238,6 +247,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Content
    */
+  #[Group('Tripal Permissions')]
+  #[Group('Tripal Content')]
   public function testTripalContentPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -363,6 +374,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Data Files
    */
+  #[Group('Tripal Permissions')]
+  #[Group('Tripal Data Files')]
   public function testAdminTripalDataFilesPages() {
     $session = $this->getSession();
     $this->assertTrue(\Drupal::request()->hasSession(),
@@ -419,6 +432,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Data Files
    */
+  #[Group('Tripal Permissions')]
+  #[Group('Tripal Data Files')]
   public function testTripalDataFilesPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');
@@ -499,6 +514,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Permissions
    * @group Tripal Term Configuration
    */
+  #[Group('Tripal Permissions')]
+  #[Group('Tripal Term Configuration')]
   public function testTripalTermConfigPages() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');

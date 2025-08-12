@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Simple test to ensure that main page loads with module enabled.
@@ -12,6 +13,9 @@ use Drupal\Tests\BrowserTestBase;
  * @group Tripal Chado
  * @group Tripal Forms
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Forms')]
 class chadoInstallerFormTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';
@@ -49,6 +53,9 @@ class chadoInstallerFormTest extends BrowserTestBase {
    * @group chado-install
    * @group chado-install-form
    */
+  #[Group('form')]
+  #[Group('chado-install')]
+  #[Group('chado-install-form')]
   public function testLoadInstallerForm() {
     $this->assertTrue(\Drupal::request()->hasSession(),
       'This test depends on having a session but for some reason there is not one available.');

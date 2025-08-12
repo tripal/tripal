@@ -2,27 +2,27 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\tripal\Entity\TripalEntityType;
-use Drupal\core\Form\FormStateInterface;
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 
-
 /**
  * Plugin implementation of string field type for Chado.
- *
- * @FieldType(
- *   id = "chado_string_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado String Field Type"),
- *   description = @Translation("A text field with a maximum length."),
- *   default_widget = "chado_string_type_widget",
- *   default_formatter = "chado_string_type_formatter",
- *   cardinality = 1
- * )
  */
+#[FieldType(
+  id: 'chado_string_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado String Field Type'),
+  description: new TranslatableMarkup('A text field with a maximum length.'),
+  default_widget: 'chado_string_type_widget',
+  default_formatter: 'chado_string_type_formatter',
+  cardinality: 1,
+)]
 class ChadoStringTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_string_type_default";

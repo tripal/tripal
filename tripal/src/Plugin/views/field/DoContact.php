@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Plugin\views\field;
 
+use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 
@@ -9,9 +10,8 @@ use Drupal\views\ResultRow;
  * Views field plugin to display 'do_contact'.
  *
  * @ingroup views_field_handlers
- *
- * @ViewsField("do_contact")
  */
+#[ViewsField('do_contact')]
 class DoContact extends FieldPluginBase {
 
   /**

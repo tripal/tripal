@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Functional;
 
 use Drupal\Tests\BrowserTestBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the basic functions of the Bulk PostgreSQL Schema Installer.
@@ -10,6 +11,8 @@ use Drupal\Tests\BrowserTestBase;
  * @group Tripal
  * @group Tripal Database
  */
+#[Group('Tripal')]
+#[Group('Tripal Database')]
 class bulkPgSchemaInstallerTest extends BrowserTestBase {
 
   // protected $htmlOutputEnabled = TRUE;
@@ -23,6 +26,8 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
 	 * @group pgsql
 	 * @group services
 	 */
+#[Group('pgsql')]
+#[Group('services')]
 	public function testInitialization() {
 
 		$service = \Drupal::service('tripal.bulkPgSchemaInstaller');
@@ -42,6 +47,8 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
 	 * @group pgsql
 	 * @group services
 	 */
+#[Group('pgsql')]
+#[Group('services')]
 	public function testCRUDSchema() {
 
 		$service = \Drupal::service('tripal.bulkPgSchemaInstaller');

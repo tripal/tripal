@@ -3,19 +3,20 @@
 namespace Drupal\tripal_chado\Plugin\TripalBackendPublish;
 
 use Drupal\Component\Utility\Xss;
+use Drupal\tripal\TripalBackendPublish\Attribute\TripalBackendPublish;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalBackendPublish\TripalBackendPublishBase;
 use Drupal\tripal\TripalBackendPublish\Exceptions\TripalPublishException;
 
 /**
  * Chado-specific TripalEntity publish.
- *
- *  @TripalBackendPublish(
- *    id = "chado_storage",
- *    label = @Translation("Chado Publish"),
- *    description = @Translation("Creates Tripal content based on records in a chado database."),
- *  )
  */
+#[TripalBackendPublish(
+  id: 'chado_storage',
+  label: new TranslatableMarkup('Chado Publish'),
+  description: new TranslatableMarkup('Creates Tripal content based on records in a chado database.'),
+)]
 class ChadoPublish extends TripalBackendPublishBase {
 
   /**
@@ -162,6 +163,34 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $republish = TRUE;
 
   /**
+   * Maximum number of linked records from one table to publish on one entity.
+   *
+   * @var int
+   */
+  protected int $publish_global_max_delta;
+
+  /**
+   * Flag to inhibit publish if maximum number of linked records is exceeded.
+   *
+   * @var bool
+   */
+  protected bool $publish_global_max_delta_inhibit;
+
+  /**
+   * Maximum number of linked records from one table to publish on one entity.
+   *
+   * @var int
+   */
+  protected int $publish_global_max_delta;
+
+  /**
+   * Flag to inhibit publish if maximum number of linked records is exceeded.
+   *
+   * @var bool
+   */
+  protected bool $publish_global_max_delta_inhibit;
+
+  /**
    * Loads migration data for preserving Tripal 3 entity IDs.
    *
    * @param string $filename
@@ -239,14 +268,69 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Populates the $this->field_info variable with field information
+   * Retrieves the object_table storage plugin setting value for linking fields.
    *
-   * @param string $bundle
-   *   The id of the bundle or entity type.
+   * @param string $field_name
+   *   The name of the field.
+   * @param array $storage_plugin_settings
+   *   Storage settings for a field.
+   *
+   * @return string
+   *   The name of the linked object table, or an empty string for non-linking
+   *   fields.
    */
-  protected function setFieldInfo() {
+  protected function getObjectTable(string $field_name, array $storage_plugin_settings): string {
+    $object_table = '';
+    if (array_key_exists('object_table', $storage_plugin_settings)) {
+      $object_table = $storage_plugin_settings['object_table'];
+    }
+    // Only look up object table for linking fields.
+    elseif (array_key_exists('linker_table', $storage_plugin_settings)
+        or array_key_exists('linker_table_and_column', $storage_plugin_settings)) {
+      $linker_table = $storage_plugin_settings['linker_table'] ?? NULL;
+      $linker_column = $storage_plugin_settings['linker_fkey_column'] ?? NULL;
+      if (!$linker_table) {
+        // @todo How to get this value from tripal_chado/src/TripalField/ChadoFieldItemBase.php:34 ?
+        $table_column_delimiter = " \u{2192} ";  // right arrow
+        [$linker_table, $linker_column] = explode($table_column_delimiter, $storage_plugin_settings['linker_table_and_column']);
+      }
+      // Look up the object table from the foreign key of the $linker_column.
+      $chado = \Drupal::service('tripal_chado.database');
+      $linker_schema_def = $chado->schema()->getTableDef($linker_table, ['format' => 'Drupal']);
+      $foreign_keys = $linker_schema_def['foreign keys'] ?? [];
+      foreach ($foreign_keys as $table => $info) {
+        if ($info['columns'][$linker_column] ?? FALSE) {
+          $object_table = $table;
+        }
+      }
+      // Store permanently so that we don't need to repeat this slow lookup.
+      if ($object_table) {
+        $config_name = 'field.storage.tripal_entity.' . $field_name;
+        $config = \Drupal::configFactory()->getEditable($config_name);
+        if ($config) {
+          $settings = $config->get('settings');
+          $settings['storage_plugin_settings']['object_table'] = $object_table;
+          $config->set('settings', $settings);
+          $config->save();
 
-    // Get the field definitions for the bundle type
+          // While the setting has been saved permanently, it is cached, so
+          // we also need to invalidate the appropriate discovery cache key.
+          $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+          $cache_key = 'entity_bundle_field_definitions:tripal_entity:' . $this->bundle . ':' . $language;
+          \Drupal::service('cache.discovery')->delete($cache_key);
+        }
+      }
+    }
+
+    return $object_table;
+  }
+
+  /**
+   * Populates the $this->field_info variable with field information.
+   */
+  protected function setFieldInfo(): void {
+
+    // Get the field definitions for the bundle type.
     $field_defs = $this->entity_field_manager->getFieldDefinitions('tripal_entity', $this->bundle);
 
     // Iterate over the field definitions for the bundle and collect the
@@ -265,23 +349,37 @@ class ChadoPublish extends TripalBackendPublishBase {
           ];
           $instance = $this->field_type_manager->createInstance($field_definition->getType(), $configuration);
           $prop_types = $instance->tripalTypes($field_definition);
-          $field_class = get_class($instance);
+          $storage_settings = $storage_definition->getSettings();
+          $object_table = $this->getObjectTable($field_name, $storage_settings['storage_plugin_settings']);
           $this->storage->addTypes($field_name, $prop_types);
           $this->storage->addFieldDefinition($field_name, $field_definition);
           $field_info = [
             'definition' => $field_definition,
-            'class' => $field_class,
+            'class' => get_class($instance),
             'prop_types' => [],
             'instance' => $instance,
+            'cardinality' => $storage_definition->getCardinality(),
+            'object_table' => $object_table,
           ];
+
+          // Store the main properties for later.
+          $main_property_name = $instance->mainPropertyName();
+          $this->main_property_names[$field_name] = $main_property_name;
+
           // Order the property types by key for easy lookup.
           foreach ($prop_types as $prop_type) {
-            $field_info['prop_types'][$prop_type->getKey()] = $prop_type;
+            $prop_key = $prop_type->getKey();
+            $field_info['prop_types'][$prop_key] = $prop_type;
+
+            // Store any table alias mappings, such as those used for property fields.
+            if ($prop_key == $main_property_name) {
+              $prop_storage_settings = $prop_type->getStorageSettings();
+              if (array_key_exists('table_alias_mapping', $prop_storage_settings)) {
+                $field_info['table_alias_mapping'] = $prop_storage_settings['table_alias_mapping'];
+              }
+            }
           }
           $this->field_info[$field_name] = $field_info;
-
-          // Store the main properties for later
-          $this->main_property_names[$field_name] = $instance->mainPropertyName();
         }
       }
     }
@@ -1372,6 +1470,13 @@ class ChadoPublish extends TripalBackendPublishBase {
       $this->logger->setJob($this->job);
     }
 
+    $max_delta = \Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta');
+    if (is_null($max_delta) or (trim($max_delta) === '')) {
+      $max_delta = 100;
+    }
+    $this->publish_global_max_delta = $max_delta;
+    $this->publish_global_max_delta_inhibit = boolval(\Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta_inhibit'));
+
     // Get the bundle object so we can get settings such as the title format.
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $this->entity_type = $this->entity_type_manager->getStorage('tripal_entity_type')->load($this->bundle);
@@ -1417,6 +1522,40 @@ class ChadoPublish extends TripalBackendPublishBase {
     }
     $message .= '.';
     $this->logger->notice($message);
+  }
+
+  /**
+   * Generates the options array for chado storage findValues().
+   *
+   * These options include appropriate max_delta specifications.
+   * The cardinality value, if a positive integer greater than 1,
+   * will override the global setting.
+   *
+   * @return array
+   *   The options to pass to findValues().
+   */
+  protected function getFindValuesOptions(): array {
+    // We add one to max_delta to use the extra record as a flag that
+    // at least one record was not published. The formatters will not
+    // display this last extra record.
+    $cardinalities = [];
+    foreach ($this->field_info as $field_name => $field_info) {
+      $cardinality = $field_info['cardinality'];
+      if (array_key_exists('object_table', $field_info)) {
+        $cardinalities[$field_info['object_table']] = $cardinality + 1;
+      }
+      if (array_key_exists('table_alias_mapping', $field_info)) {
+        // Although this is a loop, only one element will be present.
+        foreach ($field_info['table_alias_mapping'] as $alias => $table) {
+          $cardinalities[$alias] = $cardinality + 1;
+        }
+      }
+    }
+    return [
+      'global_max_delta' => $this->publish_global_max_delta + 1,
+      'cardinalities' => $cardinalities,
+      'inhibit' => $this->publish_global_max_delta_inhibit,
+    ];
   }
 
   /**
@@ -1498,7 +1637,8 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
 
       $this->logger->notice($batch_prefix . 'Step 1 of 6: Find matching records');
-      $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch);
+      $find_values_options = $this->getFindValuesOptions();
+      $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch, $find_values_options);
 
       $success = $this->validateMigrationData($matches, $this->lenient_migration);
       if (!$success) {

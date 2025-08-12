@@ -6,18 +6,20 @@ use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
 /**
  * Plugin implementation of default Tripal integer type widget.
- *
- * @FieldWidget(
- *   id = "default_tripal_integer_type_widget",
- *   label = @Translation("Tripal Integer Widget"),
- *   description = @Translation("The default integer type widget."),
- *   field_types = {
- *     "tripal_integer_type"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'default_tripal_boolean_type_widget',
+  label: new TranslatableMarkup('Tripal Boolean Widget'),
+  description: new TranslatableMarkup('The default boolean type widget.'),
+  field_types: [
+    'tripal_boolean_type',
+  ],
+)]
 class TripalIntegerTypeWidget extends TripalWidgetBase {
 
 
