@@ -296,6 +296,10 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         $this->logger->error('Skipping publication @acc due to download error.',
           ['@acc' => $pmid]);
       }
+      else if (!$this->xmlIsValid($pub_xml)) {
+        $this->logger->error('Skipping publication @acc due to download error, NCBI may be in maintenance mode.',
+          ['@acc' => $pmid]);
+      }
       else {
         $pub = $this->parse_xml($pub_xml);
         $pubs[] = $pub;
@@ -350,6 +354,10 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     $query_xml = $this->fileretriever->retrieveFileContents($query_url, $this->retrieval_options);
     if (is_null($query_xml)) {
       $this->logger->error("Could not perform Pubmed query. Cannot connect to Entrez.");
+      return FALSE;
+    }
+    else if (!$this->xmlIsValid($query_xml)) {
+      $this->logger->error("Invalid XML returned, NCBI may be in maintenance mode.");
       return FALSE;
     }
 
