@@ -2,9 +2,14 @@
 
 namespace Drupal\tripal\Form;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\tripal\Services\TripalJob;
 use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
+use Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a form for unpublishing Tripal content.
@@ -14,6 +19,83 @@ use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager
  * @ingroup tripal
  */
 class TripalEntityUnpublishMultipleForm extends FormBase {
+
+  /**
+   * The state of the drupal site providing key => value storage.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected StateInterface $state;
+
+  /**
+   * The Tripal storage manager.
+   *
+   * @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager
+   */
+  protected TripalStorageManager $tripal_storage_manager;
+
+  /**
+   * The Drupal Entity Type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected EntityTypeManagerInterface $entity_type_manager;
+
+  /**
+   * The Tripal Job service.
+   *
+   * @var \Drupal\tripal\Services\TripalJob
+   */
+  protected TripalJob $tripal_job_service;
+
+  /**
+   * The current user account.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected AccountInterface $current_user;
+
+  /**
+   * The constructor.
+   *
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state of the drupal site providing key => value storage.
+   * @param \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $tripal_storage_manager
+   *   The Tripal storage manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The Drupal Entity Type manager.
+   * @param \Drupal\tripal\Services\TripalJob $tripal_job_service
+   *   The Tripal Job service.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The current user account.
+   */
+  public function __construct(
+    StateInterface $state,
+    TripalStorageManager $tripal_storage_manager,
+    EntityTypeManagerInterface $entity_type_manager,
+    TripalJob $tripal_job_service,
+    AccountInterface $current_user,
+  ) {
+
+    $this->state = $state;
+    $this->tripal_storage_manager = $tripal_storage_manager;
+    $this->entity_type_manager = $entity_type_manager;
+    $this->tripal_job_service = $tripal_job_service;
+    $this->current_user = $current_user;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('state'),
+      $container->get('tripal.storage'),
+      $container->get('entity_type.manager'),
+      $container->get('tripal.job'),
+      $container->get('current_user'),
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -28,12 +110,10 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $bundles = [];
     $datastores = [];
-    $unpublish_form_defaults = \Drupal::state()->get('tripal_unpublish_form_defaults', []);
+    $unpublish_form_defaults = $this->state->get('tripal_unpublish_form_defaults', []);
 
     // Get a list of TripalStorage plugins.
-    /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
-    $storage_manager = \Drupal::service('tripal.storage');
-    $storage_defs = $storage_manager->getDefinitions();
+    $storage_defs = $this->tripal_storage_manager->getDefinitions();
     foreach ($storage_defs as $plugin_id => $storage_def) {
       // Don't use the Tripal default 'drupal_sql_storage' plugin
       // as a source for publishing records.
@@ -44,7 +124,7 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
     }
 
     // Get the available content types (bundles)
-    $entity_types = \Drupal::entityTypeManager()
+    $entity_types = $this->entity_type_manager
       ->getStorage('tripal_entity_type')
       ->loadByProperties([]);
     foreach ($entity_types as $entity_type) {
@@ -100,8 +180,8 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
 
     // If the user has selected the data storage backend then add any
     // form options to it that the storage backend needs.
-    if ($datastore = $form_state->getValue('datastore') and $storage_manager->datastoreExists($datastore)) {
-      $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
+    if ($datastore = $form_state->getValue('datastore') and $this->tripal_storage_manager->datastoreExists($datastore)) {
+      $storage = $this->tripal_storage_manager->getInstance(['plugin_id' => $datastore]);
       $datastore_form = $storage->publishForm($form, $form_state);
       if (!empty($datastore_form)) {
         $form['storage-options'] = array_merge_recursive($form['storage-options'], $datastore_form);
@@ -153,16 +233,13 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
     $datastore = $form_state->getValue('datastore');
 
     // Run the form validate for the storage backend.
-    /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
-    $storage_manager = \Drupal::service('tripal.storage');
-
-    if ($storage_manager->datastoreExists($datastore) !== TRUE) {
+    if ($this->tripal_storage_manager->datastoreExists($datastore) !== TRUE) {
       $form_state->setErrorByName('datastore', $this->t('The chosen datastore is not registered properly with TripalStorage.'));
     }
     // Only try to call the datastore custom validation if the
     // datastore actually exists.
     else {
-      $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
+      $storage = $this->tripal_storage_manager->getInstance(['plugin_id' => $datastore]);
       // Validation here is the same as for publishing.
       $storage->publishFormValidate($form, $form_state);
     }
@@ -183,24 +260,21 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
 
     // Store the current form settings as the default for the next
     // time unpublish is run.
-    \Drupal::state()->set('tripal_unpublish_form_defaults', $options);
+    $this->state->set('tripal_unpublish_form_defaults', $options);
 
     // Run the form submit for the storage backend.
-    /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
-    $storage_manager = \Drupal::service('tripal.storage');
-    $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
+    $storage = $this->tripal_storage_manager->getInstance(['plugin_id' => $datastore]);
     $storage->publishFromSubmit($form, $form_state);
 
     // Add the unpublish job.
-    $current_user = \Drupal::currentUser();
     $job_args = [$bundle, $datastore, $options];
     $job_name = 'Unpublish ' . ($orphaned ? 'orphaned' : 'all') . ' pages of type: ' . $bundle;
-    \Drupal::service('tripal.job')->create([
+    $this->tripal_job_service->create([
       'job_name' => $job_name,
       'modulename' => 'tripal',
       'callback' => [TripalBackendPublishManager::class, 'runTripalJob'],
       'arguments' => $job_args,
-      'uid' => $current_user->id(),
+      'uid' => $this->current_user->id(),
     ]);
   }
 
