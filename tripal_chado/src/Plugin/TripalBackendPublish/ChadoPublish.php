@@ -177,20 +177,6 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected bool $publish_global_max_delta_inhibit;
 
   /**
-   * Maximum number of linked records from one table to publish on one entity.
-   *
-   * @var int
-   */
-  protected int $publish_global_max_delta;
-
-  /**
-   * Flag to inhibit publish if maximum number of linked records is exceeded.
-   *
-   * @var bool
-   */
-  protected bool $publish_global_max_delta_inhibit;
-
-  /**
    * Loads migration data for preserving Tripal 3 entity IDs.
    *
    * @param string $filename
