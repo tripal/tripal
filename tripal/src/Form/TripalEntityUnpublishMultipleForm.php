@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\State\StateInterface;
 use Drupal\tripal\Services\TripalJob;
 use Drupal\tripal\TripalBackendPublish\PluginManager\TripalBackendPublishManager;
 use Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager;
@@ -76,7 +77,6 @@ class TripalEntityUnpublishMultipleForm extends FormBase {
     TripalJob $tripal_job_service,
     AccountInterface $current_user,
   ) {
-
     $this->state = $state;
     $this->tripal_storage_manager = $tripal_storage_manager;
     $this->entity_type_manager = $entity_type_manager;
