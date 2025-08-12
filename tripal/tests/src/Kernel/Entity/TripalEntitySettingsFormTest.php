@@ -11,6 +11,8 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal
  * @group TripalEntity
  */
+#[Group('Tripal')]
+#[Group('TripalEntity')]
 class TripalEntitySettingsFormTest extends TripalTestKernelBase {
 
   /**

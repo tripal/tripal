@@ -2,21 +2,22 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of Default Tripal field formatter for sequence data
- *
- * @FieldFormatter(
- *   id = "chado_synonym_formatter_default",
- *   label = @Translation("Chado Synonym Formatter"),
- *   description = @Translation("A chado synonym formatter"),
- *   field_types = {
- *     "chado_synonym_type_default"
- *   }
- * )
+ * Plugin implementation of Default Tripal field formatter for synonyms.
  */
+#[FieldFormatter(
+  id: 'chado_synonym_formatter_default',
+  label: new TranslatableMarkup('Chado Synonym Formatter'),
+  description: new TranslatableMarkup('A chado synonym formatter'),
+  field_types: [
+    'chado_synonym_type_default',
+  ],
+)]
 class ChadoSynonymFormatterDefault extends ChadoFormatterBase {
 
   /**

@@ -6,6 +6,7 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the base functionality for Chado Buddies.
@@ -14,6 +15,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  *
  * @group ChadoBuddy
  */
+#[Group('ChadoBuddy')]
 class ChadoBuddyBaseTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 

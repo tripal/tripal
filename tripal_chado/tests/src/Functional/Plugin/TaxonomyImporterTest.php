@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for the TaxonomyImporter class
@@ -10,6 +11,9 @@ namespace Drupal\Tests\tripal_chado\Functional;
  * @group ChadoImporter
  * @group TaxonomyImporter
  */
+#[Group('TripalImporter')]
+#[Group('ChadoImporter')]
+#[Group('TaxonomyImporter')]
 class TaxonomyImporterTest extends ChadoTestBrowserBase {
 
   /**
@@ -41,6 +45,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase {
    *
    * @group taxonomy
    */
+  #[Group('taxonomy')]
   public function testTaxonomyImporterSimpleTest() {
 
     // Installs up the chado with the test chado data

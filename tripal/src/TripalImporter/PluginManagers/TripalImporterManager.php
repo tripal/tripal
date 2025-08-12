@@ -34,6 +34,7 @@ class TripalImporterManager extends DefaultPluginManager {
         ,$namespaces
         ,$module_handler
         ,'Drupal\tripal\TripalImporter\Interfaces\TripalImporterInterface'
+        ,'Drupal\tripal\TripalImporter\Attribute\TripalImporter'
         ,'Drupal\tripal\TripalImporter\Annotation\TripalImporter'
     );
     $this->alterInfo("tripal_importer_info");

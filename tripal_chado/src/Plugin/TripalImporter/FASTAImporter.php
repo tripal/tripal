@@ -1,28 +1,38 @@
 <?php
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 
 /**
- * GFF3 Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_fasta_loader",
- *    label = @Translation("Chado FASTA File Loader"),
- *    description = @Translation("Import a FASTA file into Chado"),
- *    file_types = {"fasta","txt","fa","aa","pep","nuc","faa","fna"},
- *    upload_description = @Translation("Please provide a plain text file following the <a target='_blank' href='https://en.wikipedia.org/wiki/FASTA_format'>FASTA format specification</a>."),
- *    upload_title = @Translation("FASTA File"),
- *    use_analysis = True,
- *    require_analysis = True,
- *    button_text = @Translation("Import FASTA file"),
- *    file_upload = True,
- *    file_remote = True,
- *    file_local = True,
- *    file_required = True,
- *  )
+ * FASTA Importer implementation of the TripalImporterBase.
  */
+#[TripalImporter(
+  id: 'chado_fasta_loader',
+  label: new TranslatableMarkup('Chado FASTA File Loader'),
+  description: new TranslatableMarkup('Import a FASTA file into Chado'),
+  file_types: [
+    'fasta',
+    'txt',
+    'fa',
+    'aa',
+    'pep',
+    'nuc',
+    'faa',
+    'fna',
+  ],
+  upload_description: new TranslatableMarkup('Please provide a plain text file following the <a target="_blank" href="https://en.wikipedia.org/wiki/FASTA_format">FASTA format specification</a>.'),
+  upload_title: new TranslatableMarkup('FASTA File'),
+  use_analysis: true,
+  require_analysis: true,
+  button_text: new TranslatableMarkup('Import FASTA file'),
+  file_upload: true,
+  file_remote: true,
+  file_local: true,
+  file_required: true,
+)]
 class FASTAImporter extends ChadoImporterBase {
 
   /**

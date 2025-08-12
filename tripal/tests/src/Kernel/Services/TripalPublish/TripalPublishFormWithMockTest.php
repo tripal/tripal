@@ -4,12 +4,14 @@ namespace Drupal\Tests\tripal\Kernel;
 
 use \Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the publish form with a mock datastore.
  *
  * @group TripalPublish
  */
+#[Group('TripalPublish')]
 class TripalPublishFormWithMockTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 
