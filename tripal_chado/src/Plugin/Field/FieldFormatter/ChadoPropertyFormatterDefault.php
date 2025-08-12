@@ -26,7 +26,7 @@ class ChadoPropertyFormatterDefault extends ChadoFormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $elements = [];
+    parent::viewElements($items, $langcode);
 
     // Default filter format.
     $filter_format = 'basic_html';
@@ -59,22 +59,8 @@ class ChadoPropertyFormatterDefault extends ChadoFormatterBase {
       ];
     }
 
-    // If only one element has been found, don't make into a list.
-    if (count($list) == 1) {
-      $elements = $list;
-    }
-
-    // If more than one value has been found, display all values in an
-    // unordered list.
-    elseif (count($list) > 1) {
-      $elements[0] = [
-        '#theme' => 'item_list',
-        '#list_type' => 'ul',
-        '#items' => $list,
-        '#wrapper_attributes' => ['class' => 'container'],
-      ];
-    }
-
+    // Will convert $list to a markup list if there is more than one item.
+    $elements = $this->createListMarkup($list);
     return $elements;
   }
 }
