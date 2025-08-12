@@ -51,7 +51,7 @@ class ChadoFeatureFormatterDefault extends ChadoFormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $elements = [];
+    parent::viewElements($items, $langcode);
     $list = [];
     $token_string = $this->getSetting('token_string');
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
@@ -90,23 +90,8 @@ class ChadoFeatureFormatterDefault extends ChadoFormatterBase {
       $list[$delta] = $renderable_item;
     }
 
-    // If only one element has been found, don't make into a list.
-    if (count($list) == 1) {
-      $elements = $list;
-    }
-
-    // If more than one value has been found, display all values in an
-    // unordered list.
-// @todo: add a pager
-    elseif (count($list) > 1) {
-      $elements[0] = [
-        '#theme' => 'item_list',
-        '#list_type' => 'ul',
-        '#items' => $list,
-        '#wrapper_attributes' => ['class' => 'container'],
-      ];
-    }
-
+    // Will convert $list to a markup list if there is more than one item.
+    $elements = $this->createListMarkup($list);
     return $elements;
   }
 
