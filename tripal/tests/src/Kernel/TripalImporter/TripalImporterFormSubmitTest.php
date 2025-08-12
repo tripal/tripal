@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal\Kernel\TripalImporter;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use \Drupal\Tests\user\Traits\UserCreationTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the base functionality for importers.
@@ -13,6 +14,7 @@ use \Drupal\Tests\user\Traits\UserCreationTrait;
  *
  * @group TripalImporter
  */
+#[Group('TripalImporter')]
 class TripalImporterFormSubmitTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 

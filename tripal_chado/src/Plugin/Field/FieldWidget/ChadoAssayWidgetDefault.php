@@ -2,22 +2,23 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Chado assay widget.
- *
- * @FieldWidget(
- *   id = "chado_assay_widget_default",
- *   label = @Translation("Chado Assay Widget"),
- *   description = @Translation("The default assay widget."),
- *   field_types = {
- *     "chado_assay_type_default"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'chado_assay_widget_default',
+  label: new TranslatableMarkup('Chado Assay Widget'),
+  description: new TranslatableMarkup('The default assay widget.'),
+  field_types: [
+    'chado_assay_type_default',
+  ],
+)]
 class ChadoAssayWidgetDefault extends ChadoWidgetBase {
 
   /**

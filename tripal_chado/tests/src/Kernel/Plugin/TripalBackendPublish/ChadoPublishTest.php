@@ -2,18 +2,18 @@
 
 namespace Drupal\Tests\tripal\Kernel;
 
-use PHPUnit\Framework\Attributes\Group;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
-#[Group('TripalBackendPublish')]
-#[Group('ChadoPublish')]
 /**
  * Tests the publish service for chado-based content types.
  *
  * @group TripalBackendPublish
  * @group ChadoPublish
  */
+#[Group('TripalBackendPublish')]
+#[Group('ChadoPublish')]
 class ChadoPublishTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 

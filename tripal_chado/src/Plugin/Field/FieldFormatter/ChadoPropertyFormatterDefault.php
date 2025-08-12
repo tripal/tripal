@@ -2,24 +2,25 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Link;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal linker property formatter.
- *
- * @FieldFormatter(
- *   id = "chado_property_formatter_default",
- *   label = @Translation("Chado Property"),
- *   description = @Translation("Add a property or attribute to the content type."),
- *   field_types = {
- *     "chado_property_type_default"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'chado_property_formatter_default',
+  label: new TranslatableMarkup('Chado Property'),
+  description: new TranslatableMarkup('Add a property or attribute to the content type.'),
+  field_types: [
+    'chado_property_type_default',
+  ],
+)]
 class ChadoPropertyFormatterDefault extends ChadoFormatterBase {
 
   /**

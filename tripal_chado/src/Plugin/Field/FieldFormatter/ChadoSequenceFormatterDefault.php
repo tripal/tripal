@@ -2,22 +2,23 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of Default Tripal field formatter for sequence data
- *
- * @FieldFormatter(
- *   id = "chado_sequence_formatter_default",
- *   label = @Translation("Chado Sequence Residues Display"),
- *   description = @Translation("Displays chado sequence residues from the feature table on the page."),
- *   field_types = {
- *     "chado_sequence_type_default"
- *   }
- * )
+ * Plugin implementation of Default Tripal field formatter for sequence data.
  */
+#[FieldFormatter(
+  id: 'chado_sequence_formatter_default',
+  label: new TranslatableMarkup('Chado Sequence Residues Display'),
+  description: new TranslatableMarkup('Displays chado sequence residues from the feature table on the page.'),
+  field_types: [
+    'chado_sequence_type_default',
+  ],
+)]
 class ChadoSequenceFormatterDefault extends ChadoFormatterBase {
 
   /**

@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional\Service;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalPublish service in the context of the Chado content types.
@@ -11,6 +12,8 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  * @group Tripal
  * @group Tripal Content
  */
+#[Group('Tripal')]
+#[Group('Tripal Content')]
 class ChadoTripalPublishTest extends ChadoTestBrowserBase {
 
   /**

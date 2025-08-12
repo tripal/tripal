@@ -2,23 +2,24 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Link;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal string type formatter.
- *
- * @FieldFormatter(
- *   id = "chado_source_data_formatter_default",
- *   label = @Translation("Chado Source Data Formatter"),
- *   description = @Translation("The default source data widget which allows curators to manually enter analysis source data information on the content edit page."),
- *   field_types = {
- *     "chado_source_data_type_default"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'chado_source_data_formatter_default',
+  label: new TranslatableMarkup('Chado Source Data Formatter'),
+  description: new TranslatableMarkup('The default source data widget which allows curators to manually enter analysis source data information on the content edit page.'),
+  field_types: [
+    'chado_source_data_type_default',
+  ],
+)]
 class ChadoSourceDataFormatterDefault extends ChadoFormatterBase {
 
   /**

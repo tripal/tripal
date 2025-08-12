@@ -6,6 +6,8 @@ use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalStorage\Attribute\TripalStorage;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
@@ -14,13 +16,12 @@ use Drupal\tripal_chado\TripalStorage\ChadoRecords;
 
 /**
  * Chado implementation of the TripalStorageInterface.
- *
- * @TripalStorage(
- *   id = "chado_storage",
- *   label = @Translation("Chado Storage"),
- *   description = @Translation("Interfaces with GMOD Chado for field values."),
- * )
  */
+#[TripalStorage(
+  id: 'chado_storage',
+  label: new TranslatableMarkup('Chado Storage'),
+  description: new TranslatableMarkup('Interfaces with GMOD Chado for field values.'),
+)]
 class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**
