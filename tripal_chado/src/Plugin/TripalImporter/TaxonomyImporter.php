@@ -330,6 +330,12 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
           );
           continue;
         }
+        else if (!$this->xmlIsValid($xml_text)) {
+          $this->logger->error("Invalid XML returned for @sci_name, NCBI may be in maintenance mode.",
+            ['@sci_name' => $sci_name_escaped]
+          );
+          continue;
+        }
 
         // Parse the XML to get the taxonomy ID
         $result = FALSE;
@@ -542,7 +548,19 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
 
     // Query NCBI
     $xml_text = $this->fileretriever->retrieveFileContents($fetch_url, $this->retrieval_options);
-    if (!is_null($xml_text)) {
+    if (is_null($xml_text)) {
+      $this->logger->error("Error contacting NCBI to look up taxid @taxid",
+        ['@taxid' => $taxid]
+      );
+      return FALSE;
+    }
+    else if (!$this->xmlIsValid($xml_text)) {
+      $this->logger->error("Invalid XML returned for taxid @taxid, NCBI may be in maintenance mode.",
+        ['@taxid' => $taxid]
+      );
+      return FALSE;
+    }
+    else {
       $xml = new \SimpleXMLElement($xml_text);
       $taxon = $xml->Taxon;
 
@@ -653,12 +671,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         }
       }
     }
-    else {
-      $this->logger->warning("Error contacting NCBI to look up taxid @taxid",
-        ['@taxid' => $taxid]
-      );
-      return FALSE;
-    }
   }
 
   /**
@@ -752,7 +764,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   public function formSubmit($form, &$form_state) {
 
   }
-
 
   /**
    * Ajax callback for the TaxonomyImporter::form() function.
