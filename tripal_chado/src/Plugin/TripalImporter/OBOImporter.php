@@ -1395,7 +1395,7 @@ class OBOImporter extends ChadoImporterBase {
       $message = t('Did not get a response from EBI OLS trying to lookup: @type @id',
           ['@type'=> $type, '@id' => $id]);
       $this->logger->error($message);
-      throw new \Exception($message);
+      throw new \Exception("Did not get a response from EBI OLS trying to lookup: $type $id");
     }
 
     // If EBI sent an error message then throw an error.
@@ -1572,10 +1572,8 @@ class OBOImporter extends ChadoImporterBase {
             $query->condition('cvterm_id', $cvterm->cvterm_id);
             $success = $query->execute();
             if (!$success) {
-              $message = t('Could not update the term, "@term", with name, ' .
-                '"@name" for vocabulary, "@vocab": @error.', [
-                '@term' => $id, '@name' => $name, '@vocab' => $cv->name]);
-              throw new \Exception($message);
+              throw new \Exception('Could not update the term, "' . $id . '", with name, "'
+                  . $name . '" for vocabulary, "' . $cv->name . '".');
             }
           }
         }
@@ -1608,9 +1606,7 @@ class OBOImporter extends ChadoImporterBase {
         ]);
         $success = $query->execute();
         if (!$success) {
-          $message = t('Could not insert the cvterm, "@term"', [
-            '@term' => $name]);
-          throw new \Exception($message);
+          throw new \Exception('Could not insert the cvterm, "' . $name . '"');
         }
         $cvterm = $this->getChadoCVtermByName($cv->cv_id, $name);
       }
@@ -2570,8 +2566,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add database: @db', ['@db' => $dbname]);
-      throw new \Exception($message);
+      throw new \Exception('Could not add database: ' . $dbname);
     }
     $db = $this->getChadoDbByName($dbname);
     $this->all_dbs[$dbname] = $db;
@@ -2605,8 +2600,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add dbxref: @acc', ['@acc' => $accession]);
-      throw new \Exception($message);
+      throw new \Exception('Could not add dbxref: ' . $accession);
     }
     $dbxref = $this->getChadoDBXrefByAccession($db_id, $accession);
     return $dbxref;
@@ -2641,8 +2635,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add cvterm_dbxref');
-      throw new \Exception($message);
+      throw new \Exception('Could not add cvterm_dbxref');
     }
     return $squery->execute()->fetchObject();
   }
@@ -2667,8 +2660,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add cvtermsynonym: @synonym', ['@synonym', $synonym]);
-      throw new \Exception($message);
+      throw new \Exception('Could not add cvtermsynonym: ' . $synonym);
     }
   }
 
@@ -2696,8 +2688,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add cvtermprop: @value', ['@value' => $value]);
-      throw new \Exception($message);
+      throw new \Exception('Could not add cvtermprop: ' . $value);
     }
   }
 
@@ -2722,8 +2713,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add cvterm_relationship');
-      throw new \Exception($message);
+      throw new \Exception('Could not add cvterm_relationship');
     }
   }
 
@@ -2748,8 +2738,7 @@ class OBOImporter extends ChadoImporterBase {
     $query->fields(['name' => $cvname]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add vocabulary: @cv', ['@cv' => $cvname]);
-      throw new \Exception($message);
+      throw new \Exception('Could not add vocabulary: ' . $cvname);
     }
     $cv = $this->getChadoCvByName($cvname);
     $this->all_cvs[$cvname] = $cv;
