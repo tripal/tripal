@@ -59,6 +59,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: gene_sequence
         content_type: gene
@@ -520,6 +521,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: mrna_sequence
         content_type: mrna
@@ -1308,6 +1310,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: dna_library_type
         content_type: dna_library
@@ -1688,6 +1691,7 @@ fields:
               weight: 45
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: genome_assembly_type
         content_type: genome_assembly
@@ -2017,6 +2021,7 @@ fields:
               weight: 45
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: genome_annotation_type
         content_type: genome_annotation

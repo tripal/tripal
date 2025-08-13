@@ -1332,6 +1332,9 @@ fields:
             default:
               region: content
               weight: 25
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: protocol_software
         content_type: protocol
@@ -1358,6 +1361,9 @@ fields:
             default:
               region: content
               weight: 30
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: protocol_type
         content_type: protocol
@@ -1587,6 +1593,9 @@ fields:
             default:
               region: content
               weight: 18
+              settings:
+                filter_format: 'plain_text'
+                num_rows: 1
 
     -   name: pub_pyear
         content_type: pub
