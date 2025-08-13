@@ -1325,8 +1325,7 @@ class OBOImporter extends ChadoImporterBase {
     else {
       $ontology_results =  $this->oboEbiLookup($id, 'query');
       if ($ontology_results === FALSE OR !is_array($ontology_results)) {
-        throw new \Exception(t('Did not get a response from EBI OLS trying to lookup ontology: @id',
-          ['@id' => $ontologyID]));
+        throw new \Exception("Did not get a response from EBI OLS trying to lookup ontology: $ontologyID");
       }
       // If results were received but the number of results is 0, do a query-non-local lookup.
       if ($ontology_results['response']['numFound'] == 0) {
@@ -1398,7 +1397,7 @@ class OBOImporter extends ChadoImporterBase {
       $message = t('Did not get a response from EBI OLS trying to lookup: @type @id',
           ['@type'=> $type, '@id' => $id]);
       $this->logger->error($message);
-      throw new \Exception($message);
+      throw new \Exception("Did not get a response from EBI OLS trying to lookup: $type $id");
     }
 
     // If EBI sent an error message then throw an error.
@@ -1575,10 +1574,8 @@ class OBOImporter extends ChadoImporterBase {
             $query->condition('cvterm_id', $cvterm->cvterm_id);
             $success = $query->execute();
             if (!$success) {
-              $message = t('Could not update the term, "@term", with name, ' .
-                '"@name" for vocabulary, "@vocab": @error.', [
-                '@term' => $id, '@name' => $name, '@vocab' => $cv->name]);
-              throw new \Exception($message);
+              throw new \Exception('Could not update the term, "' . $id . '", with name, "'
+                  . $name . '" for vocabulary, "' . $cv->name . '".');
             }
           }
         }
@@ -1611,9 +1608,7 @@ class OBOImporter extends ChadoImporterBase {
         ]);
         $success = $query->execute();
         if (!$success) {
-          $message = t('Could not insert the cvterm, "@term"', [
-            '@term' => $name]);
-          throw new \Exception($message);
+          throw new \Exception('Could not insert the cvterm, "' . $name . '"');
         }
         $cvterm = $this->getChadoCVtermByName($cv->cv_id, $name);
       }
@@ -1807,8 +1802,7 @@ class OBOImporter extends ChadoImporterBase {
     // saveTerm() function should always return one.  But if for some unknown
     // reason we don't have one then fail.
     if (!$cvterm_id) {
-      throw new \Exception(t('Missing cvterm after saving term: @term',
-        ['@term' => print_r($stanza, TRUE)]));
+      throw new \Exception('Missing cvterm after saving term: ' . print_r($stanza, TRUE));
     }
 
     //
@@ -1962,18 +1956,14 @@ class OBOImporter extends ChadoImporterBase {
     // an exception if we can't find them.
     $rel_stanza = $this->getCachedTermStanza($rel_id);
     if (!$rel_stanza) {
-      throw new \Exception(t('Cannot add relationship: "@subject @rel @object". ' .
-        'The term, @rel, is not in the term cache.',
-        ['@subject' => $id, '@rel' => $rel_id, '@name' => $obj_id]));
+      throw new \Exception("Cannot add relationship: \"$id $rel_id $obj_id\". The term, $rel_id, is not in the term cache.");
     }
     $rel_cvterm_id = $this->saveTerm($rel_stanza, TRUE);
 
     // Make sure the object term exists in the cache.
     $obj_stanza = $this->getCachedTermStanza($obj_id);
     if (!$obj_stanza) {
-      throw new \Exception(t('Cannot add relationship: "@source @rel @object". ' .
-        'The term, @object, is not in the term cache.',
-        ['@source' => $id, '@rel' => $rel_id, '@object' => $obj_id]));
+      throw new \Exception("Cannot add relationship: \"$id $rel_id $obj_id\". The term, $obj_id, is not in the term cache.");
     }
     $obj_cvterm_id = $this->saveTerm($obj_stanza);
 
@@ -2288,7 +2278,7 @@ class OBOImporter extends ChadoImporterBase {
     }
     $syn_type_term = $this->syn_types[$syn_type];
     if (!$syn_type_term) {
-      throw new \Exception(t('Cannot find synonym type: @type', ['@type' => $syn_type]));
+      throw new \Exception("Cannot find synonym type: $syn_type");
     }
 
     // The synonym can only be 255 chars in the cvtermsynonym table.
@@ -2578,8 +2568,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add database: @db', ['@db' => $dbname]);
-      throw new \Exception($message);
+      throw new \Exception('Could not add database: ' . $dbname);
     }
     $db = $this->getChadoDbByName($dbname);
     $this->all_dbs[$dbname] = $db;
@@ -2613,8 +2602,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add dbxref: @acc', ['@acc' => $accession]);
-      throw new \Exception($message);
+      throw new \Exception('Could not add dbxref: ' . $accession);
     }
     $dbxref = $this->getChadoDBXrefByAccession($db_id, $accession);
     return $dbxref;
@@ -2649,8 +2637,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add cvterm_dbxref');
-      throw new \Exception($message);
+      throw new \Exception('Could not add cvterm_dbxref');
     }
     return $squery->execute()->fetchObject();
   }
@@ -2675,8 +2662,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add cvtermsynonym: @synonym', ['@synonym', $synonym]);
-      throw new \Exception($message);
+      throw new \Exception('Could not add cvtermsynonym: ' . $synonym);
     }
   }
 
@@ -2704,8 +2690,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add cvtermprop: @value', ['@value' => $value]);
-      throw new \Exception($message);
+      throw new \Exception('Could not add cvtermprop: ' . $value);
     }
   }
 
@@ -2730,8 +2715,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add cvterm_relationship');
-      throw new \Exception($message);
+      throw new \Exception('Could not add cvterm_relationship');
     }
   }
 
@@ -2756,8 +2740,7 @@ class OBOImporter extends ChadoImporterBase {
     $query->fields(['name' => $cvname]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add vocabulary: @cv', ['@cv' => $cvname]);
-      throw new \Exception($message);
+      throw new \Exception('Could not add vocabulary: ' . $cvname);
     }
     $cv = $this->getChadoCvByName($cvname);
     $this->all_cvs[$cvname] = $cv;

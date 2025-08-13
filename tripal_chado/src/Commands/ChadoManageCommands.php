@@ -33,13 +33,7 @@ class ChadoManageCommands extends DrushCommands {
       $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully installed.'));
     }
     else {
-      throw new \Exception(dt(
-        'Unable to install chado {version} in {schema}',
-        [
-          'schema' => $options['schema-name'],
-          'version' => $options['chado-version'],
-        ]
-      ));
+      throw new \Exception('Unable to install chado ' . $options['chado-version'] . ' in ' . $options['schema-name']);
     }
   }
 
@@ -59,12 +53,7 @@ class ChadoManageCommands extends DrushCommands {
     $tripaldbx = \Drupal::service('tripal.dbx');
     $schema_exists = $tripaldbx->schemaExists($options['schema-name']);
     if (!$schema_exists) {
-      throw new \Exception(dt(
-        'The schema \'@schema\' does not exist and therefore cannot be migrated.',
-        [
-          '@schema' => $options['schema-name'],
-        ]
-      ));
+      throw new \Exception("The schema '" . $options['schema-name'] . "' does not exist and therefore cannot be migrated.");
     }
 
     // First setup our task.
@@ -112,10 +101,7 @@ class ChadoManageCommands extends DrushCommands {
         if ($success) {
           $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully migrated to the most recent version.'));
         } else {
-          throw new \Exception(dt(
-            'Unable to migrate chado in schema \'{schema}\'',
-            ['schema' => $options['schema-name']]
-          ));
+          throw new \Exception("Unable to migrate chado in schema '" . $options['schema-name'] . "'");
         }
       }
     }
@@ -145,12 +131,7 @@ class ChadoManageCommands extends DrushCommands {
       $this->output()->writeln('<info>[Success]</info> Chado was successfully dropped.');
     }
     else {
-      throw new \Exception(dt(
-        'Unable to drop chado in {schema}',
-        [
-          'schema' => $options['schema-name'],
-        ]
-      ));
+      throw new \Exception('Unable to drop chado in ' . $options['schema-name']);
     }
 
   }
@@ -179,12 +160,7 @@ class ChadoManageCommands extends DrushCommands {
       $this->output()->writeln('<info>[Success]</info> Preparation complete.');
     }
     else {
-      throw new \Exception(dt(
-        'Unable to prepare Drupal + Chado in @schema',
-        [
-          '@schema' => $options['schema-name'],
-        ]
-      ));
+      throw new \Exception('Unable to prepare Drupal + Chado in ' . $options['schema-name']);
     }
   }
 
@@ -321,12 +297,8 @@ class ChadoManageCommands extends DrushCommands {
       }
     }
     else {
-      throw new \Exception(dt(
-        'Unable to set the default schema to \'@schema\' - that schema does not exist.',
-        [
-          '@schema' => $options['schema-name'],
-        ]
-      ));
+      throw new \Exception("Unable to set the default schema to '"
+          . $options['schema-name'] . "' - that schema does not exist.");
     }
   }
 }
