@@ -6,6 +6,7 @@ use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Access\AccessResultAllowed;
 use Drupal\Core\Access\AccessResultNeutral;
 use Drupal\Core\Access\AccessResultForbidden;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests Access Checks associated with Tripal Entities.
@@ -14,6 +15,9 @@ use Drupal\Core\Access\AccessResultForbidden;
  * @group Tripal Content
  * @group Tripal Permissions
  */
+#[Group('Tripal')]
+#[Group('Tripal Content')]
+#[Group('Tripal Permissions')]
 class EntityAccessTest extends BrowserTestBase {
     protected $defaultTheme = 'stark';
 

@@ -3,38 +3,39 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal feature formatter.
- *
- * @FieldFormatter(
- *   id = "chado_feature_formatter_default",
- *   label = @Translation("Chado feature formatter"),
- *   description = @Translation("A chado feature formatter"),
- *   field_types = {
- *     "chado_feature_type_default"
- *   },
- *   valid_tokens = {
- *     "[name]",
- *     "[uniquename]",
- *     "[type]",
- *     "[seqlen]",
- *     "[md5checksum]",
- *     "[is_analysis]",
- *     "[is_obsolete]",
- *     "[database_name]",
- *     "[database_accession]",
- *     "[genus]",
- *     "[species]",
- *     "[infratype]",
- *     "[infratype_abbrev]",
- *     "[infraname]",
- *     "[abbreviation]",
- *     "[common_name]",
- *   },
- * )
  */
+#[TripalFieldFormatter(
+  id: 'chado_feature_formatter_default',
+  label: new TranslatableMarkup('Chado feature formatter'),
+  description: new TranslatableMarkup('A chado feature formatter'),
+  field_types: [
+    'chado_feature_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[uniquename]',
+    '[type]',
+    '[seqlen]',
+    '[md5checksum]',
+    '[is_analysis]',
+    '[is_obsolete]',
+    '[database_name]',
+    '[database_accession]',
+    '[genus]',
+    '[species]',
+    '[infratype]',
+    '[infratype_abbrev]',
+    '[infraname]',
+    '[abbreviation]',
+    '[common_name]',
+  ],
+)]
 class ChadoFeatureFormatterDefault extends ChadoFormatterBase {
 
   /**
@@ -50,7 +51,7 @@ class ChadoFeatureFormatterDefault extends ChadoFormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $elements = [];
+    parent::viewElements($items, $langcode);
     $list = [];
     $token_string = $this->getSetting('token_string');
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
@@ -89,23 +90,8 @@ class ChadoFeatureFormatterDefault extends ChadoFormatterBase {
       $list[$delta] = $renderable_item;
     }
 
-    // If only one element has been found, don't make into a list.
-    if (count($list) == 1) {
-      $elements = $list;
-    }
-
-    // If more than one value has been found, display all values in an
-    // unordered list.
-// @todo: add a pager
-    elseif (count($list) > 1) {
-      $elements[0] = [
-        '#theme' => 'item_list',
-        '#list_type' => 'ul',
-        '#items' => $list,
-        '#wrapper_attributes' => ['class' => 'container'],
-      ];
-    }
-
+    // Will convert $list to a markup list if there is more than one item.
+    $elements = $this->createListMarkup($list);
     return $elements;
   }
 

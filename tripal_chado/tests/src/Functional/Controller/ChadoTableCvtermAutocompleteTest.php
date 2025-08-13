@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Functional;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Symfony\Component\HttpFoundation\Request;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Test autocomplete cvterm name.
@@ -13,6 +14,9 @@ use Symfony\Component\HttpFoundation\Request;
  * @group Tripal Chado
  * @group Autocomplete
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Autocomplete')]
 class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
   /**
    * Registered user with access content privileges.

@@ -3,9 +3,50 @@
 namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\Form\TripalEntityTypeCollectionDeleteForm;
+use Drupal\tripal\ListBuilders\TripalEntityTypeCollectionListBuilder;
 
 /**
  * Provides a UI for YML-based TripalEntityType creation.
+ */
+#[ConfigEntityType(
+  id: 'tripalentitytype_collection',
+  label: new TranslatableMarkup('Tripal Content Type Collection'),
+  label_collection: new TranslatableMarkup('Tripal Content Type Collections'),
+  label_singular: new TranslatableMarkup('Tripal Content Type Collection'),
+  label_plural: new TranslatableMarkup('Tripal Content Type Collections'),
+  label_count: [
+    'singular' => '@count Tripal Content Type collection',
+    'plural' => '@count Tripal Content Type collections',
+  ],
+  handlers: [
+    'list_builder' => TripalEntityTypeCollectionListBuilder::class,
+    'form' => [
+      'delete' => TripalEntityTypeCollectionDeleteForm::class,
+    ],
+  ],
+  config_prefix: 'tripalentitytype_collection',
+  admin_permission: 'administer tripal',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'label',
+  ],
+  links: [
+    'delete-form' => '/admin/tripal/config/tripalentitytype-collection/{tripalentitytype_collection}/delete',
+    'collection' => '/admin/tripal/config/tripalentitytype-collection',
+  ],
+  config_export: [
+    'id',
+    'label',
+    'description',
+    'content_types',
+  ],
+)]
+/**
+ * @todo Remove this annotation when we no longer support Drupal 10.x.
+ *
  * Each instance of this entity is a single configuration for tripal content
  * types in your site.
  *

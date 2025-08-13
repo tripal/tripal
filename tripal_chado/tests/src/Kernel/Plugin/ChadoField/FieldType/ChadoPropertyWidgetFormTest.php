@@ -4,6 +4,8 @@ namespace Drupal\Tests\tripal_chado\Kernel\ChadoField\FieldType;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the ChadoPropertyTypeDefault Field Type.
@@ -14,6 +16,8 @@ use Drupal\Tests\tripal_chado\Traits\ChadoFieldTestTrait;
  * @group TripalField
  * @group ChadoField
  */
+#[Group('TripalField')]
+#[Group('ChadoField')]
 class ChadoPropertyWidgetFormTest extends ChadoTestKernelBase {
 
   use ChadoFieldTestTrait;
@@ -219,6 +223,7 @@ class ChadoPropertyWidgetFormTest extends ChadoTestKernelBase {
    *
    * @dataProvider provideScenarios
    */
+  #[DataProvider('provideScenarios')]
   public function testChadoPropertyWidgetUpdate(int $current_scenario_key, string $current_scenario_label) {
 
     // Retrieve the full details of the current scenario.

@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Tests for the PubSearchQueryImporter class
  *
@@ -10,6 +12,10 @@ namespace Drupal\Tests\tripal_chado\Functional;
  * @group PubImporter
  * @group PubSearchQueryImporter
  */
+#[Group('TripalImporter')]
+#[Group('ChadoImporter')]
+#[Group('PubImporter')]
+#[Group('PubSearchQueryImporter')]
 class PubSearchQueryImporterTest extends ChadoTestBrowserBase
 {
 
@@ -42,6 +48,7 @@ class PubSearchQueryImporterTest extends ChadoTestBrowserBase
    *
    * @group pub
    */
+  #[Group('pub')]
   public function testPubSearchQueryImporterSimpleTest()
   {
     // Public schema connection
