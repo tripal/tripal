@@ -25,6 +25,9 @@ use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
   file_remote: false,
   file_local: false,
   file_required: false,
+  publish: [
+    'pub',
+  ],
   hidden: true,
 )]
 class PubSearchQueryImporter extends ChadoImporterBase {
@@ -878,6 +881,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     // Initialize services
     $this->chado = $this->getChadoConnection();
     $this->pub_library_manager = \Drupal::service('tripal.pub_library');
+    $this->setPublishManager(\Drupal::service('tripal.backend_publish'));
 
     // We can pass a query_id value, in which case we retrieve a criteria
     // array from the public.tripal_pub_library_query table. Alternatively we

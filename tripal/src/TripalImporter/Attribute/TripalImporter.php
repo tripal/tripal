@@ -70,6 +70,8 @@ class TripalImporter extends Plugin {
    *   necessary to require that the user provide a file for uploading if the
    *   loader keeps track of previous files and makes those available for
    *   selection.
+   * @param array|null $publish
+   *   An array containing a list of content types to be published after import.
    * @param bool|null $hidden
    *   Indicates if the importer will not appear in the importer menu.
    *   This is used by the publication importer because it is more complicated
@@ -123,6 +125,7 @@ class TripalImporter extends Plugin {
     public readonly ?bool $file_local = TRUE,
     public readonly ?bool $file_remote = TRUE,
     public readonly ?bool $file_required = TRUE,
+    public readonly ?array $publish = [],
     public readonly ?bool $hidden = FALSE,
     public readonly ?array $argument_list = [],
     public readonly ?int $cardinality = 1,

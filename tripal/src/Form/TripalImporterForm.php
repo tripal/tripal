@@ -125,8 +125,8 @@ class TripalImporterForm implements FormInterface {
 
     // Adds a checkbox to indicate whether or not to publish the imported
     // content. The default will be to publish, so this is an opt-out.
-    // The importer annotation specifies a bundle or a list of bundles to
-    // publish, e.g. both Gene and mRNA for GFF importer.
+    // An importer attribute can specify a list of bundles to publish,
+    // e.g. both 'gene' and 'mrna' for GFF importer.
     if ($importer_def['publish'] ?? FALSE) {
       $bundles = (array) $importer_def['publish'];
       $form['do_not_publish'] = [
