@@ -1814,7 +1814,7 @@ fields:
             default:
               region: content
               weight: 32
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_publication_date
         content_type: pub
@@ -1841,7 +1841,7 @@ fields:
             default:
               region: content
               weight: 33
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_citation
         content_type: pub
@@ -1894,7 +1894,7 @@ fields:
             default:
               region: content
               weight: 36
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_language_abbr
         content_type: pub
@@ -1921,7 +1921,7 @@ fields:
             default:
               region: content
               weight: 37
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_publication_type
         content_type: pub
@@ -1948,7 +1948,7 @@ fields:
             default:
               region: content
               weight: 38
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_publication_model
         content_type: pub
@@ -1975,7 +1975,7 @@ fields:
             default:
               region: content
               weight: 39
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_authors
         content_type: pub
@@ -2028,7 +2028,7 @@ fields:
             default:
               region: content
               weight: 41
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_elocation
         content_type: pub
@@ -2055,7 +2055,7 @@ fields:
             default:
               region: content
               weight: 42
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_url
         content_type: pub
@@ -2082,7 +2082,7 @@ fields:
             default:
               region: content
               weight: 42
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_journal_country
         content_type: pub
@@ -2109,7 +2109,7 @@ fields:
             default:
               region: content
               weight: 43
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_abstract
         content_type: pub
@@ -2162,7 +2162,7 @@ fields:
             default:
               region: content
               weight: 45
-              type: chado_property_string_widget_default
+              type: 'chado_property_string_widget_default'
 
     -   name: pub_miniref
         content_type: pub

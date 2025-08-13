@@ -361,7 +361,7 @@ fields:
               region: content
               weight: 35
               settings:
-                filter_format: plain_text
+                filter_format: 'plain_text'
                 num_rows: 1
 
     -   name: assay_arraybatchidentifier
@@ -390,7 +390,7 @@ fields:
               region: content
               weight: 40
               settings:
-                filter_format: plain_text
+                filter_format: 'plain_text'
                 num_rows: 1
 
     -   name: assay_operator
@@ -691,7 +691,7 @@ fields:
               region: content
               weight: 45
               settings:
-                filter_format: plain_text
+                filter_format: 'plain_text'
                 num_rows: 1
 
     -   name: array_design_dimensions
@@ -720,7 +720,7 @@ fields:
               region: content
               weight: 50
               settings:
-                filter_format: plain_text
+                filter_format: 'plain_text'
                 num_rows: 1
 
     -   name: array_design_element_dims
@@ -749,7 +749,7 @@ fields:
               region: content
               weight: 51
               settings:
-                filter_format: plain_text
+                filter_format: 'plain_text'
                 num_rows: 1
 
     -   name: array_design_num_of_elements
