@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal\Kernel\Entity;
 
 use Drupal\Core\Form\FormState;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the tripal entity settings form.
