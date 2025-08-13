@@ -986,11 +986,11 @@ class ChadoPublish extends TripalBackendPublishBase {
     $batches = $this->divideIntoBatches($entity_ids);
     $count = 0;
     foreach ($batches as $batch) {
-      // Delete fields first
+      // Delete fields first.
       foreach (array_keys($this->field_info) as $field_name) {
         $this->deleteFieldItems($field_name, $batch);
       }
-      // Now delete the entity
+      // Now delete the entity.
       $delete_query = $this->connection
         ->delete('tripal_entity')
         ->condition('id', $entity_ids, 'IN');
@@ -1143,7 +1143,7 @@ class ChadoPublish extends TripalBackendPublishBase {
    * Deletes records from the field tables for entities.
    *
    * @param string $field_name
-   *   The name of the field
+   *   The name of the field.
    * @param array $entity_ids
    *   One or more entities having the field removed.
    *
@@ -1579,7 +1579,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     // Retrieve all chado record IDs for this bundle
     $record_ids = $this->getRecordIds();
 
-    // Take the unpublish branch if specified
+    // Take the unpublish branch if specified.
     if ($options['unpublish'] ?? FALSE) {
       return $this->unpublish($options);
     }
@@ -1727,33 +1727,35 @@ class ChadoPublish extends TripalBackendPublishBase {
    *     'datastore' - The id of the TripalStorage plugin
    *   Optional keys are:
    *     'job' - A Tripal job object
-   *     'batch_size' - Maximum number of records to publish per batch, defaults to 1000
-   *     'unpublish' - A true value to instead unpublish content, needed to get to this function.
-   *     'orphaned' - Used for unpublish to only unpublish orphaned content, defaults to TRUE.
+   *     'batch_size' - Max number of records per batch, defaults to 1000.
+   *     'unpublish' - When true unpublish content (i.e. delete entities)
+   *     instead of publishing it. Must be present for this function to
+   *     be called.
+   *     'orphaned' - When unpublishing, only unpublish orphaned content
+   *     which are entities missing their chado record, defaults to TRUE.
    *
    * @return array
    *   For publish the returned array is a list of titles. Here it is just
    *   a list of the entity ID values unpublished.
-   *   This is only used for automated tests.
-   *
+   *   This return value is only used for automated tests.
    */
   public function unpublish(array $options): array {
 
-    // Populates the $this->field_info variable with field information
+    // Populates the $this->field_info variable with field information.
     $this->setFieldInfo();
 
-    // Retrieve a list of all published entities for this bundle
-    // Key is entity ID, value is chado record ID
+    // Retrieve a list of all published entities for this bundle.
+    // Key is entity ID, value is chado record ID.
     $entity_ids = $this->getEntityIDs();
 
-    // If in orphaned mode, generate a subset of which entity IDs to unpublish
+    // If in orphaned mode, generate a subset of which entity IDs to unpublish.
     $orphaned_text = '';
     if ($options['orphaned'] ?? TRUE) {
       $entity_ids = $this->findOrphanedEntities($entity_ids);
       $orphaned_text = 'orphaned ';
     }
 
-    // Let user know what and how much will be unpublished
+    // Let user know what and how much will be unpublished.
     if (count($entity_ids) < 1) {
       $this->logger->notice('There are no ' . $orphaned_text . 'entities to be unpublished');
     }
@@ -1762,7 +1764,7 @@ class ChadoPublish extends TripalBackendPublishBase {
           . $this->bundle . '" ' . $orphaned_text . 'records';
       $this->logger->notice($message);
 
-      // Unpublish
+      // Unpublish.
       $count = $this->deleteEntities($entity_ids);
       $this->logger->notice('Unpublished ' . number_format($count) . ' ' . $orphaned_text . 'entities');
       if ($count != count($entity_ids)) {
