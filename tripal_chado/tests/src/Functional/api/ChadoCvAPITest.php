@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Functional\api;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.cv.api.php functions.
@@ -11,6 +12,9 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;;
  * @group Tripal Chado
  * @group Tripal API
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal API')]
 class ChadoCvAPITest extends ChadoTestBrowserBase {
 
   /**
@@ -42,6 +46,8 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
    * @group tripal-chado
    * @group chado-cv
    */
+  #[Group('tripal-chado')]
+  #[Group('chado-cv')]
   public function testcv() {
 
     // INSERT.
@@ -94,6 +100,8 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
    * @group tripal-chado
    * @group chado-cv
    */
+  #[Group('tripal-chado')]
+  #[Group('chado-cv')]
   public function testcvterm() {
 
     // INSERT.

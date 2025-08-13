@@ -4,6 +4,8 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests that specific ChadoStorage actions perform as expected.
@@ -13,6 +15,10 @@ use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
  * @group ChadoStorage
  * @group ChadoStorage Actions
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('ChadoStorage')]
+#[Group('ChadoStorage Actions')]
 class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
@@ -89,6 +95,7 @@ class ChadoStorageActions_StorePkeyTest extends ChadoTestKernelBase {
    *  - has the value set on load
    *  - does not get changed on update
    */
+  #[DataProvider('provideFieldNames')]
   public function testStorePKeyAction($top_level_key, $field_name) {
 
     // Set the fields for this test and then re-populate the storage arrays.

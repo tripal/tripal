@@ -4,7 +4,13 @@ namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
+use Drupal\tripal\TripalDBX\TripalDbxSchema;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for ChadoConnection.
@@ -13,7 +19,21 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  * @group TripalDBX
  * @group ChadoDBX
  * @group ChadoConnection
+ * @covers \Drupal\tripal\TripalDBX\TripalDbxConnection
+ * @covers \Drupal\tripal\TripalDBX\TripalDbxSchema
+ * @covers \Drupal\tripal_chado\Database\ChadoConnection::getAvailableInstances
+ * @covers \Drupal\tripal_chado\Database\ChadoConnection::findVersion
+ * @covers \Drupal\tripal_chado\Database\ChadoConnection::removeAllTestSchemas
  */
+#[Group('Tripal Chado')]
+#[Group('TripalDBX')]
+#[Group('ChadoDBX')]
+#[Group('ChadoConnection')]
+#[CoversClass(TripalDbxConnection::class)]
+#[CoversClass(TripalDbxSchema::class)]
+#[CoversMethod(ChadoConnection::class, 'getAvailableInstances')]
+#[CoversMethod(ChadoConnection::class, 'findVersion')]
+#[CoversMethod(ChadoConnection::class, 'removeAllTestSchemas')]
 class ChadoConnectionTest extends ChadoTestKernelBase {
 
   /**
@@ -116,13 +136,12 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    *
    * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
    *
-   * @covers \Drupal\tripal_chado\Database\ChadoConnection::getAvailableInstances
-   *
    * @param string $version
    *   The version of chado to test against.
    * @param int $init_level
    *   The init level to create the test database with.
    */
+  #[DataProvider('provideChadoSchemaVersionsAcrossInitLevels')]
   public function testGetAvailableInstances(string $version, int $init_level) {
 
     // Get Chado in place.
@@ -203,9 +222,6 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    *
    * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
    *
-   * @covers \Drupal\tripal\TripalDBX\TripalDbxConnection
-   * @covers \Drupal\tripal\TripalDBX\TripalDbxSchema
-   *
    * NOTE:
    * In Drupal you can execute queries directly using CONNECTION->query()
    * or you can use the various query builders: CONNECTION->select(),
@@ -226,6 +242,7 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    * @param int $init_level
    *   The init level to create the test database with.
    */
+  #[DataProvider('provideChadoSchemaVersionsAcrossInitLevels')]
   public function testDefaultTablePrefixing(string $version, int $init_level) {
     $this->createTestSchema($init_level, $version);
 
@@ -327,12 +344,10 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    *
    * @dataProvider provideChadoSchemaVersions
    *
-   * @covers \Drupal\tripal\TripalDBX\TripalDbxConnection
-   * @covers \Drupal\tripal\TripalDBX\TripalDbxSchema
-   *
    * @param string $version
    *   The version of chado to test against.
    */
+  #[DataProvider('provideChadoSchemaVersions')]
   public function testChadoQueryBuilding(string $version) {
     $chado = $this->createTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY, $version);
 
@@ -392,13 +407,12 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
    *
    * @dataProvider provideChadoSchemaVersionsAcrossInitLevels
    *
-   * @covers \Drupal\tripal_chado\Database\ChadoConnection::findVersion
-   *
    * @param string $version
    *   The version of chado to test against.
    * @param int $init_level
    *   The init level to create the test database with.
    */
+  #[DataProvider('provideChadoSchemaVersionsAcrossInitLevels')]
   public function testFindVersion(string $version, int $init_level) {
     $expected_version = $version;
 
@@ -468,8 +482,6 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
 
   /**
    * Tests the ChadoConnection::findVersion() when version unsupported.
-   *
-   * @covers \Drupal\tripal_chado\Database\ChadoConnection::findVersion
    */
   public function testFindVersionUnsupported() {
 
@@ -580,8 +592,6 @@ class ChadoConnectionTest extends ChadoTestKernelBase {
 
   /**
    * Tests ChadoConnection::removeAllTestSchemas().
-   *
-   * @covers \Drupal\tripal_chado\Database\ChadoConnection::removeAllTestSchemas
    */
   public function testRemoveAllTestSchemas() {
 

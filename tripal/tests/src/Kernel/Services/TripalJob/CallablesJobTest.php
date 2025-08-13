@@ -5,6 +5,8 @@ namespace Drupal\Tests\tripal\Kernel\Services\TripalJob;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\tripal\Kernel\Services\TripalJob\FakeClasses\callableClassForTripalJobs;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Focused on testing callables as the callback.
@@ -12,6 +14,8 @@ use Drupal\Tests\tripal\Kernel\Services\TripalJob\FakeClasses\callableClassForTr
  * @group Tripal
  * @group TripalJobs
  */
+#[Group('Tripal')]
+#[Group('TripalJobs')]
 class CallablesJobTest extends TripalTestKernelBase {
   use UserCreationTrait;
 
@@ -111,6 +115,7 @@ class CallablesJobTest extends TripalTestKernelBase {
    *
    * @dataProvider provideValidJobs
    */
+  #[DataProvider('provideValidJobs')]
   public function testTripalJob_validjobs($details) {
 
     // Add user to the job details since we can't do it in the data provider.

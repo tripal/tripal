@@ -10,12 +10,15 @@ use Drupal\user\Entity\User;
 use Drupal\Core\Entity\EntityBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 // use Drupal\shortcut\Entity\ShortcutSet;
+use Drupal\Core\Hook\Attribute\Hook;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Xss;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
+use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutable;
+use Drupal\views\ViewsConfigUpdater;
 
 require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
@@ -727,5 +730,22 @@ function tripal_views_pre_view(ViewExecutable $view, $display_id, array &$args) 
     if (!$has_permission) {
       throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException();
     }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave().
+ */
+#[Hook('view_presave')]
+function tripal_view_presave(ViewEntityInterface $view): void {
+  // A new views 'class' setting was introduced in Drupal 11.2, but it has
+  // not been added to our yaml views configurations so that we maintain
+  // backward compatibility. We do the update here before Drupal does it
+  // in order to avoid a deprecation notice in unit tests.
+  /** @var \Drupal\views\ViewsConfigUpdater $config_updater */
+  $config_updater = \Drupal::classResolver(ViewsConfigUpdater::class);
+  if (method_exists($config_updater, 'processTableCssClassUpdate')) {
+    $config_updater->setDeprecationsEnabled(FALSE);
+    $config_updater->processTableCssClassUpdate($view);
   }
 }

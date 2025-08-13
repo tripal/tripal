@@ -15,6 +15,7 @@
          displayDetailsOnTestsThatTriggerErrors="true"
          displayDetailsOnTestsThatTriggerWarnings="true"
          displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnPhpunitDeprecations="true"
          displayDetailsOnSkippedTests="true"
          cacheResult="false"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
@@ -82,6 +83,9 @@
       <!-- Exclude Annotation classes from coverage -->
       <directory suffix=".php">tripal/src/Plugin/Annotation</directory>
       <directory suffix=".php">tripal/src/*/Annotation</directory>
+      <!-- Exclude Attribute classes from coverage -->
+      <directory suffix=".php">tripal/src/Plugin/Attribute</directory>
+      <directory suffix=".php">tripal/src/*/Attribute</directory>
       <!-- Exclude Exception classes from coverage -->
       <directory suffix=".php">tripal/src/TripalDBX/Exceptions</directory>
       <directory suffix=".php">tripal_biodb/src/Exception</directory>

@@ -2,22 +2,23 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of the 'boolean' field type.
- *
- * @FieldType(
- *   id = "tripal_boolean_type",
- *   category = "tripal",
- *   label = @Translation("Tripal Boolean Field Type"),
- *   description = @Translation("A boolean field."),
- *   default_widget = "default_tripal_boolean_type_widget",
- *   default_formatter = "default_tripal_boolean_type_formatter"
- * )
  */
+#[FieldType(
+  id: 'tripal_boolean_type',
+  category: 'tripal',
+  label: new TranslatableMarkup('Tripal Boolean Field Type'),
+  description: new TranslatableMarkup('A boolean field.'),
+  default_widget: 'default_tripal_boolean_type_widget',
+  default_formatter: 'default_tripal_boolean_type_formatter',
+)]
 class TripalBooleanTypeItem extends TripalFieldItemBase {
 
   public static $id = "tripal_boolean_type";

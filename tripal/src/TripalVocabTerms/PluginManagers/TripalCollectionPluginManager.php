@@ -3,7 +3,6 @@
 namespace Drupal\tripal\TripalVocabTerms\PluginManagers;
 
 use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
@@ -23,8 +22,8 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   The module handler.
    * @param string $plugin_interface
    *   The interface each plugin should implement.
-   * @param string $plugin_definition_annotation_name
-   *   The name of the annotation that contains the plugin definition.
+   * @param string $plugin_definition_attribute_name
+   *   The name of the attribute that contains the plugin definition.
    * @param string $table
    *   The table name used to store the collection of saved collection plugins
    *   in the drupal database.
@@ -32,18 +31,17 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
   public function __construct(
       $subdir
       ,\Traversable $namespaces
-      ,CacheBackendInterface $cache_backend
       ,ModuleHandlerInterface $module_handler
-      ,$pluginInterface
-      ,$pluginDefinitionAnnotation
+      ,$plugin_interface
+      ,$plugin_definition_attribute_name
       ,$table
   ) {
     parent::__construct(
         $subdir
         ,$namespaces
         ,$module_handler
-        ,$pluginInterface
-        ,$pluginDefinitionAnnotation
+        ,$plugin_interface
+        ,$plugin_definition_attribute_name
     );
     $this->table = $table;
   }

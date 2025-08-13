@@ -4,16 +4,18 @@ namespace Drupal\tripal_chado\Plugin\DataType;
 
 use Drupal\Core\TypedData\TypedData;
 use Drupal\Core\TypedData\ComplexDataInterface;
+use Drupal\Core\TypedData\Attribute\DataType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal_chado\TypedData\ChadoDataDefinition;
 
 /**
  * Plugin implementation of the ChadoLinker data type.
- *
- * @DataType(
- *   id = "chado_record",
- *   label = @Translation("Chado"),
- *   definition_class = "\Drupal\tripal_chado\TypedData\ChadoDataDefinition"
- * )
  */
+#[DataType(
+  id: 'chado_record',
+  label: new TranslatableMarkup('Chado'),
+  definition_class: ChadoDataDefinition::class,
+)]
 class ChadoDataType extends TypedData implements \IteratorAggregate, ComplexDataInterface {
 
   /**
