@@ -1310,10 +1310,10 @@ class ChadoPublish extends TripalBackendPublishBase {
     $this->bundle = $options['bundle'] ?? '';
     $this->datastore = $options['datastore'] ?? '';
     if (!$this->bundle) {
-      throw new TripalPublishException(t('A bundle must be specified to publish'));
+      throw new TripalPublishException('A bundle must be specified to publish');
     }
     if (!$this->datastore) {
-      throw new TripalPublishException(t('A datastore must be specified to publish'));
+      throw new TripalPublishException('A datastore must be specified to publish');
     }
     // Optional values
     $this->schema_name = $options['schema_name'] ?? 'chado';
@@ -1364,16 +1364,14 @@ class ChadoPublish extends TripalBackendPublishBase {
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $this->entity_type = $this->entity_type_manager->getStorage('tripal_entity_type')->load($this->bundle);
     if (!$this->entity_type) {
-      throw new TripalPublishException(t('Could not find the entity type with an id of: "@bundle".',
-          ['@bundle' => $this->bundle]));
+      throw new TripalPublishException('Could not find the entity type with an id of: "' . $this->bundle . '".');
     }
     $this->base_table = $this->entity_type->getThirdPartySetting('tripal', 'chado_base_table');
 
     // Get the storage plugin used to publish.
     $this->storage = $this->storage_manager->getInstance(['plugin_id' => $this->datastore]);
     if (!$this->storage) {
-      throw new \TripalPublishException(t('Could not find an instance of the TripalStorage backend: "@datastore".',
-          ['@datastore' => $this->datastore]));
+      throw new \TripalPublishException('Could not find an instance of the TripalStorage backend: "' . $this->datastore . '".');
     }
     // @todo somehow set the chado schema using the value in $this->schema_name
     return TRUE;
