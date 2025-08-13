@@ -336,11 +336,17 @@ class ChadoPublishTest extends ChadoTestKernelBase {
         'The drupal field table does not contain the expected number of publications for the analysis');
     }
     // Tests unpublishing.
-    // Try to unpublish orphaned, but since there are no orphaned entities
-    // this should do nothing.
+    // Try to unpublish only orphaned entities, but since there are no
+    // orphaned entities this should do absolutely nothing.
     $publish_options = ['bundle' => 'organism', 'datastore' => 'chado_storage', 'schema_name' => $this->testSchemaName, 'unpublish' => TRUE];
+    $initial_chado_records = $this->getChadoTableRecords('organism', 'organism_id');
+    $initial_drupal_records = $this->getPublicTableRecords('tripal_entity__organism_genus', 'organism_genus_record_id');
     $unpublished_entities = $this->chado_publish->publish($publish_options);
     $this->assertCount(0, $unpublished_entities, 'No orphans, should not have unpublished any records');
+    $final_chado_records = $this->getChadoTableRecords('organism', 'organism_id');
+    $final_drupal_records = $this->getPublicTableRecords('tripal_entity__organism_genus', 'organism_genus_record_id');
+    $this->assertEquals($initial_chado_records, $final_chado_records, 'Unexpected change to chado organism table');
+    $this->assertEquals($initial_drupal_records, $final_drupal_records, 'Unexpected change to drupal field table tripal_entity__organism_genus');
 
     // Delete one chado record and confirm that we can now unpublish it as
     // an orphaned record.
@@ -350,11 +356,21 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $this->assertEquals(1, $n, 'Did not delete organism from chado where organism_id=2');
     $unpublished_entities = $this->chado_publish->publish($publish_options);
     $this->assertCount(1, $unpublished_entities, 'Did not unpublish one orphaned organism entity');
+    $final_chado_records = $this->getChadoTableRecords('organism', 'organism_id');
+    $final_drupal_records = $this->getPublicTableRecords('tripal_entity__organism_genus', 'organism_genus_record_id');
+    $this->assertFalse(array_key_exists(2, $final_chado_records), 'The chado "2" record was not removed');
+    $this->assertFalse(array_key_exists(2, $final_drupal_records), 'The field "2" record was not unpublished');
 
     // Unpublish all remaining non-orphaned organism entities.
+    // Chado will not be touched.
+    $initial_chado_records = $this->getChadoTableRecords('organism', 'organism_id');
     $publish_options['orphaned'] = FALSE;
     $unpublished_entities = $this->chado_publish->publish($publish_options);
     $this->assertCount(6, $unpublished_entities, 'Did not unpublish the 6 remaining organism entities');
+    $final_chado_records = $this->getChadoTableRecords('organism', 'organism_id');
+    $final_drupal_records = $this->getPublicTableRecords('tripal_entity__organism_genus', 'organism_genus_record_id');
+    $this->assertEquals($initial_chado_records, $final_chado_records, 'Unexpected change to chado organism table');
+    $this->assertEmpty($final_drupal_records, 'There are field records remaining that were not unpublished');
   }
 
   /**
@@ -421,6 +437,42 @@ class ChadoPublishTest extends ChadoTestKernelBase {
     $query->addExpression('COUNT(*)', 'count');
     $count = $query->execute()->fetchField();
     return $count;
+  }
+
+  /**
+   * Returns all the records from a Drupal field table.
+   *
+   * @param string $table_name
+   *   The name of the table in the public schema.
+   * @param string $key
+   *   The name of the column for the key of the returned array.
+   *
+   * @return array
+   *   An array of record objects from the table, keyed by $key column.
+   */
+  protected function getPublicTableRecords(string $table_name, string $key): array {
+    $query = $this->public->select($table_name, 't');
+    $query->fields('t');
+    $records = $query->execute()->fetchAllAssoc($key);
+    return $records;
+  }
+
+  /**
+   * Returns all the records from a Chado table.
+   *
+   * @param string $table_name
+   *   The name of the table in the chado schema.
+   * @param string $key
+   *   The name of the column for the key of the returned array.
+   *
+   * @return array
+   *   An array of record objects from the table, keyed by $key column.
+   */
+  protected function getChadoTableRecords(string $table_name, string $key): array {
+    $query = $this->connection->select('1:' . $table_name, 't');
+    $query->fields('t');
+    $records = $query->execute()->fetchAllAssoc($key);
+    return $records;
   }
 
 }
