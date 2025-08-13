@@ -2,25 +2,26 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of Tripal linker property field type.
- *
- * @FieldType(
- *   id = "chado_property_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Property"),
- *   description = @Translation("Add a property or attribute to the content type."),
- *   default_widget = "chado_property_widget_default",
- *   default_formatter = "chado_property_formatter_default"
- * )
  */
+#[FieldType(
+  id: 'chado_property_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Property'),
+  description: new TranslatableMarkup('Add a property or attribute to the content type.'),
+  default_widget: 'chado_property_widget_default',
+  default_formatter: 'chado_property_formatter_default',
+)]
 class ChadoPropertyTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_property_type_default";

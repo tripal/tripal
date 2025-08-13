@@ -5,6 +5,8 @@ namespace Drupal\Tests\tripal\Kernel\Entity;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal\Traits\TripalEntityFieldTestTrait;
 use Drupal\tripal\Entity\TripalEntity;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalEntity Class.
@@ -12,6 +14,8 @@ use Drupal\tripal\Entity\TripalEntity;
  * @group TripalEntity
  * @group TripalTokenParser
  */
+#[Group('TripalEntity')]
+#[Group('TripalTokenParser')]
 class TripalEntityFieldTest extends TripalTestKernelBase {
 
   use TripalEntityFieldTestTrait;
@@ -132,6 +136,7 @@ class TripalEntityFieldTest extends TripalTestKernelBase {
    * @param string $current_scenario_label
    *   The label of the scenario in the YAML.
    */
+  #[DataProvider('provideScenarios')]
   public function testTripalEntitySaveTitleUrlBasic(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->scenarios[$current_scenario_key];
     $this->assertEquals($current_scenario_label, $current_scenario['label'], "We may not have retrieved the expected scenario as the labels did not match.");

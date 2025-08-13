@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Functional\ChadoImporter;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the base functionality for chado-focused importers.
@@ -17,6 +18,8 @@ class ChadoImporterTest extends ChadoTestBrowserBase {
    * @group tripal_importer
 	 * @group chado_importer
    */
+  #[Group('tripal_importer')]
+#[Group('chado_importer')]
   public function testTripalImporterManager() {
 		$this->markTestIncomplete(
       'This test has not been implemented yet.'
@@ -29,6 +32,8 @@ class ChadoImporterTest extends ChadoTestBrowserBase {
    * @group tripal_importer
 	 * @group chado_importer
    */
+  #[Group('tripal_importer')]
+#[Group('chado_importer')]
   public function testChadoImporterBase() {
     $this->markTestIncomplete(
       'This test has not been implemented yet.'

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\Services\TripalEntityTypeCollection;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -12,6 +13,9 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal Content
  * @group TripalEntityTypeCollection
  */
+#[Group('Tripal')]
+#[Group('Tripal Content')]
+#[Group('TripalEntityTypeCollection')]
 class TripalEntityTypeCollectionInstallTest extends TripalTestKernelBase {
 
   /**

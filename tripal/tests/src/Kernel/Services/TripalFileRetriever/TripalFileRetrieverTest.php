@@ -3,6 +3,8 @@
 namespace Drupal\Tests\tripal\Kernel\Services\TripalFileRetriever;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -11,6 +13,8 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal
  * @group Tripal FileRetriever
  */
+#[Group('Tripal')]
+#[Group('Tripal FileRetriever')]
 class TripalFileRetrieverTest extends TripalTestKernelBase {
 
   /**
@@ -95,6 +99,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         'skip' => FALSE,
         'download_status' => FALSE,
         'file_exists' => FALSE,
+        'test_rate_limit' => FALSE,
       ]
     ];
 
@@ -108,6 +113,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         'skip' => FALSE,
         'download_status' => TRUE,
         'file_exists' => TRUE,
+        'test_rate_limit' => FALSE,
       ]
     ];
 
@@ -121,6 +127,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         'skip' => FALSE,
         'download_status' => FALSE,
         'file_exists' => FALSE,
+        'test_rate_limit' => FALSE,
       ]
     ];
 
@@ -135,6 +142,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         'skip' => FALSE,
         'download_status' => FALSE,
         'file_exists' => FALSE,
+        'test_rate_limit' => FALSE,
       ]
     ];
 
@@ -148,6 +156,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         'skip' => TRUE,
         'download_status' => TRUE,
         'file_exists' => TRUE,
+        'test_rate_limit' => TRUE,
       ]
     ];
 
@@ -175,6 +184,7 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
    *
    * @dataProvider provideFiles2Retrieve
    */
+  #[DataProvider('provideFiles2Retrieve')]
   public function testTripalFileRetriever(string $url, array $options, array $expectations) {
     // Get the service to be tested
     $retrieval_service = \Drupal::service('tripal.fileretriever');
@@ -211,9 +221,23 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         'Did not receive NULL when we expect file retrieval to have failed.');
     }
 
-    // Tests downloadFile()
+    // Provide some non-default retrieval options.
+    // We can't easily test the retry option because that requires an
+    // intermittent internet connection.
+    $retrieval_options = [];
+    if ($expectations['test_rate_limit']) {
+      $retrieval_options = [
+        'rate_limit' => 8.765,
+        'retry_delay' => 2.345,
+      ];
+    }
+
+    // Tests downloadFile(), and additionally the rate-limiting parameter.
+    // Calling retrieveFileContents() above set the internal last_request_time.
     $this->mock_error = '';
-    $status = $retrieval_service->downloadFile($url, $this->tempfile);
+    $start = microtime(TRUE);
+    $status = $retrieval_service->downloadFile($url, $this->tempfile, $retrieval_options);
+    $stop = microtime(TRUE);
     // -- Check the error message.
     if ($expectations['error_message'] !== FALSE) {
       $this->assertStringContainsString(
@@ -221,7 +245,8 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
         $this->mock_error,
         'Did not log an error for this scenario when we expected one.'
       );
-    } else {
+    }
+    else {
       $this->assertEquals(
         '',
         $this->mock_error,
@@ -235,6 +260,14 @@ class TripalFileRetrieverTest extends TripalTestKernelBase {
     if ($expectations['file_exists']) {
       $this->assertGreaterThan(100, filesize($this->tempfile),
         'Local file created by downloadFile() is too small to have been properly populated by download.');
+    }
+
+    // -- There should have been a measurable delay to download
+    // the second time, caused by our rate-limiting parameter.
+    if ($expectations['test_rate_limit']) {
+      $actual_delay = $stop - $start;
+      $this->assertGreaterThan(7, $actual_delay,
+        'There was not the expected rate-limit delay to download the second time');
     }
 
     // Remove the temporary file.

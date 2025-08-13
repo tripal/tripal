@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Tests for the ChadoCVTerm classes
  *
@@ -10,6 +12,10 @@ namespace Drupal\Tests\tripal_chado\Functional;
  * @group OntologyImporter
  * @group OBOImporter
  */
+#[Group('TripalImporter')]
+#[Group('ChadoImporter')]
+#[Group('OntologyImporter')]
+#[Group('OBOImporter')]
 class OBOImporterTest extends ChadoTestBrowserBase {
 
   /**

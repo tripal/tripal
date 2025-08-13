@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional\Drush;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drush\TestTraits\DrushTestTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the Drush Command tripal-chado:trp-check-terms
@@ -12,6 +13,9 @@ use Drush\TestTraits\DrushTestTrait;
  * @group Tripal Chado
  * @group Drush
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Drush')]
 class ChadoCheckTermsAgainstYamlTest extends ChadoTestBrowserBase {
   protected $defaultTheme = 'stark';
 

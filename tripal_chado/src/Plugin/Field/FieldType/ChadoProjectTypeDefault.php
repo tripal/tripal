@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -10,16 +12,15 @@ use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal project field type.
- *
- * @FieldType(
- *   id = "chado_project_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Project"),
- *   description = @Translation("Add a Chado project to the content type."),
- *   default_widget = "chado_project_widget_default",
- *   default_formatter = "chado_project_formatter_default",
- * )
  */
+#[FieldType(
+  id: 'chado_project_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Project'),
+  description: new TranslatableMarkup('Add a Chado project to the content type.'),
+  default_widget: 'chado_project_widget_default',
+  default_formatter: 'chado_project_formatter_default',
+)]
 class ChadoProjectTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_project_type_default';
