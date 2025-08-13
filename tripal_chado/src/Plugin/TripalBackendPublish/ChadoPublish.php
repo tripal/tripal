@@ -982,7 +982,6 @@ class ChadoPublish extends TripalBackendPublishBase {
    *   The number of entities deleted.
    */
   protected function deleteEntities(array $entity_ids): int {
-    $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
     $batches = $this->divideIntoBatches($entity_ids);
     $count = 0;
     foreach ($batches as $batch) {
