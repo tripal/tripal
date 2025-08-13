@@ -31,4 +31,3 @@ jobs:
           pgsql-version: '17'
           drupal-version: '11.2.x-dev'
           build-image: true
-          phpunit-command-options: '-c /var/www/drupal/web/modules/contrib/tripal/phpunit.9.6.xml'
