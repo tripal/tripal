@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Core\Form\FormState;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the base functionality for importers.
@@ -13,6 +14,7 @@ use Drupal\Core\Form\FormState;
  *
  * @group TripalImporter
  */
+#[Group('TripalImporter')]
 class TripalImporterFormBuildTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 

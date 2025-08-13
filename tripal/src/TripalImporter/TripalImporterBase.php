@@ -130,7 +130,11 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition
+    );
 
     // Intialize the private member variables.
     $this->plugin_id = $plugin_id;
@@ -622,6 +626,39 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   public function getArguments() {
     return $this->arguments;
+  }
+
+  /**
+   * Validates whether XML is valid or not.
+   *
+   * @param string $xml
+   *   The XML to be checked.
+   *
+   * @return bool
+   *   Return TRUE if valid, FALSE if not valid.
+   *
+   * @see Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase::xmlIsValid().
+   */
+  protected function xmlIsValid(string $xml): bool {
+    $valid = TRUE;
+
+    // Enable user handling of errors so that exceptions are not
+    // thrown when invalid XML is read.
+    libxml_use_internal_errors(TRUE);
+    // Attempt to load the XML.
+    $doc = simplexml_load_string($xml);
+    // If SimpleXML fails to parse the XML string then it will return FALSE.
+    if ($doc === FALSE) {
+      $valid = FALSE;
+    }
+    // If not, we will check for any errors logged during parsing.
+    else {
+      $errors = libxml_get_errors();
+      if (!empty($errors)) {
+        $valid = FALSE;
+      }
+    }
+    return $valid;
   }
 
 }

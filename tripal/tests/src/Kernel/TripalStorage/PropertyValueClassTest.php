@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\TripalStorage;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -11,6 +12,8 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal
  * @group TripalStorage
  */
+#[Group('Tripal')]
+#[Group('TripalStorage')]
 class PropertyValueClassTest extends TripalTestKernelBase {
 
   /**

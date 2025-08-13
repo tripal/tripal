@@ -2,22 +2,23 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Tripal additional type widget.
- *
- * @FieldWidget(
- *   id = "chado_additional_type_widget_default",
- *   label = @Translation("Chado Type Reference Widget"),
- *   description = @Translation("A chado type reference widget"),
- *   field_types = {
- *     "chado_additional_type_type_default"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'chado_additional_type_widget_default',
+  label: new TranslatableMarkup('Chado Type Reference Widget'),
+  description: new TranslatableMarkup('A chado type reference widget'),
+  field_types: [
+    'chado_additional_type_type_default',
+  ],
+)]
 class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
 
   /**

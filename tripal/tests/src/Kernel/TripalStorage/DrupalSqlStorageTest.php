@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal\Kernel\TripalStorage;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\Plugin\TripalStorage\DrupalSqlStorage;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for Tripal Storage Base class.
@@ -11,6 +12,8 @@ use Drupal\tripal\Plugin\TripalStorage\DrupalSqlStorage;
  * @group Tripal
  * @group TripalStorage
  */
+#[Group('Tripal')]
+#[Group('TripalStorage')]
 class DrupalSqlStorageTest extends TripalTestKernelBase {
 
   /**

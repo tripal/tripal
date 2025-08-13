@@ -2,32 +2,35 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
-use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
 /**
  * OBO Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_obo_loader",
- *    label = @Translation("OBO Vocabulary Loader"),
- *    description = @Translation("Import vocabularies and terms in OBO format."),
- *    file_types = {"obo"},
- *    upload_description = @Translation("Please provide the details for importing a new OBO file. The file must have a .obo extension."),
- *    upload_title = @Translation("New OBO File"),
- *    use_analysis = FALSE,
- *    require_analysis = FALSE,
- *    button_text = @Translation("Import OBO File"),
- *    file_upload = FALSE,
- *    file_local = FALSE,
- *    file_remote = FALSE,
- *    file_required = FALSE,
- *  )
  */
+#[TripalImporter(
+  id: 'chado_obo_loader',
+  label: new TranslatableMarkup('OBO Vocabulary Loader'),
+  description: new TranslatableMarkup('Import vocabularies and terms in OBO format.'),
+  file_types: [
+    'obo',
+  ],
+  upload_description: new TranslatableMarkup('Please provide the details for importing a new OBO file. The file must have a .obo extension.'),
+  upload_title: new TranslatableMarkup('New OBO File'),
+  use_analysis: false,
+  require_analysis: false,
+  button_text: new TranslatableMarkup('Import OBO file'),
+  file_upload: false,
+  file_remote: false,
+  file_local: false,
+  file_required: false,
+)]
 class OBOImporter extends ChadoImporterBase {
 
   /**

@@ -3,28 +3,29 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal study formatter.
- *
- * @FieldFormatter(
- *   id = "chado_study_formatter_default",
- *   label = @Translation("Chado study formatter"),
- *   description = @Translation("A chado study formatter"),
- *   field_types = {
- *     "chado_study_type_default"
- *   },
- *   valid_tokens = {
- *     "[name]",
- *     "[description]",
- *     "[contact_name]",
- *     "[pub_title]",
- *     "[database_name]",
- *     "[database_accession]",
- *   },
- * )
  */
+#[TripalFieldFormatter(
+  id: 'chado_study_formatter_default',
+  label: new TranslatableMarkup('Chado study formatter'),
+  description: new TranslatableMarkup('A chado study formatter'),
+  field_types: [
+    'chado_study_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[description]',
+    '[contact_name]',
+    '[pub_title]',
+    '[database_name]',
+    '[database_accession]',
+  ],
+)]
 class ChadoStudyFormatterDefault extends ChadoFormatterBase {
 
   /**

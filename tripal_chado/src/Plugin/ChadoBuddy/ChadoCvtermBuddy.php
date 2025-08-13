@@ -3,7 +3,10 @@
 namespace Drupal\tripal_chado\Plugin\ChadoBuddy;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Component\Annotation\Plugin;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal_chado\ChadoBuddy\Attribute\ChadoBuddy;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyPluginBase;
@@ -12,14 +15,13 @@ use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\ChadoBuddy\ChadoBuddyRecord;
 
 /**
- * Plugin implementation of the chado_buddy.
- *
- * @ChadoBuddy(
- *   id = "chado_cvterm_buddy",
- *   label = @Translation("Chado Controlled Vocabulary Term Buddy"),
- *   description = @Translation("Provides helper methods for managing chado cvs and cvterms.")
- * )
+ * Plugin implementation of the chado cvterm buddy.
  */
+#[ChadoBuddy(
+  id: 'chado_cvterm_buddy',
+  label: new TranslatableMarkup('Chado Controlled Vocabulary Term Buddy'),
+  description: new TranslatableMarkup('Provides helper methods for managing chado cvs and cvterms.'),
+)]
 class ChadoCvtermBuddy extends ChadoBuddyPluginBase implements ChadoBuddyInterface, ContainerFactoryPluginInterface {
 
   /**
