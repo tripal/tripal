@@ -1514,6 +1514,33 @@ fields:
               region: content
               weight: 12
 
+    -   name: 'pub_publication_type'
+        content_type: 'pub'
+        label: 'Additional Publication Type'
+        type: 'chado_property_type_default'
+        description: 'Additional descriptors indicating the type of publication'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'pub'
+                prop_table: 'pubprop'
+        settings:
+            termIdSpace: 'TPUB'
+            termAccession: '0000015'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 13
+          form:
+            default:
+              region: 'content'
+              weight: 13
+              type: 'chado_property_string_widget_default'
+
     -   name: pub_series_name
         content_type: pub
         label: Series Name
@@ -1921,33 +1948,6 @@ fields:
             default:
               region: content
               weight: 37
-              type: 'chado_property_string_widget_default'
-
-    -   name: pub_publication_type
-        content_type: pub
-        label: 'Additional Publication Type'
-        type: chado_property_type_default
-        description: 'Additional descriptors to indicate the type of publication'
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: pub
-                prop_table: pubprop
-        settings:
-            termIdSpace: TPUB
-            termAccession: "0000015"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 38
-          form:
-            default:
-              region: content
-              weight: 38
               type: 'chado_property_string_widget_default'
 
     -   name: pub_publication_model
