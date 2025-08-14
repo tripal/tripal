@@ -566,7 +566,7 @@ class PubSearchQueryImporter extends ChadoImporterBase {
         // types will be stored as properties, so to avoid duplication
         // with the first property, remove it.
         $type = $type[array_key_first($type)];
-        array_shift($type);
+        array_shift($publication['Publication Type']);
       }
       $type_id = $this->cvterm_lookups[$type] ?? 0;
       if (!$type_id) {
