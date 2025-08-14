@@ -32,6 +32,7 @@ class TripalTextTypeWidget extends TripalWidgetBase {
       '#type' => 'text_format',
       '#format' => $this->getSetting('filter_format'),
       '#default_value' => $items[$delta]->value ?? '',
+      '#rows' => $this->getSetting('num_rows'),
       '#placeholder' => $this->getSetting('placeholder'),
       '#attributes' => ['class' => ['js-text-full', 'text-full']],
     ];
@@ -75,6 +76,7 @@ class TripalTextTypeWidget extends TripalWidgetBase {
   public static function defaultSettings() {
     return [
       'filter_format' => 'basic_html',
+      'num_rows' => 5,
     ] + parent::defaultSettings();
   }
 
@@ -88,6 +90,16 @@ class TripalTextTypeWidget extends TripalWidgetBase {
     foreach (filter_formats() as $name => $object) {
       $options[$name] = $object->get('name');
     }
+
+    $element['num_rows'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Number of Rows'),
+      '#description' => $this->t('Indicate the number of lines to display in the widget by default. A larger number will make for a longer textarea.'),
+      '#required' => TRUE,
+      '#default_value' => $this->getSetting('num_rows'),
+      '#min' => 1,
+      '#max' => 100,
+    ];
 
     $element['filter_format'] = [
       '#type' => 'select',
@@ -116,7 +128,10 @@ class TripalTextTypeWidget extends TripalWidgetBase {
     $all_formats = filter_formats();
     $format_label = $all_formats[$format]->get('name');
 
+    $num_rows = $this->getSetting('num_rows');
+
     $summary[] = $this->t("Text Format: @format", ['@format' => $format_label]);
+    $summary[] = $this->t("Number of Rows: @rows", ['@rows' => $num_rows]);
 
     return $summary;
   }

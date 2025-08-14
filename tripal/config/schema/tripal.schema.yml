@@ -364,6 +364,10 @@ tripal.tripalfield_collection.*:
                            type: integer
                            label: 'Weight'
                            nullable: false
+                         type:
+                           type: string
+                           label: 'Widget Type'
+                           nullable: true
                          settings:
                            type: mapping
                            label: 'Settings'
@@ -371,6 +375,10 @@ tripal.tripalfield_collection.*:
                              filter_format:
                                type: string
                                label: 'Filter format for a filtered text field'
+                               nullable: true
+                             num_rows:
+                               type: integer
+                               label: 'Number of Rows to display in the text widget'
                                nullable: true
                              widget_select_limit:
                                type: integer
