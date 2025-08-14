@@ -1925,9 +1925,9 @@ fields:
 
     -   name: pub_publication_type
         content_type: pub
-        label: Publication Type
+        label: 'Additional Publication Type'
         type: chado_property_type_default
-        description:
+        description: 'Additional descriptors to indicate the type of publication'
         cardinality: -1
         required: false
         storage_settings:
