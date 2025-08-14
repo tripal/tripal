@@ -1102,21 +1102,3 @@ function tripal_chado_update_10415() {
     throw new UpdateException('Could not update phylotree: ' . $e->getMessage());
   }
 }
-
-/**
- * Updates pub_publication_type field to unlimited cardinality. PR 2251.
- */
-function tripal_chado_update_10416() {
-  try {
-    $messenger = \Drupal::messenger();
-    $field_storage = FieldStorageConfig::loadByName('tripal_entity', 'pub_publication_type');
-    if ($field_storage && $field_storage->getCardinality() == 1) {
-      $field_storage->setCardinality(-1);
-      $field_storage->save();
-      $messenger->addMessage('Changed pub_publication_type field to unlimited cardinality');
-    }
-  }
-  catch (\Exception $e) {
-    throw new UpdateException('Could not update pub_publication_type field: ' . $e->getMessage());
-  }
-}
