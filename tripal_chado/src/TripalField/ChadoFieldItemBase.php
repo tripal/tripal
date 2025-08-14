@@ -1202,4 +1202,29 @@ dpm(get_class($storage), "CP45 storage class table $table column $column default
     }
     return $id;
   }
+
+  /**
+   *  Get a table definition from the chado schema.
+   *
+   * @param $schema
+   *   The schema to query for the table.
+   * @param string $table_name
+   *   The table name.
+   *
+   * @return array
+   *   The table schema.
+   */
+  public static function getChadoTableDef($schema, string $table_name): array {
+    $parameters = [
+      'format' => 'drupal',
+      'source' => [
+        'file',
+        'tripal',
+        'database',
+      ],
+    ];
+    $def = $schema->getTableDef($table_name, $parameters);
+    return $def;
+  }
+
 }
