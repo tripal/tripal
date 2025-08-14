@@ -546,14 +546,14 @@ class PubSearchQueryImporter extends ChadoImporterBase {
   /**
    * Get the cvterm_id for the publication type
    *
-   * @param array $publication
+   * @param array &$publication
    *   One publication record returned by the external database
    * @return int
    *   The corresponding cvterm_id value
    * @throw \Exception
    *   If type is not defined in the publication, or if the type is not available in the tripal_pub ontology
    */
-  protected function getPublicationTypeId(array $publication): int {
+  protected function getPublicationTypeId(array &$publication): int {
     $type_id = 0;
     // In the event that the publication has no type, e.g. 39755038,
     // then assign a generic 'Publication' type.
@@ -562,8 +562,11 @@ class PubSearchQueryImporter extends ChadoImporterBase {
     if ($type) {
       if (is_array($type)) {
         // A publication can have more than one type. We can't support
-        // that in the pub table, so just return the first one.
+        // that in the pub table, so just return the first one. The other
+        // types will be stored as properties, so to avoid duplication
+        // with the first property, remove it.
         $type = $type[array_key_first($type)];
+        array_shift($type);
       }
       $type_id = $this->cvterm_lookups[$type] ?? 0;
       if (!$type_id) {
