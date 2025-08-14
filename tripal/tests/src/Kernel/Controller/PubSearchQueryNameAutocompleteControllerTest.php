@@ -6,6 +6,7 @@ namespace Drupal\Tests\tripal\Kernel\Controller\PubSearchQueryNameAutocompleteCo
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\tripal\Controller\PubSearchQueryNameAutocompleteController;
 use Symfony\Component\HttpFoundation\Request;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -15,6 +16,9 @@ use Symfony\Component\HttpFoundation\Request;
  * @group PubImporter
  * @group Autocomplete
  */
+#[Group('Tripal')]
+#[Group('PubImporter')]
+#[Group('Autocomplete')]
 class PubSearchQueryNameAutocompleteControllerTest extends TripalTestKernelBase {
   protected $defaultTheme = 'stark';
 

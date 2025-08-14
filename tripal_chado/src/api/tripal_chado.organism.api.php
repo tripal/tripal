@@ -227,8 +227,7 @@ function chado_get_organism_select_options($published_only = FALSE, $show_common
   }
 
   if ($published_only) {
-    throw new \Exception(t('Passing TRUE for the :param parameter is not yet implemented for :func',
-      [':param' => 'published_only', ':func' => 'chado_get_organism_select_options()']));
+    throw new \Exception('Passing TRUE for the "published_only" parameter is not yet implemented for "chado_get_organism_select_options()"');
     return;
   }
 

@@ -6,6 +6,8 @@ use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalStorage\Attribute\TripalStorage;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
@@ -14,13 +16,12 @@ use Drupal\tripal_chado\TripalStorage\ChadoRecords;
 
 /**
  * Chado implementation of the TripalStorageInterface.
- *
- * @TripalStorage(
- *   id = "chado_storage",
- *   label = @Translation("Chado Storage"),
- *   description = @Translation("Interfaces with GMOD Chado for field values."),
- * )
  */
+#[TripalStorage(
+  id: 'chado_storage',
+  label: new TranslatableMarkup('Chado Storage'),
+  description: new TranslatableMarkup('Interfaces with GMOD Chado for field values.'),
+)]
 class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**
@@ -366,12 +367,19 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @{inheritdoc}
    *
    * @param array $main_property_names
-   *   Associative array where key is field name, value is name of the main property.
+   *   Associative array where key is field name, value is name of the main
+   *   property.
    * @param array $record_ids
-   *   When specified, only return records where the primary key is present in this array.
-   *   Used by publish to publish in batches.
+   *   When specified, only return records where the primary key is present in
+   *   this array. Used by publish to publish in batches.
+   * @param array $options
+   *   - global_max_delta = Maximum number of linked records from a single table
+   *     to return, zero for no limit.
+   *   - cardinalities = associative array of cardinalities on a per-table
+   *     basis, key is table name. If present, these override global_max_delta.
+   *   - inhibit = Publish no records if the number exceeds max_delta.
    */
-  public function findValues($values, array $main_property_names = [], array $record_ids = []) {
+  public function findValues($values, array $main_property_names = [], array $record_ids = [], array $options = []) {
 
     // Setup field debugging.
     $this->field_debugger->printHeader('Find');
@@ -410,7 +418,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           foreach ($tables as $table_alias) {
 
             // Now find any items for this linked table.
-            $num_items_found = $match->selectItems($base_table, $table_alias);
+            $num_items_found = $match->selectItems($base_table, $table_alias, $options);
             if ($num_items_found == 0) {
               continue;
             }

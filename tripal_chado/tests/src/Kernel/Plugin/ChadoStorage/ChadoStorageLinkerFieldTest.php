@@ -4,6 +4,8 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoStorage;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests that ChadoStorage can handle fields for linker tables as we expect.
@@ -35,6 +37,10 @@ use Drupal\Tests\tripal_chado\Traits\ChadoStorageTestTrait;
  * @group ChadoStorage
  * @group ChadoStorage Fields
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('ChadoStorage')]
+#[Group('ChadoStorage Fields')]
 class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
 
   use ChadoStorageTestTrait;
@@ -202,6 +208,7 @@ class ChadoStorageLinkerFieldTest extends ChadoTestKernelBase {
    *   The values for the extra fields specific to each linker table
    *   where the key is the property key and the value is the value we should set it to.
    */
+  #[DataProvider('provideTestCases')]
   public function testLinkerTableField($linker_field_name, $linker_table_name, $right_table_id, $extra_values) {
     $linker_pkey = $linker_table_name . '_id';
 

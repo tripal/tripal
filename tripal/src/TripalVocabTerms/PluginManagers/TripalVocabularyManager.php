@@ -30,10 +30,9 @@ class TripalVocabularyManager extends TripalCollectionPluginManager {
     parent::__construct(
         'Plugin/TripalVocabulary'
         ,$namespaces
-        ,$cache_backend
         ,$module_handler
         ,'Drupal\tripal\TripalVocabTerms\Interfaces\TripalVocabularyInterface'
-        ,'Drupal\tripal\TripalVocabTerms\Annotation\TripalVocabulary'
+        ,'Drupal\tripal\TripalVocabTerms\Attribute\TripalVocabulary'
         ,'tripal_vocabulary_collection'
     );
     $this->alterInfo('tripal_vocabulary_info');

@@ -2,20 +2,22 @@
 
 namespace Drupal\tripal\Plugin\TripalPubLibrary;
 
-use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
 use Drupal\Core\Link;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
+use Drupal\tripal\TripalPubLibrary\Attribute\TripalPubLibrary;
+use Drupal\tripal\TripalPubLibrary\TripalPubLibraryBase;
 
 /**
- * PubMed publication parser
+ * PubMed publication parser.
  *
- *  @TripalPubLibrary(
- *    id = "tripal_pub_library_PMID",
- *    label = @Translation("NIH PubMed database"),
- *    description = @Translation("Retrieves and parses publication data from the NIH PubMed database"),
- *  )
- *  n.b. last part of id must match the record in the chado.db table name column
+ * n.b. last part of id must match the record in the chado.db table name column.
  */
+#[TripalPubLibrary(
+  id: 'tripal_pub_library_PMID',
+  label: new TranslatableMarkup('NIH PubMed database'),
+  description: new TranslatableMarkup('NIH PubMed database'),
+)]
 class TripalPubLibraryPubMed extends TripalPubLibraryBase {
 
   /**
@@ -294,6 +296,10 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
         $this->logger->error('Skipping publication @acc due to download error.',
           ['@acc' => $pmid]);
       }
+      else if (!$this->xmlIsValid($pub_xml)) {
+        $this->logger->error('Skipping publication @acc due to download error, NCBI may be in maintenance mode.',
+          ['@acc' => $pmid]);
+      }
       else {
         $pub = $this->parse_xml($pub_xml);
         $pubs[] = $pub;
@@ -348,6 +354,10 @@ class TripalPubLibraryPubMed extends TripalPubLibraryBase {
     $query_xml = $this->fileretriever->retrieveFileContents($query_url, $this->retrieval_options);
     if (is_null($query_xml)) {
       $this->logger->error("Could not perform Pubmed query. Cannot connect to Entrez.");
+      return FALSE;
+    }
+    else if (!$this->xmlIsValid($query_xml)) {
+      $this->logger->error("Invalid XML returned, NCBI may be in maintenance mode.");
       return FALSE;
     }
 

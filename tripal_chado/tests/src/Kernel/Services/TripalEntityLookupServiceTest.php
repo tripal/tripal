@@ -3,12 +3,14 @@
 namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the entity lookup service for chado-based content types.
  *
  * @group TripalEntityLookup
  */
+#[Group('TripalEntityLookup')]
 class TripalEntityLookupServiceTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 

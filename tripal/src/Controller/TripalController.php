@@ -89,12 +89,6 @@ class TripalController extends ControllerBase{
     ];
   }
 
-  public function tripalContentUnpublishOrphans() {
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
   /**
    * Provides contents for the File Usage page.
    */

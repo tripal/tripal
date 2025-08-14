@@ -2,32 +2,37 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
-use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
-use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
+use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
+use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
 
 /**
  * GFF3 Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_gff3_loader",
- *    label = @Translation("Chado GFF3 File Loader"),
- *    description = @Translation("Import a GFF3 file into Chado"),
- *    file_types = {"gff","gff3", "txt"},
- *    upload_description = @Translation("Please provide a plain text, tab-delimited file following the <a target='_blank' href='https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md'>GFF3 Specification</a>. It is expected that all landmark features are associated with the same organism and that the type (column 3) are sequence ontology terms."),
- *    upload_title = @Translation("GFF3 File"),
- *    use_analysis = True,
- *    require_analysis = True,
- *    button_text = @Translation("Import GFF3 file"),
- *    file_upload = True,
- *    file_remote = True,
- *    file_local = True,
- *    file_required = True,
- *  )
  */
+#[TripalImporter(
+  id: 'chado_gff3_loader',
+  label: new TranslatableMarkup('Chado GFF3 File Loader'),
+  description: new TranslatableMarkup('Import a GFF3 file into Chado'),
+  file_types: [
+    'gff',
+    'gff3',
+    'txt',
+  ],
+  upload_description: new TranslatableMarkup('Please provide a plain text, tab-delimited file following the <a target="_blank" href="https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md">GFF3 Specification</a>. It is expected that all landmark features are associated with the same organism and that the types (column 3) are sequence ontology terms.'),
+  upload_title: new TranslatableMarkup('GFF3 File'),
+  use_analysis: true,
+  require_analysis: true,
+  button_text: new TranslatableMarkup('Import GFF3 file'),
+  file_upload: true,
+  file_remote: true,
+  file_local: true,
+  file_required: true,
+)]
 class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
   /**
@@ -608,21 +613,21 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     }
     // If the file is not local to Drupal check if it exists on the system.
     else if (!file_exists($this->gff_file)) {
-      throw new \Exception(t("Cannot find the file: %file", ['%file' => $this->gff_file]));
+      throw new \Exception('Cannot find the file: ' . $this->gff_file);
     }
 
     // Open the GFF3 file.
     $this->logger->notice("Opening @gff_file", ['@gff_file' => $this->gff_file]);
     $this->gff_file_h = fopen($this->gff_file, 'r');
     if (!$this->gff_file_h) {
-      throw new \Exception(t("Cannot open file: %file", ['%file' => $this->gff_file]));
+      throw new \Exception('Cannot open file: ' . $this->gff_file);
     }
 
     // Get the feature property CV object
     $conditions = ['cv.name' => 'local'];
     $cv_records = $this->cvterm_buddy->getCv($conditions, []);
     if (count($cv_records) != 1) {
-      throw new \Exception(t("Cannot find the 'local' ontology (feature property CV)"));
+      throw new \Exception("Cannot find the 'local' ontology (feature property CV)");
     }
     $this->feature_prop_cv_buddy_record = $cv_records[0];
 
@@ -630,7 +635,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $conditions = ['cv.name' => 'sequence'];
     $cv_records = $this->cvterm_buddy->getCv($conditions, []);
     if (count($cv_records) != 1) {
-      throw new \Exception(t("Cannot find the 'sequence' ontology (feature CV)"));
+      throw new \Exception("Cannot find the 'sequence' ontology (feature CV)");
     }
     $this->feature_cv_buddy_record = $cv_records[0];
 
@@ -649,7 +654,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     ->fetchField();
 
     if ($num_found == 0) {
-      throw new \Exception(t("Cannot find the specified organism for this GFF3 file."));
+      throw new \Exception('Cannot find the specified organism for this GFF3 file.');
     }
 
     // Get the analysis object.
@@ -667,7 +672,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     ->fetchField();
 
     if ($num_found == 0) {
-      throw new \Exception(t("Cannot find the specified organism for this GFF3 file."));
+      throw new \Exception('Cannot find the specified organism for this GFF3 file.');
     }
 
     // If a landmark type was provided then get the ID.
@@ -675,8 +680,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $cv_autocomplete = new ChadoCVTermAutocompleteController();
       $this->landmark_cvterm_id = $cv_autocomplete->getCVtermId($this->default_landmark_type, 'sequence');
       if (!$this->landmark_cvterm_id) {
-        throw new \Exception(t('Cannot find landmark feature type \'%landmark_type\'.',
-          ['%landmark_type' => $this->default_landmark_type]));
+        throw new \Exception("Cannot find landmark feature type '" . $this->default_landmark_type . "'.");
       }
     }
 
@@ -685,7 +689,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $cv_autocomplete = new ChadoCVTermAutocompleteController();
       $this->target_type_id = $cv_autocomplete->getCVtermId($this->target_type, 'sequence');
       if (!$this->target_type_id) {
-        throw new \Exception(t("Cannot find the specified target type, %type.", ['%type' => $this->target_type]));
+        throw new \Exception('Cannot find the specified target type, ' . $this->target_type . '.');
       }
     }
 
@@ -854,7 +858,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $cvterm_name = $cvterm_records[0]->getValue('cvterm.name');
     }
     elseif (count($cvterm_records) > 1) {
-      throw new \Exception(t('Error, more than one cvterm record matched %type', ['%type' => $type]));
+      throw new \Exception("Error, more than one cvterm record matched $type");
     }
     else {
       // If the term couldn't be found and it's a property term, then
@@ -1022,8 +1026,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     // get the columns
     $cols = explode("\t", $line);
     if (sizeof($cols) != 9) {
-      throw new \Exception(t('Improper number of columns on line %line_num: %line',
-        ['%line_num' => $this->current_line, '%line' => $line]));
+      throw new \Exception('Improper number of columns on line ' . $line . ': ' . $this->current_line);
     }
 
     $ret = [
@@ -1055,16 +1058,13 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     $matches = [];
     preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?\-\|]*/', $ret['landmark'], $matches);
     if ($matches[0] != $ret['landmark']) {
-      throw new \Exception(t("Landmark/seqid :landmark contains invalid
-        characters. Only characters included in this regular expression are
-        allowed [a-zA-Z0-9.:^*$@!+_?-|]",
-        [':landmark' => $ret['landmark']]));
+      throw new \Exception('Landmark/seqid ' . $ret['landmark']
+          . ' contains invalid characters. Only characters included in this regular expression are allowed [a-zA-Z0-9.:^*$@!+_?-|]');
     }
 
     // Check to make sure strand has a valid character
     if (preg_match('/[\+-\?\.]/',$ret['strand']) == false) {
-      throw new \Exception(t('Invalid strand detected on line %line,
-        strand can only be +-?.', ['%line' => $line]));
+      throw new \Exception("Invalid strand detected on line $line, strand can only be +-?.");
     }
 
     // Format the strand for chado
@@ -1083,8 +1083,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
 
     if (preg_match('/[012\.]/',$ret['phase']) == false) {
-      throw new \Exception(t('Invalid phase detected on line %line,
-        phase can only be 0,1,2 or . (period)', ['%line' => $line]));
+      throw new \Exception("Invalid phase detected on line $line, phase can only be 0,1,2 or . (period)");
     }
 
 
@@ -1116,8 +1115,8 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         continue;
       }
       if (!preg_match('/^[^\=]+\=.+$/', $attr)) {
-        throw new \Exception(t('Attribute is not correctly formatted on line %line_num: %attr',
-          ['%line_num' => $this->current_line, '%attr' => $attr]));
+        throw new \Exception('Attribute is not correctly formatted on line '
+            . $this->current_line . ': ' . $attr);
       }
 
       // Break apart each attribute into key/value pairs.
@@ -1152,17 +1151,15 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       }
       elseif (strcmp($tag_name, 'organism') == 0) {
         if (count($tags[$tag_name]) > 1) {
-          throw new \Exception(t('Each feature can only have one "organism" attribute.
-            The feature %uniquename has more than one: %organism',
-            ['%uniquename' => $ret['uniquename'], '%organism' => $ret['organism']]));
+          throw new \Exception('Each feature can only have one "organism" attribute. The feature '
+              . $ret['uniquename'] . ' has more than one: ' . $ret['organism']);
         }
         $attr_organism = $this->findOrganism($tags[$tag_name][0], $this->current_line);
       }
       elseif (strcmp($tag_name, 'Target') == 0) {
         if (count($tags[$tag_name]) > 1) {
-          throw new \Exception(t('Each feature can only have one "Target" attribute.
-            The feature %uniquename has more than one.',
-            ['%uniquename' => $ret['uniquename']]));
+          throw new \Exception('Each feature can only have one "Target" attribute. The feature '
+              . $ret['uniquename'] . ' has more than one.');
         }
         // Get the elements of the target.
         $matches = [];
@@ -1202,8 +1199,8 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
           }
         }
         else {
-          throw new \Exception(t('The "Target" attribute "%attribute" is incorrectly formatted for the
-            feature "%feature"', ['%attribute' => $tags[$tag_name][0], '%feature' => $ret['uniquename']]));
+          throw new \Exception('The "Target" attribute "' . $tags[$tag_name][0]
+              . '" is incorrectly formatted for the feature "' . $ret['uniquename'] . '"');
         }
       }
       elseif (strcmp($tag_name, 'target_organism') == 0) {
@@ -1308,12 +1305,8 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $ret['derives_from'] = $attr_derives[0];
     }
     if (count($attr_derives) > 1) {
-      throw new \Exception(t('Each feature can only have one "Derives_from" attribute.
-        The feature %uniquename has more than one: %derives',
-        [
-          '%uniquename' => $ret['uniquename'],
-          '%derives' => $ret['derives_from'],
-        ]));
+      throw new \Exception('Each feature can only have one "Derives_from" attribute. The feature '
+          . $ret['uniquename'] . ' has more than one: ' . $ret['derives_from']);
     }
 
     // Now add all of the attributes into the return array.
@@ -1338,9 +1331,8 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
 
     // Make sure we only have one Gap if it exists
     if (array_key_exists('Gap', $attr_others) and count($attr_others['Gap']) > 1) {
-      throw new \Exception(t('Each feature can only have one "Gap" attribute.
-        The feature %uniquename has more than one.',
-        ['%uniquename' => $ret['uniquename']]));
+      throw new \Exception('Each feature can only have one "Gap" attribute. The feature '
+          . $ret['uniquename'] . ' has more than one.');
     }
 
     // Add the properties and parent.
@@ -1465,12 +1457,9 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       return NULL;
     }
     if ($num_found > 1) {
-      throw new \Exception(t("The landmark '%landmark' has more than one entry for
-      this organism (%species). Did you provide a landmark type? If not, try resubmitting and providing a type.",
-        [
-          '%landmark' => $landmark_name,
-          '%species' => chado_get_organism_scientific_name($this->organism),
-        ]));
+      throw new \Exception("The landmark '$landmark_name' has more than one entry for this organism "
+          . chado_get_organism_scientific_name($this->organism)
+          . '. Did you provide a landmark type? If not, try resubmitting and providing a type.');
     }
 
     // The landmark was found, remember it
@@ -1492,9 +1481,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
       $landmark = $this->findLandmark($rid);
       if (!$landmark) {
         if (!$this->default_landmark_type) {
-          throw new \Exception(t('The landmark, %landmark, cannot be added because no landmark ' .
-              'type was provided. Please redo the importer job and specify a landmark type.',
-              ['%landmark' => $rid]));
+          throw new \Exception("The landmark, $rid, cannot be added because no landmark type was provided. Please redo the importer job and specify a landmark type.");
         }
         $this->insertLandmark($rid);
       }
@@ -1884,8 +1871,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
   private function getCachedFeature($findex) {
     $retval = fseek($this->gff_cache_file, $findex);
     if ($retval == -1) {
-      throw new \Exception(t('Cannot seek to file location, %findex, in cache file %file.',
-        ['%findex' => $findex, '%file' -> $this->gff_cache_file]));
+      throw new \Exception("Cannot seek to file location, $findex, in cache file " . $this->gff_cache_file);
     }
     $feature = fgets($this->gff_cache_file);
     $feature = rtrim($feature, "\n");
@@ -1914,11 +1900,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
           $this->insertLandmark($uniquename);
         }
         else {
-          throw new \Exception(t('The landmark (reference) sequence, %landmark,
-            is not in the database and not specified in the GFF3 file.
-            Please either pre-load the landmark sequences or set a "Landmark Type"
-            in the GFF importer',
-            ['%landmark' => $uniquename]));
+          throw new \Exception("The landmark (reference) sequence, $uniquename, is not in the database and not specified in the GFF3 file. Please either pre-load the landmark sequences or set a \"Landmark Type\" in the GFF importer");
         }
       }
     }
@@ -2464,9 +2446,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         $type = $this->default_landmark_type;
       }
       if (is_null($type)) {
-        $error_msg = 'Could not determine a type for landmark name: %landmark_name';
-        $error_msg .= '. There was no default landmark type to force either.';
-        throw new \Exception(t($error_msg, ['%landmark_name' => $landmark_name]));
+        throw new \Exception("Could not determine a type for landmark name: $landmark_name. There was no default landmark type to force either.");
       }
 
       // If there is no cached type_id for this landmark type, try to lookup and cache
@@ -2487,9 +2467,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
           }
           // Else if the default could not be found (if default landmark is empty in the form)
           else {
-            $error_msg = 'Could not lookup cvterm / type id for landmark type: %type.';
-            $error_msg .= ' Also since there is no default landmark type specified, could not force a default landmark type_id.';
-            throw new \Exception(t($error_msg, ['%type' => $type]));
+            throw new \Exception("Could not lookup cvterm / type id for landmark type: $type. Also since there is no default landmark type specified, could not force a default landmark type_id.");
           }
         }
       }
@@ -2975,8 +2953,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
     }
 
     if ($num_found > 1) {
-      throw new \Exception(t('Multiple organisms were found for the "organism" attribute, %organism, on line %line_num',
-        ['%organism' => $organism_attr, '%line_num' => $line_num]));
+      throw new \Exception("Multiple organisms were found for the \"organism\" attribute, $organism_attr, on line $line_num");
     }
 
     if ($this->create_organism) {
@@ -3258,8 +3235,7 @@ class GFF3Importer extends ChadoImporterBase implements ContainerFactoryPluginIn
         // Do nothing.
       }
       else {
-        throw new \Exception(t("A feature with the same ID exists multiple times: %uname",
-          ['%uname' => $uniquename]));
+        throw new \Exception("A feature with the same ID exists multiple times: $uniquename");
       }
     }
     return [

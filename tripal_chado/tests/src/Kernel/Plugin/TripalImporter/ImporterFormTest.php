@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Plugin\TripalImporter;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the functionality of various importer forms.
@@ -10,6 +11,8 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group TripalImporter
  * @group ChadoImporter
  */
+#[Group('TripalImporter')]
+#[Group('ChadoImporter')]
 class ImporterFormTest extends ChadoTestKernelBase {
 
   protected $defaultTheme = 'stark';

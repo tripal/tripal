@@ -3,26 +3,27 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal contact formatter.
- *
- * @FieldFormatter(
- *   id = "chado_contact_formatter_default",
- *   label = @Translation("Chado contact formatter"),
- *   description = @Translation("A chado contact formatter"),
- *   field_types = {
- *     "chado_contact_type_default",
- *     "chado_contact_by_role_type_default"
- *   },
- *   valid_tokens = {
- *     "[name]",
- *     "[description]",
- *     "[type]",
- *   },
- * )
  */
+#[TripalFieldFormatter(
+  id: 'chado_contact_formatter_default',
+  label: new TranslatableMarkup('Chado contact formatter'),
+  description: new TranslatableMarkup('A chado contact formatter'),
+  field_types: [
+    'chado_contact_type_default',
+    'chado_contact_by_role_type_default',
+  ],
+  valid_tokens: [
+    '[name]',
+    '[description]',
+    '[type]',
+  ],
+)]
 class ChadoContactFormatterDefault extends ChadoFormatterBase {
 
   /**
@@ -38,7 +39,7 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $elements = [];
+    parent::viewElements($items, $langcode);
     $list = [];
     $token_string = $this->getSetting('token_string');
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
@@ -68,23 +69,8 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
       $list[$delta] = $renderable_item;
     }
 
-    // If only one element has been found, don't make into a list.
-    if (count($list) == 1) {
-      $elements = $list;
-    }
-
-    // If more than one value has been found, display all values in an
-    // unordered list.
-// @todo: add a pager
-    elseif (count($list) > 1) {
-      $elements[0] = [
-        '#theme' => 'item_list',
-        '#list_type' => 'ul',
-        '#items' => $list,
-        '#wrapper_attributes' => ['class' => 'container'],
-      ];
-    }
-
+    // Will convert $list to a markup list if there is more than one item.
+    $elements = $this->createListMarkup($list);
     return $elements;
   }
 
