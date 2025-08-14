@@ -881,7 +881,7 @@ EOD;
     static $table_structures = [];
     $table_def = [];
 
-    $sources = (array) $parameters['source'] ?? ['file'];
+    $sources = (array) ($parameters['source'] ?? 'file');
     $format = strtolower($parameters['format'] ?? '');
     $version = $parameters['version']
       ?? $this->connection->getVersion()
