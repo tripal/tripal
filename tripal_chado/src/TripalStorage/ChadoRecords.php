@@ -90,8 +90,8 @@ class ChadoRecords  {
    */
   protected function checkElement($elements, $key, $method, $what) {
     if (!array_key_exists($key, $elements)) {
-      throw new \Exception(t('ChadoRecords::checkElement(). @method a ChadoRecord @what without a "@key" element: @elements',
-          ['@method' => $method, '@what' => $what, '@key' => $key, '@elements' => print_r($elements, TRUE)]));
+      throw new \Exception('ChadoRecords::checkElement(). ' . $method . ' a ChadoRecord ' . $what
+          . ' without a "' . $key . '" element: ' . print_r($elements, TRUE));
     }
   }
 
@@ -129,10 +129,9 @@ class ChadoRecords  {
 
     if ($base_table == $root_table) {
       if ($base_table != $root_alias) {
-        throw new \Exception(t('ChadoRecords::initTable(). The base table cannot have an alias. '
+        throw new \Exception('ChadoRecords::initTable(). The base table cannot have an alias. '
           . 'Check all fields the contribute properties and make sure none of them use an alias '
-          . 'for the root table in the "path" element. @elements',
-          ['@elements' => print_r($elements, TRUE)]));
+          . 'for the root table in the "path" element. ' . print_r($elements, TRUE));
       }
     }
 
@@ -429,20 +428,21 @@ class ChadoRecords  {
   public function setConditionValue(string $base_table, string $table_alias, int $delta, string $column_alias, $value, $is_or_condition = FALSE) {
 
     if (!array_key_exists($base_table, $this->records)) {
-      throw new \Exception(t('ChadoRecords::setConditionValue(): The base table has not been added to the ChadoRecords object: @base_table.',
-          ['@base_table' => $base_table]));
+      throw new \Exception('ChadoRecords::setConditionValue(): The base table has not been added to the ChadoRecords object: $base_table.');
     }
     if (!array_key_exists($table_alias, $this->records[$base_table]['tables'])) {
-      throw new \Exception(t('ChadoRecords::setConditionValue(): table_alias, "@alias", does not exist in the records array: @record',
-          ['@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+      throw new \Exception('ChadoRecords::setConditionValue(): table_alias, "' . $table_alias
+          . '", does not exist in the records array: ' . print_r($this->records, TRUE));
     }
     if (!array_key_exists($delta, $this->records[$base_table]['tables'][$table_alias]['items'])) {
-      throw new \Exception(t('ChadoRecords::setConditionValue(): delta, "@delta", for table_alias, "@alias", does not exist in the records array: @record',
-          ['@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+      throw new \Exception('ChadoRecords::setConditionValue(): delta, "' . $delta
+          . '", for table_alias, "' . $table_alias
+          . '", does not exist in the records array: ' . print_r($this->records, TRUE));
     }
     if (!array_key_exists($column_alias, $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['conditions'])) {
-      throw new \Exception(t('ChadoRecords::setConditionValue(): column_alias, "@calias", for delta, "@delta", of table_alias, "@alias", does not exist in the records array: @record',
-          ['@calias' => $column_alias, '@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+      throw new \Exception('ChadoRecords::setConditionValue(): column_alias, "' . $column_alias
+          . ' for delta, "' . $delta . '", of table_alias, "' . $table_alias
+          . '", does not exist in the records array: ' . print_r($this->records, TRUE));
     }
     $this->records[$base_table]['tables'][$table_alias]['items'][$delta]['conditions'][$column_alias]['value'] = $value;
   }
@@ -735,8 +735,7 @@ class ChadoRecords  {
   protected function setRecordID(string $base_table, int $record_id) {
 
     if (!array_key_exists($base_table, $this->records)) {
-      throw new \Exception(t('ChadoRecords::setRecordID(): The base table has not been added to the ChadoRecords object: @base_table.',
-          ['@base_table' => $base_table]));
+      throw new \Exception('ChadoRecords::setRecordID(): The base table has not been added to the ChadoRecords object: ' . $base_table . '.');
     }
 
     $this->records[$base_table]['record_id'] = $record_id;
@@ -755,8 +754,7 @@ class ChadoRecords  {
   public function getRecordID(string $base_table) : int {
 
     if (!array_key_exists($base_table, $this->records)) {
-      throw new \Exception(t('ChadoRecords::getRecordID(): The base table has not been added to the ChadoRecords object: @base_table.',
-          ['@base_table' => $base_table]));
+      throw new \Exception('ChadoRecords::getRecordID(): The base table has not been added to the ChadoRecords object: ' . $base_table . '.');
     }
 
     return $this->records[$base_table]['record_id'];
@@ -805,9 +803,8 @@ class ChadoRecords  {
 
     $tables = $this->getTables($base_table);
     if (!in_array($table_alias, $tables)) {
-      throw new \Exception(t('ChadoRecords::getTableFromAlias() Requesting a table for an alias that is not used: @alias. '
-          . 'Current table aliases: @tables. Base table: @base_table',
-          ['@base_table' => $base_table, '@alias' => $table_alias, '@records' => print_r($tables, TRUE)]));
+      throw new \Exception('ChadoRecords::getTableFromAlias() Requesting a table for an alias that is not used: '
+          . $table_alias . '. Current table aliases: ' . print_r($tables, TRUE) . '. Base table: ' . $base_table);
     }
     return $this->records[$base_table]['tables'][$table_alias]['chado_table'];
   }
@@ -877,8 +874,7 @@ class ChadoRecords  {
    */
   public function getTables(string $base_table) {
     if (!array_key_exists($base_table, $this->records)) {
-      throw new \Exception(t('ChadoRecords::getTables(): The base table has not been added to the ChadoRecords object: @base_table.',
-          ['@base_table' => $base_table]));
+      throw new \Exception("ChadoRecords::getTables(): The base table has not been added to the ChadoRecords object: $base_table");
     }
     return array_keys($this->records[$base_table]['tables']);
   }
@@ -897,12 +893,10 @@ class ChadoRecords  {
    */
   protected function getTableItems(string $base_table, string $table_alias) {
     if (!array_key_exists($base_table, $this->records)) {
-      throw new \Exception(t('ChadoRecords::getTableItems(): The base table has not been added to the ChadoRecords object: @base_table.',
-          ['@base_table' => $base_table]));
+      throw new \Exception("ChadoRecords::getTableItems(): The base table has not been added to the ChadoRecords object: $base_table.");
     }
     if (!array_key_exists($table_alias, $this->records[$base_table]['tables'])) {
-      throw new \Exception(t('ChadoRecords::getTableItems(): The table has not been added to the ChadoRecords object: @table_alias',
-          ['@table_alias' => $table_alias]));
+      throw new \Exception("ChadoRecords::getTableItems(): The table has not been added to the ChadoRecords object: $table_alias");
     }
 
     return $this->records[$base_table]['tables'][$table_alias]['items'];
@@ -993,8 +987,7 @@ class ChadoRecords  {
   public function getFieldAliasColumn(string $base_table, string $table_alias, int $delta, string $column_alias) {
 
     if (!array_key_exists($base_table, $this->records)) {
-      throw new \Exception(t('ChadoRecords::getFieldAliasColumn(): The base table has not been added to the ChadoRecords object: @base_table.',
-          ['@base_table' => $base_table]));
+      throw new \Exception("ChadoRecords::getFieldAliasColumn(): The base table has not been added to the ChadoRecords object: $base_table.");
     }
 
     if (!array_key_exists($table_alias, $this->records[$base_table]['tables'])) {
@@ -1031,8 +1024,7 @@ class ChadoRecords  {
     $aliases = [];
 
     if (!array_key_exists($base_table, $this->records)) {
-      throw new \Exception(t('ChadoRecords::getColumnFieldAliases(): The base table has not been added to the ChadoRecords object: @base_table.',
-          ['@base_table' => $base_table]));
+      throw new \Exception("ChadoRecords::getColumnFieldAliases(): The base table has not been added to the ChadoRecords object: $base_table.");
     }
 
     if (!array_key_exists($table_alias, $this->records[$base_table]['tables'])) {
@@ -1080,16 +1072,15 @@ class ChadoRecords  {
       int $delta, string $column_alias, $value) : bool {
 
     if (!array_key_exists($base_table, $this->records)) {
-      throw new \Exception(t('ChadoRecords::setColumnValue(): The base table has not been added to the ChadoRecords object: @base_table.',
-          ['@base_table' => $base_table]));
+      throw new \Exception("ChadoRecords::setColumnValue(): The base table has not been added to the ChadoRecords object: $base_table.");
     }
     if (!array_key_exists($table_alias, $this->records[$base_table]['tables'])) {
-      throw new \Exception(t('ChadoRecords::setColumnValue(): table_alias, "@alias", does not exist in the records array: @record',
-          ['@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+      throw new \Exception("ChadoRecords::setColumnValue(): table_alias, \"$alias\", does not exist in the records array: "
+          . print_r($this->records, TRUE));
     }
     if (!array_key_exists($delta, $this->records[$base_table]['tables'][$table_alias]['items'])) {
-      throw new \Exception(t('ChadoRecords::setColumnValue(): delta, "@delta", for table_alias, "@alias", does not exist in the records array: @record',
-          ['@alias' => $table_alias, '@delta' => $delta, '@record' => print_r($this->records, TRUE)]));
+      throw new \Exception("ChadoRecords::setColumnValue(): delta, \"$delta\", for table_alias, \"$alias\", does not exist in the records array: "
+          . print_r($this->records, TRUE));
     }
 
     // Just skip columns that don't exist.  It shouldn't be an error.
@@ -1122,8 +1113,7 @@ class ChadoRecords  {
   public function getColumnValue(string $base_table, string $table_alias, int $delta, string $column_alias) {
 
     if (!array_key_exists($base_table, $this->records)) {
-      throw new \Exception(t('ChadoRecords::getFieldValue(): The base table has not been added to the ChadoRecords object: @base_table.',
-          ['@base_table' => $base_table]));
+      throw new \Exception("ChadoRecords::getFieldValue(): The base table has not been added to the ChadoRecords object: $base_table.");
     }
     if (!array_key_exists($table_alias, $this->records[$base_table]['tables'])) {
       return NULL;
@@ -1635,15 +1625,15 @@ class ChadoRecords  {
       // Execute the insert.
       $record_id = $insert->execute();
       if (!$record_id) {
-        throw new \Exception(t('Failed to insert a record in the Chado "@table" table. Alias: @alias, Record: @record',
-            ['@alias' => $table_alias, '@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Failed to insert a record in the Chado \"$chado_table\" table. Alias: $table_alias, Record: "
+            . print_r($record, TRUE));
       }
 
       // Update the field with the record id.
       $column_aliases = $this->getColumnFieldAliases($base_table, $table_alias, $delta, $pkey);
       if (!$column_aliases){
-        throw new \Exception(t('Failed to insert a record in the Chado "@table" because the primary key is missing as a field. Alias: @alias, Record: @record',
-            ['@alias' => $table_alias, '@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Failed to insert a record in the Chado \"$chado_table\" because the primary key is missing as a field. Alias: $table_alias, Record: "
+            . print_r($record, TRUE));
       }
       $pkey_alias = array_shift($column_aliases);
 
@@ -1735,8 +1725,8 @@ class ChadoRecords  {
       // Execute the query.
       $results = $select->execute();
       if (!$results) {
-        throw new \Exception(t('Failed to select record in the Chado "@table" table. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Failed to select record in the Chado \"$chado_table\" table. Record: "
+            . print_r($record, TRUE));
       }
 
       // Iterate through the results and create a new record for each one.
@@ -1790,8 +1780,8 @@ class ChadoRecords  {
 
       // Don't update if we don't have any conditions set.
       if (!$this->hasValidConditions($record)) {
-        throw new \Exception(t('Cannot update record in the Chado "@table" table due to unset conditions. Record: @record',
-            ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Cannot update record in the Chado \"$chado_table\" table due to unset conditions. Record: "
+            . print_r($record, TRUE));
       }
 
       // Skip records that are empty.
@@ -1818,12 +1808,12 @@ class ChadoRecords  {
 
       $rows_affected = $update->execute();
       if ($rows_affected == 0) {
-        throw new \Exception(t('Failed to update record in the Chado "@table" table. Record: @record',
-            ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Failed to update record in the Chado \"$chado_table\" table. Record: "
+            . print_r($record, TRUE));
       }
       if ($rows_affected > 1) {
-        throw new \Exception(t('Incorrectly tried to update multiple records in the Chado "@table" table. Record: @record',
-            ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Incorrectly tried to update multiple records in the Chado \"$chado_table\" table. Record: "
+            . print_r($record, TRUE));
       }
     }
   }
@@ -1863,8 +1853,8 @@ class ChadoRecords  {
         if ($graceful) {
           continue;
         }
-        throw new \Exception(t('Cannot delete record in the Chado "@table" table due to unset conditions. Record: @record',
-            ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Cannot delete record in the Chado \"$chado_table\" table due to unset conditions. Record: "
+            . print_r($record, TRUE));
       }
 
       // Don't delete if the primary key is not set.
@@ -1889,12 +1879,12 @@ class ChadoRecords  {
       $rows_affected = $delete->execute();
       if ($rows_affected == 0) {
         // @debug print "\n" . strtr((string) $delete, $delete->arguments()) . "\n";
-        throw new \Exception(t('Failed to delete a record in the Chado "@table" table. Record: @record',
-            ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Failed to delete a record in the Chado \"$chado_table\" table. Record: "
+            . print_r($record, TRUE));
       }
       if ($rows_affected > 1) {
-        throw new \Exception(t('Incorrectly tried to delete multiple records in the Chado "@table" table. Record: @record',
-            ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Incorrectly tried to delete multiple records in the Chado \"$chado_table\" table. Record: "
+            . print_r($record, TRUE));
       }
 
       // Unset the record Id for this deleted record.
@@ -1959,13 +1949,13 @@ class ChadoRecords  {
     foreach ($items as $delta => $record) {
 
       if (!array_key_exists('conditions', $record)) {
-        throw new \Exception(t('Cannot select record in the Chado "@table" table due to missing conditions. Record: @record',
-            ['@table' => $table_alias, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Cannot select record in the Chado \"$table_alias\" table due to missing conditions. Record: "
+            . print_r($record, TRUE));
       }
       // Make sure conditions are valid.
       if (!$this->hasValidConditions($record)) {
-        throw new \Exception(t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
-            ['@table' => $table_alias, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Cannot select record in the Chado \"$table_alias\" table due to unset conditions. Record: "
+            . print_r($record, TRUE));
       }
 
       // Start the select.
@@ -2042,8 +2032,8 @@ class ChadoRecords  {
       // Execute the query.
       $results = $select->execute();
       if (!$results) {
-        throw new \Exception(t('Failed to select record in the Chado "@table" table. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        throw new \Exception("Failed to select record in the Chado \"$chado_table\" table. Record: "
+            . print_r($record, TRUE));
       }
 
       // Update the values in the record.

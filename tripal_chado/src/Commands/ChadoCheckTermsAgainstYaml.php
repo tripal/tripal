@@ -42,12 +42,11 @@ class ChadoCheckTermsAgainstYaml extends DrushCommands {
   public function chadoCheckTermsAreAsExpected($options = ['chado_schema' => NULL, 'auto-expand' => FALSE, 'auto-fix' => FALSE, 'no-fix' => FALSE]) {
 
     if (!$options['chado_schema']) {
-      throw new \Exception(dt('The --chado_schema argument is required.'));
+      throw new \Exception('The --chado_schema argument is required.');
     }
 
     if (!\Drupal::service('tripal.dbx')->schemaExists($options['chado_schema'])) {
-      throw new \Exception(dt('The specified chado schema "@schema" does not exist.',
-        ['@schema' => $options['chado_schema']]));
+      throw new \Exception('The specified chado schema "' . $options['chado_schema'] . '" does not exist.');
     }
     $this->chado_schema = $options['chado_schema'];
 
