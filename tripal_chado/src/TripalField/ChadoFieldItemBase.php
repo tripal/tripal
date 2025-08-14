@@ -444,32 +444,12 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
-   * Retrieves a Chado schema table definition.
+   * Retrieves the name of the primary key for a Chado table.
    *
    * To also support custom chado tables, the definition is loaded from
    * the database if necessary. Note that this may return a different
    * definition array, specifically the value may be an array instead of
-   * a string, for example for 'primary key'.
-   *
-   * @param Drupal\tripal_chado\Database\ChadoSchema $schema
-   *   The chado schema definition.
-   * @param string $table_name
-   *   The chado table to look up the table definition for.
-   *
-   * @return array
-   *   The table definition.
-   */
-  protected static function getChadoTableDef(ChadoSchema $schema, string $table_name): array {
-    $schema_def = $schema->getTableDef($table_name, ['format' => 'Drupal']);
-    // For custom chado tables, need to check the database.
-    if (!$schema_def) {
-      $schema_def = $schema->getTableDef($table_name, ['format' => 'Drupal', 'source' => 'database']);
-    }
-    return $schema_def;
-  }
-
-  /**
-   * Retrieves the name of the primary key for a Chado table.
+   * a string.
    *
    * @param Drupal\tripal_chado\Database\ChadoSchema $schema
    *   The chado schema definition.
@@ -480,7 +460,11 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    *   The table primary key name.
    */
   protected static function getPrimaryKey(ChadoSchema $schema, string $table_name): ?string {
-    $schema_def = self::getChadoTableDef($schema, $table_name);
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => ['file', 'tripal', 'database'],
+    ];
+    $schema_def = $schema->getTableDef($table_name, $parameters);
     $primary_key = $schema_def['primary key'];
     if (is_array($primary_key)) {
       $primary_key = $primary_key[array_key_first($primary_key)];

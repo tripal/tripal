@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\TripalStorage;
 
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\Database\ChadoSchema;
 use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 use Symfony\Component\Validator\ConstraintViolation;
 
@@ -1220,8 +1221,12 @@ class ChadoRecords  {
    */
   protected function validateFKs($base_table, $delta, $record_id, $record) {
 
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => ['file', 'tripal', 'database'],
+    ];
     $schema = $this->connection->schema();
-    $table_def = $this->getChadoTableDef($schema, $base_table);
+    $table_def = $schema->getTableDef($base_table, $parameters);
 
     $bad_fks = [];
     if (!array_key_exists('foreign keys', $table_def)) {
@@ -1286,8 +1291,12 @@ class ChadoRecords  {
    */
   protected function validateTypes($base_table, $delta, $record_id, $record) {
 
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => ['file', 'tripal', 'database'],
+    ];
     $schema = $this->connection->schema();
-    $table_def = $this->getChadoTableDef($schema, $base_table);
+    $table_def = $schema->getTableDef($base_table, $parameters);
 
     $bad_types = [];
     foreach ($table_def['fields'] as $col => $info) {
@@ -1357,8 +1366,12 @@ class ChadoRecords  {
    */
   protected function validateSize($base_table, $delta, $record_id, $record) {
 
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => ['file', 'tripal', 'database'],
+    ];
     $schema = $this->connection->schema();
-    $table_def = $this->getChadoTableDef($schema, $base_table);
+    $table_def = $schema->getTableDef($base_table, $parameters);
 
     $bad_sizes = [];
     foreach ($table_def['fields'] as $col => $info) {
@@ -1414,8 +1427,12 @@ class ChadoRecords  {
    */
   protected function validateUnique($base_table, $delta, $record_id,  $record) {
 
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => ['file', 'tripal', 'database'],
+    ];
     $schema = $this->connection->schema();
-    $table_def = $this->getChadoTableDef($schema, $base_table);
+    $table_def = $schema->getTableDef($base_table, $parameters);
 
     // Check if we are violating a unique constraint (if it's an insert)
     if (array_key_exists('unique keys',  $table_def)) {
@@ -2119,31 +2136,6 @@ class ChadoRecords  {
   }
 
   /**
-   * Retrieves a Chado schema table definition.
-   *
-   * To also support custom chado tables, the definition is loaded from
-   * the database if necessary. Note that this may return a different
-   * definition array, specifically the value may be an array instead of
-   * a string, for example for 'primary key'.
-   *
-   * @param Drupal\tripal_chado\Database\ChadoSchema $schema
-   *   The chado schema definition.
-   * @param string $table_name
-   *   The chado table to look up the table definition for.
-   *
-   * @return array
-   *   The table definition.
-   */
-  public function getChadoTableDef(ChadoSchema $schema, string $table_name): array {
-    $table_def = $schema->getTableDef($table_name, ['format' => 'Drupal']);
-    // For custom chado tables, need to check the database.
-    if (!$table_def) {
-      $table_def = $schema->getTableDef($table_name, ['format' => 'Drupal', 'source' => 'database']);
-    }
-    return $table_def;
-  }
-
-  /**
    * Retrieves the name of the primary key for a Chado table.
    *
    * @param Drupal\tripal_chado\Database\ChadoSchema $schema
@@ -2155,7 +2147,11 @@ class ChadoRecords  {
    *   The table primary key name.
    */
   public function getPrimaryKey(ChadoSchema $schema, string $table_name): ?string {
-    $table_def = self::getChadoTableDef($schema, $table_name);
+    $parameters = [
+      'format' => 'Drupal',
+      'source' => ['file', 'tripal', 'database'],
+    ];
+    $table_def = $schema->getTableDef($table_name, $parameters);
     $primary_key = $table_def['primary key'];
     if (is_array($primary_key)) {
       $primary_key = $primary_key[array_key_first($primary_key)];
