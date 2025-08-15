@@ -85,15 +85,14 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
     // Base table
-    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-    $base_pkey_col = $base_schema_def['primary key'];
+    $base_pkey_col = self::getPrimaryKey($schema, $base_table);
     $base_column = $storage_settings['base_column'];
     $base_column_term = self::getColumnTermId($base_table, $base_column, 'schema:name');
 
     // Relationship table
     $linker_table = $storage_settings['linker_table'] ?? ($base_table . '_relationship');
-    $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
-    $linker_pkey_col = $linker_schema_def['primary key'];
+    $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
+    $linker_pkey_col = self::getPrimaryKey($schema, $linker_table);
     // Relationship table column naming is not consistent for nd_reagent and project
     $linker_subject_col = $storage_settings['subject_column'] ?? NULL;
     $linker_object_col = $storage_settings['object_column'] ?? NULL;
