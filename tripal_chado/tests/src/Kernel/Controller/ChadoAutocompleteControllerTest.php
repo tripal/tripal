@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 use Drupal\tripal_chado\Controller\ChadoProjectAutocompleteController;
 use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the Generic Autocomplete.
@@ -15,6 +16,9 @@ use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
  * @group Tripal Chado
  * @group Autocomplete
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Autocomplete')]
 class ChadoAutocompleteControllerTest extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 

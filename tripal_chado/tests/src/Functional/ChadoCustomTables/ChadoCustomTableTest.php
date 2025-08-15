@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the base functionality for chado custom tables.
@@ -11,6 +12,9 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  * @group Tripal Chado
  * @group Tripal Chado Custom Tables
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Chado Custom Tables')]
 class ChadoCustomTableTest extends ChadoTestBrowserBase {
 
   /**
@@ -18,6 +22,7 @@ class ChadoCustomTableTest extends ChadoTestBrowserBase {
    *
    * @group service manager
    */
+  #[Group('service manager')]
   public function testManager() {
     $manager = \Drupal::service('tripal_chado.custom_tables');
     $this->assertIsObject($manager, 'Able to retrieve the custom table service manager.');

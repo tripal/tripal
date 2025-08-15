@@ -1,6 +1,8 @@
 <?php
 namespace Drupal\Tests\tripal_chado\Functional;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Tests for the NewickImporter class
  *
@@ -8,6 +10,9 @@ namespace Drupal\Tests\tripal_chado\Functional;
  * @group Tripal Chado
  * @group Tripal Chado ChadoStorage
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Chado ChadoStorage')]
 class NewickImporterTest extends ChadoTestBrowserBase
 {
 
@@ -16,6 +21,7 @@ class NewickImporterTest extends ChadoTestBrowserBase
    *
    * @group gff
    */
+  #[Group('gff')]
   public function testNewickImporterSimpleTest()
   {
     // Public schema connection

@@ -5,12 +5,14 @@ namespace Drupal\Tests\tripal_chado\Kernel\Plugin\ChadoBuddy;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\ChadoBuddy\Exceptions\ChadoBuddyException;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the Chado Property Buddy.
  *
  * @group ChadoBuddy
  */
+#[Group('ChadoBuddy')]
 abstract class ChadoTestBuddyBase extends ChadoTestKernelBase {
   protected $defaultTheme = 'stark';
 

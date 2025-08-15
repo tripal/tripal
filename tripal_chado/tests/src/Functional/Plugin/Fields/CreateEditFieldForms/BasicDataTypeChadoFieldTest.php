@@ -4,6 +4,8 @@ namespace Drupal\Tests\tripal_chado\Functional\Plugin\Fields\CreateEditFieldForm
 
 use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the configuration for where a basic chado field is added to an existing
@@ -13,6 +15,7 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  *
  * @group ChadoField
  */
+#[Group('ChadoField')]
 class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   use FieldUiTestTrait;
 
@@ -159,6 +162,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
    * - to get the full HTML: print $this->getSession()->getPage()->getContent();
    * - to get the plain text without markup: print $this->getTextContent();
    */
+  #[DataProvider('provideFieldsToTest')]
   public function testCreateViaCombinedAddFieldForm($field_type_name, $valid_options) {
 
     // ONLY do this test if we are in Drupal 10.2+ since we are assuming

@@ -163,7 +163,21 @@ class ChadoPublish extends TripalBackendPublishBase {
   protected $republish = TRUE;
 
   /**
-   * Populates the $this->field_info variable with field information
+   * Maximum number of linked records from one table to publish on one entity.
+   *
+   * @var int
+   */
+  protected int $publish_global_max_delta;
+
+  /**
+   * Flag to inhibit publish if maximum number of linked records is exceeded.
+   *
+   * @var bool
+   */
+  protected bool $publish_global_max_delta_inhibit;
+
+  /**
+   * Loads migration data for preserving Tripal 3 entity IDs.
    *
    * @param string $filename
    *   If not an empty string, load this data file.
@@ -240,14 +254,69 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
-   * Populates the $this->field_info variable with field information
+   * Retrieves the object_table storage plugin setting value for linking fields.
    *
-   * @param string $bundle
-   *   The id of the bundle or entity type.
+   * @param string $field_name
+   *   The name of the field.
+   * @param array $storage_plugin_settings
+   *   Storage settings for a field.
+   *
+   * @return string
+   *   The name of the linked object table, or an empty string for non-linking
+   *   fields.
    */
-  protected function setFieldInfo() {
+  protected function getObjectTable(string $field_name, array $storage_plugin_settings): string {
+    $object_table = '';
+    if (array_key_exists('object_table', $storage_plugin_settings)) {
+      $object_table = $storage_plugin_settings['object_table'];
+    }
+    // Only look up object table for linking fields.
+    elseif (array_key_exists('linker_table', $storage_plugin_settings)
+        or array_key_exists('linker_table_and_column', $storage_plugin_settings)) {
+      $linker_table = $storage_plugin_settings['linker_table'] ?? NULL;
+      $linker_column = $storage_plugin_settings['linker_fkey_column'] ?? NULL;
+      if (!$linker_table) {
+        // @todo How to get this value from tripal_chado/src/TripalField/ChadoFieldItemBase.php:34 ?
+        $table_column_delimiter = " \u{2192} ";  // right arrow
+        [$linker_table, $linker_column] = explode($table_column_delimiter, $storage_plugin_settings['linker_table_and_column']);
+      }
+      // Look up the object table from the foreign key of the $linker_column.
+      $chado = \Drupal::service('tripal_chado.database');
+      $linker_schema_def = $chado->schema()->getTableDef($linker_table, ['format' => 'Drupal']);
+      $foreign_keys = $linker_schema_def['foreign keys'] ?? [];
+      foreach ($foreign_keys as $table => $info) {
+        if ($info['columns'][$linker_column] ?? FALSE) {
+          $object_table = $table;
+        }
+      }
+      // Store permanently so that we don't need to repeat this slow lookup.
+      if ($object_table) {
+        $config_name = 'field.storage.tripal_entity.' . $field_name;
+        $config = \Drupal::configFactory()->getEditable($config_name);
+        if ($config) {
+          $settings = $config->get('settings');
+          $settings['storage_plugin_settings']['object_table'] = $object_table;
+          $config->set('settings', $settings);
+          $config->save();
 
-    // Get the field definitions for the bundle type
+          // While the setting has been saved permanently, it is cached, so
+          // we also need to invalidate the appropriate discovery cache key.
+          $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+          $cache_key = 'entity_bundle_field_definitions:tripal_entity:' . $this->bundle . ':' . $language;
+          \Drupal::service('cache.discovery')->delete($cache_key);
+        }
+      }
+    }
+
+    return $object_table;
+  }
+
+  /**
+   * Populates the $this->field_info variable with field information.
+   */
+  protected function setFieldInfo(): void {
+
+    // Get the field definitions for the bundle type.
     $field_defs = $this->entity_field_manager->getFieldDefinitions('tripal_entity', $this->bundle);
 
     // Iterate over the field definitions for the bundle and collect the
@@ -266,23 +335,37 @@ class ChadoPublish extends TripalBackendPublishBase {
           ];
           $instance = $this->field_type_manager->createInstance($field_definition->getType(), $configuration);
           $prop_types = $instance->tripalTypes($field_definition);
-          $field_class = get_class($instance);
+          $storage_settings = $storage_definition->getSettings();
+          $object_table = $this->getObjectTable($field_name, $storage_settings['storage_plugin_settings']);
           $this->storage->addTypes($field_name, $prop_types);
           $this->storage->addFieldDefinition($field_name, $field_definition);
           $field_info = [
             'definition' => $field_definition,
-            'class' => $field_class,
+            'class' => get_class($instance),
             'prop_types' => [],
             'instance' => $instance,
+            'cardinality' => $storage_definition->getCardinality(),
+            'object_table' => $object_table,
           ];
+
+          // Store the main properties for later.
+          $main_property_name = $instance->mainPropertyName();
+          $this->main_property_names[$field_name] = $main_property_name;
+
           // Order the property types by key for easy lookup.
           foreach ($prop_types as $prop_type) {
-            $field_info['prop_types'][$prop_type->getKey()] = $prop_type;
+            $prop_key = $prop_type->getKey();
+            $field_info['prop_types'][$prop_key] = $prop_type;
+
+            // Store any table alias mappings, such as those used for property fields.
+            if ($prop_key == $main_property_name) {
+              $prop_storage_settings = $prop_type->getStorageSettings();
+              if (array_key_exists('table_alias_mapping', $prop_storage_settings)) {
+                $field_info['table_alias_mapping'] = $prop_storage_settings['table_alias_mapping'];
+              }
+            }
           }
           $this->field_info[$field_name] = $field_info;
-
-          // Store the main properties for later
-          $this->main_property_names[$field_name] = $instance->mainPropertyName();
         }
       }
     }
@@ -535,6 +618,62 @@ class ChadoPublish extends TripalBackendPublishBase {
       $this->token_values[$record_id] = $token_values;
     }
     return $titles;
+  }
+
+  /**
+   * Retrieves a list of numeric entity ID values for the current bundle.
+   *
+   * @return array
+   *   A list of numeric entity IDs.
+   */
+  protected function getEntityIds() {
+    $storage = \Drupal::entityTypeManager()->getStorage('tripal_entity');
+    $query = $storage->getQuery();
+    $entities = $query
+      ->accessCheck(TRUE)
+      ->condition('type', $this->bundle, '=')
+      ->execute();
+    return $entities;
+  }
+
+  /**
+   * Filter entities for only those that are orphaned.
+   *
+   * Orphaned entities are those without an underlying chado record.
+   *
+   * @return array
+   *   A list of orphaned numeric entity IDs.
+   */
+  protected function findOrphanedEntities(array $entity_ids): array {
+    $orphaned_entity_ids = [];
+    $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
+    $chado = \Drupal::service('tripal_chado.database');
+
+    $schema = $chado->schema();
+    $table_def = $schema->getTableDef($this->base_table, ['format' => 'drupal']);
+    $pkey = $table_def['primary key'];
+
+    // Returns array with key chado record id and value entity id.
+    $published_entity_ids = $lookup_manager->getPublishedEntityIds($this->bundle);
+
+    // In batches of 1000, find published entities from chado records
+    // that are no longer present in chado.
+    $batches = $this->divideIntoBatches($published_entity_ids);
+    foreach ($batches as $batch) {
+      $query = $chado->select('1:' . $this->base_table, 'B');
+      $query->addField('B', $pkey, 'pkey');
+      $query->condition($pkey, array_keys($batch), 'IN');
+      $results = $query->execute()->fetchAllAssoc('pkey');
+      // $results array keys are the found chado record primary keys.
+      // Generate the list of entities that are not in these results.
+      foreach ($batch as $pkey => $entity_id) {
+        if (!array_key_exists($pkey, $results)) {
+          $orphaned_entity_ids[] = $entity_id;
+        }
+      }
+    }
+
+    return $orphaned_entity_ids;
   }
 
   /**
@@ -834,6 +973,32 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
+   * Performs bulk deletion of existing entities from the tripal_entity table.
+   *
+   * @param array $entity_ids
+   *   A list of entities to delete.
+   *
+   * @return int
+   *   The number of entities deleted.
+   */
+  protected function deleteEntities(array $entity_ids): int {
+    $batches = $this->divideIntoBatches($entity_ids);
+    $count = 0;
+    foreach ($batches as $batch) {
+      // Delete fields first.
+      foreach (array_keys($this->field_info) as $field_name) {
+        $this->deleteFieldItems($field_name, $batch);
+      }
+      // Now delete the entity.
+      $delete_query = $this->connection
+        ->delete('tripal_entity')
+        ->condition('id', $entity_ids, 'IN');
+      $count += $delete_query->execute();
+    }
+    return $count;
+  }
+
+  /**
    * Finds existing fields so that we will not be adding any duplicate fields.
    *
    * @param string $field_name
@@ -971,6 +1136,26 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
     }
     return [$num_inserted, $num_updated];
+  }
+
+  /**
+   * Deletes records from the field tables for entities.
+   *
+   * @param string $field_name
+   *   The name of the field.
+   * @param array $entity_ids
+   *   One or more entities having the field removed.
+   *
+   * @return int
+   *   The number of items deleted for the field.
+   */
+  protected function deleteFieldItems(string $field_name, array $entity_ids): int {
+    $field_table = 'tripal_entity__' . $field_name;
+    $delete_query = $this->connection
+      ->delete($field_table)
+      ->condition('entity_id', $entity_ids, 'IN');
+    $count = $delete_query->execute();
+    return $count;
   }
 
   /**
@@ -1156,7 +1341,7 @@ class ChadoPublish extends TripalBackendPublishBase {
     $batches = [];
     $num_batches = (int) ((count($record_ids) + $this->batch_size - 1) / $this->batch_size);
     for ($delta = 0; $delta < $num_batches; $delta++) {
-      $batches[$delta] = array_slice($record_ids, $delta * $this->batch_size, $this->batch_size);
+      $batches[$delta] = array_slice($record_ids, $delta * $this->batch_size, $this->batch_size, TRUE);
     }
     return $batches;
   }
@@ -1227,10 +1412,10 @@ class ChadoPublish extends TripalBackendPublishBase {
     $this->bundle = $options['bundle'] ?? '';
     $this->datastore = $options['datastore'] ?? '';
     if (!$this->bundle) {
-      throw new TripalPublishException(t('A bundle must be specified to publish'));
+      throw new TripalPublishException('A bundle must be specified to publish');
     }
     if (!$this->datastore) {
-      throw new TripalPublishException(t('A datastore must be specified to publish'));
+      throw new TripalPublishException('A datastore must be specified to publish');
     }
     // Optional values
     $this->schema_name = $options['schema_name'] ?? 'chado';
@@ -1270,20 +1455,25 @@ class ChadoPublish extends TripalBackendPublishBase {
       $this->logger->setJob($this->job);
     }
 
+    $max_delta = \Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta');
+    if (is_null($max_delta) or (trim($max_delta) === '')) {
+      $max_delta = 100;
+    }
+    $this->publish_global_max_delta = $max_delta;
+    $this->publish_global_max_delta_inhibit = boolval(\Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta_inhibit'));
+
     // Get the bundle object so we can get settings such as the title format.
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
     $this->entity_type = $this->entity_type_manager->getStorage('tripal_entity_type')->load($this->bundle);
     if (!$this->entity_type) {
-      throw new TripalPublishException(t('Could not find the entity type with an id of: "@bundle".',
-          ['@bundle' => $this->bundle]));
+      throw new TripalPublishException('Could not find the entity type with an id of: "' . $this->bundle . '".');
     }
     $this->base_table = $this->entity_type->getThirdPartySetting('tripal', 'chado_base_table');
 
     // Get the storage plugin used to publish.
     $this->storage = $this->storage_manager->getInstance(['plugin_id' => $this->datastore]);
     if (!$this->storage) {
-      throw new \TripalPublishException(t('Could not find an instance of the TripalStorage backend: "@datastore".',
-          ['@datastore' => $this->datastore]));
+      throw new \TripalPublishException('Could not find an instance of the TripalStorage backend: "' . $this->datastore . '".');
     }
     // @todo somehow set the chado schema using the value in $this->schema_name
     return TRUE;
@@ -1318,6 +1508,40 @@ class ChadoPublish extends TripalBackendPublishBase {
   }
 
   /**
+   * Generates the options array for chado storage findValues().
+   *
+   * These options include appropriate max_delta specifications.
+   * The cardinality value, if a positive integer greater than 1,
+   * will override the global setting.
+   *
+   * @return array
+   *   The options to pass to findValues().
+   */
+  protected function getFindValuesOptions(): array {
+    // We add one to max_delta to use the extra record as a flag that
+    // at least one record was not published. The formatters will not
+    // display this last extra record.
+    $cardinalities = [];
+    foreach ($this->field_info as $field_name => $field_info) {
+      $cardinality = $field_info['cardinality'];
+      if (array_key_exists('object_table', $field_info)) {
+        $cardinalities[$field_info['object_table']] = $cardinality + 1;
+      }
+      if (array_key_exists('table_alias_mapping', $field_info)) {
+        // Although this is a loop, only one element will be present.
+        foreach ($field_info['table_alias_mapping'] as $alias => $table) {
+          $cardinalities[$alias] = $cardinality + 1;
+        }
+      }
+    }
+    return [
+      'global_max_delta' => $this->publish_global_max_delta + 1,
+      'cardinalities' => $cardinalities,
+      'inhibit' => $this->publish_global_max_delta_inhibit,
+    ];
+  }
+
+  /**
    * Publishes Chado content to Tripal entities.
    *
    * @param array $options
@@ -1335,6 +1559,8 @@ class ChadoPublish extends TripalBackendPublishBase {
    *         that was run on the Tripal 3 site.
    *     'lenient_migration' - Do not stop if there are missing records in the migration
    *         data, rather just skip over them.
+   *     'unpublish' - A true value to instead unpublish content.
+   *     'orphaned' - Used for unpublish to only unpublish orphaned content.
    * .
    * @return array
    *   An associative array of the first 100 entities that were published,
@@ -1349,6 +1575,11 @@ class ChadoPublish extends TripalBackendPublishBase {
 
     // Retrieve all chado record IDs for this bundle
     $record_ids = $this->getRecordIds();
+
+    // Take the unpublish branch if specified.
+    if ($options['unpublish'] ?? FALSE) {
+      return $this->unpublish($options);
+    }
 
     // If there are no record IDs for this bundle, return early
     if (!count($record_ids)) {
@@ -1389,7 +1620,8 @@ class ChadoPublish extends TripalBackendPublishBase {
       }
 
       $this->logger->notice($batch_prefix . 'Step 1 of 6: Find matching records');
-      $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch);
+      $find_values_options = $this->getFindValuesOptions();
+      $matches = $this->storage->findValues($this->search_values, $this->main_property_names, $record_id_batch, $find_values_options);
 
       $success = $this->validateMigrationData($matches, $this->lenient_migration);
       if (!$success) {
@@ -1482,4 +1714,62 @@ class ChadoPublish extends TripalBackendPublishBase {
     return $this->published_or_updated_entities;
   }
 
+  /**
+   * Unpublishes Tripal entities.
+   *
+   * @param array $options
+   *   Associative array defining what and how to unpublish.
+   *   Required keys are:
+   *     'bundle' - The id of the bundle or entity type
+   *     'datastore' - The id of the TripalStorage plugin
+   *   Optional keys are:
+   *     'job' - A Tripal job object
+   *     'batch_size' - Max number of records per batch, defaults to 1000.
+   *     'unpublish' - When true unpublish content (i.e. delete entities)
+   *     instead of publishing it. Must be present for this function to
+   *     be called.
+   *     'orphaned' - When unpublishing, only unpublish orphaned content
+   *     which are entities missing their chado record, defaults to TRUE.
+   *
+   * @return array
+   *   For publish the returned array is a list of titles. Here it is just
+   *   a list of the entity ID values unpublished.
+   *   This return value is only used for automated tests.
+   */
+  public function unpublish(array $options): array {
+
+    // Populates the $this->field_info variable with field information.
+    $this->setFieldInfo();
+
+    // Retrieve a list of all published entities for this bundle.
+    // Key is entity ID, value is chado record ID.
+    $entity_ids = $this->getEntityIDs();
+
+    // If in orphaned mode, generate a subset of which entity IDs to unpublish.
+    $orphaned_text = '';
+    if ($options['orphaned'] ?? TRUE) {
+      $entity_ids = $this->findOrphanedEntities($entity_ids);
+      $orphaned_text = 'orphaned ';
+    }
+
+    // Let user know what and how much will be unpublished.
+    if (count($entity_ids) < 1) {
+      $this->logger->notice('There are no ' . $orphaned_text . 'entities to be unpublished');
+    }
+    else {
+      $message = 'Preparing to unpublish ' . number_format(count($entity_ids)) . ' "'
+          . $this->bundle . '" ' . $orphaned_text . 'records';
+      $this->logger->notice($message);
+
+      // Unpublish.
+      $count = $this->deleteEntities($entity_ids);
+      $this->logger->notice('Unpublished ' . number_format($count) . ' ' . $orphaned_text . 'entities');
+      if ($count != count($entity_ids)) {
+        $this->logger->error("This is not the expected number of ' . $orphaned_text
+            . 'records to be unpublished, expected " . count($entity_ids));
+      }
+    }
+
+    return $entity_ids;
+  }
 }

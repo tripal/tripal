@@ -3,7 +3,8 @@
 namespace Drupal\Tests\tripal_chado\Kernel\Api;
 
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
-
+use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for API functions dealing with phylogenetic trees.
@@ -13,7 +14,24 @@ use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
  * @group Tripal Chado
  * @group Tripal API
  * @group Tripal Phylotree
+ *
+ * @covers ::chado_phylogeny_lookup_organism_by_name
+ * @covers ::chado_phylogeny_get_node_types_vocab
+ * not yet implemented because newick importer not completed
+ *   ::chado_phylogeny_import_tree_file
+ *   ::chado_validate_phylotree
+ *   ::chado_insert_phylotree
+ *   ::chado_update_phylotree
+ *   ::chado_delete_phylotree
+ *   ::chado_assign_phylogeny_tree_indices
+ *   ::chado_phylogeny_import_tree
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal API')]
+#[Group('Tripal Phylotree')]
+#[CoversFunction('chado_phylogeny_lookup_organism_by_name')]
+#[CoversFunction('chado_phylogeny_get_node_types_vocab')]
 class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
   /**
@@ -37,20 +55,12 @@ class ChadoPhylogenyAPITest extends ChadoTestKernelBase {
 
   /**
    * Tests the following phylotree API functions:
-   * @cover ::chado_phylogeny_lookup_organism_by_name
-   * @cover ::chado_phylogeny_get_node_types_vocab
-   * not yet implemented because newick importer not completed
-   *   ::chado_phylogeny_import_tree_file
-   *   ::chado_validate_phylotree
-   *   ::chado_insert_phylotree
-   *   ::chado_update_phylotree
-   *   ::chado_delete_phylotree
-   *   ::chado_assign_phylogeny_tree_indices
-   *   ::chado_phylogeny_import_tree
    *
    * @group tripal-chado
    * @group chado-organism
    */
+  #[Group('tripal-chado')]
+  #[Group('chado-organism')]
   public function testChadoPhylotreeAPIFunctions() {
 
     // Create a new test schema for us to use, and retrieve its name.

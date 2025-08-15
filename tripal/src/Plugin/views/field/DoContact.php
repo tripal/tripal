@@ -6,12 +6,12 @@ use Drupal\views\Attribute\ViewsField;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 
-#[ViewsField('do_contact')]
 /**
  * Views field plugin to display 'do_contact'.
  *
  * @ingroup views_field_handlers
  */
+#[ViewsField('do_contact')]
 class DoContact extends FieldPluginBase {
 
   /**

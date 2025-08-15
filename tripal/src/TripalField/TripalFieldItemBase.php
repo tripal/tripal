@@ -2,6 +2,9 @@
 
 namespace Drupal\tripal\TripalField;
 
+use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
+use Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -13,7 +16,6 @@ use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\TypedData\DataDefinition;
-use \RuntimeException;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
@@ -28,7 +30,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $settings = [
       'termIdSpace' => '',
       'termAccession' => '',
-      # 'max_delta' => 100,
       // A simple flag to indicate that we should enable debugging information
       // for this field type.
       // This will be used by ChadoStorage to tell the ChadoFieldDebugger service
@@ -57,7 +58,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     return $settings + parent::defaultStorageSettings();
   }
 
-
   /**
    * A helper function for the fieldSettingsForm.
    *
@@ -68,10 +68,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @param \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase $idSpace
    * @param \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase $vocabulary
    */
-  public static function buildVocabularyTermTable(array &$elements,
-      \Drupal\tripal\TripalVocabTerms\TripalTerm $term,
-      \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase $idSpace,
-      \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase $vocabulary) {
+  public static function buildVocabularyTermTable(
+    array &$elements,
+    TripalTerm $term,
+    TripalIdSpaceBase $idSpace,
+    TripalVocabularyBase $vocabulary,
+  ) {
 
     // Construct a table for the vocabulary information.
     $headers = ['Term Property', 'Value'];
@@ -143,19 +145,19 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements['field_term_fs']['table_label'] = [
       '#type' => 'item',
       '#title' => t('The Current Term'),
-      '#description' => t("Terms belong to a vocabulary (e.g. Sequence "  .
+      '#description' => t("Terms belong to a vocabulary (e.g. Sequence " .
           "Ontology) and are identified with a unique accession which is often  " .
           "numeric but may not be (e.g. gene accession is 0000704 in the Sequence " .
           "Ontology). Term IDs are prefixed with an ID Space (e.g. SO). The " .
-          "ID Space and the accession will uniquely identify a term (e.g. SO:0000704).")
+          "ID Space and the accession will uniquely identify a term (e.g. SO:0000704)."),
     ];
 
     $elements['field_term_fs']['field_term'] = [
       '#type' => 'table',
-      '#header'=> $headers,
+      '#header' => $headers,
       '#rows' => $rows,
       '#empty' => t('There is no term associated with this field.'),
-      '#sticky' => False
+      '#sticky' => FALSE,
     ];
   }
 
@@ -164,7 +166,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    *
    * @param $field
    * @param array $form
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    */
   public static function buildFieldTermForm($field, $form, FormStateInterface $form_state) {
     $elements = [];
@@ -204,7 +206,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     ];
 
     $default_vocabulary_term = '';
-    // For Drupal ≥10.2 our values are now in the subform
+    // For Drupal ≥10.2 our values are now in the subform.
     $vocabulary_term = $form_state->getValue(['field_storage', 'subform', 'settings', 'field_term_fs', 'vocabulary_term'])
         ?? $form_state->getValue(['settings', 'field_term_fs', 'vocabulary_term']);
 
@@ -217,11 +219,11 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if ($vocabulary_term) {
       $default_vocabulary_term = $vocabulary_term;
     }
-    $first_pass = $form_state->getUserInput(['settings', 'field_term_fs', 'vocabulary_term'])?FALSE:TRUE;
+    $first_pass = $form_state->getUserInput(['settings', 'field_term_fs', 'vocabulary_term']) ? FALSE : TRUE;
 
     if (!$termIdSpace or !$termAccession) {
       if (!$default_vocabulary_term) {
-        // Only display this message once
+        // Only display this message once.
         if ($first_pass) {
           \Drupal::messenger()->addWarning(t("The field is missing an assigned controlled vocabulary term. Please set one"));
         }
@@ -261,8 +263,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       '#description' => t("All fields attached to a Tripal-based content " .
           "type must be associated with a controlled vocabulary term. " .
           "Use caution when changing the term. It should accurately represent " .
-          "the type of data stored in this field.  Using terms that are developed ".
-          "by the community (e.g. Sequence Ontology, etc.) ensures that the ".
+          "the type of data stored in this field.  Using terms that are developed " .
+          "by the community (e.g. Sequence Ontology, etc.) ensures that the " .
           "data on your site is discoverable and interoperable."),
       '#open' => $is_open,
     ];
@@ -283,7 +285,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
           "to help choose. Only the top 10 best matches are shown at a time."),
       '#default_value' => $default_vocabulary_term,
       '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => array('count' => 10),
+      '#autocomplete_route_parameters' => ['count' => 10],
       '#element_validate' => [[static::class, 'fieldSettingsFormValidate']],
     ];
     return $elements;
@@ -298,7 +300,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   }
 
   /**
-   * Form element validation handler
+   * Form element validation handler.
    *
    * @param array $form
    *   The form where the settings form is being included in.
@@ -376,7 +378,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * @param object $field_definition
    *   The field configuration object. This can be an instance of:
    *   \Drupal\field\Entity\FieldStorageConfig or
-   *   \Drupal\field\Entity\FieldConfig
+   *   \Drupal\field\Entity\FieldConfig.
    */
   private static function placeholderProperties($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
@@ -385,7 +387,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       new IntStoragePropertyType($entity_type_id, 'placeholder', 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
-      ])
+      ]),
     ]);
   }
 
@@ -399,22 +401,22 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       if ($type instanceof IntStoragePropertyType) {
         $properties[$type->getKey()] = DataDefinition::create("integer");
       }
-      else if ($type instanceof VarCharStoragePropertyType) {
+      elseif ($type instanceof VarCharStoragePropertyType) {
         $properties[$type->getKey()] = DataDefinition::create("string");
       }
-      else if ($type instanceof TextStoragePropertyType) {
+      elseif ($type instanceof TextStoragePropertyType) {
         $properties[$type->getKey()] = DataDefinition::create("string");
       }
-      else if ($type instanceof BoolStoragePropertyType) {
+      elseif ($type instanceof BoolStoragePropertyType) {
         $properties[$type->getKey()] = DataDefinition::create("boolean");
       }
       else {
-        throw new RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
+        throw new \RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
       }
     }
 
     if (empty($properties)) {
-      throw new RuntimeException("Cannot return empty array.");
+      throw new \RuntimeException("Cannot return empty array.");
     }
 
     return $properties;
@@ -429,24 +431,24 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     foreach ($prop_types as $type) {
       if ($type instanceof IntStoragePropertyType) {
         $column = [
-          "type" => "int"
+          "type" => "int",
         ];
         $schema["columns"][$type->getKey()] = $column;
       }
-      else if ($type instanceof VarCharStoragePropertyType) {
+      elseif ($type instanceof VarCharStoragePropertyType) {
         $column = [
           "type" => "varchar",
-          "length" => $type->getMaxCharacterSize()
+          "length" => $type->getMaxCharacterSize(),
         ];
         $schema["columns"][$type->getKey()] = $column;
       }
-      else if ($type instanceof TextStoragePropertyType) {
+      elseif ($type instanceof TextStoragePropertyType) {
         $column = [
           "type" => "text",
         ];
         $schema["columns"][$type->getKey()] = $column;
       }
-      else if ($type instanceof BoolStoragePropertyType) {
+      elseif ($type instanceof BoolStoragePropertyType) {
         $column = [
           "type" => "int",
           "size" => "tiny",
@@ -455,12 +457,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
         $schema["columns"][$type->getKey()] = $column;
       }
       else {
-        throw new RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
+        throw new \RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
       }
     }
 
     if (empty($schema)) {
-      throw new RuntimeException("Cannot return empty array.");
+      throw new \RuntimeException("Cannot return empty array.");
     }
     return $schema;
   }
@@ -472,14 +474,14 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements = [];
     $settings = $this->getSetting('storage_plugin_settings');
 
-    // turn into selection
+    // Turn into selection.
     $elements["storage_plugin_id"] = [
       "#type" => "textfield",
       "#title" => $this->t("Tripal Storage Plugin ID."),
       '#default_value' => $this->getSetting('storage_plugin_id'),
       "#required" => TRUE,
       "#description" => $this->t("The plugin ID of the storage backend."),
-      "#disabled" => TRUE
+      "#disabled" => TRUE,
     ];
 
     // Make a fieldset for each property setting.
@@ -500,27 +502,28 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
             [
               'data' => $propkey,
               'header' => TRUE,
-              'width' => '20%'
+              'width' => '20%',
             ],
-            $propval
+            $propval,
           ];
         }
         $prop_element = [
           '#type' => 'details',
           '#title' => $key,
-          '#open' => False,
+          '#open' => FALSE,
           'prop_settings_table' => [
             '#type' => 'table',
-            '#header'=> [],
+            '#header' => [],
             '#rows' => $prop_rows,
             '#empty' => $this->t('There are no settings.'),
-            '#sticky' => False
+            '#sticky' => FALSE,
           ],
         ];
         $property_elements[$key] = $prop_element;
       }
       $renderer = \Drupal::service('renderer');
-      $settings['property_settings'] = $renderer->render($property_elements);;
+      $settings['property_settings'] = $renderer->render($property_elements);
+
     }
 
     // Construct a table for the vocabulary information.
@@ -540,7 +543,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       '#type' => 'details',
       '#title' => $this->t("Storage Settings"),
       '#description' => $this->t("The following storage settings apply for this field."),
-      '#open' => False,
+      '#open' => FALSE,
     ];
     $elements['settings_fs']['table_label'] = [
       '#type' => 'item',
@@ -548,12 +551,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     ];
     $elements['settings_fs']['settings_table'] = [
       '#type' => 'table',
-      '#header'=> $headers,
+      '#header' => $headers,
       '#rows' => $rows,
       '#empty' => $this->t('There are no settings.'),
-      '#sticky' => False
+      '#sticky' => FALSE,
     ];
-    return $elements + parent::storageSettingsForm($form,$form_state,$has_data);
+    return $elements + parent::storageSettingsForm($form, $form_state, $has_data);
   }
 
   /**
@@ -582,10 +585,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $delta = $field_item->getName();
     foreach ($prop_values as $property) {
       $prop_key = $property->getKey();
-      $entity->get($field_name)->get($delta)->get($prop_key)->setValue($property->getValue(), False);
+      $entity->get($field_name)->get($delta)->get($prop_key)->setValue($property->getValue(), FALSE);
     }
   }
-
 
   /**
    * {@inheritdoc}
@@ -609,17 +611,17 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
         continue;
       }
       // Clear all other properties.
-      $entity->get($field_name)->get($delta)->get($prop_key)->setValue('', False);
+      $entity->get($field_name)->get($delta)->get($prop_key)->setValue('', FALSE);
     }
   }
 
   /**
-   * Santizies a property key.
+   * Sanitizes a property key.
    *
    * Property keys are often controlled vocabulary IDs, which is the IdSpace
    * and accession separated by a colon. The colon is not supported by the
    * storage backend and must be converted to an underscore. This
-   * function performs that task
+   * function performs that task.
    *
    * @param string $key
    *
@@ -631,7 +633,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   }
 
   /**
-   * Returns the settings from the form state
+   * Returns the settings from the form state.
    *
    * Under Drupal ~10.2 the settings array is located in a subform.
    * This function will figure out where it is, and return it.
@@ -644,9 +646,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public static function getFormStateSettings(FormStateInterface $form_state) {
     $settings = [];
-    // First test Drupal ~10.2 location
+    // First test Drupal ~10.2 location.
     $settings = $form_state->getValue(['field_storage', 'subform', 'settings']);
-    // Otherwise if Drupal <= 10.1
+    // Otherwise if Drupal <= 10.1.
     if (!$settings) {
       $settings = $form_state->getValue('settings');
     }
@@ -690,6 +692,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
 
   /**
    * {@inheritDoc}
+   *
    * @see \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface::discover()
    */
   public static function discover(TripalEntityType $bundle, string $field_id, array $field_types, array $field_instances): array {
@@ -734,4 +737,31 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     }
     return $field_name;
   }
+
+  /**
+   * Retrieve the max delta value specific to this field.
+   *
+   * @return int
+   *   The max delta value specific to this field.
+   */
+  public function getFieldMaxDelta(): int {
+    // Retrieve the global max_delta setting.
+    $max_delta = \Drupal::config('tripal.settings')->get('tripal_entity_type.publish_global_max_delta');
+
+    // The max_delta global setting defaults to 100 if not defined.
+    if (is_null($max_delta) or (trim($max_delta) === '')) {
+      $max_delta = 100;
+    }
+
+    // Retrieve the cardinality for this field.
+    $cardinality = $this->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
+
+    // Finite field cardinality will override the global max_delta setting.
+    if ($cardinality > 1) {
+      $max_delta = $cardinality;
+    }
+
+    return $max_delta;
+  }
+
 }

@@ -49,8 +49,6 @@ jobs:
           # Note: Drupal 11.1 is already only tested on one postgresql
           # version since it requires 16+.
           - pgsql-version: '17'
-            drupal-version: '10.4.x-dev'
-          - pgsql-version: '17'
             drupal-version: '10.5.x-dev'
     steps:
       # Check out the repo

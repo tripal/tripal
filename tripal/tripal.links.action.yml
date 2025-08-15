@@ -17,10 +17,10 @@ tripal.content_bio_data_publish_form:
   appears_on:
     - 'entity.tripal_entity.collection'
 
-# -- Remove orphaned content (i.e missing non-drupal record) link on Content Listing page.
+# -- Unpublish content, or remove orphaned content (i.e missing non-drupal record).
 tripal.content_type_unpublish:
-  route_name: 'tripal.content_type_unpublish'
-  title: 'Unpublish Orphaned Content'
+  route_name: 'tripal.content_type_unpublish_multiple'
+  title: 'Unpublish Tripal Content'
   weight: 100
   appears_on:
     - 'entity.tripal_entity.collection'

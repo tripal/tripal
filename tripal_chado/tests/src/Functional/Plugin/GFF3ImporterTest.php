@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Tests for the GFF3Importer class
  *
@@ -9,6 +11,9 @@ namespace Drupal\Tests\tripal_chado\Functional;
  * @group ChadoImporter
  * @group GFF3Importer
  */
+#[Group('TripalImporter')]
+#[Group('ChadoImporter')]
+#[Group('GFF3Importer')]
 class GFF3ImporterTest extends ChadoTestBrowserBase
 {
 
@@ -17,6 +22,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
    *
    * @group gff
    */
+  #[Group('gff')]
   public function testGFFImporterSimpleTest()
   {
     // GFF3 Specifications document: http://gmod.org/wiki/GFF3

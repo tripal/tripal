@@ -3,6 +3,7 @@ namespace Drupal\Tests\tripal_chado\Kernel;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal_chado\Traits\ChadoTestTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * This is a base class for Chado tests.
@@ -24,6 +25,8 @@ use Drupal\Tests\tripal_chado\Traits\ChadoTestTrait;
  * @group Tripal
  * @group Tripal Chado
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
 abstract class ChadoTestKernelBase extends TripalTestKernelBase {
 
   use ChadoTestTrait;
