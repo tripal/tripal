@@ -983,18 +983,21 @@ EOD;
       $schema_name = $this->defaultSchema;
       $this->initialize();
 
-      $sql_query = "
-        SELECT
-          pg_temp.tripal_get_table_ddl(:schema, :table, TRUE)
-          AS \"definition\";
-      ";
-      $result = $this->connection->query(
-          $sql_query,
-          [':schema' => $schema_name, ':table' => $table_name, ]
-      );
       $table_raw_definition = '';
-      if ($result) {
-        $table_raw_definition = $result->fetchObject()->definition;
+      $table_exists = $this->connection->schema()->tableExists($table_name);
+      if ($table_exists) {
+        $sql_query = "
+          SELECT
+            pg_temp.tripal_get_table_ddl(:schema, :table, TRUE)
+            AS \"definition\";
+        ";
+        $result = $this->connection->query(
+            $sql_query,
+            [':schema' => $schema_name, ':table' => $table_name, ]
+        );
+        if ($result) {
+          $table_raw_definition = $result->fetchObject()->definition;
+        }
       }
       $db_ddls[$cache_key] = $table_raw_definition;
     }
