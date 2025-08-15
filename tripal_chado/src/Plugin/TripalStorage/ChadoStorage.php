@@ -1209,7 +1209,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     else if (preg_match('/\./', $curr_path)) {
 
       // Get the table/column at the end.
-      list($table_alias, $value_column) = explode(".", $path);
+      if (is_array($path)) {
+        $path = $path[array_key_first($path)];
+      }
+      [$table_alias, $value_column] = explode(".", $path);
       $chado_table = $table_alias;
       if (array_key_exists($table_alias, $aliases)) {
         $chado_table = $aliases[$table_alias];

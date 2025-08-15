@@ -1442,7 +1442,9 @@ class ChadoRecords  {
       // violates it.
       $ukeys = $table_def['unique keys'];
       foreach ($ukeys as $ukey_name => $ukey_cols) {
-        $ukey_cols = explode(',', $ukey_cols);
+        if (!is_array($ukey_cols)) {
+          $ukey_cols = explode(',', $ukey_cols);
+        }
         $query = $this->connection->select('1:'. $base_table, $base_table);
         $query->fields($base_table);
         foreach ($ukey_cols as $col) {
@@ -1457,7 +1459,7 @@ class ChadoRecords  {
           // as either NULL or as an empty string in the database
           // table. Create a condition that checks for both. For
           // other types, e.g. integer, just check for null.
-          if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
+          if (($table_def['fields'][$col]['not null'] ?? FALSE) == FALSE and !$col_val) {
             if (in_array($table_def['fields'][$col]['type'],
                 ['character', 'character varying', 'text'])) {
                   $query->condition($query->orConditionGroup()
@@ -1547,7 +1549,7 @@ class ChadoRecords  {
 
       // If the field requires a value but doesn't have one then it may be
       // a problem.
-      if ($info['not null'] == TRUE and (!isset($col_val) or ($col_val == ''))) {
+      if (($info['not null'] ?? FALSE) == TRUE and (!isset($col_val) or ($col_val == ''))) {
         // If the column  has a default value then it's not a problem.
         if (array_key_exists('default', $info)) {
           continue;
