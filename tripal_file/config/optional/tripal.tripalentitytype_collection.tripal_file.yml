@@ -1,5 +1,5 @@
 id: 'tripal_file'
-label: 'Tripal File Content Types'
+label: 'Tripal File Content Types (Tripal File)'
 description: 'Files and associated licenses'
 dependencies:
     module:

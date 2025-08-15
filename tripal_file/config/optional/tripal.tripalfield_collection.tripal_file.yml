@@ -37,6 +37,9 @@ fields:
                 default:
                     region: 'content'
                     weight: 10
+                    settings:
+                        filter_format: 'plain_text'
+                        num_rows: 1
 
     -   name: 'file_description'
         content_type: 'tripal_file'
@@ -105,7 +108,8 @@ fields:
             storage_plugin_id: 'chado_storage'
             storage_plugin_settings:
                 base_table: 'file'
-                base_column: 'license_id'
+                linker_table: 'file_license'
+                linker_fkey_column: 'license_id'
         settings:
             termIdSpace: 'schema'
             termAccession: 'license'
@@ -149,6 +153,9 @@ fields:
                 default:
                     region: 'content'
                     weight: 10
+                    settings:
+                        filter_format: 'plain_text'
+                        num_rows: 1
 
     -   name: 'license_summary'
         content_type: 'tripal_license'
@@ -206,3 +213,4 @@ fields:
               weight: 30
               settings:
                 filter_format: 'plain_text'
+                num_rows: 1
