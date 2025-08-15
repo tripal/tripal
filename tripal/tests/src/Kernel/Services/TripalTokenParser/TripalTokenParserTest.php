@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\Services\TripalTokenParser;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -12,6 +13,9 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal Services
  * @group TripalTokenParser
  */
+#[Group('Tripal')]
+#[Group('Tripal Services')]
+#[Group('TripalTokenParser')]
 class TripalTokenParserTest extends TripalTestKernelBase {
 
   protected static $modules = ['system', 'user', 'path', 'path_alias', 'tripal'];

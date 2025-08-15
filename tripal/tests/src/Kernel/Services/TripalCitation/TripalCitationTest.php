@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Kernel\Services\TripalCitation;
 
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
+use PHPUnit\Framework\Attributes\Group;
 //use Drupal\tripal\Services\TripalCitationManager;
 
 
@@ -12,6 +13,8 @@ use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
  * @group Tripal
  * @group Tripal Citation
  */
+#[Group('Tripal')]
+#[Group('Tripal Citation')]
 class TripalCitationTest extends TripalTestKernelBase {
 
 

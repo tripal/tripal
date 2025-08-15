@@ -59,6 +59,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: germplasm_organism
         content_type: germplasm
@@ -331,6 +332,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: breeding_cross_organism
         content_type: breeding_cross
@@ -603,6 +605,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: germplasm_variety_organism
         content_type: germplasm_variety
@@ -875,6 +878,7 @@ fields:
               weight: 15
               settings:
                 filter_format: plain_text
+                num_rows: 1
 
     -   name: ril_organism
         content_type: ril

@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for the TaxonomyImporter class
@@ -10,6 +11,9 @@ namespace Drupal\Tests\tripal_chado\Functional;
  * @group ChadoImporter
  * @group TreeGenerator
  */
+#[Group('TripalImporter')]
+#[Group('ChadoImporter')]
+#[Group('TreeGenerator')]
 class TreeGeneratorTest extends ChadoTestBrowserBase {
 
   /**
@@ -17,6 +21,7 @@ class TreeGeneratorTest extends ChadoTestBrowserBase {
    *
    * @group taxonomy
    */
+  #[Group('taxonomy')]
   public function testTreeGeneratorSimpleTest() {
 
     // Installs up the chado with the test chado data

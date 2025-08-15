@@ -9,6 +9,7 @@ use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
 use Drupal\tripal\TripalVocabTerms\Interfaces\TripalVocabularyInterface;
 use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal\Services\TripalLogger;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests for the ChadoCVTerm classes
@@ -17,6 +18,9 @@ use Drupal\tripal\Services\TripalLogger;
  * @group Tripal Chado
  * @group Tripal Chado ChadoVocabTerms
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Chado ChadoVocabTerms')]
 class ChadoVocabTermsTest extends ChadoTestKernelBase {
 
   protected static $modules = ['system', 'tripal_chado'];

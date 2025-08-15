@@ -8,8 +8,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 /**
  * Defines a Chado Buddy attribute object.
  *
- * Plugin Namespace: Drupal\tripal_chado\ChadoBuddy
- *
+ * Plugin Namespace: Drupal\tripal_chado\ChadoBuddy.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class ChadoBuddy extends Plugin {

@@ -9,12 +9,12 @@ use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\Core\Render\Markup;
 
-#[ViewsField('chado_mviews_edit_link')]
 /**
  * Field handler to present a link to edit a chado custom table.
  *
  * @ingroup views_field_handlers
  */
+#[ViewsField('chado_mviews_edit_link')]
 class ChadoMviewsEditLink extends FieldPluginBase {
 
   /**

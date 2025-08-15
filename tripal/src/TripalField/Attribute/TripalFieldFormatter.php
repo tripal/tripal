@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Drupal\tripal\TripalField\Attribute;
 
 use Drupal\Core\Field\Attribute\FieldFormatter;
-use Drupal\Component\Plugin\Attribute\Plugin;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
