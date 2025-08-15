@@ -97,8 +97,8 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
-      $linker_pkey_col = $linker_schema_def['primary key'];
+      $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
+      $linker_pkey_col = self::getPrimaryKey($schema, $linker_table);
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
@@ -233,6 +233,7 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
     if (count($linker_tables) < 1) {
       $compatible = FALSE;
     }
+dpm($compatible, "CP21 Tripal File isCompatible");//@@@
     return $compatible;
   }
 
@@ -253,8 +254,10 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
       'description' => 'A file is an information-bearing object that contains a physical embodiment of some information using a particular character encoding.',
     ];
 
+dpm($options, "CP22 Tripal File discover options");//@@@
     // Call the parent discover() with this field's specific options
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
+dpm($field_list, "CP29 Tripal File discover field list");//@@@
 
     return $field_list;
   }

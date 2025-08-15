@@ -86,18 +86,20 @@ class TripalLicenseTypeDefault extends ChadoFieldItemBase {
 
     // Columns specific to the object table
     $object_schema_def = self::getChadoTableDef($schema, $object_table);
+    $cvterm_schema_def = self::getChadoTableDef($schema, 'cvterm');
     $name_term = self::getColumnTermId($object_table, 'name', 'schema:name');
     $name_len = $object_schema_def['fields']['name']['length'];
     $summary_term = self::getColumnTermId($object_table, 'summary', 'schema:description');
     $uri_term = self::getColumnTermId($object_table, 'uri', 'schema:url');
-
+    $type_term = self::getColumnTermId($object_table, 'type_id', 'schema:additionalType');
+    $type_len = $cvterm_schema_def['fields']['name']['size'];
     // Linker table, when used, requires specifying the linker table and column.
     [$linker_table, $linker_fkey_column] = self::get_linker_table_and_column($storage_settings, $base_table, $object_pkey_col);
 
     $extra_linker_columns = [];
     if ($linker_table != $base_table) {
-      $linker_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
-      $linker_pkey_col = $linker_schema_def['primary key'];
+      $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
+      $linker_pkey_col = self::getPrimaryKey($schema, $linker_table);
       // the following should be the same as $base_pkey_col @todo make sure it is
       $linker_left_col = array_keys($linker_schema_def['foreign keys'][$base_table]['columns'])[0];
       $linker_left_term = self::getColumnTermId($linker_table, $linker_left_col, self::$record_id_term);
@@ -212,8 +214,8 @@ class TripalLicenseTypeDefault extends ChadoFieldItemBase {
       'action' => 'read_value',
       'drupal_store' => FALSE,
       'path' => $linker_table . '.' . $linker_fkey_column . '>' . $object_table . '.' . $object_pkey_col
-        . ';' . $object_table . '.type_id>cvterm.cvterm_id;name',
-      'as' => 'license_type',
+        . ';' . $object_table . '.uri',
+      'as' => 'license_uri',
     ]);
 
     return $properties;

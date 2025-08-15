@@ -65,7 +65,7 @@ class TripalLicenseWidgetDefault extends ChadoWidgetBase {
     $options = [
       'base_table' => 'license',
       'column_name' => 'name',
-      'type_column' => 'type_id',
+      'type_column' => 'x',
       'property_table' => 'license',
     ];
     $select_element = $this->genericSelectElement('license_id', $license_id, $options);

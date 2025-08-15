@@ -49,11 +49,6 @@ class TripalFileFormatterDefault extends ChadoFormatterBase {
         'type' => $item->get('file_type')->getString(),
       ];
 
-      // Change the non-user-friendly 'null' file, which is specified by chado.
-      if ($values['name'] == 'null') {
-        $values['name'] = 'Unknown';
-      }
-
       // Substitute values in token string to generate displayed string.
       $displayed_string = $token_string;
       foreach ($values as $key => $value) {
@@ -73,7 +68,6 @@ class TripalFileFormatterDefault extends ChadoFormatterBase {
 
     // If more than one value has been found, display all values in an
     // unordered list.
-// @todo: add a pager
     elseif (count($list) > 1) {
       $elements[0] = [
         '#theme' => 'item_list',

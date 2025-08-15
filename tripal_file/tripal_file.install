@@ -111,17 +111,13 @@ function tripal_file_add_linker_table_terms(): void {
   $tripal_file_config_id = 'tripal_file_mapping';
   $storage = \Drupal::entityTypeManager()->getStorage($storage_id);
   $chado_core_mapping = $storage->load($core_config_id);
-#print "CP70 methods ";var_dump(get_class_methods($chado_core_mapping));//@@@
-#print "CP71 mapping ";var_dump($chado_core_mapping);//@@@
   $core_mapping_tables = $chado_core_mapping->get('tables');
-#print "CP72 tables ";var_dump($core_mapping_tables);//@@@
 
   // Get a keyed list to be able to determine if a table is already present.
   $existing_tables = [];
   foreach ($core_mapping_tables as $index => $table) {
     $existing_tables[$table['name']] = $index;
   }
-print "CP73 existing tables ";var_dump($existing_tables);//@@@
 
   // Get the table mapping for this module.
   $tripal_file_mapping = $storage->load($tripal_file_config_id);
@@ -140,22 +136,9 @@ print "CP77 adding table \"".$table['name']."\"\n";//@@@
 print "CP79 saving updated\n";//@@@
     $chado_core_mapping->save();
   }
-//@todo
   return;
 
-print "CP72 tripal_file_add_linker_table_terms\n";//@@@
-  /** @var Drupal\Core\Config\Entity\ConfigEntityStorage **/
-  $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-  /** @var Drupal\tripal_chado\Entity\ChadoTermMapping **/
-  $mapping = $storage->load('core_mapping');
-  $mapping->refreshMapping('config/install/tripal_chado.chado_term_mapping.core_mapping');
-print "CP74 tripal_file_add_linker_table_terms\n";//@@@
-return;
-
-#  the chado_semweb table is not currently in tripal
-#@todo      $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-#      self::$mapping = $storage->load('core_mapping');
-# maybe tripal_chado_rebuild_chado_term_mappings();
+//@todo add to yaml instead
   // Terms for linker tables
   $linked_tables = tripal_file_get_linked_tables();
 
@@ -197,13 +180,13 @@ function tripal_file_add_default_licenses($chado): void {
 
   $license_defs = [
     0 => [
-      'name' => 'Public Domain',
-      'summary' => 'The data have no known copyrights or restrictions and can be freely used by anyone.',
+      'name' => 'No license',
+      'summary' => 'There is no license associated with this item.',
       'uri' => NULL,
     ],
     1 => [
-      'name' => 'No license',
-      'summary' => 'There is no license associated with this item.',
+      'name' => 'Public Domain',
+      'summary' => 'The data have no known copyrights or restrictions and can be freely used by anyone.',
       'uri' => NULL,
     ],
     2 => [
@@ -246,15 +229,17 @@ function tripal_file_add_default_licenses($chado): void {
     }
   }
 
-  // Publish any added licenses.
+  // Publish new licenses.
   if ($n_added) {
-    $publish_service = \Drupal::service('tripal.backend_publish');
-    $chado_publish = $publish_service->createInstance('chado_storage', []);
+    $tripal_publish_service = \Drupal::service('tripal.backend_publish');
+    $default_schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+    $chado_publish_instance = $tripal_publish_service->createInstance('chado_storage', []);
     $publish_options = [
       'bundle' => 'tripal_license',
       'datastore' => 'chado_storage',
-    ];//  'schema_name' => $this->testSchemaName];
-    $published_entities = $chado_publish->publish($publish_options);
+      'schema_name' => $default_schema_name,
+    ];
+    $published_entities = $chado_publish_instance->publish($publish_options);
   }
 }
 

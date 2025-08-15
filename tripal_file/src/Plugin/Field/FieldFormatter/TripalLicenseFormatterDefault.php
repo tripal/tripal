@@ -17,7 +17,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
   ],
   valid_tokens: [
     '[name]',
-    '[description]',
+    '[summary]',
     '[uri]',
   ],
 )]
@@ -45,14 +45,8 @@ class TripalLicenseFormatterDefault extends ChadoFormatterBase {
       $values = [
         'entity_id' => $item->get('entity_id')->getString(),
         'name' => $item->get('license_name')->getString(),
-        'description' => $item->get('license_description')->getString(),
-        'type' => $item->get('license_type')->getString(),
+        'summary' => $item->get('license_summary')->getString(),
       ];
-
-      // Change the non-user-friendly 'null' license, which is specified by chado.
-      if ($values['name'] == 'null') {
-        $values['name'] = 'Unknown';
-      }
 
       // Substitute values in token string to generate displayed string.
       $displayed_string = $token_string;
@@ -73,7 +67,6 @@ class TripalLicenseFormatterDefault extends ChadoFormatterBase {
 
     // If more than one value has been found, display all values in an
     // unordered list.
-// @todo: add a pager
     elseif (count($list) > 1) {
       $elements[0] = [
         '#theme' => 'item_list',
