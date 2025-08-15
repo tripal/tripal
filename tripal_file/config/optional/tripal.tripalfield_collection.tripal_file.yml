@@ -124,6 +124,35 @@ fields:
                     region: 'content'
                     weight: 40
 
+    -   name: 'file_relationship'
+        content_type: 'tripal_file'
+        label: 'Relationship'
+        type: 'chado_relationship_type_default'
+        description: 'Other files related to this file.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                base_column: 'name'
+                linker_table: 'file_relationship'
+                subject_column: subject_id
+                object_column: object_id
+        settings:
+            termIdSpace: 'SBO'
+            termAccession: '0000374'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 50
+            form:
+                default:
+                    region: 'content'
+                    weight: 50
+
     -   name: 'license_name'
         content_type: 'tripal_license'
         label: 'Name'
