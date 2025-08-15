@@ -462,7 +462,11 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   protected static function getPrimaryKey(ChadoSchema $schema, string $table_name): ?string {
     $parameters = [
       'format' => 'Drupal',
-      'source' => ['file', 'tripal', 'database'],
+      'source' => [
+        'file',
+        'tripal',
+        'database'
+      ],
     ];
     $schema_def = $schema->getTableDef($table_name, $parameters);
     $primary_key = $schema_def['primary key'];
