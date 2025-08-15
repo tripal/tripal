@@ -949,8 +949,8 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $field_list = [];
 
     // See if the base table has a foreign key directly to the field's table.
-    if ($options['chado']->schema()->foreignKeyExists($options['base_table'], $options['table'])) {
-      $fk_def = $options['chado']->schema()->getForeignKeyDef($options['base_table'], $options['table']);
+    $fk_def = self::getChadoForeignKeyDef($options['chado']->schema(), $options['base_table'], $options['table']);
+    if ($fk_def) {
       $options['base_column'] = array_keys($fk_def['columns'])[0];
       // Check for existing fields of this type.
       if (array_key_exists($options['id'], $field_types)) {
@@ -964,9 +964,9 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
       // If this is new, then create a field entry in the list.
       if (!$field_list) {
-        $table_def = $options['chado']->schema()->getTableDef($options['base_table'], ['format' => 'Drupal']);
+        $table_def = self::getChadoTableDef($options['chado']->schema(), $options['base_table']);
         // Use the column not null and default value status to set the field's required status
-        $required = $table_def['fields'][$options['base_column']]['not null'];
+        $required = $table_def['fields'][$options['base_column']]['not null'] ?? FALSE;
         if ($table_def['fields'][$options['base_column']]['default'] ?? FALSE) {
           $required = FALSE;
         }
@@ -1020,11 +1020,11 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     // through an intermediate linking table.
     $possible_linking_tables = self::getPossibleLinkingTables($options);
     foreach ($possible_linking_tables as $linking_table) {
-      if ($options['chado']->schema()->foreignKeyExists($linking_table, $options['base_table'])) {
-        $linking_def = $options['chado']->schema()->getForeignKeyDef($linking_table, $options['base_table']);
+      $linking_def = self::getChadoForeignKeyDef($options['chado']->schema(), $linking_table, $options['base_table']);
+      if ($linking_def) {
         $base_column = array_keys($linking_def['columns'])[0];
-        if ($options['chado']->schema()->foreignKeyExists($linking_table, $options['table'])) {
-          $fk_def = $options['chado']->schema()->getForeignKeyDef($linking_table, $options['table']);
+        $fk_def = self::getChadoForeignKeyDef($options['chado']->schema(), $linking_table, $options['table']);
+        if ($fk_def) {
           $linker_fkey_column = array_keys($fk_def['columns'])[0];
           // Check for existing fields of this type.
           if (array_key_exists($options['id'], $field_types)) {
@@ -1161,6 +1161,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
   /**
    * Adds tripal term plugin IDs for the field's term.
+   *
    * Used for the field discovery process if a DB or CV
    * is not a tripal collection yet.
    *
@@ -1178,7 +1179,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   }
 
   /**
-   *  Get the column's term ID.
+   * Get the column's term ID.
    *
    * @param string $table
    *   The table name.
@@ -1194,7 +1195,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     if (is_null(self::$mapping)) {
       /** @var Drupal\Core\Config\Entity\ConfigEntityStorage **/
       $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-dpm(get_class($storage), "CP45 storage class table $table column $column default_term $default_term");//@@@
       /** @var Drupal\tripal_chado\Entity\ChadoTermMapping **/
       self::$mapping = $storage->load('core_mapping');
     }
@@ -1208,7 +1208,7 @@ dpm(get_class($storage), "CP45 storage class table $table column $column default
   }
 
   /**
-   *  Get a table definition from the chado schema.
+   * Get a table definition from the chado schema.
    *
    * @param $schema
    *   The schema to query for the table.
@@ -1229,6 +1229,27 @@ dpm(get_class($storage), "CP45 storage class table $table column $column default
     ];
     $def = $schema->getTableDef($table_name, $parameters);
     return $def;
+  }
+
+  /**
+   * Get a foreign key definition for a chado table.
+   *
+   * @param $schema
+   *   The schema to query for the table.
+   * @param string $left_table
+   *   The name of the table the foreign key resides in. E.g. 'feature' for
+   *   the feature.type_id => cvterm.cvterm_id foreign key.
+   * @param string $right_table
+   *   The name of the table the foreign key refers to. For the example
+   *   above it would be cvterm.
+   *
+   * @return array
+   *   The the foreign key definition, or an empty array if none exists.
+   */
+  public static function getChadoForeignKeyDef($schema, string $left_table, string $right_table): array {
+    $table_def = self::getChadoTableDef($schema, $left_table);
+    $definition = $table_def['foreign keys'][$right_table] ?? [];
+    return $definition;
   }
 
 }
