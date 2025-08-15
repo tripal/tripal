@@ -3,22 +3,23 @@
 namespace Drupal\tripal_file\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\Attribute\FieldType;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Link;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
+/**
+ * The default formatter for file content type.
+ *
+ * The default is a table to match the Tripal 3 version of this module.
+ */
 #[TripalFieldFormatter(
   id: 'tripal_file_formatter_default',
   label: new TranslatableMarkup('Tripal file formatter'),
   description: new TranslatableMarkup('A tripal file formatter'),
   field_types: [
     'tripal_file_type_default',
-  ],
-  valid_tokens: [
-    '[name]',
-    '[description]',
-    '[type]',
   ],
 )]
 class TripalFileFormatterDefault extends ChadoFormatterBase {
@@ -28,7 +29,6 @@ class TripalFileFormatterDefault extends ChadoFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $settings['token_string'] = '[name]';
     return $settings;
   }
 
@@ -37,8 +37,11 @@ class TripalFileFormatterDefault extends ChadoFormatterBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
-    $list = [];
-    $token_string = $this->getSetting('token_string');
+    $rows = [];
+    $header = [
+      $this->t('File'),
+      $this->t('Type'),
+    ];
     $lookup_manager = \Drupal::service('tripal.tripal_entity.lookup');
 
     foreach ($items as $delta => $item) {
@@ -49,33 +52,20 @@ class TripalFileFormatterDefault extends ChadoFormatterBase {
         'type' => $item->get('file_type')->getString(),
       ];
 
-      // Substitute values in token string to generate displayed string.
-      $displayed_string = $token_string;
-      foreach ($values as $key => $value) {
-        $displayed_string = preg_replace("/\[$key\]/", $value, $displayed_string);
-      }
-
       // Create a clickable link to the corresponding entity when one exists.
-      $renderable_item = $lookup_manager->getRenderableItem($displayed_string, $values['entity_id']);
+      $renderable_item = $lookup_manager->getRenderableItem($values['name'], $values['entity_id']);
+      $link = Link::fromTextAndUrl($renderable_item['#title'], $renderable_item['#url']);
 
-      $list[$delta] = $renderable_item;
+      $row = [$link, $values['type']];
+      $rows[$delta] = $row;
     }
 
-    // If only one element has been found, don't make into a list.
-    if (count($list) == 1) {
-      $elements = $list;
-    }
-
-    // If more than one value has been found, display all values in an
-    // unordered list.
-    elseif (count($list) > 1) {
-      $elements[0] = [
-        '#theme' => 'item_list',
-        '#list_type' => 'ul',
-        '#items' => $list,
-        '#wrapper_attributes' => ['class' => 'container'],
-      ];
-    }
+    $elements[0] = [
+      '#theme' => 'table',
+      '#header' => $header,
+      '#rows' => $rows,
+      '#wrapper_attributes' => ['class' => 'container'],
+    ];
 
     return $elements;
   }
