@@ -254,10 +254,8 @@ dpm($compatible, "CP21 Tripal File isCompatible");//@@@
       'description' => 'A file is an information-bearing object that contains a physical embodiment of some information using a particular character encoding.',
     ];
 
-dpm($options, "CP22 Tripal File discover options");//@@@
     // Call the parent discover() with this field's specific options
     $field_list = parent::discover($bundle, $field_id, $field_types, $field_instances, $options);
-dpm($field_list, "CP29 Tripal File discover field list");//@@@
 
     return $field_list;
   }
