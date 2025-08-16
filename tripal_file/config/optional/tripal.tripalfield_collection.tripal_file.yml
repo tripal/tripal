@@ -31,8 +31,8 @@ fields:
                     label: 'above'
                     weight: 10
                     settings:
-                      field_prefix: ''
-                      field_suffix: ''
+                        field_prefix: ''
+                        field_suffix: ''
             form:
                 default:
                     region: 'content'
@@ -40,6 +40,33 @@ fields:
                     settings:
                         filter_format: 'plain_text'
                         num_rows: 1
+
+    -   name: 'file_location'
+        content_type: 'tripal_file'
+        label: 'File Location'
+        type: 'tripal_file_location_type_default'
+        description: 'The location of the file.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'fileloc'
+                linker_fkey_column: 'file_id'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'fileLocation'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 20
+            form:
+                default:
+                    region: 'content'
+                    weight: 20
 
     -   name: 'file_description'
         content_type: 'tripal_file'
@@ -61,14 +88,14 @@ fields:
                 default:
                     region: 'content'
                     label: 'above'
-                    weight: 20
+                    weight: 30
                     settings:
-                      field_prefix: ''
-                      field_suffix: ''
+                        field_prefix: ''
+                        field_suffix: ''
             form:
                 default:
                     region: 'content'
-                    weight: 20
+                    weight: 30
 
     -   name: 'file_type'
         content_type: 'tripal_file'
@@ -91,11 +118,11 @@ fields:
                 default:
                     region: 'content'
                     label: 'above'
-                    weight: 30
+                    weight: 40
             form:
                 default:
                     region: 'content'
-                    weight: 30
+                    weight: 40
 
     -   name: 'file_license'
         content_type: 'tripal_file'
@@ -118,11 +145,11 @@ fields:
                 default:
                     region: 'content'
                     label: 'above'
-                    weight: 40
+                    weight: 50
             form:
                 default:
                     region: 'content'
-                    weight: 40
+                    weight: 50
 
     -   name: 'file_relationship'
         content_type: 'tripal_file'
@@ -147,11 +174,11 @@ fields:
                 default:
                     region: 'content'
                     label: 'above'
-                    weight: 50
+                    weight: 60
             form:
                 default:
                     region: 'content'
-                    weight: 50
+                    weight: 60
 
     -   name: 'license_name'
         content_type: 'tripal_license'
@@ -176,8 +203,8 @@ fields:
                     label: 'above'
                     weight: 10
                     settings:
-                      field_prefix: ''
-                      field_suffix: ''
+                        field_prefix: ''
+                        field_suffix: ''
             form:
                 default:
                     region: 'content'
@@ -208,8 +235,8 @@ fields:
                     label: 'above'
                     weight: 20
                     settings:
-                      field_prefix: ''
-                      field_suffix: ''
+                        field_prefix: ''
+                        field_suffix: ''
             form:
                 default:
                     region: 'content'
