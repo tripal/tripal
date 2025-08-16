@@ -953,6 +953,11 @@ EOD;
         throw new SchemaException("Invalid table definition source: '$source'.");
       }
     }
+    // The primary key will be an array for some sources. For consistency,
+    // make it always be a scalar.
+    if (is_array($table_def['primary key'] ?? NULL)) {
+      $table_def['primary key'] = $table_def['primary key'][array_key_first($table_def['primary key'])];
+    }
     return $table_def;
   }
 
@@ -983,21 +988,18 @@ EOD;
       $schema_name = $this->defaultSchema;
       $this->initialize();
 
+      $sql_query = "
+        SELECT
+          pg_temp.tripal_get_table_ddl(:schema, :table, TRUE)
+          AS \"definition\";
+      ";
+      $result = $this->connection->query(
+          $sql_query,
+          [':schema' => $schema_name, ':table' => $table_name, ]
+      );
       $table_raw_definition = '';
-      $table_exists = $this->connection->schema()->tableExists($table_name);
-      if ($table_exists) {
-        $sql_query = "
-          SELECT
-            pg_temp.tripal_get_table_ddl(:schema, :table, TRUE)
-            AS \"definition\";
-        ";
-        $result = $this->connection->query(
-            $sql_query,
-            [':schema' => $schema_name, ':table' => $table_name, ]
-        );
-        if ($result) {
-          $table_raw_definition = $result->fetchObject()->definition;
-        }
+      if ($result) {
+        $table_raw_definition = $result->fetchObject()->definition;
       }
       $db_ddls[$cache_key] = $table_raw_definition;
     }
