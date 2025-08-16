@@ -2163,17 +2163,17 @@ class ChadoRecords  {
   }
 
   /**
-   * Retrieves the name of the primary key for a Chado table.
+  * Get a table definition from the chado schema.
    *
-   * @param Drupal\tripal_chado\Database\ChadoSchema $schema
-   *   The chado schema definition.
+   * @param $schema
+   *   The schema to query for the table.
    * @param string $table_name
-   *   The chado table to look up the primary key for.
+   *   The table name.
    *
-   * @return string
-   *   The table primary key name.
+   * @return array
+   *   The table schema.
    */
-  public function getChadoTableDef(ChadoSchema $schema, string $table_name): ?string {
+  public function getChadoTableDef(ChadoSchema $schema, string $table_name): array {
     $parameters = [
       'format' => 'Drupal',
       'source' => [
