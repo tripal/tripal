@@ -92,7 +92,7 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     // Relationship table
     $linker_table = $storage_settings['linker_table'] ?? ($base_table . '_relationship');
     $linker_schema_def = self::getChadoTableDef($schema, $linker_table);
-    $linker_pkey_col = self::getPrimaryKey($schema, $linker_table);
+    $linker_pkey_col = $linker_schema_def['primary key'];
     // Relationship table column naming is not consistent for nd_reagent and project
     $linker_subject_col = $storage_settings['subject_column'] ?? NULL;
     $linker_object_col = $storage_settings['object_column'] ?? NULL;
@@ -231,10 +231,10 @@ class ChadoRelationshipTypeDefault extends ChadoFieldItemBase {
     $schema = $chado->schema();
     // Get the base table for the content type.
     $base_table = $entity_type->getThirdPartySetting('tripal', 'chado_base_table');
-    // Relationship tables have a standard naming method
+    // Relationship tables have a standard naming method.
     $relationship_table = $base_table . '_relationship';
-    $relationship_schema_def = $schema->getTableDef($relationship_table, ['format' => 'Drupal']);
-    if ($relationship_schema_def) {
+    $table_exists = $schema->tableExists($relationship_table);
+    if ($table_exists) {
       $compatible = TRUE;
     }
 

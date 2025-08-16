@@ -953,6 +953,11 @@ EOD;
         throw new SchemaException("Invalid table definition source: '$source'.");
       }
     }
+    // The primary key will be an array for some sources. For consistency,
+    // make it always be a scalar.
+    if (is_array($table_def['primary key'] ?? NULL)) {
+      $table_def['primary key'] = $table_def['primary key'][array_key_first($table_def['primary key'])];
+    }
     return $table_def;
   }
 

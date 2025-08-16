@@ -1214,11 +1214,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    */
   protected static function getPrimaryKey(ChadoSchema $schema, string $table_name): ?string {
     $def = self::getChadoTableDef($schema, $table_name);
-    $primary_key = $def['primary key'];
-    if (is_array($primary_key)) {
-      $primary_key = $primary_key[array_key_first($primary_key)];
-    }
-    return $primary_key;
+    return $def['primary key'];
   }
 
   /**
