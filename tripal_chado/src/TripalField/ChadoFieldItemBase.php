@@ -1224,16 +1224,19 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param string $left_table
    *   The name of the table the foreign key resides in. E.g. 'feature' for
    *   the feature.type_id => cvterm.cvterm_id foreign key.
-   * @param string $right_table
+   * @param string|null $right_table
    *   The name of the table the foreign key refers to. For the example
-   *   above it would be cvterm.
+   *   above it would be cvterm. If NULL, then all foreign keys are returned.
    *
    * @return array
    *   The the foreign key definition, or an empty array if none exists.
    */
-  public static function getChadoForeignKeyDef($schema, string $left_table, string $right_table): array {
+  public static function getChadoForeignKeyDef($schema, string $left_table, ?string $right_table = NULL): array {
     $table_def = self::getChadoTableDef($schema, $left_table);
-    $definition = $table_def['foreign keys'][$right_table] ?? [];
+    $definition = $table_def['foreign keys'] ?? [];
+    if ($right_table) {
+      $definition = $definition[$right_table] ?? [];
+    }
     return $definition;
   }
 
