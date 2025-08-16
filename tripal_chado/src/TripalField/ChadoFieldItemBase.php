@@ -987,7 +987,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $table_exists = $options['chado']->schema()->tableExists($linking_table);
       if ($table_exists) {
         $linking_def = self::getChadoForeignKeyDef($options['chado']->schema(), $linking_table, $options['base_table']);
-        $base_column = array_keys($linking_def['columns'])[0];
         $fk_def = self::getChadoForeignKeyDef($options['chado']->schema(), $linking_table, $options['table']);
         if ($fk_def) {
           $linker_fkey_column = array_keys($fk_def['columns'])[0];
