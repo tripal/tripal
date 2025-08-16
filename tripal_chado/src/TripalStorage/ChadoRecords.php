@@ -2194,12 +2194,12 @@ class ChadoRecords  {
    * @param string $table_name
    *   The chado table to look up the primary key for.
    *
-   * @return string
+   * @return string|null
    *   The table primary key name.
    */
   public function getPrimaryKey(ChadoSchema $schema, string $table_name): ?string {
     $table_def = $this->getChadoTableDef($schema, $table_name);
-    return tripal_chado/src/TripalStorage/ChadoRecords.php;
+    return $table_def['primary key'] ?? NULL;
   }
 
 }
