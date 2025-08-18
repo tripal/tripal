@@ -2,6 +2,8 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -10,16 +12,15 @@ use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of default Tripal organism field type.
- *
- * @FieldType(
- *   id = "chado_organism_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Organism"),
- *   description = @Translation("A chado organism reference"),
- *   default_widget = "chado_organism_widget_default",
- *   default_formatter = "chado_organism_formatter_default",
- * )
  */
+#[FieldType(
+  id: 'chado_organism_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Organism'),
+  description: new TranslatableMarkup('A chado organism reference'),
+  default_widget: 'chado_organism_widget_default',
+  default_formatter: 'chado_organism_formatter_default',
+)]
 class ChadoOrganismTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_organism_type_default';

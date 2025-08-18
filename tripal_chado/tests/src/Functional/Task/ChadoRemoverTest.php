@@ -3,6 +3,10 @@
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use Drupal\tripal_chado\Task\ChadoRemover;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\Group;
 
 
 /**
@@ -14,14 +18,21 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  * @group Tripal Chado
  * @group Tripal Chado Task
  * @group Tripal Chado Remover
+ *
+ * @covers ::setParameters
+ * @covers ::performTask
  */
+#[CoversClass(ChadoRemover::class)]
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal Chado Task')]
+#[Group('Tripal Chado Remover')]
+#[CoversMethod(ChadoRemover::class, 'setParameters')]
+#[CoversMethod(ChadoRemover::class, 'performTask')]
 class ChadoRemoverTest extends ChadoTestBrowserBase {
 
   /**
    * Tests task.
-   *
-   * @cover ::setParameters
-   * @cover ::performTask
    */
   public function testPerformTaskRemover() {
     // Create a temporary schema.

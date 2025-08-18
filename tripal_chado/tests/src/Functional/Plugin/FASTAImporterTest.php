@@ -1,6 +1,8 @@
 <?php
 namespace Drupal\Tests\tripal_chado\Functional;
 
+use PHPUnit\Framework\Attributes\Group;
+
 /**
  * Tests for the FASTAImporter class
  *
@@ -8,6 +10,9 @@ namespace Drupal\Tests\tripal_chado\Functional;
  * @group ChadoImporter
  * @group FASTAImporter
  */
+#[Group('TripalImporter')]
+#[Group('ChadoImporter')]
+#[Group('FASTAImporter')]
 class FASTAImporterTest extends ChadoTestBrowserBase
 {
 
@@ -16,6 +21,7 @@ class FASTAImporterTest extends ChadoTestBrowserBase
    *
    * @group FASTA
    */
+  #[Group('FASTA')]
   public function testFASTAImporterSimpleTest()
   {
     // Public schema connection

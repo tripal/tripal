@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 use Drupal\tripal_chado\Services\ChadoCustomTableManager;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the functions in the ChadoCustomTableManager services class.
@@ -11,6 +12,8 @@ use Drupal\tripal_chado\Services\ChadoCustomTableManager;
  * @group Tripal
  * @group Tripal Chado
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
 class ChadoCustomTableManagerTest extends ChadoTestBrowserBase {
 
 /**
@@ -18,6 +21,7 @@ class ChadoCustomTableManagerTest extends ChadoTestBrowserBase {
  *
  * @group chado
  */
+#[Group('chado')]
   public function testCustomTableManager() {
     // Create and then get the existing test chado schema name.
     $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);

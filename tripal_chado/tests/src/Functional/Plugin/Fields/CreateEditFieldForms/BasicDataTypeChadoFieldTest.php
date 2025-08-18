@@ -4,6 +4,8 @@ namespace Drupal\Tests\tripal_chado\Functional\Plugin\Fields\CreateEditFieldForm
 
 use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the configuration for where a basic chado field is added to an existing
@@ -13,6 +15,7 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  *
  * @group ChadoField
  */
+#[Group('ChadoField')]
 class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
   use FieldUiTestTrait;
 
@@ -159,6 +162,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
    * - to get the full HTML: print $this->getSession()->getPage()->getContent();
    * - to get the plain text without markup: print $this->getTextContent();
    */
+  #[DataProvider('provideFieldsToTest')]
   public function testCreateViaCombinedAddFieldForm($field_type_name, $valid_options) {
 
     // ONLY do this test if we are in Drupal 10.2+ since we are assuming
@@ -170,6 +174,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     // Pages to access.
     $manage_fields_path = '/admin/structure/bio_data/manage/' . $this->type . '/fields';
     $add_field_path = '/admin/structure/bio_data/manage/' . $this->type . '/fields/add-field';
+    $select_field_path = '/admin/structure/bio_data/manage/' . $this->type . '/fields/add-field/tripal_chado/true?entity_type=tripal_entity';
 
     // Details of the field to create.
     $unique_suffix = uniqid();
@@ -202,12 +207,25 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       // To indicate a Chado Field we select the one where the category machine name=tripal_chado.
       'new_storage_type' => 'tripal_chado',
     ];
-    $this->submitForm($input, 'Continue');
+
+    // Drupal <= 11.1 uses a 'Continue' button to submit. For >= 11.2 each type
+    // is an ajax submit button. Other changes in the form also need handling.
+    $field_id = $field_type_name;
+    $save_button_text = 'Save settings';
+    if (floatval(\Drupal::VERSION) >= 11.2) {
+      $field_id = preg_replace('/_/', '-', $field_type_name);
+      $save_button_text = 'Save';
+      // This is the URL that the ajax would redirect us to.
+      $html = $this->drupalGet($select_field_path);
+    }
+    else {
+      $this->submitForm($input, 'Continue');
+    }
 
     // Confirm that after submission, there
     // -- is a form element with out field type.
     //    the id of the input element is the machine name of the field.
-    $form_element = $this->getSession()->getPage()->findById($field_type_name);
+    $form_element = $this->getSession()->getPage()->findById($field_id);
     $this->assertNotNull($form_element,
       "We were not able to find a form element with an id of $field_type_name after choosing the category.");
 
@@ -216,7 +234,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
     // This is another collection of radio inputs where the field machine name
     // is the id of the input element.
     $input = [
-      $field_type_name => $field_type_name,
+      $field_id => $field_type_name,
     ];
     $this->submitForm($input, 'Continue');
 
@@ -251,7 +269,7 @@ class BasicDataTypeChadoFieldTest extends ChadoTestBrowserBase {
       'description' => 'This is the help text for the field.',
       'settings[field_term_fs][vocabulary_term]' => 'comment (schema:comment)',
     ];
-    $this->submitForm($input, 'Save settings');
+    $this->submitForm($input, $save_button_text);
 
     // Finally assert the field exists on the overview.
     $this->assertFieldExistsOnOverview($details['label']);

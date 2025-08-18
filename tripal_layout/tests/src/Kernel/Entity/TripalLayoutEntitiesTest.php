@@ -5,6 +5,8 @@ namespace Drupal\Tests\tripal_layout\Kernel\Entity;
 use Symfony\Component\Yaml\Yaml;
 use Drupal\Tests\tripal\Kernel\TripalTestKernelBase;
 use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Tests the TripalLayoutDefaultView and TripalLayoutDefaultForm entities.
@@ -12,6 +14,8 @@ use Drupal\Tests\tripal_layout\Traits\TripalLayoutTestTrait;
  * @group TripalLayoutDisplay
  * @group TripalLayoutDisplayEntity
  */
+#[Group('TripalLayoutDisplay')]
+#[Group('TripalLayoutDisplayEntity')]
 class TripalLayoutEntitiesTest extends TripalTestKernelBase {
 
   use TripalLayoutTestTrait;
@@ -113,6 +117,7 @@ class TripalLayoutEntitiesTest extends TripalTestKernelBase {
    *
    * @dataProvider provideLayoutDisplayEntitySenarios
    */
+  #[DataProvider('provideLayoutDisplayEntitySenarios')]
   public function testTripalLayoutEntityGetters(string $display_context, array $entity_defn, array $bundle_defn, array $expectations) {
 
     // Create entity from valid YAML.

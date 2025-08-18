@@ -2,30 +2,31 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
-use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\Core\Link;
-use Drupal\Core\Url;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal\TripalImporter\Attribute\TripalImporter;
 use Drupal\tripal_chado\ChadoBuddy\PluginManagers\ChadoBuddyPluginManager;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
 /**
  * Taxonomy Importer implementation of the TripalImporterBase.
- *
- *  @TripalImporter(
- *    id = "chado_taxonomy_loader",
- *    label = @Translation("NCBI Taxonomy Loader"),
- *    description = @Translation("Import organisms by NCBI Taxonomy ID into Chado"),
- *    use_analysis = False,
- *    require_analysis = False,
- *    button_text = @Translation("Import Organisms"),
- *    file_upload = FALSE,
- *    file_local = FALSE,
- *    file_remote = FALSE,
- *    file_required = FALSE,
- *  )
  */
+#[TripalImporter(
+  id: 'chado_taxonomy_loader',
+  label: new TranslatableMarkup('NCBI Taxonomy Loader'),
+  description: new TranslatableMarkup('Import organisms by NCBI Taxonomy ID into Chado'),
+  use_analysis: false,
+  require_analysis: false,
+  button_text: new TranslatableMarkup('Import Organisms'),
+  file_upload: false,
+  file_remote: false,
+  file_local: false,
+  file_required: false,
+)]
 class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPluginInterface {
 
   /**
@@ -329,6 +330,12 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
           );
           continue;
         }
+        else if (!$this->xmlIsValid($xml_text)) {
+          $this->logger->error("Invalid XML returned for @sci_name, NCBI may be in maintenance mode.",
+            ['@sci_name' => $sci_name_escaped]
+          );
+          continue;
+        }
 
         // Parse the XML to get the taxonomy ID
         $result = FALSE;
@@ -541,7 +548,19 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
 
     // Query NCBI
     $xml_text = $this->fileretriever->retrieveFileContents($fetch_url, $this->retrieval_options);
-    if (!is_null($xml_text)) {
+    if (is_null($xml_text)) {
+      $this->logger->error("Error contacting NCBI to look up taxid @taxid",
+        ['@taxid' => $taxid]
+      );
+      return FALSE;
+    }
+    else if (!$this->xmlIsValid($xml_text)) {
+      $this->logger->error("Invalid XML returned for taxid @taxid, NCBI may be in maintenance mode.",
+        ['@taxid' => $taxid]
+      );
+      return FALSE;
+    }
+    else {
       $xml = new \SimpleXMLElement($xml_text);
       $taxon = $xml->Taxon;
 
@@ -585,7 +604,7 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
         if (!$organism) {
           $organism = $this->addOrganism($sci_name, $rank);
           if (!$organism) {
-            throw new \Exception(t('Cannot add organism: @sci_name', ['@sci_name' => $sci_name]));
+            throw new \Exception('Cannot add organism: ' . $sci_name);
           }
         }
       }
@@ -651,12 +670,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
           $name_ranks[$type]++;
         }
       }
-    }
-    else {
-      $this->logger->warning("Error contacting NCBI to look up taxid @taxid",
-        ['@taxid' => $taxid]
-      );
-      return FALSE;
     }
   }
 
@@ -751,7 +764,6 @@ class TaxonomyImporter extends ChadoImporterBase implements ContainerFactoryPlug
   public function formSubmit($form, &$form_state) {
 
   }
-
 
   /**
    * Ajax callback for the TaxonomyImporter::form() function.

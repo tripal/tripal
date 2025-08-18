@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal_chado\Functional\api;
 
 use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.db.api.php functions.
@@ -11,6 +12,9 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
  * @group Tripal Chado
  * @group Tripal API
  */
+#[Group('Tripal')]
+#[Group('Tripal Chado')]
+#[Group('Tripal API')]
 class ChadoDbAPITest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stark';
@@ -49,6 +53,8 @@ class ChadoDbAPITest extends ChadoTestBrowserBase {
    * @group tripal-chado
    * @group chado-db
    */
+  #[Group('tripal-chado')]
+  #[Group('chado-db')]
   public function testDB() {
 
 		// INSERT.
@@ -106,6 +112,8 @@ class ChadoDbAPITest extends ChadoTestBrowserBase {
    * @group tripal-chado
    * @group chado-db
    */
+  #[Group('tripal-chado')]
+  #[Group('chado-db')]
   public function testDbxref() {
 
 		// INSERT.

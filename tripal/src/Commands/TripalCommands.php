@@ -15,12 +15,12 @@ class TripalCommands extends DrushCommands {
    */
   protected function switchUser($uname) {
     if (!$uname) {
-      throw new \Exception(dt('The --username argument is required.'));
+      throw new \Exception('The --username argument is required.');
     }
 
     $user = user_load_by_name($uname);
     if (!$user) {
-      throw new \Exception(dt('The --username argument does not specify a valid user.'));
+      throw new \Exception('The --username argument does not specify a valid user.');
     }
     \Drupal::service('account_switcher')->switchTo($user);
   }
@@ -108,7 +108,7 @@ class TripalCommands extends DrushCommands {
     $uname = $options['username'];
 
     if (!$job_id) {
-      throw new \Exception(dt('The --job_id argument is required.'));
+      throw new \Exception('The --job_id argument is required.');
     }
 
     $this->switchUser($uname);
@@ -160,10 +160,10 @@ class TripalCommands extends DrushCommands {
   public function tripalImportContentTypes($options = ['username' => NULL, 'collection_id' => NULL]) {
 
     if (!$options['username']) {
-      throw new \Exception(dt('The --username argument is required.'));
+      throw new \Exception('The --username argument is required.');
     }
     if (!$options['collection_id']) {
-      throw new \Exception(dt('The --collection_id argument is required.'));
+      throw new \Exception('The --collection_id argument is required.');
     }
 
     $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
@@ -176,7 +176,7 @@ class TripalCommands extends DrushCommands {
       foreach($collections as $id => $details) {
         Drush::logger()->notice('  - ' . $id . ' (' . $details['description'] . ')');
       }
-      throw new \Exception(dt('The collection ID you provided was not valid. Please try again with one of the above listed ids (e.g. general_chado).'));
+      throw new \Exception('The collection ID you provided was not valid. Please try again with one of the above listed ids (e.g. general_chado).');
     }
 
     $chosen_collection_ids = [ $options['collection_id'] ];

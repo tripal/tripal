@@ -2,23 +2,24 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
 use Drupal\tripal\Entity\TripalEntityType;
 
 /**
- * Plugin implementation of Default Tripal field for sequence data.
- *
- * @FieldType(
- *   id = "chado_sequence_checksum_type_default",
- *   category = "tripal_chado",
- *   label = @Translation("Chado Feature Sequence Checksum"),
- *   description = @Translation("A chado feature sequence md5 checksum"),
- *   default_widget = "chado_sequence_checksum_widget_default",
- *   default_formatter = "chado_sequence_checksum_formatter_default"
- * )
+ * Plugin implementation of Default Tripal field for sequence checksum.
  */
+#[FieldType(
+  id: 'chado_sequence_checksum_type_default',
+  category: 'tripal_chado',
+  label: new TranslatableMarkup('Chado Feature Sequence Checksum'),
+  description: new TranslatableMarkup('A chado feature sequence md5 checksum'),
+  default_widget: 'chado_sequence_checksum_widget_default',
+  default_formatter: 'chado_sequence_checksum_formatter_default',
+)]
 class ChadoSequenceChecksumTypeDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_sequence_checksum_type_default";

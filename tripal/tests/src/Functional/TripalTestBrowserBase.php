@@ -3,6 +3,7 @@ namespace Drupal\Tests\tripal\Functional;
 
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\tripal\Traits\TripalTestTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * This is a base class for Tripal tests that need a full Drupal install.
@@ -12,6 +13,7 @@ use Drupal\Tests\tripal\Traits\TripalTestTrait;
  *
  * @group Tripal
  */
+#[Group('Tripal')]
 abstract class TripalTestBrowserBase extends BrowserTestBase {
 
   use TripalTestTrait;

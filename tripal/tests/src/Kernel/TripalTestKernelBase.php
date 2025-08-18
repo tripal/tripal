@@ -3,6 +3,7 @@ namespace Drupal\Tests\tripal\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\tripal\Traits\TripalTestTrait;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * This is a base class for Tripal Kernel tests.
@@ -12,6 +13,7 @@ use Drupal\Tests\tripal\Traits\TripalTestTrait;
  *
  * @group Tripal
  */
+#[Group('Tripal')]
 abstract class TripalTestKernelBase extends KernelTestBase {
 
   use TripalTestTrait;
