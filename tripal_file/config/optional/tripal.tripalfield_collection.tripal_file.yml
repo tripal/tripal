@@ -41,33 +41,6 @@ fields:
                         filter_format: 'plain_text'
                         num_rows: 1
 
-    -   name: 'file_location'
-        content_type: 'tripal_file'
-        label: 'File Location'
-        type: 'tripal_file_location_type_default'
-        description: 'The location of the file.'
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: 'chado_storage'
-            storage_plugin_settings:
-                base_table: 'file'
-                linker_table: 'fileloc'
-                linker_fkey_column: 'file_id'
-        settings:
-            termIdSpace: 'schema'
-            termAccession: 'fileLocation'
-        display:
-            view:
-                default:
-                    region: 'content'
-                    label: 'above'
-                    weight: 20
-            form:
-                default:
-                    region: 'content'
-                    weight: 20
-
     -   name: 'file_description'
         content_type: 'tripal_file'
         label: 'Description'
@@ -88,14 +61,14 @@ fields:
                 default:
                     region: 'content'
                     label: 'above'
-                    weight: 30
+                    weight: 20
                     settings:
                         field_prefix: ''
                         field_suffix: ''
             form:
                 default:
                     region: 'content'
-                    weight: 30
+                    weight: 20
 
     -   name: 'file_type'
         content_type: 'tripal_file'
@@ -113,6 +86,33 @@ fields:
         settings:
             termIdSpace: 'schema'
             termAccession: 'additionalType'
+        display:
+            view:
+                default:
+                    region: 'content'
+                    label: 'above'
+                    weight: 30
+            form:
+                default:
+                    region: 'content'
+                    weight: 30
+
+    -   name: 'file_location'
+        content_type: 'tripal_file'
+        label: 'File Location'
+        type: 'tripal_file_location_type_default'
+        description: 'The location of the file.'
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'file'
+                linker_table: 'fileloc'
+                linker_fkey_column: 'file_id'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'itemLocation'
         display:
             view:
                 default:
