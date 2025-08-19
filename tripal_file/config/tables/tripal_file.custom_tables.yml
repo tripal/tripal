@@ -28,6 +28,10 @@
             table: cvterm
             columns:
                 type_id: cvterm_id
+#        fileloc:
+#            table: fileloc
+#            columns:
+#                file_id: file_id
 -
     table: license
     fields:
