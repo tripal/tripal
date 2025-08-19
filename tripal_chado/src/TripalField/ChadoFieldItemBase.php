@@ -644,7 +644,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   protected function getLinkerTables($object_table, $base_table) {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-
     $base_pkey_col = self::getPrimaryKey($schema, $base_table);
     $object_pkey_col = self::getPrimaryKey($schema, $object_table);
 
@@ -653,15 +652,23 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     foreach (array_keys($all_tables) as $table_name) {
       $table_schema_def = self::getChadoTableDef($schema, $table_name);
       if (array_key_exists('foreign keys', $table_schema_def)) {
+        // Map for easy lookup.
+        $all_fkeys = [];
         foreach ($table_schema_def['foreign keys'] as $foreign_key) {
-          if ($foreign_key['table'] == $object_table) {
-            // If the current table is the base table, we have a direct
-            // reference to the object table, otherwise it is a linker table,
-            // and needs to also have a foreign key to the base table.
-            if (($table_name == $base_table)
-                or ($schema->foreignKeyConstraintExists($table_name, $base_pkey_col))) {
-              $linker_tables[] = [$table_name, array_keys($foreign_key['columns'])[0]];
-            }
+          // For example, a table with a type_id column, here we would store
+          // $all_fkeys['a_table'] = ['type_id' => 'cvterm_id']
+          $all_fkeys[$foreign_key['table']] = $foreign_key['columns'];
+        }
+
+        if ($all_fkeys[$object_table] ?? FALSE) {
+          // If the current table is the base table, we have a direct
+          // reference to the object table, otherwise it is a linker table,
+          // and needs to also have a foreign key to the base table.
+          if ($table_name == $base_table) {
+            $linker_tables[] = [$table_name, $all_fkeys[$base_table][$base_pkey_col]];
+          }
+          else if ($all_fkeys[$object_table][$object_pkey_col] ?? FALSE) {
+            $linker_tables[] = [$table_name, $all_fkeys[$object_table][$object_pkey_col]];
           }
         }
       }
@@ -987,7 +994,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       $table_exists = $options['chado']->schema()->tableExists($linking_table);
       if ($table_exists) {
         $linking_def = self::getChadoForeignKeyDef($options['chado']->schema(), $linking_table, $options['base_table']);
-        $base_column = array_keys($linking_def['columns'])[0];
         $fk_def = self::getChadoForeignKeyDef($options['chado']->schema(), $linking_table, $options['table']);
         if ($fk_def) {
           $linker_fkey_column = array_keys($fk_def['columns'])[0];
@@ -1225,16 +1231,19 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * @param string $left_table
    *   The name of the table the foreign key resides in. E.g. 'feature' for
    *   the feature.type_id => cvterm.cvterm_id foreign key.
-   * @param string $right_table
+   * @param string|null $right_table
    *   The name of the table the foreign key refers to. For the example
-   *   above it would be cvterm.
+   *   above it would be cvterm. If NULL, then all foreign keys are returned.
    *
    * @return array
    *   The the foreign key definition, or an empty array if none exists.
    */
-  public static function getChadoForeignKeyDef($schema, string $left_table, string $right_table): array {
+  public static function getChadoForeignKeyDef($schema, string $left_table, ?string $right_table = NULL): array {
     $table_def = self::getChadoTableDef($schema, $left_table);
-    $definition = $table_def['foreign keys'][$right_table] ?? [];
+    $definition = $table_def['foreign keys'] ?? [];
+    if ($right_table) {
+      $definition = $definition[$right_table] ?? [];
+    }
     return $definition;
   }
 
