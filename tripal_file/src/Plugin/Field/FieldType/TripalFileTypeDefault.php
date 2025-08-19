@@ -233,7 +233,6 @@ class TripalFileTypeDefault extends ChadoFieldItemBase {
     if (count($linker_tables) < 1) {
       $compatible = FALSE;
     }
-dpm($compatible, "CP21 Tripal File isCompatible");//@@@
     return $compatible;
   }
 
@@ -252,6 +251,7 @@ dpm($compatible, "CP21 Tripal File isCompatible");//@@@
       'termIdSpace' => 'SIO',
       'termAccession' => '000396',
       'description' => 'A file is an information-bearing object that contains a physical embodiment of some information using a particular character encoding.',
+      'cardinality' => -1,
     ];
 
     // Call the parent discover() with this field's specific options

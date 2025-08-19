@@ -38,9 +38,6 @@ class TripalLicenseTypeDefault extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $storage_settings = parent::defaultStorageSettings();
-    $storage_settings['storage_plugin_settings']['linking_method'] = '';
-    $storage_settings['storage_plugin_settings']['linker_table'] = '';
-    $storage_settings['storage_plugin_settings']['linker_fkey_column'] = '';
     $storage_settings['storage_plugin_settings']['object_table'] = self::$object_table;
     return $storage_settings;
   }
@@ -251,7 +248,8 @@ class TripalLicenseTypeDefault extends ChadoFieldItemBase {
       'label' => 'license',
       'termIdSpace' => 'schema',
       'termAccession' => 'license',
-      'summary' => 'A license document that applies to this content, typically indicated by URL.',
+      'description' => 'A license document that applies to this content, typically indicated by URL.',
+      'cardinality' => -1,
     ];
 
     // Call the parent discover() with this field's specific options
