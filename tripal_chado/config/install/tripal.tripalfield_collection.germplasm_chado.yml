@@ -844,7 +844,7 @@ fields:
           view:
             default:
               region: content
-              label: above
+              label: inline
               weight: 10
           form:
             default:
@@ -870,12 +870,12 @@ fields:
           view:
             default:
               region: content
-              label: above
-              weight: 15
+              label: inline
+              weight: 20
           form:
             default:
               region: content
-              weight: 15
+              weight: 20
               settings:
                 filter_format: plain_text
                 num_rows: 1
@@ -901,12 +901,65 @@ fields:
           view:
             default:
               region: content
-              label: above
-              weight: 25
+              label: inline
+              weight: 30
           form:
             default:
               region: content
-              weight: 25
+              weight: 30
+
+    -   name: 'germcollection_addtltype'
+        content_type: 'germcollection'
+        label: 'Germplasm Collection Type'
+        type: 'chado_property_type_default'
+        description: 'Indicate the type of germplasm collection (e.g. Diversity Panel)'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'stockcollection'
+                prop_table: 'stockcollectionprop'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'additionalType'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'inline'
+              weight: 40
+          form:
+            default:
+              region: 'content'
+              weight: 40
+              type: 'chado_property_string_widget_default'
+
+    -   name: 'germcollection_description'
+        content_type: 'germcollection'
+        label: 'Description'
+        type: 'chado_property_type_default'
+        description: 'Describe this germplasm collection.'
+        cardinality: -1
+        required: false
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'stockcollection'
+                prop_table: 'stockcollectionprop'
+        settings:
+            termIdSpace: 'schema'
+            termAccession: 'description'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 50
+          form:
+            default:
+              region: 'content'
+              weight: 50
 
     -   name: germcollection_contact
         content_type: germcollection
@@ -929,11 +982,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 80
+              weight: 60
           form:
             default:
               region: content
-              weight: 80
+              weight: 60
 
     -   name: germcollection_stock
         content_type: germcollection
@@ -956,8 +1009,8 @@ fields:
             default:
               region: content
               label: above
-              weight: 80
+              weight: 70
           form:
             default:
               region: content
-              weight: 80
+              weight: 70
