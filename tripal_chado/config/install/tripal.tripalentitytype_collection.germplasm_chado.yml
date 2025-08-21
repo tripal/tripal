@@ -3,56 +3,56 @@ label: 'Germplasm Content Types (Chado)'
 description: 'Content types based on Chado focused on supporting germplasm characterization.'
 content_types:
 
-    -   label: Germplasm Accession
-        term: EFO:0007059
-        help_text: Use the germplasm accession page for a living genetic resources such as seeds or tissues that are maintained for the purpose of animal and plant breeding, and preservation.
-        category: Germplasm
-        id: germplasm
-        title_format: "[germplasm_name]"
-        url_format: "germplasm/[TripalEntity__entity_id]"
+    -   label: 'Germplasm Accession'
+        term: 'EFO:0007059'
+        help_text: 'Use the germplasm accession page for a living genetic resources such as seeds or tissues that are maintained for the purpose of animal and plant breeding, and preservation.'
+        category: 'Germplasm'
+        id: 'germplasm'
+        title_format: '[germplasm_name]'
+        url_format: 'germplasm/[TripalEntity__entity_id]'
         synonyms:
-            - bio_data_21
+            - 'bio_data_21'
         settings:
-            chado_base_table: stock
-            bundle_type_table: stock
-            bundle_type_column: type_id
+            chado_base_table: 'stock'
+            bundle_type_table: 'stock'
+            bundle_type_column: 'type_id'
 
-    -   label: Breeding Cross Progeny
-        term: PBO:0000065
-        help_text: Use the breeding cross page for information about a cross between two germplasm in a breeding application and the group of resulting progeny.
-        category: Germplasm
-        id: breeding_cross
-        title_format: "[breeding_cross_name]"
-        url_format: "breeding_cross/[TripalEntity__entity_id]"
+    -   label: 'Breeding Cross Progeny'
+        term: 'PBO:0000065'
+        help_text: 'Use the breeding cross page for information about a cross between two germplasm in a breeding application and the group of resulting progeny.'
+        category: 'Germplasm'
+        id: 'breeding_cross'
+        title_format: '[breeding_cross_name]'
+        url_format: 'breeding_cross/[TripalEntity__entity_id]'
         synonyms:
-            - bio_data_22
+            - 'bio_data_22'
         settings:
-            chado_base_table: stock
-            bundle_type_table: stock
-            bundle_type_column: type_id
+            chado_base_table: 'stock'
+            bundle_type_table: 'stock'
+            bundle_type_column: 'type_id'
 
-    -   label: Germplasm Variety
-        term: EFO:0005136
-        help_text: Use the germplasm variety page for information about specific cultivated variety of germplasm.
-        category: Germplasm
-        id: germplasm_variety
-        title_format: "[germplasm_variety_name]"
-        url_format: "germplasm_variety/[TripalEntity__entity_id]"
+    -   label: 'Germplasm Variety'
+        term: 'EFO:0005136'
+        help_text: 'Use the germplasm variety page for information about specific cultivated variety of germplasm.'
+        category: 'Germplasm'
+        id: 'germplasm_variety'
+        title_format: '[germplasm_variety_name]'
+        url_format: 'germplasm_variety/[TripalEntity__entity_id]'
         synonyms:
-            - bio_data_23
+            - 'bio_data_23'
         settings:
-            chado_base_table: stock
-            bundle_type_table: stock
-            bundle_type_column: type_id
+            chado_base_table: 'stock'
+            bundle_type_table: 'stock'
+            bundle_type_column: 'type_id'
 
-    -   label: Germplasm Collection
-        term: OBI:0002076
-        help_text: Use this page to describe a collection of germplasm. This collection should be linked to more then one germplasm page and is not restricted to a single organism.
-        category: Germplasm
-        id: germcollection
-        title_format: "[germcollection_unique_name][: [germcollection_name]]"
-        url_format: "germplasm_collection/[TripalEntity__entity_id]"
+    -   label: 'Germplasm Collection'
+        term: 'OBI:0002076'
+        help_text: 'Use this page to describe a collection of germplasm. This collection should be linked to more then one germplasm page and is not restricted to a single organism.'
+        category: 'Germplasm'
+        id: 'germcollection'
+        title_format: '[germcollection_unique_name][: [germcollection_name]]'
+        url_format: 'germplasm_collection/[TripalEntity__entity_id]'
         settings:
-            chado_base_table: stockcollection
-            bundle_type_table: stockcollection
-            bundle_type_column: type_id
+            chado_base_table: 'stockcollection'
+            bundle_type_table: 'stockcollection'
+            bundle_type_column: 'type_id'
