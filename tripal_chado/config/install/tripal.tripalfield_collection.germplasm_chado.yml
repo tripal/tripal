@@ -822,19 +822,19 @@ fields:
               region: content
               weight: 90
 
-## Recombinant Inbred Line ##
+## Germplasm Collection ##
 
-    -   name: ril_name
-        content_type: ril
+    -   name: germcollection_name
+        content_type: germcollection
         label: Name
         type: chado_string_type_default
-        description: The name of the item.
+        description: The name of the collection.
         cardinality: 1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table: stock
+                base_table: stockcollection
                 base_column: name
             max_length: 255
         settings:
@@ -851,17 +851,17 @@ fields:
               region: content
               weight: 10
 
-    -   name: ril_unique_name
-        content_type: ril
+    -   name: germcollection_unique_name
+        content_type: germcollection
         label: Unique Name
         type: chado_text_type_default
-        description: A name that uniquely identifies the ril within this organism.
+        description: A name that uniquely identifies this germplasm collection.
         cardinality: 1
         required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table: stock
+                base_table: stockcollection
                 base_column: uniquename
         settings:
             termIdSpace: data
@@ -880,75 +880,23 @@ fields:
                 filter_format: plain_text
                 num_rows: 1
 
-    -   name: ril_organism
-        content_type: ril
-        label: Organism
-        type: chado_organism_type_default
-        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
-        cardinality: 1
-        required: true
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                base_column: organism_id
-        settings:
-            termIdSpace: OBI
-            termAccession: "0100026"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 10
-          form:
-            default:
-              region: content
-              weight: 10
-
-    -   name: ril_description
-        content_type: ril
-        label: Description
-        type: chado_text_type_default
-        description: A description of the item.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                base_column: description
-        settings:
-            termIdSpace: schema
-            termAccession: description
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 20
-          form:
-            default:
-              region: content
-              weight: 20
-
-    -   name: ril_type
-        content_type: ril
+    -   name: germcollection_type
+        content_type: germcollection
         label: Type
         type: chado_additional_type_type_default
-        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        description: 'The type of collection. In this case it is a germplasm collection.'
         cardinality: 1
         required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table: stock
-                type_table: stock
+                base_table: stockcollection
+                type_table: stockcollection
                 type_column: type_id
         settings:
-            termIdSpace: CO_010
-            termAccession: "0000162"
-            fixed_value: CO_010:0000162
+            termIdSpace: OBI
+            termAccession: "0002076"
+            fixed_value: OBI:0002076
         display:
           view:
             default:
@@ -960,137 +908,56 @@ fields:
               region: content
               weight: 25
 
-    -   name: ril_pub
-        content_type: ril
-        label: Publication
-        type: chado_pub_type_default
-        description: Associates a publication (e.g. journal article, conference proceedings, book chapter, etc.) with this record.
+    -   name: germcollection_contact
+        content_type: germcollection
+        label: Contact
+        type: chado_contact_type_default
+        description: An individual or organization that serves as a contact for this record.
         cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_pub
-                linker_fkey_column: pub_id
+                base_table: stockcollection
+                linker_table: stockcollection
+                linker_fkey_column: contact_id
         settings:
-            termIdSpace: TPUB
-            termAccession: "0000002"
+            termIdSpace: NCIT
+            termAccession: C47954
         display:
           view:
             default:
               region: content
               label: above
-              weight: 30
+              weight: 80
           form:
             default:
               region: content
-              weight: 30
+              weight: 80
 
-    -   name: ril_relationship
-        content_type: ril
-        label: Relationship
-        type: chado_relationship_type_default
-        description: "Germplasm related to this RIL. Think of relationship statements as sentences: SUBJECT TYPE OBJECT (e.g. 'Sara (subject) is the mother of (type) Jacob (object)'). By default the current RIL is the subject; chose Reverse if the object is the current RIL."
+    -   name: germcollection_stock
+        content_type: germcollection
+        label: Germplasm
+        type: chado_stock_type_default
+        description: All germplasm that are part of this collection.
         cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table: stock
-                base_column: name
-                linker_table: stock_relationship
-                subject_column: subject_id
-                object_column: object_id
+                base_table: stockcollection
+                linker_table: stockcollection_stock
+                linker_fkey_column: stock_id
         settings:
-            termIdSpace: "SBO"
-            termAccession: "0000374"
+            termIdSpace: EFO
+            termAccession: '0007059'
         display:
           view:
             default:
               region: content
               label: above
-              weight: 49
+              weight: 80
           form:
             default:
               region: content
-              weight: 49
-
-    -   name: ril_dbxref
-        content_type: ril
-        label: Primary Database Reference
-        type: chado_dbxref_type_default
-        description: The ID where this record may be available in an external online database.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                base_column: dbxref_id
-        settings:
-            termIdSpace: SBO
-            termAccession: "0000554"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 68
-          form:
-            default:
-              region: content
-              weight: 68
-
-    -   name: ril_dbxref_ann
-        content_type: ril
-        label: Database Reference Annotations
-        type: chado_dbxref_type_default
-        description: The IDs where this record may be available in other external online databases.
-        cardinality: -1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                linker_table: stock_dbxref
-                linker_fkey_column: dbxref_id
-        settings:
-            termIdSpace: SBO
-            termAccession: "0000552"
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 68
-          form:
-            default:
-              region: content
-              weight: 68
-
-    -   name: ril_is_obsolete
-        content_type: ril
-        label: Is Obsolete
-        type: chado_boolean_type_default
-        description: Indicates if this record is obsolete.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: stock
-                base_column: is_obsolete
-        settings:
-            termIdSpace: local
-            termAccession: is_obsolete
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 90
-          form:
-            default:
-              region: content
-              weight: 90
+              weight: 80
