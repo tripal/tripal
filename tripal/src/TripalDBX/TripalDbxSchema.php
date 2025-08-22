@@ -629,7 +629,7 @@ EOD;
     if ($column === NULL) {
       $parameters = ['source' => 'database', 'format' => 'Drupal',];
 
-      // Cache the table schema so we don't fet it thousands of times.
+      // Cache the table schema so we don't fetch it thousands of times.
       $cache_id = 'table_def_' . $table . '_' . $parameters;
       // Check if this table definition is cached.
       if ($cache = \Drupal::cache()->get($cache_id)) {
