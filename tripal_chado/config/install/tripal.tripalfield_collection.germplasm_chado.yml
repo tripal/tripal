@@ -940,7 +940,7 @@ fields:
         label: 'Description'
         type: 'chado_property_type_default'
         description: 'Describe this germplasm collection.'
-        cardinality: -1
+        cardinality: 1
         required: false
         storage_settings:
             storage_plugin_id: 'chado_storage'
