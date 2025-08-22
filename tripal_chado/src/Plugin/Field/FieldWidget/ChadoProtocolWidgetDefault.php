@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado protocol widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_protocol_widget_default',
   label: new TranslatableMarkup('Chado Protocol Widget'),
   description: new TranslatableMarkup('The default protocol widget.'),

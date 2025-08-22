@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado publication widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_pub_widget_default',
   label: new TranslatableMarkup('Chado Publication Widget'),
   description: new TranslatableMarkup('The default publication widget.'),

@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado Synonym widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_synonym_widget_default',
   label: new TranslatableMarkup('Chado Alias Widget'),
   description: new TranslatableMarkup('The default chado synonym widget.'),

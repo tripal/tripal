@@ -12,7 +12,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal contact field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_contact_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Contacts: All'),

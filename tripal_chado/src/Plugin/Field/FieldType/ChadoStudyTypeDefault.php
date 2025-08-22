@@ -12,7 +12,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal study field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_study_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Study'),

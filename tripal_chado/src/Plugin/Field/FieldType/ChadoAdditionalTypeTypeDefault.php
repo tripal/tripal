@@ -17,7 +17,7 @@ use Drupal\tripal\Services\TripalFieldCollection;
 /**
  * Plugin implementation of Tripal additional type field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_additional_type_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Type Reference'),

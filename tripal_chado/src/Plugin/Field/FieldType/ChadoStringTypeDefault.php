@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 /**
  * Plugin implementation of string field type for Chado.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_string_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado String Field Type'),

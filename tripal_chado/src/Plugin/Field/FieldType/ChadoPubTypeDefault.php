@@ -14,7 +14,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal publication field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_pub_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Publication'),

@@ -14,7 +14,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 /**
  * Plugin implementation of Tripal linker property field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_property_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Property'),

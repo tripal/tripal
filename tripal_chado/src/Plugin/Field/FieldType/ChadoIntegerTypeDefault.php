@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 /**
  * Plugin implementation of the 'integer' field type for Chado.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_integer_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Integer Field Type'),

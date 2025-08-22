@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado featuremap widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_featuremap_widget_default',
   label: new TranslatableMarkup('Chado FeatureMap Widget'),
   description: new TranslatableMarkup('The default featuremap widget.'),

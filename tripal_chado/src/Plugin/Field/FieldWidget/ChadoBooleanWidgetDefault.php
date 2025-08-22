@@ -11,7 +11,7 @@ use Drupal\tripal\Plugin\Field\FieldWidget\TripalBooleanTypeWidget;
 /**
  * Plugin implementation of default Chado boolean type widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_boolean_type_widget',
   label: new TranslatableMarkup('Chado Boolean Widget'),
   description: new TranslatableMarkup('The default boolean type widget.'),

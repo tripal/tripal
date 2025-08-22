@@ -14,7 +14,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal stock field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_stock_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Stock'),

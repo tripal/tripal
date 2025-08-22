@@ -14,7 +14,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
 /**
  * Plugin implementation of default Chado dbxref widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_dbxref_widget_default',
   label: new TranslatableMarkup('Chado Dbxref Widget'),
   description: new TranslatableMarkup('The default dbxref widget.'),

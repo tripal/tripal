@@ -13,7 +13,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal Array Design field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_array_design_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Array Design'),

@@ -13,7 +13,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal relationship field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_relationship_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Relationship'),

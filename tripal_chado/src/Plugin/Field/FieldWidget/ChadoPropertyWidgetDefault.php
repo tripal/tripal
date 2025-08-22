@@ -12,7 +12,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Tripal linker property widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_property_widget_default',
   label: new TranslatableMarkup('Chado Property: Long Text'),
   description: new TranslatableMarkup('Provides a long text widget for Chado Properties using a formatted textarea.'),

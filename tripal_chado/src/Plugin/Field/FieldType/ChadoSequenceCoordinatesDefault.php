@@ -13,7 +13,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of Default Tripal field for sequence coordinates.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_sequence_coordinates_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Sequence Coordinates'),

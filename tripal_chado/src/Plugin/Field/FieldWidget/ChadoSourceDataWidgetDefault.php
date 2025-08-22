@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado Data Source widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_source_data_widget_default',
   label: new TranslatableMarkup('Chado Data Source Widget Default'),
   description: new TranslatableMarkup('The default source data widget which allows curators to manually enter analysis source data information on the content edit page.'),

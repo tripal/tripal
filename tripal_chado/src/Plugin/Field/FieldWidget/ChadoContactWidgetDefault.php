@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado contact widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_contact_widget_default',
   label: new TranslatableMarkup('Chado Contact Widget'),
   description: new TranslatableMarkup('The default contact widget.'),

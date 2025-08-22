@@ -9,7 +9,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 /**
  * Plugin implementation of Default Tripal field formatter for sequence length.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_sequence_length_formatter_default',
   label: new TranslatableMarkup('Chado Sequence Length Formatter'),
   description: new TranslatableMarkup('A chado sequence length formatter'),

@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado study widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_study_widget_default',
   label: new TranslatableMarkup('Chado Study Widget'),
   description: new TranslatableMarkup('The default study widget.'),

@@ -11,7 +11,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of Default Tripal field for sequence length.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_sequence_length_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Feature Sequence Length'),

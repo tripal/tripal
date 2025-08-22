@@ -10,7 +10,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 /**
  * Plugin implementation of default Chado string type formatter.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_string_type_formatter',
   label: new TranslatableMarkup('Chado String Type Formatter'),
   description: new TranslatableMarkup('The Chado string type formatter.'),

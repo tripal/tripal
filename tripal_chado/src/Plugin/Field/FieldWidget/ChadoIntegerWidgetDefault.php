@@ -11,7 +11,7 @@ use Drupal\tripal\Plugin\Field\FieldWidget\TripalIntegerTypeWidget;
 /**
  * Plugin implementation of default Chado integer type widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_integer_type_widget',
   label: new TranslatableMarkup('Chado Integer Widget'),
   description: new TranslatableMarkup('The default integer type widget.'),

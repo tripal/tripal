@@ -10,7 +10,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 /**
  * Plugin implementation of default Tripal additional type formatter.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_additional_type_formatter_default',
   label: new TranslatableMarkup('Chado Type Reference Formatter'),
   description: new TranslatableMarkup('A Chado type reference formatter'),

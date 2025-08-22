@@ -13,7 +13,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of default Tripal dbxref field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_dbxref_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Database Cross Reference'),

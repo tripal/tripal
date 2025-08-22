@@ -10,7 +10,7 @@ use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalIntegerTypeFormatter;
 /**
  * Plugin implementation of default Chado integer type formatter.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_integer_type_formatter',
   label: new TranslatableMarkup('Chado Integer Type Formatter'),
   description: new TranslatableMarkup('The Chado integer type formatter.'),

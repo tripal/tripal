@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado Sequence Residues widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_sequence_widget_default',
   label: new TranslatableMarkup('Chado Sequence Residues Widget'),
   description: new TranslatableMarkup('The default chado sequence widget which allows curators to manually enter sequence residues on the content edit page.'),

@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado feature widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_feature_widget_default',
   label: new TranslatableMarkup('Chado Feature Widget'),
   description: new TranslatableMarkup('The default feature widget.'),

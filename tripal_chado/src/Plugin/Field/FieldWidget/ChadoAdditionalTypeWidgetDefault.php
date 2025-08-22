@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Tripal additional type widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_additional_type_widget_default',
   label: new TranslatableMarkup('Chado Type Reference Widget'),
   description: new TranslatableMarkup('A chado type reference widget'),

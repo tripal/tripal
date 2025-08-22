@@ -12,7 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 /**
  * Plugin implementation of the 'boolean' field type for Chado.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_boolean_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Boolean Field Type'),

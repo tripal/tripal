@@ -12,7 +12,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of Default Tripal field for unit of measurement.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_unit_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Unit'),

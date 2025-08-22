@@ -13,7 +13,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of Default Tripal field for sequence data.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_sequence_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Sequence Residues'),

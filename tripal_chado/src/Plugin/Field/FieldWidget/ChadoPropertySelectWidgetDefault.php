@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Tripal linker property widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_property_select_widget_default',
   label: new TranslatableMarkup('Chado Property: Select Drop-down'),
   description: new TranslatableMarkup('Provides a configurable drop-down widget for Chado Properties.'),

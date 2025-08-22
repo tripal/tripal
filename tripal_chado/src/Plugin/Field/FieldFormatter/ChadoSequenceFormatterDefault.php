@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 /**
  * Plugin implementation of Default Tripal field formatter for sequence data.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_sequence_formatter_default',
   label: new TranslatableMarkup('Chado Sequence Residues Display'),
   description: new TranslatableMarkup('Displays chado sequence residues from the feature table on the page.'),

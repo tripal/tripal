@@ -13,7 +13,7 @@ use Drupal\tripal_chado\Controller\ChadoGenericAutocompleteController;
 /**
  * Plugin implementation of default Chado relationship widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_relationship_widget_default',
   label: new TranslatableMarkup('Chado Relationship Widget'),
   description: new TranslatableMarkup('The default relationship widget.'),

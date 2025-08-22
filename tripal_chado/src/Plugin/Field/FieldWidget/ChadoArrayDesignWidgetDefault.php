@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado Array Design widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_array_design_widget_default',
   label: new TranslatableMarkup('Chado Array Design Widget'),
   description: new TranslatableMarkup('The default array design widget.'),

@@ -10,7 +10,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 /**
  * Plugin implementation of Default Tripal field formatter for synonyms.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_synonym_formatter_default',
   label: new TranslatableMarkup('Chado Synonym Formatter'),
   description: new TranslatableMarkup('A chado synonym formatter'),

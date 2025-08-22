@@ -12,7 +12,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of Default Tripal field for data source.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_source_data_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Data Source'),

@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado Sequence Coordinates widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_sequence_coordinates_widget_default',
   label: new TranslatableMarkup('Chado Sequence Coordinates Widget'),
   description: new TranslatableMarkup('The default chado sequence coordinates widget.'),

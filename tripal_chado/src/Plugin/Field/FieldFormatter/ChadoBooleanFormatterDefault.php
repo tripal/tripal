@@ -10,7 +10,7 @@ use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalBooleanTypeFormatter;
 /**
  * Plugin implementation of default Chado boolean type formatter.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_boolean_type_formatter',
   label: new TranslatableMarkup('Chado Boolean Type Formatter'),
   description: new TranslatableMarkup('The Chado boolean type formatter.'),

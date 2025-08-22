@@ -11,7 +11,7 @@ use Drupal\tripal\Plugin\Field\FieldWidget\TripalStringTypeWidget;
 /**
  * Plugin implementation of default Chado string type widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_string_type_widget',
   label: new TranslatableMarkup('Chado String Widget'),
   description: new TranslatableMarkup('The default string type widget.'),

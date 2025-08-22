@@ -12,7 +12,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 /**
  * Plugin implementation of default Tripal string type formatter.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_source_data_formatter_default',
   label: new TranslatableMarkup('Chado Source Data Formatter'),
   description: new TranslatableMarkup('The default source data widget which allows curators to manually enter analysis source data information on the content edit page.'),

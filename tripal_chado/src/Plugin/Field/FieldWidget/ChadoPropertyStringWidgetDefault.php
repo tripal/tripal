@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Tripal linker property widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_property_string_widget_default',
   label: new TranslatableMarkup('Chado Property: Short Text'),
   description: new TranslatableMarkup('Provides a simple string widget for Chado Properties using a textfield.'),

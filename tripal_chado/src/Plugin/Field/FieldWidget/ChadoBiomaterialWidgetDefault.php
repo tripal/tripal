@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 /**
  * Plugin implementation of default Chado biomaterial widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_biomaterial_widget_default',
   label: new TranslatableMarkup('Chado Biomaterial Widget'),
   description: new TranslatableMarkup('The default biomaterial widget.'),

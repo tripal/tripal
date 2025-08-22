@@ -11,7 +11,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Plugin implementation of Default Tripal field formatter for sequence data.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_sequence_checksum_formatter_default',
   label: new TranslatableMarkup('Chado Sequence checksum Formatter'),
   description: new TranslatableMarkup('A chado sequence checksum formatter'),

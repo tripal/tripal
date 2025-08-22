@@ -12,7 +12,7 @@ use Drupal\tripal_chado\Controller\ChadoOrganismAutocompleteController;
 /**
  * Plugin implementation of default Chado organism widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'chado_organism_widget_default',
   label: new TranslatableMarkup('Chado Organism Widget'),
   description: new TranslatableMarkup('The default organism widget.'),

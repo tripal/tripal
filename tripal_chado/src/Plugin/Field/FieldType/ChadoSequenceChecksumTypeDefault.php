@@ -12,7 +12,7 @@ use Drupal\tripal\Entity\TripalEntityType;
 /**
  * Plugin implementation of Default Tripal field for sequence checksum.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_sequence_checksum_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Feature Sequence Checksum'),

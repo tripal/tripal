@@ -13,7 +13,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 /**
  * Plugin implementation of default Tripal linker property formatter.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'chado_property_formatter_default',
   label: new TranslatableMarkup('Chado Property'),
   description: new TranslatableMarkup('Add a property or attribute to the content type.'),

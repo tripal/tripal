@@ -12,7 +12,7 @@ use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 /**
  * Plugin implementation of the 'text' field type for Chado.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'chado_text_type_default',
   category: 'tripal_chado',
   label: new TranslatableMarkup('Chado Text Field Type'),
