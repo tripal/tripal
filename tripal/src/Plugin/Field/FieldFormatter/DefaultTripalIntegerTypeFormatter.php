@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\Attribute\FieldFormatter;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;

@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\Core\Field\Attribute\FieldType;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;

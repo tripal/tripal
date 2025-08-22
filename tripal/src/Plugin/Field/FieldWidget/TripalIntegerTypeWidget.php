@@ -6,7 +6,7 @@ use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
-use Drupal\Core\Field\Attribute\FieldWidget;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
