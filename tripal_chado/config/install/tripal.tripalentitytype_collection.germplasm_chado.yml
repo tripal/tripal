@@ -33,7 +33,7 @@ content_types:
 
     -   label: 'Germplasm Variety'
         term: 'EFO:0005136'
-        help_text: 'Use the germplasm variety page for information about specific cultivated variety of germplasm.'
+        help_text: 'Use the germplasm variety page for information about a specific cultivated variety of germplasm.'
         category: 'Germplasm'
         id: 'germplasm_variety'
         title_format: '[germplasm_variety_name]'
@@ -47,7 +47,7 @@ content_types:
 
     -   label: 'Germplasm Collection'
         term: 'OBI:0002076'
-        help_text: 'Use this page to describe a collection of germplasm. This collection should be linked to more then one germplasm page and is not restricted to a single organism.'
+        help_text: 'Use this page to describe a collection of germplasm. This collection should be linked to more than one germplasm page and is not restricted to a single organism.'
         category: 'Germplasm'
         id: 'germcollection'
         title_format: '[germcollection_unique_name][: [germcollection_name]]'

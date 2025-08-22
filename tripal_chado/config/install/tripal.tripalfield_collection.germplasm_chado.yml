@@ -184,7 +184,7 @@ fields:
                 subject_column: 'subject_id'
                 object_column: 'object_id'
         settings:
-            termIdSpace: SB'O
+            termIdSpace: 'SBO'
             termAccession: '0000374'
         display:
           view:
