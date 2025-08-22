@@ -11,7 +11,7 @@ use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 /**
  * Plugin implementation of the 'boolean' field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'tripal_boolean_type',
   category: 'tripal',
   label: new TranslatableMarkup('Tripal Boolean Field Type'),

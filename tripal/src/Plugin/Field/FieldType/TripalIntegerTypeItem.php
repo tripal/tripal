@@ -11,7 +11,7 @@ use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 /**
  * Plugin implementation of the 'integer' field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'tripal_integer_type',
   category: 'tripal',
   label: new TranslatableMarkup('Tripal Integer Field Type'),

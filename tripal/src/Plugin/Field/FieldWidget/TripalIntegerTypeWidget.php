@@ -12,7 +12,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 /**
  * Plugin implementation of default Tripal integer type widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'default_tripal_boolean_type_widget',
   label: new TranslatableMarkup('Tripal Boolean Widget'),
   description: new TranslatableMarkup('The default boolean type widget.'),

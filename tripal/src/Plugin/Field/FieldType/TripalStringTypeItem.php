@@ -12,7 +12,7 @@ use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 /**
  * Plugin implementation of Tripal string field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'tripal_string_type',
   category: 'tripal',
   label: new TranslatableMarkup('Tripal String Field Type'),

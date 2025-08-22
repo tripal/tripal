@@ -11,7 +11,7 @@ use Drupal\tripal\TripalField\TripalFormatterBase;
 /**
  * Plugin implementation of default Tripal boolean type formatter.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'default_tripal_boolean_type_formatter',
   label: new TranslatableMarkup('Default Boolean Type Formatter'),
   description: new TranslatableMarkup('The default boolean type formatter.'),

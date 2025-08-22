@@ -11,7 +11,7 @@ use Drupal\tripal\TripalField\TripalFormatterBase;
 /**
  * Plugin implementation of default Tripal text type formatter.
  */
-#[FieldFormatter(
+#[TripalFieldFormatter(
   id: 'default_tripal_text_type_formatter',
   label: new TranslatableMarkup('Default Text Type Formatter'),
   description: new TranslatableMarkup('The default text type formatter.'),

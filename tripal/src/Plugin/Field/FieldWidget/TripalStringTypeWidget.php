@@ -11,7 +11,7 @@ use Drupal\tripal\TripalField\TripalWidgetBase;
 /**
  * Plugin implementation of default Tripal string type widget.
  */
-#[FieldWidget(
+#[TripalFieldWidget(
   id: 'default_tripal_string_type_widget',
   label: new TranslatableMarkup('Tripal String Widget'),
   description: new TranslatableMarkup('The default string type widget.'),

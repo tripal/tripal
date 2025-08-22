@@ -11,7 +11,7 @@ use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 /**
  * Plugin implementation of the 'text' field type.
  */
-#[FieldType(
+#[TripalFieldType(
   id: 'tripal_text_type',
   category: 'tripal',
   label: new TranslatableMarkup('Tripal Text Field Type'),
