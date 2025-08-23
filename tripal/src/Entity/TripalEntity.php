@@ -14,6 +14,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Component\Utility\Xss;
 use Drupal\user\UserInterface;
 use Drupal\tripal\Access\TripalEntityAccessControlHandler;
+use Drupal\tripal\Entity\TripalEntityViewsData;
 use Drupal\tripal\Form\TripalEntityForm;
 use Drupal\tripal\Form\TripalEntityDeleteForm;
 use Drupal\tripal\Form\TripalEntityUnpublishForm;
@@ -34,6 +35,7 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
     'storage' => SqlContentEntityStorage::class,
     'list_builder' => TripalEntityListBuilder::class,
     'view_builder' => EntityViewBuilder::class,
+    'views_data' => TripalEntityViewsData::class,
     'form' => [
       'default' => TripalEntityForm::class,
       'add' => TripalEntityForm::class,
