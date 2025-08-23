@@ -2,10 +2,10 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
-use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\Entity\TripalEntityType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;

@@ -2,9 +2,9 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
-use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal\Plugin\Field\FieldFormatter\DefaultTripalTextTypeFormatter;
 
 /**

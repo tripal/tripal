@@ -2,10 +2,10 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
-use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 

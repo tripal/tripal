@@ -2,12 +2,11 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
-
-use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\TripalWidgetBase;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 
 /**
  * Plugin implementation of default Tripal integer type widget.

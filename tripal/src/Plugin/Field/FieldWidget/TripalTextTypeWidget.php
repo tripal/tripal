@@ -2,10 +2,10 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\tripal\TripalField\Attribute\TripalFieldWidget;
 use Drupal\tripal\TripalField\TripalWidgetBase;
 
 /**

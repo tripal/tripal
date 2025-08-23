@@ -2,12 +2,12 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
-use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\UrlHelper;
+use Drupal\tripal\TripalField\Attribute\TripalFieldFormatter;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
