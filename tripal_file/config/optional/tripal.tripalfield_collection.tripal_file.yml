@@ -102,7 +102,7 @@ fields:
         label: 'File Location'
         type: 'tripal_file_location_type_default'
         description: 'The location of the file.'
-        cardinality: 1
+        cardinality: -1
         required: false
         storage_settings:
             storage_plugin_id: 'chado_storage'
