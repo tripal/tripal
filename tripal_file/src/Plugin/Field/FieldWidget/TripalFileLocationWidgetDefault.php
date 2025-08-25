@@ -5,7 +5,9 @@ namespace Drupal\tripal_file\Plugin\Field\FieldWidget;
 use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\File\FileUrlGenerator;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 #[FieldWidget(
@@ -17,6 +19,15 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
   ],
 )]
 class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
+
+  /**
+   * Service to convert a uri to the local path.
+   *
+   * We need to access this service directly if the file
+   * is not registered with Drupal. We will only load it
+   * when it is necessary.
+   */
+  protected static ?FileUrlGenerator $file_url_generator = NULL;
 
   /**
    * {@inheritdoc}
@@ -108,18 +119,59 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-# @todo wondering about the need for this...
-#    foreach ($values as $delta => $properties) {
-#      $values[$delta]['fileloc_md5checksum'] = trim($values[$delta]['fileloc_md5checksum']);
-#    }
+
+    // lookup md5 checksum and size for local files.
+    foreach ($values as $delta => $properties) {
+      $uri = $properties['fileloc_uri'];
+      if ($uri) {
+        $scheme = parse_url($uri, PHP_URL_SCHEME);
+        // Only local files are handled here.
+        if ($scheme == 'public') {
+          $file_path = self::GetLocalPath($uri);
+          if ($file_path) {
+            $file_size = filesize($file_path);
+            $file_md5_checksum = md5_file($file_path);
+            $values[$delta]['fileloc_size'] = $file_size;
+            $values[$delta]['fileloc_md5checksum'] = $file_md5_checksum;
+          }
+        }
+      }
+
+    }
     return $values;
+  }
+
+  /**
+   * Get the local filesystem full path for a public:// uri.
+   *
+   * @param string $uri
+   *   The uri to look up, e.g. public://dir/filename.txt.
+   * @return string
+   *   If the uri is for a local filesystem file, returns the local
+   *   filesystem path, or an empty string if the file does not exist.
+   *   If the uri is external, the passed uri value is returned unchanged.
+   */
+  protected static function GetLocalPath(string $uri): string {
+    $file_path = $uri;
+    $scheme = parse_url($uri, PHP_URL_SCHEME);
+    // Only evaluate for a local file.
+    if ($scheme == 'public') {
+      if (!self::$file_url_generator) {
+        self::$file_url_generator = \Drupal::service('file_url_generator');
+      }
+      $file_path = \Drupal::root() . self::$file_url_generator->generateString($uri);
+      if (!file_exists($file_path)) {
+        $file_path = '';
+      }
+    }
+    return $file_path;
   }
 
   /**
    * Form element validation handler for the uri field.
    *
    * This field is required in the database table, but we do not set
-   * it as required in the form because it affects empty records.
+   * it as required in the form because doing so affects empty records.
    *
    * @param array $element
    *   The form element being validated
@@ -141,7 +193,13 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
                           && !$other_values['fileloc_size']);
       if (!$other_values_empty) {
         $form_state->setErrorByName(implode('][', $element_parents),
-          t('The URI field is a required value'));
+          t('The URI field is a required value.'));
+      }
+    }
+    else {
+      if (!self::GetLocalPath($element_value)) {
+        $form_state->setErrorByName(implode('][', $element_parents),
+          t('The specified file does not exist in the local filesystem.'));
       }
     }
   }
@@ -190,3 +248,5 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
     return parent::settingsSummary();
   }
 }
+//@todo: edit and save not working
+//@todo: empty deltas getting saved
