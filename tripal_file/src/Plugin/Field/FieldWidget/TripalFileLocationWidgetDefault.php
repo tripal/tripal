@@ -21,11 +21,11 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
 
   /**
-   * Service to convert a uri to the local path.
+   * Service to convert a uri to its corresponding local path.
    *
-   * We need to access this service directly if the file
-   * is not registered with Drupal. We will only load it
-   * when it is necessary.
+   * We need to access this service directly for any files that are
+   * not registered with Drupal. We will only load this service when
+   * it is necessary.
    */
   protected static ?FileUrlGenerator $file_url_generator = NULL;
 
@@ -120,12 +120,25 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
 
-    // lookup md5 checksum and size for local files.
+    // Remove any empty values that don't have a uri.
+    foreach ($values as $delta => $item) {
+      if (trim($item['fileloc_uri']) == '') {
+        unset($values[$delta]);
+      }
+    }
+
+    // Use the Drupal delta value as the chado rank.
+    foreach ($values as $delta => $item) {
+      // @todo needed? $values[$delta]['_weight'] = $delta;
+      $values[$delta]['fileloc_rank'] = $delta;
+    }
+
+    // Lookup md5 checksum and size for local files.
     foreach ($values as $delta => $properties) {
       $uri = $properties['fileloc_uri'];
       if ($uri) {
+        // We can only lookup local files, ignore external files.
         $scheme = parse_url($uri, PHP_URL_SCHEME);
-        // Only local files are handled here.
         if ($scheme == 'public') {
           $file_path = self::GetLocalPath($uri);
           if ($file_path) {
@@ -136,19 +149,18 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
           }
         }
       }
-
     }
     return $values;
   }
 
   /**
-   * Get the local filesystem full path for a public:// uri.
+   * Get the local filesystem absolute path for a public:// uri.
    *
    * @param string $uri
    *   The uri to look up, e.g. public://dir/filename.txt.
    * @return string
    *   If the uri is for a local filesystem file, returns the local
-   *   filesystem path, or an empty string if the file does not exist.
+   *   filesystem absolute path, or an empty string if the file does not exist.
    *   If the uri is external, the passed uri value is returned unchanged.
    */
   protected static function GetLocalPath(string $uri): string {
@@ -177,8 +189,11 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    *   The form element being validated
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state of the (entire) configuration form
+   *
+   * @return void
+   *   No return value.
    */
-  public static function validateFilelocUri($element, FormStateInterface $form_state) {
+  public static function validateFilelocUri($element, FormStateInterface $form_state): void {
     // element_parents e.g. 0 => "project_relationship", 1 => 0, 2 => "related_record".
     $element_parents = $element['#parents'];
     $delta = $element_parents[1];
@@ -214,8 +229,11 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    *   The form element being validated
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state of the (entire) configuration form
+   *
+   * @return void
+   *   No return value.
    */
-  public static function validateMd5checksum($element, FormStateInterface $form_state) {
+  public static function validateMd5checksum($element, FormStateInterface $form_state): void {
     $element_parents = $element['#parents'];
     // element_parents e.g. 0 => "project_relationship", 1 => 0, 2 => "related_record"
     $element_value = $element['#value'];
@@ -247,6 +265,5 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
   public function settingsSummary() {
     return parent::settingsSummary();
   }
+
 }
-//@todo: edit and save not working
-//@todo: empty deltas getting saved
