@@ -2,11 +2,13 @@
 
 namespace Drupal\tripal_file\Plugin\Field\FieldWidget;
 
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Field\Attribute\FieldWidget;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\File\FileUrlGenerator;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
@@ -36,10 +38,6 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
 
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
-#    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-#    $linker_fkey_column = $storage_settings['linker_fkey_column']
-#      ?? $storage_settings['base_column'] ?? 'file_id';
-#    $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
     $item_vals = $items[$delta]->getValue();
@@ -110,7 +108,7 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
     ];
 
     // Save some initial values to allow later handling of the "Remove" button
-    $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
+    $this->saveInitialValues($delta, $field_name, $fileloc_id, $form_state);
 
     return $elements;
   }
@@ -120,22 +118,29 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
 
-    // Remove any empty values that don't have a uri.
+    // Remove any empty values that don't have a uri. Because of
+    // validation, if this is empty, then other values are empty too.
+#@todo test that this is even needed
     foreach ($values as $delta => $item) {
       if (trim($item['fileloc_uri']) == '') {
-        unset($values[$delta]);
+#        unset($values[$delta]);
       }
     }
 
-    // Use the Drupal delta value as the chado rank.
+    $values = $this->genericSelectMassageFormValues('fileloc_id', $values);
+    $values = $this->massagePropertyFormValues('fileloc_uri', $values, $form_state, NULL, 'fileloc_id');
+
     foreach ($values as $delta => $item) {
-      // @todo needed? $values[$delta]['_weight'] = $delta;
-      $values[$delta]['fileloc_rank'] = $delta;
+      // Use the Drupal delta value as the chado rank.
+      if ($item['fileloc_uri'] ?? '') {
+        $values[$delta]['fileloc_rank'] = $delta;
+#        $values[$delta]['_weight'] = $delta;
+      }
     }
 
-    // Lookup md5 checksum and size for local files.
-    foreach ($values as $delta => $properties) {
-      $uri = $properties['fileloc_uri'];
+    // Look up md5 checksum and size for local files.
+    foreach ($values as $delta => $item) {
+      $uri = $item['fileloc_uri'] ?? '';
       if ($uri) {
         // We can only lookup local files, ignore external files.
         $scheme = parse_url($uri, PHP_URL_SCHEME);
@@ -186,9 +191,9 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
    * it as required in the form because doing so affects empty records.
    *
    * @param array $element
-   *   The form element being validated
+   *   The form element being validated.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state of the (entire) configuration form
+   *   The form state of the (entire) configuration form.
    *
    * @return void
    *   No return value.
@@ -212,7 +217,15 @@ class TripalFileLocationWidgetDefault extends ChadoWidgetBase {
       }
     }
     else {
-      if (!self::GetLocalPath($element_value)) {
+      // Check that this is a well-formed uri using the same code
+      // as the formatter.
+      $scheme = parse_url($element_value, PHP_URL_SCHEME);
+      if (!$scheme) {
+        $form_state->setErrorByName(implode('][', $element_parents),
+          t('The specified URI is not valid.'));
+      }
+      // Validates that public:// files exist.
+      else if (!self::GetLocalPath($element_value)) {
         $form_state->setErrorByName(implode('][', $element_parents),
           t('The specified file does not exist in the local filesystem.'));
       }

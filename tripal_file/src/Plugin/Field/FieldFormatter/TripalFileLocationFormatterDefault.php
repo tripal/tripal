@@ -64,7 +64,10 @@ class TripalFileLocationFormatterDefault extends ChadoFormatterBase {
         $values['filename'] = $uri;
       }
 
+      // The scheme will be NULL for an invalid URI.
       $scheme = parse_url($uri, PHP_URL_SCHEME);
+      $host = '';
+      $link = $uri;
       if ($scheme == 'public') {
         $host = \Drupal::config('system.site')->get('name');
         $url = \Drupal::service('file_url_generator')->generate($uri);
@@ -73,7 +76,9 @@ class TripalFileLocationFormatterDefault extends ChadoFormatterBase {
         $host = parse_url($uri, PHP_URL_HOST);
         $url = Url::fromUri($uri);
       }
-      $link = Link::fromTextAndUrl($values['filename'], $url);
+      if ($scheme) {
+        $link = Link::fromTextAndUrl($values['filename'], $url);
+      }
 
       $row = [$link, $host, $values['size'], $values['md5checksum']];
       $rows[$delta] = $row;
@@ -83,6 +88,7 @@ class TripalFileLocationFormatterDefault extends ChadoFormatterBase {
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,
+//      '#attributes' => ['class' => 'responsive-enabled'],  // no change
       '#wrapper_attributes' => ['class' => 'container'],
     ];
 
