@@ -29,7 +29,7 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
    */
   public static function mainPropertyName() {
     // Overrides the default of 'value'
-    return 'value';
+    return 'fileloc_uri';
   }
 
   /**
@@ -122,6 +122,8 @@ class TripalFileLocationTypeDefault extends ChadoFieldItemBase {
       'drupal_store' => FALSE,
       'path' => $base_table . '.' . $base_pkey_col . '>' . $object_table . '.' . $object_fkey_col . ';uri',
       'as' => 'fileloc_uri',
+      'delete_if_empty' => TRUE,
+      'empty_value' => ''
     ]);
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'fileloc_rank', $rank_term, [
