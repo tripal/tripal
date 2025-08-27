@@ -1,0 +1,119 @@
+system-under-test:
+  chado_version: '1.3.3.013'
+  bundle:
+    label: 'Stock'
+    termIdSpace: 'EFO'
+    termAccession: '0007059'
+    id: 'test_stock'
+    settings:
+      chado_base_table: 'stock'
+  fields:
+  - name: 'stock_name'
+    type: 'chado_string_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+    widget: 'chado_string_type_widget'
+    formatter: 'chado_string_type_formatter'
+    termIdSpace: 'schema'
+    termAccession: 'name'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'stock'
+          base_column: 'name'
+      max_length: 255
+  - name: 'stock_type'
+    type: 'chado_additional_type_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAdditionalTypeTypeDefault'
+    widget: 'chado_additional_type_widget_default'
+    formatter: 'chado_additional_type_formatter_default'
+    termIdSpace: 'schema'
+    termAccession: 'additionalType'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'stock'
+          type_table: 'stock'
+          type_column: 'type_id'
+  - name: 'stock_coll1'
+    type: 'chado_stockcollection_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStockCollectionTypeDefault'
+    widget: 'chado_stockcollection_widget_default'
+    formatter: 'chado_stockcollection_formatter_default'
+    termIdSpace: 'rdfs'
+    termAccession: 'comment'
+    cardinality: -1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'stock'
+          linker_table: 'stockcollection_stock'
+          linker_fkey_column: 'stockcollection_id'
+  - name: 'stock_coll2'
+    type: 'chado_stockcollection_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStockCollectionTypeDefault'
+    widget: 'chado_stockcollection_widget_default'
+    formatter: 'chado_stockcollection_formatter_default'
+    termIdSpace: 'NCIT'
+    termAccession: 'C25341'
+    cardinality: -1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'stock'
+          linker_table: 'stockcollection_stock'
+          linker_fkey_column: 'stockcollection_id'
+scenarios:
+  - label: 'Base Fields Only'
+    description: 'Create a page without setting any stock collections.'
+    create:
+      user_input:
+        stock_name:
+        - record_id: 0
+          value: '1234S'
+        stock_type:
+        - record_id: 0
+          type_id: 165
+          term_name: ''
+          id_space: ''
+          accession: ''
+        stock_coll1:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: ''
+          rank: 0
+          type_id: 0
+        stock_coll2:
+        - record_id: 0
+          prop_id: 0
+          linker_id: 0
+          value: ''
+          rank: 0
+          type_id: 0
+      expected:
+        stock_name:
+        - record_id: 1
+          value: '1234S'
+        stock_type:
+        - record_id: 1
+          type_id: 165
+          term_name: 'germplasm'
+          id_space: 'EFO'
+          accession: '0007059'
+    edit:
+      user_input:
+        stock_name:
+        - record_id: 1
+          value: '1234S EDIT'
+      expected:
+        stock_name:
+        - record_id: 1
+          value: '1234S EDIT'
+        stock_type:
+        - record_id: 1
+          type_id: 165
+          term_name: 'germplasm'
+          id_space: 'EFO'
+          accession: '0007059'
