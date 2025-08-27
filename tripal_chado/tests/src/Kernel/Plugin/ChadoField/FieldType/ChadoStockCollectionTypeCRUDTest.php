@@ -127,6 +127,13 @@ class ChadoStockCollectionTypeCRUDTest extends ChadoTestKernelBase {
       $this->system_under_test['chado_version']
     );
 
+    $this->chado_connection->insert('1:organism')
+      ->fields([
+        'genus' => 'Tripalus',
+        'species' => 'databasica',
+      ])
+      ->execute();
+
     // Next setup the environment according to the system under test.
     $this->setupChadoEntityFieldTestEnvironment($this->system_under_test);
   }
@@ -184,8 +191,6 @@ class ChadoStockCollectionTypeCRUDTest extends ChadoTestKernelBase {
   #[DataProvider('provideScenarios')]
   public function testChadoStockCollectionTypeEntityCrud(int $current_scenario_key, string $current_scenario_label) {
     $current_scenario = $this->retrieveCurrentScenario($current_scenario_key, $current_scenario_label);
-
-    $this->markTestIncomplete('Not yet finished.');
 
     // 1. Create the entity with that value set.
     $entity = TripalEntity::create([

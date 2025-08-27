@@ -22,6 +22,20 @@ system-under-test:
           base_table: 'stock'
           base_column: 'name'
       max_length: 255
+  - name: 'stock_uniquename'
+    type: 'chado_string_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStringTypeDefault'
+    widget: 'chado_string_type_widget'
+    formatter: 'chado_string_type_formatter'
+    termIdSpace: 'data'
+    termAccession: '0842'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'stock'
+          base_column: 'uniquename'
+      max_length: 255
   - name: 'stock_type'
     type: 'chado_additional_type_type_default'
     type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoAdditionalTypeTypeDefault'
@@ -36,6 +50,19 @@ system-under-test:
           base_table: 'stock'
           type_table: 'stock'
           type_column: 'type_id'
+  - name: 'stock_organism'
+    type: 'chado_organism_type_default'
+    type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoOrganismTypeDefault'
+    widget: 'chado_organism_widget_default'
+    formatter: 'chado_organism_formatter_default'
+    termIdSpace: 'OBI'
+    termAccession: '0100026'
+    cardinality: 1
+    settings:
+      storage_plugin_id: 'chado_storage'
+      storage_plugin_settings:
+          base_table: 'stock'
+          type_column: 'organism_id'
   - name: 'stock_coll1'
     type: 'chado_stockcollection_type_default'
     type_class: 'Drupal\tripal_chado\Plugin\Field\FieldType\ChadoStockCollectionTypeDefault'
@@ -72,12 +99,18 @@ scenarios:
         stock_name:
         - record_id: 0
           value: '1234S'
+        stock_uniquename:
+        - record_id: 0
+          value: '1234S'
         stock_type:
         - record_id: 0
-          type_id: 165
+          type_id: 3
           term_name: ''
           id_space: ''
           accession: ''
+        stock_organism:
+        - record_id: 1
+          organism_id: 1
         stock_coll1:
         - record_id: 0
           prop_id: 0
@@ -96,12 +129,20 @@ scenarios:
         stock_name:
         - record_id: 1
           value: '1234S'
+        stock_uniquename:
+        - record_id: 1
+          value: '1234S'
         stock_type:
         - record_id: 1
-          type_id: 165
+          type_id: 3
           term_name: 'germplasm'
           id_space: 'EFO'
           accession: '0007059'
+        stock_organism:
+        - record_id: 1
+          organism_id: 1
+          organism_genus: 'Tripalus'
+          organism_species: 'databasica'
     edit:
       user_input:
         stock_name:
@@ -111,9 +152,17 @@ scenarios:
         stock_name:
         - record_id: 1
           value: '1234S EDIT'
+        stock_uniquename:
+        - record_id: 1
+          value: '1234S'
         stock_type:
         - record_id: 1
-          type_id: 165
+          type_id: 3
           term_name: 'germplasm'
           id_space: 'EFO'
           accession: '0007059'
+        stock_organism:
+        - record_id: 1
+          organism_id: 1
+          organism_genus: 'Tripalus'
+          organism_species: 'databasica'
