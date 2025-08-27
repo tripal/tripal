@@ -71,42 +71,13 @@ class TripalFileWidgetDefault extends ChadoWidgetBase {
     $select_element = $this->genericSelectElement('file_id', $file_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
-    // Special processing for the null file which is defined by chado
-    if (array_key_exists('#options', $select_element)) {
-      $null_file = array_search('null', $select_element['#options']);
-      if ($null_file) {
-        $select_element['#options'][$null_file] = '- Unknown -';  // This will sort to the top
-      }
-      natcasesort($select_element['#options']);
-    }
-
     // Insert the select element, either a select or an autocomplete depending
     // on the number of options.
     $elements[$linker_fkey_column] = $element + $select_element;
 
-    // If there is a type_id and the value is not already set, then we want to
-    // use the cvterm of the field as the default.
-    if (array_key_exists('linker_type_id', $property_definitions)) {
-
-      if (empty($item['linker_type_id'])) {
-        $termIdSpace = $this->getFieldSetting('termIdSpace');
-        $termAccession = $this->getFieldSetting('termAccession');
-
-        $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-        $idSpace = $idSpace_manager->loadCollection($termIdSpace);
-        $term = $idSpace->getTerm($termAccession);
-
-        $item['linker_type_id'] = $term->getInternalId();
-      }
-
-      $elements['linker_type_id'] = [
-        '#type' => 'value',
-        '#default_value' => $item['linker_type_id'],
-      ];
-    }
-
     // If there is a rank and it is not already set,
     // then we want to use 0 as the default.
+    // Only file_pub does not have a rank column.
     if (array_key_exists('linker_rank', $property_definitions)) {
       $default_value = $item_vals['linker_rank'] ?? 0;
       $elements['linker_rank'] = [
