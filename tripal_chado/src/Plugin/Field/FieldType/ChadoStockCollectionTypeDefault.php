@@ -71,7 +71,6 @@ class ChadoStockCollectionTypeDefault extends ChadoFieldItemBase {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'OBI';
     $settings['termAccession'] = '0002076';
-    $settings['termFixed'] = FALSE;
     return $settings;
   }
 
@@ -137,6 +136,9 @@ class ChadoStockCollectionTypeDefault extends ChadoFieldItemBase {
     else {
       $linker_fkey_term = self::getColumnTermId($base_table, $linker_fkey_column, self::$record_id_term);
     }
+
+    $cvterm_schema_def = $schema->getTableDef('cvterm', ['format' => 'Drupal']);
+    $stockcollection_type_len = $cvterm_schema_def['fields']['name']['size'];
 
     $properties = [];
 
