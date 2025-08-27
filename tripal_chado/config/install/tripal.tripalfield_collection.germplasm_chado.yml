@@ -141,6 +141,34 @@ fields:
               region: 'content'
               weight: 25
 
+    -   name: 'germplasm_collection'
+        content_type: 'germplasm'
+        label: 'Collections'
+        type: 'chado_stockcollection_type_default'
+        description: 'The stock collections that this germplasm is part of.'
+        cardinality: -1
+        required: true
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'stock'
+                linker_table: 'stockcollection_stock'
+                linker_fkey_column: 'stockcollection_id'
+        settings:
+            termIdSpace: 'OBI'
+            termAccession: '0002076'
+            fixed_value: 'OBI:0002076'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 27
+          form:
+            default:
+              region: 'content'
+              weight: 27
+
     -   name: 'germplasm_pub'
         content_type: 'germplasm'
         label: 'Publication'
@@ -414,6 +442,34 @@ fields:
               region: 'content'
               weight: 25
 
+    -   name: 'breeding_cross_collection'
+        content_type: 'breeding_cross'
+        label: 'Collections'
+        type: 'chado_stockcollection_type_default'
+        description: 'The stock collections that this cross is part of.'
+        cardinality: -1
+        required: true
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'stock'
+                linker_table: 'stockcollection_stock'
+                linker_fkey_column: 'stockcollection_id'
+        settings:
+            termIdSpace: 'OBI'
+            termAccession: '0002076'
+            fixed_value: 'OBI:0002076'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 27
+          form:
+            default:
+              region: 'content'
+              weight: 27
+
     -   name: 'breeding_cross_pub'
         content_type: 'breeding_cross'
         label: 'Publication'
@@ -686,6 +742,34 @@ fields:
             default:
               region: 'content'
               weight: 25
+
+    -   name: 'germplasmvariety_collection'
+        content_type: 'germplasm_variety'
+        label: 'Collections'
+        type: 'chado_stockcollection_type_default'
+        description: 'The stock collections that this germplasm variety is part of.'
+        cardinality: -1
+        required: true
+        storage_settings:
+            storage_plugin_id: 'chado_storage'
+            storage_plugin_settings:
+                base_table: 'stock'
+                linker_table: 'stockcollection_stock'
+                linker_fkey_column: 'stockcollection_id'
+        settings:
+            termIdSpace: 'OBI'
+            termAccession: '0002076'
+            fixed_value: 'OBI:0002076'
+        display:
+          view:
+            default:
+              region: 'content'
+              label: 'above'
+              weight: 27
+          form:
+            default:
+              region: 'content'
+              weight: 27
 
     -   name: 'germplasm_variety_pub'
         content_type: 'germplasm_variety'
