@@ -115,16 +115,6 @@ class TripalFileWidgetDefault extends ChadoWidgetBase {
       ];
     }
 
-    // If there is a pub_id and it is not already set, then we want to use
-    // the null pub which has an id of 1.
-    if (array_key_exists('linker_pub_id', $property_definitions)) {
-      $default_value = $item_vals['linker_pub_id'] ?? 1;
-      $elements['linker_pub_id'] = [
-        '#type' => 'value',
-        '#default_value' => $default_value,
-      ];
-    }
-
     // Save some initial values to allow later handling of the "Remove" button
     $this->saveInitialValues($delta, $field_name, $linker_id, $form_state);
 
