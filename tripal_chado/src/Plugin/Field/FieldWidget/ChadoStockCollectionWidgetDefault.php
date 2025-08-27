@@ -12,14 +12,14 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  * Plugin implementation of default Chado stock widget.
  */
 #[FieldWidget(
-  id: 'chado_stock_widget_default',
-  label: new TranslatableMarkup('Chado Stock Widget'),
+  id: 'chado_stockcollection_widget_default',
+  label: new TranslatableMarkup('Chado Stock Collection Widget'),
   description: new TranslatableMarkup('The default stock widget.'),
   field_types: [
     'chado_stock_type_default',
   ],
 )]
-class ChadoStockWidgetDefault extends ChadoWidgetBase {
+class ChadoStockCollectionWidgetDefault extends ChadoWidgetBase {
 
   /**
    * {@inheritdoc}
@@ -30,7 +30,7 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
     $field_definition = $items[$delta]->getFieldDefinition();
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $linker_fkey_column = $storage_settings['linker_fkey_column']
-      ?? $storage_settings['base_column'] ?? 'stock_id';
+      ?? $storage_settings['base_column'] ?? 'stockcollection_id';
     $property_definitions = $items[$delta]->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
     $field_name = $items->getFieldDefinition()->get('field_name');
 
@@ -38,7 +38,7 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
     $record_id = $item_vals['record_id'] ?? 0;
     $linker_id = $item_vals['linker_id'] ?? 0;
     $link = $item_vals['link'] ?? 0;
-    $stock_id = $item_vals['stock_id'] ?? 0;
+    $stockcollection_id = $item_vals['stockcollection_id'] ?? 0;
 
     $elements = [];
     $elements['record_id'] = [
@@ -66,12 +66,12 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
 
     // Create a select element specific to this content type.
     $options = [
-      'base_table' => 'stock',
+      'base_table' => 'stockcollection',
       'column_name' => 'name',
       'type_column' => 'type_id',
-      'property_table' => 'stock',
+      'property_table' => 'stockcollection',
     ];
-    $select_element = $this->genericSelectElement('stock_id', $stock_id, $options);
+    $select_element = $this->genericSelectElement('stockcollection_id', $stockcollection_id, $options);
     $elements[$linker_fkey_column] = $element + $select_element;
 
     // If there are any additional columns present in the linker table,
@@ -97,8 +97,8 @@ class ChadoStockWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    $values = $this->genericSelectMassageFormValues('stock_id', $values);
-    return $this->massageLinkingFormValues('stock_id', $values, $form_state);
+    $values = $this->genericSelectMassageFormValues('stockcollection_id', $values);
+    return $this->massageLinkingFormValues('stockcollection_id', $values, $form_state);
   }
 
   /**
